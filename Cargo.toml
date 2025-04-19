@@ -1,0 +1,23 @@
+[dependencies.lazy_static]
+version = "1.3"
+
+[dependencies.num-bigint]
+version = "0.2"
+
+[dependencies.num-rational]
+version = "0.2"
+
+[dependencies.num-traits]
+version = "0.2"
+
+[package]
+authors = ["Marcin S. <scatman@bu.edu>"]
+description = "OVER: the best data format."
+documentation = "https://docs.rs/over"
+edition = "2018"
+keywords = ["config", "format", "minimal", "intuitive", "powerful"]
+license = "MIT"
+name = "over"
+readme = "README.md"
+repository = "https://github.com/m-cat/over"
+version = "0.6.5"
