@@ -2144,7 +2144,8 @@ pub mod process
                     self.inner.extend(iter);
                 }
 
-                pub fn as_mut(&mut self) -> RcVecMut<T> {
+                pub fn as_mut(&mut self) -> RcVecMut<'_, T>
+                {
                     RcVecMut {
                         inner: &mut self.inner,
                     }
@@ -2167,7 +2168,8 @@ pub mod process
                     self.inner.extend(iter);
                 }
 
-                pub fn as_mut(&mut self) -> RcVecMut<T> {
+                pub fn as_mut(&mut self) -> RcVecMut<'_, T> 
+                {
                     RcVecMut { inner: self.inner }
                 }
 
@@ -2492,13 +2494,10 @@ pub mod process
                 }
             }
             
-            fn get_cursor(src: &str) -> Cursor {
-                #[cfg(fuzzing)]
-                return Cursor { rest: src, off: 1 };
-
-                // Create a dummy file & add it to the source map
-                #[cfg(not(fuzzing))]
-                SOURCE_MAP.with(|sm| {
+            fn get_cursor(src: &str) -> Cursor<'_>
+            {
+                SOURCE_MAP.with(|sm|
+                {
                     let mut sm = sm.borrow_mut();
                     let span = sm.add_file(src);
                     Cursor {
