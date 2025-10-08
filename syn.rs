@@ -7,6 +7,7 @@
 
 #![allow
 (
+    non_camel_case_types,
     non_snake_case,
     unused_attributes,
     unused_imports,
@@ -32,7 +33,7 @@ extern crate proc_macro;
 
 #[macro_use] pub mod macros
 {
-    /// Performs variable interpolation against the input and produces it as [`proc_macro2::TokenStream`].
+    /// Performs variable interpolation against the input and produces it as [`process::macros::TokenStream`].
     #[macro_export] macro_rules! quote
     {
         () =>
@@ -1186,7 +1187,8 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! custom_punctuation
     {
-        ($ident:ident, $($tt:tt)+) => {
+        ($ident:ident, $($tt:tt)+) =>
+        {
             pub struct $ident {
                 #[allow(dead_code)]
                 pub spans: ::syntax::custom_punctuation_repr!($($tt)+),
@@ -2159,6 +2161,11 @@ pub mod char
     pub use std::char::{ * };
 }
 
+pub mod clone
+{
+    pub use std::clone::{ * };
+}
+
 pub mod cmp
 {
     pub use std::cmp::{ * };
@@ -2385,7 +2392,7 @@ pub mod process
                 panic::set_hook(original_hook);
                 if sanity_check != &*hopefully_null_hook
                 {
-                    panic!("observed race condition in proc_macro2::inside_proc_macro");
+                    panic!("observed race condition in process::macros::inside_proc_macro");
                 }
             }
         }
@@ -2404,7 +2411,7 @@ pub mod process
             };
             /*
             */
-            /// Invalidate any `proc_macro2::Span` that exist on the current thread.
+            /// Invalidate any `process::macros::Span` that exist on the current thread.
             pub fn invalidate_current_thread_spans()
             {
                 ::process::macros::imp::invalidate_current_thread_spans();
@@ -2873,7 +2880,8 @@ pub mod process
                     }
                 }
 
-                fn span_within( &self, span: Span) -> bool {
+                fn span_within( &self, span: Span) -> bool
+        {
                     span.lo >= self.span.lo && span.hi <= self.span.hi
                 }
 
@@ -3141,7 +3149,8 @@ pub mod process
                     }
                 }
                 
-                fn is_call_site( &self ) -> bool {
+                fn is_call_site( &self ) -> bool
+        {
                     self.lo == 0 && self.hi == 0
                 }
             }
@@ -3341,7 +3350,8 @@ pub mod process
 
             impl PartialEq for Ident
             {
-                fn eq( &self, other: &Ident) -> bool {
+                fn eq( &self, other: &Ident) -> bool
+        {
                     self.sym == other.sym && self.raw == other.raw
                 }
             }
@@ -4527,7 +4537,8 @@ pub mod process
 
             impl PartialEq for Ident           
             {
-                fn eq( &self, other: &Ident) -> bool {
+                fn eq( &self, other: &Ident) -> bool
+        {
                     match (self, other) {
                         (Ident::Compiler(t), Ident::Compiler(o)) => t.to_string() == o.to_string(),
                         (Ident::Fallback(t), Ident::Fallback(o)) => t == o,
@@ -4812,7 +4823,7 @@ pub mod process
                 {
                     panic!
                     (
-                        "proc_macro2::extra::invalidate_current_thread_spans is not available in procedural macros"
+                        "process::macros::extra::invalidate_current_thread_spans is not available in procedural macros"
                     );
                 }
                 
@@ -4905,11 +4916,13 @@ pub mod process
                     }
                 }
 
-                pub fn starts_with( &self, s: &str) -> bool {
+                pub fn starts_with( &self, s: &str) -> bool
+        {
                     self.rest.starts_with(s)
                 }
 
-                pub fn starts_with_char( &self, ch: char) -> bool {
+                pub fn starts_with_char( &self, ch: char) -> bool
+        {
                     self.rest.starts_with(ch)
                 }
 
@@ -4920,7 +4933,8 @@ pub mod process
                     self.rest.starts_with(f)
                 }
 
-                pub fn is_empty( &self ) -> bool {
+                pub fn is_empty( &self ) -> bool
+        {
                     self.rest.is_empty()
                 }
 
@@ -5663,7 +5677,16 @@ pub mod process
             fn backslash_u<I>(chars: &mut I) -> Result<char, Reject> where
             I: Iterator<Item = (usize, char)>,
             {
-                next_ch!(chars @ '{');
+                let _ = match chars.next()
+                {
+                    Some((_, ch)) => match ch
+                    {
+                        '{' => ch,
+                        _ => return Err(Reject),
+                    },
+                    None => todo!(),
+                };
+
                 let mut value = 0;
                 let mut len = 0;
                 for (_, ch) in chars
@@ -6543,7 +6566,7 @@ pub mod process
             {
                 Span::_new(self.inner.located_at(other.inner))
             }
-            /// Convert `proc_macro2::Span` to `proc_macro::Span`
+            /// Convert `process::macros::Span` to `proc_macro::Span`
             pub fn unwrap( self ) -> proc_macro::Span 
            
             {
@@ -8113,6 +8136,11 @@ pub mod rc
     pub use std::rc::{ * };
 }
 
+pub mod result
+{
+    pub use std::result::{ * };
+}
+
 pub mod slice
 {
     pub use std::slice::{ * };
@@ -8198,25 +8226,6 @@ pub mod syntax
             clippy::wildcard_imports,
         )]
         #![allow(unknown_lints, mismatched_lifetime_syntaxes)]
-
-        extern crate self as syn;
-
-        #[cfg(feature = "proc-macro")]
-        extern crate proc_macro;
-
-        #[macro_use]
-        mod macros;
-
-        #[cfg(feature = "parsing")]
-        #[macro_use]
-        mod group;
-
-        #[macro_use]
-        pub mod token;
-
-        mod attr;
-        #[cfg_attr(docsrs, doc(cfg(any(feature = "full", feature = "derive"))))]
-        pub use ::syntax::attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue};
     */
     pub mod attr
     {
@@ -8448,9 +8457,12 @@ pub mod syntax
         {
             type Ret = iter::Filter<slice::Iter<'a, Attribute>, fn(&&Attribute) -> bool>;
 
-            fn outer(self) -> Self::Ret {
-                fn is_outer(attr: &&Attribute) -> bool {
-                    match attr.style {
+            fn outer(self) -> Self::Ret
+            {
+                fn is_outer(attr: &&Attribute) -> bool
+                {
+                    match attr.style
+                    {
                         AttrStyle::Outer => true,
                         AttrStyle::Inner(_) => false,
                     }
@@ -8459,7 +8471,8 @@ pub mod syntax
             }
 
                 fn inner(self) -> Self::Ret {
-                fn is_inner(attr: &&Attribute) -> bool {
+                fn is_inner(attr: &&Attribute) -> bool
+                {
                     match attr.style {
                         AttrStyle::Inner(_) => true,
                         AttrStyle::Outer => false,
@@ -8492,16 +8505,23 @@ pub mod syntax
         
         pub mod parsing
         {
-            use ::syntax::attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue};
-            use ::syntax::error::Result;
-            use ::syntax::expr::{Expr, ExprLit};
-            use ::syntax::lit::Lit;
-            use ::syntax::parse::discouraged::Speculative as _;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::path::Path;
-            use ::syntax::{mac, token};
-            use ::process::macros::Ident;
-            use std::fmt::{self, Display};
+            use ::
+            {
+                fmt::{self, Display},
+                process::macros::{ Ident },
+                syntax::
+                {
+                    attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue},
+                    error::Result,
+                    expr::{Expr, ExprLit},
+                    lit::Lit,
+                    parse::discouraged::Speculative as _,
+                    parse::{Parse, ParseStream},
+                    path::Path,
+                    mac, token,
+                },
+                *
+            };          
 
             pub fn parse_inner(input: ParseStream, attrs: &mut Vec<Attribute>) -> Result<()> {
                 while input.peek(Token![#]) && input.peek2(Token![!]) {
@@ -8636,12 +8656,19 @@ pub mod syntax
         
         mod printing
         {
-            use ::syntax::attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue};
-            use ::syntax::path;
-            use ::syntax::path::printing::PathStyle;
-            use ::process::macros::TokenStream;
-            use ::quote::ToTokens;
-
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::ToTokens,                
+                syntax::
+                {
+                    attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue},
+                    path,
+                    path::printing::PathStyle,
+                },
+                *,
+            };
+            
             impl ToTokens for Attribute 
             {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
@@ -8684,7 +8711,10 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::attr::
+    {
+        AttrStyle, Attribute, Meta, MetaList, MetaNameValue
+    };
 
     pub mod group
     {
@@ -8703,11 +8733,6 @@ pub mod syntax
             *,
         };
         /*
-        use ::syntax::error::Result;
-        use ::syntax::parse::ParseBuffer;
-        use ::syntax::token;
-        use ::process::macros::extra::DelimSpan;
-        use ::process::macros::Delimiter;
         */
         pub struct Parens<'a> 
         {
@@ -9107,10 +9132,14 @@ pub mod syntax
 
         pub mod private
         {
-            use ::syntax::buffer::Cursor;
-            use ::process::macros::Span;
+            use ::
+            {
+                process::macros::Span,
+                syntax::buffer::Cursor,
+                *,
+            };
             
-             pub trait Sealed {}
+            pub trait Sealed {}
             /// Support writing `token.span` rather than `token.spans[0]` on tokens that hold a single span.
             #[repr(transparent)]
             pub struct WithSpan
@@ -9130,7 +9159,7 @@ pub mod syntax
         impl_low_level_token!("punctuation token" Punct punct);
         impl_low_level_token!("literal" Literal literal);
         impl_low_level_token!("token" TokenTree token_tree);
-        impl_low_level_token!("group token" proc_macro2::Group any_group);
+        impl_low_level_token!("group token" process::macros::Group any_group);
         impl_low_level_token!("lifetime" Lifetime lifetime);
         
         impl<T: CustomToken> private::Sealed for T {}
@@ -9172,7 +9201,8 @@ pub mod syntax
 
          
             impl Token for Underscore {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 if let Some((ident, _rest)) = cursor.ident() {
                     return ident == "_";
                 }
@@ -9225,7 +9255,8 @@ pub mod syntax
         impl cmp::Eq for Group {}
 
         impl PartialEq for Group {
-            fn eq(&self, _other: &Group) -> bool {
+            fn eq(&self, _other: &Group) -> bool
+        {
                 true
             }
         }
@@ -9250,7 +9281,8 @@ pub mod syntax
 
          
             impl Token for Paren {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 cursor.group(Delimiter::Parenthesis).is_some()
             }
 
@@ -9261,7 +9293,8 @@ pub mod syntax
 
          
             impl Token for Brace {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 cursor.group(Delimiter::Brace).is_some()
             }
 
@@ -9272,7 +9305,8 @@ pub mod syntax
 
          
             impl Token for Bracket {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 cursor.group(Delimiter::Bracket).is_some()
             }
 
@@ -9283,7 +9317,8 @@ pub mod syntax
 
          
             impl Token for Group {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 cursor.group(Delimiter::None).is_some()
             }
 
@@ -9506,14 +9541,20 @@ pub mod syntax
             [~]           => { ::syntax::token::Tilde };
             [_]           => { ::syntax::token::Underscore };
         }
-
-       
-         
-            pub mod parsing {
-            use ::syntax::buffer::Cursor;
-            use ::syntax::error::{Error, Result};
-            use ::syntax::parse::ParseStream;
-            use ::process::macros::{Spacing, Span};
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                process::macros::{Spacing, Span},
+                syntax::
+                {
+                    buffer::Cursor,
+                    error::{Error, Result},
+                    parse::ParseStream,
+                },
+                *,
+            };
 
             pub fn keyword(input: ParseStream, token: &str) -> Result<Span> {
                 input.step(|cursor| {
@@ -9526,7 +9567,8 @@ pub mod syntax
                 })
             }
 
-            pub fn peek_keyword(cursor: Cursor, token: &str) -> bool {
+            pub fn peek_keyword(cursor: Cursor, token: &str) -> bool
+        {
                 if let Some((ident, _rest)) = cursor.ident() {
                     ident == token
                 } else {
@@ -9567,7 +9609,8 @@ pub mod syntax
                 })
             }
 
-                pub fn peek_punct(mut cursor: Cursor, token: &str) -> bool {
+                pub fn peek_punct(mut cursor: Cursor, token: &str) -> bool
+        {
                 for (i, ch) in token.chars().enumerate( )
                 {
                     match cursor.punct() {
@@ -9593,7 +9636,8 @@ pub mod syntax
             use ::process::macros::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream};
             use ::quote::TokenStreamExt;
 
-                pub fn punct(s: &str, spans: &[Span], tokens: &mut TokenStream) {
+                pub fn punct(s: &str, spans: &[Span], tokens: &mut TokenStream)
+            {
                 assert_eq!(s.len(), spans.len());
 
                 let mut chars = s.chars();
@@ -9632,12 +9676,10 @@ pub mod syntax
     {
         use ::
         {
+            ops::{ AddAssign, MulAssign },
             *,
         };
-        /*
-        use std::ops::{AddAssign, MulAssign};
-        */
-       
+        
         pub struct BigInt {
             digits: Vec<u8>,
         }
@@ -9710,18 +9752,18 @@ pub mod syntax
         //! A stably addressed token buffer supporting efficient traversal based on a cheaply copyable cursor.
         use ::
         {
+            cmp::{ Ordering },
+            marker::{ PhantomData },
+            process::macros::
+            {
+                extra::DelimSpan,
+                Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
+            },
             *,
         };
         /*
-        use ::syntax::Lifetime;
-        use ::process::macros::extra::DelimSpan;
-        use ::process::macros::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
-        use std::cmp::Ordering;
-        use std::marker::PhantomData;
-        use std::ptr;
         */
-        /// Internal type which is used instead of `TokenTree` to represent a token tree
-        /// within a `TokenBuffer`.
+        /// Internal type which is used instead of `TokenTree` to represent a token tree within a `TokenBuffer`.
         enum Entry {
            
            
@@ -9733,9 +9775,8 @@ pub mod syntax
            
             End(isize, isize),
         }
-        /// A buffer that can be efficiently traversed multiple times, unlike
-        /// `TokenStream` which requires a deep copy in order to traverse more than
-        /// once.
+        /// A buffer that can be efficiently traversed multiple times, 
+        /// unlike `TokenStream` which requires a deep copy in order to traverse more than once.
         pub struct TokenBuffer {
            
            
@@ -9772,7 +9813,7 @@ pub mod syntax
                 Self::new2(stream.into())
             }
             /// Creates a `TokenBuffer` containing all the tokens from the input
-            /// `proc_macro2::TokenStream`.
+            /// `process::macros::TokenStream`.
             pub fn new2(stream: TokenStream) -> Self {
                 let mut entries = Vec::new();
                 Self::recursive_new(&mut entries, stream);
@@ -9789,7 +9830,6 @@ pub mod syntax
             }
         }
         /// A cheaply copyable cursor into a `TokenBuffer`.
-        /// and copied around.
         pub struct Cursor<'a> {
            
             ptr: *const Entry,
@@ -9868,7 +9908,8 @@ pub mod syntax
             }
             /// Checks whether the cursor is currently pointing at the end of its valid
             /// scope.
-            pub fn eof(self) -> bool {
+            pub fn eof(self) -> bool
+            {
                
                 ptr::eq(self.ptr, self.scope)
             }
@@ -9906,14 +9947,14 @@ pub mod syntax
             }
             /// If the cursor is pointing at a `Lifetime`, returns it along with a
             /// cursor pointing at the next `TokenTree`.
-            pub fn lifetime(mut self) -> Option<(Lifetime, Cursor<'a>)>
+            pub fn lifetime(mut self) -> Option<( ::syntax::Lifetime, Cursor<'a>)>
             {
                 self.ignore_none();
                 match self.entry() {
                     Entry::Punct(punct) if punct.as_char() == '\'' && punct.spacing() == Spacing::Joint => {
                         let next = unsafe { self.bump_ignore_group() };
                         let (ident, rest) = next.ident()?;
-                        let lifetime = Lifetime {
+                        let lifetime = ::syntax::Lifetime {
                             apostrophe: punct.span(),
                             ident,
                         };
@@ -10068,7 +10109,8 @@ pub mod syntax
         impl<'a> Eq for Cursor<'a> {}
 
         impl<'a> PartialEq for Cursor<'a> {
-            fn eq(&self, other: &Self) -> bool {
+            fn eq(&self, other: &Self) -> bool
+        {
                 ptr::eq(self.ptr, other.ptr)
             }
         }
@@ -10083,11 +10125,13 @@ pub mod syntax
             }
         }
 
-        pub fn same_scope(a: Cursor, b: Cursor) -> bool {
+        pub fn same_scope(a: Cursor, b: Cursor) -> bool
+        {
             ptr::eq(a.scope, b.scope)
         }
 
-        pub fn same_buffer(a: Cursor, b: Cursor) -> bool {
+        pub fn same_buffer(a: Cursor, b: Cursor) -> bool
+        {
             ptr::eq(start_of_buffer(a), start_of_buffer(b))
         }
 
@@ -10116,30 +10160,31 @@ pub mod syntax
     {
         use ::
         {
+            ops::{ ControlFlow },
+            process::macros::{Delimiter, TokenStream, TokenTree},
+            syntax::
+            {
+                expr::Expr,
+                generics::TypeParamBound,
+                path::{Path, PathArguments},
+                punctuated::Punctuated,
+                ty::{ReturnType, Type},
+            },
             *,
         };
         /*
-        use ::syntax::expr::Expr;
-        #[cfg(any(feature = "printing", feature = "full"))]
-        use ::syntax::generics::TypeParamBound;
-        #[cfg(any(feature = "printing", feature = "full"))]
-        use ::syntax::path::{Path, PathArguments};
-        #[cfg(any(feature = "printing", feature = "full"))]
-        use ::syntax::punctuated::Punctuated;
-        #[cfg(any(feature = "printing", feature = "full"))]
-        use ::syntax::ty::{ReturnType, Type};
-        use ::process::macros::{Delimiter, TokenStream, TokenTree};
-        #[cfg(any(feature = "printing", feature = "full"))]
-        use std::ops::ControlFlow;
+        
         */
-        pub fn requires_semi_to_be_stmt(expr: &Expr) -> bool {
+        pub fn requires_semi_to_be_stmt(expr: &Expr) -> bool
+        {
             match expr {
                 Expr::Macro(expr) => !expr.mac.delimiter.is_brace(),
                 _ => requires_comma_to_be_match_arm(expr),
             }
         }
 
-        pub fn requires_comma_to_be_match_arm(expr: &Expr) -> bool {
+        pub fn requires_comma_to_be_match_arm(expr: &Expr) -> bool
+        {
             match expr {
                 Expr::If(_)
                 | Expr::Match(_)
@@ -10184,7 +10229,8 @@ pub mod syntax
             }
         }
         
-        pub fn trailing_unparameterized_path(mut ty: &Type) -> bool {
+        pub fn trailing_unparameterized_path(mut ty: &Type) -> bool
+        {
             loop {
                 match ty {
                     Type::BareFn(t) => match &t.output {
@@ -10243,7 +10289,8 @@ pub mod syntax
             }
         }
         /// Whether the expression's first token is the label of a loop/block.
-        pub fn expr_leading_label(mut expr: &Expr) -> bool {
+        pub fn expr_leading_label(mut expr: &Expr) -> bool
+        {
             loop {
                 match expr {
                     Expr::Block(e) => return e.label.is_some(),
@@ -10295,7 +10342,8 @@ pub mod syntax
             }
         }
         /// Whether the expression's last token is `}`.
-        pub fn expr_trailing_brace(mut expr: &Expr) -> bool {
+        pub fn expr_trailing_brace(mut expr: &Expr) -> bool
+        {
             loop {
                 match expr {
                     Expr::Async(_)
@@ -10355,7 +10403,8 @@ pub mod syntax
                 }
             }
 
-            fn type_trailing_brace(mut ty: &Type) -> bool {
+            fn type_trailing_brace(mut ty: &Type) -> bool
+        {
                 loop {
                     match ty {
                         Type::BareFn(t) => match &t.output {
@@ -10417,7 +10466,8 @@ pub mod syntax
                 }
             }
 
-            fn tokens_trailing_brace(tokens: &TokenStream) -> bool {
+            fn tokens_trailing_brace(tokens: &TokenStream) -> bool
+        {
                 if let Some(TokenTree::Group(last)) = tokens.clone().into_iter().last() {
                     last.delimiter() == Delimiter::Brace
                 } else {
@@ -10431,16 +10481,19 @@ pub mod syntax
     {
         use ::
         {
+            syntax::
+            {
+                attr::Attribute,
+                expr::{Expr, Index, Member},
+                ident::Ident,
+                punctuated::{self, Punctuated},
+                restriction::{FieldMutability, Visibility},
+                token,
+                ty::Type,
+            },
             *,
         };
         /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::expr::{Expr, Index, Member};
-        use ::syntax::ident::Ident;
-        use ::syntax::punctuated::{self, Punctuated};
-        use ::syntax::restriction::{FieldMutability, Visibility};
-        use ::syntax::token;
-        use ::syntax::ty::Type;
         */
         ast_struct! {
             /// An enum variant.
@@ -10487,10 +10540,9 @@ pub mod syntax
             }
         }
 
-        impl Fields {
-            /// Get an iterator over the borrowed [`Field`] items in this object. This
-            /// iterator can be used to iterate over a named or unnamed struct or
-            /// variant's fields uniformly.
+        impl Fields
+        {
+            /// Get an iterator over the borrowed [`Field`] items in this object.
             pub fn iter(&self) -> punctuated::Iter<Field>
             {
                 match self {
@@ -10499,9 +10551,7 @@ pub mod syntax
                     Fields::Unnamed(f) => f.unnamed.iter(),
                 }
             }
-            /// Get an iterator over the mutably borrowed [`Field`] items in this
-            /// object. This iterator can be used to iterate over a named or unnamed
-            /// struct or variant's fields uniformly.
+            /// Get an iterator over the mutably borrowed [`Field`] items in this object.
             pub fn iter_mut(&mut self) -> punctuated::IterMut<Field>
             {
                 match self {
@@ -10519,7 +10569,8 @@ pub mod syntax
                 }
             }
             /// Returns `true` if there are zero fields.
-            pub fn is_empty(&self) -> bool {
+            pub fn is_empty(&self) -> bool
+            {
                 match self {
                     Fields::Unit => true,
                     Fields::Named(f) => f.named.is_empty(),
@@ -10527,39 +10578,9 @@ pub mod syntax
                 }
             }
 
-            return_impl_trait! {
+            return_impl_trait!
+            {
                 /// Get an iterator over the fields of a struct or variant as [`Member`]s.
-                /// This iterator can be used to iterate over a named or unnamed struct or
-                /// variant's fields uniformly.
-                ///
-                /// # Example
-                ///
-                /// The following is a simplistic [`Clone`] derive for structs. (A more
-                /// complete implementation would additionally want to infer trait bounds on
-                /// the generic type parameters.)
-                ///
-                /// ```
-                /// # use ::quote::quote;
-                /// #
-                /// fn derive_clone(input: &syn::ItemStruct) -> proc_macro2::TokenStream {
-                ///     let ident = &input.ident;
-                ///     let members = input.fields.members();
-                ///     let (impl_generics, ty_generics, where_clause) = input.generics.split_for_impl();
-                ///     quote! {
-                ///         impl #impl_generics Clone for #ident #ty_generics #where_clause {
-                ///             fn clone(&self) -> Self {
-                ///                 Self {
-                ///                     #(#members: self.#members.clone()),*
-                ///                 }
-                ///             }
-                ///         }
-                ///     }
-                /// }
-                /// ```
-                ///
-                /// For structs with named fields, it produces an expression like `Self { a:
-                /// self.a.clone() }`. For structs with unnamed fields, `Self { 0:
-                /// self.0.clone() }`. And for unit structs, `Self {}`.
                 pub fn members(&self) -> impl Iterator<Item = Member> + Clone + '_ [Members] {
                     Members {
                         fields: self.iter(),
@@ -10638,7 +10659,7 @@ pub mod syntax
                         #[cfg(all(feature = "parsing", feature = "printing"))]
                         let span = ::syntax::spanned::Spanned::span(&field.ty);
                         #[cfg(not(all(feature = "parsing", feature = "printing")))]
-                        let span = proc_macro2::Span::call_site();
+                        let span = process::macros::Span::call_site();
                         Member::Unnamed(Index {
                             index: self.index,
                             span,
@@ -10661,18 +10682,25 @@ pub mod syntax
 
         pub mod parsing
         {
-            use ::syntax::attr::Attribute;
-            use ::syntax::data::{Field, Fields, FieldsNamed, FieldsUnnamed, Variant};
-            use ::syntax::error::Result;
-            use ::syntax::expr::Expr;
-            use ::syntax::ext::IdentExt as _;
-            use ::syntax::ident::Ident;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::restriction::{FieldMutability, Visibility};
-            use ::syntax::token;
-            use ::syntax::ty::Type;
-            use ::syntax::verbatim;
-
+            use ::
+            {
+                syntax::
+                {
+                    attr::Attribute,
+                    data::{Field, Fields, FieldsNamed, FieldsUnnamed, Variant},
+                    error::Result,
+                    expr::Expr,
+                    ext::IdentExt as _,
+                    ident::Ident,
+                    parse::{Parse, ParseStream},
+                    restriction::{FieldMutability, Visibility},
+                    token,
+                    ty::Type,
+                    verbatim,
+                },
+                *,
+            };
+            
             impl Parse for Variant
             {
                 fn parse(input: ParseStream) -> Result<Self> {
@@ -10779,10 +10807,17 @@ pub mod syntax
         
         mod printing
         {
-            use ::syntax::data::{Field, FieldsNamed, FieldsUnnamed, Variant};
-            use ::syntax::print::TokensOrDefault;
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::
+                {
+                    data::{Field, FieldsNamed, FieldsUnnamed, Variant},
+                    print::TokensOrDefault,
+                },
+                *,
+            };
 
             impl ToTokens for Variant {
                 fn to_tokens(&self, tokens: &mut TokenStream)
@@ -10826,22 +10861,25 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::data::{Field, Fields, FieldsNamed, FieldsUnnamed, Variant};
     
     pub mod derive
     {
         use ::
         {
+            syntax::
+            {
+                attr::Attribute,
+                data::{ Fields, FieldsNamed, Variant },
+                generics::Generics,
+                ident::Ident,
+                punctuated::Punctuated,
+                restriction::Visibility,
+                token,
+            },
             *,
         };
         /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::data::{Fields, FieldsNamed, Variant};
-        use ::syntax::generics::Generics;
-        use ::syntax::ident::Ident;
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::restriction::Visibility;
-        use ::syntax::token;
         */
         ast_struct!
         {
@@ -10856,7 +10894,8 @@ pub mod syntax
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// The storage of a struct, enum or union data structure.
             ///
             /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
@@ -10868,7 +10907,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A struct input to a `proc_macro_derive` macro.
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub struct DataStruct {
@@ -10878,7 +10918,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An enum input to a `proc_macro_derive` macro.
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub struct DataEnum {
@@ -10888,7 +10929,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An untagged union input to a `proc_macro_derive` macro.
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub struct DataUnion {
@@ -10896,20 +10938,27 @@ pub mod syntax
                 pub fields: FieldsNamed,
             }
         }
-
-         
-            pub mod parsing {
-            use ::syntax::attr::Attribute;
-            use ::syntax::data::{Fields, FieldsNamed, Variant};
-            use ::syntax::derive::{Data, DataEnum, DataStruct, DataUnion, DeriveInput};
-            use ::syntax::error::Result;
-            use ::syntax::generics::{Generics, WhereClause};
-            use ::syntax::ident::Ident;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::punctuated::Punctuated;
-            use ::syntax::restriction::Visibility;
-            use ::syntax::token;
-
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                syntax::
+                {
+                    attr::Attribute,
+                    data::{Fields, FieldsNamed, Variant},
+                    derive::{Data, DataEnum, DataStruct, DataUnion, DeriveInput},
+                    error::Result,
+                    generics::{Generics, WhereClause},
+                    ident::Ident,
+                    parse::{Parse, ParseStream},
+                    punctuated::Punctuated,
+                    restriction::Visibility,
+                    token,
+                },
+                *,
+            };
+            
             impl Parse for DeriveInput
             {
                 fn parse(input: ParseStream) -> Result<Self> {
@@ -11043,13 +11092,20 @@ pub mod syntax
         
         mod printing
         {
-            use ::syntax::attr::FilterAttrs;
-            use ::syntax::data::Fields;
-            use ::syntax::derive::{Data, DeriveInput};
-            use ::syntax::print::TokensOrDefault;
-            use ::process::macros::TokenStream;
-            use ::quote::ToTokens;
-
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::ToTokens,
+                syntax::
+                {
+                    attr::FilterAttrs,
+                    data::Fields,
+                    derive::{Data, DeriveInput},
+                    print::TokensOrDefault,
+                },
+                *,
+            };
+            
             impl ToTokens for DeriveInput {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     for attr in self.attrs.outer() {
@@ -11093,25 +11149,23 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::derive::{Data, DataEnum, DataStruct, DataUnion, DeriveInput};
 
     pub mod drops
     {
         use ::
         {
+            mem::{ ManuallyDrop },
+            ops::{ Deref, DerefMut },
             *,
         };
         /*
-        use std::iter;
-        use std::mem::ManuallyDrop;
-        use std::ops::{Deref, DerefMut};
-        use std::option;
-        use std::slice;
         */
         #[repr(transparent)]
         pub struct NoDrop<T: ?Sized>(ManuallyDrop<T>);
 
-        impl<T> NoDrop<T> {
+        impl<T> NoDrop<T>
+        {
             pub fn new(value: T) -> Self
             where
                 T: TrivialDrop,
@@ -11146,23 +11200,24 @@ pub mod syntax
     {
         use ::
         {
+            fmt::{ self, Debug, Display },
+            iter::{ FromIterator },
+            process::macros::
+            {
+                Delimiter, Group, Ident, LexError, Literal, Punct, Spacing, Span, TokenStream, TokenTree
+            },
+            quote::{ ToTokens },
+            syntax::
+            {
+                buffer::Cursor,
+                thread::ThreadBound,
+            },
             *,
         };
         /*
-         
-            use ::syntax::buffer::Cursor;
-        use ::syntax::thread::ThreadBound;
-        use ::process::macros::{
-            Delimiter, Group, Ident, LexError, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
-        };
-        
-        use ::quote::ToTokens;
-        use std::fmt::{self, Debug, Display};
-        use std::slice;
-        use std::vec;
         */
         /// The result of a Syn parser.
-        pub type Result<T> = std::result::Result<T, Error>;
+        pub type Result<T> = ::result::Result<T, Error>;
 
         /// Error returned when a Syn parser cannot parse the input tokens.
         pub struct Error {
@@ -11188,26 +11243,6 @@ pub mod syntax
             /// Usually the [`ParseStream::error`] method will be used instead, which
             /// automatically uses the correct span from the current position of the
             /// parse stream.
-            ///
-            /// ```
-            /// use syn::{Error, Ident, LitStr, Result, Token};
-            /// use syn::parse::ParseStream;
-            ///
-            ///
-            ///
-            ///
-            /// fn parse_name(input: ParseStream) -> Result<LitStr> {
-            ///     let name_token: Ident = input.parse()?;
-            ///     if name_token != "name" {
-            ///        
-            ///        
-            ///         return Err(Error::new(name_token.span(), "expected `name`"));
-            ///     }
-            ///     input.parse::<Token![=]>()?;
-            ///     let s: LitStr = input.parse()?;
-            ///     Ok(s)
-            /// }
-            /// ```
             pub fn new<T: Display>(span: Span, message: T) -> Self {
                 return new(span, message.to_string());
 
@@ -11225,7 +11260,6 @@ pub mod syntax
             }
             /// Creates an error with the specified message spanning the given syntax
             /// tree node.
-            /// stable Rust.
             pub fn new_spanned<T: ToTokens, U: Display>(tokens: T, message: U) -> Self {
                 return new_spanned(tokens.into_token_stream(), message.to_string());
 
@@ -11242,7 +11276,6 @@ pub mod syntax
                 }
             }
             /// The source location of the error.
-            /// originally created.
             pub fn span(&self) -> Span {
                 let SpanRange { start, end } = match self.messages[0].span.get() {
                     Some(span) => *span,
@@ -11465,7 +11498,7 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::error::{Error, Result};
     
     pub mod expr
     {
@@ -12246,7 +12279,8 @@ pub mod syntax
             /// possibly form the beginning of an expr.
             /// operator because it cannot be a starting token for any Rust expression.
              
-                pub fn peek(input: ParseStream) -> bool {
+                pub fn peek(input: ParseStream) -> bool
+        {
                 input.peek(Ident::peek_any) && !input.peek(Token![as])
                     || input.peek(token::Paren)
                     || input.peek(token::Bracket)
@@ -12351,7 +12385,8 @@ pub mod syntax
 
         impl PartialEq for Member 
         {
-            fn eq(&self, other: &Self) -> bool {
+            fn eq(&self, other: &Self) -> bool
+        {
                 match (self, other) {
                     (Member::Named(this), Member::Named(other)) => this == other,
                     (Member::Unnamed(this), Member::Unnamed(other)) => this == other,
@@ -12391,7 +12426,8 @@ pub mod syntax
 
         impl Member 
         {
-            pub fn is_named(&self) -> bool {
+            pub fn is_named(&self) -> bool
+        {
                 match self {
                     Member::Named(_) => true,
                     Member::Unnamed(_) => false,
@@ -12520,48 +12556,46 @@ pub mod syntax
         
         pub mod parsing
         {
-            use ::syntax::attr;
-            use ::syntax::attr::Attribute;
-            use ::syntax::classify;
-            use ::syntax::error::{Error, Result};
-            use ::syntax::expr::{
-                Arm, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure,
-                ExprConst, ExprContinue, ExprForLoop, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
-                ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprUnsafe,
-                ExprWhile, ExprYield, Label, PointerMutability, RangeLimits,
+            use ::
+            {
+                process::macros::{Span, TokenStream},
+                syntax::
+                {
+                    attr,
+                    attr::Attribute,
+                    classify,
+                    error::{Error, Result},
+                    expr::
+                    {
+                        Arm, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure,
+                        ExprConst, ExprContinue, ExprForLoop, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
+                        ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprUnsafe,
+                        ExprWhile, ExprYield, Label, PointerMutability, RangeLimits, Expr, ExprBinary, ExprCall, 
+                        ExprCast, ExprField, ExprGroup, ExprIndex, ExprLit, ExprMacro, ExprMethodCall, ExprParen, 
+                        ExprPath, ExprReference, ExprStruct, ExprTuple, ExprUnary, FieldValue, Index, Member,
+                    },
+                    generics::{self, BoundLifetimes},
+                    ident::Ident,
+                    lifetime::Lifetime,
+                    lit::{Lit, LitFloat, LitInt},
+                    mac::{self, Macro},
+                    op::BinOp,
+                    parse::discouraged::Speculative as _,
+                    parse::ParseBuffer,
+                    parse::{Parse, ParseStream},
+                    pat::{Pat, PatType},
+                    path::{self, AngleBracketedGenericArguments, Path, QSelf},
+                    precedence::Precedence,
+                    punctuated::Punctuated,
+                    stmt::Block,
+                    token,
+                    ty::{self, ReturnType, Type},
+                    verbatim,
+                },
+                *,
             };
-            use ::syntax::expr::{
-                Expr, ExprBinary, ExprCall, ExprCast, ExprField, ExprGroup, ExprIndex, ExprLit, ExprMacro,
-                ExprMethodCall, ExprParen, ExprPath, ExprReference, ExprStruct, ExprTuple, ExprUnary,
-                FieldValue, Index, Member,
-            };
-            use ::syntax::generics::{self, BoundLifetimes};
-            use ::syntax::ident::Ident;
-            use ::syntax::lifetime::Lifetime;
-            use ::syntax::lit::{Lit, LitFloat, LitInt};
-            use ::syntax::mac::{self, Macro};
-            use ::syntax::op::BinOp;
-            use ::syntax::parse::discouraged::Speculative as _;
-            use ::syntax::parse::ParseBuffer;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::pat::{Pat, PatType};
-            use ::syntax::path::{self, AngleBracketedGenericArguments, Path, QSelf};
-            use ::syntax::precedence::Precedence;
-            use ::syntax::punctuated::Punctuated;
-            use ::syntax::stmt::Block;
-            use ::syntax::token;
-            use ::syntax::ty;
-            use ::syntax::ty::{ReturnType, Type};
-            use ::syntax::verbatim;
-            use ::process::macros::{Span, TokenStream};
-            use std::mem;
-
-           
-           
-            //
-           
-           
-                pub struct AllowStruct(pub bool);
+            
+            pub struct AllowStruct(pub bool);
 
             impl Parse for Expr
             {
@@ -13298,7 +13332,8 @@ pub mod syntax
                 }
             }
 
-                fn continue_parsing_early(mut expr: &Expr) -> bool {
+                fn continue_parsing_early(mut expr: &Expr) -> bool
+        {
                 while let Expr::Group(group) = expr {
                     expr = &group.expr;
                 }
@@ -13859,7 +13894,8 @@ pub mod syntax
 
                 impl Parse for Option<Label>
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Lifetime) {
                         input.parse().map(Some)
                     } else {
@@ -14121,21 +14157,19 @@ pub mod syntax
 
             impl Parse for ExprPath
             {
-                fn parse(input: ParseStream) -> Result<Self> {
-                    #[cfg(not(feature = "full"))]
-                    let attrs = Vec::new();
-                                let attrs = input.call(Attribute::parse_outer)?;
-
+                fn parse(input: ParseStream) -> Result<Self>
+                {
+                    let attrs = input.call(Attribute::parse_outer)?;
                     let expr_style = true;
                     let (qself, path) = path::parsing::qpath(input, expr_style)?;
-
                     Ok(ExprPath { attrs, qself, path })
                 }
             }
 
             impl Parse for Member
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Ident) {
                         input.parse().map(Member::Named)
                     } else if input.peek(LitInt) {
@@ -14282,31 +14316,36 @@ pub mod syntax
         
         pub mod printing
         {
-            use ::syntax::attr::Attribute;
-                use ::syntax::attr::FilterAttrs;
-                use ::syntax::classify;
-                use ::syntax::expr::{
-                Arm, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure,
-                ExprConst, ExprContinue, ExprForLoop, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
-                ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprUnsafe,
-                ExprWhile, ExprYield, Label, PointerMutability, RangeLimits,
+            use ::
+            {
+                process::macros::{Literal, Span, TokenStream},
+                quote::{ToTokens, TokenStreamExt},
+                syntax::
+                {
+                    attr::Attribute,
+                    attr::FilterAttrs,
+                    classify,
+                    expr::
+                    {
+                        Arm, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure, 
+                        ExprConst, ExprContinue, ExprForLoop, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
+                        ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprUnsafe,
+                        ExprWhile, ExprYield, Label, PointerMutability, RangeLimits, Expr, ExprBinary, ExprCall,
+                        ExprCast, ExprField, ExprGroup, ExprIndex, ExprLit, ExprMacro, ExprMethodCall, ExprParen,
+                        ExprPath, ExprReference, ExprStruct, ExprTuple, ExprUnary, FieldValue, Index, Member,
+                    },
+                    fixup::FixupContext,
+                    op::BinOp,
+                    path,
+                    path::printing::PathStyle,
+                    precedence::Precedence,
+                    token,
+                    ty::ReturnType,
+                },
+                *,
             };
-            use ::syntax::expr::{
-                Expr, ExprBinary, ExprCall, ExprCast, ExprField, ExprGroup, ExprIndex, ExprLit, ExprMacro,
-                ExprMethodCall, ExprParen, ExprPath, ExprReference, ExprStruct, ExprTuple, ExprUnary,
-                FieldValue, Index, Member,
-            };
-            use ::syntax::fixup::FixupContext;
-            use ::syntax::op::BinOp;
-            use ::syntax::path;
-            use ::syntax::path::printing::PathStyle;
-            use ::syntax::precedence::Precedence;
-            use ::syntax::token;
-                use ::syntax::ty::ReturnType;
-            use ::process::macros::{Literal, Span, TokenStream};
-            use ::quote::{ToTokens, TokenStreamExt};
-
-                pub fn outer_attrs_to_tokens(attrs: &[Attribute], tokens: &mut TokenStream) {
+            
+            pub fn outer_attrs_to_tokens(attrs: &[Attribute], tokens: &mut TokenStream) {
                 tokens.append_all(attrs.outer());
             }
 
@@ -14342,59 +14381,54 @@ pub mod syntax
                 }
             }
 
-            pub fn print_expr(expr: &Expr, tokens: &mut TokenStream, mut fixup: FixupContext) {
-                        let needs_group = fixup.parenthesize(expr);
-                #[cfg(not(feature = "full"))]
-                let needs_group = false;
+            pub fn print_expr(expr: &Expr, tokens: &mut TokenStream, mut fixup: FixupContext)
+            {
+                let needs_group = fixup.parenthesize(expr);
 
-                if needs_group {
-                    fixup = FixupContext::NONE;
-                }
+                if needs_group { fixup = FixupContext::NONE; }
 
-                let do_print_expr = |tokens: &mut TokenStream| match expr {
-                                Expr::Array(e) => e.to_tokens(tokens),
-                                Expr::Assign(e) => print_expr_assign(e, tokens, fixup),
-                                Expr::Async(e) => e.to_tokens(tokens),
-                                Expr::Await(e) => print_expr_await(e, tokens, fixup),
+                let do_print_expr = |tokens: &mut TokenStream| match expr
+                {
+                    Expr::Array(e) => e.to_tokens(tokens),
+                    Expr::Assign(e) => print_expr_assign(e, tokens, fixup),
+                    Expr::Async(e) => e.to_tokens(tokens),
+                    Expr::Await(e) => print_expr_await(e, tokens, fixup),
                     Expr::Binary(e) => print_expr_binary(e, tokens, fixup),
-                                Expr::Block(e) => e.to_tokens(tokens),
-                                Expr::Break(e) => print_expr_break(e, tokens, fixup),
+                    Expr::Block(e) => e.to_tokens(tokens),
+                    Expr::Break(e) => print_expr_break(e, tokens, fixup),
                     Expr::Call(e) => print_expr_call(e, tokens, fixup),
                     Expr::Cast(e) => print_expr_cast(e, tokens, fixup),
-                                Expr::Closure(e) => print_expr_closure(e, tokens, fixup),
-                                Expr::Const(e) => e.to_tokens(tokens),
-                                Expr::Continue(e) => e.to_tokens(tokens),
+                    Expr::Closure(e) => print_expr_closure(e, tokens, fixup),
+                    Expr::Const(e) => e.to_tokens(tokens),
+                    Expr::Continue(e) => e.to_tokens(tokens),
                     Expr::Field(e) => print_expr_field(e, tokens, fixup),
-                                Expr::ForLoop(e) => e.to_tokens(tokens),
+                    Expr::ForLoop(e) => e.to_tokens(tokens),
                     Expr::Group(e) => e.to_tokens(tokens),
-                                Expr::If(e) => e.to_tokens(tokens),
+                    Expr::If(e) => e.to_tokens(tokens),
                     Expr::Index(e) => print_expr_index(e, tokens, fixup),
-                                Expr::Infer(e) => e.to_tokens(tokens),
-                                Expr::Let(e) => print_expr_let(e, tokens, fixup),
+                    Expr::Infer(e) => e.to_tokens(tokens),
+                    Expr::Let(e) => print_expr_let(e, tokens, fixup),
                     Expr::Lit(e) => e.to_tokens(tokens),
-                                Expr::Loop(e) => e.to_tokens(tokens),
+                    Expr::Loop(e) => e.to_tokens(tokens),
                     Expr::Macro(e) => e.to_tokens(tokens),
-                                Expr::Match(e) => e.to_tokens(tokens),
+                    Expr::Match(e) => e.to_tokens(tokens),
                     Expr::MethodCall(e) => print_expr_method_call(e, tokens, fixup),
                     Expr::Paren(e) => e.to_tokens(tokens),
                     Expr::Path(e) => e.to_tokens(tokens),
-                                Expr::Range(e) => print_expr_range(e, tokens, fixup),
-                                Expr::RawAddr(e) => print_expr_raw_addr(e, tokens, fixup),
+                    Expr::Range(e) => print_expr_range(e, tokens, fixup),
+                    Expr::RawAddr(e) => print_expr_raw_addr(e, tokens, fixup),
                     Expr::Reference(e) => print_expr_reference(e, tokens, fixup),
-                                Expr::Repeat(e) => e.to_tokens(tokens),
-                                Expr::Return(e) => print_expr_return(e, tokens, fixup),
+                    Expr::Repeat(e) => e.to_tokens(tokens),
+                    Expr::Return(e) => print_expr_return(e, tokens, fixup),
                     Expr::Struct(e) => e.to_tokens(tokens),
-                                Expr::Try(e) => print_expr_try(e, tokens, fixup),
-                                Expr::TryBlock(e) => e.to_tokens(tokens),
+                    Expr::Try(e) => print_expr_try(e, tokens, fixup),
+                    Expr::TryBlock(e) => e.to_tokens(tokens),
                     Expr::Tuple(e) => e.to_tokens(tokens),
                     Expr::Unary(e) => print_expr_unary(e, tokens, fixup),
-                                Expr::Unsafe(e) => e.to_tokens(tokens),
+                    Expr::Unsafe(e) => e.to_tokens(tokens),
                     Expr::Verbatim(e) => e.to_tokens(tokens),
-                                Expr::While(e) => e.to_tokens(tokens),
-                                Expr::Yield(e) => print_expr_yield(e, tokens, fixup),
-
-                    #[cfg(not(feature = "full"))]
-                    _ => unreachable!(),
+                    Expr::While(e) => e.to_tokens(tokens),
+                    Expr::Yield(e) => print_expr_yield(e, tokens, fixup),
                 };
 
                 if needs_group {
@@ -14403,8 +14437,8 @@ pub mod syntax
                     do_print_expr(tokens);
                 }
             }
-
-                impl ToTokens for ExprArray {
+            
+            impl ToTokens for ExprArray {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.bracket_token.surround(tokens, |tokens| {
@@ -15221,16 +15255,19 @@ pub mod syntax
         //! Extension traits to provide parsing methods on foreign types.
         use ::
         {
+            process::macros::Ident,
+            syntax::
+            {
+                buffer::Cursor,
+                error::Result,
+                parse::ParseStream,
+                parse::Peek,
+                sealed::lookahead,
+                token::CustomToken,
+            },
             *,
         };
         /*
-        use ::syntax::buffer::Cursor;
-        use ::syntax::error::Result;
-        use ::syntax::parse::ParseStream;
-        use ::syntax::parse::Peek;
-        use ::syntax::sealed::lookahead;
-        use ::syntax::token::CustomToken;
-        use ::process::macros::Ident;
         */
         /// Additional methods for `Ident` not provided by proc-macro2 or libproc_macro.
         pub trait IdentExt: Sized + private::Sealed {
@@ -15276,7 +15313,8 @@ pub mod syntax
         }
 
         impl CustomToken for private::IdentAny {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 cursor.ident().is_some()
             }
 
@@ -15310,11 +15348,14 @@ pub mod syntax
     {
         use ::
         {
+            syntax::
+            {
+                attr::{ Attribute },
+                item::{ Item },
+            },
             *,
         };
         /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::item::Item;
         */
         ast_struct!
         {
@@ -15390,14 +15431,21 @@ pub mod syntax
                 pub items: Vec<Item>,
             }
         }
-
-         
-            pub mod parsing {
-            use ::syntax::attr::Attribute;
-            use ::syntax::error::Result;
-            use ::syntax::file::File;
-            use ::syntax::parse::{Parse, ParseStream};
-
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                syntax::
+                {
+                    attr::Attribute,
+                    error::Result,
+                    file::File,
+                    parse::{Parse, ParseStream},
+                },
+                *,
+            };
+            
             impl Parse for File
             {
                 fn parse(input: ParseStream) -> Result<Self>
@@ -15418,12 +15466,20 @@ pub mod syntax
             }
         }
         
-        mod printing {
-            use ::syntax::attr::FilterAttrs;
-            use ::syntax::file::File;
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
-
+        mod printing
+        {
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::
+                {
+                    attr::FilterAttrs,
+                    file::File,
+                },
+                *,
+            };
+            
             impl ToTokens for File {
                 fn to_tokens(&self, tokens: &mut TokenStream)
                 {
@@ -15432,22 +15488,22 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::file::{ File };
     
     pub mod fixup
     {
         use ::
         {
+            syntax::
+            {
+                expr::{ Expr, ExprBreak, ExprRange, ExprRawAddr, ExprReference, ExprReturn, ExprUnary, ExprYield },
+                precedence::{ Precedence },
+                ty::{ ReturnType },
+                classify
+            },
             *,
         };
         /*
-        use ::syntax::classify;
-        use ::syntax::expr::Expr;
-        use ::syntax::expr::{
-            ExprBreak, ExprRange, ExprRawAddr, ExprReference, ExprReturn, ExprUnary, ExprYield,
-        };
-        use ::syntax::precedence::Precedence;
-        use ::syntax::ty::ReturnType;
         */
         pub struct FixupContext
         {
@@ -15579,7 +15635,8 @@ pub mod syntax
             next_operator_can_begin_generics: bool,
         }
 
-        impl FixupContext {
+        impl FixupContext 
+        {
             /// The default amount of fixing is minimal fixing. Fixups should be turned
             /// on in a targeted fashion where needed.
             pub const NONE: Self = FixupContext {
@@ -15744,7 +15801,8 @@ pub mod syntax
             }
             /// Determine whether parentheses are needed around the given expression to
             /// head off the early termination of a statement or condition.
-                pub fn parenthesize(self, expr: &Expr) -> bool {
+                pub fn parenthesize(self, expr: &Expr) -> bool
+        {
                 (self.leftmost_subexpression_in_stmt && !classify::requires_semi_to_be_stmt(expr))
                     || ((self.stmt || self.leftmost_subexpression_in_stmt) && matches!(expr, Expr::Let(_)))
                     || (self.leftmost_subexpression_in_match_arm
@@ -15812,13 +15870,15 @@ pub mod syntax
 
         impl Copy for FixupContext {}
 
-        impl Clone for FixupContext {
+        impl Clone for FixupContext 
+        {
             fn clone(&self) -> Self {
                 *self
             }
         }
 
-        enum Scan {
+        enum Scan 
+        {
             Fail,
             Bailout,
             Consume,
@@ -15826,19 +15886,23 @@ pub mod syntax
 
         impl Copy for Scan {}
 
-        impl Clone for Scan {
+        impl Clone for Scan 
+        {
             fn clone(&self) -> Self {
                 *self
             }
         }
 
-        impl PartialEq for Scan {
-            fn eq(&self, other: &Self) -> bool {
+        impl PartialEq for Scan 
+        {
+            fn eq(&self, other: &Self) -> bool
+        {
                 *self as u8 == *other as u8
             }
         }
 
-        fn scan_left(expr: &Expr, fixup: FixupContext) -> bool {
+        fn scan_left(expr: &Expr, fixup: FixupContext) -> bool 
+        {
             match expr {
                 Expr::Assign(_) => fixup.previous_operator <= Precedence::Assign,
                 Expr::Binary(e) => match Precedence::of_binop(&e.op) {
@@ -15851,13 +15915,15 @@ pub mod syntax
             }
         }
 
-        fn scan_right(
+        fn scan_right
+        (
             expr: &Expr,
             fixup: FixupContext,
             precedence: Precedence,
             fail_offset: u8,
             bailout_offset: u8,
-        ) -> Scan {
+        ) -> Scan 
+        {
             let consume_by_precedence = if match precedence {
                 Precedence::Assign | Precedence::Compare => precedence <= fixup.next_operator,
                 _ => precedence < fixup.next_operator,
@@ -15871,7 +15937,8 @@ pub mod syntax
                 return consume_by_precedence;
             }
             match expr {
-                Expr::Assign(e) if e.attrs.is_empty() => {
+                Expr::Assign(e) if e.attrs.is_empty() =>
+                {
                     if match fixup.next_operator {
                         Precedence::Unambiguous => fail_offset >= 2,
                         _ => bailout_offset >= 1,
@@ -15897,7 +15964,8 @@ pub mod syntax
                         Scan::Bailout
                     }
                 }
-                Expr::Binary(e) if e.attrs.is_empty() => {
+                Expr::Binary(e) if e.attrs.is_empty() =>
+                {
                     if match fixup.next_operator {
                         Precedence::Unambiguous => {
                             fail_offset >= 2
@@ -15939,7 +16007,8 @@ pub mod syntax
                 }
                 Expr::RawAddr(ExprRawAddr { expr, .. })
                 | Expr::Reference(ExprReference { expr, .. })
-                | Expr::Unary(ExprUnary { expr, .. }) => {
+                | Expr::Unary(ExprUnary { expr, .. }) =>
+                {
                     if match fixup.next_operator {
                         Precedence::Unambiguous => {
                             fail_offset >= 2
@@ -16044,7 +16113,8 @@ pub mod syntax
                         _ => Scan::Consume,
                     },
                 },
-                Expr::Closure(e) => {
+                Expr::Closure(e) =>
+                {
                     if matches!(e.output, ReturnType::Default)
                         || matches!(&*e.body, Expr::Block(body) if body.attrs.is_empty() && body.label.is_none())
                     {
@@ -16061,7 +16131,8 @@ pub mod syntax
                         Scan::Consume
                     }
                 }
-                Expr::Let(e) => {
+                Expr::Let(e) =>
+                {
                     if bailout_offset >= 1 {
                         return Scan::Consume;
                     }
@@ -16138,22 +16209,23 @@ pub mod syntax
     {
         use ::
         {
+            fmt::{self, Debug},
+            hash::{Hash, Hasher},
+            process::macros::{ TokenStream },
+            syntax::
+            {
+                attr::Attribute,
+                expr::Expr,
+                ident::Ident,
+                lifetime::Lifetime,
+                path::Path,
+                punctuated::{ Iter, IterMut, Punctuated },
+                token,
+                ty::Type,
+            },
             *,
         };
-        /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::expr::Expr;
-        use ::syntax::ident::Ident;
-        use ::syntax::lifetime::Lifetime;
-        use ::syntax::path::Path;
-        use ::syntax::punctuated::{Iter, IterMut, Punctuated};
-        use ::syntax::token;
-        use ::syntax::ty::Type;
-        use ::process::macros::TokenStream;
-        #[cfg(all(feature = "printing", feature = "extra-traits"))]
-        use std::fmt::{self, Debug};
-        #[cfg(all(feature = "printing", feature = "extra-traits"))]
-        use std::hash::{Hash, Hasher};
+        /*        
         */
         ast_struct! 
         {
@@ -16413,7 +16485,8 @@ pub mod syntax
                         impl<'a> Eq for $ty<'a> {}
 
                         impl<'a> PartialEq for $ty<'a> {
-                    fn eq(&self, other: &Self) -> bool {
+                    fn eq(&self, other: &Self) -> bool
+        {
                         self.0 == other.0
                     }
                 }
@@ -16586,31 +16659,39 @@ pub mod syntax
                 pub bounds: Punctuated<TypeParamBound, Token![+]>,
             }
         }
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                syntax::
+                {
+                    attr::{ Attribute },
+                    error::{ self, Error, Result },
+                    ext::{ IdentExt as _ },
+                    generics::
+                    {
+                        BoundLifetimes, ConstParam, GenericParam, Generics, LifetimeParam, PredicateLifetime, 
+                        PredicateType, TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause, 
+                        WherePredicate,
+                    },
+                    ident::{ Ident },
+                    lifetime::{ Lifetime },
+                    parse::{ Parse, ParseStream },
+                    path::{ self, ParenthesizedGenericArguments, Path, PathArguments },
+                    punctuated::{ Punctuated },
+                    ty::{ Type },
+                    token, verbatim,
 
-         
-            pub mod parsing {
-            use ::syntax::attr::Attribute;
-                use ::syntax::error;
-            use ::syntax::error::{Error, Result};
-            use ::syntax::ext::IdentExt as _;
-            use ::syntax::generics::{
-                BoundLifetimes, ConstParam, GenericParam, Generics, LifetimeParam, PredicateLifetime,
-                PredicateType, TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause,
-                WherePredicate,
+                },
+                *,
             };
-                use ::syntax::generics::{CapturedParam, PreciseCapture};
-            use ::syntax::ident::Ident;
-            use ::syntax::lifetime::Lifetime;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::path::{self, ParenthesizedGenericArguments, Path, PathArguments};
-            use ::syntax::punctuated::Punctuated;
-            use ::syntax::token;
-            use ::syntax::ty::Type;
-            use ::syntax::verbatim;
-
+            /*
+            */
             impl Parse for Generics
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if !input.peek(Token![<]) {
                         return Ok(Generics::default());
                     }
@@ -16762,7 +16843,8 @@ pub mod syntax
 
             impl Parse for Option<BoundLifetimes>
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Token![for]) {
                         input.parse().map(Some)
                     } else {
@@ -16824,12 +16906,14 @@ pub mod syntax
                 }
             }
 
-            impl TypeParamBound {
+            impl TypeParamBound 
+            {
                 pub fn parse_single(
                     input: ParseStream,
                     #[cfg_attr(not(feature = "full"), allow(unused_variables))] allow_precise_capture: bool,
                     allow_const: bool,
-                ) -> Result<Self> {
+                ) -> Result<Self>
+                {
                     if input.peek(Lifetime) {
                         return input.parse().map(TypeParamBound::Lifetime);
                     }
@@ -16903,7 +16987,8 @@ pub mod syntax
                 }
             }
 
-            impl TraitBound {
+            impl TraitBound 
+            {
                 fn do_parse(input: ParseStream, allow_const: bool) -> Result<Option<Self>> {
                     let mut lifetimes: Option<BoundLifetimes> = input.parse()?;
 
@@ -16965,7 +17050,8 @@ pub mod syntax
 
             impl Parse for TraitBoundModifier
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Token![?]) {
                         input.parse().map(TraitBoundModifier::Maybe)
                     } else {
@@ -17038,7 +17124,8 @@ pub mod syntax
 
             impl Parse for Option<WhereClause>
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Token![where]) {
                         input.parse().map(Some)
                     } else {
@@ -17049,7 +17136,8 @@ pub mod syntax
 
             impl Parse for WherePredicate
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Lifetime) && input.peek2(Token![:]) {
                         Ok(WherePredicate::Lifetime(PredicateLifetime {
                             lifetime: input.parse()?,
@@ -17167,7 +17255,8 @@ pub mod syntax
                 }
             }
 
-            pub fn choose_generics_over_qpath(input: ParseStream) -> bool {
+            pub fn choose_generics_over_qpath(input: ParseStream) -> bool
+        {
                
                
                
@@ -17201,31 +17290,38 @@ pub mod syntax
                         || input.peek2(Token![const]))
             }
 
-                pub fn choose_generics_over_qpath_after_keyword(input: ParseStream) -> bool {
+                pub fn choose_generics_over_qpath_after_keyword(input: ParseStream) -> bool
+        {
                 let input = input.fork();
                 input.call(Ident::parse_any).unwrap();
                 choose_generics_over_qpath(&input)
             }
         }
-
         
         pub mod printing
         {
-            use ::syntax::attr::FilterAttrs;
-                use ::syntax::expr;
-            use ::syntax::expr::Expr;
-                use ::syntax::fixup::FixupContext;
-            use ::syntax::generics::{
-                BoundLifetimes, ConstParam, GenericParam, Generics, ImplGenerics, LifetimeParam,
-                PredicateLifetime, PredicateType, TraitBound, TraitBoundModifier, Turbofish, TypeGenerics,
-                TypeParam, WhereClause,
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::
+                {
+                    attr::FilterAttrs,
+                    expr,
+                    expr::Expr,
+                    fixup::FixupContext,
+                    generics::
+                    {
+                        BoundLifetimes, ConstParam, GenericParam, Generics, ImplGenerics, LifetimeParam,
+                        PredicateLifetime, PredicateType, TraitBound, TraitBoundModifier, Turbofish, TypeGenerics,
+                        TypeParam, WhereClause, CapturedParam, PreciseCapture
+                    },
+                    print::TokensOrDefault,
+                    token,
+                },
+                *,
             };
-                use ::syntax::generics::{CapturedParam, PreciseCapture};
-            use ::syntax::print::TokensOrDefault;
-            use ::syntax::token;
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
-
+            
             impl ToTokens for Generics {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     if self.params.is_empty() {
@@ -17517,56 +17613,36 @@ pub mod syntax
                     {
                         expr.to_tokens(tokens);
                     }
-
-                                Expr::Block(expr) => expr.to_tokens(tokens),
-
-                    #[cfg(not(feature = "full"))]
-                    Expr::Verbatim(expr) => expr.to_tokens(tokens),
-
+                    
+                    Expr::Block(expr) => expr.to_tokens(tokens),
+                    
                    
-                   
-                    _ => token::Brace::default().surround(tokens, |tokens| {
-                                        expr::printing::print_expr(expr, tokens, FixupContext::new_stmt());
-
-                        #[cfg(not(feature = "full"))]
-                        expr.to_tokens(tokens);
+                    _ => token::Brace::default().surround(tokens, |tokens|
+                    {
+                        expr::printing::print_expr(expr, tokens, FixupContext::new_stmt());
                     }),
                 }
             }
         }
-    }
-    /*
-    pub use ::syntax::generics::{
-        BoundLifetimes, ConstParam, GenericParam, Generics, LifetimeParam, PredicateLifetime,
-        PredicateType, TraitBound, TraitBoundModifier, TypeParam, TypeParamBound, WhereClause,
-        WherePredicate,
+    } pub use self::generics::
+    {
+        BoundLifetimes, CapturedParam, ImplGenerics, Turbofish, TypeGenerics, PreciseCapture, ConstParam,
+        GenericParam, Generics, LifetimeParam,  PredicateLifetime, PredicateType, TraitBound, TraitBoundModifier, 
+        TypeParam, TypeParamBound,  WhereClause, WherePredicate,
     };
-    
-    pub use ::syntax::generics::{CapturedParam, PreciseCapture};
-    
-    pub use ::syntax::generics::{ImplGenerics, Turbofish, TypeGenerics};
-    */
+
     pub mod ident
     {
         use ::
         {
+            process::macros::{ Ident },
+            syntax::{ lookahead },
             *,
         };
         /*
-         
-            use ::syntax::lookahead;
-
-        pub use ::process::macros::Ident;
         */
-         
-            pub_if_not_doc! {
-                
-            pub fn Ident(marker: lookahead::TokenMarker) -> Ident {
-                match marker {}
-            }
-        }
-
-        macro_rules! ident_from_token {
+        macro_rules! ident_from_token
+        {
             ($token:ident) => {
                 impl From<Token![$token]> for Ident {
                     fn from(token: Token![$token]) -> Ident {
@@ -17576,41 +17652,59 @@ pub mod syntax
             };
         }
 
+        pub_if_not_doc!
+        {
+            pub fn Ident(marker: lookahead::TokenMarker) -> Ident
+            {
+                match marker {}
+            }
+        }
+
         ident_from_token!(self);
         ident_from_token!(Self);
         ident_from_token!(super);
         ident_from_token!(crate);
         ident_from_token!(extern);
 
-        impl From<Token![_]> for Ident {
+        impl From<Token![_]> for Ident 
+        {
             fn from(token: Token![_]) -> Ident {
                 Ident::new("_", token.span)
             }
         }
 
-        pub fn xid_ok(symbol: &str) -> bool {
+        pub fn xid_ok(symbol: &str) -> bool 
+        {
             let mut chars = symbol.chars();
             let first = chars.next().unwrap();
-            if !(first == '_' || unicode_ident::is_xid_start(first)) {
+            if !(first == '_' || is::xid_start(first)) {
                 return false;
             }
             for ch in chars {
-                if !unicode_ident::is_xid_continue(ch) {
+                if !is::xid_continue(ch) {
                     return false;
                 }
             }
             true
         }
+        
+        mod parsing
+        {
+            use ::
+            {
+                process::macros::Ident,
+                syntax::
+                {
+                    buffer::Cursor,
+                    error::Result,
+                    parse::{Parse, ParseStream},
+                    token::Token,
+                },
+                *,
+            };
 
-         
-            mod parsing {
-            use ::syntax::buffer::Cursor;
-            use ::syntax::error::Result;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::token::Token;
-            use ::process::macros::Ident;
-
-            fn accept_as_ident(ident: &Ident) -> bool {
+            fn accept_as_ident(ident: &Ident) -> bool
+        {
                 match ident.to_string().as_str() {
                     "_" |
                    
@@ -17647,7 +17741,8 @@ pub mod syntax
             }
 
             impl Token for Ident {
-                fn peek(cursor: Cursor) -> bool {
+                fn peek(cursor: Cursor) -> bool
+        {
                     if let Some((ident, _rest)) = cursor.ident() {
                         accept_as_ident(&ident)
                     } else {
@@ -17660,33 +17755,34 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::ident::Ident;
     
     pub mod item
     {
         use ::
         {
+            process::macros::{ TokenStream },
+            syntax::
+            {
+                attr::Attribute,
+                data::{Fields, FieldsNamed, Variant},
+                derive::{Data, DataEnum, DataStruct, DataUnion, DeriveInput},
+                expr::Expr,
+                generics::{Generics, TypeParamBound},
+                ident::Ident,
+                lifetime::Lifetime,
+                mac::Macro,
+                pat::{Pat, PatType},
+                path::Path,
+                punctuated::Punctuated,
+                restriction::Visibility,
+                stmt::Block,
+                token,
+                ty::{Abi, ReturnType, Type},
+            },
             *,
         };
         /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::data::{Fields, FieldsNamed, Variant};
-        use ::syntax::derive::{Data, DataEnum, DataStruct, DataUnion, DeriveInput};
-        use ::syntax::expr::Expr;
-        use ::syntax::generics::{Generics, TypeParamBound};
-        use ::syntax::ident::Ident;
-        use ::syntax::lifetime::Lifetime;
-        use ::syntax::mac::Macro;
-        use ::syntax::pat::{Pat, PatType};
-        use ::syntax::path::Path;
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::restriction::Visibility;
-        use ::syntax::stmt::Block;
-        use ::syntax::token;
-        use ::syntax::ty::{Abi, ReturnType, Type};
-        use ::process::macros::TokenStream;
-         
-            use std::mem;
         */
         ast_enum_of_structs!
         {
@@ -17750,7 +17846,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A constant item: `const MAX: u16 = 65535`.
             pub struct ItemConst {
                 pub attrs: Vec<Attribute>,
@@ -17766,7 +17863,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An enum definition: `enum Foo<A, B> { A(A), B(B) }`.
             pub struct ItemEnum {
                 pub attrs: Vec<Attribute>,
@@ -17779,7 +17877,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An `extern crate` item: `extern crate serde`.
             pub struct ItemExternCrate {
                 pub attrs: Vec<Attribute>,
@@ -17792,7 +17891,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A free-standing function: `fn process(n: usize) -> Result<()> { ... }`.
             pub struct ItemFn {
                 pub attrs: Vec<Attribute>,
@@ -17802,7 +17902,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A block of foreign items: `extern "C" { ... }`.
             pub struct ItemForeignMod {
                 pub attrs: Vec<Attribute>,
@@ -17813,7 +17914,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An impl block providing trait or associated items: `impl<A> Trait
             /// for Data<A> { ... }`.
             pub struct ItemImpl {
@@ -17831,7 +17933,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation, which includes `macro_rules!` definitions.
             pub struct ItemMacro {
                 pub attrs: Vec<Attribute>,
@@ -17842,7 +17945,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A module or module declaration: `mod m` or `mod m { ... }`.
             pub struct ItemMod {
                 pub attrs: Vec<Attribute>,
@@ -17855,7 +17959,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A static item: `static BIKE: Shed = Shed(42)`.
             pub struct ItemStatic {
                 pub attrs: Vec<Attribute>,
@@ -17871,7 +17976,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A struct definition: `struct Foo<A> { x: A }`.
             pub struct ItemStruct {
                 pub attrs: Vec<Attribute>,
@@ -17884,7 +17990,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A trait definition: `pub trait Iterator { ... }`.
             pub struct ItemTrait {
                 pub attrs: Vec<Attribute>,
@@ -17902,7 +18009,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A trait alias: `pub trait SharableIterator = Iterator + Sync`.
             pub struct ItemTraitAlias {
                 pub attrs: Vec<Attribute>,
@@ -17916,7 +18024,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A type alias: `type Result<T> = std::result::Result<T, MyError>`.
             pub struct ItemType {
                 pub attrs: Vec<Attribute>,
@@ -17930,7 +18039,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A union definition: `union Foo<A, B> { x: A, y: B }`.
             pub struct ItemUnion {
                 pub attrs: Vec<Attribute>,
@@ -17942,7 +18052,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A use declaration: `use std::collections::HashMap`.
             pub struct ItemUse {
                 pub attrs: Vec<Attribute>,
@@ -17954,7 +18065,8 @@ pub mod syntax
             }
         }
 
-        impl Item {
+        impl Item 
+        {
              
                 pub fn replace_attrs(&mut self, new: Vec<Attribute>) -> Vec<Attribute>
             {
@@ -17979,7 +18091,8 @@ pub mod syntax
             }
         }
 
-        impl From<DeriveInput> for Item {
+        impl From<DeriveInput> for Item 
+        {
             fn from(input: DeriveInput) -> Item {
                 match input.data {
                     Data::Struct(data) => Item::Struct(ItemStruct {
@@ -18012,7 +18125,8 @@ pub mod syntax
             }
         }
 
-        impl From<ItemStruct> for DeriveInput {
+        impl From<ItemStruct> for DeriveInput 
+        {
             fn from(input: ItemStruct) -> DeriveInput {
                 DeriveInput {
                     attrs: input.attrs,
@@ -18028,7 +18142,8 @@ pub mod syntax
             }
         }
 
-        impl From<ItemEnum> for DeriveInput {
+        impl From<ItemEnum> for DeriveInput 
+        {
             fn from(input: ItemEnum) -> DeriveInput {
                 DeriveInput {
                     attrs: input.attrs,
@@ -18044,7 +18159,8 @@ pub mod syntax
             }
         }
 
-        impl From<ItemUnion> for DeriveInput {
+        impl From<ItemUnion> for DeriveInput 
+        {
             fn from(input: ItemUnion) -> DeriveInput {
                 DeriveInput {
                     attrs: input.attrs,
@@ -18059,7 +18175,8 @@ pub mod syntax
             }
         }
 
-        ast_enum_of_structs! {
+        ast_enum_of_structs! 
+        {
             /// A suffix of an import tree in a `use` item: `Type as Renamed` or `*`.
             ///
             /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
@@ -18077,7 +18194,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A path prefix of imports in a `use` item: `std::...`.
             pub struct UsePath {
                 pub ident: Ident,
@@ -18086,14 +18204,16 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An identifier imported by a `use` item: `HashMap`.
             pub struct UseName {
                 pub ident: Ident,
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An renamed identifier imported by a `use` item: `HashMap as Map`.
             pub struct UseRename {
                 pub ident: Ident,
@@ -18102,14 +18222,16 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A glob import in a `use` item: `*`.
             pub struct UseGlob {
                 pub star_token: Token![*],
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A braced group of imports in a `use` item: `{A, B, C}`.
             pub struct UseGroup {
                 pub brace_token: token::Brace,
@@ -18117,7 +18239,8 @@ pub mod syntax
             }
         }
 
-        ast_enum_of_structs! {
+        ast_enum_of_structs! 
+        {
             /// An item within an `extern` block.
             ///
             /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
@@ -18154,7 +18277,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A foreign function in an `extern` block.
             pub struct ForeignItemFn {
                 pub attrs: Vec<Attribute>,
@@ -18164,7 +18288,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A foreign static item in an `extern` block: `static ext: u8`.
             pub struct ForeignItemStatic {
                 pub attrs: Vec<Attribute>,
@@ -18178,7 +18303,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A foreign type in an `extern` block: `type void`.
             pub struct ForeignItemType {
                 pub attrs: Vec<Attribute>,
@@ -18190,7 +18316,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation within an extern block.
             pub struct ForeignItemMacro {
                 pub attrs: Vec<Attribute>,
@@ -18199,7 +18326,8 @@ pub mod syntax
             }
         }
 
-        ast_enum_of_structs! {
+        ast_enum_of_structs! 
+        {
             /// An item declaration within the definition of a trait.
             ///
             /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
@@ -18236,7 +18364,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated constant within the definition of a trait.
             pub struct TraitItemConst {
                 pub attrs: Vec<Attribute>,
@@ -18250,7 +18379,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated function within the definition of a trait.
             pub struct TraitItemFn {
                 pub attrs: Vec<Attribute>,
@@ -18260,7 +18390,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated type within the definition of a trait.
             pub struct TraitItemType {
                 pub attrs: Vec<Attribute>,
@@ -18274,7 +18405,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation within the definition of a trait.
             pub struct TraitItemMacro {
                 pub attrs: Vec<Attribute>,
@@ -18283,7 +18415,8 @@ pub mod syntax
             }
         }
 
-        ast_enum_of_structs! {
+        ast_enum_of_structs! 
+        {
             /// An item within an impl block.
             ///
             /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
@@ -18320,7 +18453,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated constant within an impl block.
             pub struct ImplItemConst {
                 pub attrs: Vec<Attribute>,
@@ -18337,7 +18471,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated function within an impl block.
             pub struct ImplItemFn {
                 pub attrs: Vec<Attribute>,
@@ -18348,7 +18483,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated type within an impl block.
             pub struct ImplItemType {
                 pub attrs: Vec<Attribute>,
@@ -18363,7 +18499,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation within an impl block.
             pub struct ImplItemMacro {
                 pub attrs: Vec<Attribute>,
@@ -18372,7 +18509,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A function signature in a trait or implementation: `unsafe fn
             /// initialize(&self)`.
             pub struct Signature {
@@ -18390,7 +18528,8 @@ pub mod syntax
             }
         }
 
-        impl Signature {
+        impl Signature 
+        {
             /// A method's `self` receiver, such as `&self` or `self: Box<Self>`.
             pub fn receiver(&self) -> Option<&Receiver>
             {
@@ -18402,7 +18541,8 @@ pub mod syntax
             }
         }
 
-        ast_enum_of_structs! {
+        ast_enum_of_structs! 
+        {
             /// An argument in a function signature: the `n: usize` in `fn f(n: usize)`.
             pub enum FnArg {
                 /// The `self` argument of an associated method.
@@ -18412,7 +18552,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The `self` argument of an associated method.
             /// is written in shorthand such as `self` or `&self` or `&mut self`. In the
             /// shorthand case, the type in `ty` is reconstructed as one of `Self`,
@@ -18427,14 +18568,16 @@ pub mod syntax
             }
         }
 
-        impl Receiver {
+        impl Receiver 
+        {
             pub fn lifetime(&self) -> Option<&Lifetime>
             {
                 self.reference.as_ref()?.1.as_ref()
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The variadic argument of a foreign function.
             ///    
             /// }
@@ -18447,7 +18590,8 @@ pub mod syntax
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// The mutability of an `Item::Static` or `ForeignItem::Static`.
             #[non_exhaustive]
             pub enum StaticMutability {
@@ -18456,7 +18600,8 @@ pub mod syntax
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// Unused, but reserved for RFC 3323 restrictions.
             #[non_exhaustive]
             pub enum ImplRestriction {}
@@ -18471,38 +18616,46 @@ pub mod syntax
            
            
         }
-
-         
-            pub mod parsing {
-            use ::syntax::attr::{self, Attribute};
-            use ::syntax::derive;
-            use ::syntax::error::{Error, Result};
-            use ::syntax::expr::Expr;
-            use ::syntax::ext::IdentExt as _;
-            use ::syntax::generics::{self, Generics, TypeParamBound};
-            use ::syntax::ident::Ident;
-            use ::syntax::item::{
-                FnArg, ForeignItem, ForeignItemFn, ForeignItemMacro, ForeignItemStatic, ForeignItemType,
-                ImplItem, ImplItemConst, ImplItemFn, ImplItemMacro, ImplItemType, Item, ItemConst,
-                ItemEnum, ItemExternCrate, ItemFn, ItemForeignMod, ItemImpl, ItemMacro, ItemMod,
-                ItemStatic, ItemStruct, ItemTrait, ItemTraitAlias, ItemType, ItemUnion, ItemUse, Receiver,
-                Signature, StaticMutability, TraitItem, TraitItemConst, TraitItemFn, TraitItemMacro,
-                TraitItemType, UseGlob, UseGroup, UseName, UsePath, UseRename, UseTree, Variadic,
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                process::macros::{ TokenStream },
+                syntax::
+                {
+                    attr::{self, Attribute},
+                    derive,
+                    error::{Error, Result},
+                    expr::Expr,
+                    ext::IdentExt as _,
+                    generics::{self, Generics, TypeParamBound},
+                    ident::Ident,
+                    item::
+                    {
+                        FnArg, ForeignItem, ForeignItemFn, ForeignItemMacro, ForeignItemStatic, ForeignItemType,
+                        ImplItem, ImplItemConst, ImplItemFn, ImplItemMacro, ImplItemType, Item, ItemConst, ItemEnum,
+                        ItemExternCrate, ItemFn, ItemForeignMod, ItemImpl, ItemMacro, ItemMod, ItemStatic, ItemStruct,
+                        ItemTrait, ItemTraitAlias, ItemType, ItemUnion, ItemUse, Receiver, Signature, 
+                        StaticMutability, TraitItem, TraitItemConst, TraitItemFn, TraitItemMacro, TraitItemType, 
+                        UseGlob, UseGroup, UseName, UsePath, UseRename, UseTree, Variadic,
+                    },
+                    lifetime::Lifetime,
+                    lit::LitStr,
+                    mac::{self, Macro},
+                    parse::discouraged::Speculative as _,
+                    parse::{Parse, ParseBuffer, ParseStream},
+                    pat::{Pat, PatType, PatWild},
+                    path::Path,
+                    punctuated::Punctuated,
+                    restriction::Visibility,
+                    stmt::Block,
+                    token,
+                    ty::{Abi, ReturnType, Type, TypePath, TypeReference},
+                    verbatim,
+                },
+                *,
             };
-            use ::syntax::lifetime::Lifetime;
-            use ::syntax::lit::LitStr;
-            use ::syntax::mac::{self, Macro};
-            use ::syntax::parse::discouraged::Speculative as _;
-            use ::syntax::parse::{Parse, ParseBuffer, ParseStream};
-            use ::syntax::pat::{Pat, PatType, PatWild};
-            use ::syntax::path::Path;
-            use ::syntax::punctuated::Punctuated;
-            use ::syntax::restriction::Visibility;
-            use ::syntax::stmt::Block;
-            use ::syntax::token;
-            use ::syntax::ty::{Abi, ReturnType, Type, TypePath, TypeReference};
-            use ::syntax::verbatim;
-            use ::process::macros::TokenStream;
 
             impl Parse for Item
             {
@@ -18513,7 +18666,8 @@ pub mod syntax
                 }
             }
 
-            pub fn parse_rest_of_item(
+            pub fn parse_rest_of_item
+            (
                 begin: ParseBuffer,
                 mut attrs: Vec<Attribute>,
                 input: ParseStream,
@@ -18691,7 +18845,8 @@ pub mod syntax
                 Ok(item)
             }
 
-            struct FlexibleItemType {
+            struct FlexibleItemType 
+            {
                 vis: Visibility,
                 defaultness: Option<Token![default]>,
                 type_token: Token![type],
@@ -18703,12 +18858,14 @@ pub mod syntax
                 semi_token: Token![;],
             }
 
-            enum TypeDefaultness {
+            enum TypeDefaultness 
+            {
                 Optional,
                 Disallowed,
             }
 
-            enum WhereClauseLocation {
+            enum WhereClauseLocation 
+            {
                
                 BeforeEq,
                
@@ -18835,7 +18992,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_macro2(begin: ParseBuffer, _vis: Visibility, input: ParseStream) -> Result<Item> {
+            fn parse_macro2(begin: ParseBuffer, _vis: Visibility, input: ParseStream) -> Result<Item> 
+            {
                 input.parse::<Token![macro]>()?;
                 input.parse::<Ident>()?;
 
@@ -18901,7 +19059,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_item_use(
+            fn parse_item_use
+            (
                 input: ParseStream,
                 allow_crate_root_in_path: bool,
             ) -> Result<Option<ItemUse>>
@@ -18936,7 +19095,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_use_tree(
+            fn parse_use_tree
+            (
                 input: ParseStream,
                 allow_crate_root_in_path: bool,
             ) -> Result<Option<UseTree>>
@@ -19068,7 +19228,8 @@ pub mod syntax
                 }
             }
 
-            fn peek_signature(input: ParseStream, allow_safe: bool) -> bool {
+            fn peek_signature(input: ParseStream, allow_safe: bool) -> bool
+            {
                 let fork = input.fork();
                 fork.parse::<Option<Token![const]>>().is_ok()
                     && fork.parse::<Option<Token![async]>>().is_ok()
@@ -19140,7 +19301,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_rest_of_fn(
+            fn parse_rest_of_fn
+            (
                 input: ParseStream,
                 mut attrs: Vec<Attribute>,
                 vis: Visibility,
@@ -19172,12 +19334,14 @@ pub mod syntax
                 }
             }
 
-            enum FnArgOrVariadic {
+            enum FnArgOrVariadic
+            {
                 FnArg(FnArg),
                 Variadic(Variadic),
             }
 
-            fn parse_fn_arg_or_variadic(
+            fn parse_fn_arg_or_variadic
+            (
                 input: ParseStream,
                 attrs: Vec<Attribute>,
                 allow_variadic: bool,
@@ -19273,7 +19437,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_fn_args(
+            fn parse_fn_args
+            (
                 input: ParseStream,
             ) -> Result<(Punctuated<FnArg, Token![,]>, Option<Variadic>)>
             {
@@ -19800,7 +19965,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_rest_of_trait(
+            fn parse_rest_of_trait
+            (
                 input: ParseStream,
                 mut attrs: Vec<Attribute>,
                 vis: Visibility,
@@ -19865,7 +20031,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_start_of_trait_alias(
+            fn parse_start_of_trait_alias
+            (
                 input: ParseStream,
             ) -> Result<(Vec<Attribute>, Visibility, Token![trait], Ident, Generics)>
             {
@@ -19877,7 +20044,8 @@ pub mod syntax
                 Ok((attrs, vis, trait_token, ident, generics))
             }
 
-            fn parse_rest_of_trait_alias(
+            fn parse_rest_of_trait_alias
+            (
                 input: ParseStream,
                 attrs: Vec<Attribute>,
                 vis: Visibility,
@@ -20182,9 +20350,7 @@ pub mod syntax
                 } else {
                     None
                 };
-
-                #[cfg(not(feature = "printing"))]
-                let first_ty_span = input.span();
+                
                 let mut first_ty: Type = input.parse()?;
                 let self_ty: Type;
                 let trait_;
@@ -20208,8 +20374,6 @@ pub mod syntax
                     } else if !allow_verbatim_impl {
                         
                 return Err(Error::new_spanned(first_ty_ref, "expected trait path"));
-                        #[cfg(not(feature = "printing"))]
-                        return Err(Error::new(first_ty_span, "expected trait path"));
                     } else {
                         trait_ = None;
                     }
@@ -20393,7 +20557,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_impl_item_fn(
+            fn parse_impl_item_fn
+            (
                 input: ParseStream,
                 allow_omitted_body: bool,
             ) -> Result<Option<ImplItemFn>>
@@ -20508,8 +20673,10 @@ pub mod syntax
                 }
             }
 
-            impl Visibility {
-                fn is_inherited(&self) -> bool {
+            impl Visibility
+            {
+                fn is_inherited(&self) -> bool
+        {
                     match self {
                         Visibility::Inherited => true,
                         _ => false,
@@ -20525,28 +20692,35 @@ pub mod syntax
                 }
             }
         }
-
         
-        mod printing
+        pub mod printing
         {
-            use ::syntax::attr::FilterAttrs;
-            use ::syntax::data::Fields;
-            use ::syntax::item::{
-                ForeignItemFn, ForeignItemMacro, ForeignItemStatic, ForeignItemType, ImplItemConst,
-                ImplItemFn, ImplItemMacro, ImplItemType, ItemConst, ItemEnum, ItemExternCrate, ItemFn,
-                ItemForeignMod, ItemImpl, ItemMacro, ItemMod, ItemStatic, ItemStruct, ItemTrait,
-                ItemTraitAlias, ItemType, ItemUnion, ItemUse, Receiver, Signature, StaticMutability,
-                TraitItemConst, TraitItemFn, TraitItemMacro, TraitItemType, UseGlob, UseGroup, UseName,
-                UsePath, UseRename, Variadic,
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::
+                {
+                    attr::FilterAttrs,
+                    data::Fields,
+                    item::
+                    {
+                        ForeignItemFn, ForeignItemMacro, ForeignItemStatic, ForeignItemType, ImplItemConst,
+                        ImplItemFn, ImplItemMacro, ImplItemType, ItemConst, ItemEnum, ItemExternCrate, ItemFn,
+                        ItemForeignMod, ItemImpl, ItemMacro, ItemMod, ItemStatic, ItemStruct, ItemTrait,
+                        ItemTraitAlias, ItemType, ItemUnion, ItemUse, Receiver, Signature, StaticMutability,
+                        TraitItemConst, TraitItemFn, TraitItemMacro, TraitItemType, UseGlob, UseGroup, UseName,
+                        UsePath, UseRename, Variadic,
+                    },
+                    mac::MacroDelimiter,
+                    path,
+                    path::printing::PathStyle,
+                    print::TokensOrDefault,
+                    ty::Type,
+                },
+                *,
             };
-            use ::syntax::mac::MacroDelimiter;
-            use ::syntax::path;
-            use ::syntax::path::printing::PathStyle;
-            use ::syntax::print::TokensOrDefault;
-            use ::syntax::ty::Type;
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
-
+            
             impl ToTokens for ItemExternCrate {
                 fn to_tokens(&self, tokens: &mut TokenStream)
                 {
@@ -21081,45 +21255,38 @@ pub mod syntax
                 }
             }
         }
-    }
-    /*
-    #[cfg(feature = "full")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "full")))]
-    pub use ::syntax::item::{
-        FnArg, ForeignItem, ForeignItemFn, ForeignItemMacro, ForeignItemStatic, ForeignItemType,
-        ImplItem, ImplItemConst, ImplItemFn, ImplItemMacro, ImplItemType, ImplRestriction, Item,
-        ItemConst, ItemEnum, ItemExternCrate, ItemFn, ItemForeignMod, ItemImpl, ItemMacro, ItemMod,
-        ItemStatic, ItemStruct, ItemTrait, ItemTraitAlias, ItemType, ItemUnion, ItemUse, Receiver,
-        Signature, StaticMutability, TraitItem, TraitItemConst, TraitItemFn, TraitItemMacro,
-        TraitItemType, UseGlob, UseGroup, UseName, UsePath, UseRename, UseTree, Variadic,
-    };*/
+    } pub use self::item::
+    {
+        FnArg, ForeignItem, ForeignItemFn, ForeignItemMacro, ForeignItemStatic, ForeignItemType, ImplItem,
+        ImplItemConst, ImplItemFn, ImplItemMacro, ImplItemType, ImplRestriction, Item, ItemConst, ItemEnum,
+        ItemExternCrate, ItemFn, ItemForeignMod, ItemImpl, ItemMacro, ItemMod, ItemStatic, ItemStruct, ItemTrait,
+        ItemTraitAlias, ItemType, ItemUnion, ItemUse, Receiver, Signature, StaticMutability, TraitItem,
+        TraitItemConst, TraitItemFn, TraitItemMacro, TraitItemType, UseGlob, UseGroup, UseName, UsePath,
+        UseRename, UseTree, Variadic,
+    };
 
     pub mod lifetime
     {
         use ::
         {
+            cmp::{ Ordering },
+            fmt::{ self, Display },
+            hash::{ Hash, Hasher },
+            process::macros::{ Ident, Span },
+            syntax::{ lookahead },
             *,
         };
         /*
-         
-            use ::syntax::lookahead;
-        use ::process::macros::{Ident, Span};
-        use std::cmp::Ordering;
-        use std::fmt::{self, Display};
-        use std::hash::{Hash, Hasher};
         */
         /// A Rust lifetime: `'a`.
-        /// - Must not consist of just an apostrophe: `'`.
-        /// - Character after the apostrophe must be `_` or a Unicode code point with
-        ///   the XID_Start property.
-        /// - All following characters must be Unicode code points with the XID_Continue
-        ///   property.
-        pub struct Lifetime {
+        pub struct Lifetime 
+        {
             pub apostrophe: Span,
             pub ident: Ident,
         }
 
-        impl Lifetime {
+        impl Lifetime 
+        {
             /// # Panics
             ///
             /// Panics if the lifetime does not conform to the bulleted rules above.
@@ -21165,14 +21332,16 @@ pub mod syntax
             }
         }
 
-        impl Display for Lifetime {
+        impl Display for Lifetime 
+        {
             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 "'".fmt(formatter)?;
                 self.ident.fmt(formatter)
             }
         }
 
-        impl Clone for Lifetime {
+        impl Clone for Lifetime 
+        {
             fn clone(&self) -> Self {
                 Lifetime {
                     apostrophe: self.apostrophe,
@@ -21181,7 +21350,8 @@ pub mod syntax
             }
         }
 
-        impl PartialEq for Lifetime {
+        impl PartialEq for Lifetime 
+        {
             fn eq(&self, other: &Lifetime) -> bool
             {
                 self.ident.eq(&other.ident)
@@ -21190,40 +21360,50 @@ pub mod syntax
 
         impl Eq for Lifetime {}
 
-        impl PartialOrd for Lifetime {
+        impl PartialOrd for Lifetime 
+        {
             fn partial_cmp(&self, other: &Lifetime) -> Option<Ordering> {
                 Some(self.cmp(other))
             }
         }
 
-        impl Ord for Lifetime {
+        impl Ord for Lifetime 
+        {
             fn cmp(&self, other: &Lifetime) -> Ordering
             {
                 self.ident.cmp(&other.ident)
             }
         }
 
-        impl Hash for Lifetime {
+        impl Hash for Lifetime 
+        {
             fn hash<H: Hasher>(&self, h: &mut H)
             {
                 self.ident.hash(h);
             }
         }
-
-         
-            pub_if_not_doc! {
-                
-            pub fn Lifetime(marker: lookahead::TokenMarker) -> Lifetime {
+        
+        pub_if_not_doc!
+        {
+            pub fn Lifetime(marker: lookahead::TokenMarker) -> Lifetime
+            {
                 match marker {}
             }
         }
-
-         
-            pub mod parsing {
-            use ::syntax::error::Result;
-            use ::syntax::lifetime::Lifetime;
-            use ::syntax::parse::{Parse, ParseStream};
-
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                syntax::
+                {
+                    error::Result,
+                    lifetime::Lifetime,
+                    parse::{Parse, ParseStream},
+                },
+                *,
+            };
+            
             impl Parse for Lifetime
             {
                 fn parse(input: ParseStream) -> Result<Self> {
@@ -21238,10 +21418,14 @@ pub mod syntax
 
         mod printing
         {
-            use ::syntax::lifetime::Lifetime;
-            use ::process::macros::{Punct, Spacing, TokenStream};
-            use ::quote::{ToTokens, TokenStreamExt};
-
+            use ::
+            {
+                process::macros::{Punct, Spacing, TokenStream},
+                quote::{ToTokens, TokenStreamExt},
+                syntax::lifetime::Lifetime,
+                *,
+            };
+            
             impl ToTokens for Lifetime {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     let mut apostrophe = Punct::new('\'', Spacing::Joint);
@@ -21251,27 +21435,28 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::lifetime::{ Lifetime };
 
     pub mod lit
     {
         use ::
         {
+            ffi::{ CStr, CString },
+            fmt::{ self, Display },
+            hash::{ Hash, Hasher },
+            process::macros::
+            {
+                Ident, Literal, Span, TokenStream, TokenTree
+            },
+            syntax::
+            {
+                parse::{ Parse, Parser },
+                lookahead, Error, Result
+            },
+            str::{ self, FromStr },
             *,
         };
         /*
-         
-            use ::syntax::lookahead;
-         
-            use ::syntax::parse::{Parse, Parser};
-        use ::syntax::{Error, Result};
-        use ::process::macros::{Ident, Literal, Span};
-         
-            use ::process::macros::{TokenStream, TokenTree};
-        use std::ffi::{CStr, CString};
-        use std::fmt::{self, Display};
-        use std::hash::{Hash, Hasher};
-        use std::str::{self, FromStr};
         */
         ast_enum_of_structs!
         {
@@ -21843,9 +22028,14 @@ pub mod syntax
             }
         }
 
-        mod debug_impls {
-            use ::syntax::lit::{LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr};
-            use std::fmt::{self, Debug};
+        mod debug_impls
+        {
+            use ::
+            {
+                fmt::{ self, Debug },
+                syntax::lit::{ LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr },
+                *,
+            };
 
             impl  Debug for LitStr {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -22008,7 +22198,8 @@ pub mod syntax
                 }
 
                         impl PartialEq for $ty {
-                    fn eq(&self, other: &Self) -> bool {
+                    fn eq(&self, other: &Self) -> bool
+        {
                         self.repr.token.to_string() == other.repr.token.to_string()
                     }
                 }
@@ -22064,20 +22255,27 @@ pub mod syntax
                 match marker {}
             }
         }
-
-         
-            pub mod parsing {
-            use ::syntax::buffer::Cursor;
-            use ::syntax::error::Result;
-            use ::syntax::lit::{
-                value, Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitFloatRepr, LitInt,
-                LitIntRepr, LitStr,
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                cell::{ Cell },
+                process::macros::{ Literal, Punct, Span },
+                rc::{ Rc },
+                syntax::
+                {
+                    buffer::Cursor,
+                    error::Result,
+                    lit::
+                    {
+                        value, Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitFloatRepr, LitInt,
+                        LitIntRepr, LitStr,
+                    },
+                    parse::{Parse, ParseStream, Unexpected},
+                    token::{self, Token},
+                },
             };
-            use ::syntax::parse::{Parse, ParseStream, Unexpected};
-            use ::syntax::token::{self, Token};
-            use ::process::macros::{Literal, Punct, Span};
-            use std::cell::Cell;
-            use std::rc::Rc;
 
             impl Parse for Lit
             {
@@ -22239,7 +22437,8 @@ pub mod syntax
                 }
             }
 
-            fn peek_impl(cursor: Cursor, peek: fn(ParseStream) -> bool) -> bool {
+            fn peek_impl(cursor: Cursor, peek: fn(ParseStream) -> bool) -> bool
+        {
                 let scope = Span::call_site();
                 let unexpected = Rc::new(Cell::new(Unexpected::None));
                 let buffer = ::syntax::parse::new_parse_buffer(scope, cursor, unexpected);
@@ -22249,8 +22448,10 @@ pub mod syntax
             macro_rules! impl_token {
                 ($display:literal $name:ty) => {
                     impl Token for $name {
-                        fn peek(cursor: Cursor) -> bool {
-                            fn peek(input: ParseStream) -> bool {
+                        fn peek(cursor: Cursor) -> bool
+        {
+                            fn peek(input: ParseStream) -> bool
+        {
                                 <$name as Parse>::parse(input).is_ok()
                             }
                             peek_impl(cursor, peek)
@@ -22278,11 +22479,16 @@ pub mod syntax
 
         mod printing
         {
-            use ::syntax::lit::{LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr};
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
-
-            impl ToTokens for LitStr {
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::lit::{LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr},
+                *,
+            };
+            
+            impl ToTokens for LitStr
+            {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     self.repr.token.to_tokens(tokens);
                 }
@@ -22334,17 +22540,23 @@ pub mod syntax
 
         mod value
         {
-            use ::syntax::bigint::BigInt;
-            use ::syntax::lit::{
-                Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitFloatRepr, LitInt,
-                LitIntRepr, LitRepr, LitStr,
+            use ::
+            {
+                ffi::{ CString },
+                ops::{ Index, RangeFrom },
+                process::macros::{ Literal, Span },
+                syntax::
+                {
+                    bigint::BigInt,
+                    lit::
+                    {
+                        Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitFloatRepr, LitInt, 
+                        LitIntRepr, LitRepr, LitStr,
+                    },
+                },
+                *,
             };
-            use ::process::macros::{Literal, Span};
-            use std::ascii;
-            use std::char;
-            use std::ffi::CString;
-            use std::ops::{Index, RangeFrom};
-
+            
             impl Lit {
                 /// Interpret a Syn literal from a proc-macro2 literal.
                 #[track_caller]
@@ -22470,8 +22682,7 @@ pub mod syntax
                     }
                 }
             }
-            /// Get the byte at offset idx, or a default of `b'\0'` if we're looking
-            /// past the end of the input buffer.
+            /// Get a byte at offset idx, or a default of `b'\0'` if we're looking past the end of the input buffer.
             pub fn byte<S: AsRef<[u8]> + ?Sized>(s: &S, idx: usize) -> u8 {
                 let s = s.as_ref();
                 if idx < s.len() {
@@ -22493,7 +22704,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_lit_str_cooked(mut s: &str) -> (Box<str>, Box<str>) {
+            fn parse_lit_str_cooked(mut s: &str) -> (Box<str>, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'"');
                 s = &s[1..];
 
@@ -22556,7 +22768,8 @@ pub mod syntax
                 (content, suffix)
             }
 
-            fn parse_lit_str_raw(mut s: &str) -> (Box<str>, Box<str>) {
+            fn parse_lit_str_raw(mut s: &str) -> (Box<str>, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'r');
                 s = &s[1..];
 
@@ -22575,7 +22788,8 @@ pub mod syntax
                 (content, suffix)
             }
 
-            pub fn parse_lit_byte_str(s: &str) -> (Vec<u8>, Box<str>) {
+            pub fn parse_lit_byte_str(s: &str) -> (Vec<u8>, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'b');
                 match byte(s, 1) {
                     b'"' => parse_lit_byte_str_cooked(s),
@@ -22584,7 +22798,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_lit_byte_str_cooked(mut s: &str) -> (Vec<u8>, Box<str>) {
+            fn parse_lit_byte_str_cooked(mut s: &str) -> (Vec<u8>, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'b');
                 assert_eq!(byte(s, 1), b'"');
                 s = &s[2..];
@@ -22644,13 +22859,15 @@ pub mod syntax
                 (out, suffix)
             }
 
-            fn parse_lit_byte_str_raw(s: &str) -> (Vec<u8>, Box<str>) {
+            fn parse_lit_byte_str_raw(s: &str) -> (Vec<u8>, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'b');
                 let (value, suffix) = parse_lit_str_raw(&s[1..]);
                 (String::from(value).into_bytes(), suffix)
             }
 
-            pub fn parse_lit_c_str(s: &str) -> (CString, Box<str>) {
+            pub fn parse_lit_c_str(s: &str) -> (CString, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'c');
                 match byte(s, 1) {
                     b'"' => parse_lit_c_str_cooked(s),
@@ -22659,7 +22876,8 @@ pub mod syntax
                 }
             }
 
-            fn parse_lit_c_str_cooked(mut s: &str) -> (CString, Box<str>) {
+            fn parse_lit_c_str_cooked(mut s: &str) -> (CString, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'c');
                 assert_eq!(byte(s, 1), b'"');
                 s = &s[2..];
@@ -22726,13 +22944,15 @@ pub mod syntax
                 (CString::new(out).unwrap(), suffix)
             }
 
-            fn parse_lit_c_str_raw(s: &str) -> (CString, Box<str>) {
+            fn parse_lit_c_str_raw(s: &str) -> (CString, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'c');
                 let (value, suffix) = parse_lit_str_raw(&s[1..]);
                 (CString::new(String::from(value)).unwrap(), suffix)
             }
 
-            pub fn parse_lit_byte(s: &str) -> (u8, Box<str>) {
+            pub fn parse_lit_byte(s: &str) -> (u8, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'b');
                 assert_eq!(byte(s, 1), b'\'');
 
@@ -22773,7 +22993,8 @@ pub mod syntax
                 (b, suffix)
             }
 
-            pub fn parse_lit_char(mut s: &str) -> (char, Box<str>) {
+            pub fn parse_lit_char(mut s: &str) -> (char, Box<str>)
+            {
                 assert_eq!(byte(s, 0), b'\'');
                 s = &s[1..];
 
@@ -23064,27 +23285,28 @@ pub mod syntax
                 }
             }
         }
-    }
-    /*
-    pub use ::syntax::lit::StrStyle;
-    #[doc(inline)]
-    pub use ::syntax::lit::{
-        Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr,
-    }; */    
+    } pub use self::lit::
+    {
+        Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr, StrStyle
+    };
+
     pub mod lookahead
     {
         use ::
         {
+            cell::{ RefCell },
+            process::macros::{Delimiter, Span},
+            syntax::
+            {
+                buffer::Cursor,
+                error::{self, Error},
+                sealed::lookahead::Sealed,
+                span::IntoSpans,
+                token::{CustomToken, Token},
+            },
             *,
         };
         /*
-        use ::syntax::buffer::Cursor;
-        use ::syntax::error::{self, Error};
-        use ::syntax::sealed::lookahead::Sealed;
-        use ::syntax::span::IntoSpans;
-        use ::syntax::token::{CustomToken, Token};
-        use ::process::macros::{Delimiter, Span};
-        use std::cell::RefCell;
         */
         /// Support for checking the next token in a stream to decide how to parse.
         pub struct Lookahead1<'a> {
@@ -23105,7 +23327,8 @@ pub mod syntax
             lookahead: &Lookahead1,
             peek: fn(Cursor) -> bool,
             display: fn() -> &'static str,
-        ) -> bool {
+        ) -> bool
+        {
             if peek(lookahead.cursor) {
                 return true;
             }
@@ -23116,7 +23339,8 @@ pub mod syntax
         impl<'a> Lookahead1<'a> {
             /// Looks at the next token in the parse stream to determine whether it
             /// matches the requested type of token.
-            pub fn peek<T: Peek>(&self, token: T) -> bool {
+            pub fn peek<T: Peek>(&self, token: T) -> bool
+        {
                 let _ = token;
                 peek_impl(self, T::Token::peek, T::Token::display)
             }
@@ -23294,7 +23518,8 @@ pub mod syntax
         }
 
         impl CustomToken for End {
-            fn peek(cursor: Cursor) -> bool {
+            fn peek(cursor: Cursor) -> bool
+        {
                 cursor.eof()
             }
 
@@ -23324,23 +23549,23 @@ pub mod syntax
     {
         use ::
         {
+            process::macros::
+            {
+                extra::DelimSpan, Delimiter, TokenStream, TokenTree
+            },
+            syntax::
+            {
+                error::Result,
+                parse::{ Parse, ParseStream, Parser },
+                path::Path,
+                token::{ Brace, Bracket, Paren },
+            },
             *,
         };
         /*
-         
-            use ::syntax::error::Result;
-         
-            use ::syntax::parse::{Parse, ParseStream, Parser};
-        use ::syntax::path::Path;
-        use ::syntax::token::{Brace, Bracket, Paren};
-        use ::process::macros::extra::DelimSpan;
-         
-            use ::process::macros::Delimiter;
-        use ::process::macros::TokenStream;
-         
-            use ::process::macros::TokenTree;
         */
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation: `println!("{}", mac)`.
             pub struct Macro {
                 pub path: Path,
@@ -23350,7 +23575,8 @@ pub mod syntax
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// A grouping token that surrounds a macro body: `m!(...)` or `m!{...}` or `m![...]`.
             pub enum MacroDelimiter {
                 Paren(Paren),
@@ -23359,7 +23585,8 @@ pub mod syntax
             }
         }
 
-        impl MacroDelimiter {
+        impl MacroDelimiter 
+        {
             pub fn span(&self) -> &DelimSpan {
                 match self {
                     MacroDelimiter::Paren(token) => &token.span,
@@ -23369,7 +23596,8 @@ pub mod syntax
             }
 
             #[cfg(all(feature = "full", any(feature = "parsing", feature = "printing")))]
-            pub fn is_brace(&self) -> bool {
+            pub fn is_brace(&self) -> bool
+        {
                 match self {
                     MacroDelimiter::Brace(_) => true,
                     MacroDelimiter::Paren(_) | MacroDelimiter::Bracket(_) => false,
@@ -23377,7 +23605,8 @@ pub mod syntax
             }
         }
 
-        impl Macro {
+        impl Macro 
+        {
             /// Parse the tokens within the macro invocation's delimiters into a syntax
             /// tree.
             /// use syn::ext::IdentExt;
@@ -23466,9 +23695,9 @@ pub mod syntax
                 ::syntax::parse::parse_scoped(parser, scope, self.tokens.clone())
             }
         }
-
-         
-            pub fn parse_delimiter(input: ParseStream) -> Result<(MacroDelimiter, TokenStream)> {
+        
+        pub fn parse_delimiter(input: ParseStream) -> Result<(MacroDelimiter, TokenStream)>
+        {
             input.step(|cursor| {
                 if let Some((TokenTree::Group(g), rest)) = cursor.token_tree() {
                     let span = g.delim_span();
@@ -23486,14 +23715,21 @@ pub mod syntax
                 }
             })
         }
-
-         
-            pub mod parsing {
-            use ::syntax::error::Result;
-            use ::syntax::mac::{parse_delimiter, Macro};
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::path::Path;
-
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                syntax::
+                {    
+                    error::Result,
+                    mac::{parse_delimiter, Macro},
+                    parse::{Parse, ParseStream},
+                    path::Path,
+                },
+                *,
+            };
+            
             impl Parse for Macro
             {
                 fn parse(input: ParseStream) -> Result<Self> {
@@ -23514,13 +23750,20 @@ pub mod syntax
 
         mod printing
         {
-            use ::syntax::mac::{Macro, MacroDelimiter};
-            use ::syntax::path;
-            use ::syntax::path::printing::PathStyle;
-            use ::syntax::token;
-            use ::process::macros::{Delimiter, TokenStream};
-            use ::quote::ToTokens;
-
+            use ::
+            {
+                process::macros::{ Delimiter, TokenStream },
+                quote::{ ToTokens },
+                syntax::
+                {
+                    mac::{Macro, MacroDelimiter},
+                    path,
+                    path::printing::PathStyle,
+                    token,
+                },
+                *,
+            };
+            
             impl MacroDelimiter {
                 pub fn surround(&self, tokens: &mut TokenStream, inner: TokenStream) {
                     let (delim, span) = match self {
@@ -23540,24 +23783,27 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::mac::{Macro, MacroDelimiter};
     
     pub mod meta
     {
         //! Facility for interpreting structured content inside of an `Attribute`.
         use ::
         {
+            fmt::{ Display },
+            process::macros::{ Ident },
+            syntax::
+            {
+                error::{Error, Result},
+                ext::IdentExt as _,
+                lit::Lit,
+                parse::{ParseStream, Parser},
+                path::{Path, PathSegment},
+                punctuated::Punctuated,
+            },
             *,
         };
         /*
-        use ::syntax::error::{Error, Result};
-        use ::syntax::ext::IdentExt as _;
-        use ::syntax::lit::Lit;
-        use ::syntax::parse::{ParseStream, Parser};
-        use ::syntax::path::{Path, PathSegment};
-        use ::syntax::punctuated::Punctuated;
-        use ::process::macros::Ident;
-        use std::fmt::Display;
         */
         /// Make a parser that is usable with `parse_macro_input!` in a `#[proc_macro_attribute]` macro.
         pub fn parser(logic: impl FnMut(ParseNestedMeta) -> Result<()>) -> impl Parser<Output = ()> {
@@ -23571,7 +23817,8 @@ pub mod syntax
         }
         /// Context for parsing a single property in the conventional syntax for structured attributes.
         #[non_exhaustive]
-        pub struct ParseNestedMeta<'a> {
+        pub struct ParseNestedMeta<'a>
+        {
             pub path: Path,
             pub input: ParseStream<'a>,
         }
@@ -23772,8 +24019,7 @@ pub mod syntax
                 }
             }
         }
-
-       
+        
         fn parse_meta_path(input: ParseStream) -> Result<Path> {
             Ok(Path {
                 leading_colon: input.parse()?,
@@ -23889,13 +24135,21 @@ pub mod syntax
         
         pub mod parsing
         {
-            use ::syntax::error::Result;
-            use ::syntax::op::{BinOp, UnOp};
-            use ::syntax::parse::{Parse, ParseStream};
-
+            use ::
+            {
+                syntax::
+                {
+                    error::Result,
+                    op::{BinOp, UnOp},
+                    parse::{Parse, ParseStream},
+                },
+                *
+            };
+            
             impl Parse for BinOp
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Token![+=]) {
                         input.parse().map(BinOp::AddAssign)
                     } else if input.peek(Token![-=]) {
@@ -23975,13 +24229,18 @@ pub mod syntax
             }
         }
         
-        mod printing
+        pub mod printing
         {
-            use ::syntax::op::{BinOp, UnOp};
-            use ::process::macros::TokenStream;
-            use ::quote::ToTokens;
-
-            impl ToTokens for BinOp {
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::ToTokens,
+                syntax::op::{BinOp, UnOp},
+                *,
+            };
+            
+            impl ToTokens for BinOp
+            {
                 fn to_tokens(&self, tokens: &mut TokenStream )
                 {
                     match self {
@@ -24017,7 +24276,8 @@ pub mod syntax
                 }
             }
 
-            impl ToTokens for UnOp {
+            impl ToTokens for UnOp
+            {
                 fn to_tokens(&self, tokens: &mut TokenStream )
                 {
                     match self {
@@ -24028,52 +24288,61 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::op::{BinOp, UnOp};
     
     pub mod parse
     {
         //! Parsing interface for parsing a token stream into a syntax tree node.
         use ::
         {
+            cell::{ Cell },
+            fmt::{ self, Debug, Display },
+            hash::{ Hash, Hasher },
+            marker::{ PhantomData },
+            ops::{ Deref },
+            panic::{ RefUnwindSafe, UnwindSafe },
+            process::macros::{ Delimiter, Group, Literal, Punct, Span, TokenStream, TokenTree },
+            quote::{ ToTokens },
+            rc::{ Rc },
+            str::{ FromStr },
+            syntax::
+            {
+                buffer::{ Cursor, TokenBuffer },
+                error,
+                lookahead,
+                punctuated::Punctuated,
+                token::Token,
+            },
             *,
         };
         /*
-        use ::syntax::buffer::{Cursor, TokenBuffer};
-        use ::syntax::error;
-        use ::syntax::lookahead;
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::token::Token;
-        use ::process::macros::{Delimiter, Group, Literal, Punct, Span, TokenStream, TokenTree};        
-        use ::quote::ToTokens;
-        use std::cell::Cell;
-        use std::fmt::{self, Debug, Display};
-        use std::hash::{Hash, Hasher};
-        use std::marker::PhantomData;
-        use std::mem;
-        use std::ops::Deref;
-        use std::panic::{RefUnwindSafe, UnwindSafe};
-        use std::rc::Rc;
-        use std::str::FromStr;
-
-        pub use ::syntax::error::{Error, Result};
-        pub use ::syntax::lookahead::{End, Lookahead1, Peek};
         */
+        pub use ::syntax::
+        {
+            error::{ Error, Result },
+            lookahead::{ End, Lookahead1, Peek },
+        };
+
         pub mod discouraged
         {
             //! Extensions to the parsing API with niche applicability.
             use ::
             {
+                cell::{ Cell },
+                process::macros::
+                {
+                    extra::DelimSpan, Delimiter,
+                },
+                rc::{ Rc },
+                syntax::
+                {
+                    buffer::Cursor,
+                    error::Result,
+                    parse::{inner_unexpected, ParseBuffer, Unexpected},
+                },
                 *,
             };
             /*
-            use ::syntax::buffer::Cursor;
-            use ::syntax::error::Result;
-            use ::syntax::parse::{inner_unexpected, ParseBuffer, Unexpected};
-            use ::process::macros::extra::DelimSpan;
-            use ::process::macros::Delimiter;
-            use std::cell::Cell;
-            use std::mem;
-            use std::rc::Rc;
             */
             /// Extensions to the `ParseStream` API to support speculative parsing.
             pub trait Speculative {
@@ -24559,7 +24828,8 @@ pub mod syntax
             ///     }
             /// }
             /// ```
-            pub fn peek<T: Peek>(&self, token: T) -> bool {
+            pub fn peek<T: Peek>(&self, token: T) -> bool
+        {
                 let _ = token;
                 T::Token::peek(self.cursor())
             }
@@ -24586,8 +24856,10 @@ pub mod syntax
             ///     }
             /// }
             /// ```
-            pub fn peek2<T: Peek>(&self, token: T) -> bool {
-                fn peek2(buffer: &ParseBuffer, peek: fn(Cursor) -> bool) -> bool {
+            pub fn peek2<T: Peek>(&self, token: T) -> bool
+        {
+                fn peek2(buffer: &ParseBuffer, peek: fn(Cursor) -> bool) -> bool
+        {
                     buffer.cursor().skip().map_or(false, peek)
                 }
 
@@ -24595,8 +24867,10 @@ pub mod syntax
                 peek2(self, T::Token::peek)
             }
             /// Looks at the third-next token in the parse stream.
-            pub fn peek3<T: Peek>(&self, token: T) -> bool {
-                fn peek3(buffer: &ParseBuffer, peek: fn(Cursor) -> bool) -> bool {
+            pub fn peek3<T: Peek>(&self, token: T) -> bool
+        {
+                fn peek3(buffer: &ParseBuffer, peek: fn(Cursor) -> bool) -> bool
+        {
                     buffer
                         .cursor()
                         .skip()
@@ -24921,7 +25195,7 @@ pub mod syntax
             /// #
             /// # fn remainder_after_skipping_past_next_at(
             /// #     input: ParseStream,
-            /// # ) -> Result<proc_macro2::TokenStream> {
+            /// # ) -> Result<process::macros::TokenStream> {
             /// #     skip_past_next_at(input)?;
             /// #     input.parse()
             /// # }
@@ -25115,12 +25389,12 @@ pub mod syntax
             #[cfg_attr(docsrs, doc(cfg(feature = "proc-macro")))]
             fn parse(self, tokens: proc_macro::TokenStream) -> Result<Self::Output>
             {
-                self.parse2(proc_macro2::TokenStream::from(tokens))
+                self.parse2(process::macros::TokenStream::from(tokens))
             }
             /// Parse a string of Rust code into the chosen syntax tree node.
             fn parse_str(self, s: &str) -> Result<Self::Output>
             {
-                self.parse2(proc_macro2::TokenStream::from_str(s)?)
+                self.parse2(process::macros::TokenStream::from_str(s)?)
             }
 
            
@@ -25232,7 +25506,8 @@ pub mod syntax
 
         impl PartialEq for Nothing 
         {
-            fn eq(&self, _other: &Self) -> bool {
+            fn eq(&self, _other: &Self) -> bool
+        {
                 true
             }
         }
@@ -25249,18 +25524,18 @@ pub mod syntax
         /// type inference to figure out a return type for those tokens.
         use ::
         {
+            process::macros::{ TokenStream },
+            syntax::
+            {
+                error::Result,
+                parse::{Parse, ParseStream, Parser},
+                Arm, Block, Pat, Stmt, attr, Attribute, Field, FieldMutability, Ident, Type, Visibility,
+            },
             *,
         };
         /*
-        Can parse any type that implements Parse.
-
-        use ::syntax::error::Result;
-        use ::syntax::parse::{Parse, ParseStream, Parser};
-        use ::process::macros::TokenStream;
-        */
-       
-        #[track_caller]
-        pub fn parse<T: ParseQuote>(token_stream: TokenStream) -> T {
+        Can parse any type that implements Parse. */       
+        #[track_caller] pub fn parse<T: ParseQuote>(token_stream: TokenStream) -> T {
             let parser = T::parse;
             match parser.parse2(token_stream) {
                 Ok(t) => t,
@@ -25277,14 +25552,7 @@ pub mod syntax
                 <T as Parse>::parse(input)
             }
         }
-
-        ////////////////////////////////////////////////////////////////////////////////
-       
-
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::{attr, Attribute, Field, FieldMutability, Ident, Type, Visibility};
-        use ::syntax::{Arm, Block, Pat, Stmt};
-
+        
         impl ParseQuote for Attribute {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.peek(Token![#]) && input.peek2(Token![!]) {
@@ -25371,6 +25639,7 @@ pub mod syntax
     {
         use ::
         {
+            process::macros::TokenStream,
             syntax::
             {
                 attr::{ Attribute },
@@ -25383,20 +25652,16 @@ pub mod syntax
             },
             *,
         };
-        /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::expr::Member;
-        use ::syntax::ident::Ident;
-        use ::syntax::path::{Path, QSelf};
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::token;
-        use ::syntax::ty::Type;
-        use ::process::macros::TokenStream;
-
-        pub use ::syntax::expr::{
-            ExprConst as PatConst, ExprLit as PatLit, ExprMacro as PatMacro, ExprPath as PatPath,
+        
+        pub use ::syntax::expr::
+        {
+            ExprConst as PatConst, 
+            ExprLit as PatLit, 
+            ExprMacro as PatMacro, 
+            ExprPath as PatPath, 
             ExprRange as PatRange,
         };
+        /*
         */
         ast_enum_of_structs!
         {
@@ -25467,7 +25732,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct!
+        {
             /// A pattern that binds a new variable: `ref mut binding @ SUBPATTERN`.
             pub struct PatIdent {
                 pub attrs: Vec<Attribute>,
@@ -25478,7 +25744,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A pattern that matches any one of a set of cases.
             pub struct PatOr {
                 pub attrs: Vec<Attribute>,
@@ -25487,7 +25754,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A parenthesized pattern: `(A | B)`.
             pub struct PatParen {
                 pub attrs: Vec<Attribute>,
@@ -25496,7 +25764,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A reference pattern: `&mut var`.
             pub struct PatReference {
                 pub attrs: Vec<Attribute>,
@@ -25506,7 +25775,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The dots in a tuple or slice pattern: `[0, 1, ..]`.
             pub struct PatRest {
                 pub attrs: Vec<Attribute>,
@@ -25514,7 +25784,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A dynamically sized slice pattern: `[a, b, ref i @ .., y, z]`.
             pub struct PatSlice {
                 pub attrs: Vec<Attribute>,
@@ -25523,7 +25794,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A struct or struct variant pattern: `Variant { x, y, .. }`.
             pub struct PatStruct {
                 pub attrs: Vec<Attribute>,
@@ -25535,7 +25807,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A tuple pattern: `(a, b)`.
             pub struct PatTuple {
                 pub attrs: Vec<Attribute>,
@@ -25544,7 +25817,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A tuple struct or tuple variant pattern: `Variant(x, y, .., z)`.
             pub struct PatTupleStruct {
                 pub attrs: Vec<Attribute>,
@@ -25555,7 +25829,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A type ascription pattern: `foo: f64`.
             pub struct PatType {
                 pub attrs: Vec<Attribute>,
@@ -25565,7 +25840,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A pattern that matches any value: `_`.
             pub struct PatWild {
                 pub attrs: Vec<Attribute>,
@@ -25573,7 +25849,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A single field in a struct pattern.
             pub struct FieldPat {
                 pub attrs: Vec<Attribute>,
@@ -25582,29 +25859,37 @@ pub mod syntax
                 pub pat: Box<Pat>,
             }
         }
-
-         
-            pub mod parsing {
-            use ::syntax::attr::Attribute;
-            use ::syntax::error::{self, Result};
-            use ::syntax::expr::{
-                Expr, ExprConst, ExprLit, ExprMacro, ExprPath, ExprRange, Member, RangeLimits,
+        
+        pub mod parsing
+        {
+            use ::
+            {
+                process::macros::TokenStream,
+                syntax::
+                {
+                    attr::Attribute,
+                    error::{self, Result},
+                    expr::
+                    {
+                        Expr, ExprConst, ExprLit, ExprMacro, ExprPath, ExprRange, Member, RangeLimits,
+                    },
+                    ext::IdentExt as _,
+                    ident::Ident,
+                    lit::Lit,
+                    mac::{self, Macro},
+                    parse::{Parse, ParseBuffer, ParseStream},
+                    pat::{
+                        FieldPat, Pat, PatIdent, PatOr, PatParen, PatReference, PatRest, PatSlice, PatStruct,
+                        PatTuple, PatTupleStruct, PatType, PatWild,
+                    },
+                    path::{self, Path, QSelf},
+                    punctuated::Punctuated,
+                    stmt::Block,
+                    token,
+                    verbatim,
+                },
+                *,
             };
-            use ::syntax::ext::IdentExt as _;
-            use ::syntax::ident::Ident;
-            use ::syntax::lit::Lit;
-            use ::syntax::mac::{self, Macro};
-            use ::syntax::parse::{Parse, ParseBuffer, ParseStream};
-            use ::syntax::pat::{
-                FieldPat, Pat, PatIdent, PatOr, PatParen, PatReference, PatRest, PatSlice, PatStruct,
-                PatTuple, PatTupleStruct, PatType, PatWild,
-            };
-            use ::syntax::path::{self, Path, QSelf};
-            use ::syntax::punctuated::Punctuated;
-            use ::syntax::stmt::Block;
-            use ::syntax::token;
-            use ::syntax::verbatim;
-            use ::process::macros::TokenStream;
 
             impl Pat {
                 /// Parse a pattern that does _not_ involve `|` at the top level.
@@ -26339,8 +26624,7 @@ pub mod syntax
                 }
             }
         }
-    }
-    pub use ::syntax::pat::
+    } pub use self::pat::
     {
         FieldPat, Pat, PatConst, PatIdent, PatLit, PatMacro, PatOr, PatParen, PatPath, PatRange,
         PatReference, PatRest, PatSlice, PatStruct, PatTuple, PatTupleStruct, PatType, PatWild,
@@ -26350,17 +26634,20 @@ pub mod syntax
     {
         use ::
         {
+            syntax::
+            {
+                error::Result,
+                expr::Expr,
+                generics::TypeParamBound,
+                ident::Ident,
+                lifetime::Lifetime,
+                punctuated::Punctuated,
+                token,
+                ty::{ReturnType, Type},
+            },
             *,
         };
         /*
-        use ::syntax::error::Result;
-        use ::syntax::expr::Expr;
-        use ::syntax::generics::TypeParamBound;
-        use ::syntax::ident::Ident;
-        use ::syntax::lifetime::Lifetime;
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::token;
-        use ::syntax::ty::{ReturnType, Type};
         */
         ast_struct! 
         {
@@ -26486,7 +26773,8 @@ pub mod syntax
 
         impl PathArguments 
         {
-            pub fn is_empty(&self) -> bool {
+            pub fn is_empty(&self) -> bool
+        {
                 match self {
                     PathArguments::None => true,
                     PathArguments::AngleBracketed(bracketed) => bracketed.args.is_empty(),
@@ -26494,7 +26782,8 @@ pub mod syntax
                 }
             }
 
-            pub fn is_none(&self) -> bool {
+            pub fn is_none(&self) -> bool
+        {
                 match self {
                     PathArguments::None => true,
                     PathArguments::AngleBracketed(_) | PathArguments::Parenthesized(_) => false,
@@ -26610,23 +26899,30 @@ pub mod syntax
         
         pub mod parsing
         {
-            use ::syntax::error::Result;
-                use ::syntax::expr::ExprBlock;
-            use ::syntax::expr::{Expr, ExprPath};
-            use ::syntax::ext::IdentExt as _;
-                use ::syntax::generics::TypeParamBound;
-            use ::syntax::ident::Ident;
-            use ::syntax::lifetime::Lifetime;
-            use ::syntax::lit::Lit;
-            use ::syntax::parse::{Parse, ParseStream};
-                use ::syntax::path::Constraint;
-            use ::syntax::path::{
-                AngleBracketedGenericArguments, AssocConst, AssocType, GenericArgument,
-                ParenthesizedGenericArguments, Path, PathArguments, PathSegment, QSelf,
+            use ::
+            {
+                syntax::
+                {
+                    error::Result,
+                    expr::ExprBlock,
+                    expr::{Expr, ExprPath},
+                    ext::IdentExt as _,
+                    generics::TypeParamBound,
+                    ident::Ident,
+                    lifetime::Lifetime,
+                    lit::Lit,
+                    parse::{Parse, ParseStream},
+                    path::
+                    {
+                        AngleBracketedGenericArguments, AssocConst, AssocType, Constraint, GenericArgument, 
+                        ParenthesizedGenericArguments, Path, PathArguments, PathSegment, QSelf,
+                    },
+                    punctuated::Punctuated,
+                    token,
+                    ty::{ReturnType, Type},
+                },
+                *,
             };
-            use ::syntax::punctuated::Punctuated;
-            use ::syntax::token;
-            use ::syntax::ty::{ReturnType, Type};
 
             impl Parse for Path
             {
@@ -26637,7 +26933,8 @@ pub mod syntax
 
             impl Parse for GenericArgument
             {
-                fn parse(input: ParseStream) -> Result<Self> {
+                fn parse(input: ParseStream) -> Result<Self>
+                {
                     if input.peek(Lifetime) && !input.peek2(Token![+]) {
                         return Ok(GenericArgument::Lifetime(input.parse()?));
                     }
@@ -26746,21 +27043,10 @@ pub mod syntax
                     }));
                 }
 
-                if input.peek(token::Brace) {
-                                {
-                        let block: ExprBlock = input.parse()?;
-                        return Ok(Expr::Block(block));
-                    }
-
-                    #[cfg(not(feature = "full"))]
-                    {
-                        let begin = input.fork();
-                        let content;
-                        braced!(content in input);
-                        content.parse::<Expr>()?;
-                        let verbatim = verbatim::between(&begin, input);
-                        return Ok(Expr::Verbatim(verbatim));
-                    }
+                if input.peek(token::Brace)
+                {
+                    let block: ExprBlock = input.parse()?;
+                    return Ok(Expr::Block(block));
                 }
 
                 Err(lookahead.error())
@@ -26836,7 +27122,8 @@ pub mod syntax
 
             impl PathSegment
             {
-                fn parse_helper(input: ParseStream, expr_style: bool) -> Result<Self> {
+                fn parse_helper(input: ParseStream, expr_style: bool) -> Result<Self>
+                {
                     if input.peek(Token![super])
                         || input.peek(Token![self])
                         || input.peek(Token![crate])
@@ -26961,7 +27248,8 @@ pub mod syntax
                     Ok(())
                 }
 
-                pub fn is_mod_style(&self) -> bool {
+                pub fn is_mod_style(&self) -> bool
+        {
                     self.segments
                         .iter()
                         .all(|segment| segment.arguments.is_none())
@@ -27023,19 +27311,23 @@ pub mod syntax
 
         pub mod printing
         {
-            use ::syntax::generics;
-            use ::syntax::path::{
-                AngleBracketedGenericArguments, AssocConst, AssocType, Constraint, GenericArgument,
-                ParenthesizedGenericArguments, Path, PathArguments, PathSegment, QSelf,
+            use ::
+            {
+                process::macros::{ Span, TokenStream },
+                quote::ToTokens,
+                syntax::
+                {
+                    generics,
+                    print::TokensOrDefault,
+                    spanned::Spanned,
+                    path::
+                    {
+                        AngleBracketedGenericArguments, AssocConst, AssocType, Constraint, GenericArgument,
+                        ParenthesizedGenericArguments, Path, PathArguments, PathSegment, QSelf,
+                    }
+                },
+                *,
             };
-            use ::syntax::print::TokensOrDefault;
-             
-                use ::syntax::spanned::Spanned;
-             
-                use ::process::macros::Span;
-            use ::process::macros::TokenStream;
-            use ::quote::ToTokens;
-            use std::cmp;
 
             pub enum PathStyle {
                 Expr,
@@ -27284,7 +27576,7 @@ pub mod syntax
             }
         }
     }
-    pub use ::syntax::path::
+    pub use self::path::
     {
         AngleBracketedGenericArguments, AssocConst, AssocType, Constraint, GenericArgument,
         ParenthesizedGenericArguments, Path, PathArguments, PathSegment, QSelf,
@@ -27294,23 +27586,23 @@ pub mod syntax
     {
         use ::
         {
+            cmp::{ Ordering },
+            syntax::
+            {
+                attr::{ AttrStyle, Attribute },
+                expr::
+                {
+                    Expr, ExprArray, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprCall, ExprConst, ExprContinue,
+                    ExprField, ExprForLoop, ExprGroup, ExprIf, ExprIndex, ExprInfer, ExprLit, ExprLoop, ExprMacro,
+                    ExprMatch, ExprMethodCall, ExprParen, ExprPath, ExprRepeat, ExprReturn, ExprStruct, ExprTry,
+                    ExprTryBlock, ExprTuple, ExprUnsafe, ExprWhile, ExprYield,
+                },
+                op::{ BinOp },
+                ty::{ ReturnType },
+            },
             *,
         };
         /*
-        #[cfg(all(feature = "printing", feature = "full"))]
-        use ::syntax::attr::{AttrStyle, Attribute};
-        use ::syntax::expr::Expr;
-        #[cfg(all(feature = "printing", feature = "full"))]
-        use ::syntax::expr::{
-            ExprArray, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprCall, ExprConst, ExprContinue,
-            ExprField, ExprForLoop, ExprGroup, ExprIf, ExprIndex, ExprInfer, ExprLit, ExprLoop, ExprMacro,
-            ExprMatch, ExprMethodCall, ExprParen, ExprPath, ExprRepeat, ExprReturn, ExprStruct, ExprTry,
-            ExprTryBlock, ExprTuple, ExprUnsafe, ExprWhile, ExprYield,
-        };
-        use ::syntax::op::BinOp;
-        #[cfg(all(feature = "printing", feature = "full"))]
-        use ::syntax::ty::ReturnType;
-        use std::cmp::Ordering;
         */
         pub enum Precedence
         {
@@ -27447,7 +27739,8 @@ pub mod syntax
 
         impl PartialEq for Precedence 
         {
-            fn eq(&self, other: &Self) -> bool {
+            fn eq(&self, other: &Self) -> bool
+        {
                 *self as u8 == *other as u8
             }
         }
@@ -27467,11 +27760,11 @@ pub mod syntax
     {
         use ::
         {
+            process::macros::{ TokenStream },
+            quote::{ ToTokens },
             *,
         };
         /*
-        use ::process::macros::TokenStream;
-        use ::quote::ToTokens;
         */
         pub struct TokensOrDefault<'a, T: 'a>(pub &'a Option<T>);
 
@@ -27492,23 +27785,20 @@ pub mod syntax
         //! A punctuated sequence of syntax tree nodes separated by punctuation.
         use ::
         {
+            fmt::{ self, Debug },
+            hash::{ Hash, Hasher },
+            iter::{ FromIterator },
+            ops::{ Index, IndexMut },
+            syntax::
+            {
+                drops::{ NoDrop, TrivialDrop },
+                error::{ Result },
+                parse::{ Parse, ParseStream },
+                token::{ Token },
+            },
             *,
         };
         /*
-        use ::syntax::drops::{NoDrop, TrivialDrop};
-         
-            use ::syntax::error::Result;
-         
-            use ::syntax::parse::{Parse, ParseStream};
-         
-            use ::syntax::token::Token;
-        use std::fmt::{self, Debug};
-        use std::hash::{Hash, Hasher};
-        use std::iter;
-        use std::ops::{Index, IndexMut};
-        use std::option;
-        use std::slice;
-        use std::vec;
         */
         /// A punctuated sequence of syntax tree nodes of type `T` separated by punctuation of type `P`.
         pub struct Punctuated<T, P> 
@@ -27790,8 +28080,8 @@ pub mod syntax
         }
 
         impl<T, P> Clone for Punctuated<T, P> where
-            T: Clone,
-            P: Clone,
+        T: Clone,
+        P: Clone,
         {
             fn clone(&self) -> Self {
                 Punctuated {
@@ -27808,24 +28098,25 @@ pub mod syntax
         }
 
         impl<T, P> Eq for Punctuated<T, P> where
-            T: Eq,
-            P: Eq,
+        T: Eq,
+        P: Eq,
         {
         }
 
         impl<T, P> PartialEq for Punctuated<T, P> where
-            T: PartialEq,
-            P: PartialEq,
+        T: PartialEq,
+        P: PartialEq,
         {
-            fn eq(&self, other: &Self) -> bool {
+            fn eq(&self, other: &Self) -> bool
+        {
                 let Punctuated { inner, last } = self;
                 *inner == other.inner && *last == other.last
             }
         }
 
         impl<T, P> Hash for Punctuated<T, P> where
-            T: Hash,
-            P: Hash,
+        T: Hash,
+        P: Hash,
         {
             fn hash<H: Hasher>(&self, state: &mut H) {
                 let Punctuated { inner, last } = self;
@@ -27850,7 +28141,7 @@ pub mod syntax
         }
 
         impl<T, P> FromIterator<T> for Punctuated<T, P> where
-            P: Default,
+        P: Default,
         {
             fn from_iter<I: IntoIterator<Item = T>>(i: I) -> Self {
                 let mut ret = Punctuated::new();
@@ -27860,7 +28151,7 @@ pub mod syntax
         }
 
         impl<T, P> Extend<T> for Punctuated<T, P> where
-            P: Default,
+        P: Default,
         {
             fn extend<I: IntoIterator<Item = T>>(&mut self, i: I) {
                 for value in i {
@@ -28159,10 +28450,9 @@ pub mod syntax
         }
 
         impl<'a, T, P> TrivialDrop for PrivateIter<'a, T, P> where
-            slice::Iter<'a, (T, P)>: TrivialDrop,
-            option::IntoIter<&'a T>: TrivialDrop,
-        {
-        }
+        slice::Iter<'a, (T, P)>: TrivialDrop,
+        option::IntoIter<&'a T>: TrivialDrop,
+        {}
 
         pub fn empty_punctuated_iter<'a, T>() -> Iter<'a, T> 
         {
@@ -28467,7 +28757,8 @@ pub mod syntax
         {
         }
 
-        impl<T, P> Index<usize> for Punctuated<T, P> {
+        impl<T, P> Index<usize> for Punctuated<T, P>
+        {
             type Output = T;
 
             fn index(&self, index: usize) -> &Self::Output {
@@ -28482,7 +28773,8 @@ pub mod syntax
             }
         }
 
-        impl<T, P> IndexMut<usize> for Punctuated<T, P> {
+        impl<T, P> IndexMut<usize> for Punctuated<T, P>
+        {
             fn index_mut(&mut self, index: usize) -> &mut Self::Output {
                 if index == self.len() - 1 {
                     match &mut self.last {
@@ -28519,10 +28811,14 @@ pub mod syntax
 
         mod printing
         {
-            use ::syntax::punctuated::{Pair, Punctuated};
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
-
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::punctuated::{Pair, Punctuated},
+                *,
+            };
+            
             impl<T, P> ToTokens for Punctuated<T, P> where
             T: ToTokens,
             P: ToTokens
@@ -28556,11 +28852,14 @@ pub mod syntax
     {
         use ::
         {
+            syntax::
+            {
+                path::{ Path },
+                token,
+            },
             *,
         };
         /*
-        use ::syntax::path::Path;
-        use ::syntax::token;
         */
         ast_enum!
         {
@@ -28579,7 +28878,8 @@ pub mod syntax
             }
         }
 
-        ast_struct! {
+        ast_struct!
+        {
             /// A visibility level restricted to some path: `pub(self)` or
             /// `pub(super)` or `pub(crate)` or `pub(in some::module)`.
             pub struct VisRestricted {
@@ -28590,7 +28890,8 @@ pub mod syntax
             }
         }
 
-        ast_enum! {
+        ast_enum!
+        {
             /// Unused, but reserved for RFC 3323 restrictions.
             #[non_exhaustive]
             pub enum FieldMutability {
@@ -28611,15 +28912,22 @@ pub mod syntax
 
         pub mod parsing 
         {
-            use ::syntax::error::Result;
-            use ::syntax::ext::IdentExt as _;
-            use ::syntax::ident::Ident;
-            use ::syntax::parse::discouraged::Speculative as _;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::path::Path;
-            use ::syntax::restriction::{VisRestricted, Visibility};
-            use ::syntax::token;
-
+            use ::
+            {
+                syntax::
+                {
+                    error::Result,
+                    ext::IdentExt as _,
+                    ident::Ident,
+                    parse::discouraged::Speculative as _,
+                    parse::{Parse, ParseStream},
+                    path::Path,
+                    restriction::{VisRestricted, Visibility},
+                    token,
+                },
+                *,
+            };
+            
             impl Parse for Visibility
             {
                 fn parse(input: ParseStream) -> Result<Self> {
@@ -28702,12 +29010,19 @@ pub mod syntax
         
         mod printing
         {
-            use ::syntax::path;
-            use ::syntax::path::printing::PathStyle;
-            use ::syntax::restriction::{VisRestricted, Visibility};
-            use ::process::macros::TokenStream;
-            use ::quote::ToTokens;
-
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::ToTokens,
+                syntax::
+                {
+                    path,
+                    path::printing::PathStyle,
+                    restriction::{VisRestricted, Visibility},
+                },
+                *,
+            };
+            
             impl ToTokens for Visibility
             {
                 fn to_tokens(&self, tokens: &mut TokenStream)
@@ -28734,7 +29049,7 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::restriction::{ FieldMutability, VisRestricted, Visibility };
 
     mod sealed
     {
@@ -28744,7 +29059,8 @@ pub mod syntax
         };
         /*
         */        
-        pub mod lookahead {
+        pub mod lookahead
+        {
             pub trait Sealed: Copy {}
         }
     }
@@ -28753,16 +29069,15 @@ pub mod syntax
     {
         use ::
         {
+            process::macros::{ Delimiter, Ident, Spacing, TokenTree },
+            syntax::
+            {
+                parse::{ParseStream, Result},
+                Token, AngleBracketedGenericArguments, BinOp, Expr, ExprPath, Lifetime, Lit, Type,
+            },
             *,
         };
         /*
-        use self::{Action::*, Input::*};
-        use ::process::macros::{Delimiter, Ident, Spacing, TokenTree};
-        use syn::parse::{ParseStream, Result};
-        #[allow(unused_imports)]
-        //#[cfg_attr(not(test), expect(unused_imports))]
-        use syn::Token;
-        use syn::{AngleBracketedGenericArguments, BinOp, Expr, ExprPath, Lifetime, Lit, Type};
         */
         enum Input
         {
@@ -28782,16 +29097,17 @@ pub mod syntax
             CanBeginExpr,
             Otherwise,
             Empty,
-        }
+        } use self::Input::{ * };
 
         enum Action {
             SetState(&'static [(Input, Action)]),
             IncDepth,
             DecDepth,
             Finish,
-        }
+        } use self::Action::{ * };
 
-        static INIT: [(Input, Action); 28] = [
+        static INIT: [(Input, Action); 28] = 
+        [
             (ConsumeDelimiter, SetState(&POSTFIX)),
             (Keyword("async"), SetState(&ASYNC)),
             (Keyword("break"), SetState(&BREAK_LABEL)),
@@ -28822,7 +29138,8 @@ pub mod syntax
             (ExpectPath, SetState(&PATH)),
         ];
 
-        static POSTFIX: [(Input, Action); 10] = [
+        static POSTFIX: [(Input, Action); 10] = 
+        [
             (Keyword("as"), SetState(&[(ExpectType, SetState(&POSTFIX))])),
             (Punct("..="), SetState(&INIT)),
             (Punct(".."), SetState(&RANGE)),
@@ -28835,7 +29152,8 @@ pub mod syntax
             (Empty, Finish),
         ];
 
-        static ASYNC: [(Input, Action); 3] = [
+        static ASYNC: [(Input, Action); 3] = 
+        [
             (Keyword("move"), SetState(&ASYNC)),
             (Punct("|"), SetState(&CLOSURE_ARGS)),
             (ConsumeBrace, SetState(&POSTFIX)),
@@ -28843,18 +29161,21 @@ pub mod syntax
 
         static BLOCK: [(Input, Action); 1] = [(ConsumeBrace, SetState(&POSTFIX))];
 
-        static BREAK_LABEL: [(Input, Action); 2] = [
+        static BREAK_LABEL: [(Input, Action); 2] =
+        [
             (ConsumeLifetime, SetState(&BREAK_VALUE)),
             (Otherwise, SetState(&BREAK_VALUE)),
         ];
 
-        static BREAK_VALUE: [(Input, Action); 3] = [
+        static BREAK_VALUE: [(Input, Action); 3] =
+        [
             (ConsumeNestedBrace, SetState(&IF_THEN)),
             (CanBeginExpr, SetState(&INIT)),
             (Otherwise, SetState(&POSTFIX)),
         ];
 
-        static CLOSURE: [(Input, Action); 7] = [
+        static CLOSURE: [(Input, Action); 7] =
+        [
             (Keyword("async"), SetState(&CLOSURE)),
             (Keyword("move"), SetState(&CLOSURE)),
             (Punct(","), SetState(&CLOSURE)),
@@ -28864,51 +29185,58 @@ pub mod syntax
             (ConsumeIdent, SetState(&CLOSURE)),
         ];
 
-        static CLOSURE_ARGS: [(Input, Action); 2] = [
+        static CLOSURE_ARGS: [(Input, Action); 2] =
+        [
             (Punct("|"), SetState(&CLOSURE_RET)),
             (ConsumeAny, SetState(&CLOSURE_ARGS)),
         ];
 
-        static CLOSURE_RET: [(Input, Action); 2] = [
+        static CLOSURE_RET: [(Input, Action); 2] =
+        [
             (Punct("->"), SetState(&[(ExpectType, SetState(&BLOCK))])),
             (Otherwise, SetState(&INIT)),
         ];
 
-        static CONST: [(Input, Action); 2] = [
+        static CONST: [(Input, Action); 2] =
+        [
             (Punct("|"), SetState(&CLOSURE_ARGS)),
             (ConsumeBrace, SetState(&POSTFIX)),
         ];
 
-        static CONTINUE: [(Input, Action); 2] = [
+        static CONTINUE: [(Input, Action); 2] =
+        [
             (ConsumeLifetime, SetState(&POSTFIX)),
             (Otherwise, SetState(&POSTFIX)),
         ];
 
-        static DOT: [(Input, Action); 3] = [
+        static DOT: [(Input, Action); 3] =
+        [
             (Keyword("await"), SetState(&POSTFIX)),
             (ConsumeIdent, SetState(&METHOD)),
             (ConsumeLiteral, SetState(&POSTFIX)),
         ];
 
-        static FOR: [(Input, Action); 2] = [
+        static FOR: [(Input, Action); 2] =
+        [
             (Punct("<"), SetState(&CLOSURE)),
             (Otherwise, SetState(&PATTERN)),
         ];
 
         static IF_ELSE: [(Input, Action); 2] = [(Keyword("if"), SetState(&INIT)), (ConsumeBrace, DecDepth)];
-        static IF_THEN: [(Input, Action); 2] =
-            [(Keyword("else"), SetState(&IF_ELSE)), (Otherwise, DecDepth)];
+        static IF_THEN: [(Input, Action); 2] = [(Keyword("else"), SetState(&IF_ELSE)), (Otherwise, DecDepth)];
 
         static METHOD: [(Input, Action); 1] = [(ExpectTurbofish, SetState(&POSTFIX))];
 
-        static PATH: [(Input, Action); 4] = [
+        static PATH: [(Input, Action); 4] =
+        [
             (Punct("!="), SetState(&INIT)),
             (Punct("!"), SetState(&INIT)),
             (ConsumeNestedBrace, SetState(&IF_THEN)),
             (Otherwise, SetState(&POSTFIX)),
         ];
 
-        static PATTERN: [(Input, Action); 15] = [
+        static PATTERN: [(Input, Action); 15] =
+        [
             (ConsumeDelimiter, SetState(&PATTERN)),
             (Keyword("box"), SetState(&PATTERN)),
             (Keyword("in"), IncDepth),
@@ -28926,7 +29254,8 @@ pub mod syntax
             (ExpectPath, SetState(&PATTERN)),
         ];
 
-        static RANGE: [(Input, Action); 6] = [
+        static RANGE: [(Input, Action); 6] =
+        [
             (Punct("..="), SetState(&INIT)),
             (Punct(".."), SetState(&RANGE)),
             (Punct("."), SetState(&DOT)),
@@ -28935,24 +29264,28 @@ pub mod syntax
             (Otherwise, SetState(&INIT)),
         ];
 
-        static RAW: [(Input, Action); 3] = [
+        static RAW: [(Input, Action); 3] =
+        [
             (Keyword("const"), SetState(&INIT)),
             (Keyword("mut"), SetState(&INIT)),
             (Otherwise, SetState(&POSTFIX)),
         ];
 
-        static REFERENCE: [(Input, Action); 3] = [
+        static REFERENCE: [(Input, Action); 3] = 
+        [
             (Keyword("mut"), SetState(&INIT)),
             (Keyword("raw"), SetState(&RAW)),
             (Otherwise, SetState(&INIT)),
         ];
 
-        static RETURN: [(Input, Action); 2] = [
+        static RETURN: [(Input, Action); 2] = 
+        [
             (CanBeginExpr, SetState(&INIT)),
             (Otherwise, SetState(&POSTFIX)),
         ];
 
-        pub fn scan_expr(input: ParseStream) -> Result<()> {
+        pub fn scan_expr(input: ParseStream) -> Result<()>
+        {
             let mut state = INIT.as_slice();
             let mut depth = 0usize;
             'table: loop {
@@ -29121,8 +29454,12 @@ pub mod syntax
 
         mod private
         {
-            use ::syntax::spanned::ToTokens;
-
+            use ::
+            {
+                syntax::spanned::ToTokens,
+                *,
+            };
+            
             pub trait Sealed {}
             impl<T: ?Sized + ToTokens> Sealed for T {}
 
@@ -29134,20 +29471,24 @@ pub mod syntax
     {
         use ::
         {
+            syntax::
+            {
+                attr::Attribute,
+                expr::Expr,
+                item::Item,
+                mac::Macro,
+                pat::Pat,
+                token,
+            },
             *,
         };
         /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::expr::Expr;
-        use ::syntax::item::Item;
-        use ::syntax::mac::Macro;
-        use ::syntax::pat::Pat;
-        use ::syntax::token;
         */
         ast_struct! 
         {
             /// A braced block containing Rust statements.
-            pub struct Block {
+            pub struct Block
+            {
                 pub brace_token: token::Brace,
                 /// Statements in a block
                 pub stmts: Vec<Stmt>,
@@ -29157,7 +29498,8 @@ pub mod syntax
         ast_enum! 
         {
             /// A statement, usually ending in a semicolon.
-            pub enum Stmt {
+            pub enum Stmt 
+            {
                 /// A local (let) binding.
                 Local(Local),
                 /// An item definition.
@@ -29176,7 +29518,8 @@ pub mod syntax
         ast_struct! 
         {
             /// A local `let` binding: `let x: u64 = s.parse()?;`.
-            pub struct Local {
+            pub struct Local
+            {
                 pub attrs: Vec<Attribute>,
                 pub let_token: Token![let],
                 pub pat: Pat,
@@ -29187,8 +29530,7 @@ pub mod syntax
 
         ast_struct! 
         {
-            /// The expression assigned in a local `let` binding, including optional
-            /// diverging `else` block.
+            /// The expression assigned in a local `let` binding, including optional diverging `else` block.
             pub struct LocalInit {
                 pub eq_token: Token![=],
                 pub expr: Box<Expr>,
@@ -29199,8 +29541,8 @@ pub mod syntax
         ast_struct! 
         {
             /// A macro invocation in statement position.
-            /// expression.
-            pub struct StmtMacro {
+            pub struct StmtMacro
+            {
                 pub attrs: Vec<Attribute>,
                 pub mac: Macro,
                 pub semi_token: Option<Token![;]>,
@@ -29209,22 +29551,29 @@ pub mod syntax
         
         pub mod parsing
         {
-            use ::syntax::attr::Attribute;
-            use ::syntax::classify;
-            use ::syntax::error::Result;
-            use ::syntax::expr::{Expr, ExprBlock, ExprMacro};
-            use ::syntax::ident::Ident;
-            use ::syntax::item;
-            use ::syntax::mac::{self, Macro};
-            use ::syntax::parse::discouraged::Speculative as _;
-            use ::syntax::parse::{Parse, ParseStream};
-            use ::syntax::pat::{Pat, PatType};
-            use ::syntax::path::Path;
-            use ::syntax::stmt::{Block, Local, LocalInit, Stmt, StmtMacro};
-            use ::syntax::token;
-            use ::syntax::ty::Type;
-            use ::process::macros::TokenStream;
-
+            use ::
+            {
+                process::macros::TokenStream,
+                syntax::
+                {
+                    attr::Attribute,
+                    classify,
+                    error::Result,
+                    expr::{Expr, ExprBlock, ExprMacro},
+                    ident::Ident,
+                    item,
+                    mac::{self, Macro},
+                    parse::discouraged::Speculative as _,
+                    parse::{Parse, ParseStream},
+                    pat::{Pat, PatType},
+                    path::Path,
+                    stmt::{Block, Local, LocalInit, Stmt, StmtMacro},
+                    token,
+                    ty::Type,
+                },
+                *,
+            };
+            
             struct AllowNoSemi(bool);
 
             impl Block
@@ -29548,13 +29897,20 @@ pub mod syntax
         
         pub mod printing 
         {
-            use ::syntax::classify;
-            use ::syntax::expr::{self, Expr};
-            use ::syntax::fixup::FixupContext;
-            use ::syntax::stmt::{Block, Local, Stmt, StmtMacro};
-            use ::syntax::token;
-            use ::process::macros::TokenStream;
-            use ::quote::{ToTokens, TokenStreamExt};
+            use ::
+            {
+                process::macros::TokenStream,
+                quote::{ToTokens, TokenStreamExt},
+                syntax::
+                {
+                    classify,
+                    expr::{self, Expr},
+                    fixup::FixupContext,
+                    stmt::{Block, Local, Stmt, StmtMacro},
+                    token,
+                },
+                *,
+            };
 
             impl ToTokens for Block
             {
@@ -29618,35 +29974,32 @@ pub mod syntax
                 }
             }
         }
-    }
+    } pub use self::stmt::{Block, Local, LocalInit, Stmt, StmtMacro};
 
     pub mod thread
     {
         use ::
         {
+            fmt::{ self, Debug },
+            thread::{ self, ThreadId },
             *,
         };
         /*
-        use std::fmt::{self, Debug};
-        use std::thread::{self, ThreadId};
         */
-        /// ThreadBound is a Sync-maker and Send-maker that allows accessing a value
-        /// of type T only from the original thread on which the ThreadBound was
-        /// constructed.
-        pub struct ThreadBound<T> {
+        /// ThreadBound is a Sync-maker and Send-maker that allows accessing a value of type T 
+        /// only from the original thread on which the ThreadBound was constructed.
+        pub struct ThreadBound<T>
+        {
             value: T,
             thread_id: ThreadId,
         }
 
         unsafe impl<T> Sync for ThreadBound<T> {}
-
-       
-        //
-       
-       
+        
         unsafe impl<T: Copy> Send for ThreadBound<T> {}
 
-        impl<T> ThreadBound<T> {
+        impl<T> ThreadBound<T> 
+        {
             pub fn new(value: T) -> Self {
                 ThreadBound {
                     value,
@@ -29663,7 +30016,8 @@ pub mod syntax
             }
         }
 
-        impl<T: Debug> Debug for ThreadBound<T> {
+        impl<T: Debug> Debug for ThreadBound<T> 
+        {
             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 match self.get() {
                     Some(value) => Debug::fmt(value, formatter),
@@ -29671,18 +30025,11 @@ pub mod syntax
                 }
             }
         }
-
-       
-       
-       
-        //
-       
-       
-       
-       
+        
         impl<T: Copy> Copy for ThreadBound<T> {}
 
-        impl<T: Copy> Clone for ThreadBound<T> {
+        impl<T: Copy> Clone for ThreadBound<T> 
+        {
             fn clone(&self) -> Self {
                 *self
             }
@@ -29693,16 +30040,18 @@ pub mod syntax
     {
         use ::
         {
+            hash::{ Hash, Hasher },
+            process::macros::{ Delimiter, TokenStream, TokenTree },
             *,
         };
         /*
-        use ::process::macros::{Delimiter, TokenStream, TokenTree};
-        use std::hash::{Hash, Hasher};
         */
         pub struct TokenTreeHelper<'a>(pub &'a TokenTree);
 
-        impl<'a> PartialEq for TokenTreeHelper<'a> {
-            fn eq(&self, other: &Self) -> bool {
+        impl<'a> PartialEq for TokenTreeHelper<'a>
+        {
+            fn eq(&self, other: &Self) -> bool
+        {
                 use ::process::macros::Spacing;
 
                 match (self.0, other.0) {
@@ -29743,7 +30092,8 @@ pub mod syntax
             }
         }
 
-        impl<'a> Hash for TokenTreeHelper<'a> {
+        impl<'a> Hash for TokenTreeHelper<'a>
+        {
             fn hash<H: Hasher>(&self, h: &mut H) {
                 use ::process::macros::Spacing;
 
@@ -29778,8 +30128,10 @@ pub mod syntax
 
         pub struct TokenStreamHelper<'a>(pub &'a TokenStream);
 
-        impl<'a> PartialEq for TokenStreamHelper<'a> {
-            fn eq(&self, other: &Self) -> bool {
+        impl<'a> PartialEq for TokenStreamHelper<'a>
+        {
+            fn eq(&self, other: &Self) -> bool
+        {
                 let left = self.0.clone().into_iter().collect::<Vec<_>>();
                 let right = other.0.clone().into_iter().collect::<Vec<_>>();
                 if left.len() != right.len() {
@@ -29794,7 +30146,8 @@ pub mod syntax
             }
         }
 
-        impl<'a> Hash for TokenStreamHelper<'a> {
+        impl<'a> Hash for TokenStreamHelper<'a>
+        {
             fn hash<H: Hasher>(&self, state: &mut H) {
                 let tts = self.0.clone().into_iter().collect::<Vec<_>>();
                 tts.len().hash(state);
@@ -29809,20 +30162,23 @@ pub mod syntax
     {
         use ::
         {
+            process::macros::{ TokenStream },
+            syntax::
+            {
+                attr::Attribute,
+                expr::Expr,
+                generics::{BoundLifetimes, TypeParamBound},
+                ident::Ident,
+                lifetime::Lifetime,
+                lit::LitStr,
+                mac::Macro,
+                path::{Path, QSelf},
+                punctuated::Punctuated,
+                token,
+            },
             *,
         };
         /*
-        use ::syntax::attr::Attribute;
-        use ::syntax::expr::Expr;
-        use ::syntax::generics::{BoundLifetimes, TypeParamBound};
-        use ::syntax::ident::Ident;
-        use ::syntax::lifetime::Lifetime;
-        use ::syntax::lit::LitStr;
-        use ::syntax::mac::Macro;
-        use ::syntax::path::{Path, QSelf};
-        use ::syntax::punctuated::Punctuated;
-        use ::syntax::token;
-        use ::process::macros::TokenStream;
         */
         ast_enum_of_structs! 
         {
@@ -30583,7 +30939,8 @@ pub mod syntax
                     Self::parse(input, allow_plus)
                 }
 
-                pub fn parse(input: ParseStream, allow_plus: bool) -> Result<Self> {
+                pub fn parse(input: ParseStream, allow_plus: bool) -> Result<Self>
+                {
                     if input.peek(Token![->]) {
                         let arrow = input.parse()?;
                         let allow_group_generic = true;
@@ -30701,16 +31058,7 @@ pub mod syntax
                             TypeParamBound::Lifetime(lifetime) => {
                                 last_nontrait_span = Some(lifetime.ident.span());
                             }
-                            TypeParamBound::PreciseCapture(precise_capture) => {
-                                                        {
-                                    last_nontrait_span = Some(precise_capture.gt_token.span);
-                                }
-                                #[cfg(not(feature = "full"))]
-                                {
-                                    _ = precise_capture;
-                                    unreachable!();
-                                }
-                            }
+                            TypeParamBound::PreciseCapture(precise_capture) => { last_nontrait_span = Some(precise_capture.gt_token.span); }
                             TypeParamBound::Verbatim(_) => {
                                
                                 at_least_one_trait = true;
@@ -31088,15 +31436,15 @@ pub mod syntax
     {
         use ::
         {
+            cmp::{ Ordering },
+            syntax::parse::{ ParseStream },
+            process::macros::{ Delimiter, TokenStream },
             *,
         };
         /*
-        use ::syntax::parse::ParseStream;
-        use ::process::macros::{Delimiter, TokenStream};
-        use std::cmp::Ordering;
-        use std::iter;
         */
-        pub fn between<'a>(begin: ParseStream<'a>, end: ParseStream<'a>) -> TokenStream {
+        pub fn between<'a>(begin: ParseStream<'a>, end: ParseStream<'a>) -> TokenStream
+        {
             let end = end.cursor();
             let mut cursor = begin.cursor();
             assert!(::syntax::buffer::same_buffer(end, cursor));
@@ -31522,7 +31870,7 @@ pub mod syntax
                     fold_generics(self, i)
                 }
                 
-                fn fold_ident(&mut self, i: proc_macro2::Ident) -> proc_macro2::Ident {
+                fn fold_ident(&mut self, i: process::macros::Ident) -> process::macros::Ident {
                     fold_ident(self, i)
                 }
                     fn fold_impl_item(&mut self, i: ::syntax::ImplItem) -> ::syntax::ImplItem {
@@ -31786,7 +32134,7 @@ pub mod syntax
                     fold_signature(self, i)
                 }
                 
-                fn fold_span(&mut self, i: proc_macro2::Span) -> proc_macro2::Span {
+                fn fold_span(&mut self, i: process::macros::Span) -> process::macros::Span {
                     i
                 }
                     fn fold_static_mutability(
@@ -31804,8 +32152,8 @@ pub mod syntax
                 
                 fn fold_token_stream(
                     &mut self,
-                    i: proc_macro2::TokenStream,
-                ) -> proc_macro2::TokenStream {
+                    i: process::macros::TokenStream,
+                ) -> process::macros::TokenStream {
                     i
                 }
                 
@@ -32940,7 +33288,7 @@ pub mod syntax
                     where_clause: (node.where_clause).map(|it| f.fold_where_clause(it)),
                 }
             }
-            pub fn fold_ident<F>(f: &mut F, node: proc_macro2::Ident) -> proc_macro2::Ident where
+            pub fn fold_ident<F>(f: &mut F, node: process::macros::Ident) -> process::macros::Ident where
                 F: Fold + ?Sized,
             {
                 let mut node = node;
@@ -33805,7 +34153,7 @@ pub mod syntax
                     output: f.fold_return_type(node.output),
                 }
             }
-            pub fn fold_span<F>(f: &mut F, node: proc_macro2::Span) -> proc_macro2::Span where
+            pub fn fold_span<F>(f: &mut F, node: process::macros::Span) -> process::macros::Span where
                 F: Fold + ?Sized,
             {
                 node
@@ -34307,14 +34655,12 @@ pub mod syntax
         {
             use ::
             {
+                syntax::punctuated::Punctuated,
                 *,
             };
             /*
-            #![allow(unused_variables)]
-            #![allow(clippy::needless_pass_by_ref_mut)]
-                use ::syntax::punctuated::Punctuated;
             */
-                macro_rules! full {
+            macro_rules! full {
                 ($e:expr) => {
                     $e
                 };
@@ -34325,14 +34671,10 @@ pub mod syntax
             }
             /// Syntax tree traversal to walk a shared borrow of a syntax tree.
             pub trait Visit<'ast> {
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_abi(&mut self, i: &'ast ::syntax::Abi) {
+                        fn visit_abi(&mut self, i: &'ast ::syntax::Abi) {
                     visit_abi(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_angle_bracketed_generic_arguments(
+                        fn visit_angle_bracketed_generic_arguments(
                     &mut self,
                     i: &'ast ::syntax::AngleBracketedGenericArguments,
                 ) {
@@ -34341,90 +34683,68 @@ pub mod syntax
                             fn visit_arm(&mut self, i: &'ast ::syntax::Arm) {
                     visit_arm(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_assoc_const(&mut self, i: &'ast ::syntax::AssocConst) {
+                        fn visit_assoc_const(&mut self, i: &'ast ::syntax::AssocConst) {
                     visit_assoc_const(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_assoc_type(&mut self, i: &'ast ::syntax::AssocType) {
+                        fn visit_assoc_type(&mut self, i: &'ast ::syntax::AssocType) {
                     visit_assoc_type(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_attr_style(&mut self, i: &'ast ::syntax::AttrStyle) {
+                        fn visit_attr_style(&mut self, i: &'ast ::syntax::AttrStyle) {
                     visit_attr_style(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_attribute(&mut self, i: &'ast ::syntax::Attribute) {
+                        fn visit_attribute(&mut self, i: &'ast ::syntax::Attribute) {
                     visit_attribute(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bare_fn_arg(&mut self, i: &'ast ::syntax::BareFnArg) {
+                        fn visit_bare_fn_arg(&mut self, i: &'ast ::syntax::BareFnArg) {
                     visit_bare_fn_arg(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bare_variadic(&mut self, i: &'ast ::syntax::BareVariadic) {
+                        fn visit_bare_variadic(&mut self, i: &'ast ::syntax::BareVariadic) {
                     visit_bare_variadic(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bin_op(&mut self, i: &'ast ::syntax::BinOp) {
+                        fn visit_bin_op(&mut self, i: &'ast ::syntax::BinOp) {
                     visit_bin_op(self, i);
                 }
                             fn visit_block(&mut self, i: &'ast ::syntax::Block) {
                     visit_block(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bound_lifetimes(&mut self, i: &'ast ::syntax::BoundLifetimes) {
+                        fn visit_bound_lifetimes(&mut self, i: &'ast ::syntax::BoundLifetimes) {
                     visit_bound_lifetimes(self, i);
                 }
                             fn visit_captured_param(&mut self, i: &'ast ::syntax::CapturedParam) {
                     visit_captured_param(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_const_param(&mut self, i: &'ast ::syntax::ConstParam) {
+                        fn visit_const_param(&mut self, i: &'ast ::syntax::ConstParam) {
                     visit_const_param(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_constraint(&mut self, i: &'ast ::syntax::Constraint) {
+                        fn visit_constraint(&mut self, i: &'ast ::syntax::Constraint) {
                     visit_constraint(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data(&mut self, i: &'ast ::syntax::Data) {
                     visit_data(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_enum(&mut self, i: &'ast ::syntax::DataEnum) {
                     visit_data_enum(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_struct(&mut self, i: &'ast ::syntax::DataStruct) {
                     visit_data_struct(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_union(&mut self, i: &'ast ::syntax::DataUnion) {
                     visit_data_union(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_derive_input(&mut self, i: &'ast ::syntax::DeriveInput) {
                     visit_derive_input(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr(&mut self, i: &'ast ::syntax::Expr) {
+                        fn visit_expr(&mut self, i: &'ast ::syntax::Expr) {
                     visit_expr(self, i);
                 }
                             fn visit_expr_array(&mut self, i: &'ast ::syntax::ExprArray) {
@@ -34439,9 +34759,7 @@ pub mod syntax
                             fn visit_expr_await(&mut self, i: &'ast ::syntax::ExprAwait) {
                     visit_expr_await(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_binary(&mut self, i: &'ast ::syntax::ExprBinary) {
+                        fn visit_expr_binary(&mut self, i: &'ast ::syntax::ExprBinary) {
                     visit_expr_binary(self, i);
                 }
                             fn visit_expr_block(&mut self, i: &'ast ::syntax::ExprBlock) {
@@ -34450,14 +34768,10 @@ pub mod syntax
                             fn visit_expr_break(&mut self, i: &'ast ::syntax::ExprBreak) {
                     visit_expr_break(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_call(&mut self, i: &'ast ::syntax::ExprCall) {
+                        fn visit_expr_call(&mut self, i: &'ast ::syntax::ExprCall) {
                     visit_expr_call(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_cast(&mut self, i: &'ast ::syntax::ExprCast) {
+                        fn visit_expr_cast(&mut self, i: &'ast ::syntax::ExprCast) {
                     visit_expr_cast(self, i);
                 }
                             fn visit_expr_closure(&mut self, i: &'ast ::syntax::ExprClosure) {
@@ -34469,25 +34783,19 @@ pub mod syntax
                             fn visit_expr_continue(&mut self, i: &'ast ::syntax::ExprContinue) {
                     visit_expr_continue(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_field(&mut self, i: &'ast ::syntax::ExprField) {
+                        fn visit_expr_field(&mut self, i: &'ast ::syntax::ExprField) {
                     visit_expr_field(self, i);
                 }
                             fn visit_expr_for_loop(&mut self, i: &'ast ::syntax::ExprForLoop) {
                     visit_expr_for_loop(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_group(&mut self, i: &'ast ::syntax::ExprGroup) {
+                        fn visit_expr_group(&mut self, i: &'ast ::syntax::ExprGroup) {
                     visit_expr_group(self, i);
                 }
                             fn visit_expr_if(&mut self, i: &'ast ::syntax::ExprIf) {
                     visit_expr_if(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_index(&mut self, i: &'ast ::syntax::ExprIndex) {
+                        fn visit_expr_index(&mut self, i: &'ast ::syntax::ExprIndex) {
                     visit_expr_index(self, i);
                 }
                             fn visit_expr_infer(&mut self, i: &'ast ::syntax::ExprInfer) {
@@ -34496,35 +34804,25 @@ pub mod syntax
                             fn visit_expr_let(&mut self, i: &'ast ::syntax::ExprLet) {
                     visit_expr_let(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_lit(&mut self, i: &'ast ::syntax::ExprLit) {
+                        fn visit_expr_lit(&mut self, i: &'ast ::syntax::ExprLit) {
                     visit_expr_lit(self, i);
                 }
                             fn visit_expr_loop(&mut self, i: &'ast ::syntax::ExprLoop) {
                     visit_expr_loop(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_macro(&mut self, i: &'ast ::syntax::ExprMacro) {
+                        fn visit_expr_macro(&mut self, i: &'ast ::syntax::ExprMacro) {
                     visit_expr_macro(self, i);
                 }
                             fn visit_expr_match(&mut self, i: &'ast ::syntax::ExprMatch) {
                     visit_expr_match(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_method_call(&mut self, i: &'ast ::syntax::ExprMethodCall) {
+                        fn visit_expr_method_call(&mut self, i: &'ast ::syntax::ExprMethodCall) {
                     visit_expr_method_call(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_paren(&mut self, i: &'ast ::syntax::ExprParen) {
+                        fn visit_expr_paren(&mut self, i: &'ast ::syntax::ExprParen) {
                     visit_expr_paren(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_path(&mut self, i: &'ast ::syntax::ExprPath) {
+                        fn visit_expr_path(&mut self, i: &'ast ::syntax::ExprPath) {
                     visit_expr_path(self, i);
                 }
                             fn visit_expr_range(&mut self, i: &'ast ::syntax::ExprRange) {
@@ -34533,9 +34831,7 @@ pub mod syntax
                             fn visit_expr_raw_addr(&mut self, i: &'ast ::syntax::ExprRawAddr) {
                     visit_expr_raw_addr(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_reference(&mut self, i: &'ast ::syntax::ExprReference) {
+                        fn visit_expr_reference(&mut self, i: &'ast ::syntax::ExprReference) {
                     visit_expr_reference(self, i);
                 }
                             fn visit_expr_repeat(&mut self, i: &'ast ::syntax::ExprRepeat) {
@@ -34544,9 +34840,7 @@ pub mod syntax
                             fn visit_expr_return(&mut self, i: &'ast ::syntax::ExprReturn) {
                     visit_expr_return(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_struct(&mut self, i: &'ast ::syntax::ExprStruct) {
+                        fn visit_expr_struct(&mut self, i: &'ast ::syntax::ExprStruct) {
                     visit_expr_struct(self, i);
                 }
                             fn visit_expr_try(&mut self, i: &'ast ::syntax::ExprTry) {
@@ -34555,14 +34849,10 @@ pub mod syntax
                             fn visit_expr_try_block(&mut self, i: &'ast ::syntax::ExprTryBlock) {
                     visit_expr_try_block(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_tuple(&mut self, i: &'ast ::syntax::ExprTuple) {
+                        fn visit_expr_tuple(&mut self, i: &'ast ::syntax::ExprTuple) {
                     visit_expr_tuple(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_unary(&mut self, i: &'ast ::syntax::ExprUnary) {
+                        fn visit_expr_unary(&mut self, i: &'ast ::syntax::ExprUnary) {
                     visit_expr_unary(self, i);
                 }
                             fn visit_expr_unsafe(&mut self, i: &'ast ::syntax::ExprUnsafe) {
@@ -34574,37 +34864,25 @@ pub mod syntax
                             fn visit_expr_yield(&mut self, i: &'ast ::syntax::ExprYield) {
                     visit_expr_yield(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_field(&mut self, i: &'ast ::syntax::Field) {
+                        fn visit_field(&mut self, i: &'ast ::syntax::Field) {
                     visit_field(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_field_mutability(&mut self, i: &'ast ::syntax::FieldMutability) {
+                        fn visit_field_mutability(&mut self, i: &'ast ::syntax::FieldMutability) {
                     visit_field_mutability(self, i);
                 }
                             fn visit_field_pat(&mut self, i: &'ast ::syntax::FieldPat) {
                     visit_field_pat(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_field_value(&mut self, i: &'ast ::syntax::FieldValue) {
+                        fn visit_field_value(&mut self, i: &'ast ::syntax::FieldValue) {
                     visit_field_value(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_fields(&mut self, i: &'ast ::syntax::Fields) {
+                        fn visit_fields(&mut self, i: &'ast ::syntax::Fields) {
                     visit_fields(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_fields_named(&mut self, i: &'ast ::syntax::FieldsNamed) {
+                        fn visit_fields_named(&mut self, i: &'ast ::syntax::FieldsNamed) {
                     visit_fields_named(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_fields_unnamed(&mut self, i: &'ast ::syntax::FieldsUnnamed) {
+                        fn visit_fields_unnamed(&mut self, i: &'ast ::syntax::FieldsUnnamed) {
                     visit_fields_unnamed(self, i);
                 }
                             fn visit_file(&mut self, i: &'ast ::syntax::File) {
@@ -34628,22 +34906,16 @@ pub mod syntax
                             fn visit_foreign_item_type(&mut self, i: &'ast ::syntax::ForeignItemType) {
                     visit_foreign_item_type(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_generic_argument(&mut self, i: &'ast ::syntax::GenericArgument) {
+                        fn visit_generic_argument(&mut self, i: &'ast ::syntax::GenericArgument) {
                     visit_generic_argument(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_generic_param(&mut self, i: &'ast ::syntax::GenericParam) {
+                        fn visit_generic_param(&mut self, i: &'ast ::syntax::GenericParam) {
                     visit_generic_param(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_generics(&mut self, i: &'ast ::syntax::Generics) {
+                        fn visit_generics(&mut self, i: &'ast ::syntax::Generics) {
                     visit_generics(self, i);
                 }
-                fn visit_ident(&mut self, i: &'ast proc_macro2::Ident) {
+                fn visit_ident(&mut self, i: &'ast process::macros::Ident) {
                     visit_ident(self, i);
                 }
                             fn visit_impl_item(&mut self, i: &'ast ::syntax::ImplItem) {
@@ -34664,9 +34936,7 @@ pub mod syntax
                             fn visit_impl_restriction(&mut self, i: &'ast ::syntax::ImplRestriction) {
                     visit_impl_restriction(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_index(&mut self, i: &'ast ::syntax::Index) {
+                        fn visit_index(&mut self, i: &'ast ::syntax::Index) {
                     visit_index(self, i);
                 }
                             fn visit_item(&mut self, i: &'ast ::syntax::Item) {
@@ -34723,9 +34993,7 @@ pub mod syntax
                 fn visit_lifetime(&mut self, i: &'ast ::syntax::Lifetime) {
                     visit_lifetime(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_lifetime_param(&mut self, i: &'ast ::syntax::LifetimeParam) {
+                        fn visit_lifetime_param(&mut self, i: &'ast ::syntax::LifetimeParam) {
                     visit_lifetime_param(self, i);
                 }
                 fn visit_lit(&mut self, i: &'ast ::syntax::Lit) {
@@ -34761,39 +35029,25 @@ pub mod syntax
                             fn visit_local_init(&mut self, i: &'ast ::syntax::LocalInit) {
                     visit_local_init(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_macro(&mut self, i: &'ast ::syntax::Macro) {
+                        fn visit_macro(&mut self, i: &'ast ::syntax::Macro) {
                     visit_macro(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_macro_delimiter(&mut self, i: &'ast ::syntax::MacroDelimiter) {
+                        fn visit_macro_delimiter(&mut self, i: &'ast ::syntax::MacroDelimiter) {
                     visit_macro_delimiter(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_member(&mut self, i: &'ast ::syntax::Member) {
+                        fn visit_member(&mut self, i: &'ast ::syntax::Member) {
                     visit_member(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_meta(&mut self, i: &'ast ::syntax::Meta) {
+                        fn visit_meta(&mut self, i: &'ast ::syntax::Meta) {
                     visit_meta(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_meta_list(&mut self, i: &'ast ::syntax::MetaList) {
+                        fn visit_meta_list(&mut self, i: &'ast ::syntax::MetaList) {
                     visit_meta_list(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_meta_name_value(&mut self, i: &'ast ::syntax::MetaNameValue) {
+                        fn visit_meta_name_value(&mut self, i: &'ast ::syntax::MetaNameValue) {
                     visit_meta_name_value(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_parenthesized_generic_arguments(
+                        fn visit_parenthesized_generic_arguments(
                     &mut self,
                     i: &'ast ::syntax::ParenthesizedGenericArguments,
                 ) {
@@ -34835,19 +35089,13 @@ pub mod syntax
                             fn visit_pat_wild(&mut self, i: &'ast ::syntax::PatWild) {
                     visit_pat_wild(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_path(&mut self, i: &'ast ::syntax::Path) {
+                        fn visit_path(&mut self, i: &'ast ::syntax::Path) {
                     visit_path(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_path_arguments(&mut self, i: &'ast ::syntax::PathArguments) {
+                        fn visit_path_arguments(&mut self, i: &'ast ::syntax::PathArguments) {
                     visit_path_arguments(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_path_segment(&mut self, i: &'ast ::syntax::PathSegment) {
+                        fn visit_path_segment(&mut self, i: &'ast ::syntax::PathSegment) {
                     visit_path_segment(self, i);
                 }
                             fn visit_pointer_mutability(&mut self, i: &'ast ::syntax::PointerMutability) {
@@ -34856,19 +35104,13 @@ pub mod syntax
                             fn visit_precise_capture(&mut self, i: &'ast ::syntax::PreciseCapture) {
                     visit_precise_capture(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_predicate_lifetime(&mut self, i: &'ast ::syntax::PredicateLifetime) {
+                        fn visit_predicate_lifetime(&mut self, i: &'ast ::syntax::PredicateLifetime) {
                     visit_predicate_lifetime(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_predicate_type(&mut self, i: &'ast ::syntax::PredicateType) {
+                        fn visit_predicate_type(&mut self, i: &'ast ::syntax::PredicateType) {
                     visit_predicate_type(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_qself(&mut self, i: &'ast ::syntax::QSelf) {
+                        fn visit_qself(&mut self, i: &'ast ::syntax::QSelf) {
                     visit_qself(self, i);
                 }
                             fn visit_range_limits(&mut self, i: &'ast ::syntax::RangeLimits) {
@@ -34877,15 +35119,13 @@ pub mod syntax
                             fn visit_receiver(&mut self, i: &'ast ::syntax::Receiver) {
                     visit_receiver(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_return_type(&mut self, i: &'ast ::syntax::ReturnType) {
+                        fn visit_return_type(&mut self, i: &'ast ::syntax::ReturnType) {
                     visit_return_type(self, i);
                 }
                             fn visit_signature(&mut self, i: &'ast ::syntax::Signature) {
                     visit_signature(self, i);
                 }
-                fn visit_span(&mut self, i: &proc_macro2::Span) {}
+                fn visit_span(&mut self, i: &process::macros::Span) {}
                             fn visit_static_mutability(&mut self, i: &'ast ::syntax::StaticMutability) {
                     visit_static_mutability(self, i);
                 }
@@ -34895,15 +35135,11 @@ pub mod syntax
                             fn visit_stmt_macro(&mut self, i: &'ast ::syntax::StmtMacro) {
                     visit_stmt_macro(self, i);
                 }
-                fn visit_token_stream(&mut self, i: &'ast proc_macro2::TokenStream) {}
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_trait_bound(&mut self, i: &'ast ::syntax::TraitBound) {
+                fn visit_token_stream(&mut self, i: &'ast process::macros::TokenStream) {}
+                        fn visit_trait_bound(&mut self, i: &'ast ::syntax::TraitBound) {
                     visit_trait_bound(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_trait_bound_modifier(&mut self, i: &'ast ::syntax::TraitBoundModifier) {
+                        fn visit_trait_bound_modifier(&mut self, i: &'ast ::syntax::TraitBoundModifier) {
                     visit_trait_bound_modifier(self, i);
                 }
                             fn visit_trait_item(&mut self, i: &'ast ::syntax::TraitItem) {
@@ -34921,94 +35157,58 @@ pub mod syntax
                             fn visit_trait_item_type(&mut self, i: &'ast ::syntax::TraitItemType) {
                     visit_trait_item_type(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type(&mut self, i: &'ast ::syntax::Type) {
+                        fn visit_type(&mut self, i: &'ast ::syntax::Type) {
                     visit_type(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_array(&mut self, i: &'ast ::syntax::TypeArray) {
+                        fn visit_type_array(&mut self, i: &'ast ::syntax::TypeArray) {
                     visit_type_array(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_bare_fn(&mut self, i: &'ast ::syntax::TypeBareFn) {
+                        fn visit_type_bare_fn(&mut self, i: &'ast ::syntax::TypeBareFn) {
                     visit_type_bare_fn(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_group(&mut self, i: &'ast ::syntax::TypeGroup) {
+                        fn visit_type_group(&mut self, i: &'ast ::syntax::TypeGroup) {
                     visit_type_group(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_impl_trait(&mut self, i: &'ast ::syntax::TypeImplTrait) {
+                        fn visit_type_impl_trait(&mut self, i: &'ast ::syntax::TypeImplTrait) {
                     visit_type_impl_trait(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_infer(&mut self, i: &'ast ::syntax::TypeInfer) {
+                        fn visit_type_infer(&mut self, i: &'ast ::syntax::TypeInfer) {
                     visit_type_infer(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_macro(&mut self, i: &'ast ::syntax::TypeMacro) {
+                        fn visit_type_macro(&mut self, i: &'ast ::syntax::TypeMacro) {
                     visit_type_macro(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_never(&mut self, i: &'ast ::syntax::TypeNever) {
+                        fn visit_type_never(&mut self, i: &'ast ::syntax::TypeNever) {
                     visit_type_never(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_param(&mut self, i: &'ast ::syntax::TypeParam) {
+                        fn visit_type_param(&mut self, i: &'ast ::syntax::TypeParam) {
                     visit_type_param(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_param_bound(&mut self, i: &'ast ::syntax::TypeParamBound) {
+                        fn visit_type_param_bound(&mut self, i: &'ast ::syntax::TypeParamBound) {
                     visit_type_param_bound(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_paren(&mut self, i: &'ast ::syntax::TypeParen) {
+                        fn visit_type_paren(&mut self, i: &'ast ::syntax::TypeParen) {
                     visit_type_paren(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_path(&mut self, i: &'ast ::syntax::TypePath) {
+                        fn visit_type_path(&mut self, i: &'ast ::syntax::TypePath) {
                     visit_type_path(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_ptr(&mut self, i: &'ast ::syntax::TypePtr) {
+                        fn visit_type_ptr(&mut self, i: &'ast ::syntax::TypePtr) {
                     visit_type_ptr(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_reference(&mut self, i: &'ast ::syntax::TypeReference) {
+                        fn visit_type_reference(&mut self, i: &'ast ::syntax::TypeReference) {
                     visit_type_reference(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_slice(&mut self, i: &'ast ::syntax::TypeSlice) {
+                        fn visit_type_slice(&mut self, i: &'ast ::syntax::TypeSlice) {
                     visit_type_slice(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_trait_object(&mut self, i: &'ast ::syntax::TypeTraitObject) {
+                        fn visit_type_trait_object(&mut self, i: &'ast ::syntax::TypeTraitObject) {
                     visit_type_trait_object(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_tuple(&mut self, i: &'ast ::syntax::TypeTuple) {
+                        fn visit_type_tuple(&mut self, i: &'ast ::syntax::TypeTuple) {
                     visit_type_tuple(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_un_op(&mut self, i: &'ast ::syntax::UnOp) {
+                        fn visit_un_op(&mut self, i: &'ast ::syntax::UnOp) {
                     visit_un_op(self, i);
                 }
                             fn visit_use_glob(&mut self, i: &'ast ::syntax::UseGlob) {
@@ -35032,34 +35232,22 @@ pub mod syntax
                             fn visit_variadic(&mut self, i: &'ast ::syntax::Variadic) {
                     visit_variadic(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_variant(&mut self, i: &'ast ::syntax::Variant) {
+                        fn visit_variant(&mut self, i: &'ast ::syntax::Variant) {
                     visit_variant(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_vis_restricted(&mut self, i: &'ast ::syntax::VisRestricted) {
+                        fn visit_vis_restricted(&mut self, i: &'ast ::syntax::VisRestricted) {
                     visit_vis_restricted(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_visibility(&mut self, i: &'ast ::syntax::Visibility) {
+                        fn visit_visibility(&mut self, i: &'ast ::syntax::Visibility) {
                     visit_visibility(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_where_clause(&mut self, i: &'ast ::syntax::WhereClause) {
+                        fn visit_where_clause(&mut self, i: &'ast ::syntax::WhereClause) {
                     visit_where_clause(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_where_predicate(&mut self, i: &'ast ::syntax::WherePredicate) {
+                        fn visit_where_predicate(&mut self, i: &'ast ::syntax::WherePredicate) {
                     visit_where_predicate(self, i);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_abi<'ast, V>(v: &mut V, node: &'ast ::syntax::Abi) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35068,8 +35256,6 @@ pub mod syntax
                     v.visit_lit_str(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_angle_bracketed_generic_arguments<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::AngleBracketedGenericArguments,
@@ -35099,8 +35285,6 @@ pub mod syntax
                 v.visit_expr(&*node.body);
                 skip!(node.comma);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_assoc_const<'ast, V>(v: &mut V, node: &'ast ::syntax::AssocConst) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35111,8 +35295,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_expr(&node.value);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_assoc_type<'ast, V>(v: &mut V, node: &'ast ::syntax::AssocType) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35123,8 +35305,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_type(&node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_attr_style<'ast, V>(v: &mut V, node: &'ast ::syntax::AttrStyle) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35135,8 +35315,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_attribute<'ast, V>(v: &mut V, node: &'ast ::syntax::Attribute) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35145,8 +35323,6 @@ pub mod syntax
                 skip!(node.bracket_token);
                 v.visit_meta(&node.meta);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bare_fn_arg<'ast, V>(v: &mut V, node: &'ast ::syntax::BareFnArg) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35159,8 +35335,6 @@ pub mod syntax
                 }
                 v.visit_type(&node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bare_variadic<'ast, V>(v: &mut V, node: &'ast ::syntax::BareVariadic) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35174,8 +35348,6 @@ pub mod syntax
                 skip!(node.dots);
                 skip!(node.comma);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bin_op<'ast, V>(v: &mut V, node: &'ast ::syntax::BinOp) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35274,8 +35446,6 @@ pub mod syntax
                     v.visit_stmt(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bound_lifetimes<'ast, V>(v: &mut V, node: &'ast ::syntax::BoundLifetimes) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35299,8 +35469,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_const_param<'ast, V>(v: &mut V, node: &'ast ::syntax::ConstParam) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35316,8 +35484,6 @@ pub mod syntax
                     v.visit_expr(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_constraint<'ast, V>(v: &mut V, node: &'ast ::syntax::Constraint) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35331,8 +35497,6 @@ pub mod syntax
                     v.visit_type_param_bound(it);
                 }
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data<'ast, V>(v: &mut V, node: &'ast ::syntax::Data) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35348,8 +35512,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_enum<'ast, V>(v: &mut V, node: &'ast ::syntax::DataEnum) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35360,8 +35522,6 @@ pub mod syntax
                     v.visit_variant(it);
                 }
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::DataStruct) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35369,16 +35529,12 @@ pub mod syntax
                 v.visit_fields(&node.fields);
                 skip!(node.semi_token);
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_union<'ast, V>(v: &mut V, node: &'ast ::syntax::DataUnion) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.union_token);
                 v.visit_fields_named(&node.fields);
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_derive_input<'ast, V>(v: &mut V, node: &'ast ::syntax::DeriveInput) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35390,8 +35546,6 @@ pub mod syntax
                 v.visit_generics(&node.generics);
                 v.visit_data(&node.data);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr<'ast, V>(v: &mut V, node: &'ast ::syntax::Expr) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35560,8 +35714,6 @@ pub mod syntax
                 skip!(node.dot_token);
                 skip!(node.await_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_binary<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBinary) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35597,8 +35749,6 @@ pub mod syntax
                     v.visit_expr(&**it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_call<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprCall) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35612,8 +35762,6 @@ pub mod syntax
                     v.visit_expr(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_cast<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprCast) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35666,8 +35814,6 @@ pub mod syntax
                     v.visit_lifetime(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_field<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprField) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35693,8 +35839,6 @@ pub mod syntax
                 v.visit_expr(&*node.expr);
                 v.visit_block(&node.body);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_group<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprGroup) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35718,8 +35862,6 @@ pub mod syntax
                     v.visit_expr(&*(it).1);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_index<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprIndex) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35749,8 +35891,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_expr(&*node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_lit<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLit) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35771,8 +35911,6 @@ pub mod syntax
                 skip!(node.loop_token);
                 v.visit_block(&node.body);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMacro) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35794,8 +35932,6 @@ pub mod syntax
                     v.visit_arm(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_method_call<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMethodCall) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35814,8 +35950,6 @@ pub mod syntax
                     v.visit_expr(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprParen) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35825,8 +35959,6 @@ pub mod syntax
                 skip!(node.paren_token);
                 v.visit_expr(&*node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_path<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprPath) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35863,8 +35995,6 @@ pub mod syntax
                 v.visit_pointer_mutability(&node.mutability);
                 v.visit_expr(&*node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprReference) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35897,8 +36027,6 @@ pub mod syntax
                     v.visit_expr(&**it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprStruct) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35937,8 +36065,6 @@ pub mod syntax
                 skip!(node.try_token);
                 v.visit_block(&node.block);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTuple) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35951,8 +36077,6 @@ pub mod syntax
                     v.visit_expr(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_unary<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprUnary) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -35995,8 +36119,6 @@ pub mod syntax
                     v.visit_expr(&**it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_field<'ast, V>(v: &mut V, node: &'ast ::syntax::Field) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36011,8 +36133,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_type(&node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_field_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldMutability) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36030,8 +36150,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_pat(&*node.pat);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_field_value<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldValue) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36042,8 +36160,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_expr(&node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_fields<'ast, V>(v: &mut V, node: &'ast ::syntax::Fields) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36057,8 +36173,6 @@ pub mod syntax
                     ::syntax::Fields::Unit => {}
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_fields_named<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldsNamed) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36068,8 +36182,6 @@ pub mod syntax
                     v.visit_field(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_fields_unnamed<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldsUnnamed) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36171,8 +36283,6 @@ pub mod syntax
                 v.visit_generics(&node.generics);
                 skip!(node.semi_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_generic_argument<'ast, V>(v: &mut V, node: &'ast ::syntax::GenericArgument) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36197,8 +36307,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_generic_param<'ast, V>(v: &mut V, node: &'ast ::syntax::GenericParam) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36214,8 +36322,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_generics<'ast, V>(v: &mut V, node: &'ast ::syntax::Generics) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36229,7 +36335,7 @@ pub mod syntax
                     v.visit_where_clause(it);
                 }
             }
-            pub fn visit_ident<'ast, V>(v: &mut V, node: &'ast proc_macro2::Ident) where
+            pub fn visit_ident<'ast, V>(v: &mut V, node: &'ast process::macros::Ident) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_span(&node.span());
@@ -36312,8 +36418,6 @@ pub mod syntax
             {
                 match *node {}
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_index<'ast, V>(v: &mut V, node: &'ast ::syntax::Index) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36617,8 +36721,6 @@ pub mod syntax
                 v.visit_span(&node.apostrophe);
                 v.visit_ident(&node.ident);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_lifetime_param<'ast, V>(v: &mut V, node: &'ast ::syntax::LifetimeParam) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36715,8 +36817,6 @@ pub mod syntax
                     v.visit_expr(&*(it).1);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::Macro) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36725,8 +36825,6 @@ pub mod syntax
                 v.visit_macro_delimiter(&node.delimiter);
                 v.visit_token_stream(&node.tokens);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_macro_delimiter<'ast, V>(v: &mut V, node: &'ast ::syntax::MacroDelimiter) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36742,8 +36840,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_member<'ast, V>(v: &mut V, node: &'ast ::syntax::Member) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36756,8 +36852,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_meta<'ast, V>(v: &mut V, node: &'ast ::syntax::Meta) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36773,8 +36867,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_meta_list<'ast, V>(v: &mut V, node: &'ast ::syntax::MetaList) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36782,8 +36874,6 @@ pub mod syntax
                 v.visit_macro_delimiter(&node.delimiter);
                 v.visit_token_stream(&node.tokens);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_meta_name_value<'ast, V>(v: &mut V, node: &'ast ::syntax::MetaNameValue) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -36791,8 +36881,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_expr(&node.value);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_parenthesized_generic_arguments<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::ParenthesizedGenericArguments,
@@ -36993,8 +37081,6 @@ pub mod syntax
                 }
                 skip!(node.underscore_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_path<'ast, V>(v: &mut V, node: &'ast ::syntax::Path) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37004,8 +37090,6 @@ pub mod syntax
                     v.visit_path_segment(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_path_arguments<'ast, V>(v: &mut V, node: &'ast ::syntax::PathArguments) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37019,8 +37103,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_path_segment<'ast, V>(v: &mut V, node: &'ast ::syntax::PathSegment) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37050,8 +37132,6 @@ pub mod syntax
                 }
                 skip!(node.gt_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_predicate_lifetime<'ast, V>(v: &mut V, node: &'ast ::syntax::PredicateLifetime) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37062,8 +37142,6 @@ pub mod syntax
                     v.visit_lifetime(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_predicate_type<'ast, V>(v: &mut V, node: &'ast ::syntax::PredicateType) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37077,8 +37155,6 @@ pub mod syntax
                     v.visit_type_param_bound(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_qself<'ast, V>(v: &mut V, node: &'ast ::syntax::QSelf) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37117,8 +37193,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_type(&*node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_return_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ReturnType) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37152,7 +37226,7 @@ pub mod syntax
                 }
                 v.visit_return_type(&node.output);
             }
-            pub fn visit_span<'ast, V>(v: &mut V, node: &proc_macro2::Span) where
+            pub fn visit_span<'ast, V>(v: &mut V, node: &process::macros::Span) where
                 V: Visit<'ast> + ?Sized,
             {}
                 pub fn visit_static_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::StaticMutability) where
@@ -37193,8 +37267,6 @@ pub mod syntax
                 v.visit_macro(&node.mac);
                 skip!(node.semi_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_trait_bound<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitBound) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37205,8 +37277,6 @@ pub mod syntax
                 }
                 v.visit_path(&node.path);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_trait_bound_modifier<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::TraitBoundModifier,
@@ -37299,8 +37369,6 @@ pub mod syntax
                 }
                 skip!(node.semi_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type<'ast, V>(v: &mut V, node: &'ast ::syntax::Type) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37352,8 +37420,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_array<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeArray) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37362,8 +37428,6 @@ pub mod syntax
                 skip!(node.semi_token);
                 v.visit_expr(&node.len);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_bare_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeBareFn) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37385,16 +37449,12 @@ pub mod syntax
                 }
                 v.visit_return_type(&node.output);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_group<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeGroup) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.group_token);
                 v.visit_type(&*node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_impl_trait<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeImplTrait) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37404,29 +37464,21 @@ pub mod syntax
                     v.visit_type_param_bound(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_infer<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeInfer) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.underscore_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_macro(&node.mac);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_never<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeNever) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.bang_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_param<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParam) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37444,8 +37496,6 @@ pub mod syntax
                     v.visit_type(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_param_bound<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParamBound) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37464,16 +37514,12 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParen) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.paren_token);
                 v.visit_type(&*node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_path<'ast, V>(v: &mut V, node: &'ast ::syntax::TypePath) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37482,8 +37528,6 @@ pub mod syntax
                 }
                 v.visit_path(&node.path);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_ptr<'ast, V>(v: &mut V, node: &'ast ::syntax::TypePtr) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37492,8 +37536,6 @@ pub mod syntax
                 skip!(node.mutability);
                 v.visit_type(&*node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeReference) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37504,16 +37546,12 @@ pub mod syntax
                 skip!(node.mutability);
                 v.visit_type(&*node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_slice<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeSlice) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.bracket_token);
                 v.visit_type(&*node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_trait_object<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeTraitObject) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37523,8 +37561,6 @@ pub mod syntax
                     v.visit_type_param_bound(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeTuple) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37534,8 +37570,6 @@ pub mod syntax
                     v.visit_type(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_un_op<'ast, V>(v: &mut V, node: &'ast ::syntax::UnOp) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37618,8 +37652,6 @@ pub mod syntax
                 skip!(node.dots);
                 skip!(node.comma);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_variant<'ast, V>(v: &mut V, node: &'ast ::syntax::Variant) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37633,8 +37665,6 @@ pub mod syntax
                     v.visit_expr(&(it).1);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_vis_restricted<'ast, V>(v: &mut V, node: &'ast ::syntax::VisRestricted) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37643,8 +37673,6 @@ pub mod syntax
                 skip!(node.in_token);
                 v.visit_path(&*node.path);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_visibility<'ast, V>(v: &mut V, node: &'ast ::syntax::Visibility) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37658,8 +37686,6 @@ pub mod syntax
                     ::syntax::Visibility::Inherited => {}
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_where_clause<'ast, V>(v: &mut V, node: &'ast ::syntax::WhereClause) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37669,8 +37695,6 @@ pub mod syntax
                     v.visit_where_predicate(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_where_predicate<'ast, V>(v: &mut V, node: &'ast ::syntax::WherePredicate) where
                 V: Visit<'ast> + ?Sized,
             {
@@ -37689,14 +37713,16 @@ pub mod syntax
         {
             use ::
             {
+                syntax::
+                {
+                    punctuated::{ Punctuated },
+                },
                 *,
             };
             /*
-            #![allow(unused_variables)]
-            #![allow(clippy::needless_pass_by_ref_mut)]
-                use ::syntax::punctuated::Punctuated;
             */
-                macro_rules! full {
+            macro_rules! full
+            {
                 ($e:expr) => {
                     $e
                 };
@@ -37707,14 +37733,10 @@ pub mod syntax
             }
             /// Syntax tree traversal to mutate an exclusive borrow of a syntax tree in place.
             pub trait VisitMut {
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_abi_mut(&mut self, i: &mut ::syntax::Abi) {
+                        fn visit_abi_mut(&mut self, i: &mut ::syntax::Abi) {
                     visit_abi_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_angle_bracketed_generic_arguments_mut(
+                        fn visit_angle_bracketed_generic_arguments_mut(
                     &mut self,
                     i: &mut ::syntax::AngleBracketedGenericArguments,
                 ) {
@@ -37723,97 +37745,73 @@ pub mod syntax
                             fn visit_arm_mut(&mut self, i: &mut ::syntax::Arm) {
                     visit_arm_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_assoc_const_mut(&mut self, i: &mut ::syntax::AssocConst) {
+                        fn visit_assoc_const_mut(&mut self, i: &mut ::syntax::AssocConst) {
                     visit_assoc_const_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_assoc_type_mut(&mut self, i: &mut ::syntax::AssocType) {
+                        fn visit_assoc_type_mut(&mut self, i: &mut ::syntax::AssocType) {
                     visit_assoc_type_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_attr_style_mut(&mut self, i: &mut ::syntax::AttrStyle) {
+                        fn visit_attr_style_mut(&mut self, i: &mut ::syntax::AttrStyle) {
                     visit_attr_style_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_attribute_mut(&mut self, i: &mut ::syntax::Attribute) {
+                        fn visit_attribute_mut(&mut self, i: &mut ::syntax::Attribute) {
                     visit_attribute_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_attributes_mut(&mut self, i: &mut Vec<::syntax::Attribute>) {
+                        fn visit_attributes_mut(&mut self, i: &mut Vec<::syntax::Attribute>) {
                     for attr in i {
                         self.visit_attribute_mut(attr);
                     }
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bare_fn_arg_mut(&mut self, i: &mut ::syntax::BareFnArg) {
+                        fn visit_bare_fn_arg_mut(&mut self, i: &mut ::syntax::BareFnArg) {
                     visit_bare_fn_arg_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bare_variadic_mut(&mut self, i: &mut ::syntax::BareVariadic) {
+                        fn visit_bare_variadic_mut(&mut self, i: &mut ::syntax::BareVariadic) {
                     visit_bare_variadic_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bin_op_mut(&mut self, i: &mut ::syntax::BinOp) {
+                        fn visit_bin_op_mut(&mut self, i: &mut ::syntax::BinOp) {
                     visit_bin_op_mut(self, i);
                 }
                             fn visit_block_mut(&mut self, i: &mut ::syntax::Block) {
                     visit_block_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_bound_lifetimes_mut(&mut self, i: &mut ::syntax::BoundLifetimes) {
+                        fn visit_bound_lifetimes_mut(&mut self, i: &mut ::syntax::BoundLifetimes) {
                     visit_bound_lifetimes_mut(self, i);
                 }
                             fn visit_captured_param_mut(&mut self, i: &mut ::syntax::CapturedParam) {
                     visit_captured_param_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_const_param_mut(&mut self, i: &mut ::syntax::ConstParam) {
+                        fn visit_const_param_mut(&mut self, i: &mut ::syntax::ConstParam) {
                     visit_const_param_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_constraint_mut(&mut self, i: &mut ::syntax::Constraint) {
+                        fn visit_constraint_mut(&mut self, i: &mut ::syntax::Constraint) {
                     visit_constraint_mut(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_mut(&mut self, i: &mut ::syntax::Data) {
                     visit_data_mut(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_enum_mut(&mut self, i: &mut ::syntax::DataEnum) {
                     visit_data_enum_mut(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_struct_mut(&mut self, i: &mut ::syntax::DataStruct) {
                     visit_data_struct_mut(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_data_union_mut(&mut self, i: &mut ::syntax::DataUnion) {
                     visit_data_union_mut(self, i);
                 }
-                #[cfg(feature = "derive")]
+                
                 #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
                 fn visit_derive_input_mut(&mut self, i: &mut ::syntax::DeriveInput) {
                     visit_derive_input_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_mut(&mut self, i: &mut ::syntax::Expr) {
+                        fn visit_expr_mut(&mut self, i: &mut ::syntax::Expr) {
                     visit_expr_mut(self, i);
                 }
                             fn visit_expr_array_mut(&mut self, i: &mut ::syntax::ExprArray) {
@@ -37828,9 +37826,7 @@ pub mod syntax
                             fn visit_expr_await_mut(&mut self, i: &mut ::syntax::ExprAwait) {
                     visit_expr_await_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_binary_mut(&mut self, i: &mut ::syntax::ExprBinary) {
+                        fn visit_expr_binary_mut(&mut self, i: &mut ::syntax::ExprBinary) {
                     visit_expr_binary_mut(self, i);
                 }
                             fn visit_expr_block_mut(&mut self, i: &mut ::syntax::ExprBlock) {
@@ -37839,14 +37835,10 @@ pub mod syntax
                             fn visit_expr_break_mut(&mut self, i: &mut ::syntax::ExprBreak) {
                     visit_expr_break_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_call_mut(&mut self, i: &mut ::syntax::ExprCall) {
+                        fn visit_expr_call_mut(&mut self, i: &mut ::syntax::ExprCall) {
                     visit_expr_call_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_cast_mut(&mut self, i: &mut ::syntax::ExprCast) {
+                        fn visit_expr_cast_mut(&mut self, i: &mut ::syntax::ExprCast) {
                     visit_expr_cast_mut(self, i);
                 }
                             fn visit_expr_closure_mut(&mut self, i: &mut ::syntax::ExprClosure) {
@@ -37858,25 +37850,19 @@ pub mod syntax
                             fn visit_expr_continue_mut(&mut self, i: &mut ::syntax::ExprContinue) {
                     visit_expr_continue_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_field_mut(&mut self, i: &mut ::syntax::ExprField) {
+                        fn visit_expr_field_mut(&mut self, i: &mut ::syntax::ExprField) {
                     visit_expr_field_mut(self, i);
                 }
                             fn visit_expr_for_loop_mut(&mut self, i: &mut ::syntax::ExprForLoop) {
                     visit_expr_for_loop_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_group_mut(&mut self, i: &mut ::syntax::ExprGroup) {
+                        fn visit_expr_group_mut(&mut self, i: &mut ::syntax::ExprGroup) {
                     visit_expr_group_mut(self, i);
                 }
                             fn visit_expr_if_mut(&mut self, i: &mut ::syntax::ExprIf) {
                     visit_expr_if_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_index_mut(&mut self, i: &mut ::syntax::ExprIndex) {
+                        fn visit_expr_index_mut(&mut self, i: &mut ::syntax::ExprIndex) {
                     visit_expr_index_mut(self, i);
                 }
                             fn visit_expr_infer_mut(&mut self, i: &mut ::syntax::ExprInfer) {
@@ -37885,35 +37871,25 @@ pub mod syntax
                             fn visit_expr_let_mut(&mut self, i: &mut ::syntax::ExprLet) {
                     visit_expr_let_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_lit_mut(&mut self, i: &mut ::syntax::ExprLit) {
+                        fn visit_expr_lit_mut(&mut self, i: &mut ::syntax::ExprLit) {
                     visit_expr_lit_mut(self, i);
                 }
                             fn visit_expr_loop_mut(&mut self, i: &mut ::syntax::ExprLoop) {
                     visit_expr_loop_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_macro_mut(&mut self, i: &mut ::syntax::ExprMacro) {
+                        fn visit_expr_macro_mut(&mut self, i: &mut ::syntax::ExprMacro) {
                     visit_expr_macro_mut(self, i);
                 }
                             fn visit_expr_match_mut(&mut self, i: &mut ::syntax::ExprMatch) {
                     visit_expr_match_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_method_call_mut(&mut self, i: &mut ::syntax::ExprMethodCall) {
+                        fn visit_expr_method_call_mut(&mut self, i: &mut ::syntax::ExprMethodCall) {
                     visit_expr_method_call_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_paren_mut(&mut self, i: &mut ::syntax::ExprParen) {
+                        fn visit_expr_paren_mut(&mut self, i: &mut ::syntax::ExprParen) {
                     visit_expr_paren_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_path_mut(&mut self, i: &mut ::syntax::ExprPath) {
+                        fn visit_expr_path_mut(&mut self, i: &mut ::syntax::ExprPath) {
                     visit_expr_path_mut(self, i);
                 }
                             fn visit_expr_range_mut(&mut self, i: &mut ::syntax::ExprRange) {
@@ -37922,9 +37898,7 @@ pub mod syntax
                             fn visit_expr_raw_addr_mut(&mut self, i: &mut ::syntax::ExprRawAddr) {
                     visit_expr_raw_addr_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_reference_mut(&mut self, i: &mut ::syntax::ExprReference) {
+                        fn visit_expr_reference_mut(&mut self, i: &mut ::syntax::ExprReference) {
                     visit_expr_reference_mut(self, i);
                 }
                             fn visit_expr_repeat_mut(&mut self, i: &mut ::syntax::ExprRepeat) {
@@ -37933,9 +37907,7 @@ pub mod syntax
                             fn visit_expr_return_mut(&mut self, i: &mut ::syntax::ExprReturn) {
                     visit_expr_return_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_struct_mut(&mut self, i: &mut ::syntax::ExprStruct) {
+                        fn visit_expr_struct_mut(&mut self, i: &mut ::syntax::ExprStruct) {
                     visit_expr_struct_mut(self, i);
                 }
                             fn visit_expr_try_mut(&mut self, i: &mut ::syntax::ExprTry) {
@@ -37944,14 +37916,10 @@ pub mod syntax
                             fn visit_expr_try_block_mut(&mut self, i: &mut ::syntax::ExprTryBlock) {
                     visit_expr_try_block_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_tuple_mut(&mut self, i: &mut ::syntax::ExprTuple) {
+                        fn visit_expr_tuple_mut(&mut self, i: &mut ::syntax::ExprTuple) {
                     visit_expr_tuple_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_expr_unary_mut(&mut self, i: &mut ::syntax::ExprUnary) {
+                        fn visit_expr_unary_mut(&mut self, i: &mut ::syntax::ExprUnary) {
                     visit_expr_unary_mut(self, i);
                 }
                             fn visit_expr_unsafe_mut(&mut self, i: &mut ::syntax::ExprUnsafe) {
@@ -37963,37 +37931,25 @@ pub mod syntax
                             fn visit_expr_yield_mut(&mut self, i: &mut ::syntax::ExprYield) {
                     visit_expr_yield_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_field_mut(&mut self, i: &mut ::syntax::Field) {
+                        fn visit_field_mut(&mut self, i: &mut ::syntax::Field) {
                     visit_field_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_field_mutability_mut(&mut self, i: &mut ::syntax::FieldMutability) {
+                        fn visit_field_mutability_mut(&mut self, i: &mut ::syntax::FieldMutability) {
                     visit_field_mutability_mut(self, i);
                 }
                             fn visit_field_pat_mut(&mut self, i: &mut ::syntax::FieldPat) {
                     visit_field_pat_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_field_value_mut(&mut self, i: &mut ::syntax::FieldValue) {
+                        fn visit_field_value_mut(&mut self, i: &mut ::syntax::FieldValue) {
                     visit_field_value_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_fields_mut(&mut self, i: &mut ::syntax::Fields) {
+                        fn visit_fields_mut(&mut self, i: &mut ::syntax::Fields) {
                     visit_fields_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_fields_named_mut(&mut self, i: &mut ::syntax::FieldsNamed) {
+                        fn visit_fields_named_mut(&mut self, i: &mut ::syntax::FieldsNamed) {
                     visit_fields_named_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_fields_unnamed_mut(&mut self, i: &mut ::syntax::FieldsUnnamed) {
+                        fn visit_fields_unnamed_mut(&mut self, i: &mut ::syntax::FieldsUnnamed) {
                     visit_fields_unnamed_mut(self, i);
                 }
                             fn visit_file_mut(&mut self, i: &mut ::syntax::File) {
@@ -38017,22 +37973,16 @@ pub mod syntax
                             fn visit_foreign_item_type_mut(&mut self, i: &mut ::syntax::ForeignItemType) {
                     visit_foreign_item_type_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_generic_argument_mut(&mut self, i: &mut ::syntax::GenericArgument) {
+                        fn visit_generic_argument_mut(&mut self, i: &mut ::syntax::GenericArgument) {
                     visit_generic_argument_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_generic_param_mut(&mut self, i: &mut ::syntax::GenericParam) {
+                        fn visit_generic_param_mut(&mut self, i: &mut ::syntax::GenericParam) {
                     visit_generic_param_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_generics_mut(&mut self, i: &mut ::syntax::Generics) {
+                        fn visit_generics_mut(&mut self, i: &mut ::syntax::Generics) {
                     visit_generics_mut(self, i);
                 }
-                fn visit_ident_mut(&mut self, i: &mut proc_macro2::Ident) {
+                fn visit_ident_mut(&mut self, i: &mut process::macros::Ident) {
                     visit_ident_mut(self, i);
                 }
                             fn visit_impl_item_mut(&mut self, i: &mut ::syntax::ImplItem) {
@@ -38053,9 +38003,7 @@ pub mod syntax
                             fn visit_impl_restriction_mut(&mut self, i: &mut ::syntax::ImplRestriction) {
                     visit_impl_restriction_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_index_mut(&mut self, i: &mut ::syntax::Index) {
+                        fn visit_index_mut(&mut self, i: &mut ::syntax::Index) {
                     visit_index_mut(self, i);
                 }
                             fn visit_item_mut(&mut self, i: &mut ::syntax::Item) {
@@ -38112,9 +38060,7 @@ pub mod syntax
                 fn visit_lifetime_mut(&mut self, i: &mut ::syntax::Lifetime) {
                     visit_lifetime_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_lifetime_param_mut(&mut self, i: &mut ::syntax::LifetimeParam) {
+                        fn visit_lifetime_param_mut(&mut self, i: &mut ::syntax::LifetimeParam) {
                     visit_lifetime_param_mut(self, i);
                 }
                 fn visit_lit_mut(&mut self, i: &mut ::syntax::Lit) {
@@ -38150,39 +38096,25 @@ pub mod syntax
                             fn visit_local_init_mut(&mut self, i: &mut ::syntax::LocalInit) {
                     visit_local_init_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_macro_mut(&mut self, i: &mut ::syntax::Macro) {
+                        fn visit_macro_mut(&mut self, i: &mut ::syntax::Macro) {
                     visit_macro_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_macro_delimiter_mut(&mut self, i: &mut ::syntax::MacroDelimiter) {
+                        fn visit_macro_delimiter_mut(&mut self, i: &mut ::syntax::MacroDelimiter) {
                     visit_macro_delimiter_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_member_mut(&mut self, i: &mut ::syntax::Member) {
+                        fn visit_member_mut(&mut self, i: &mut ::syntax::Member) {
                     visit_member_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_meta_mut(&mut self, i: &mut ::syntax::Meta) {
+                        fn visit_meta_mut(&mut self, i: &mut ::syntax::Meta) {
                     visit_meta_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_meta_list_mut(&mut self, i: &mut ::syntax::MetaList) {
+                        fn visit_meta_list_mut(&mut self, i: &mut ::syntax::MetaList) {
                     visit_meta_list_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_meta_name_value_mut(&mut self, i: &mut ::syntax::MetaNameValue) {
+                        fn visit_meta_name_value_mut(&mut self, i: &mut ::syntax::MetaNameValue) {
                     visit_meta_name_value_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_parenthesized_generic_arguments_mut(
+                        fn visit_parenthesized_generic_arguments_mut(
                     &mut self,
                     i: &mut ::syntax::ParenthesizedGenericArguments,
                 ) {
@@ -38224,19 +38156,13 @@ pub mod syntax
                             fn visit_pat_wild_mut(&mut self, i: &mut ::syntax::PatWild) {
                     visit_pat_wild_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_path_mut(&mut self, i: &mut ::syntax::Path) {
+                        fn visit_path_mut(&mut self, i: &mut ::syntax::Path) {
                     visit_path_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_path_arguments_mut(&mut self, i: &mut ::syntax::PathArguments) {
+                        fn visit_path_arguments_mut(&mut self, i: &mut ::syntax::PathArguments) {
                     visit_path_arguments_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_path_segment_mut(&mut self, i: &mut ::syntax::PathSegment) {
+                        fn visit_path_segment_mut(&mut self, i: &mut ::syntax::PathSegment) {
                     visit_path_segment_mut(self, i);
                 }
                             fn visit_pointer_mutability_mut(&mut self, i: &mut ::syntax::PointerMutability) {
@@ -38245,19 +38171,13 @@ pub mod syntax
                             fn visit_precise_capture_mut(&mut self, i: &mut ::syntax::PreciseCapture) {
                     visit_precise_capture_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_predicate_lifetime_mut(&mut self, i: &mut ::syntax::PredicateLifetime) {
+                        fn visit_predicate_lifetime_mut(&mut self, i: &mut ::syntax::PredicateLifetime) {
                     visit_predicate_lifetime_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_predicate_type_mut(&mut self, i: &mut ::syntax::PredicateType) {
+                        fn visit_predicate_type_mut(&mut self, i: &mut ::syntax::PredicateType) {
                     visit_predicate_type_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_qself_mut(&mut self, i: &mut ::syntax::QSelf) {
+                        fn visit_qself_mut(&mut self, i: &mut ::syntax::QSelf) {
                     visit_qself_mut(self, i);
                 }
                             fn visit_range_limits_mut(&mut self, i: &mut ::syntax::RangeLimits) {
@@ -38266,15 +38186,13 @@ pub mod syntax
                             fn visit_receiver_mut(&mut self, i: &mut ::syntax::Receiver) {
                     visit_receiver_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_return_type_mut(&mut self, i: &mut ::syntax::ReturnType) {
+                        fn visit_return_type_mut(&mut self, i: &mut ::syntax::ReturnType) {
                     visit_return_type_mut(self, i);
                 }
                             fn visit_signature_mut(&mut self, i: &mut ::syntax::Signature) {
                     visit_signature_mut(self, i);
                 }
-                fn visit_span_mut(&mut self, i: &mut proc_macro2::Span) {}
+                fn visit_span_mut(&mut self, i: &mut process::macros::Span) {}
                             fn visit_static_mutability_mut(&mut self, i: &mut ::syntax::StaticMutability) {
                     visit_static_mutability_mut(self, i);
                 }
@@ -38284,15 +38202,11 @@ pub mod syntax
                             fn visit_stmt_macro_mut(&mut self, i: &mut ::syntax::StmtMacro) {
                     visit_stmt_macro_mut(self, i);
                 }
-                fn visit_token_stream_mut(&mut self, i: &mut proc_macro2::TokenStream) {}
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_trait_bound_mut(&mut self, i: &mut ::syntax::TraitBound) {
+                fn visit_token_stream_mut(&mut self, i: &mut process::macros::TokenStream) {}
+                        fn visit_trait_bound_mut(&mut self, i: &mut ::syntax::TraitBound) {
                     visit_trait_bound_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_trait_bound_modifier_mut(&mut self, i: &mut ::syntax::TraitBoundModifier) {
+                        fn visit_trait_bound_modifier_mut(&mut self, i: &mut ::syntax::TraitBoundModifier) {
                     visit_trait_bound_modifier_mut(self, i);
                 }
                             fn visit_trait_item_mut(&mut self, i: &mut ::syntax::TraitItem) {
@@ -38310,94 +38224,58 @@ pub mod syntax
                             fn visit_trait_item_type_mut(&mut self, i: &mut ::syntax::TraitItemType) {
                     visit_trait_item_type_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_mut(&mut self, i: &mut ::syntax::Type) {
+                        fn visit_type_mut(&mut self, i: &mut ::syntax::Type) {
                     visit_type_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_array_mut(&mut self, i: &mut ::syntax::TypeArray) {
+                        fn visit_type_array_mut(&mut self, i: &mut ::syntax::TypeArray) {
                     visit_type_array_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_bare_fn_mut(&mut self, i: &mut ::syntax::TypeBareFn) {
+                        fn visit_type_bare_fn_mut(&mut self, i: &mut ::syntax::TypeBareFn) {
                     visit_type_bare_fn_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_group_mut(&mut self, i: &mut ::syntax::TypeGroup) {
+                        fn visit_type_group_mut(&mut self, i: &mut ::syntax::TypeGroup) {
                     visit_type_group_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_impl_trait_mut(&mut self, i: &mut ::syntax::TypeImplTrait) {
+                        fn visit_type_impl_trait_mut(&mut self, i: &mut ::syntax::TypeImplTrait) {
                     visit_type_impl_trait_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_infer_mut(&mut self, i: &mut ::syntax::TypeInfer) {
+                        fn visit_type_infer_mut(&mut self, i: &mut ::syntax::TypeInfer) {
                     visit_type_infer_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_macro_mut(&mut self, i: &mut ::syntax::TypeMacro) {
+                        fn visit_type_macro_mut(&mut self, i: &mut ::syntax::TypeMacro) {
                     visit_type_macro_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_never_mut(&mut self, i: &mut ::syntax::TypeNever) {
+                        fn visit_type_never_mut(&mut self, i: &mut ::syntax::TypeNever) {
                     visit_type_never_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_param_mut(&mut self, i: &mut ::syntax::TypeParam) {
+                        fn visit_type_param_mut(&mut self, i: &mut ::syntax::TypeParam) {
                     visit_type_param_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_param_bound_mut(&mut self, i: &mut ::syntax::TypeParamBound) {
+                        fn visit_type_param_bound_mut(&mut self, i: &mut ::syntax::TypeParamBound) {
                     visit_type_param_bound_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_paren_mut(&mut self, i: &mut ::syntax::TypeParen) {
+                        fn visit_type_paren_mut(&mut self, i: &mut ::syntax::TypeParen) {
                     visit_type_paren_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_path_mut(&mut self, i: &mut ::syntax::TypePath) {
+                        fn visit_type_path_mut(&mut self, i: &mut ::syntax::TypePath) {
                     visit_type_path_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_ptr_mut(&mut self, i: &mut ::syntax::TypePtr) {
+                        fn visit_type_ptr_mut(&mut self, i: &mut ::syntax::TypePtr) {
                     visit_type_ptr_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_reference_mut(&mut self, i: &mut ::syntax::TypeReference) {
+                        fn visit_type_reference_mut(&mut self, i: &mut ::syntax::TypeReference) {
                     visit_type_reference_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_slice_mut(&mut self, i: &mut ::syntax::TypeSlice) {
+                        fn visit_type_slice_mut(&mut self, i: &mut ::syntax::TypeSlice) {
                     visit_type_slice_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_trait_object_mut(&mut self, i: &mut ::syntax::TypeTraitObject) {
+                        fn visit_type_trait_object_mut(&mut self, i: &mut ::syntax::TypeTraitObject) {
                     visit_type_trait_object_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_type_tuple_mut(&mut self, i: &mut ::syntax::TypeTuple) {
+                        fn visit_type_tuple_mut(&mut self, i: &mut ::syntax::TypeTuple) {
                     visit_type_tuple_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_un_op_mut(&mut self, i: &mut ::syntax::UnOp) {
+                        fn visit_un_op_mut(&mut self, i: &mut ::syntax::UnOp) {
                     visit_un_op_mut(self, i);
                 }
                             fn visit_use_glob_mut(&mut self, i: &mut ::syntax::UseGlob) {
@@ -38421,34 +38299,22 @@ pub mod syntax
                             fn visit_variadic_mut(&mut self, i: &mut ::syntax::Variadic) {
                     visit_variadic_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_variant_mut(&mut self, i: &mut ::syntax::Variant) {
+                        fn visit_variant_mut(&mut self, i: &mut ::syntax::Variant) {
                     visit_variant_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_vis_restricted_mut(&mut self, i: &mut ::syntax::VisRestricted) {
+                        fn visit_vis_restricted_mut(&mut self, i: &mut ::syntax::VisRestricted) {
                     visit_vis_restricted_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_visibility_mut(&mut self, i: &mut ::syntax::Visibility) {
+                        fn visit_visibility_mut(&mut self, i: &mut ::syntax::Visibility) {
                     visit_visibility_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_where_clause_mut(&mut self, i: &mut ::syntax::WhereClause) {
+                        fn visit_where_clause_mut(&mut self, i: &mut ::syntax::WhereClause) {
                     visit_where_clause_mut(self, i);
                 }
-                #[cfg(any(feature = "derive", feature = "full"))]
-                #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-                fn visit_where_predicate_mut(&mut self, i: &mut ::syntax::WherePredicate) {
+                        fn visit_where_predicate_mut(&mut self, i: &mut ::syntax::WherePredicate) {
                     visit_where_predicate_mut(self, i);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_abi_mut<V>(v: &mut V, node: &mut ::syntax::Abi) where
                 V: VisitMut + ?Sized,
             {
@@ -38457,8 +38323,6 @@ pub mod syntax
                     v.visit_lit_str_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_angle_bracketed_generic_arguments_mut<V>(
                 v: &mut V,
                 node: &mut ::syntax::AngleBracketedGenericArguments,
@@ -38486,8 +38350,6 @@ pub mod syntax
                 v.visit_expr_mut(&mut *node.body);
                 skip!(node.comma);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_assoc_const_mut<V>(v: &mut V, node: &mut ::syntax::AssocConst) where
                 V: VisitMut + ?Sized,
             {
@@ -38498,8 +38360,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_expr_mut(&mut node.value);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_assoc_type_mut<V>(v: &mut V, node: &mut ::syntax::AssocType) where
                 V: VisitMut + ?Sized,
             {
@@ -38510,8 +38370,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_type_mut(&mut node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_attr_style_mut<V>(v: &mut V, node: &mut ::syntax::AttrStyle) where
                 V: VisitMut + ?Sized,
             {
@@ -38522,8 +38380,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_attribute_mut<V>(v: &mut V, node: &mut ::syntax::Attribute) where
                 V: VisitMut + ?Sized,
             {
@@ -38532,8 +38388,6 @@ pub mod syntax
                 skip!(node.bracket_token);
                 v.visit_meta_mut(&mut node.meta);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bare_fn_arg_mut<V>(v: &mut V, node: &mut ::syntax::BareFnArg) where
                 V: VisitMut + ?Sized,
             {
@@ -38544,8 +38398,6 @@ pub mod syntax
                 }
                 v.visit_type_mut(&mut node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bare_variadic_mut<V>(v: &mut V, node: &mut ::syntax::BareVariadic) where
                 V: VisitMut + ?Sized,
             {
@@ -38557,8 +38409,6 @@ pub mod syntax
                 skip!(node.dots);
                 skip!(node.comma);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bin_op_mut<V>(v: &mut V, node: &mut ::syntax::BinOp) where
                 V: VisitMut + ?Sized,
             {
@@ -38657,8 +38507,6 @@ pub mod syntax
                     v.visit_stmt_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_bound_lifetimes_mut<V>(v: &mut V, node: &mut ::syntax::BoundLifetimes) where
                 V: VisitMut + ?Sized,
             {
@@ -38682,8 +38530,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_const_param_mut<V>(v: &mut V, node: &mut ::syntax::ConstParam) where
                 V: VisitMut + ?Sized,
             {
@@ -38697,8 +38543,6 @@ pub mod syntax
                     v.visit_expr_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_constraint_mut<V>(v: &mut V, node: &mut ::syntax::Constraint) where
                 V: VisitMut + ?Sized,
             {
@@ -38712,8 +38556,6 @@ pub mod syntax
                     v.visit_type_param_bound_mut(it);
                 }
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_mut<V>(v: &mut V, node: &mut ::syntax::Data) where
                 V: VisitMut + ?Sized,
             {
@@ -38729,8 +38571,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_enum_mut<V>(v: &mut V, node: &mut ::syntax::DataEnum) where
                 V: VisitMut + ?Sized,
             {
@@ -38741,8 +38581,6 @@ pub mod syntax
                     v.visit_variant_mut(it);
                 }
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_struct_mut<V>(v: &mut V, node: &mut ::syntax::DataStruct) where
                 V: VisitMut + ?Sized,
             {
@@ -38750,16 +38588,12 @@ pub mod syntax
                 v.visit_fields_mut(&mut node.fields);
                 skip!(node.semi_token);
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_data_union_mut<V>(v: &mut V, node: &mut ::syntax::DataUnion) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.union_token);
                 v.visit_fields_named_mut(&mut node.fields);
             }
-            #[cfg(feature = "derive")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub fn visit_derive_input_mut<V>(v: &mut V, node: &mut ::syntax::DeriveInput) where
                 V: VisitMut + ?Sized,
             {
@@ -38769,8 +38603,6 @@ pub mod syntax
                 v.visit_generics_mut(&mut node.generics);
                 v.visit_data_mut(&mut node.data);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_mut<V>(v: &mut V, node: &mut ::syntax::Expr) where
                 V: VisitMut + ?Sized,
             {
@@ -38931,8 +38763,6 @@ pub mod syntax
                 skip!(node.dot_token);
                 skip!(node.await_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_binary_mut<V>(v: &mut V, node: &mut ::syntax::ExprBinary) where
                 V: VisitMut + ?Sized,
             {
@@ -38962,8 +38792,6 @@ pub mod syntax
                     v.visit_expr_mut(&mut **it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_call_mut<V>(v: &mut V, node: &mut ::syntax::ExprCall) where
                 V: VisitMut + ?Sized,
             {
@@ -38975,8 +38803,6 @@ pub mod syntax
                     v.visit_expr_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_cast_mut<V>(v: &mut V, node: &mut ::syntax::ExprCast) where
                 V: VisitMut + ?Sized,
             {
@@ -39021,8 +38847,6 @@ pub mod syntax
                     v.visit_lifetime_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_field_mut<V>(v: &mut V, node: &mut ::syntax::ExprField) where
                 V: VisitMut + ?Sized,
             {
@@ -39044,8 +38868,6 @@ pub mod syntax
                 v.visit_expr_mut(&mut *node.expr);
                 v.visit_block_mut(&mut node.body);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_group_mut<V>(v: &mut V, node: &mut ::syntax::ExprGroup) where
                 V: VisitMut + ?Sized,
             {
@@ -39065,8 +38887,6 @@ pub mod syntax
                     v.visit_expr_mut(&mut *(it).1);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_index_mut<V>(v: &mut V, node: &mut ::syntax::ExprIndex) where
                 V: VisitMut + ?Sized,
             {
@@ -39090,8 +38910,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_expr_mut(&mut *node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_lit_mut<V>(v: &mut V, node: &mut ::syntax::ExprLit) where
                 V: VisitMut + ?Sized,
             {
@@ -39108,8 +38926,6 @@ pub mod syntax
                 skip!(node.loop_token);
                 v.visit_block_mut(&mut node.body);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_macro_mut<V>(v: &mut V, node: &mut ::syntax::ExprMacro) where
                 V: VisitMut + ?Sized,
             {
@@ -39127,8 +38943,6 @@ pub mod syntax
                     v.visit_arm_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_method_call_mut<V>(v: &mut V, node: &mut ::syntax::ExprMethodCall) where
                 V: VisitMut + ?Sized,
             {
@@ -39145,8 +38959,6 @@ pub mod syntax
                     v.visit_expr_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_paren_mut<V>(v: &mut V, node: &mut ::syntax::ExprParen) where
                 V: VisitMut + ?Sized,
             {
@@ -39154,8 +38966,6 @@ pub mod syntax
                 skip!(node.paren_token);
                 v.visit_expr_mut(&mut *node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_path_mut<V>(v: &mut V, node: &mut ::syntax::ExprPath) where
                 V: VisitMut + ?Sized,
             {
@@ -39186,8 +38996,6 @@ pub mod syntax
                 v.visit_pointer_mutability_mut(&mut node.mutability);
                 v.visit_expr_mut(&mut *node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_reference_mut<V>(v: &mut V, node: &mut ::syntax::ExprReference) where
                 V: VisitMut + ?Sized,
             {
@@ -39214,8 +39022,6 @@ pub mod syntax
                     v.visit_expr_mut(&mut **it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_struct_mut<V>(v: &mut V, node: &mut ::syntax::ExprStruct) where
                 V: VisitMut + ?Sized,
             {
@@ -39248,8 +39054,6 @@ pub mod syntax
                 skip!(node.try_token);
                 v.visit_block_mut(&mut node.block);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_tuple_mut<V>(v: &mut V, node: &mut ::syntax::ExprTuple) where
                 V: VisitMut + ?Sized,
             {
@@ -39260,8 +39064,6 @@ pub mod syntax
                     v.visit_expr_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_expr_unary_mut<V>(v: &mut V, node: &mut ::syntax::ExprUnary) where
                 V: VisitMut + ?Sized,
             {
@@ -39296,8 +39098,6 @@ pub mod syntax
                     v.visit_expr_mut(&mut **it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_field_mut<V>(v: &mut V, node: &mut ::syntax::Field) where
                 V: VisitMut + ?Sized,
             {
@@ -39310,8 +39110,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_type_mut(&mut node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_field_mutability_mut<V>(v: &mut V, node: &mut ::syntax::FieldMutability) where
                 V: VisitMut + ?Sized,
             {
@@ -39327,8 +39125,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_pat_mut(&mut *node.pat);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_field_value_mut<V>(v: &mut V, node: &mut ::syntax::FieldValue) where
                 V: VisitMut + ?Sized,
             {
@@ -39337,8 +39133,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_expr_mut(&mut node.expr);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_fields_mut<V>(v: &mut V, node: &mut ::syntax::Fields) where
                 V: VisitMut + ?Sized,
             {
@@ -39352,8 +39146,6 @@ pub mod syntax
                     ::syntax::Fields::Unit => {}
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_fields_named_mut<V>(v: &mut V, node: &mut ::syntax::FieldsNamed) where
                 V: VisitMut + ?Sized,
             {
@@ -39363,8 +39155,6 @@ pub mod syntax
                     v.visit_field_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_fields_unnamed_mut<V>(v: &mut V, node: &mut ::syntax::FieldsUnnamed) where
                 V: VisitMut + ?Sized,
             {
@@ -39453,8 +39243,6 @@ pub mod syntax
                 v.visit_generics_mut(&mut node.generics);
                 skip!(node.semi_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_generic_argument_mut<V>(v: &mut V, node: &mut ::syntax::GenericArgument) where
                 V: VisitMut + ?Sized,
             {
@@ -39479,8 +39267,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_generic_param_mut<V>(v: &mut V, node: &mut ::syntax::GenericParam) where
                 V: VisitMut + ?Sized,
             {
@@ -39496,8 +39282,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_generics_mut<V>(v: &mut V, node: &mut ::syntax::Generics) where
                 V: VisitMut + ?Sized,
             {
@@ -39511,7 +39295,7 @@ pub mod syntax
                     v.visit_where_clause_mut(it);
                 }
             }
-            pub fn visit_ident_mut<V>(v: &mut V, node: &mut proc_macro2::Ident) where
+            pub fn visit_ident_mut<V>(v: &mut V, node: &mut process::macros::Ident) where
                 V: VisitMut + ?Sized,
             {
                 let mut span = node.span();
@@ -39588,8 +39372,6 @@ pub mod syntax
             {
                 match *node {}
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_index_mut<V>(v: &mut V, node: &mut ::syntax::Index) where
                 V: VisitMut + ?Sized,
             {
@@ -39863,8 +39645,6 @@ pub mod syntax
                 v.visit_span_mut(&mut node.apostrophe);
                 v.visit_ident_mut(&mut node.ident);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_lifetime_param_mut<V>(v: &mut V, node: &mut ::syntax::LifetimeParam) where
                 V: VisitMut + ?Sized,
             {
@@ -39957,8 +39737,6 @@ pub mod syntax
                     v.visit_expr_mut(&mut *(it).1);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_macro_mut<V>(v: &mut V, node: &mut ::syntax::Macro) where
                 V: VisitMut + ?Sized,
             {
@@ -39967,8 +39745,6 @@ pub mod syntax
                 v.visit_macro_delimiter_mut(&mut node.delimiter);
                 v.visit_token_stream_mut(&mut node.tokens);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_macro_delimiter_mut<V>(v: &mut V, node: &mut ::syntax::MacroDelimiter) where
                 V: VisitMut + ?Sized,
             {
@@ -39984,8 +39760,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_member_mut<V>(v: &mut V, node: &mut ::syntax::Member) where
                 V: VisitMut + ?Sized,
             {
@@ -39998,8 +39772,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_meta_mut<V>(v: &mut V, node: &mut ::syntax::Meta) where
                 V: VisitMut + ?Sized,
             {
@@ -40015,8 +39787,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_meta_list_mut<V>(v: &mut V, node: &mut ::syntax::MetaList) where
                 V: VisitMut + ?Sized,
             {
@@ -40024,8 +39794,6 @@ pub mod syntax
                 v.visit_macro_delimiter_mut(&mut node.delimiter);
                 v.visit_token_stream_mut(&mut node.tokens);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_meta_name_value_mut<V>(v: &mut V, node: &mut ::syntax::MetaNameValue) where
                 V: VisitMut + ?Sized,
             {
@@ -40033,8 +39801,6 @@ pub mod syntax
                 skip!(node.eq_token);
                 v.visit_expr_mut(&mut node.value);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_parenthesized_generic_arguments_mut<V>(
                 v: &mut V,
                 node: &mut ::syntax::ParenthesizedGenericArguments,
@@ -40213,8 +39979,6 @@ pub mod syntax
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.underscore_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_path_mut<V>(v: &mut V, node: &mut ::syntax::Path) where
                 V: VisitMut + ?Sized,
             {
@@ -40224,8 +39988,6 @@ pub mod syntax
                     v.visit_path_segment_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_path_arguments_mut<V>(v: &mut V, node: &mut ::syntax::PathArguments) where
                 V: VisitMut + ?Sized,
             {
@@ -40239,8 +40001,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_path_segment_mut<V>(v: &mut V, node: &mut ::syntax::PathSegment) where
                 V: VisitMut + ?Sized,
             {
@@ -40270,8 +40030,6 @@ pub mod syntax
                 }
                 skip!(node.gt_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_predicate_lifetime_mut<V>(v: &mut V, node: &mut ::syntax::PredicateLifetime) where
                 V: VisitMut + ?Sized,
             {
@@ -40282,8 +40040,6 @@ pub mod syntax
                     v.visit_lifetime_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_predicate_type_mut<V>(v: &mut V, node: &mut ::syntax::PredicateType) where
                 V: VisitMut + ?Sized,
             {
@@ -40297,8 +40053,6 @@ pub mod syntax
                     v.visit_type_param_bound_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_qself_mut<V>(v: &mut V, node: &mut ::syntax::QSelf) where
                 V: VisitMut + ?Sized,
             {
@@ -40335,8 +40089,6 @@ pub mod syntax
                 skip!(node.colon_token);
                 v.visit_type_mut(&mut *node.ty);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_return_type_mut<V>(v: &mut V, node: &mut ::syntax::ReturnType) where
                 V: VisitMut + ?Sized,
             {
@@ -40370,7 +40122,7 @@ pub mod syntax
                 }
                 v.visit_return_type_mut(&mut node.output);
             }
-            pub fn visit_span_mut<V>(v: &mut V, node: &mut proc_macro2::Span) where
+            pub fn visit_span_mut<V>(v: &mut V, node: &mut process::macros::Span) where
                 V: VisitMut + ?Sized,
             {}
                 pub fn visit_static_mutability_mut<V>(v: &mut V, node: &mut ::syntax::StaticMutability) where
@@ -40409,8 +40161,6 @@ pub mod syntax
                 v.visit_macro_mut(&mut node.mac);
                 skip!(node.semi_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_trait_bound_mut<V>(v: &mut V, node: &mut ::syntax::TraitBound) where
                 V: VisitMut + ?Sized,
             {
@@ -40421,8 +40171,6 @@ pub mod syntax
                 }
                 v.visit_path_mut(&mut node.path);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_trait_bound_modifier_mut<V>(v: &mut V, node: &mut ::syntax::TraitBoundModifier) where
                 V: VisitMut + ?Sized,
             {
@@ -40504,8 +40252,6 @@ pub mod syntax
                 }
                 skip!(node.semi_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_mut<V>(v: &mut V, node: &mut ::syntax::Type) where
                 V: VisitMut + ?Sized,
             {
@@ -40557,8 +40303,6 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_array_mut<V>(v: &mut V, node: &mut ::syntax::TypeArray) where
                 V: VisitMut + ?Sized,
             {
@@ -40567,8 +40311,6 @@ pub mod syntax
                 skip!(node.semi_token);
                 v.visit_expr_mut(&mut node.len);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_bare_fn_mut<V>(v: &mut V, node: &mut ::syntax::TypeBareFn) where
                 V: VisitMut + ?Sized,
             {
@@ -40590,16 +40332,12 @@ pub mod syntax
                 }
                 v.visit_return_type_mut(&mut node.output);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_group_mut<V>(v: &mut V, node: &mut ::syntax::TypeGroup) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.group_token);
                 v.visit_type_mut(&mut *node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_impl_trait_mut<V>(v: &mut V, node: &mut ::syntax::TypeImplTrait) where
                 V: VisitMut + ?Sized,
             {
@@ -40609,29 +40347,21 @@ pub mod syntax
                     v.visit_type_param_bound_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_infer_mut<V>(v: &mut V, node: &mut ::syntax::TypeInfer) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.underscore_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_macro_mut<V>(v: &mut V, node: &mut ::syntax::TypeMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_macro_mut(&mut node.mac);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_never_mut<V>(v: &mut V, node: &mut ::syntax::TypeNever) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.bang_token);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_param_mut<V>(v: &mut V, node: &mut ::syntax::TypeParam) where
                 V: VisitMut + ?Sized,
             {
@@ -40647,8 +40377,6 @@ pub mod syntax
                     v.visit_type_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_param_bound_mut<V>(v: &mut V, node: &mut ::syntax::TypeParamBound) where
                 V: VisitMut + ?Sized,
             {
@@ -40667,16 +40395,12 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_paren_mut<V>(v: &mut V, node: &mut ::syntax::TypeParen) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.paren_token);
                 v.visit_type_mut(&mut *node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_path_mut<V>(v: &mut V, node: &mut ::syntax::TypePath) where
                 V: VisitMut + ?Sized,
             {
@@ -40685,8 +40409,6 @@ pub mod syntax
                 }
                 v.visit_path_mut(&mut node.path);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_ptr_mut<V>(v: &mut V, node: &mut ::syntax::TypePtr) where
                 V: VisitMut + ?Sized,
             {
@@ -40695,8 +40417,6 @@ pub mod syntax
                 skip!(node.mutability);
                 v.visit_type_mut(&mut *node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_reference_mut<V>(v: &mut V, node: &mut ::syntax::TypeReference) where
                 V: VisitMut + ?Sized,
             {
@@ -40707,16 +40427,12 @@ pub mod syntax
                 skip!(node.mutability);
                 v.visit_type_mut(&mut *node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_slice_mut<V>(v: &mut V, node: &mut ::syntax::TypeSlice) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.bracket_token);
                 v.visit_type_mut(&mut *node.elem);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_trait_object_mut<V>(v: &mut V, node: &mut ::syntax::TypeTraitObject) where
                 V: VisitMut + ?Sized,
             {
@@ -40726,8 +40442,6 @@ pub mod syntax
                     v.visit_type_param_bound_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_type_tuple_mut<V>(v: &mut V, node: &mut ::syntax::TypeTuple) where
                 V: VisitMut + ?Sized,
             {
@@ -40737,8 +40451,6 @@ pub mod syntax
                     v.visit_type_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_un_op_mut<V>(v: &mut V, node: &mut ::syntax::UnOp) where
                 V: VisitMut + ?Sized,
             {
@@ -40819,8 +40531,6 @@ pub mod syntax
                 skip!(node.dots);
                 skip!(node.comma);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_variant_mut<V>(v: &mut V, node: &mut ::syntax::Variant) where
                 V: VisitMut + ?Sized,
             {
@@ -40832,8 +40542,6 @@ pub mod syntax
                     v.visit_expr_mut(&mut (it).1);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_vis_restricted_mut<V>(v: &mut V, node: &mut ::syntax::VisRestricted) where
                 V: VisitMut + ?Sized,
             {
@@ -40842,8 +40550,6 @@ pub mod syntax
                 skip!(node.in_token);
                 v.visit_path_mut(&mut *node.path);
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_visibility_mut<V>(v: &mut V, node: &mut ::syntax::Visibility) where
                 V: VisitMut + ?Sized,
             {
@@ -40857,8 +40563,6 @@ pub mod syntax
                     ::syntax::Visibility::Inherited => {}
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_where_clause_mut<V>(v: &mut V, node: &mut ::syntax::WhereClause) where
                 V: VisitMut + ?Sized,
             {
@@ -40868,8 +40572,6 @@ pub mod syntax
                     v.visit_where_predicate_mut(it);
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
-            #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
             pub fn visit_where_predicate_mut<V>(v: &mut V, node: &mut ::syntax::WherePredicate) where
                 V: VisitMut + ?Sized,
             {
@@ -41144,10 +40846,9 @@ pub mod syntax
                         ::syntax::Expr::Unary(v0) => ::syntax::Expr::Unary(v0.clone()),
                                         ::syntax::Expr::Unsafe(v0) => ::syntax::Expr::Unsafe(v0.clone()),
                         ::syntax::Expr::Verbatim(v0) => ::syntax::Expr::Verbatim(v0.clone()),
-                                        ::syntax::Expr::While(v0) => ::syntax::Expr::While(v0.clone()),
-                                        ::syntax::Expr::Yield(v0) => ::syntax::Expr::Yield(v0.clone()),
-                        #[cfg(not(feature = "full"))]
-                        _ => unreachable!(),
+                        ::syntax::Expr::While(v0) => ::syntax::Expr::While(v0.clone()),
+                        ::syntax::Expr::Yield(v0) => ::syntax::Expr::Yield(v0.clone()),
+                                        
                     }
                 }
             }
@@ -42748,8 +42449,6 @@ pub mod syntax
                         ::syntax::TypeParamBound::Verbatim(v0) => {
                             ::syntax::TypeParamBound::Verbatim(v0.clone())
                         }
-                        #[cfg(not(feature = "full"))]
-                        _ => unreachable!(),
                     }
                 }
             }
@@ -42956,11 +42655,11 @@ pub mod syntax
         {
             use ::
             {
+                fmt::{self, Debug},
                 *,
             };
             /*
             #![allow(unknown_lints, non_local_definitions)]
-            use std::fmt::{self, Debug};
             */
             impl Debug for ::syntax::Abi {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
@@ -42975,7 +42674,6 @@ pub mod syntax
                     self.debug(formatter, "AngleBracketedGenericArguments")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::AngleBracketedGenericArguments {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43265,7 +42963,7 @@ pub mod syntax
                     formatter.finish()
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Debug for ::syntax::Data {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     formatter.write_str("Data::")?;
@@ -43276,13 +42974,13 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Debug for ::syntax::DataEnum {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     self.debug(formatter, "DataEnum")
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl ::syntax::DataEnum {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43292,13 +42990,13 @@ pub mod syntax
                     formatter.finish()
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Debug for ::syntax::DataStruct {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     self.debug(formatter, "DataStruct")
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl ::syntax::DataStruct {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43308,13 +43006,13 @@ pub mod syntax
                     formatter.finish()
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Debug for ::syntax::DataUnion {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     self.debug(formatter, "DataUnion")
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl ::syntax::DataUnion {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43323,7 +43021,7 @@ pub mod syntax
                     formatter.finish()
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Debug for ::syntax::DeriveInput {
                 fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                     let mut formatter = formatter.debug_struct("DeriveInput");
@@ -43383,9 +43081,7 @@ pub mod syntax
                         }
                         
                         ::syntax::Expr::While(v0) => v0.debug(formatter, "While"),
-                                        ::syntax::Expr::Yield(v0) => v0.debug(formatter, "Yield"),
-                        #[cfg(not(feature = "full"))]
-                        _ => unreachable!(),
+                        ::syntax::Expr::Yield(v0) => v0.debug(formatter, "Yield"),
                     }
                 }
             }
@@ -43453,7 +43149,6 @@ pub mod syntax
                     self.debug(formatter, "ExprBinary")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprBinary {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43498,7 +43193,6 @@ pub mod syntax
                     self.debug(formatter, "ExprCall")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprCall {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43514,7 +43208,6 @@ pub mod syntax
                     self.debug(formatter, "ExprCast")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprCast {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43580,7 +43273,6 @@ pub mod syntax
                     self.debug(formatter, "ExprField")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprField {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43614,7 +43306,6 @@ pub mod syntax
                     self.debug(formatter, "ExprGroup")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprGroup {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43645,7 +43336,6 @@ pub mod syntax
                     self.debug(formatter, "ExprIndex")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprIndex {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43690,7 +43380,6 @@ pub mod syntax
                     self.debug(formatter, "ExprLit")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprLit {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43719,7 +43408,6 @@ pub mod syntax
                     self.debug(formatter, "ExprMacro")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprMacro {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43749,7 +43437,6 @@ pub mod syntax
                     self.debug(formatter, "ExprMethodCall")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprMethodCall {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43768,7 +43455,6 @@ pub mod syntax
                     self.debug(formatter, "ExprParen")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprParen {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43783,7 +43469,6 @@ pub mod syntax
                     self.debug(formatter, "ExprPath")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprPath {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43829,7 +43514,6 @@ pub mod syntax
                     self.debug(formatter, "ExprReference")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprReference {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43875,7 +43559,6 @@ pub mod syntax
                     self.debug(formatter, "ExprStruct")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprStruct {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43922,7 +43605,6 @@ pub mod syntax
                     self.debug(formatter, "ExprTuple")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprTuple {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -43937,7 +43619,6 @@ pub mod syntax
                     self.debug(formatter, "ExprUnary")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ExprUnary {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -44046,7 +43727,6 @@ pub mod syntax
                     self.debug(formatter, "FieldsNamed")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::FieldsNamed {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -44060,7 +43740,6 @@ pub mod syntax
                     self.debug(formatter, "FieldsUnnamed")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::FieldsUnnamed {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -44788,7 +44467,6 @@ pub mod syntax
                     self.debug(formatter, "MetaList")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::MetaList {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -44803,7 +44481,6 @@ pub mod syntax
                     self.debug(formatter, "MetaNameValue")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::MetaNameValue {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -44818,7 +44495,6 @@ pub mod syntax
                     self.debug(formatter, "ParenthesizedGenericArguments")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::ParenthesizedGenericArguments {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45022,7 +44698,6 @@ pub mod syntax
                     self.debug(formatter, "Path")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::Path {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45354,7 +45029,6 @@ pub mod syntax
                     self.debug(formatter, "TypeArray")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeArray {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45370,7 +45044,6 @@ pub mod syntax
                     self.debug(formatter, "TypeBareFn")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeBareFn {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45390,7 +45063,6 @@ pub mod syntax
                     self.debug(formatter, "TypeGroup")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeGroup {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45404,7 +45076,6 @@ pub mod syntax
                     self.debug(formatter, "TypeImplTrait")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeImplTrait {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45418,7 +45089,6 @@ pub mod syntax
                     self.debug(formatter, "TypeInfer")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeInfer {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45431,7 +45101,6 @@ pub mod syntax
                     self.debug(formatter, "TypeMacro")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeMacro {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45444,7 +45113,6 @@ pub mod syntax
                     self.debug(formatter, "TypeNever")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeNever {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45484,8 +45152,6 @@ pub mod syntax
                             formatter.field(v0);
                             formatter.finish()
                         }
-                        #[cfg(not(feature = "full"))]
-                        _ => unreachable!(),
                     }
                 }
             }
@@ -45494,7 +45160,6 @@ pub mod syntax
                     self.debug(formatter, "TypeParen")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeParen {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45508,7 +45173,6 @@ pub mod syntax
                     self.debug(formatter, "TypePath")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypePath {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45522,7 +45186,6 @@ pub mod syntax
                     self.debug(formatter, "TypePtr")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypePtr {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45538,7 +45201,6 @@ pub mod syntax
                     self.debug(formatter, "TypeReference")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeReference {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45554,7 +45216,6 @@ pub mod syntax
                     self.debug(formatter, "TypeSlice")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeSlice {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45568,7 +45229,6 @@ pub mod syntax
                     self.debug(formatter, "TypeTraitObject")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeTraitObject {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45582,7 +45242,6 @@ pub mod syntax
                     self.debug(formatter, "TypeTuple")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::TypeTuple {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45710,7 +45369,6 @@ pub mod syntax
                     self.debug(formatter, "VisRestricted")
                 }
             }
-            #[cfg(any(feature = "derive", feature = "full"))]
             impl ::syntax::VisRestricted {
                 fn debug(&self, formatter: &mut fmt::Formatter, name: &str) -> fmt::Result {
                     let mut formatter = formatter.debug_struct(name);
@@ -45766,47 +45424,53 @@ pub mod syntax
         {
             use ::
             {
+                syntax::tt::TokenStreamHelper,
                 *,
             };
             /*
-            use ::syntax::tt::TokenStreamHelper;
             */
             impl Eq for ::syntax::Abi {}
             impl PartialEq for ::syntax::Abi {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.name == other.name
                 }
             }
             impl Eq for ::syntax::AngleBracketedGenericArguments {}
             impl PartialEq for ::syntax::AngleBracketedGenericArguments {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.colon2_token == other.colon2_token && self.args == other.args
                 }
             }
                 impl  Eq for ::syntax::Arm {}
                 impl  PartialEq for ::syntax::Arm {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.pat == other.pat && self.guard == other.guard
                         && self.body == other.body && self.comma == other.comma
                 }
             }
             impl Eq for ::syntax::AssocConst {}
             impl PartialEq for ::syntax::AssocConst {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident && self.generics == other.generics
                         && self.value == other.value
                 }
             }
             impl Eq for ::syntax::AssocType {}
             impl PartialEq for ::syntax::AssocType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident && self.generics == other.generics
                         && self.ty == other.ty
                 }
             }
             impl Eq for ::syntax::AttrStyle {}
             impl PartialEq for ::syntax::AttrStyle {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::AttrStyle::Outer, ::syntax::AttrStyle::Outer) => true,
                         (::syntax::AttrStyle::Inner(_), ::syntax::AttrStyle::Inner(_)) => true,
@@ -45816,25 +45480,29 @@ pub mod syntax
             }
             impl Eq for ::syntax::Attribute {}
             impl PartialEq for ::syntax::Attribute {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.style == other.style && self.meta == other.meta
                 }
             }
             impl Eq for ::syntax::BareFnArg {}
             impl PartialEq for ::syntax::BareFnArg {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.name == other.name && self.ty == other.ty
                 }
             }
             impl Eq for ::syntax::BareVariadic {}
             impl PartialEq for ::syntax::BareVariadic {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.name == other.name && self.comma == other.comma
                 }
             }
             impl Eq for ::syntax::BinOp {}
             impl PartialEq for ::syntax::BinOp {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::BinOp::Add(_), ::syntax::BinOp::Add(_)) => true,
                         (::syntax::BinOp::Sub(_), ::syntax::BinOp::Sub(_)) => true,
@@ -45870,19 +45538,22 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::Block {}
                 impl  PartialEq for ::syntax::Block {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.stmts == other.stmts
                 }
             }
             impl Eq for ::syntax::BoundLifetimes {}
             impl PartialEq for ::syntax::BoundLifetimes {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.lifetimes == other.lifetimes
                 }
             }
                 impl  Eq for ::syntax::CapturedParam {}
                 impl  PartialEq for ::syntax::CapturedParam {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (
                             ::syntax::CapturedParam::Lifetime(self0),
@@ -45897,23 +45568,26 @@ pub mod syntax
             }
             impl Eq for ::syntax::ConstParam {}
             impl PartialEq for ::syntax::ConstParam {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.ident == other.ident && self.ty == other.ty
                         && self.eq_token == other.eq_token && self.default == other.default
                 }
             }
             impl Eq for ::syntax::Constraint {}
             impl PartialEq for ::syntax::Constraint {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident && self.generics == other.generics
                         && self.bounds == other.bounds
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Eq for ::syntax::Data {}
-            #[cfg(feature = "derive")]
+            
             impl  PartialEq for ::syntax::Data {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Data::Struct(self0), ::syntax::Data::Struct(other0)) => self0 == other0,
                         (::syntax::Data::Enum(self0), ::syntax::Data::Enum(other0)) => self0 == other0,
@@ -45922,42 +45596,47 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Eq for ::syntax::DataEnum {}
-            #[cfg(feature = "derive")]
+            
             impl  PartialEq for ::syntax::DataEnum {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.variants == other.variants
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Eq for ::syntax::DataStruct {}
-            #[cfg(feature = "derive")]
+            
             impl  PartialEq for ::syntax::DataStruct {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.fields == other.fields && self.semi_token == other.semi_token
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Eq for ::syntax::DataUnion {}
-            #[cfg(feature = "derive")]
+            
             impl  PartialEq for ::syntax::DataUnion {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.fields == other.fields
                 }
             }
-            #[cfg(feature = "derive")]
+            
             impl  Eq for ::syntax::DeriveInput {}
-            #[cfg(feature = "derive")]
+            
             impl  PartialEq for ::syntax::DeriveInput {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.data == other.data
                 }
             }
             impl Eq for ::syntax::Expr {}
             impl PartialEq for ::syntax::Expr {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                                         (::syntax::Expr::Array(self0), ::syntax::Expr::Array(other0)) => self0 == other0,
                                         (::syntax::Expr::Assign(self0), ::syntax::Expr::Assign(other0)) => self0 == other0,
@@ -46021,64 +45700,74 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ExprArray {}
                 impl  PartialEq for ::syntax::ExprArray {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.elems == other.elems
                 }
             }
                 impl  Eq for ::syntax::ExprAssign {}
                 impl  PartialEq for ::syntax::ExprAssign {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.left == other.left && self.right == other.right
                 }
             }
                 impl  Eq for ::syntax::ExprAsync {}
                 impl  PartialEq for ::syntax::ExprAsync {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.capture == other.capture
                         && self.block == other.block
                 }
             }
                 impl  Eq for ::syntax::ExprAwait {}
                 impl  PartialEq for ::syntax::ExprAwait {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.base == other.base
                 }
             }
             impl Eq for ::syntax::ExprBinary {}
             impl PartialEq for ::syntax::ExprBinary {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.left == other.left && self.op == other.op
                         && self.right == other.right
                 }
             }
                 impl  Eq for ::syntax::ExprBlock {}
                 impl  PartialEq for ::syntax::ExprBlock {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.label == other.label
                         && self.block == other.block
                 }
             }
                 impl  Eq for ::syntax::ExprBreak {}
                 impl  PartialEq for ::syntax::ExprBreak {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.label == other.label && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::ExprCall {}
             impl PartialEq for ::syntax::ExprCall {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.func == other.func && self.args == other.args
                 }
             }
             impl Eq for ::syntax::ExprCast {}
             impl PartialEq for ::syntax::ExprCast {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr && self.ty == other.ty
                 }
             }
                 impl  Eq for ::syntax::ExprClosure {}
                 impl  PartialEq for ::syntax::ExprClosure {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.lifetimes == other.lifetimes
                         && self.constness == other.constness && self.movability == other.movability
                         && self.asyncness == other.asyncness && self.capture == other.capture
@@ -46088,39 +45777,45 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ExprConst {}
                 impl  PartialEq for ::syntax::ExprConst {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.block == other.block
                 }
             }
                 impl  Eq for ::syntax::ExprContinue {}
                 impl  PartialEq for ::syntax::ExprContinue {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.label == other.label
                 }
             }
             impl Eq for ::syntax::ExprField {}
             impl PartialEq for ::syntax::ExprField {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.base == other.base
                         && self.member == other.member
                 }
             }
                 impl  Eq for ::syntax::ExprForLoop {}
                 impl  PartialEq for ::syntax::ExprForLoop {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.label == other.label && self.pat == other.pat
                         && self.expr == other.expr && self.body == other.body
                 }
             }
             impl Eq for ::syntax::ExprGroup {}
             impl PartialEq for ::syntax::ExprGroup {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr
                 }
             }
                 impl  Eq for ::syntax::ExprIf {}
                 impl  PartialEq for ::syntax::ExprIf {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.cond == other.cond
                         && self.then_branch == other.then_branch
                         && self.else_branch == other.else_branch
@@ -46128,49 +45823,57 @@ pub mod syntax
             }
             impl Eq for ::syntax::ExprIndex {}
             impl PartialEq for ::syntax::ExprIndex {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr && self.index == other.index
                 }
             }
                 impl  Eq for ::syntax::ExprInfer {}
                 impl  PartialEq for ::syntax::ExprInfer {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs
                 }
             }
                 impl  Eq for ::syntax::ExprLet {}
                 impl  PartialEq for ::syntax::ExprLet {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.pat == other.pat && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::ExprLit {}
             impl PartialEq for ::syntax::ExprLit {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.lit == other.lit
                 }
             }
                 impl  Eq for ::syntax::ExprLoop {}
                 impl  PartialEq for ::syntax::ExprLoop {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.label == other.label && self.body == other.body
                 }
             }
             impl Eq for ::syntax::ExprMacro {}
             impl PartialEq for ::syntax::ExprMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mac == other.mac
                 }
             }
                 impl  Eq for ::syntax::ExprMatch {}
                 impl  PartialEq for ::syntax::ExprMatch {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr && self.arms == other.arms
                 }
             }
             impl Eq for ::syntax::ExprMethodCall {}
             impl PartialEq for ::syntax::ExprMethodCall {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.receiver == other.receiver
                         && self.method == other.method && self.turbofish == other.turbofish
                         && self.args == other.args
@@ -46178,52 +45881,60 @@ pub mod syntax
             }
             impl Eq for ::syntax::ExprParen {}
             impl PartialEq for ::syntax::ExprParen {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::ExprPath {}
             impl PartialEq for ::syntax::ExprPath {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.qself == other.qself && self.path == other.path
                 }
             }
                 impl  Eq for ::syntax::ExprRange {}
                 impl  PartialEq for ::syntax::ExprRange {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.start == other.start
                         && self.limits == other.limits && self.end == other.end
                 }
             }
                 impl  Eq for ::syntax::ExprRawAddr {}
                 impl  PartialEq for ::syntax::ExprRawAddr {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mutability == other.mutability
                         && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::ExprReference {}
             impl PartialEq for ::syntax::ExprReference {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mutability == other.mutability
                         && self.expr == other.expr
                 }
             }
                 impl  Eq for ::syntax::ExprRepeat {}
                 impl  PartialEq for ::syntax::ExprRepeat {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr && self.len == other.len
                 }
             }
                 impl  Eq for ::syntax::ExprReturn {}
                 impl  PartialEq for ::syntax::ExprReturn {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::ExprStruct {}
             impl PartialEq for ::syntax::ExprStruct {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.qself == other.qself && self.path == other.path
                         && self.fields == other.fields && self.dot2_token == other.dot2_token
                         && self.rest == other.rest
@@ -46231,50 +45942,58 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ExprTry {}
                 impl  PartialEq for ::syntax::ExprTry {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr
                 }
             }
                 impl  Eq for ::syntax::ExprTryBlock {}
                 impl  PartialEq for ::syntax::ExprTryBlock {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.block == other.block
                 }
             }
             impl Eq for ::syntax::ExprTuple {}
             impl PartialEq for ::syntax::ExprTuple {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.elems == other.elems
                 }
             }
             impl Eq for ::syntax::ExprUnary {}
             impl PartialEq for ::syntax::ExprUnary {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.op == other.op && self.expr == other.expr
                 }
             }
                 impl  Eq for ::syntax::ExprUnsafe {}
                 impl  PartialEq for ::syntax::ExprUnsafe {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.block == other.block
                 }
             }
                 impl  Eq for ::syntax::ExprWhile {}
                 impl  PartialEq for ::syntax::ExprWhile {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.label == other.label && self.cond == other.cond
                         && self.body == other.body
                 }
             }
                 impl  Eq for ::syntax::ExprYield {}
                 impl  PartialEq for ::syntax::ExprYield {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::Field {}
             impl PartialEq for ::syntax::Field {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.mutability == other.mutability && self.ident == other.ident
                         && self.colon_token == other.colon_token && self.ty == other.ty
@@ -46282,7 +46001,8 @@ pub mod syntax
             }
             impl Eq for ::syntax::FieldMutability {}
             impl PartialEq for ::syntax::FieldMutability {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::FieldMutability::None, ::syntax::FieldMutability::None) => true,
                     }
@@ -46290,21 +46010,24 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::FieldPat {}
                 impl  PartialEq for ::syntax::FieldPat {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.member == other.member
                         && self.colon_token == other.colon_token && self.pat == other.pat
                 }
             }
             impl Eq for ::syntax::FieldValue {}
             impl PartialEq for ::syntax::FieldValue {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.member == other.member
                         && self.colon_token == other.colon_token && self.expr == other.expr
                 }
             }
             impl Eq for ::syntax::Fields {}
             impl PartialEq for ::syntax::Fields {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Fields::Named(self0), ::syntax::Fields::Named(other0)) => {
                             self0 == other0
@@ -46319,26 +46042,30 @@ pub mod syntax
             }
             impl Eq for ::syntax::FieldsNamed {}
             impl PartialEq for ::syntax::FieldsNamed {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.named == other.named
                 }
             }
             impl Eq for ::syntax::FieldsUnnamed {}
             impl PartialEq for ::syntax::FieldsUnnamed {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.unnamed == other.unnamed
                 }
             }
                 impl  Eq for ::syntax::File {}
                 impl  PartialEq for ::syntax::File {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.shebang == other.shebang && self.attrs == other.attrs
                         && self.items == other.items
                 }
             }
                 impl  Eq for ::syntax::FnArg {}
                 impl  PartialEq for ::syntax::FnArg {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::FnArg::Receiver(self0), ::syntax::FnArg::Receiver(other0)) => {
                             self0 == other0
@@ -46350,7 +46077,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ForeignItem {}
                 impl  PartialEq for ::syntax::ForeignItem {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::ForeignItem::Fn(self0), ::syntax::ForeignItem::Fn(other0)) => {
                             self0 == other0
@@ -46374,20 +46102,23 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ForeignItemFn {}
                 impl  PartialEq for ::syntax::ForeignItemFn {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.sig == other.sig
                 }
             }
                 impl  Eq for ::syntax::ForeignItemMacro {}
                 impl  PartialEq for ::syntax::ForeignItemMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mac == other.mac
                         && self.semi_token == other.semi_token
                 }
             }
                 impl  Eq for ::syntax::ForeignItemStatic {}
                 impl  PartialEq for ::syntax::ForeignItemStatic {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.mutability == other.mutability && self.ident == other.ident
                         && self.ty == other.ty
@@ -46395,14 +46126,16 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ForeignItemType {}
                 impl  PartialEq for ::syntax::ForeignItemType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics
                 }
             }
             impl Eq for ::syntax::GenericArgument {}
             impl PartialEq for ::syntax::GenericArgument {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (
                             ::syntax::GenericArgument::Lifetime(self0),
@@ -46434,7 +46167,8 @@ pub mod syntax
             }
             impl Eq for ::syntax::GenericParam {}
             impl PartialEq for ::syntax::GenericParam {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (
                             ::syntax::GenericParam::Lifetime(self0),
@@ -46452,14 +46186,16 @@ pub mod syntax
             }
             impl Eq for ::syntax::Generics {}
             impl PartialEq for ::syntax::Generics {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.lt_token == other.lt_token && self.params == other.params
                         && self.gt_token == other.gt_token && self.where_clause == other.where_clause
                 }
             }
                 impl  Eq for ::syntax::ImplItem {}
                 impl  PartialEq for ::syntax::ImplItem {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::ImplItem::Const(self0), ::syntax::ImplItem::Const(other0)) => {
                             self0 == other0
@@ -46480,7 +46216,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ImplItemConst {}
                 impl  PartialEq for ::syntax::ImplItemConst {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.defaultness == other.defaultness && self.ident == other.ident
                         && self.generics == other.generics && self.ty == other.ty
@@ -46489,7 +46226,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ImplItemFn {}
                 impl  PartialEq for ::syntax::ImplItemFn {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.defaultness == other.defaultness && self.sig == other.sig
                         && self.block == other.block
@@ -46497,14 +46235,16 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ImplItemMacro {}
                 impl  PartialEq for ::syntax::ImplItemMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mac == other.mac
                         && self.semi_token == other.semi_token
                 }
             }
                 impl  Eq for ::syntax::ImplItemType {}
                 impl  PartialEq for ::syntax::ImplItemType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.defaultness == other.defaultness && self.ident == other.ident
                         && self.generics == other.generics && self.ty == other.ty
@@ -46512,13 +46252,15 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ImplRestriction {}
                 impl  PartialEq for ::syntax::ImplRestriction {
-                fn eq(&self, _other: &Self) -> bool {
+                fn eq(&self, _other: &Self) -> bool
+        {
                     match *self {}
                 }
             }
                 impl  Eq for ::syntax::Item {}
                 impl  PartialEq for ::syntax::Item {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Item::Const(self0), ::syntax::Item::Const(other0)) => self0 == other0,
                         (::syntax::Item::Enum(self0), ::syntax::Item::Enum(other0)) => self0 == other0,
@@ -46550,7 +46292,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemConst {}
                 impl  PartialEq for ::syntax::ItemConst {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.ty == other.ty
                         && self.expr == other.expr
@@ -46558,35 +46301,40 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemEnum {}
                 impl  PartialEq for ::syntax::ItemEnum {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.variants == other.variants
                 }
             }
                 impl  Eq for ::syntax::ItemExternCrate {}
                 impl  PartialEq for ::syntax::ItemExternCrate {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.rename == other.rename
                 }
             }
                 impl  Eq for ::syntax::ItemFn {}
                 impl  PartialEq for ::syntax::ItemFn {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.sig == other.sig
                         && self.block == other.block
                 }
             }
                 impl  Eq for ::syntax::ItemForeignMod {}
                 impl  PartialEq for ::syntax::ItemForeignMod {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.unsafety == other.unsafety
                         && self.abi == other.abi && self.items == other.items
                 }
             }
                 impl  Eq for ::syntax::ItemImpl {}
                 impl  PartialEq for ::syntax::ItemImpl {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.defaultness == other.defaultness
                         && self.unsafety == other.unsafety && self.generics == other.generics
                         && self.trait_ == other.trait_ && self.self_ty == other.self_ty
@@ -46595,14 +46343,16 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemMacro {}
                 impl  PartialEq for ::syntax::ItemMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.ident == other.ident && self.mac == other.mac
                         && self.semi_token == other.semi_token
                 }
             }
                 impl  Eq for ::syntax::ItemMod {}
                 impl  PartialEq for ::syntax::ItemMod {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.unsafety == other.unsafety && self.ident == other.ident
                         && self.content == other.content && self.semi == other.semi
@@ -46610,7 +46360,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemStatic {}
                 impl  PartialEq for ::syntax::ItemStatic {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.mutability == other.mutability && self.ident == other.ident
                         && self.ty == other.ty && self.expr == other.expr
@@ -46618,7 +46369,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemStruct {}
                 impl  PartialEq for ::syntax::ItemStruct {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.fields == other.fields
                         && self.semi_token == other.semi_token
@@ -46626,7 +46378,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemTrait {}
                 impl  PartialEq for ::syntax::ItemTrait {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.unsafety == other.unsafety && self.auto_token == other.auto_token
                         && self.restriction == other.restriction && self.ident == other.ident
@@ -46636,48 +46389,55 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::ItemTraitAlias {}
                 impl  PartialEq for ::syntax::ItemTraitAlias {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.bounds == other.bounds
                 }
             }
                 impl  Eq for ::syntax::ItemType {}
                 impl  PartialEq for ::syntax::ItemType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.ty == other.ty
                 }
             }
                 impl  Eq for ::syntax::ItemUnion {}
                 impl  PartialEq for ::syntax::ItemUnion {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis && self.ident == other.ident
                         && self.generics == other.generics && self.fields == other.fields
                 }
             }
                 impl  Eq for ::syntax::ItemUse {}
                 impl  PartialEq for ::syntax::ItemUse {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.vis == other.vis
                         && self.leading_colon == other.leading_colon && self.tree == other.tree
                 }
             }
                 impl  Eq for ::syntax::Label {}
                 impl  PartialEq for ::syntax::Label {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.name == other.name
                 }
             }
             impl Eq for ::syntax::LifetimeParam {}
             impl PartialEq for ::syntax::LifetimeParam {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.lifetime == other.lifetime
                         && self.colon_token == other.colon_token && self.bounds == other.bounds
                 }
             }
             impl  Eq for ::syntax::Lit {}
             impl  PartialEq for ::syntax::Lit {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Lit::Str(self0), ::syntax::Lit::Str(other0)) => self0 == other0,
                         (::syntax::Lit::ByteStr(self0), ::syntax::Lit::ByteStr(other0)) => self0 == other0,
@@ -46696,7 +46456,8 @@ pub mod syntax
             }
             impl  Eq for ::syntax::LitBool {}
             impl  PartialEq for ::syntax::LitBool {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.value == other.value
                 }
             }
@@ -46709,26 +46470,30 @@ pub mod syntax
             impl  Eq for ::syntax::LitStr {}
                 impl  Eq for ::syntax::Local {}
                 impl  PartialEq for ::syntax::Local {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.pat == other.pat && self.init == other.init
                 }
             }
                 impl  Eq for ::syntax::LocalInit {}
                 impl  PartialEq for ::syntax::LocalInit {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.expr == other.expr && self.diverge == other.diverge
                 }
             }
             impl Eq for ::syntax::Macro {}
             impl PartialEq for ::syntax::Macro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.path == other.path && self.delimiter == other.delimiter
                         && TokenStreamHelper(&self.tokens) == TokenStreamHelper(&other.tokens)
                 }
             }
             impl Eq for ::syntax::MacroDelimiter {}
             impl PartialEq for ::syntax::MacroDelimiter {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::MacroDelimiter::Paren(_), ::syntax::MacroDelimiter::Paren(_)) => true,
                         (::syntax::MacroDelimiter::Brace(_), ::syntax::MacroDelimiter::Brace(_)) => true,
@@ -46741,7 +46506,8 @@ pub mod syntax
             }
             impl Eq for ::syntax::Meta {}
             impl PartialEq for ::syntax::Meta {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Meta::Path(self0), ::syntax::Meta::Path(other0)) => self0 == other0,
                         (::syntax::Meta::List(self0), ::syntax::Meta::List(other0)) => self0 == other0,
@@ -46754,26 +46520,30 @@ pub mod syntax
             }
             impl Eq for ::syntax::MetaList {}
             impl PartialEq for ::syntax::MetaList {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.path == other.path && self.delimiter == other.delimiter
                         && TokenStreamHelper(&self.tokens) == TokenStreamHelper(&other.tokens)
                 }
             }
             impl Eq for ::syntax::MetaNameValue {}
             impl PartialEq for ::syntax::MetaNameValue {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.path == other.path && self.value == other.value
                 }
             }
             impl Eq for ::syntax::ParenthesizedGenericArguments {}
             impl PartialEq for ::syntax::ParenthesizedGenericArguments {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.inputs == other.inputs && self.output == other.output
                 }
             }
                 impl  Eq for ::syntax::Pat {}
                 impl  PartialEq for ::syntax::Pat {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Pat::Const(self0), ::syntax::Pat::Const(other0)) => self0 == other0,
                         (::syntax::Pat::Ident(self0), ::syntax::Pat::Ident(other0)) => self0 == other0,
@@ -46804,7 +46574,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::PatIdent {}
                 impl  PartialEq for ::syntax::PatIdent {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.by_ref == other.by_ref
                         && self.mutability == other.mutability && self.ident == other.ident
                         && self.subpat == other.subpat
@@ -46812,77 +46583,89 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::PatOr {}
                 impl  PartialEq for ::syntax::PatOr {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.leading_vert == other.leading_vert
                         && self.cases == other.cases
                 }
             }
                 impl  Eq for ::syntax::PatParen {}
                 impl  PartialEq for ::syntax::PatParen {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.pat == other.pat
                 }
             }
                 impl  Eq for ::syntax::PatReference {}
                 impl  PartialEq for ::syntax::PatReference {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mutability == other.mutability
                         && self.pat == other.pat
                 }
             }
                 impl  Eq for ::syntax::PatRest {}
                 impl  PartialEq for ::syntax::PatRest {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs
                 }
             }
                 impl  Eq for ::syntax::PatSlice {}
                 impl  PartialEq for ::syntax::PatSlice {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.elems == other.elems
                 }
             }
                 impl  Eq for ::syntax::PatStruct {}
                 impl  PartialEq for ::syntax::PatStruct {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.qself == other.qself && self.path == other.path
                         && self.fields == other.fields && self.rest == other.rest
                 }
             }
                 impl  Eq for ::syntax::PatTuple {}
                 impl  PartialEq for ::syntax::PatTuple {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.elems == other.elems
                 }
             }
                 impl  Eq for ::syntax::PatTupleStruct {}
                 impl  PartialEq for ::syntax::PatTupleStruct {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.qself == other.qself && self.path == other.path
                         && self.elems == other.elems
                 }
             }
                 impl  Eq for ::syntax::PatType {}
                 impl  PartialEq for ::syntax::PatType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.pat == other.pat && self.ty == other.ty
                 }
             }
                 impl  Eq for ::syntax::PatWild {}
                 impl  PartialEq for ::syntax::PatWild {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs
                 }
             }
             impl Eq for ::syntax::Path {}
             impl PartialEq for ::syntax::Path {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.leading_colon == other.leading_colon && self.segments == other.segments
                 }
             }
             impl Eq for ::syntax::PathArguments {}
             impl PartialEq for ::syntax::PathArguments {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::PathArguments::None, ::syntax::PathArguments::None) => true,
                         (
@@ -46899,13 +46682,15 @@ pub mod syntax
             }
             impl Eq for ::syntax::PathSegment {}
             impl PartialEq for ::syntax::PathSegment {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident && self.arguments == other.arguments
                 }
             }
                 impl  Eq for ::syntax::PointerMutability {}
                 impl  PartialEq for ::syntax::PointerMutability {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::PointerMutability::Const(_), ::syntax::PointerMutability::Const(_)) => {
                             true
@@ -46917,33 +46702,38 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::PreciseCapture {}
                 impl  PartialEq for ::syntax::PreciseCapture {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.params == other.params
                 }
             }
             impl Eq for ::syntax::PredicateLifetime {}
             impl PartialEq for ::syntax::PredicateLifetime {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.lifetime == other.lifetime && self.bounds == other.bounds
                 }
             }
             impl Eq for ::syntax::PredicateType {}
             impl PartialEq for ::syntax::PredicateType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.lifetimes == other.lifetimes && self.bounded_ty == other.bounded_ty
                         && self.bounds == other.bounds
                 }
             }
             impl Eq for ::syntax::QSelf {}
             impl PartialEq for ::syntax::QSelf {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ty == other.ty && self.position == other.position
                         && self.as_token == other.as_token
                 }
             }
                 impl  Eq for ::syntax::RangeLimits {}
                 impl  PartialEq for ::syntax::RangeLimits {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::RangeLimits::HalfOpen(_), ::syntax::RangeLimits::HalfOpen(_)) => true,
                         (::syntax::RangeLimits::Closed(_), ::syntax::RangeLimits::Closed(_)) => true,
@@ -46953,7 +46743,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::Receiver {}
                 impl  PartialEq for ::syntax::Receiver {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.reference == other.reference
                         && self.mutability == other.mutability
                         && self.colon_token == other.colon_token && self.ty == other.ty
@@ -46961,7 +46752,8 @@ pub mod syntax
             }
             impl Eq for ::syntax::ReturnType {}
             impl PartialEq for ::syntax::ReturnType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::ReturnType::Default, ::syntax::ReturnType::Default) => true,
                         (::syntax::ReturnType::Type(_, self1), ::syntax::ReturnType::Type(_, other1)) => {
@@ -46973,7 +46765,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::Signature {}
                 impl  PartialEq for ::syntax::Signature {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.constness == other.constness && self.asyncness == other.asyncness
                         && self.unsafety == other.unsafety && self.abi == other.abi
                         && self.ident == other.ident && self.generics == other.generics
@@ -46983,7 +46776,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::StaticMutability {}
                 impl  PartialEq for ::syntax::StaticMutability {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::StaticMutability::Mut(_), ::syntax::StaticMutability::Mut(_)) => true,
                         (::syntax::StaticMutability::None, ::syntax::StaticMutability::None) => true,
@@ -46993,7 +46787,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::Stmt {}
                 impl  PartialEq for ::syntax::Stmt {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Stmt::Local(self0), ::syntax::Stmt::Local(other0)) => self0 == other0,
                         (::syntax::Stmt::Item(self0), ::syntax::Stmt::Item(other0)) => self0 == other0,
@@ -47007,21 +46802,24 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::StmtMacro {}
                 impl  PartialEq for ::syntax::StmtMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mac == other.mac
                         && self.semi_token == other.semi_token
                 }
             }
             impl Eq for ::syntax::TraitBound {}
             impl PartialEq for ::syntax::TraitBound {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.paren_token == other.paren_token && self.modifier == other.modifier
                         && self.lifetimes == other.lifetimes && self.path == other.path
                 }
             }
             impl Eq for ::syntax::TraitBoundModifier {}
             impl PartialEq for ::syntax::TraitBoundModifier {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::TraitBoundModifier::None, ::syntax::TraitBoundModifier::None) => true,
                         (
@@ -47034,7 +46832,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::TraitItem {}
                 impl  PartialEq for ::syntax::TraitItem {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::TraitItem::Const(self0), ::syntax::TraitItem::Const(other0)) => {
                             self0 == other0
@@ -47057,7 +46856,8 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::TraitItemConst {}
                 impl  PartialEq for ::syntax::TraitItemConst {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.ident == other.ident
                         && self.generics == other.generics && self.ty == other.ty
                         && self.default == other.default
@@ -47065,21 +46865,24 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::TraitItemFn {}
                 impl  PartialEq for ::syntax::TraitItemFn {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.sig == other.sig
                         && self.default == other.default && self.semi_token == other.semi_token
                 }
             }
                 impl  Eq for ::syntax::TraitItemMacro {}
                 impl  PartialEq for ::syntax::TraitItemMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.mac == other.mac
                         && self.semi_token == other.semi_token
                 }
             }
                 impl  Eq for ::syntax::TraitItemType {}
                 impl  PartialEq for ::syntax::TraitItemType {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.ident == other.ident
                         && self.generics == other.generics && self.colon_token == other.colon_token
                         && self.bounds == other.bounds && self.default == other.default
@@ -47087,7 +46890,8 @@ pub mod syntax
             }
             impl Eq for ::syntax::Type {}
             impl PartialEq for ::syntax::Type {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Type::Array(self0), ::syntax::Type::Array(other0)) => self0 == other0,
                         (::syntax::Type::BareFn(self0), ::syntax::Type::BareFn(other0)) => self0 == other0,
@@ -47118,13 +46922,15 @@ pub mod syntax
             }
             impl Eq for ::syntax::TypeArray {}
             impl PartialEq for ::syntax::TypeArray {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.elem == other.elem && self.len == other.len
                 }
             }
             impl Eq for ::syntax::TypeBareFn {}
             impl PartialEq for ::syntax::TypeBareFn {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.lifetimes == other.lifetimes && self.unsafety == other.unsafety
                         && self.abi == other.abi && self.inputs == other.inputs
                         && self.variadic == other.variadic && self.output == other.output
@@ -47132,37 +46938,43 @@ pub mod syntax
             }
             impl Eq for ::syntax::TypeGroup {}
             impl PartialEq for ::syntax::TypeGroup {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.elem == other.elem
                 }
             }
             impl Eq for ::syntax::TypeImplTrait {}
             impl PartialEq for ::syntax::TypeImplTrait {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.bounds == other.bounds
                 }
             }
             impl Eq for ::syntax::TypeInfer {}
             impl PartialEq for ::syntax::TypeInfer {
-                fn eq(&self, _other: &Self) -> bool {
+                fn eq(&self, _other: &Self) -> bool
+        {
                     true
                 }
             }
             impl Eq for ::syntax::TypeMacro {}
             impl PartialEq for ::syntax::TypeMacro {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.mac == other.mac
                 }
             }
             impl Eq for ::syntax::TypeNever {}
             impl PartialEq for ::syntax::TypeNever {
-                fn eq(&self, _other: &Self) -> bool {
+                fn eq(&self, _other: &Self) -> bool
+        {
                     true
                 }
             }
             impl Eq for ::syntax::TypeParam {}
             impl PartialEq for ::syntax::TypeParam {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.ident == other.ident
                         && self.colon_token == other.colon_token && self.bounds == other.bounds
                         && self.eq_token == other.eq_token && self.default == other.default
@@ -47170,7 +46982,8 @@ pub mod syntax
             }
             impl Eq for ::syntax::TypeParamBound {}
             impl PartialEq for ::syntax::TypeParamBound {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (
                             ::syntax::TypeParamBound::Trait(self0),
@@ -47194,51 +47007,59 @@ pub mod syntax
             }
             impl Eq for ::syntax::TypeParen {}
             impl PartialEq for ::syntax::TypeParen {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.elem == other.elem
                 }
             }
             impl Eq for ::syntax::TypePath {}
             impl PartialEq for ::syntax::TypePath {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.qself == other.qself && self.path == other.path
                 }
             }
             impl Eq for ::syntax::TypePtr {}
             impl PartialEq for ::syntax::TypePtr {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.const_token == other.const_token && self.mutability == other.mutability
                         && self.elem == other.elem
                 }
             }
             impl Eq for ::syntax::TypeReference {}
             impl PartialEq for ::syntax::TypeReference {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.lifetime == other.lifetime && self.mutability == other.mutability
                         && self.elem == other.elem
                 }
             }
             impl Eq for ::syntax::TypeSlice {}
             impl PartialEq for ::syntax::TypeSlice {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.elem == other.elem
                 }
             }
             impl Eq for ::syntax::TypeTraitObject {}
             impl PartialEq for ::syntax::TypeTraitObject {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.dyn_token == other.dyn_token && self.bounds == other.bounds
                 }
             }
             impl Eq for ::syntax::TypeTuple {}
             impl PartialEq for ::syntax::TypeTuple {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.elems == other.elems
                 }
             }
             impl Eq for ::syntax::UnOp {}
             impl PartialEq for ::syntax::UnOp {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::UnOp::Deref(_), ::syntax::UnOp::Deref(_)) => true,
                         (::syntax::UnOp::Not(_), ::syntax::UnOp::Not(_)) => true,
@@ -47249,37 +47070,43 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::UseGlob {}
                 impl  PartialEq for ::syntax::UseGlob {
-                fn eq(&self, _other: &Self) -> bool {
+                fn eq(&self, _other: &Self) -> bool
+        {
                     true
                 }
             }
                 impl  Eq for ::syntax::UseGroup {}
                 impl  PartialEq for ::syntax::UseGroup {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.items == other.items
                 }
             }
                 impl  Eq for ::syntax::UseName {}
                 impl  PartialEq for ::syntax::UseName {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident
                 }
             }
                 impl  Eq for ::syntax::UsePath {}
                 impl  PartialEq for ::syntax::UsePath {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident && self.tree == other.tree
                 }
             }
                 impl  Eq for ::syntax::UseRename {}
                 impl  PartialEq for ::syntax::UseRename {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.ident == other.ident && self.rename == other.rename
                 }
             }
                 impl  Eq for ::syntax::UseTree {}
                 impl  PartialEq for ::syntax::UseTree {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::UseTree::Path(self0), ::syntax::UseTree::Path(other0)) => {
                             self0 == other0
@@ -47302,26 +47129,30 @@ pub mod syntax
             }
                 impl  Eq for ::syntax::Variadic {}
                 impl  PartialEq for ::syntax::Variadic {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.pat == other.pat && self.comma == other.comma
                 }
             }
             impl Eq for ::syntax::Variant {}
             impl PartialEq for ::syntax::Variant {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.attrs == other.attrs && self.ident == other.ident
                         && self.fields == other.fields && self.discriminant == other.discriminant
                 }
             }
             impl Eq for ::syntax::VisRestricted {}
             impl PartialEq for ::syntax::VisRestricted {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.in_token == other.in_token && self.path == other.path
                 }
             }
             impl Eq for ::syntax::Visibility {}
             impl PartialEq for ::syntax::Visibility {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (::syntax::Visibility::Public(_), ::syntax::Visibility::Public(_)) => true,
                         (
@@ -47335,13 +47166,15 @@ pub mod syntax
             }
             impl Eq for ::syntax::WhereClause {}
             impl PartialEq for ::syntax::WhereClause {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     self.predicates == other.predicates
                 }
             }
             impl Eq for ::syntax::WherePredicate {}
             impl PartialEq for ::syntax::WherePredicate {
-                fn eq(&self, other: &Self) -> bool {
+                fn eq(&self, other: &Self) -> bool
+        {
                     match (self, other) {
                         (
                             ::syntax::WherePredicate::Lifetime(self0),
@@ -47360,14 +47193,14 @@ pub mod syntax
         {
             use ::
             {
+                hash::{ Hash, Hasher },
+                syntax::tt::{ TokenStreamHelper },
                 *,
             };
             /*
-            #[cfg(any(feature = "derive", feature = "full"))]
-            use ::syntax::tt::TokenStreamHelper;
-            use std::hash::{Hash, Hasher};
             */
-            impl Hash for ::syntax::Abi {
+            impl Hash for ::syntax::Abi
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47375,7 +47208,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::AngleBracketedGenericArguments {
+            impl Hash for ::syntax::AngleBracketedGenericArguments
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47384,7 +47218,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Arm {
+            impl Hash for ::syntax::Arm
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47396,7 +47231,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::AssocConst {
+            impl Hash for ::syntax::AssocConst
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47406,7 +47242,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::AssocType {
+            impl Hash for ::syntax::AssocType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47416,7 +47253,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::AttrStyle {
+            impl Hash for ::syntax::AttrStyle
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47432,7 +47270,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Attribute {
+            impl Hash for ::syntax::Attribute
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47441,7 +47280,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::BareFnArg {
+            impl Hash for ::syntax::BareFnArg
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47451,7 +47291,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::BareVariadic {
+            impl Hash for ::syntax::BareVariadic
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47461,7 +47302,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::BinOp {
+            impl Hash for ::syntax::BinOp
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47582,7 +47424,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Block {
+            impl Hash for ::syntax::Block
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47590,7 +47433,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::BoundLifetimes {
+            impl Hash for ::syntax::BoundLifetimes
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47598,7 +47442,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::CapturedParam {
+            impl Hash for ::syntax::CapturedParam
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47617,7 +47462,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ConstParam {
+            impl Hash for ::syntax::ConstParam
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47629,7 +47475,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Constraint {
+            impl Hash for ::syntax::Constraint
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47638,8 +47485,9 @@ pub mod syntax
                     self.bounds.hash(state);
                 }
             }
-            #[cfg(feature = "derive")]
-            impl Hash for ::syntax::Data {
+            
+            impl Hash for ::syntax::Data
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47662,16 +47510,18 @@ pub mod syntax
                     }
                 }
             }
-            #[cfg(feature = "derive")]
-            impl Hash for ::syntax::DataEnum {
+            
+            impl Hash for ::syntax::DataEnum
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
                     self.variants.hash(state);
                 }
             }
-            #[cfg(feature = "derive")]
-            impl Hash for ::syntax::DataStruct {
+            
+            impl Hash for ::syntax::DataStruct
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47679,16 +47529,18 @@ pub mod syntax
                     self.semi_token.hash(state);
                 }
             }
-            #[cfg(feature = "derive")]
-            impl Hash for ::syntax::DataUnion {
+            
+            impl Hash for ::syntax::DataUnion
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
                     self.fields.hash(state);
                 }
             }
-            #[cfg(feature = "derive")]
-            impl Hash for ::syntax::DeriveInput {
+            
+            impl Hash for ::syntax::DeriveInput
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47701,6 +47553,7 @@ pub mod syntax
             }
             
             impl Hash for ::syntax::Expr
+           
             {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
@@ -47946,13 +47799,12 @@ pub mod syntax
                             state.write_u8(39u8);
                             v0.hash(state);
                         }
-                        
-                        _ => unreachable!(),
                     }
                 }
             }
             
             impl Hash for ::syntax::ExprArray
+           
             {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
@@ -47963,6 +47815,7 @@ pub mod syntax
             }
             
             impl Hash for ::syntax::ExprAssign
+           
             {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
@@ -47973,7 +47826,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprAsync {
+            impl Hash for ::syntax::ExprAsync
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47983,7 +47837,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprAwait {
+            impl Hash for ::syntax::ExprAwait
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -47992,7 +47847,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprBinary {
+            impl Hash for ::syntax::ExprBinary
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48003,7 +47859,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprBlock {
+            impl Hash for ::syntax::ExprBlock
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48013,7 +47870,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprBreak {
+            impl Hash for ::syntax::ExprBreak
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48023,7 +47881,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprCall {
+            impl Hash for ::syntax::ExprCall
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48033,7 +47892,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprCast {
+            impl Hash for ::syntax::ExprCast
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48043,7 +47903,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprClosure {
+            impl Hash for ::syntax::ExprClosure
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48059,7 +47920,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprConst {
+            impl Hash for ::syntax::ExprConst
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48068,7 +47930,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprContinue {
+            impl Hash for ::syntax::ExprContinue
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48077,7 +47940,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprField {
+            impl Hash for ::syntax::ExprField
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48087,7 +47951,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprForLoop {
+            impl Hash for ::syntax::ExprForLoop
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48099,7 +47964,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprGroup {
+            impl Hash for ::syntax::ExprGroup
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48108,7 +47974,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprIf {
+            impl Hash for ::syntax::ExprIf
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48119,7 +47986,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprIndex {
+            impl Hash for ::syntax::ExprIndex
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48129,7 +47997,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprInfer {
+            impl Hash for ::syntax::ExprInfer
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48137,7 +48006,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprLet {
+            impl Hash for ::syntax::ExprLet
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48147,7 +48017,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprLit {
+            impl Hash for ::syntax::ExprLit
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48156,7 +48027,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprLoop {
+            impl Hash for ::syntax::ExprLoop
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48166,7 +48038,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprMacro {
+            impl Hash for ::syntax::ExprMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48175,7 +48048,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprMatch {
+            impl Hash for ::syntax::ExprMatch
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48185,7 +48059,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprMethodCall {
+            impl Hash for ::syntax::ExprMethodCall
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48197,7 +48072,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprParen {
+            impl Hash for ::syntax::ExprParen
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48206,7 +48082,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprPath {
+            impl Hash for ::syntax::ExprPath
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48216,7 +48093,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprRange {
+            impl Hash for ::syntax::ExprRange
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48227,7 +48105,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprRawAddr {
+            impl Hash for ::syntax::ExprRawAddr
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48237,7 +48116,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprReference {
+            impl Hash for ::syntax::ExprReference
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48247,7 +48127,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprRepeat {
+            impl Hash for ::syntax::ExprRepeat
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48257,7 +48138,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprReturn {
+            impl Hash for ::syntax::ExprReturn
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48266,7 +48148,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprStruct {
+            impl Hash for ::syntax::ExprStruct
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48279,7 +48162,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprTry {
+            impl Hash for ::syntax::ExprTry
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48288,7 +48172,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprTryBlock {
+            impl Hash for ::syntax::ExprTryBlock
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48297,7 +48182,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprTuple {
+            impl Hash for ::syntax::ExprTuple
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48306,7 +48192,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprUnary {
+            impl Hash for ::syntax::ExprUnary
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48316,7 +48203,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprUnsafe {
+            impl Hash for ::syntax::ExprUnsafe
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48325,7 +48213,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprWhile {
+            impl Hash for ::syntax::ExprWhile
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48336,7 +48225,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ExprYield {
+            impl Hash for ::syntax::ExprYield
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48345,7 +48235,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Field {
+            impl Hash for ::syntax::Field
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48358,7 +48249,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::FieldMutability {
+            impl Hash for ::syntax::FieldMutability
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48370,7 +48262,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::FieldPat {
+            impl Hash for ::syntax::FieldPat
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48381,7 +48274,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::FieldValue {
+            impl Hash for ::syntax::FieldValue
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48392,7 +48286,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Fields {
+            impl Hash for ::syntax::Fields
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48414,7 +48309,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::FieldsNamed {
+            impl Hash for ::syntax::FieldsNamed
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48422,7 +48318,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::FieldsUnnamed {
+            impl Hash for ::syntax::FieldsUnnamed
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48430,7 +48327,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::File {
+            impl Hash for ::syntax::File
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48440,7 +48338,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::FnArg {
+            impl Hash for ::syntax::FnArg
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48459,7 +48358,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ForeignItem {
+            impl Hash for ::syntax::ForeignItem
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48493,7 +48393,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ForeignItemFn {
+            impl Hash for ::syntax::ForeignItemFn
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48503,7 +48404,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ForeignItemMacro {
+            impl Hash for ::syntax::ForeignItemMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48513,7 +48415,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ForeignItemStatic {
+            impl Hash for ::syntax::ForeignItemStatic
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48525,7 +48428,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ForeignItemType {
+            impl Hash for ::syntax::ForeignItemType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48536,7 +48440,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::GenericArgument {
+            impl Hash for ::syntax::GenericArgument
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48575,7 +48480,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::GenericParam {
+            impl Hash for ::syntax::GenericParam
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48599,7 +48505,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Generics {
+            impl Hash for ::syntax::Generics
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48610,7 +48517,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ImplItem {
+            impl Hash for ::syntax::ImplItem
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48644,7 +48552,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ImplItemConst {
+            impl Hash for ::syntax::ImplItemConst
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48658,7 +48567,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ImplItemFn {
+            impl Hash for ::syntax::ImplItemFn
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48670,7 +48580,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ImplItemMacro {
+            impl Hash for ::syntax::ImplItemMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48680,7 +48591,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ImplItemType {
+            impl Hash for ::syntax::ImplItemType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48693,7 +48605,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ImplRestriction {
+            impl Hash for ::syntax::ImplRestriction
+            {
                 fn hash<H>(&self, _state: &mut H) where
                 H: Hasher
                 {
@@ -48701,7 +48614,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Item {
+            impl Hash for ::syntax::Item
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48790,7 +48704,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemConst {
+            impl Hash for ::syntax::ItemConst
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48803,7 +48718,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemEnum {
+            impl Hash for ::syntax::ItemEnum
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48815,7 +48731,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemExternCrate {
+            impl Hash for ::syntax::ItemExternCrate
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48826,7 +48743,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemFn {
+            impl Hash for ::syntax::ItemFn
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48837,7 +48755,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemForeignMod {
+            impl Hash for ::syntax::ItemForeignMod
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48848,7 +48767,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemImpl {
+            impl Hash for ::syntax::ItemImpl
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48862,7 +48782,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemMacro {
+            impl Hash for ::syntax::ItemMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48873,7 +48794,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemMod {
+            impl Hash for ::syntax::ItemMod
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48886,7 +48808,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemStatic {
+            impl Hash for ::syntax::ItemStatic
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48899,7 +48822,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemStruct {
+            impl Hash for ::syntax::ItemStruct
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48912,7 +48836,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemTrait {
+            impl Hash for ::syntax::ItemTrait
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48929,7 +48854,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemTraitAlias {
+            impl Hash for ::syntax::ItemTraitAlias
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48941,7 +48867,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemType {
+            impl Hash for ::syntax::ItemType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48953,7 +48880,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemUnion {
+            impl Hash for ::syntax::ItemUnion
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48965,7 +48893,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ItemUse {
+            impl Hash for ::syntax::ItemUse
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48976,7 +48905,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Label {
+            impl Hash for ::syntax::Label
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48984,7 +48914,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::LifetimeParam {
+            impl Hash for ::syntax::LifetimeParam
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -48995,7 +48926,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Lit {
+            impl Hash for ::syntax::Lit
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49049,7 +48981,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::LitBool {
+            impl Hash for ::syntax::LitBool
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49057,7 +48990,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Local {
+            impl Hash for ::syntax::Local
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49067,7 +49001,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::LocalInit {
+            impl Hash for ::syntax::LocalInit
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49076,7 +49011,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Macro {
+            impl Hash for ::syntax::Macro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49086,7 +49022,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::MacroDelimiter {
+            impl Hash for ::syntax::MacroDelimiter
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49107,7 +49044,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Meta {
+            impl Hash for ::syntax::Meta
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49131,7 +49069,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::MetaList {
+            impl Hash for ::syntax::MetaList
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49141,7 +49080,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::MetaNameValue {
+            impl Hash for ::syntax::MetaNameValue
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49150,7 +49090,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ParenthesizedGenericArguments {
+            impl Hash for ::syntax::ParenthesizedGenericArguments
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49159,7 +49100,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Pat {
+            impl Hash for ::syntax::Pat
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49253,7 +49195,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatIdent {
+            impl Hash for ::syntax::PatIdent
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49265,7 +49208,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatOr {
+            impl Hash for ::syntax::PatOr
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49275,7 +49219,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatParen {
+            impl Hash for ::syntax::PatParen
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49284,7 +49229,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatReference {
+            impl Hash for ::syntax::PatReference
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49294,7 +49240,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatRest {
+            impl Hash for ::syntax::PatRest
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49302,7 +49249,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatSlice {
+            impl Hash for ::syntax::PatSlice
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49311,7 +49259,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatStruct {
+            impl Hash for ::syntax::PatStruct
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49323,7 +49272,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatTuple {
+            impl Hash for ::syntax::PatTuple
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49332,7 +49282,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatTupleStruct {
+            impl Hash for ::syntax::PatTupleStruct
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49343,7 +49294,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatType {
+            impl Hash for ::syntax::PatType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49353,7 +49305,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PatWild {
+            impl Hash for ::syntax::PatWild
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49361,7 +49314,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Path {
+            impl Hash for ::syntax::Path
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49370,7 +49324,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PathArguments {
+            impl Hash for ::syntax::PathArguments
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49392,7 +49347,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PathSegment {
+            impl Hash for ::syntax::PathSegment
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49401,7 +49357,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PointerMutability {
+            impl Hash for ::syntax::PointerMutability
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49418,7 +49375,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PreciseCapture {
+            impl Hash for ::syntax::PreciseCapture
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49426,7 +49384,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PredicateLifetime {
+            impl Hash for ::syntax::PredicateLifetime
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49435,7 +49394,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::PredicateType {
+            impl Hash for ::syntax::PredicateType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49445,7 +49405,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::QSelf {
+            impl Hash for ::syntax::QSelf
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49455,7 +49416,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::RangeLimits {
+            impl Hash for ::syntax::RangeLimits
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49472,7 +49434,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Receiver {
+            impl Hash for ::syntax::Receiver
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49484,7 +49447,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::ReturnType {
+            impl Hash for ::syntax::ReturnType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49501,7 +49465,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Signature {
+            impl Hash for ::syntax::Signature
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49517,7 +49482,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::StaticMutability {
+            impl Hash for ::syntax::StaticMutability
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49533,7 +49499,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Stmt {
+            impl Hash for ::syntax::Stmt
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49563,7 +49530,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::StmtMacro {
+            impl Hash for ::syntax::StmtMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49573,7 +49541,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitBound {
+            impl Hash for ::syntax::TraitBound
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49584,7 +49553,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitBoundModifier {
+            impl Hash for ::syntax::TraitBoundModifier
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49600,7 +49570,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitItem {
+            impl Hash for ::syntax::TraitItem
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49634,7 +49605,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitItemConst {
+            impl Hash for ::syntax::TraitItemConst
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49646,7 +49618,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitItemFn {
+            impl Hash for ::syntax::TraitItemFn
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49657,7 +49630,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitItemMacro {
+            impl Hash for ::syntax::TraitItemMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49667,7 +49641,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TraitItemType {
+            impl Hash for ::syntax::TraitItemType
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49680,7 +49655,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Type {
+            impl Hash for ::syntax::Type
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49764,7 +49740,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeArray {
+            impl Hash for ::syntax::TypeArray
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49773,7 +49750,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeBareFn {
+            impl Hash for ::syntax::TypeBareFn
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49786,7 +49764,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeGroup {
+            impl Hash for ::syntax::TypeGroup
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49794,7 +49773,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeImplTrait {
+            impl Hash for ::syntax::TypeImplTrait
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49802,13 +49782,15 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeInfer {
+            impl Hash for ::syntax::TypeInfer
+            {
                 fn hash<H>(&self, _state: &mut H) where
                 H: Hasher
                 {}
             }
             
-            impl Hash for ::syntax::TypeMacro {
+            impl Hash for ::syntax::TypeMacro
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49816,13 +49798,15 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeNever {
+            impl Hash for ::syntax::TypeNever
+            {
                 fn hash<H>(&self, _state: &mut H) where
                 H: Hasher
                 {}
             }
             
-            impl Hash for ::syntax::TypeParam {
+            impl Hash for ::syntax::TypeParam
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49835,7 +49819,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeParamBound {
+            impl Hash for ::syntax::TypeParamBound
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49865,7 +49850,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeParen {
+            impl Hash for ::syntax::TypeParen
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49873,7 +49859,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypePath {
+            impl Hash for ::syntax::TypePath
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49882,7 +49869,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypePtr {
+            impl Hash for ::syntax::TypePtr
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49892,7 +49880,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeReference {
+            impl Hash for ::syntax::TypeReference
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49902,7 +49891,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeSlice {
+            impl Hash for ::syntax::TypeSlice
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49910,7 +49900,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeTraitObject {
+            impl Hash for ::syntax::TypeTraitObject
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49919,7 +49910,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::TypeTuple {
+            impl Hash for ::syntax::TypeTuple
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49927,7 +49919,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::UnOp {
+            impl Hash for ::syntax::UnOp
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49948,13 +49941,15 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::UseGlob {
+            impl Hash for ::syntax::UseGlob
+            {
                 fn hash<H>(&self, _state: &mut H) where
                 H: Hasher
                 {}
             }
             
-            impl Hash for ::syntax::UseGroup {
+            impl Hash for ::syntax::UseGroup
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49962,7 +49957,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::UseName {
+            impl Hash for ::syntax::UseName
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49970,7 +49966,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::UsePath {
+            impl Hash for ::syntax::UsePath
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49979,7 +49976,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::UseRename {
+            impl Hash for ::syntax::UseRename
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -49988,7 +49986,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::UseTree {
+            impl Hash for ::syntax::UseTree
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50022,7 +50021,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Variadic {
+            impl Hash for ::syntax::Variadic
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50032,7 +50032,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Variant {
+            impl Hash for ::syntax::Variant
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50043,7 +50044,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::VisRestricted {
+            impl Hash for ::syntax::VisRestricted
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50052,7 +50054,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::Visibility {
+            impl Hash for ::syntax::Visibility
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50073,7 +50076,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::WhereClause {
+            impl Hash for ::syntax::WhereClause
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50081,7 +50085,8 @@ pub mod syntax
                 }
             }
             
-            impl Hash for ::syntax::WherePredicate {
+            impl Hash for ::syntax::WherePredicate           
+            {
                 fn hash<H>(&self, state: &mut H) where
                 H: Hasher
                 {
@@ -50104,29 +50109,35 @@ pub mod syntax
     
     pub mod __private
     {
-        use ::
+        pub use ::
         {
+            clone::{ Clone },
+            cmp::{ Eq, PartialEq },
+            default::{ Default },
+            fmt::{ Debug },
+            hash::{ Hash, Hasher },
+            marker::{ Copy },
+            option::Option::{ None, Some },
+            result::Result::{ Err, Ok },
+            quote::
+            {
+                self, ToTokens, TokenStreamExt
+            },
+            syntax::
+            {
+                group::{ parse_braces, parse_brackets, parse_parens },
+                span::{ IntoSpans },
+                parse_quote::{ parse as parse_quote },
+                token::
+                {
+                    parsing::{ peek_punct, punct as parse_punct },
+                    printing::{ punct as print_punct },
+                    private::{ CustomToken },
+                },
+            },
             *,
         };
         /*
-        pub use std::clone::Clone;
-        pub use std::cmp::{Eq, PartialEq};
-        pub use std::concat;
-        pub use std::default::Default;
-        pub use std::fmt::Debug;
-        pub use std::hash::{Hash, Hasher};
-        pub use std::marker::Copy;
-        pub use std::option::Option::{None, Some};
-        pub use std::result::Result::{Err, Ok};
-        pub use std::stringify;
-        pub use quote;
-        pub use ::syntax::group::{parse_braces, parse_brackets, parse_parens};
-        pub use ::syntax::span::IntoSpans;
-        pub use ::syntax::parse_quote::parse as parse_quote;
-        pub use ::syntax::token::parsing::{peek_punct, punct as parse_punct};
-        pub use ::syntax::token::printing::punct as print_punct;
-        pub use ::syntax::token::private::CustomToken;
-        pub use ::quote::{ToTokens, TokenStreamExt};
         */
         pub type TokenStream = proc_macro::TokenStream;
         pub type Span = process::macros::Span;
@@ -50143,7 +50154,7 @@ pub mod syntax
         parse::Parser::parse(T::parse, tokens)
     }
     /// Parse a proc-macro2 token stream into the chosen syntax tree node.
-    pub fn parse2<T: parse::Parse>(tokens: proc_macro2::TokenStream) -> Result<T>
+    pub fn parse2<T: parse::Parse>(tokens: process::macros::TokenStream) -> Result<T>
     {
         parse::Parser::parse2(T::parse, tokens)
     }
@@ -50196,4 +50207,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 50199 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 50210 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
