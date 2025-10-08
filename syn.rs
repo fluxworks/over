@@ -7,6 +7,7 @@
 
 #![allow
 (
+    non_snake_case,
     unused_attributes,
     unused_imports,
     unused_variables,
@@ -1053,7 +1054,8 @@ extern crate proc_macro;
 
         (($($arms:tt)*) $tokens:ident $name:ident {}) => {
             impl ::quote::ToTokens for $name {
-                fn to_tokens(&self, $tokens:&mut ::process::macros::TokenStream) {
+                fn to_tokens(&self, $tokens:&mut ::process::macros::TokenStream )
+                {
                     match self {
                         $($arms)*
                     }
@@ -1433,12 +1435,6 @@ extern crate proc_macro;
         };
     }
     
-    #[cfg(not(feature = "printing"))]
-    #[doc(hidden)]
-    #[macro_export] macro_rules! impl_to_tokens_for_custom_keyword {
-        ($ident:ident) => {};
-    }
-    
     #[macro_export] macro_rules! impl_clone_for_custom_keyword {
         ($ident:ident) => {
             impl ::syntax::__private::Copy for $ident {}
@@ -1450,12 +1446,6 @@ extern crate proc_macro;
                 }
             }
         };
-    }
-    
-    #[cfg(not(feature = "clone-impls"))]
-    #[doc(hidden)]
-    #[macro_export] macro_rules! impl_clone_for_custom_keyword {
-        ($ident:ident) => {};
     }
     
     #[macro_export] macro_rules! impl_extra_traits_for_custom_keyword 
@@ -2182,6 +2172,11 @@ pub mod collections
 pub mod convert
 {
     pub use std::convert::{ * };
+}
+
+pub mod default
+{
+    pub use std::default::{ * };
 }
 
 pub mod error
@@ -2947,8 +2942,7 @@ pub mod process
             impl SourceMap
             {
                 fn next_start_pos( &self ) -> u32 {
-                   
-                    //
+
                    
                    
                     self.files.last().unwrap().span.hi + 1
@@ -4420,7 +4414,8 @@ pub mod process
                     }
                 }
 
-                pub fn set_span(&mut self, span: Span) {
+                pub fn set_span(&mut self, span: Span )
+                {
                     match (self, span) {
                         (Group::Compiler(g), Span::Compiler(s)) => g.set_span(s),
                         (Group::Fallback(g), Span::Fallback(s)) => g.set_span(s),
@@ -4503,7 +4498,8 @@ pub mod process
                     }
                 }
 
-                pub fn set_span(&mut self, span: Span) {
+                pub fn set_span(&mut self, span: Span )
+                {
                     match (self, span) {
                         (Ident::Compiler(t), Span::Compiler(s)) => t.set_span(s),
                         (Ident::Fallback(t), Span::Fallback(s)) => t.set_span(s),
@@ -4542,7 +4538,7 @@ pub mod process
             }
 
             impl<T> PartialEq<T> for Ident where
-            T: ?Sized + AsRef<str>,
+            T: ?Sized + AsRef<str>
             {
                 fn eq( &self, other: &T) -> bool
                 {
@@ -4750,7 +4746,8 @@ pub mod process
                     }
                 }
 
-                pub fn set_span(&mut self, span: Span) {
+                pub fn set_span(&mut self, span: Span )
+                {
                     match (self, span) {
                         (Literal::Compiler(lit), Span::Compiler(s)) => lit.set_span(s),
                         (Literal::Fallback(lit), Span::Fallback(s)) => lit.set_span(s),
@@ -5279,7 +5276,8 @@ pub mod process
             {
                 let mut chars = input.char_indices();
 
-                while let Some((i, ch)) = chars.next() {
+                while let Some((i, ch)) = chars.next( )
+                {
                     match ch {
                         '"' =>
                     {
@@ -5321,7 +5319,8 @@ pub mod process
             {
                 let (input, delimiter) = delimiter_of_raw_string(input)?;
                 let mut bytes = input.bytes().enumerate();
-                while let Some((i, byte)) = bytes.next() {
+                while let Some((i, byte)) = bytes.next( )
+                {
                     match byte {
                         b'"' if input.rest[i + 1..].starts_with(delimiter) =>
                     {
@@ -5354,7 +5353,8 @@ pub mod process
             fn cooked_byte_string(mut input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut bytes = input.bytes().enumerate();
-                while let Some((offset, b)) = bytes.next() {
+                while let Some((offset, b)) = bytes.next( )
+                {
                     match b {
                         b'"' =>
                     {
@@ -5391,7 +5391,8 @@ pub mod process
 
             fn delimiter_of_raw_string(input: Cursor<'_>) -> PResult<'_, &str>
             {
-                for (i, byte) in input.bytes().enumerate() {
+                for (i, byte) in input.bytes().enumerate( )
+                {
                     match byte {
                         b'"' =>
                     {
@@ -5413,7 +5414,8 @@ pub mod process
             {
                 let (input, delimiter) = delimiter_of_raw_string(input)?;
                 let mut bytes = input.bytes().enumerate();
-                while let Some((i, byte)) = bytes.next() {
+                while let Some((i, byte)) = bytes.next( )
+                {
                     match byte {
                         b'"' if input.rest[i + 1..].starts_with(delimiter) =>
                     {
@@ -5451,7 +5453,8 @@ pub mod process
             {
                 let (input, delimiter) = delimiter_of_raw_string(input)?;
                 let mut bytes = input.bytes().enumerate();
-                while let Some((i, byte)) = bytes.next() {
+                while let Some((i, byte)) = bytes.next( )
+                {
                     match byte {
                         b'"' if input.rest[i + 1..].starts_with(delimiter) =>
                     {
@@ -5475,7 +5478,8 @@ pub mod process
             {
                 let mut chars = input.char_indices();
 
-                while let Some((i, ch)) = chars.next() {
+                while let Some((i, ch)) = chars.next( )
+                {
                     match ch {
                         '"' =>
                     {
@@ -5727,7 +5731,8 @@ pub mod process
                 let mut len = 1;
                 let mut has_dot = false;
                 let mut has_exp = false;
-                while let Some(&ch) = chars.peek() {
+                while let Some(&ch) = chars.peek( )
+                {
                     match ch {
                         '0'..='9' | '_' =>
                     {
@@ -5837,7 +5842,8 @@ pub mod process
 
                 let mut len = 0;
                 let mut empty = true;
-                for b in input.bytes() {
+                for b in input.bytes( )
+                {
                     match b {
                         b'0'..=b'9' =>
                     {
@@ -8208,9 +8214,7 @@ pub mod syntax
         #[macro_use]
         pub mod token;
 
-        #[cfg(any(feature = "full", feature = "derive"))]
         mod attr;
-        #[cfg(any(feature = "full", feature = "derive"))]
         #[cfg_attr(docsrs, doc(cfg(any(feature = "full", feature = "derive"))))]
         pub use ::syntax::attr::{AttrStyle, Attribute, Meta, MetaList, MetaNameValue};
     */
@@ -8653,7 +8657,8 @@ pub mod syntax
 
             impl ToTokens for Meta 
             {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         Meta::Path(path) => path::printing::print_path(tokens, path, PathStyle::Mod),
                         Meta::List(meta_list) => meta_list.to_tokens(tokens),
@@ -8818,6 +8823,281 @@ pub mod syntax
                 impl private::Sealed for $($path)::+ {}
             };
         }
+
+        macro_rules! define_keywords
+        {
+            ($($token:literal pub struct $name:ident)*) => 
+            {
+                $
+                (
+                    pub struct $name 
+                    {
+                        pub span: Span,
+                    }
+            
+                    pub fn $name<S: IntoSpans<Span>>(span: S) -> $name
+                    {
+                        $name
+                        {
+                            span: span.into_spans(),
+                        }
+                    }
+
+                    impl ::default::Default for $name
+                    {
+                        fn default() -> Self
+                        {
+                            $name
+                            {
+                                span: Span::call_site(),
+                            }
+                        }
+                    }
+                    
+                    impl Copy for $name {}
+                    
+                    impl Clone for $name
+                    {
+                        fn clone(&self) -> Self { *self }
+                    }
+
+                    impl Debug for $name
+                    {
+                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.write_str(stringify!($name)) }
+                    }
+
+                    impl cmp::Eq for $name {}
+
+                    impl PartialEq for $name
+                    {
+                        fn eq(&self, _other: &$name) -> bool { true }
+                    }
+
+                    impl Hash for $name
+                    {
+                        fn hash<H: Hasher>(&self, _state: &mut H) {}
+                    }
+                   
+                    impl ToTokens for $name
+                    {
+                        fn to_tokens(&self, tokens: &mut TokenStream)
+                        { printing::keyword($token, self.span, tokens); }
+                    }
+                    
+                    impl Parse for $name
+                    {
+                        fn parse(input: ParseStream) -> Result<Self>
+                        {
+                            Ok($name
+                            {
+                                span: parsing::keyword(input, $token)?,
+                            })
+                        }
+                    }
+                    
+                    impl Token for $name
+                    {
+                        fn peek(cursor: Cursor) -> bool { parsing::peek_keyword(cursor, $token) }
+                        fn display() -> &'static str { concat!("`", $token, "`") }
+                    }
+                    
+                    impl private::Sealed for $name {}
+                )*
+            };
+        }
+
+        macro_rules! impl_deref_if_len_is_1 
+        {
+            ($name:ident/1) =>
+            {
+                impl Deref for $name
+                {
+                    type Target = WithSpan;
+
+                    fn deref(&self) -> &Self::Target
+                    {
+                        unsafe { &*(self as *const Self).cast::<WithSpan>() }
+                    }
+                }
+
+                impl DerefMut for $name
+                {
+                    fn deref_mut(&mut self) -> &mut Self::Target
+                    {
+                        unsafe { &mut *(self as *mut Self).cast::<WithSpan>() }
+                    }
+                }
+            };
+
+            ($name:ident/$len:literal) => {};
+        }
+
+        macro_rules! define_punctuation_structs 
+        {
+            ($($token:literal pub struct $name:ident/$len:tt #[doc = $usage:literal])*) =>
+            {
+                $
+                (
+                    pub struct $name
+                    {
+                        pub spans: [Span; $len],
+                    }
+            
+                    pub fn $name<S: IntoSpans<[Span; $len]>>(spans: S) -> $name
+                    {
+                        $name
+                        {
+                            spans: spans.into_spans(),
+                        }
+                    }
+
+                    impl ::default::Default for $name
+                    {
+                        fn default() -> Self
+                        {
+                            $name
+                            {
+                                spans: [Span::call_site(); $len],
+                            }
+                        }
+                    }
+                    
+                    impl Copy for $name {}
+                    
+                    impl Clone for $name
+                    {
+                        fn clone(&self) -> Self { *self }
+                    }
+
+                    impl Debug for $name
+                    {
+                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.write_str(stringify!($name)) }
+                    }
+
+                    impl cmp::Eq for $name {}
+
+                    impl PartialEq for $name
+                    {
+                        fn eq(&self, _other: &$name) -> bool { true }
+                    }
+
+                    impl Hash for $name
+                    {
+                        fn hash<H: Hasher>(&self, _state: &mut H) {}
+                    }
+
+                    impl_deref_if_len_is_1!($name/$len);
+                )*
+            };
+        }
+
+        macro_rules! define_punctuation 
+        {
+            ($($token:literal pub struct $name:ident/$len:tt #[doc = $usage:literal])*) =>
+            {
+                $
+                (
+                    define_punctuation_structs!
+                    {
+                        $token pub struct $name/$len #[doc = $usage]
+                    }
+                   
+                    impl ToTokens for $name
+                    {
+                        fn to_tokens(&self, tokens: &mut TokenStream)
+                        { printing::punct($token, &self.spans, tokens); }
+                    }
+                    
+                    impl Parse for $name
+                    {
+                        fn parse(input: ParseStream) -> Result<Self>
+                        {
+                            Ok
+                            (
+                                $name
+                                {
+                                    spans: parsing::punct(input, $token)?,
+                                }
+                            )
+                        }
+                    }
+                     
+                    impl Token for $name
+                    {
+                        fn peek(cursor: Cursor) -> bool { parsing::peek_punct(cursor, $token) }
+                        fn display() -> &'static str { concat!("`", $token, "`") }
+                    }
+                     
+                    impl private::Sealed for $name {}
+                )*
+            };
+        }
+
+        macro_rules! define_delimiters 
+        {
+            ($($delim:ident pub struct $name:ident #[$doc:meta])*) =>
+            {
+                $
+                (
+                    #[$doc]
+                    pub struct $name
+                    {
+                        pub span: DelimSpan,
+                    }
+            
+                    pub fn $name<S: IntoSpans<DelimSpan>>(span: S) -> $name
+                    {
+                        $name
+                        {
+                            span: span.into_spans(),
+                        }
+                    }
+
+                    impl std::default::Default for $name
+                    {
+                        fn default() -> Self { $name(Span::call_site()) }
+                    }
+                    
+                    impl Copy for $name {}
+                    
+                    impl Clone for $name
+                    {
+                        fn clone(&self) -> Self { *self }
+                    }
+
+                    impl Debug for $name
+                    {
+                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                        { f.write_str(stringify!($name)) }
+                    }
+
+                    impl cmp::Eq for $name {}
+
+                    impl PartialEq for $name
+                    {
+                        fn eq(&self, _other: &$name) -> bool { true }
+                    }
+
+                    impl Hash for $name
+                    {
+                        fn hash<H: Hasher>(&self, _state: &mut H) {}
+                    }
+
+                    impl $name
+                    {
+                        pub fn surround<F>( &self, tokens:&mut TokenStream, f:F ) where
+                        F: FnOnce( &mut TokenStream )
+                        {
+                            let mut inner = TokenStream::new();
+                            f( &mut inner );
+                            printing::delim( Delimiter::$delim, self.span.join(), tokens, inner );
+                        }
+                    }
+                    
+                    impl private::Sealed for $name {}
+                )*
+            };
+        }
         /// Marker trait for types that represent single tokens.
         pub trait Token: private::Sealed
         {
@@ -8860,290 +9140,8 @@ pub mod syntax
             fn display() -> &'static str { <Self as CustomToken>::display() }
         }
 
-        macro_rules! define_keywords
+        define_punctuation_structs! 
         {
-            ($($token:literal pub struct $name:ident)*) => 
-            {
-                $(
-                    #[doc = concat!('`', $token, '`')]
-                    ///
-                    /// Don't try to remember the name of this type &mdash; use the [`Token!`] macro instead.
-                    pub struct $name 
-                    {
-                        pub span: Span,
-                    }
-
-                                #[allow(non_snake_case)]
-                    pub fn $name<S: IntoSpans<Span>>(span: S) -> $name {
-                        $name {
-                            span: span.into_spans(),
-                        }
-                    }
-
-                    impl std::default::Default for $name {
-                        fn default() -> Self {
-                            $name {
-                                span: Span::call_site(),
-                            }
-                        }
-                    }
-
-                    #[cfg(feature = "clone-impls")]
-                     
-                    impl Copy for $name {}
-
-                    #[cfg(feature = "clone-impls")]
-                     
-                    impl Clone for $name {
-                        fn clone(&self) -> Self {
-                            *self
-                        }
-                    }
-
-                    impl Debug for $name {
-                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                            f.write_str(stringify!($name))
-                        }
-                    }
-
-                    impl cmp::Eq for $name {}
-
-                    impl PartialEq for $name {
-                        fn eq(&self, _other: &$name) -> bool {
-                            true
-                        }
-                    }
-
-                    impl Hash for $name
-                    {
-                        fn hash<H: Hasher>(&self, _state: &mut H) {}
-                    }
-                   
-                    impl ToTokens for $name
-                    {
-                        fn to_tokens(&self, tokens: &mut TokenStream)
-                        { printing::keyword($token, self.span, tokens); }
-                    }
-                    
-                    impl Parse for $name
-                    {
-                        fn parse(input: ParseStream) -> Result<Self>
-                        {
-                            Ok($name
-                            {
-                                span: parsing::keyword(input, $token)?,
-                            })
-                        }
-                    }
-                    
-                    impl Token for $name
-                    {
-                        fn peek(cursor: Cursor) -> bool { parsing::peek_keyword(cursor, $token) }
-                        fn display() -> &'static str { concat!("`", $token, "`") }
-                    }
-                    
-                    impl private::Sealed for $name {}
-                )*
-            };
-        }
-
-        macro_rules! impl_deref_if_len_is_1 {
-            ($name:ident/1) => {
-                impl Deref for $name {
-                    type Target = WithSpan;
-
-                    fn deref(&self) -> &Self::Target {
-                        unsafe { &*(self as *const Self).cast::<WithSpan>() }
-                    }
-                }
-
-                impl DerefMut for $name {
-                    fn deref_mut(&mut self) -> &mut Self::Target {
-                        unsafe { &mut *(self as *mut Self).cast::<WithSpan>() }
-                    }
-                }
-            };
-
-            ($name:ident/$len:literal) => {};
-        }
-
-        macro_rules! define_punctuation_structs {
-            ($($token:literal pub struct $name:ident/$len:tt #[doc = $usage:literal])*) => {
-                $(
-                    #[cfg_attr(not(doc), repr(transparent))]
-                    #[allow(unknown_lints, repr_transparent_external_private_fields)]
-                    #[doc = concat!('`', $token, '`')]
-                    ///
-                    /// Usage:
-                    #[doc = concat!($usage, '.')]
-                    ///
-                    /// Don't try to remember the name of this type &mdash; use the
-                    /// [`Token!`] macro instead.
-                    ///
-                    /// [`Token!`]: ::syntax::token
-                    pub struct $name {
-                        pub spans: [Span; $len],
-                    }
-
-                                #[allow(non_snake_case)]
-                    pub fn $name<S: IntoSpans<[Span; $len]>>(spans: S) -> $name {
-                        $name {
-                            spans: spans.into_spans(),
-                        }
-                    }
-
-                    impl std::default::Default for $name {
-                        fn default() -> Self {
-                            $name {
-                                spans: [Span::call_site(); $len],
-                            }
-                        }
-                    }
-
-                    #[cfg(feature = "clone-impls")]
-                     
-                    impl Copy for $name {}
-
-                    #[cfg(feature = "clone-impls")]
-                     
-                    impl Clone for $name {
-                        fn clone(&self) -> Self {
-                            *self
-                        }
-                    }
-
-                    impl Debug for $name {
-                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                            f.write_str(stringify!($name))
-                        }
-                    }
-
-                    impl cmp::Eq for $name {}
-
-                    impl PartialEq for $name {
-                        fn eq(&self, _other: &$name) -> bool {
-                            true
-                        }
-                    }
-
-                    impl Hash for $name {
-                        fn hash<H: Hasher>(&self, _state: &mut H) {}
-                    }
-
-                    impl_deref_if_len_is_1!($name/$len);
-                )*
-            };
-        }
-
-        macro_rules! define_punctuation {
-            ($($token:literal pub struct $name:ident/$len:tt #[doc = $usage:literal])*) => {
-                $(
-                    define_punctuation_structs! {
-                        $token pub struct $name/$len #[doc = $usage]
-                    }
-                   
-                    impl ToTokens for $name {
-                        fn to_tokens(&self, tokens: &mut TokenStream) {
-                            printing::punct($token, &self.spans, tokens);
-                        }
-                    }
-
-                     
-                                impl Parse for $name {
-                        fn parse(input: ParseStream) -> Result<Self> {
-                            Ok($name {
-                                spans: parsing::punct(input, $token)?,
-                            })
-                        }
-                    }
-
-                     
-                        impl Token for $name {
-                        fn peek(cursor: Cursor) -> bool {
-                            parsing::peek_punct(cursor, $token)
-                        }
-
-                        fn display() -> &'static str {
-                            concat!("`", $token, "`")
-                        }
-                    }
-
-                     
-                        impl private::Sealed for $name {}
-                )*
-            };
-        }
-
-        macro_rules! define_delimiters {
-            ($($delim:ident pub struct $name:ident #[$doc:meta])*) => {
-                $(
-                    #[$doc]
-                    pub struct $name {
-                        pub span: DelimSpan,
-                    }
-
-                                #[allow(non_snake_case)]
-                    pub fn $name<S: IntoSpans<DelimSpan>>(span: S) -> $name {
-                        $name {
-                            span: span.into_spans(),
-                        }
-                    }
-
-                    impl std::default::Default for $name {
-                        fn default() -> Self {
-                            $name(Span::call_site())
-                        }
-                    }
-
-                    #[cfg(feature = "clone-impls")]
-                     
-                    impl Copy for $name {}
-
-                    #[cfg(feature = "clone-impls")]
-                     
-                    impl Clone for $name {
-                        fn clone(&self) -> Self {
-                            *self
-                        }
-                    }
-
-                    impl Debug for $name {
-                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                            f.write_str(stringify!($name))
-                        }
-                    }
-
-                    impl cmp::Eq for $name {}
-
-                    impl PartialEq for $name {
-                        fn eq(&self, _other: &$name) -> bool {
-                            true
-                        }
-                    }
-
-                    impl Hash for $name {
-                        fn hash<H: Hasher>(&self, _state: &mut H) {}
-                    }
-
-                    impl $name {
-                        
-                            pub fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-                        where
-                            F: FnOnce(&mut TokenStream),
-                        {
-                            let mut inner = TokenStream::new();
-                            f(&mut inner);
-                            printing::delim(Delimiter::$delim, self.span.join(), tokens, inner);
-                        }
-                    }
-
-                     
-                        impl private::Sealed for $name {}
-                )*
-            };
-        }
-
-        define_punctuation_structs! {
             "_" pub struct Underscore/1 /// wildcard patterns, inferred types, unnamed items in constants, extern crates, use declarations, and destructuring assignment
         }
 
@@ -9155,8 +9153,7 @@ impl ToTokens for Underscore {
         }
 
          
-            #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl Parse for Underscore {
+            impl Parse for Underscore {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.step(|cursor| {
                     if let Some((ident, rest)) = cursor.ident() {
@@ -9198,7 +9195,6 @@ impl ToTokens for Underscore {
             pub span: Span,
         }
 
-        #[allow(non_snake_case)]
         pub fn Group<S: IntoSpans<Span>>(span: S) -> Group {
             Group {
                 span: span.into_spans(),
@@ -9634,7 +9630,8 @@ impl ToTokens for Underscore {
             }
 
                 pub fn peek_punct(mut cursor: Cursor, token: &str) -> bool {
-                for (i, ch) in token.chars().enumerate() {
+                for (i, ch) in token.chars().enumerate( )
+                {
                     match cursor.punct() {
                         Some((punct, rest)) => {
                             if punct.as_char() != ch {
@@ -10080,8 +10077,7 @@ pub mod printing {
             }
             /// Returns the `Span` of the token immediately prior to the position of
             /// this cursor, or of the current token if there is no previous one.
-            #[cfg(any(feature = "full", feature = "derive"))]
-            pub fn prev_span(mut self) -> Span {
+                pub fn prev_span(mut self) -> Span {
                 if start_of_buffer(self) < self.ptr {
                     self.ptr = unsafe { self.ptr.offset(-1) };
                 }
@@ -10727,7 +10723,6 @@ pub fn trailing_unparameterized_path(mut ty: &Type) -> bool {
             }
         }
 
-         
         pub mod parsing
         {
             use ::syntax::attr::Attribute;
@@ -12865,13 +12860,8 @@ impl IdentFragment for Index {
                 }
             }
             
-           
-           
-           
-           
-           
-           
-                fn trailer_expr(
+            fn trailer_expr
+            (
                 begin: ParseBuffer,
                 mut attrs: Vec<Attribute>,
                 input: ParseStream,
@@ -12902,8 +12892,9 @@ impl IdentFragment for Index {
 
                 Ok(e)
             }
-
-                fn trailer_helper(input: ParseStream, mut e: Expr) -> Result<Expr> {
+            
+            fn trailer_helper(input: ParseStream, mut e: Expr) -> Result<Expr>
+            {
                 loop {
                     if input.peek(token::Paren) {
                         let content;
@@ -12994,85 +12985,9 @@ impl IdentFragment for Index {
                 }
                 Ok(e)
             }
-
-            #[cfg(not(feature = "full"))]
-            fn trailer_expr(input: ParseStream) -> Result<Expr>
+            
+            fn atom_expr(input: ParseStream, allow_struct: AllowStruct) -> Result<Expr>
             {
-                let mut e = atom_expr(input)?;
-
-                loop {
-                    if input.peek(token::Paren) {
-                        let content;
-                        e = Expr::Call(ExprCall {
-                            attrs: Vec::new(),
-                            func: Box::new(e),
-                            paren_token: parenthesized!(content in input),
-                            args: content.parse_terminated(Expr::parse, Token![,])?,
-                        });
-                    } else if input.peek(Token![.])
-                        && !input.peek(Token![..])
-                        && !input.peek2(Token![await])
-                    {
-                        let mut dot_token: Token![.] = input.parse()?;
-
-                        let float_token: Option<LitFloat> = input.parse()?;
-                        if let Some(float_token) = float_token {
-                            if multi_index(&mut e, &mut dot_token, float_token)? {
-                                continue;
-                            }
-                        }
-
-                        let member: Member = input.parse()?;
-                        let turbofish = if member.is_named() && input.peek(Token![::]) {
-                            let colon2_token: Token![::] = input.parse()?;
-                            let turbofish =
-                                AngleBracketedGenericArguments::do_parse(Some(colon2_token), input)?;
-                            Some(turbofish)
-                        } else {
-                            None
-                        };
-
-                        if turbofish.is_some() || input.peek(token::Paren) {
-                            if let Member::Named(method) = member {
-                                let content;
-                                e = Expr::MethodCall(ExprMethodCall {
-                                    attrs: Vec::new(),
-                                    receiver: Box::new(e),
-                                    dot_token,
-                                    method,
-                                    turbofish,
-                                    paren_token: parenthesized!(content in input),
-                                    args: content.parse_terminated(Expr::parse, Token![,])?,
-                                });
-                                continue;
-                            }
-                        }
-
-                        e = Expr::Field(ExprField {
-                            attrs: Vec::new(),
-                            base: Box::new(e),
-                            dot_token,
-                            member,
-                        });
-                    } else if input.peek(token::Bracket) {
-                        let content;
-                        e = Expr::Index(ExprIndex {
-                            attrs: Vec::new(),
-                            expr: Box::new(e),
-                            bracket_token: bracketed!(content in input),
-                            index: content.parse()?,
-                        });
-                    } else {
-                        break;
-                    }
-                }
-
-                Ok(e)
-            }
-
-           
-           
-                fn atom_expr(input: ParseStream, allow_struct: AllowStruct) -> Result<Expr> {
                 if input.peek(token::Group) {
                     expr_group(input, allow_struct)
                 } else if input.peek(Lit) {
@@ -13147,8 +13062,8 @@ impl IdentFragment for Index {
                     Err(input.error("expected an expression"))
                 }
             }
-
-                fn atom_labeled(input: ParseStream) -> Result<Expr>
+            
+            fn atom_labeled(input: ParseStream) -> Result<Expr>
             {
                 let the_label: Label = input.parse()?;
                 let mut expr = if input.peek(Token![while]) {
@@ -13171,42 +13086,8 @@ impl IdentFragment for Index {
                 }
                 Ok(expr)
             }
-
-            #[cfg(not(feature = "full"))]
-            fn atom_expr(input: ParseStream) -> Result<Expr> {
-                if input.peek(token::Group) {
-                    expr_group(input)
-                } else if input.peek(Lit) {
-                    input.parse().map(Expr::Lit)
-                } else if input.peek(token::Paren) {
-                    paren_or_tuple(input)
-                } else if input.peek(Ident)
-                    || input.peek(Token![::])
-                    || input.peek(Token![<])
-                    || input.peek(Token![self])
-                    || input.peek(Token![Self])
-                    || input.peek(Token![super])
-                    || input.peek(Token![crate])
-                {
-                    path_or_macro_or_struct(input)
-                } else if input.is_empty() {
-                    Err(input.error("expected an expression"))
-                } else {
-                    if input.peek(token::Brace) {
-                        let scan = input.fork();
-                        let content;
-                        braced!(content in scan);
-                        if content.parse::<Expr>().is_ok() && content.is_empty() {
-                            let expr_block = verbatim::between(input, &scan);
-                            input.advance_to(&scan);
-                            return Ok(Expr::Verbatim(expr_block));
-                        }
-                    }
-                    Err(input.error("unsupported expression; enable syn's features=[\"full\"]"))
-                }
-            }
-
-                fn expr_builtin(input: ParseStream) -> Result<Expr>
+            
+            fn expr_builtin(input: ParseStream) -> Result<Expr>
             {
                 let begin = input.fork();
 
@@ -14423,28 +14304,23 @@ pub mod printing {
                 fn inner_attrs_to_tokens(attrs: &[Attribute], tokens: &mut TokenStream) {
                 tokens.append_all(attrs.inner());
             }
-
-            #[cfg(not(feature = "full"))]
-            pub fn outer_attrs_to_tokens(_attrs: &[Attribute], _tokens: &mut TokenStream) {}
-
-            pub fn print_subexpression(
+            
+            pub fn print_subexpression
+            (
                 expr: &Expr,
                 needs_group: bool,
                 tokens: &mut TokenStream,
                 mut fixup: FixupContext,
-            ) {
+            )
+            {
                 if needs_group {
-                   
-                    //
-                   
-                    //
+
+
                    
                    
                    
-                   
-                    //
-                   
-                    //
+
+
                     fixup = FixupContext::NONE;
                 }
 
@@ -15291,7 +15167,8 @@ pub mod printing {
             }
 
             impl ToTokens for Member {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         Member::Named(ident) => ident.to_tokens(tokens),
                         Member::Unnamed(index) => index.to_tokens(tokens),
@@ -15300,7 +15177,8 @@ pub mod printing {
             }
 
                 impl ToTokens for RangeLimits {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         RangeLimits::HalfOpen(t) => t.to_tokens(tokens),
                         RangeLimits::Closed(t) => t.to_tokens(tokens),
@@ -15309,7 +15187,8 @@ pub mod printing {
             }
 
                 impl ToTokens for PointerMutability {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         PointerMutability::Const(const_token) => const_token.to_tokens(tokens),
                         PointerMutability::Mut(mut_token) => mut_token.to_tokens(tokens),
@@ -16283,7 +16162,8 @@ mod printing {
             }
         }
 
-        ast_enum_of_structs! {
+        ast_enum_of_structs! 
+        {
             /// A generic type parameter, lifetime, or const generic: `T: Into<String>`,
             /// `'a: 'b`, `const LEN: usize`.
             ///
@@ -16298,7 +16178,8 @@ mod printing {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A lifetime definition: `'a: 'b + 'c + 'd`.
             pub struct LifetimeParam {
                 pub attrs: Vec<Attribute>,
@@ -16308,7 +16189,8 @@ mod printing {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A generic type parameter: `T: Into<String>`.
             pub struct TypeParam {
                 pub attrs: Vec<Attribute>,
@@ -16320,7 +16202,8 @@ mod printing {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A const generic parameter: `const LENGTH: usize`.
             pub struct ConstParam {
                 pub attrs: Vec<Attribute>,
@@ -16333,7 +16216,8 @@ mod printing {
             }
         }
 
-        impl Default for Generics {
+        impl Default for Generics
+        {
             fn default() -> Self {
                 Generics {
                     lt_token: None,
@@ -16344,43 +16228,50 @@ mod printing {
             }
         }
 
-        impl Generics {
-            return_impl_trait! {
+        impl Generics
+        {
+            return_impl_trait! 
+            {
                 /// Iterator over the lifetime parameters in `self.params`.
                 pub fn lifetimes(&self) -> impl Iterator<Item = &LifetimeParam> [Lifetimes] {
                     Lifetimes(self.params.iter())
                 }
             }
 
-            return_impl_trait! {
+            return_impl_trait! 
+            {
                 /// Iterator over the lifetime parameters in `self.params`.
                 pub fn lifetimes_mut(&mut self) -> impl Iterator<Item = &mut LifetimeParam> [LifetimesMut] {
                     LifetimesMut(self.params.iter_mut())
                 }
             }
 
-            return_impl_trait! {
+            return_impl_trait! 
+            {
                 /// Iterator over the type parameters in `self.params`.
                 pub fn type_params(&self) -> impl Iterator<Item = &TypeParam> [TypeParams] {
                     TypeParams(self.params.iter())
                 }
             }
 
-            return_impl_trait! {
+            return_impl_trait! 
+            {
                 /// Iterator over the type parameters in `self.params`.
                 pub fn type_params_mut(&mut self) -> impl Iterator<Item = &mut TypeParam> [TypeParamsMut] {
                     TypeParamsMut(self.params.iter_mut())
                 }
             }
 
-            return_impl_trait! {
+            return_impl_trait! 
+            {
                 /// Iterator over the constant parameters in `self.params`.
                 pub fn const_params(&self) -> impl Iterator<Item = &ConstParam> [ConstParams] {
                     ConstParams(self.params.iter())
                 }
             }
 
-            return_impl_trait! {
+            return_impl_trait! 
+            {
                 /// Iterator over the constant parameters in `self.params`.
                 pub fn const_params_mut(&mut self) -> impl Iterator<Item = &mut ConstParam> [ConstParamsMut] {
                     ConstParamsMut(self.params.iter_mut())
@@ -16394,19 +16285,8 @@ mod printing {
                     predicates: Punctuated::new(),
                 })
             }
-            /// Split a type's generics into the pieces required for impl'ing a trait
-            /// for that type.
-            /// #
-            /// let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-            /// quote! {
-            ///     impl #impl_generics MyTrait for #name #ty_generics #where_clause {
-            ///        
-            ///     }
-            /// }
-            /// # ;
-            /// ```
-            
-    pub fn split_for_impl(&self) -> (ImplGenerics, TypeGenerics, Option<&WhereClause>) {
+            /// Split a type's generics into the pieces required for impl'ing a trait for that type.
+            pub fn split_for_impl(&self) -> (ImplGenerics, TypeGenerics, Option<&WhereClause>) {
                 (
                     ImplGenerics(self),
                     TypeGenerics(self),
@@ -16499,43 +16379,24 @@ mod printing {
             }
         }
         /// Returned by `Generics::split_for_impl`.
-        
-#[cfg_attr(
-            docsrs,
-            doc(cfg(all(any(feature = "full", feature = "derive"), feature = "printing")))
-        )]
         pub struct ImplGenerics<'a>(&'a Generics);
 
         /// Returned by `Generics::split_for_impl`.
-        
-#[cfg_attr(
-            docsrs,
-            doc(cfg(all(any(feature = "full", feature = "derive"), feature = "printing")))
-        )]
         pub struct TypeGenerics<'a>(&'a Generics);
 
         /// Returned by `TypeGenerics::as_turbofish`.
-        
-#[cfg_attr(
-            docsrs,
-            doc(cfg(all(any(feature = "full", feature = "derive"), feature = "printing")))
-        )]
         pub struct Turbofish<'a>(&'a Generics);
 
         
 macro_rules! generics_wrapper_impls {
             ($ty:ident) => {
-                #[cfg(feature = "clone-impls")]
-                 
                 impl<'a> Clone for $ty<'a> {
                     fn clone(&self) -> Self {
                         $ty(self.0)
                     }
                 }
 
-                #[cfg(feature = "extra-traits")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
-                impl<'a> Debug for $ty<'a> {
+                        impl<'a> Debug for $ty<'a> {
                     fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                         formatter
                             .debug_tuple(stringify!($ty))
@@ -16544,21 +16405,15 @@ macro_rules! generics_wrapper_impls {
                     }
                 }
 
-                #[cfg(feature = "extra-traits")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
-                impl<'a> Eq for $ty<'a> {}
+                        impl<'a> Eq for $ty<'a> {}
 
-                #[cfg(feature = "extra-traits")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
-                impl<'a> PartialEq for $ty<'a> {
+                        impl<'a> PartialEq for $ty<'a> {
                     fn eq(&self, other: &Self) -> bool {
                         self.0 == other.0
                     }
                 }
 
-                #[cfg(feature = "extra-traits")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
-                impl<'a> Hash for $ty<'a> {
+                        impl<'a> Hash for $ty<'a> {
                     fn hash<H: Hasher>(&self, state: &mut H) {
                         self.0.hash(state);
                     }
@@ -17349,7 +17204,8 @@ impl<'a> TypeGenerics<'a> {
         }
 
         
-pub mod printing {
+        pub mod printing
+        {
             use ::syntax::attr::FilterAttrs;
                 use ::syntax::expr;
             use ::syntax::expr::Expr;
@@ -17557,7 +17413,8 @@ pub mod printing {
             }
 
             impl ToTokens for TraitBoundModifier {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         TraitBoundModifier::None => {}
                         TraitBoundModifier::Maybe(t) => t.to_tokens(tokens),
@@ -17635,7 +17492,8 @@ pub mod printing {
             }
 
                 impl ToTokens for CapturedParam {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         CapturedParam::Lifetime(lifetime) => lifetime.to_tokens(tokens),
                         CapturedParam::Ident(ident) => ident.to_tokens(tokens),
@@ -17697,7 +17555,7 @@ pub mod printing {
         */
          
             pub_if_not_doc! {
-                #[allow(non_snake_case)]
+                
             pub fn Ident(marker: lookahead::TokenMarker) -> Ident {
                 match marker {}
             }
@@ -20664,7 +20522,8 @@ pub mod printing {
         }
 
         
-mod printing {
+        mod printing
+        {
             use ::syntax::attr::FilterAttrs;
             use ::syntax::data::Fields;
             use ::syntax::item::{
@@ -21208,7 +21067,8 @@ mod printing {
             }
 
             impl ToTokens for StaticMutability {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         StaticMutability::None => {}
                         StaticMutability::Mut(mut_token) => mut_token.to_tokens(tokens),
@@ -21244,10 +21104,6 @@ mod printing {
         use std::hash::{Hash, Hasher};
         */
         /// A Rust lifetime: `'a`.
-        ///
-        /// Lifetime names must conform to the following rules:
-        ///
-        /// - Must start with an apostrophe.
         /// - Must not consist of just an apostrophe: `'`.
         /// - Character after the apostrophe must be `_` or a Unicode code point with
         ///   the XID_Start property.
@@ -21351,7 +21207,7 @@ mod printing {
 
          
             pub_if_not_doc! {
-                #[allow(non_snake_case)]
+                
             pub fn Lifetime(marker: lookahead::TokenMarker) -> Lifetime {
                 match marker {}
             }
@@ -21375,8 +21231,8 @@ mod printing {
             }
         }
 
-        
-mod printing {
+        mod printing
+        {
             use ::syntax::lifetime::Lifetime;
             use ::process::macros::{Punct, Spacing, TokenStream};
             use ::quote::{ToTokens, TokenStreamExt};
@@ -21409,7 +21265,6 @@ mod printing {
             use ::process::macros::{TokenStream, TokenTree};
         use std::ffi::{CStr, CString};
         use std::fmt::{self, Display};
-        #[cfg(feature = "extra-traits")]
         use std::hash::{Hash, Hasher};
         use std::str::{self, FromStr};
         */
@@ -21824,8 +21679,7 @@ mod printing {
             ///     }
             /// }
             /// ```
-            pub fn base10_parse<N>(&self) -> Result<N>
-            where
+            pub fn base10_parse<N>(&self) -> Result<N> where
                 N: FromStr,
                 N::Err: Display,
            
@@ -21903,8 +21757,7 @@ mod printing {
                 &self.repr.digits
             }
 
-            pub fn base10_parse<N>(&self) -> Result<N>
-            where
+            pub fn base10_parse<N>(&self) -> Result<N> where
                 N: FromStr,
                 N::Err: Display,
            
@@ -21985,7 +21838,6 @@ mod printing {
             }
         }
 
-        #[cfg(feature = "extra-traits")]
         mod debug_impls {
             use ::syntax::lit::{LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr};
             use std::fmt::{self, Debug};
@@ -22142,8 +21994,6 @@ mod printing {
 
         macro_rules! lit_extra_traits {
             ($ty:ident) => {
-                #[cfg(feature = "clone-impls")]
-                 
                 impl Clone for $ty {
                     fn clone(&self) -> Self {
                         $ty {
@@ -22152,17 +22002,13 @@ mod printing {
                     }
                 }
 
-                #[cfg(feature = "extra-traits")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
-                impl PartialEq for $ty {
+                        impl PartialEq for $ty {
                     fn eq(&self, other: &Self) -> bool {
                         self.repr.token.to_string() == other.repr.token.to_string()
                     }
                 }
 
-                #[cfg(feature = "extra-traits")]
-                #[cfg_attr(docsrs, doc(cfg(feature = "extra-traits")))]
-                impl Hash for $ty {
+                        impl Hash for $ty {
                     fn hash<H>(&self, state: &mut H)
                     where
                         H: Hasher,
@@ -22173,7 +22019,7 @@ mod printing {
 
                  
                     pub_if_not_doc! {
-                                #[allow(non_snake_case)]
+                                
                     pub fn $ty(marker: lookahead::TokenMarker) -> $ty {
                         match marker {}
                     }
@@ -22191,13 +22037,12 @@ mod printing {
 
          
             pub_if_not_doc! {
-                #[allow(non_snake_case)]
+                
             pub fn LitBool(marker: lookahead::TokenMarker) -> LitBool {
                 match marker {}
             }
         }
-        /// The style of a string literal, either plain quoted or a raw string like
-        /// `r##"data"##`.
+        /// The style of a string literal, either plain quoted or a raw string like `r##"data"##`.
         pub enum StrStyle {
             /// An ordinary string like `"data"`.
             Cooked,
@@ -22209,7 +22054,7 @@ mod printing {
 
          
             pub_if_not_doc! {
-                #[allow(non_snake_case)]
+                
             pub fn Lit(marker: lookahead::TokenMarker) -> Lit {
                 match marker {}
             }
@@ -22426,8 +22271,8 @@ mod printing {
             impl_token!("boolean literal" LitBool);
         }
 
-        
-mod printing {
+        mod printing
+        {
             use ::syntax::lit::{LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr};
             use ::process::macros::TokenStream;
             use ::quote::{ToTokens, TokenStreamExt};
@@ -22482,7 +22327,8 @@ mod printing {
             }
         }
 
-        mod value {
+        mod value
+        {
             use ::syntax::bigint::BigInt;
             use ::syntax::lit::{
                 Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitFloatRepr, LitInt,
@@ -22604,7 +22450,8 @@ mod printing {
                     }
                 }
 
-                pub fn set_span(&mut self, span: Span) {
+                pub fn set_span(&mut self, span: Span )
+                {
                     match self {
                         Lit::Str(lit) => lit.set_span(span),
                         Lit::ByteStr(lit) => lit.set_span(span),
@@ -23148,7 +22995,8 @@ mod printing {
                 let mut has_e = false;
                 let mut has_sign = false;
                 let mut has_exponent = false;
-                while read < bytes.len() {
+                while read < bytes.len( )
+                {
                     match bytes[read] {
                         b'_' => {
                            
@@ -23226,8 +23074,7 @@ mod printing {
     #[doc(inline)]
     pub use ::syntax::lit::{
         Lit, LitBool, LitByte, LitByteStr, LitCStr, LitChar, LitFloat, LitInt, LitStr,
-    }; */
-    
+    }; */    
     pub mod lookahead
     {
         use ::
@@ -23316,29 +23163,17 @@ mod printing {
             }
         }
         /// Types that can be parsed by looking at just one token.
-        ///
-        /// This trait is sealed and cannot be implemented for types outside of Syn.
-        ///
-        /// [`ParseStream::peek`]: ::syntax::parse::ParseBuffer::peek
         pub trait Peek: Sealed {
            
                 type Token: Token;
         }
         /// Pseudo-token used for peeking the end of a parse stream.
-        ///
-        /// This type is only useful as an argument to one of the following functions:
-        ///
-        /// - [`ParseStream::peek`][::syntax::parse::ParseBuffer::peek]
         /// - [`ParseStream::peek2`][::syntax::parse::ParseBuffer::peek2]
         /// - [`ParseStream::peek3`][::syntax::parse::ParseBuffer::peek3]
         /// - [`Lookahead1::peek`]
         ///
         /// The peek will return `true` if there are no remaining tokens after that
         /// point in the parse stream.
-        ///
-        /// # Example
-        ///
-        /// Suppose we are parsing attributes containing core::fmt inspired formatting
         /// arguments:
         ///
         /// - `#[fmt("simple example")]`
@@ -23681,8 +23516,8 @@ mod printing {
             }
         }
 
-        
-mod printing {
+        mod printing
+        {
             use ::syntax::mac::{Macro, MacroDelimiter};
             use ::syntax::path;
             use ::syntax::path::printing::PathStyle;
@@ -23728,117 +23563,7 @@ mod printing {
         use ::process::macros::Ident;
         use std::fmt::Display;
         */
-        /// Make a parser that is usable with `parse_macro_input!` in a
-        /// `#[proc_macro_attribute]` macro.
-        /// need this function. In several cases your callers will get worse error
-        /// messages if you use this function, because the surrounding delimiter's span
-        /// is concealed from attribute macros by rustc. Use
-        /// [`Attribute::parse_nested_meta`] instead.
-        ///
-        /// [`Attribute::parse_nested_meta`]: ::syntax::Attribute::parse_nested_meta
-        ///
-        /// # Example
-        ///
-        /// This example implements an attribute macro whose invocations look like this:
-        ///
-        /// ```
-        /// # const IGNORE: &str = stringify! {
-        /// #[tea(kind = "EarlGrey", hot)]
-        /// struct Picard {...}
-        /// # };
-        /// ```
-        ///
-        /// The "parameters" supported by the attribute are:
-        ///
-        /// - `kind = "..."`
-        /// - `hot`
-        /// - `with(sugar, milk, ...)`, a comma-separated list of ingredients
-        ///
-        /// ```
-        /// # extern crate proc_macro;
-        /// #
-        /// use proc_macro::TokenStream;
-        /// use syn::{parse_macro_input, LitStr, Path};
-        ///
-        /// # const IGNORE: &str = stringify! {
-        /// #[proc_macro_attribute]
-        /// # };
-        /// pub fn tea(args: TokenStream, input: TokenStream) -> TokenStream {
-        ///     let mut kind: Option<LitStr> = None;
-        ///     let mut hot: bool = false;
-        ///     let mut with: Vec<Path> = Vec::new();
-        ///     let tea_parser = syn::meta::parser(|meta| {
-        ///         if meta.path.is_ident("kind") {
-        ///             kind = Some(meta.value()?.parse()?);
-        ///             Ok(())
-        ///         } else if meta.path.is_ident("hot") {
-        ///             hot = true;
-        ///             Ok(())
-        ///         } else if meta.path.is_ident("with") {
-        ///             meta.parse_nested_meta(|meta| {
-        ///                 with.push(meta.path);
-        ///                 Ok(())
-        ///             })
-        ///         } else {
-        ///             Err(meta.error("unsupported tea property"))
-        ///         }
-        ///     });
-        ///
-        ///     parse_macro_input!(args with tea_parser);
-        ///     eprintln!("kind={kind:?} hot={hot} with={with:?}");
-        ///
-        ///     /* ... */
-        /// #   TokenStream::new()
-        /// }
-        /// ```
-        ///
-        /// The `syn::meta` library will take care of dealing with the commas including
-        /// trailing commas, and producing sensible error messages on unexpected input.
-        ///  --> src/main.rs:3:37
-        ///   |
-        /// 3 | #[tea(kind = "EarlGrey", with(sugar = "lol", milk))]
-        ///   |                                     ^
-        /// ```
-        ///
-        /// # Example
-        ///
-        /// Same as above but we factor out most of the logic into a separate function.
-        /// #
-        /// use proc_macro::TokenStream;
-        /// use syn::meta::ParseNestedMeta;
-        /// use syn::parse::{Parser, Result};
-        /// use syn::{parse_macro_input, LitStr, Path};
-        ///
-        /// # const IGNORE: &str = stringify! {
-        /// #[proc_macro_attribute]
-        /// # };
-        /// pub fn tea(args: TokenStream, input: TokenStream) -> TokenStream {
-        ///     let mut attrs = TeaAttributes::default();
-        ///     let tea_parser = syn::meta::parser(|meta| attrs.parse(meta));
-        ///     parse_macro_input!(args with tea_parser);
-        ///
-        ///     /* ... */
-        /// #   TokenStream::new()
-        /// }
-        ///
-        /// #[derive(Default)]
-        /// struct TeaAttributes {
-        ///     kind: Option<LitStr>,
-        ///     hot: bool,
-        ///     with: Vec<Path>,
-        /// }
-        ///
-        /// impl TeaAttributes {
-        ///     fn parse(&mut self, meta: ParseNestedMeta) -> Result<()> {
-        ///         if meta.path.is_ident("kind") {
-        ///             self.kind = Some(meta.value()?.parse()?);
-        ///             Ok(())
-        ///         } else /* just like in last example */
-        /// #           { unimplemented!() }
-        ///
-        ///     }
-        /// }
-        /// ```
+        /// Make a parser that is usable with `parse_macro_input!` in a `#[proc_macro_attribute]` macro.
         pub fn parser(logic: impl FnMut(ParseNestedMeta) -> Result<()>) -> impl Parser<Output = ()> {
             |input: ParseStream| {
                 if input.is_empty() {
@@ -23848,8 +23573,7 @@ mod printing {
                 }
             }
         }
-        /// Context for parsing a single property in the conventional syntax for
-        /// structured attributes.
+        /// Context for parsing a single property in the conventional syntax for structured attributes.
         #[non_exhaustive]
         pub struct ParseNestedMeta<'a> {
             pub path: Path,
@@ -24153,7 +23877,8 @@ mod printing {
             }
         }
 
-        ast_enum! {
+        ast_enum!
+        {
             /// A unary operator: `*`, `!`, `-`.
             #[non_exhaustive]
             pub enum UnOp {
@@ -24165,9 +23890,9 @@ mod printing {
                 Neg(Token![-]),
             }
         }
-
-         
-            pub mod parsing {
+        
+        pub mod parsing
+        {
             use ::syntax::error::Result;
             use ::syntax::op::{BinOp, UnOp};
             use ::syntax::parse::{Parse, ParseStream};
@@ -24253,15 +23978,16 @@ mod printing {
                 }
             }
         }
-
         
-mod printing {
+        mod printing
+        {
             use ::syntax::op::{BinOp, UnOp};
             use ::process::macros::TokenStream;
             use ::quote::ToTokens;
 
             impl ToTokens for BinOp {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         BinOp::Add(t) => t.to_tokens(tokens),
                         BinOp::Sub(t) => t.to_tokens(tokens),
@@ -24296,7 +24022,8 @@ mod printing {
             }
 
             impl ToTokens for UnOp {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         UnOp::Deref(t) => t.to_tokens(tokens),
                         UnOp::Not(t) => t.to_tokens(tokens),
@@ -24320,12 +24047,10 @@ mod printing {
         use ::syntax::lookahead;
         use ::syntax::punctuated::Punctuated;
         use ::syntax::token::Token;
-        use ::process::macros::{Delimiter, Group, Literal, Punct, Span, TokenStream, TokenTree};
-        
-use ::quote::ToTokens;
+        use ::process::macros::{Delimiter, Group, Literal, Punct, Span, TokenStream, TokenTree};        
+        use ::quote::ToTokens;
         use std::cell::Cell;
         use std::fmt::{self, Debug, Display};
-        #[cfg(feature = "extra-traits")]
         use std::hash::{Hash, Hasher};
         use std::marker::PhantomData;
         use std::mem;
@@ -24571,14 +24296,10 @@ use ::quote::ToTokens;
         }
         /// Parsing interface implemented by all types that can be parsed in a default
         /// way from a token stream.
-        ///
-        /// [module documentation]: self
         pub trait Parse: Sized {
             fn parse(input: ParseStream) -> Result<Self>;
         }
         /// Input to a Syn parser function.
-        ///
-        /// [module documentation]: self
         pub type ParseStream<'a> = &'a ParseBuffer<'a>;
 
         /// Cursor position within a buffered token stream.
@@ -24617,50 +24338,8 @@ use ::quote::ToTokens;
         impl<'a> UnwindSafe for ParseBuffer<'a> {}
         impl<'a> RefUnwindSafe for ParseBuffer<'a> {}
         /// Cursor state associated with speculative parsing.
-        ///
-        /// This type is the input of the closure provided to [`ParseStream::step`].
-        ///
-        /// [`ParseStream::step`]: ParseBuffer::step
-        ///
-        /// # Example
-        ///
-        /// ```
-        /// use ::process::macros::TokenTree;
-        /// use syn::Result;
-        /// use syn::parse::ParseStream;
-        ///
-        ///
-        ///
-        ///
-        /// fn skip_past_next_at(input: ParseStream) -> Result<()> {
-        ///     input.step(|cursor| {
-        ///         let mut rest = *cursor;
-        ///         while let Some((tt, next)) = rest.token_tree() {
-        ///             match &tt {
-        ///                 TokenTree::Punct(punct) if punct.as_char() == '@' => {
-        ///                     return Ok(((), next));
-        ///                 }
-        ///                 _ => rest = next,
-        ///             }
-        ///         }
-        ///         Err(cursor.error("no `@` was found after this point"))
-        ///     })
-        /// }
-        /// #
-        /// # fn remainder_after_skipping_past_next_at(
-        /// #     input: ParseStream,
-        /// # ) -> Result<proc_macro2::TokenStream> {
-        /// #     skip_past_next_at(input)?;
-        /// #     input.parse()
-        /// # }
-        /// #
-        /// # use syn::parse::Parser;
-        /// # let remainder = remainder_after_skipping_past_next_at
-        /// #     .parse_str("a @ b c")
-        /// #     .unwrap();
-        /// # assert_eq!(remainder.to_string(), "b c");
-        /// ```
-        pub struct StepCursor<'c, 'a> {
+        pub struct StepCursor<'c, 'a> 
+        {
             scope: Span,
            
             cursor: Cursor<'c>,
@@ -24675,7 +24354,8 @@ use ::quote::ToTokens;
             marker: PhantomData<fn(Cursor<'c>) -> Cursor<'a>>,
         }
 
-        impl<'c, 'a> Deref for StepCursor<'c, 'a> {
+        impl<'c, 'a> Deref for StepCursor<'c, 'a> 
+        {
             type Target = Cursor<'c>;
 
             fn deref(&self) -> &Self::Target {
@@ -24685,20 +24365,23 @@ use ::quote::ToTokens;
 
         impl<'c, 'a> Copy for StepCursor<'c, 'a> {}
 
-        impl<'c, 'a> Clone for StepCursor<'c, 'a> {
+        impl<'c, 'a> Clone for StepCursor<'c, 'a> 
+        {
             fn clone(&self) -> Self {
                 *self
             }
         }
 
-        impl<'c, 'a> StepCursor<'c, 'a> {
+        impl<'c, 'a> StepCursor<'c, 'a> 
+        {
             /// Triggers an error at the current position of the parse stream.
             pub fn error<T: Display>(self, message: T) -> Error {
                 error::new_at(self.scope, self.cursor, message)
             }
         }
 
-        pub fn advance_step_cursor<'c, 'a>(proof: StepCursor<'c, 'a>, to: Cursor<'c>) -> Cursor<'a> {
+        pub fn advance_step_cursor<'c, 'a>(proof: StepCursor<'c, 'a>, to: Cursor<'c>) -> Cursor<'a> 
+        {
            
            
            
@@ -24711,7 +24394,8 @@ use ::quote::ToTokens;
             scope: Span,
             cursor: Cursor,
             unexpected: Rc<Cell<Unexpected>>,
-        ) -> ParseBuffer {
+        ) -> ParseBuffer 
+        {
             ParseBuffer {
                 scope,
                
@@ -24721,19 +24405,22 @@ use ::quote::ToTokens;
             }
         }
 
-        pub enum Unexpected {
+        pub enum Unexpected 
+        {
             None,
             Some(Span, Delimiter),
             Chain(Rc<Cell<Unexpected>>),
         }
 
-        impl Default for Unexpected {
+        impl Default for Unexpected 
+        {
             fn default() -> Self {
                 Unexpected::None
             }
         }
 
-        impl Clone for Unexpected {
+        impl Clone for Unexpected 
+        {
             fn clone(&self) -> Self {
                 match self {
                     Unexpected::None => Unexpected::None,
@@ -24743,16 +24430,16 @@ use ::quote::ToTokens;
             }
         }
 
-       
-       
-        fn cell_clone<T: Default + Clone>(cell: &Cell<T>) -> T {
+        fn cell_clone<T: Default + Clone>(cell: &Cell<T>) -> T 
+        {
             let prev = cell.take();
             let ret = prev.clone();
             cell.set(prev);
             ret
         }
 
-        fn inner_unexpected(buffer: &ParseBuffer) -> (Rc<Cell<Unexpected>>, Option<(Span, Delimiter)>) {
+        fn inner_unexpected(buffer: &ParseBuffer) -> (Rc<Cell<Unexpected>>, Option<(Span, Delimiter)>) 
+        {
             let mut unexpected = get_unexpected(buffer);
             loop {
                 match cell_clone(&unexpected) {
@@ -24763,11 +24450,13 @@ use ::quote::ToTokens;
             }
         }
 
-        pub fn get_unexpected(buffer: &ParseBuffer) -> Rc<Cell<Unexpected>> {
+        pub fn get_unexpected(buffer: &ParseBuffer) -> Rc<Cell<Unexpected>> 
+        {
             cell_clone(&buffer.unexpected).unwrap()
         }
 
-        fn span_of_unexpected_ignoring_nones(mut cursor: Cursor) -> Option<(Span, Delimiter)> {
+        fn span_of_unexpected_ignoring_nones(mut cursor: Cursor) -> Option<(Span, Delimiter)> 
+        {
             if cursor.eof() {
                 return None;
             }
@@ -24784,7 +24473,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl<'a> ParseBuffer<'a> {
+        impl<'a> ParseBuffer<'a> 
+        {
             /// Parses a syntax tree node of type `T`, advancing the position of our
             /// parse stream past it.
             pub fn parse<T: Parse>(&self) -> Result<T> {
@@ -24998,8 +24688,7 @@ use ::quote::ToTokens;
                 &'a self,
                 parser: fn(ParseStream<'a>) -> Result<T>,
                 separator: P,
-            ) -> Result<Punctuated<T, P::Token>>
-            where
+            ) -> Result<Punctuated<T, P::Token>> where
                 P: Peek,
                 P::Token: Parse,
             {
@@ -25247,8 +24936,7 @@ use ::quote::ToTokens;
             /// #     .unwrap();
             /// # assert_eq!(remainder.to_string(), "b c");
             /// ```
-            pub fn step<F, R>(&self, function: F) -> Result<R>
-            where
+            pub fn step<F, R>(&self, function: F) -> Result<R> where
                 F: for<'c> FnOnce(StepCursor<'c, 'a>) -> Result<(R, Cursor<'c>)>,
             {
                
@@ -25350,15 +25038,15 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl<T: Parse> Parse for Box<T> {
+        impl<T: Parse> Parse for Box<T> 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.parse().map(Box::new)
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl<T: Parse + Token> Parse for Option<T> {
+        impl<T: Parse + Token> Parse for Option<T> 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 if T::peek(input.cursor()) {
                     Ok(Some(input.parse()?))
@@ -25368,15 +25056,15 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl Parse for TokenStream {
+        impl Parse for TokenStream 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.step(|cursor| Ok((cursor.token_stream(), Cursor::empty())))
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl Parse for TokenTree {
+        impl Parse for TokenTree 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.step(|cursor| match cursor.token_tree() {
                     Some((tt, rest)) => Ok((tt, rest)),
@@ -25385,8 +25073,8 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl Parse for Group {
+        impl Parse for Group 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.step(|cursor| {
                     if let Some((group, rest)) = cursor.any_group_token() {
@@ -25399,8 +25087,8 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl Parse for Punct {
+        impl Parse for Punct 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.step(|cursor| match cursor.punct() {
                     Some((punct, rest)) => Ok((punct, rest)),
@@ -25409,8 +25097,8 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg_attr(docsrs, doc(cfg(feature = "parsing")))]
-        impl Parse for Literal {
+        impl Parse for Literal 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 input.step(|cursor| match cursor.literal() {
                     Some((literal, rest)) => Ok((literal, rest)),
@@ -25419,11 +25107,8 @@ use ::quote::ToTokens;
             }
         }
         /// Parser that can parse Rust tokens into a particular syntax tree node.
-        ///
-        /// Refer to the [module documentation] for details about parsing in Syn.
-        ///
-        /// [module documentation]: self
-        pub trait Parser: Sized {
+        pub trait Parser: Sized 
+        {
             type Output;
 
             /// Parse a proc-macro2 token stream into the chosen syntax tree node.
@@ -25450,7 +25135,8 @@ use ::quote::ToTokens;
             }
         }
 
-        fn tokens_to_parse_buffer(tokens: &TokenBuffer) -> ParseBuffer {
+        fn tokens_to_parse_buffer(tokens: &TokenBuffer) -> ParseBuffer 
+        {
             let scope = Span::call_site();
             let cursor = tokens.begin();
             let unexpected = Rc::new(Cell::new(Unexpected::None));
@@ -25496,11 +25182,13 @@ use ::quote::ToTokens;
             }
         }
 
-        pub fn parse_scoped<F: Parser>(f: F, scope: Span, tokens: TokenStream) -> Result<F::Output> {
+        pub fn parse_scoped<F: Parser>(f: F, scope: Span, tokens: TokenStream) -> Result<F::Output> 
+        {
             f.__parse_scoped(scope, tokens)
         }
 
-        fn err_unexpected_token(span: Span, delimiter: Delimiter) -> Error {
+        fn err_unexpected_token(span: Span, delimiter: Delimiter) -> Error 
+        {
             let msg = match delimiter {
                 Delimiter::Parenthesis => "unexpected token, expected `)`",
                 Delimiter::Brace => "unexpected token, expected `}`",
@@ -25510,35 +25198,10 @@ use ::quote::ToTokens;
             Error::new(span, msg)
         }
         /// An empty syntax tree node that consumes no tokens when parsed.
-        ///
-        /// ```
-        /// # extern crate proc_macro;
-        /// #
-        /// use proc_macro::TokenStream;
-        /// use syn::parse_macro_input;
-        /// use syn::parse::Nothing;
-        ///
-        /// # const IGNORE: &str = stringify! {
-        /// #[proc_macro_attribute]
-        /// # };
-        /// pub fn my_attr(args: TokenStream, input: TokenStream) -> TokenStream {
-        ///     parse_macro_input!(args as Nothing);
-        ///
-        ///     /* ... */
-        /// #   TokenStream::new()
-        /// }
-        /// ```
-        ///
-        /// ```text
-        /// error: unexpected token
-        ///  --> src/main.rs:3:19
-        ///   |
-        /// 3 | #[my_attr(asdf)]
-        ///   |           ^^^^
-        /// ```
         pub struct Nothing;
 
-        impl Parse for Nothing {
+        impl Parse for Nothing 
+        {
             fn parse(_input: ParseStream) -> Result<Self>
             {
                 Ok
@@ -25553,7 +25216,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Clone for Nothing {
+        impl Clone for Nothing 
+        {
             fn clone(&self) -> Self {
                 *self
             }
@@ -25561,7 +25225,8 @@ use ::quote::ToTokens;
 
         impl Copy for Nothing {}
 
-        impl Debug for Nothing {
+        impl Debug for Nothing 
+        {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 f.write_str("Nothing")
             }
@@ -25569,13 +25234,15 @@ use ::quote::ToTokens;
 
         impl Eq for Nothing {}
 
-        impl PartialEq for Nothing {
+        impl PartialEq for Nothing 
+        {
             fn eq(&self, _other: &Self) -> bool {
                 true
             }
         }
 
-        impl Hash for Nothing {
+        impl Hash for Nothing 
+        {
             fn hash<H: Hasher>(&self, _state: &mut H) {}
         }
     } 
@@ -25619,11 +25286,9 @@ use ::quote::ToTokens;
        
 
         use ::syntax::punctuated::Punctuated;
-        #[cfg(any(feature = "full", feature = "derive"))]
         use ::syntax::{attr, Attribute, Field, FieldMutability, Ident, Type, Visibility};
         use ::syntax::{Arm, Block, Pat, Stmt};
 
-        #[cfg(any(feature = "full", feature = "derive"))]
         impl ParseQuote for Attribute {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.peek(Token![#]) && input.peek2(Token![!]) {
@@ -25634,7 +25299,6 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg(any(feature = "full", feature = "derive"))]
         impl ParseQuote for Vec<Attribute> {
             fn parse(input: ParseStream) -> Result<Self>
             {
@@ -25646,7 +25310,6 @@ use ::quote::ToTokens;
             }
         }
 
-        #[cfg(any(feature = "full", feature = "derive"))]
         impl ParseQuote for Field {
             fn parse(input: ParseStream) -> Result<Self>
             {
@@ -26511,7 +26174,6 @@ use ::quote::ToTokens;
             }
         }
 
-        
         mod printing
         {
             use ::
@@ -26682,11 +26344,11 @@ use ::quote::ToTokens;
             }
         }
     }
-    /*
-    pub use ::syntax::pat::{
+    pub use ::syntax::pat::
+    {
         FieldPat, Pat, PatConst, PatIdent, PatLit, PatMacro, PatOr, PatParen, PatPath, PatRange,
         PatReference, PatRest, PatSlice, PatStruct, PatTuple, PatTupleStruct, PatType, PatWild,
-    }; */
+    }; 
     
     pub mod path
     {
@@ -26695,8 +26357,7 @@ use ::quote::ToTokens;
             *,
         };
         /*
-         
-            use ::syntax::error::Result;
+        use ::syntax::error::Result;
         use ::syntax::expr::Expr;
         use ::syntax::generics::TypeParamBound;
         use ::syntax::ident::Ident;
@@ -26705,7 +26366,8 @@ use ::quote::ToTokens;
         use ::syntax::token;
         use ::syntax::ty::{ReturnType, Type};
         */
-        ast_struct! {
+        ast_struct! 
+        {
             /// A path at which a named item is exported (e.g. `std::collections::HashMap`).
             pub struct Path {
                 pub leading_colon: Option<Token![::]>,
@@ -26713,9 +26375,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl<T> From<T> for Path
-        where
-            T: Into<PathSegment>,
+        impl<T> From<T> for Path where
+        T: Into<PathSegment>
         {
             fn from(segment: T) -> Self {
                 let mut path = Path {
@@ -26727,7 +26388,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Path {
+        impl Path 
+        {
             /// Determines whether this is a path of length 1 equal to the given
             /// ident.
             /// - the first path segment has no angle bracketed or parenthesized
@@ -26783,7 +26445,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A segment of a path together with any path arguments on that segment.
             pub struct PathSegment {
                 pub ident: Ident,
@@ -26791,9 +26454,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl<T> From<T> for PathSegment
-        where
-            T: Into<Ident>,
+        impl<T> From<T> for PathSegment where
+        T: Into<Ident>,
         {
             fn from(ident: T) -> Self {
                 PathSegment {
@@ -26803,7 +26465,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// Angle bracketed or parenthesized arguments of a path segment.
             ///
             /// ## Parenthesized
@@ -26818,13 +26481,15 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Default for PathArguments {
+        impl Default for PathArguments 
+        {
             fn default() -> Self {
                 PathArguments::None
             }
         }
 
-        impl PathArguments {
+        impl PathArguments 
+        {
             pub fn is_empty(&self) -> bool {
                 match self {
                     PathArguments::None => true,
@@ -26841,7 +26506,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// An individual generic argument, like `'a`, `T`, or `Item = T`.
             #[non_exhaustive]
             pub enum GenericArgument {
@@ -26865,7 +26531,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// Angle bracketed arguments of a path segment: the `<K, V>` in `HashMap<K,
             /// V>`.
             pub struct AngleBracketedGenericArguments {
@@ -26876,7 +26543,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A binding (equality constraint) on an associated type: the `Item = u8`
             /// in `Iterator<Item = u8>`.
             pub struct AssocType {
@@ -26887,7 +26555,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An equality constraint on an associated constant: the `PANIC = false` in
             /// `Trait<PANIC = false>`.
             pub struct AssocConst {
@@ -26898,7 +26567,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An associated type bound: `Iterator<Item: Display>`.
             pub struct Constraint {
                 pub ident: Ident,
@@ -26908,7 +26578,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// Arguments of a function path segment: the `(A, B) -> C` in `Fn(A,B) ->
             /// C`.
             pub struct ParenthesizedGenericArguments {
@@ -26920,7 +26591,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The explicit Self type in a qualified path: the `T` in `<T as
             /// Display>::fmt`.
             /// item qualified with this Self type.
@@ -26939,9 +26611,9 @@ use ::quote::ToTokens;
                 pub gt_token: Token![>],
             }
         }
-
-         
-            pub mod parsing {
+        
+        pub mod parsing
+        {
             use ::syntax::error::Result;
                 use ::syntax::expr::ExprBlock;
             use ::syntax::expr::{Expr, ExprPath};
@@ -26959,8 +26631,6 @@ use ::quote::ToTokens;
             use ::syntax::punctuated::Punctuated;
             use ::syntax::token;
             use ::syntax::ty::{ReturnType, Type};
-            #[cfg(not(feature = "full"))]
-            use ::syntax::verbatim;
 
             impl Parse for Path
             {
@@ -27355,8 +27025,8 @@ use ::quote::ToTokens;
             }
         }
 
-        
-pub mod printing {
+        pub mod printing
+        {
             use ::syntax::generics;
             use ::syntax::path::{
                 AngleBracketedGenericArguments, AssocConst, AssocType, Constraint, GenericArgument,
@@ -27430,7 +27100,8 @@ pub mod printing {
 
             impl ToTokens for GenericArgument {
                 #[allow(clippy::match_same_arms)]
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         GenericArgument::Lifetime(lt) => lt.to_tokens(tokens),
                         GenericArgument::Type(ty) => ty.to_tokens(tokens),
@@ -27465,7 +27136,8 @@ pub mod printing {
                
                
                 let mut trailing_or_empty = true;
-                for param in arguments.args.pairs() {
+                for param in arguments.args.pairs( )
+                {
                     match param.value() {
                         GenericArgument::Lifetime(_) => {
                             param.to_tokens(tokens);
@@ -27478,7 +27150,8 @@ pub mod printing {
                         | GenericArgument::Constraint(_) => {}
                     }
                 }
-                for param in arguments.args.pairs() {
+                for param in arguments.args.pairs( )
+                {
                     match param.value() {
                         GenericArgument::Type(_)
                         | GenericArgument::Const(_)
@@ -27596,11 +27269,11 @@ pub mod printing {
                     PathStyle::AsWritten => colon2_token.to_tokens(tokens),
                 }
             }
-
-             
-                #[cfg_attr(docsrs, doc(cfg(all(feature = "parsing", feature = "printing"))))]
-            impl Spanned for QSelf {
-                fn span(&self) -> Span {
+            
+            impl Spanned for QSelf
+            {
+                fn span(&self) -> Span
+                {
                     struct QSelfDelimiters<'a>(&'a QSelf);
 
                     impl<'a> ToTokens for QSelfDelimiters<'a> {
@@ -27615,11 +27288,11 @@ pub mod printing {
             }
         }
     }
-    /*
-    pub use ::syntax::path::{
+    pub use ::syntax::path::
+    {
         AngleBracketedGenericArguments, AssocConst, AssocType, Constraint, GenericArgument,
         ParenthesizedGenericArguments, Path, PathArguments, PathSegment, QSelf,
-    }; */
+    };
     
     pub mod precedence
     {
@@ -27630,8 +27303,7 @@ pub mod printing {
         /*
         #[cfg(all(feature = "printing", feature = "full"))]
         use ::syntax::attr::{AttrStyle, Attribute};
-        
-use ::syntax::expr::Expr;
+        use ::syntax::expr::Expr;
         #[cfg(all(feature = "printing", feature = "full"))]
         use ::syntax::expr::{
             ExprArray, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprCall, ExprConst, ExprContinue,
@@ -27644,49 +27316,32 @@ use ::syntax::expr::Expr;
         use ::syntax::ty::ReturnType;
         use std::cmp::Ordering;
         */
-       
-        pub enum Precedence {
-           
+        pub enum Precedence
+        {
             Jump,
-           
             Assign,
-           
             Range,
-           
             Or,
-           
             And,
-           
-            
-    Let,
-           
+            Let,
             Compare,
-           
             BitOr,
-           
             BitXor,
-           
             BitAnd,
-           
             Shift,
-           
             Sum,
-           
             Product,
-           
             Cast,
-           
-            
-    Prefix,
-           
-            
-    Unambiguous,
+            Prefix,
+            Unambiguous,
         }
 
-        impl Precedence {
+        impl Precedence
+        {
             pub const MIN: Self = Precedence::Jump;
 
-            pub fn of_binop(op: &BinOp) -> Self {
+            pub fn of_binop(op: &BinOp) -> Self
+            {
                 match op {
                     BinOp::Add(_) | BinOp::Sub(_) => Precedence::Sum,
                     BinOp::Mul(_) | BinOp::Div(_) | BinOp::Rem(_) => Precedence::Product,
@@ -27716,27 +27371,31 @@ use ::syntax::expr::Expr;
                     | BinOp::ShrAssign(_) => Precedence::Assign,
                 }
             }
-
             
-    pub fn of(e: &Expr) -> Self {
-                        fn prefix_attrs(attrs: &[Attribute]) -> Precedence {
-                    for attr in attrs {
-                        if let AttrStyle::Outer = attr.style {
-                            return Precedence::Prefix;
-                        }
+            pub fn of(e: &Expr) -> Self
+            {
+                fn prefix_attrs(attrs: &[Attribute]) -> Precedence
+                {
+                    for attr in attrs
+                    {
+                        if let AttrStyle::Outer = attr.style { return Precedence::Prefix; }
                     }
+
                     Precedence::Unambiguous
                 }
 
-                match e {
-                                Expr::Closure(e) => match e.output {
+                match e
+                {
+                    Expr::Closure(e) => match e.output
+                    {
                         ReturnType::Default => Precedence::Jump,
                         ReturnType::Type(..) => prefix_attrs(&e.attrs),
                     },
 
-                                Expr::Break(ExprBreak { expr, .. })
+                    Expr::Break(ExprBreak { expr, .. })
                     | Expr::Return(ExprReturn { expr, .. })
-                    | Expr::Yield(ExprYield { expr, .. }) => match expr {
+                    | Expr::Yield(ExprYield { expr, .. }) => match expr
+                    {
                         Some(_) => Precedence::Jump,
                         None => Precedence::Unambiguous,
                     },
@@ -27747,8 +27406,8 @@ use ::syntax::expr::Expr;
                     Expr::Let(_) => Precedence::Let,
                     Expr::Cast(_) => Precedence::Cast,
                     Expr::RawAddr(_) | Expr::Reference(_) | Expr::Unary(_) => Precedence::Prefix,
-
-                                Expr::Array(ExprArray { attrs, .. })
+                    
+                    Expr::Array(ExprArray { attrs, .. })
                     | Expr::Async(ExprAsync { attrs, .. })
                     | Expr::Await(ExprAwait { attrs, .. })
                     | Expr::Block(ExprBlock { attrs, .. })
@@ -27774,7 +27433,7 @@ use ::syntax::expr::Expr;
                     | Expr::TryBlock(ExprTryBlock { attrs, .. })
                     | Expr::Tuple(ExprTuple { attrs, .. })
                     | Expr::Unsafe(ExprUnsafe { attrs, .. })
-                    | Expr::While(ExprWhile { attrs, .. }) => prefix_attrs(attrs),
+                    | Expr::While(ExprWhile { attrs, .. }) => prefix_attrs(attrs),                    
                     
                     Expr::Verbatim(_) => Precedence::Unambiguous,
                 }
@@ -27783,19 +27442,22 @@ use ::syntax::expr::Expr;
 
         impl Copy for Precedence {}
 
-        impl Clone for Precedence {
+        impl Clone for Precedence 
+        {
             fn clone(&self) -> Self {
                 *self
             }
         }
 
-        impl PartialEq for Precedence {
+        impl PartialEq for Precedence 
+        {
             fn eq(&self, other: &Self) -> bool {
                 *self as u8 == *other as u8
             }
         }
 
-        impl PartialOrd for Precedence {
+        impl PartialOrd for Precedence 
+        {
             fn partial_cmp(&self, other: &Self) -> Option<Ordering>
             {
                 let this = *self as u8;
@@ -27817,8 +27479,7 @@ use ::syntax::expr::Expr;
         */
         pub struct TokensOrDefault<'a, T: 'a>(pub &'a Option<T>);
 
-        impl<'a, T> ToTokens for TokensOrDefault<'a, T>
-        where
+        impl<'a, T> ToTokens for TokensOrDefault<'a, T> where
             T: ToTokens + Default,
         {
             fn to_tokens(&self, tokens: &mut TokenStream) {
@@ -27845,29 +27506,23 @@ use ::syntax::expr::Expr;
             use ::syntax::parse::{Parse, ParseStream};
          
             use ::syntax::token::Token;
-        #[cfg(feature = "extra-traits")]
         use std::fmt::{self, Debug};
-        #[cfg(feature = "extra-traits")]
         use std::hash::{Hash, Hasher};
-        #[cfg(any(feature = "full", feature = "derive"))]
         use std::iter;
         use std::ops::{Index, IndexMut};
         use std::option;
         use std::slice;
         use std::vec;
         */
-        /// **A punctuated sequence of syntax tree nodes of type `T` separated by
-        /// punctuation of type `P`.**
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct Punctuated<T, P> {
+        /// A punctuated sequence of syntax tree nodes of type `T` separated by punctuation of type `P`.
+        pub struct Punctuated<T, P> 
+        {
             inner: Vec<(T, P)>,
             last: Option<Box<T>>,
         }
 
-        impl<T, P> Punctuated<T, P> {
+        impl<T, P> Punctuated<T, P> 
+        {
             /// Creates an empty punctuated sequence.
             pub const fn new() -> Self {
                 Punctuated {
@@ -28066,8 +27721,7 @@ use ::syntax::expr::Expr;
             /// Parses zero or more occurrences of `T` separated by punctuation of type
             /// `P`, with optional trailing punctuation.
              
-                pub fn parse_terminated(input: ParseStream) -> Result<Self>
-            where
+                pub fn parse_terminated(input: ParseStream) -> Result<Self> where
                 T: Parse,
                 P: Parse,
             {
@@ -28082,8 +27736,7 @@ use ::syntax::expr::Expr;
                 pub fn parse_terminated_with<'a>(
                 input: ParseStream<'a>,
                 parser: fn(ParseStream<'a>) -> Result<T>,
-            ) -> Result<Self>
-            where
+            ) -> Result<Self> where
                 P: Parse,
             {
                 let mut punctuated = Punctuated::new();
@@ -28108,8 +27761,7 @@ use ::syntax::expr::Expr;
             /// is not followed by a `P`, even if there are remaining tokens in the
             /// stream.
              
-                pub fn parse_separated_nonempty(input: ParseStream) -> Result<Self>
-            where
+                pub fn parse_separated_nonempty(input: ParseStream) -> Result<Self> where
                 T: Parse,
                 P: Token + Parse,
             {
@@ -28124,8 +27776,7 @@ use ::syntax::expr::Expr;
                 pub fn parse_separated_nonempty_with<'a>(
                 input: ParseStream<'a>,
                 parser: fn(ParseStream<'a>) -> Result<T>,
-            ) -> Result<Self>
-            where
+            ) -> Result<Self> where
                 P: Token + Parse,
             {
                 let mut punctuated = Punctuated::new();
@@ -28144,8 +27795,7 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Clone for Punctuated<T, P>
-        where
+        impl<T, P> Clone for Punctuated<T, P> where
             T: Clone,
             P: Clone,
         {
@@ -28163,15 +27813,13 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Eq for Punctuated<T, P>
-        where
+        impl<T, P> Eq for Punctuated<T, P> where
             T: Eq,
             P: Eq,
         {
         }
 
-        impl<T, P> PartialEq for Punctuated<T, P>
-        where
+        impl<T, P> PartialEq for Punctuated<T, P> where
             T: PartialEq,
             P: PartialEq,
         {
@@ -28181,8 +27829,7 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Hash for Punctuated<T, P>
-        where
+        impl<T, P> Hash for Punctuated<T, P> where
             T: Hash,
             P: Hash,
         {
@@ -28193,7 +27840,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T: Debug, P: Debug> Debug for Punctuated<T, P> {
+        impl<T: Debug, P: Debug> Debug for Punctuated<T, P> 
+        {
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
                 let mut list = f.debug_list();
                 for (t, p) in &self.inner {
@@ -28207,8 +27855,7 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> FromIterator<T> for Punctuated<T, P>
-        where
+        impl<T, P> FromIterator<T> for Punctuated<T, P> where
             P: Default,
         {
             fn from_iter<I: IntoIterator<Item = T>>(i: I) -> Self {
@@ -28218,8 +27865,7 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Extend<T> for Punctuated<T, P>
-        where
+        impl<T, P> Extend<T> for Punctuated<T, P> where
             P: Default,
         {
             fn extend<I: IntoIterator<Item = T>>(&mut self, i: I) {
@@ -28229,7 +27875,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> FromIterator<Pair<T, P>> for Punctuated<T, P> {
+        impl<T, P> FromIterator<Pair<T, P>> for Punctuated<T, P> 
+        {
             fn from_iter<I: IntoIterator<Item = Pair<T, P>>>(i: I) -> Self {
                 let mut ret = Punctuated::new();
                 do_extend(&mut ret, i.into_iter());
@@ -28237,9 +27884,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Extend<Pair<T, P>> for Punctuated<T, P>
-        where
-            P: Default,
+        impl<T, P> Extend<Pair<T, P>> for Punctuated<T, P> where
+        P: Default,
         {
             fn extend<I: IntoIterator<Item = Pair<T, P>>>(&mut self, i: I) {
                 if !self.empty_or_trailing() {
@@ -28249,9 +27895,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        fn do_extend<T, P, I>(punctuated: &mut Punctuated<T, P>, i: I)
-        where
-            I: Iterator<Item = Pair<T, P>>,
+        fn do_extend<T, P, I>(punctuated: &mut Punctuated<T, P>, i: I) where
+        I: Iterator<Item = Pair<T, P>>,
         {
             let mut nomore = false;
             for pair in i {
@@ -28268,7 +27913,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> IntoIterator for Punctuated<T, P> {
+        impl<T, P> IntoIterator for Punctuated<T, P> 
+        {
             type Item = T;
             type IntoIter = IntoIter<T>;
 
@@ -28283,7 +27929,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> IntoIterator for &'a Punctuated<T, P> {
+        impl<'a, T, P> IntoIterator for &'a Punctuated<T, P> 
+        {
             type Item = &'a T;
             type IntoIter = Iter<'a, T>;
 
@@ -28292,7 +27939,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> IntoIterator for &'a mut Punctuated<T, P> {
+        impl<'a, T, P> IntoIterator for &'a mut Punctuated<T, P> 
+        {
             type Item = &'a mut T;
             type IntoIter = IterMut<'a, T>;
 
@@ -28301,22 +27949,21 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Default for Punctuated<T, P> {
+        impl<T, P> Default for Punctuated<T, P> 
+        {
             fn default() -> Self {
                 Punctuated::new()
             }
         }
         /// An iterator over borrowed pairs of type `Pair<&T, &P>`.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct Pairs<'a, T: 'a, P: 'a> {
+        pub struct Pairs<'a, T: 'a, P: 'a> 
+        {
             inner: slice::Iter<'a, (T, P)>,
             last: option::IntoIter<&'a T>,
         }
 
-        impl<'a, T, P> Iterator for Pairs<'a, T, P> {
+        impl<'a, T, P> Iterator for Pairs<'a, T, P> 
+        {
             type Item = Pair<&'a T, &'a P>;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28332,7 +27979,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> DoubleEndedIterator for Pairs<'a, T, P> {
+        impl<'a, T, P> DoubleEndedIterator for Pairs<'a, T, P> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.last
@@ -28342,15 +27990,16 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> ExactSizeIterator for Pairs<'a, T, P> {
+        impl<'a, T, P> ExactSizeIterator for Pairs<'a, T, P> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len() + self.last.len()
             }
         }
 
-       
-        impl<'a, T, P> Clone for Pairs<'a, T, P> {
+        impl<'a, T, P> Clone for Pairs<'a, T, P> 
+        {
             fn clone(&self) -> Self {
                 Pairs {
                     inner: self.inner.clone(),
@@ -28359,16 +28008,14 @@ use ::syntax::expr::Expr;
             }
         }
         /// An iterator over mutably borrowed pairs of type `Pair<&mut T, &mut P>`.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct PairsMut<'a, T: 'a, P: 'a> {
+        pub struct PairsMut<'a, T: 'a, P: 'a> 
+        {
             inner: slice::IterMut<'a, (T, P)>,
             last: option::IntoIter<&'a mut T>,
         }
 
-        impl<'a, T, P> Iterator for PairsMut<'a, T, P> {
+        impl<'a, T, P> Iterator for PairsMut<'a, T, P> 
+        {
             type Item = Pair<&'a mut T, &'a mut P>;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28384,7 +28031,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> DoubleEndedIterator for PairsMut<'a, T, P> {
+        impl<'a, T, P> DoubleEndedIterator for PairsMut<'a, T, P> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.last
@@ -28394,23 +28042,22 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> ExactSizeIterator for PairsMut<'a, T, P> {
+        impl<'a, T, P> ExactSizeIterator for PairsMut<'a, T, P> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len() + self.last.len()
             }
         }
         /// An iterator over owned pairs of type `Pair<T, P>`.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct IntoPairs<T, P> {
+        pub struct IntoPairs<T, P> 
+        {
             inner: vec::IntoIter<(T, P)>,
             last: option::IntoIter<T>,
         }
 
-        impl<T, P> Iterator for IntoPairs<T, P> {
+        impl<T, P> Iterator for IntoPairs<T, P> 
+        {
             type Item = Pair<T, P>;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28426,7 +28073,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> DoubleEndedIterator for IntoPairs<T, P> {
+        impl<T, P> DoubleEndedIterator for IntoPairs<T, P> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.last
@@ -28436,17 +28084,17 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> ExactSizeIterator for IntoPairs<T, P> {
+        impl<T, P> ExactSizeIterator for IntoPairs<T, P> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len() + self.last.len()
             }
         }
 
-        impl<T, P> Clone for IntoPairs<T, P>
-        where
-            T: Clone,
-            P: Clone,
+        impl<T, P> Clone for IntoPairs<T, P> where
+        T: Clone,
+        P: Clone
         {
             fn clone(&self) -> Self {
                 IntoPairs {
@@ -28456,15 +28104,13 @@ use ::syntax::expr::Expr;
             }
         }
         /// An iterator over owned values of type `T`.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct IntoIter<T> {
+        pub struct IntoIter<T> 
+        {
             inner: vec::IntoIter<T>,
         }
 
-        impl<T> Iterator for IntoIter<T> {
+        impl<T> Iterator for IntoIter<T> 
+        {
             type Item = T;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28477,23 +28123,24 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T> DoubleEndedIterator for IntoIter<T> {
+        impl<T> DoubleEndedIterator for IntoIter<T> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.inner.next_back()
             }
         }
 
-        impl<T> ExactSizeIterator for IntoIter<T> {
+        impl<T> ExactSizeIterator for IntoIter<T> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len()
             }
         }
 
-        impl<T> Clone for IntoIter<T>
-        where
-            T: Clone,
+        impl<T> Clone for IntoIter<T> where
+        T: Clone,
         {
             fn clone(&self) -> Self {
                 IntoIter {
@@ -28502,15 +28149,13 @@ use ::syntax::expr::Expr;
             }
         }
         /// An iterator over borrowed values of type `&T`.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct Iter<'a, T: 'a> {
+        pub struct Iter<'a, T: 'a> 
+        {
             inner: Box<NoDrop<dyn IterTrait<'a, T> + 'a>>,
         }
 
-        trait IterTrait<'a, T: 'a>: Iterator<Item = &'a T> + DoubleEndedIterator + ExactSizeIterator {
+        trait IterTrait<'a, T: 'a>: Iterator<Item = &'a T> + DoubleEndedIterator + ExactSizeIterator 
+        {
             fn clone_box(&self) -> Box<NoDrop<dyn IterTrait<'a, T> + 'a>>;
         }
 
@@ -28519,22 +28164,21 @@ use ::syntax::expr::Expr;
             last: option::IntoIter<&'a T>,
         }
 
-        impl<'a, T, P> TrivialDrop for PrivateIter<'a, T, P>
-        where
+        impl<'a, T, P> TrivialDrop for PrivateIter<'a, T, P> where
             slice::Iter<'a, (T, P)>: TrivialDrop,
             option::IntoIter<&'a T>: TrivialDrop,
         {
         }
 
-        #[cfg(any(feature = "full", feature = "derive"))]
-        pub fn empty_punctuated_iter<'a, T>() -> Iter<'a, T> {
+        pub fn empty_punctuated_iter<'a, T>() -> Iter<'a, T> 
+        {
             Iter {
                 inner: Box::new(NoDrop::new(iter::empty())),
             }
         }
 
-       
-        impl<'a, T> Clone for Iter<'a, T> {
+        impl<'a, T> Clone for Iter<'a, T> 
+        {
             fn clone(&self) -> Self {
                 Iter {
                     inner: self.inner.clone_box(),
@@ -28542,7 +28186,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T> Iterator for Iter<'a, T> {
+        impl<'a, T> Iterator for Iter<'a, T> 
+        {
             type Item = &'a T;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28555,21 +28200,24 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T> DoubleEndedIterator for Iter<'a, T> {
+        impl<'a, T> DoubleEndedIterator for Iter<'a, T> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.inner.next_back()
             }
         }
 
-        impl<'a, T> ExactSizeIterator for Iter<'a, T> {
+        impl<'a, T> ExactSizeIterator for Iter<'a, T> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len()
             }
         }
 
-        impl<'a, T, P> Iterator for PrivateIter<'a, T, P> {
+        impl<'a, T, P> Iterator for PrivateIter<'a, T, P> 
+        {
             type Item = &'a T;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28581,7 +28229,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> DoubleEndedIterator for PrivateIter<'a, T, P> {
+        impl<'a, T, P> DoubleEndedIterator for PrivateIter<'a, T, P> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.last
@@ -28590,15 +28239,16 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> ExactSizeIterator for PrivateIter<'a, T, P> {
+        impl<'a, T, P> ExactSizeIterator for PrivateIter<'a, T, P> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len() + self.last.len()
             }
         }
 
-       
-        impl<'a, T, P> Clone for PrivateIter<'a, T, P> {
+        impl<'a, T, P> Clone for PrivateIter<'a, T, P> 
+        {
             fn clone(&self) -> Self {
                 PrivateIter {
                     inner: self.inner.clone(),
@@ -28607,53 +28257,51 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, I> IterTrait<'a, T> for I
-        where
-            T: 'a,
-            I: DoubleEndedIterator<Item = &'a T>
-                + ExactSizeIterator<Item = &'a T>
-                + Clone
-                + TrivialDrop
-                + 'a,
+        impl<'a, T, I> IterTrait<'a, T> for I where
+        T: 'a,
+        I: DoubleEndedIterator<Item = &'a T>
+        + ExactSizeIterator<Item = &'a T>
+        + Clone
+        + TrivialDrop
+        + 'a
         {
             fn clone_box(&self) -> Box<NoDrop<dyn IterTrait<'a, T> + 'a>> {
                 Box::new(NoDrop::new(self.clone()))
             }
         }
         /// An iterator over mutably borrowed values of type `&mut T`.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub struct IterMut<'a, T: 'a> {
+        pub struct IterMut<'a, T: 'a>
+        {
             inner: Box<NoDrop<dyn IterMutTrait<'a, T, Item = &'a mut T> + 'a>>,
         }
 
-        trait IterMutTrait<'a, T: 'a>:
-            DoubleEndedIterator<Item = &'a mut T> + ExactSizeIterator<Item = &'a mut T>
+        trait IterMutTrait<'a, T: 'a>
+        : DoubleEndedIterator<Item = &'a mut T> 
+        + ExactSizeIterator<Item = &'a mut T>
         {
         }
 
-        struct PrivateIterMut<'a, T: 'a, P: 'a> {
+        struct PrivateIterMut<'a, T: 'a, P: 'a>
+        {
             inner: slice::IterMut<'a, (T, P)>,
             last: option::IntoIter<&'a mut T>,
         }
 
-        impl<'a, T, P> TrivialDrop for PrivateIterMut<'a, T, P>
-        where
-            slice::IterMut<'a, (T, P)>: TrivialDrop,
-            option::IntoIter<&'a mut T>: TrivialDrop,
+        impl<'a, T, P> TrivialDrop for PrivateIterMut<'a, T, P> where
+        slice::IterMut<'a, (T, P)>: TrivialDrop,
+        option::IntoIter<&'a mut T>: TrivialDrop
         {
         }
 
-        #[cfg(any(feature = "full", feature = "derive"))]
-        pub fn empty_punctuated_iter_mut<'a, T>() -> IterMut<'a, T> {
+        pub fn empty_punctuated_iter_mut<'a, T>() -> IterMut<'a, T> 
+        {
             IterMut {
                 inner: Box::new(NoDrop::new(iter::empty())),
             }
         }
 
-        impl<'a, T> Iterator for IterMut<'a, T> {
+        impl<'a, T> Iterator for IterMut<'a, T> 
+        {
             type Item = &'a mut T;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28666,21 +28314,24 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T> DoubleEndedIterator for IterMut<'a, T> {
+        impl<'a, T> DoubleEndedIterator for IterMut<'a, T> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.inner.next_back()
             }
         }
 
-        impl<'a, T> ExactSizeIterator for IterMut<'a, T> {
+        impl<'a, T> ExactSizeIterator for IterMut<'a, T> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len()
             }
         }
 
-        impl<'a, T, P> Iterator for PrivateIterMut<'a, T, P> {
+        impl<'a, T, P> Iterator for PrivateIterMut<'a, T, P> 
+        {
             type Item = &'a mut T;
 
             fn next(&mut self) -> Option<Self::Item>
@@ -28692,7 +28343,8 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> DoubleEndedIterator for PrivateIterMut<'a, T, P> {
+        impl<'a, T, P> DoubleEndedIterator for PrivateIterMut<'a, T, P> 
+        {
             fn next_back(&mut self) -> Option<Self::Item>
             {
                 self.last
@@ -28701,31 +28353,29 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<'a, T, P> ExactSizeIterator for PrivateIterMut<'a, T, P> {
+        impl<'a, T, P> ExactSizeIterator for PrivateIterMut<'a, T, P> 
+        {
             fn len(&self) -> usize
             {
                 self.inner.len() + self.last.len()
             }
         }
 
-        impl<'a, T, I> IterMutTrait<'a, T> for I
-        where
-            T: 'a,
-            I: DoubleEndedIterator<Item = &'a mut T> + ExactSizeIterator<Item = &'a mut T> + 'a,
+        impl<'a, T, I> IterMutTrait<'a, T> for I where
+        T: 'a,
+        I: DoubleEndedIterator<Item = &'a mut T> 
+        + ExactSizeIterator<Item = &'a mut T> + 'a
         {
         }
-        /// A single syntax tree node of type `T` followed by its trailing punctuation
-        /// of type `P` if any.
-        ///
-        /// Refer to the [module documentation] for details about punctuated sequences.
-        ///
-        /// [module documentation]: self
-        pub enum Pair<T, P> {
+        /// A single syntax tree node of type `T` followed by its trailing punctuation of type `P` if any.
+        pub enum Pair<T, P> 
+        {
             Punctuated(T, P),
             End(T),
         }
 
-        impl<T, P> Pair<T, P> {
+        impl<T, P> Pair<T, P> 
+        {
             /// Extracts the syntax tree node from this punctuated pair, discarding the
             /// following punctuation.
             pub fn into_value(self) -> T {
@@ -28792,9 +28442,9 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Pair<&T, &P> {
-            pub fn cloned(self) -> Pair<T, P>
-            where
+        impl<T, P> Pair<&T, &P> 
+        {
+            pub fn cloned(self) -> Pair<T, P> where
                 T: Clone,
                 P: Clone,
             {
@@ -28805,10 +28455,9 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Clone for Pair<T, P>
-        where
-            T: Clone,
-            P: Clone,
+        impl<T, P> Clone for Pair<T, P> where
+        T: Clone,
+        P: Clone
         {
             fn clone(&self) -> Self {
                 match self {
@@ -28818,10 +28467,9 @@ use ::syntax::expr::Expr;
             }
         }
 
-        impl<T, P> Copy for Pair<T, P>
-        where
-            T: Copy,
-            P: Copy,
+        impl<T, P> Copy for Pair<T, P> where
+        T: Copy,
+        P: Copy,
         {
         }
 
@@ -28852,16 +28500,15 @@ use ::syntax::expr::Expr;
                 }
             }
         }
-
-        #[cfg(all(feature = "fold", any(feature = "full", feature = "derive")))]
-        pub fn fold<T, P, V, F>(
+        
+        pub fn fold<T, P, V, F>
+        (
             punctuated: Punctuated<T, P>,
             fold: &mut V,
             mut f: F,
-        ) -> Punctuated<T, P>
-        where
-            V: ?Sized,
-            F: FnMut(&mut V, T) -> T,
+        ) -> Punctuated<T, P> where
+        V: ?Sized,
+        F: FnMut(&mut V, T) -> T,
         {
             Punctuated {
                 inner: punctuated
@@ -28876,16 +28523,15 @@ use ::syntax::expr::Expr;
             }
         }
 
-        
-mod printing {
+        mod printing
+        {
             use ::syntax::punctuated::{Pair, Punctuated};
             use ::process::macros::TokenStream;
             use ::quote::{ToTokens, TokenStreamExt};
 
-            impl<T, P> ToTokens for Punctuated<T, P>
-            where
-                T: ToTokens,
-                P: ToTokens,
+            impl<T, P> ToTokens for Punctuated<T, P> where
+            T: ToTokens,
+            P: ToTokens
             {
                 fn to_tokens(&self, tokens: &mut TokenStream)
                 {
@@ -28893,13 +28539,14 @@ mod printing {
                 }
             }
 
-            impl<T, P> ToTokens for Pair<T, P>
-            where
-                T: ToTokens,
-                P: ToTokens,
+            impl<T, P> ToTokens for Pair<T, P> where
+            T: ToTokens,
+            P: ToTokens
             {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
-                    match self {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
+                    match self
+                    {
                         Pair::Punctuated(a, b) => {
                             a.to_tokens(tokens);
                             b.to_tokens(tokens);
@@ -28968,8 +28615,8 @@ mod printing {
             }
         }
 
-         
-            pub mod parsing {
+        pub mod parsing 
+        {
             use ::syntax::error::Result;
             use ::syntax::ext::IdentExt as _;
             use ::syntax::ident::Ident;
@@ -29003,7 +28650,8 @@ mod printing {
 
             impl Visibility
             {
-                fn parse_pub(input: ParseStream) -> Result<Self> {
+                fn parse_pub(input: ParseStream) -> Result<Self>
+                {
                     let pub_token = input.parse::<Token![pub]>()?;
 
                     if input.peek(token::Paren) {
@@ -29047,26 +28695,31 @@ mod printing {
                     Ok(Visibility::Public(pub_token))
                 }
 
-                        pub fn is_some(&self) -> bool {
-                    match self {
+                pub fn is_some(&self) -> bool
+                {
+                    match self
+                    {
                         Visibility::Inherited => false,
                         _ => true,
                     }
                 }
             }
         }
-
         
-mod printing {
+        mod printing
+        {
             use ::syntax::path;
             use ::syntax::path::printing::PathStyle;
             use ::syntax::restriction::{VisRestricted, Visibility};
             use ::process::macros::TokenStream;
             use ::quote::ToTokens;
 
-            impl ToTokens for Visibility {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
-                    match self {
+            impl ToTokens for Visibility
+            {
+                fn to_tokens(&self, tokens: &mut TokenStream)
+                {
+                    match self
+                    {
                         Visibility::Public(pub_token) => pub_token.to_tokens(tokens),
                         Visibility::Restricted(vis_restricted) => vis_restricted.to_tokens(tokens),
                         Visibility::Inherited => {}
@@ -29074,12 +28727,13 @@ mod printing {
                 }
             }
 
-            impl ToTokens for VisRestricted {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+            impl ToTokens for VisRestricted
+            {
+                fn to_tokens(&self, tokens: &mut TokenStream)
+                {
                     self.pub_token.to_tokens(tokens);
-                    self.paren_token.surround(tokens, |tokens| {
-                       
-                       
+                    self.paren_token.surround(tokens, |tokens|
+                    {
                         self.in_token.to_tokens(tokens);
                         path::printing::print_path(tokens, &self.path, PathStyle::Mod);
                     });
@@ -29478,8 +29132,7 @@ mod printing {
             pub trait Sealed {}
             impl<T: ?Sized + ToTokens> Sealed for T {}
 
-            #[cfg(any(feature = "full", feature = "derive"))]
-            impl Sealed for ::syntax::QSelf {}
+                impl Sealed for ::syntax::QSelf {}
         }
     }
     
@@ -29497,7 +29150,8 @@ mod printing {
         use ::syntax::pat::Pat;
         use ::syntax::token;
         */
-        ast_struct! {
+        ast_struct! 
+        {
             /// A braced block containing Rust statements.
             pub struct Block {
                 pub brace_token: token::Brace,
@@ -29506,7 +29160,8 @@ mod printing {
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// A statement, usually ending in a semicolon.
             pub enum Stmt {
                 /// A local (let) binding.
@@ -29524,7 +29179,8 @@ mod printing {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A local `let` binding: `let x: u64 = s.parse()?;`.
             pub struct Local {
                 pub attrs: Vec<Attribute>,
@@ -29535,7 +29191,8 @@ mod printing {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The expression assigned in a local `let` binding, including optional
             /// diverging `else` block.
             pub struct LocalInit {
@@ -29545,7 +29202,8 @@ mod printing {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation in statement position.
             /// expression.
             pub struct StmtMacro {
@@ -29554,9 +29212,9 @@ mod printing {
                 pub semi_token: Option<Token![;]>,
             }
         }
-
-         
-            pub mod parsing {
+        
+        pub mod parsing
+        {
             use ::syntax::attr::Attribute;
             use ::syntax::classify;
             use ::syntax::error::Result;
@@ -29575,7 +29233,8 @@ mod printing {
 
             struct AllowNoSemi(bool);
 
-            impl Block {
+            impl Block
+            {
                 /// Parse the body of a block as zero or more statements, possibly
                 /// including one trailing expression.
                 ///
@@ -29811,7 +29470,8 @@ mod printing {
                 })
             }
 
-            fn stmt_expr(
+            fn stmt_expr
+            (
                 input: ParseStream,
                 allow_nosemi: AllowNoSemi,
                 mut attrs: Vec<Attribute>,
@@ -29913,7 +29573,8 @@ mod printing {
 
             impl ToTokens for Stmt
             {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         Stmt::Local(local) => local.to_tokens(tokens),
                         Stmt::Item(item) => item.to_tokens(tokens),
@@ -31376,7 +31037,8 @@ mod printing {
 
             impl ToTokens for ReturnType 
             {
-                fn to_tokens(&self, tokens: &mut TokenStream) {
+                fn to_tokens(&self, tokens: &mut TokenStream )
+                {
                     match self {
                         ReturnType::Default => {}
                         ReturnType::Type(arrow, ty) => {
@@ -34656,8 +34318,7 @@ mod printing {
             /*
             #![allow(unused_variables)]
             #![allow(clippy::needless_pass_by_ref_mut)]
-            #[cfg(any(feature = "full", feature = "derive"))]
-            use ::syntax::punctuated::Punctuated;
+                use ::syntax::punctuated::Punctuated;
             */
                 macro_rules! full {
                 ($e:expr) => {
@@ -38226,8 +37887,7 @@ mod printing {
             /*
             #![allow(unused_variables)]
             #![allow(clippy::needless_pass_by_ref_mut)]
-            #[cfg(any(feature = "full", feature = "derive"))]
-            use ::syntax::punctuated::Punctuated;
+                use ::syntax::punctuated::Punctuated;
             */
                 macro_rules! full {
                 ($e:expr) => {
@@ -50684,4 +50344,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 50687 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 50347 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
