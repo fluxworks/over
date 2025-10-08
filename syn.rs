@@ -9144,9 +9144,8 @@ pub mod syntax
         {
             "_" pub struct Underscore/1 /// wildcard patterns, inferred types, unnamed items in constants, extern crates, use declarations, and destructuring assignment
         }
-
         
-impl ToTokens for Underscore {
+        impl ToTokens for Underscore {
             fn to_tokens(&self, tokens: &mut TokenStream) {
                 tokens.append(Ident::new("_", self.span));
             }
@@ -9235,10 +9234,9 @@ impl ToTokens for Underscore {
             fn hash<H: Hasher>(&self, _state: &mut H) {}
         }
 
-        impl Group {
-            
-    pub fn surround<F>(&self, tokens: &mut TokenStream, f: F)
-            where
+        impl Group
+        {
+            pub fn surround<F>(&self, tokens: &mut TokenStream, f: F) where
                 F: FnOnce(&mut TokenStream),
             {
                 let mut inner = TokenStream::new();
@@ -9404,67 +9402,7 @@ impl ToTokens for Underscore {
             Bracket       pub struct Bracket      /// `[`&hellip;`]`
             Parenthesis   pub struct Paren        /// `(`&hellip;`)`
         }
-        /// A type-macro that expands to the name of the Rust type representation of a
-        /// given token.
-        ///
-        /// ```
-        /// use syn::{Ident, Token};
-        /// use syn::parse::{Parse, ParseStream, Result};
-        ///
-        ///
-        /// pub struct UnitStruct {
-        ///     struct_token: Token![struct],
-        ///     ident: Ident,
-        ///     semi_token: Token![;],
-        /// }
-        ///
-        /// impl Parse for UnitStruct {
-        ///     fn parse(input: ParseStream) -> Result<Self> {
-        ///         let struct_token: Token![struct] = input.parse()?;
-        ///         let ident: Ident = input.parse()?;
-        ///         let semi_token = input.parse::<Token![;]>()?;
-        ///         Ok(UnitStruct { struct_token, ident, semi_token })
-        ///     }
-        /// }
-        /// ```
-        ///
-        /// As an expression, `Token!` is used for peeking tokens or instantiating
-        /// tokens from a span.
-        /// # use syn::parse::{Parse, ParseStream, Result};
-        /// #
-        /// # struct UnitStruct {
-        /// #     struct_token: Token![struct],
-        /// #     ident: Ident,
-        /// #     semi_token: Token![;],
-        /// # }
-        /// #
-        /// # impl Parse for UnitStruct {
-        /// #     fn parse(input: ParseStream) -> Result<Self> {
-        /// #         unimplemented!()
-        /// #     }
-        /// # }
-        /// #
-        /// fn make_unit_struct(name: Ident) -> UnitStruct {
-        ///     let span = name.span();
-        ///     UnitStruct {
-        ///         struct_token: Token![struct](span),
-        ///         ident: name,
-        ///         semi_token: Token![;](span),
-        ///     }
-        /// }
-        ///
-        /// # fn parse(input: ParseStream) -> Result<()> {
-        /// if input.peek(Token![struct]) {
-        ///     let unit_struct: UnitStruct = input.parse()?;
-        ///     /* ... */
-        /// }
-        /// # Ok(())
-        /// # }
-        /// ```
-        ///
-        /// See the [token module] documentation for details and examples.
-        ///
-        /// [token module]: ::syntax::token
+        /// A type-macro that expands to the name of the Rust type representation of a given token.
         #[macro_export]
         macro_rules! Token {
             [abstract]    => { ::syntax::token::Abstract };
@@ -9649,10 +9587,9 @@ impl ToTokens for Underscore {
                 false
             }
         }
-
-       
         
-pub mod printing {
+        pub mod printing
+        {
             use ::process::macros::{Delimiter, Group, Ident, Punct, Spacing, Span, TokenStream};
             use ::quote::TokenStreamExt;
 
@@ -10246,9 +10183,8 @@ pub mod printing {
                 | Expr::Verbatim(_) => true,
             }
         }
-
         
-pub fn trailing_unparameterized_path(mut ty: &Type) -> bool {
+        pub fn trailing_unparameterized_path(mut ty: &Type) -> bool {
             loop {
                 match ty {
                     Type::BareFn(t) => match &t.output {
@@ -10840,9 +10776,9 @@ pub fn trailing_unparameterized_path(mut ty: &Type) -> bool {
                 }
             }
         }
-
         
-mod printing {
+        mod printing
+        {
             use ::syntax::data::{Field, FieldsNamed, FieldsUnnamed, Variant};
             use ::syntax::print::TokensOrDefault;
             use ::process::macros::TokenStream;
@@ -11104,9 +11040,9 @@ mod printing {
                 Ok((where_clause, fields))
             }
         }
-
         
-mod printing {
+        mod printing
+        {
             use ::syntax::attr::FilterAttrs;
             use ::syntax::data::Fields;
             use ::syntax::derive::{Data, DeriveInput};
@@ -11220,7 +11156,7 @@ mod printing {
             Delimiter, Group, Ident, LexError, Literal, Punct, Spacing, Span, TokenStream, TokenTree,
         };
         
-use ::quote::ToTokens;
+        use ::quote::ToTokens;
         use std::fmt::{self, Debug, Display};
         use std::slice;
         use std::vec;
@@ -11290,8 +11226,7 @@ use ::quote::ToTokens;
             /// Creates an error with the specified message spanning the given syntax
             /// tree node.
             /// stable Rust.
-            
-    pub fn new_spanned<T: ToTokens, U: Display>(tokens: T, message: U) -> Self {
+            pub fn new_spanned<T: ToTokens, U: Display>(tokens: T, message: U) -> Self {
                 return new_spanned(tokens.into_token_stream(), message.to_string());
 
                 fn new_spanned(tokens: TokenStream, message: String) -> Error {
@@ -11733,7 +11668,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A slice literal expression: `[a, b, c, d]`.
             pub struct ExprArray #full {
                 pub attrs: Vec<Attribute>,
@@ -11742,7 +11678,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An assignment expression: `a = compute()`.
             pub struct ExprAssign #full {
                 pub attrs: Vec<Attribute>,
@@ -11752,7 +11689,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An async block: `async { ... }`.
             pub struct ExprAsync #full {
                 pub attrs: Vec<Attribute>,
@@ -11762,7 +11700,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An await expression: `fut.await`.
             pub struct ExprAwait #full {
                 pub attrs: Vec<Attribute>,
@@ -11772,7 +11711,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A binary operation: `a + b`, `a += b`.
             pub struct ExprBinary {
                 pub attrs: Vec<Attribute>,
@@ -11782,7 +11722,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A blocked scope: `{ ... }`.
             pub struct ExprBlock #full {
                 pub attrs: Vec<Attribute>,
@@ -11791,7 +11732,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A `break`, with an optional label to break and an optional
             /// expression.
             pub struct ExprBreak #full {
@@ -11802,7 +11744,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A function call expression: `invoke(a, b)`.
             pub struct ExprCall {
                 pub attrs: Vec<Attribute>,
@@ -11812,7 +11755,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A cast expression: `foo as f64`.
             pub struct ExprCast {
                 pub attrs: Vec<Attribute>,
@@ -11822,7 +11766,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A closure expression: `|a, b| a + b`.
             pub struct ExprClosure #full {
                 pub attrs: Vec<Attribute>,
@@ -11839,7 +11784,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A const block: `const { ... }`.
             pub struct ExprConst #full {
                 pub attrs: Vec<Attribute>,
@@ -11848,7 +11794,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A `continue`, with an optional label.
             pub struct ExprContinue #full {
                 pub attrs: Vec<Attribute>,
@@ -11857,7 +11804,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// Access of a named struct field (`obj.k`) or unnamed tuple struct
             /// field (`obj.0`).
             pub struct ExprField {
@@ -11868,7 +11816,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A for loop: `for pat in expr { ... }`.
             pub struct ExprForLoop #full {
                 pub attrs: Vec<Attribute>,
@@ -11881,7 +11830,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An expression contained within invisible delimiters.
             /// `TokenStream`.
             pub struct ExprGroup {
@@ -11891,7 +11841,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An `if` expression with an optional `else` block: `if expr { ... }
             /// else { ... }`.
             pub struct ExprIf #full {
@@ -11903,7 +11854,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A square bracketed indexing expression: `vector[2]`.
             pub struct ExprIndex {
                 pub attrs: Vec<Attribute>,
@@ -11913,7 +11865,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The inferred value of a const generic argument, denoted `_`.
             pub struct ExprInfer #full {
                 pub attrs: Vec<Attribute>,
@@ -11921,7 +11874,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A `let` guard: `let Some(x) = opt`.
             pub struct ExprLet #full {
                 pub attrs: Vec<Attribute>,
@@ -11932,7 +11886,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A literal in place of an expression: `1`, `"foo"`.
             pub struct ExprLit {
                 pub attrs: Vec<Attribute>,
@@ -11940,7 +11895,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// Conditionless loop: `loop { ... }`.
             pub struct ExprLoop #full {
                 pub attrs: Vec<Attribute>,
@@ -11950,7 +11906,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A macro invocation expression: `format!("{}", q)`.
             pub struct ExprMacro {
                 pub attrs: Vec<Attribute>,
@@ -11958,7 +11915,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A `match` expression: `match n { Some(n) => {}, None => {} }`.
             pub struct ExprMatch #full {
                 pub attrs: Vec<Attribute>,
@@ -11969,7 +11927,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A method call expression: `x.foo::<T>(a, b)`.
             pub struct ExprMethodCall {
                 pub attrs: Vec<Attribute>,
@@ -11982,7 +11941,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A parenthesized expression: `(a + b)`.
             pub struct ExprParen {
                 pub attrs: Vec<Attribute>,
@@ -11991,7 +11951,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A path like `std::mem::replace` possibly containing generic
             /// parameters and a qualified self-type.
             ///
@@ -12003,7 +11964,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A range expression: `1..2`, `1..`, `..2`, `1..=2`, `..=2`.
             pub struct ExprRange #full {
                 pub attrs: Vec<Attribute>,
@@ -12013,7 +11975,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// Address-of operation: `&raw const place` or `&raw mut place`.
             pub struct ExprRawAddr #full {
                 pub attrs: Vec<Attribute>,
@@ -12024,7 +11987,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A referencing operation: `&a` or `&mut a`.
             pub struct ExprReference {
                 pub attrs: Vec<Attribute>,
@@ -12034,7 +11998,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An array literal constructed from one repeated element: `[0u8; N]`.
             pub struct ExprRepeat #full {
                 pub attrs: Vec<Attribute>,
@@ -12045,7 +12010,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A `return`, with an optional value to be returned.
             pub struct ExprReturn #full {
                 pub attrs: Vec<Attribute>,
@@ -12067,7 +12033,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A try-expression: `expr?`.
             pub struct ExprTry #full {
                 pub attrs: Vec<Attribute>,
@@ -12076,7 +12043,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A try block: `try { ... }`.
             pub struct ExprTryBlock #full {
                 pub attrs: Vec<Attribute>,
@@ -12085,7 +12053,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A tuple expression: `(a, b, c, d)`.
             pub struct ExprTuple {
                 pub attrs: Vec<Attribute>,
@@ -12094,7 +12063,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A unary operation: `!x`, `*x`.
             pub struct ExprUnary {
                 pub attrs: Vec<Attribute>,
@@ -12103,7 +12073,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// An unsafe block: `unsafe { ... }`.
             pub struct ExprUnsafe #full {
                 pub attrs: Vec<Attribute>,
@@ -12112,7 +12083,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A while loop: `while expr { ... }`.
             pub struct ExprWhile #full {
                 pub attrs: Vec<Attribute>,
@@ -12123,7 +12095,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A yield expression: `yield expr`.
             pub struct ExprYield #full {
                 pub attrs: Vec<Attribute>,
@@ -12132,7 +12105,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Expr {
+        impl Expr 
+        {
             /// An unspecified invalid expression.
             /// use std::mem;
             /// use syn::{parse_quote, Expr};
@@ -12338,7 +12312,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// A struct or tuple struct field accessed in a struct literal or field
             /// expression.
             pub enum Member {
@@ -12349,27 +12324,33 @@ use ::quote::ToTokens;
             }
         }
 
-        impl From<Ident> for Member {
+        impl From<Ident> for Member 
+        {
             fn from(ident: Ident) -> Member {
                 Member::Named(ident)
             }
         }
 
-        impl From<Index> for Member {
+        impl From<Index> for Member 
+        {
             fn from(index: Index) -> Member {
                 Member::Unnamed(index)
             }
         }
 
-        impl From<usize> for Member {
+        impl From<usize> for Member 
+        {
             fn from(index: usize) -> Member {
                 Member::Unnamed(Index::from(index))
             }
         }
 
-        impl Eq for Member {}
+        impl Eq for Member {
 
-        impl PartialEq for Member {
+        }
+
+        impl PartialEq for Member 
+        {
             fn eq(&self, other: &Self) -> bool {
                 match (self, other) {
                     (Member::Named(this), Member::Named(other)) => this == other,
@@ -12379,7 +12360,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Hash for Member {
+        impl Hash for Member 
+        {
             fn hash<H: Hasher>(&self, state: &mut H) {
                 match self {
                     Member::Named(m) => m.hash(state),
@@ -12388,7 +12370,8 @@ use ::quote::ToTokens;
             }
         }
         
-        impl IdentFragment for Member 
+        impl IdentFragment for Member
+
         {
             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 match self {
@@ -12406,7 +12389,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Member {
+        impl Member 
+        {
             pub fn is_named(&self) -> bool {
                 match self {
                     Member::Named(_) => true,
@@ -12415,7 +12399,8 @@ use ::quote::ToTokens;
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// The index of an unnamed tuple struct field.
             pub struct Index {
                 pub index: u32,
@@ -12423,7 +12408,8 @@ use ::quote::ToTokens;
             }
         }
 
-        impl From<usize> for Index {
+        impl From<usize> for Index 
+        {
             fn from(index: usize) -> Index {
                 assert!(index < u32::MAX as usize);
                 Index {
@@ -12433,24 +12419,28 @@ use ::quote::ToTokens;
             }
         }
 
-        impl Eq for Index {}
+        impl Eq for Index {
 
-        impl PartialEq for Index {
+        }
+
+        impl PartialEq for Index 
+        {
             fn eq(&self, other: &Self) -> bool
             {
                 self.index == other.index
             }
         }
 
-        impl Hash for Index {
+        impl Hash for Index 
+        {
             fn hash<H: Hasher>(&self, state: &mut H)
             {
                 self.index.hash(state);
             }
         }
-
         
-impl IdentFragment for Index {
+        impl IdentFragment for Index
+        {
             fn fmt(&self, formatter: &mut fmt::Formatter) -> fmt::Result {
                 Display::fmt(&self.index, formatter)
             }
@@ -12460,7 +12450,8 @@ impl IdentFragment for Index {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A field-value pair in a struct literal.
             pub struct FieldValue {
                 pub attrs: Vec<Attribute>,
@@ -12473,7 +12464,8 @@ impl IdentFragment for Index {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// A lifetime labeling a `for`, `while`, or `loop`.
             pub struct Label {
                 pub name: Lifetime,
@@ -12481,7 +12473,8 @@ impl IdentFragment for Index {
             }
         }
 
-        ast_struct! {
+        ast_struct! 
+        {
             /// One arm of a `match` expression: `0..=10 => { return true; }`.
             /// #     let n = 0;
             /// match n {
@@ -12504,7 +12497,8 @@ impl IdentFragment for Index {
             }
         }
 
-        ast_enum! {
+        ast_enum! 
+        {
             /// Limit types of a range, inclusive or exclusive.
             pub enum RangeLimits {
                 /// Inclusive at the beginning, exclusive at the end.
@@ -12526,11 +12520,11 @@ impl IdentFragment for Index {
         
         pub mod parsing
         {
-                use ::syntax::attr;
+            use ::syntax::attr;
             use ::syntax::attr::Attribute;
-                use ::syntax::classify;
+            use ::syntax::classify;
             use ::syntax::error::{Error, Result};
-                use ::syntax::expr::{
+            use ::syntax::expr::{
                 Arm, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure,
                 ExprConst, ExprContinue, ExprForLoop, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
                 ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprUnsafe,
@@ -12541,25 +12535,25 @@ impl IdentFragment for Index {
                 ExprMethodCall, ExprParen, ExprPath, ExprReference, ExprStruct, ExprTuple, ExprUnary,
                 FieldValue, Index, Member,
             };
-                use ::syntax::generics::{self, BoundLifetimes};
+            use ::syntax::generics::{self, BoundLifetimes};
             use ::syntax::ident::Ident;
-                use ::syntax::lifetime::Lifetime;
+            use ::syntax::lifetime::Lifetime;
             use ::syntax::lit::{Lit, LitFloat, LitInt};
             use ::syntax::mac::{self, Macro};
             use ::syntax::op::BinOp;
             use ::syntax::parse::discouraged::Speculative as _;
-                use ::syntax::parse::ParseBuffer;
+            use ::syntax::parse::ParseBuffer;
             use ::syntax::parse::{Parse, ParseStream};
-                use ::syntax::pat::{Pat, PatType};
+            use ::syntax::pat::{Pat, PatType};
             use ::syntax::path::{self, AngleBracketedGenericArguments, Path, QSelf};
             use ::syntax::precedence::Precedence;
             use ::syntax::punctuated::Punctuated;
-                use ::syntax::stmt::Block;
+            use ::syntax::stmt::Block;
             use ::syntax::token;
             use ::syntax::ty;
-                use ::syntax::ty::{ReturnType, Type};
+            use ::syntax::ty::{ReturnType, Type};
             use ::syntax::verbatim;
-                use ::process::macros::{Span, TokenStream};
+            use ::process::macros::{Span, TokenStream};
             use std::mem;
 
            
@@ -12779,7 +12773,6 @@ impl IdentFragment for Index {
                 }
             }
 
-           
             pub fn ambiguous_expr(
                 input: ParseStream,
                 #[cfg(feature = "full")] allow_struct: AllowStruct,
@@ -13117,41 +13110,57 @@ impl IdentFragment for Index {
                 )
             }
 
-            fn rest_of_path_or_macro_or_struct(
+            fn rest_of_path_or_macro_or_struct
+            (
                 qself: Option<QSelf>,
                 path: Path,
                 input: ParseStream,
-                #[cfg(feature = "full")] allow_struct: AllowStruct,
-            ) -> Result<Expr> {
+                allow_struct: AllowStruct,
+            ) -> Result<Expr>
+            {
                 if qself.is_none()
-                    && input.peek(Token![!])
-                    && !input.peek(Token![!=])
-                    && path.is_mod_style()
+                && input.peek(Token![!])
+                && !input.peek(Token![!=])
+                && path.is_mod_style()
                 {
                     let bang_token: Token![!] = input.parse()?;
                     let (delimiter, tokens) = mac::parse_delimiter(input)?;
-                    return Ok(Expr::Macro(ExprMacro {
-                        attrs: Vec::new(),
-                        mac: Macro {
-                            path,
-                            bang_token,
-                            delimiter,
-                            tokens,
-                        },
-                    }));
+                    return Ok
+                    (
+                        Expr::Macro
+                        (
+                            ExprMacro
+                            {
+                                attrs: Vec::new(),
+                                mac: Macro
+                                {
+                                    path,
+                                    bang_token,
+                                    delimiter,
+                                    tokens,
+                                },
+                            }
+                        )
+                    );
                 }
-
-                #[cfg(not(feature = "full"))]
-                let allow_struct = (true,);
-                if allow_struct.0 && input.peek(token::Brace) {
+                
+                if allow_struct.0 && input.peek(token::Brace)
+                {
                     return expr_struct_helper(input, qself, path).map(Expr::Struct);
                 }
 
-                Ok(Expr::Path(ExprPath {
-                    attrs: Vec::new(),
-                    qself,
-                    path,
-                }))
+                Ok
+                (
+                    Expr::Path
+                    (
+                        ExprPath
+                        {
+                            attrs: Vec::new(),
+                            qself,
+                            path,
+                        }
+                    )
+                )
             }
 
             impl Parse for ExprMacro
@@ -14270,9 +14279,9 @@ impl IdentFragment for Index {
                 Err(input.error(msg))
             }
         }
-
         
-pub mod printing {
+        pub mod printing
+        {
             use ::syntax::attr::Attribute;
                 use ::syntax::attr::FilterAttrs;
                 use ::syntax::classify;
@@ -15197,17 +15206,15 @@ pub mod printing {
             }
         }
     }
-    /*
+    
     pub use ::syntax::expr::
     {
-        Arm, Label, PointerMutability, RangeLimits,
-        Expr, ExprBinary, ExprCall, ExprCast, ExprField, ExprIndex, ExprLit, ExprMacro, ExprMethodCall,
-        ExprParen, ExprPath, ExprReference, ExprStruct, ExprUnary, FieldValue, Index, Member,
-        ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure, ExprConst,
-        ExprContinue, ExprForLoop, ExprGroup, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch,
-        ExprRange, ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprTuple, ExprUnsafe,
-        ExprWhile, ExprYield,
-    }; */
+        Arm, Label, PointerMutability, RangeLimits, Expr, ExprBinary, ExprCall, ExprCast, ExprField, ExprIndex, 
+        ExprLit, ExprMacro, ExprMethodCall, ExprParen, ExprPath, ExprReference, ExprStruct, ExprUnary, FieldValue, 
+        Index, Member, ExprArray, ExprAssign, ExprAsync, ExprAwait, ExprBlock, ExprBreak, ExprClosure, ExprConst,
+        ExprContinue, ExprForLoop, ExprGroup, ExprIf, ExprInfer, ExprLet, ExprLoop, ExprMatch, ExprRange,
+        ExprRawAddr, ExprRepeat, ExprReturn, ExprTry, ExprTryBlock, ExprTuple, ExprUnsafe, ExprWhile, ExprYield,
+    };
     
     pub mod ext
     {
@@ -15410,9 +15417,8 @@ pub mod printing {
                 }
             }
         }
-
         
-mod printing {
+        mod printing {
             use ::syntax::attr::FilterAttrs;
             use ::syntax::file::File;
             use ::process::macros::TokenStream;
@@ -16386,9 +16392,8 @@ mod printing {
 
         /// Returned by `TypeGenerics::as_turbofish`.
         pub struct Turbofish<'a>(&'a Generics);
-
         
-macro_rules! generics_wrapper_impls {
+        macro_rules! generics_wrapper_impls {
             ($ty:ident) => {
                 impl<'a> Clone for $ty<'a> {
                     fn clone(&self) -> Self {
@@ -16422,14 +16427,14 @@ macro_rules! generics_wrapper_impls {
         }
 
         
-generics_wrapper_impls!(ImplGenerics);
+        generics_wrapper_impls!(ImplGenerics);
+                
+        generics_wrapper_impls!(TypeGenerics);
+                
+        generics_wrapper_impls!(Turbofish);
         
-generics_wrapper_impls!(TypeGenerics);
-        
-generics_wrapper_impls!(Turbofish);
-
-        
-impl<'a> TypeGenerics<'a> {
+        impl<'a> TypeGenerics<'a>
+        {
             /// Turn a type's generics like `<X, Y>` into a turbofish like `::<X, Y>`.
             pub fn as_turbofish(&self) -> Turbofish<'a> {
                 Turbofish(self.0)
@@ -22480,7 +22485,6 @@ impl<'a> TypeGenerics<'a> {
                 s.chars().next().unwrap_or('\0')
             }
 
-           
             pub fn parse_lit_str(s: &str) -> (Box<str>, Box<str>) {
                 match byte(s, 0) {
                     b'"' => parse_lit_str_cooked(s),
@@ -22571,7 +22575,6 @@ impl<'a> TypeGenerics<'a> {
                 (content, suffix)
             }
 
-           
             pub fn parse_lit_byte_str(s: &str) -> (Vec<u8>, Box<str>) {
                 assert_eq!(byte(s, 0), b'b');
                 match byte(s, 1) {
@@ -22647,7 +22650,6 @@ impl<'a> TypeGenerics<'a> {
                 (String::from(value).into_bytes(), suffix)
             }
 
-           
             pub fn parse_lit_c_str(s: &str) -> (CString, Box<str>) {
                 assert_eq!(byte(s, 0), b'c');
                 match byte(s, 1) {
@@ -22730,7 +22732,6 @@ impl<'a> TypeGenerics<'a> {
                 (CString::new(String::from(value)).unwrap(), suffix)
             }
 
-           
             pub fn parse_lit_byte(s: &str) -> (u8, Box<str>) {
                 assert_eq!(byte(s, 0), b'b');
                 assert_eq!(byte(s, 1), b'\'');
@@ -22772,7 +22773,6 @@ impl<'a> TypeGenerics<'a> {
                 (b, suffix)
             }
 
-           
             pub fn parse_lit_char(mut s: &str) -> (char, Box<str>) {
                 assert_eq!(byte(s, 0), b'\'');
                 s = &s[1..];
@@ -22817,8 +22817,7 @@ impl<'a> TypeGenerics<'a> {
                 (ch, suffix)
             }
 
-            fn backslash_x<S>(s: &S) -> (u8, &S)
-            where
+            fn backslash_x<S>(s: &S) -> (u8, &S) where
                 S: Index<RangeFrom<usize>, Output = S> + AsRef<[u8]> + ?Sized,
             {
                 let mut ch = 0;
@@ -22840,8 +22839,7 @@ impl<'a> TypeGenerics<'a> {
                 (ch, &s[2..])
             }
 
-            fn backslash_u<S>(mut s: &S) -> (char, &S)
-            where
+            fn backslash_u<S>(mut s: &S) -> (char, &S) where
                 S: Index<RangeFrom<usize>, Output = S> + AsRef<[u8]> + ?Sized,
             {
                 if byte(s, 0) != b'{' {
@@ -22883,7 +22881,6 @@ impl<'a> TypeGenerics<'a> {
                 }
             }
 
-           
             pub fn parse_lit_int(mut s: &str) -> Option<(Box<str>, Box<str>)>
             {
                 let negative = byte(s, 0) == b'-';
@@ -22975,7 +22972,6 @@ impl<'a> TypeGenerics<'a> {
                 }
             }
 
-           
             pub fn parse_lit_float(input: &str) -> Option<(Box<str>, Box<str>)> {
                
                
@@ -27687,8 +27683,7 @@ impl<'a> TypeGenerics<'a> {
             }
             /// Appends a syntax tree node onto the end of this punctuated sequence.
             /// the given value of type `T`.
-            pub fn push(&mut self, value: T)
-            where
+            pub fn push(&mut self, value: T) where
                 P: Default,
             {
                 if !self.empty_or_trailing() {
@@ -27697,8 +27692,7 @@ impl<'a> TypeGenerics<'a> {
                 self.push_value(value);
             }
             /// Inserts an element at position `index`.
-            pub fn insert(&mut self, index: usize, value: T)
-            where
+            pub fn insert(&mut self, index: usize, value: T) where
                 P: Default,
             {
                 assert!(
@@ -35066,8 +35060,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_abi<'ast, V>(v: &mut V, node: &'ast ::syntax::Abi)
-            where
+            pub fn visit_abi<'ast, V>(v: &mut V, node: &'ast ::syntax::Abi) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.extern_token);
@@ -35080,8 +35073,7 @@ impl<'a> TypeGenerics<'a> {
             pub fn visit_angle_bracketed_generic_arguments<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::AngleBracketedGenericArguments,
-            )
-            where
+            ) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.colon2_token);
@@ -35092,8 +35084,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.gt_token);
             }
-                pub fn visit_arm<'ast, V>(v: &mut V, node: &'ast ::syntax::Arm)
-            where
+                pub fn visit_arm<'ast, V>(v: &mut V, node: &'ast ::syntax::Arm) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35110,8 +35101,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_assoc_const<'ast, V>(v: &mut V, node: &'ast ::syntax::AssocConst)
-            where
+            pub fn visit_assoc_const<'ast, V>(v: &mut V, node: &'ast ::syntax::AssocConst) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
@@ -35123,8 +35113,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_assoc_type<'ast, V>(v: &mut V, node: &'ast ::syntax::AssocType)
-            where
+            pub fn visit_assoc_type<'ast, V>(v: &mut V, node: &'ast ::syntax::AssocType) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
@@ -35136,8 +35125,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_attr_style<'ast, V>(v: &mut V, node: &'ast ::syntax::AttrStyle)
-            where
+            pub fn visit_attr_style<'ast, V>(v: &mut V, node: &'ast ::syntax::AttrStyle) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -35149,8 +35137,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_attribute<'ast, V>(v: &mut V, node: &'ast ::syntax::Attribute)
-            where
+            pub fn visit_attribute<'ast, V>(v: &mut V, node: &'ast ::syntax::Attribute) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.pound_token);
@@ -35160,8 +35147,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bare_fn_arg<'ast, V>(v: &mut V, node: &'ast ::syntax::BareFnArg)
-            where
+            pub fn visit_bare_fn_arg<'ast, V>(v: &mut V, node: &'ast ::syntax::BareFnArg) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35175,8 +35161,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bare_variadic<'ast, V>(v: &mut V, node: &'ast ::syntax::BareVariadic)
-            where
+            pub fn visit_bare_variadic<'ast, V>(v: &mut V, node: &'ast ::syntax::BareVariadic) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35191,8 +35176,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bin_op<'ast, V>(v: &mut V, node: &'ast ::syntax::BinOp)
-            where
+            pub fn visit_bin_op<'ast, V>(v: &mut V, node: &'ast ::syntax::BinOp) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -35282,8 +35266,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_block<'ast, V>(v: &mut V, node: &'ast ::syntax::Block)
-            where
+                pub fn visit_block<'ast, V>(v: &mut V, node: &'ast ::syntax::Block) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.brace_token);
@@ -35293,8 +35276,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bound_lifetimes<'ast, V>(v: &mut V, node: &'ast ::syntax::BoundLifetimes)
-            where
+            pub fn visit_bound_lifetimes<'ast, V>(v: &mut V, node: &'ast ::syntax::BoundLifetimes) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.for_token);
@@ -35305,8 +35287,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.gt_token);
             }
-                pub fn visit_captured_param<'ast, V>(v: &mut V, node: &'ast ::syntax::CapturedParam)
-            where
+                pub fn visit_captured_param<'ast, V>(v: &mut V, node: &'ast ::syntax::CapturedParam) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -35320,8 +35301,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_const_param<'ast, V>(v: &mut V, node: &'ast ::syntax::ConstParam)
-            where
+            pub fn visit_const_param<'ast, V>(v: &mut V, node: &'ast ::syntax::ConstParam) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35338,8 +35318,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_constraint<'ast, V>(v: &mut V, node: &'ast ::syntax::Constraint)
-            where
+            pub fn visit_constraint<'ast, V>(v: &mut V, node: &'ast ::syntax::Constraint) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
@@ -35354,8 +35333,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data<'ast, V>(v: &mut V, node: &'ast ::syntax::Data)
-            where
+            pub fn visit_data<'ast, V>(v: &mut V, node: &'ast ::syntax::Data) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -35372,8 +35350,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_enum<'ast, V>(v: &mut V, node: &'ast ::syntax::DataEnum)
-            where
+            pub fn visit_data_enum<'ast, V>(v: &mut V, node: &'ast ::syntax::DataEnum) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.enum_token);
@@ -35385,8 +35362,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::DataStruct)
-            where
+            pub fn visit_data_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::DataStruct) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.struct_token);
@@ -35395,8 +35371,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_union<'ast, V>(v: &mut V, node: &'ast ::syntax::DataUnion)
-            where
+            pub fn visit_data_union<'ast, V>(v: &mut V, node: &'ast ::syntax::DataUnion) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.union_token);
@@ -35404,8 +35379,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_derive_input<'ast, V>(v: &mut V, node: &'ast ::syntax::DeriveInput)
-            where
+            pub fn visit_derive_input<'ast, V>(v: &mut V, node: &'ast ::syntax::DeriveInput) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35418,8 +35392,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr<'ast, V>(v: &mut V, node: &'ast ::syntax::Expr)
-            where
+            pub fn visit_expr<'ast, V>(v: &mut V, node: &'ast ::syntax::Expr) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -35545,8 +35518,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_expr_array<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprArray)
-            where
+                pub fn visit_expr_array<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprArray) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35558,8 +35530,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_expr(it);
                 }
             }
-                pub fn visit_expr_assign<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprAssign)
-            where
+                pub fn visit_expr_assign<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprAssign) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35569,8 +35540,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.eq_token);
                 v.visit_expr(&*node.right);
             }
-                pub fn visit_expr_async<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprAsync)
-            where
+                pub fn visit_expr_async<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprAsync) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35580,8 +35550,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.capture);
                 v.visit_block(&node.block);
             }
-                pub fn visit_expr_await<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprAwait)
-            where
+                pub fn visit_expr_await<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprAwait) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35593,8 +35562,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_binary<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBinary)
-            where
+            pub fn visit_expr_binary<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBinary) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35604,8 +35572,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_bin_op(&node.op);
                 v.visit_expr(&*node.right);
             }
-                pub fn visit_expr_block<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBlock)
-            where
+                pub fn visit_expr_block<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBlock) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35616,8 +35583,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_block(&node.block);
             }
-                pub fn visit_expr_break<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBreak)
-            where
+                pub fn visit_expr_break<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprBreak) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35633,8 +35599,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_call<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprCall)
-            where
+            pub fn visit_expr_call<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprCall) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35649,8 +35614,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_cast<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprCast)
-            where
+            pub fn visit_expr_cast<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprCast) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35660,8 +35624,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.as_token);
                 v.visit_type(&*node.ty);
             }
-                pub fn visit_expr_closure<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprClosure)
-            where
+                pub fn visit_expr_closure<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprClosure) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35683,8 +35646,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_return_type(&node.output);
                 v.visit_expr(&*node.body);
             }
-                pub fn visit_expr_const<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprConst)
-            where
+                pub fn visit_expr_const<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprConst) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35693,8 +35655,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.const_token);
                 v.visit_block(&node.block);
             }
-                pub fn visit_expr_continue<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprContinue)
-            where
+                pub fn visit_expr_continue<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprContinue) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35707,8 +35668,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_field<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprField)
-            where
+            pub fn visit_expr_field<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprField) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35718,8 +35678,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.dot_token);
                 v.visit_member(&node.member);
             }
-                pub fn visit_expr_for_loop<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprForLoop)
-            where
+                pub fn visit_expr_for_loop<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprForLoop) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35736,8 +35695,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_group<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprGroup)
-            where
+            pub fn visit_expr_group<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprGroup) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35746,8 +35704,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.group_token);
                 v.visit_expr(&*node.expr);
             }
-                pub fn visit_expr_if<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprIf)
-            where
+                pub fn visit_expr_if<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprIf) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35763,8 +35720,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_index<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprIndex)
-            where
+            pub fn visit_expr_index<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprIndex) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35774,8 +35730,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.bracket_token);
                 v.visit_expr(&*node.index);
             }
-                pub fn visit_expr_infer<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprInfer)
-            where
+                pub fn visit_expr_infer<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprInfer) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35783,8 +35738,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.underscore_token);
             }
-                pub fn visit_expr_let<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLet)
-            where
+                pub fn visit_expr_let<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLet) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35797,8 +35751,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_lit<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLit)
-            where
+            pub fn visit_expr_lit<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLit) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35806,8 +35759,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_lit(&node.lit);
             }
-                pub fn visit_expr_loop<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLoop)
-            where
+                pub fn visit_expr_loop<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprLoop) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35821,8 +35773,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMacro)
-            where
+            pub fn visit_expr_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35830,8 +35781,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_macro(&node.mac);
             }
-                pub fn visit_expr_match<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMatch)
-            where
+                pub fn visit_expr_match<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMatch) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35846,8 +35796,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_method_call<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMethodCall)
-            where
+            pub fn visit_expr_method_call<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprMethodCall) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35867,8 +35816,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprParen)
-            where
+            pub fn visit_expr_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprParen) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35879,8 +35827,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_path<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprPath)
-            where
+            pub fn visit_expr_path<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprPath) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35891,8 +35838,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_path(&node.path);
             }
-                pub fn visit_expr_range<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprRange)
-            where
+                pub fn visit_expr_range<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprRange) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35906,8 +35852,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_expr(&**it);
                 }
             }
-                pub fn visit_expr_raw_addr<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprRawAddr)
-            where
+                pub fn visit_expr_raw_addr<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprRawAddr) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35920,8 +35865,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprReference)
-            where
+            pub fn visit_expr_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprReference) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35931,8 +35875,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.mutability);
                 v.visit_expr(&*node.expr);
             }
-                pub fn visit_expr_repeat<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprRepeat)
-            where
+                pub fn visit_expr_repeat<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprRepeat) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35943,8 +35886,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.semi_token);
                 v.visit_expr(&*node.len);
             }
-                pub fn visit_expr_return<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprReturn)
-            where
+                pub fn visit_expr_return<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprReturn) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35957,8 +35899,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprStruct)
-            where
+            pub fn visit_expr_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprStruct) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35978,8 +35919,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_expr(&**it);
                 }
             }
-                pub fn visit_expr_try<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTry)
-            where
+                pub fn visit_expr_try<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTry) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -35988,8 +35928,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr(&*node.expr);
                 skip!(node.question_token);
             }
-                pub fn visit_expr_try_block<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTryBlock)
-            where
+                pub fn visit_expr_try_block<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTryBlock) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36000,8 +35939,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTuple)
-            where
+            pub fn visit_expr_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprTuple) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36015,8 +35953,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_unary<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprUnary)
-            where
+            pub fn visit_expr_unary<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprUnary) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36025,8 +35962,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_un_op(&node.op);
                 v.visit_expr(&*node.expr);
             }
-                pub fn visit_expr_unsafe<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprUnsafe)
-            where
+                pub fn visit_expr_unsafe<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprUnsafe) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36035,8 +35971,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.unsafe_token);
                 v.visit_block(&node.block);
             }
-                pub fn visit_expr_while<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprWhile)
-            where
+                pub fn visit_expr_while<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprWhile) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36049,8 +35984,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr(&*node.cond);
                 v.visit_block(&node.body);
             }
-                pub fn visit_expr_yield<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprYield)
-            where
+                pub fn visit_expr_yield<'ast, V>(v: &mut V, node: &'ast ::syntax::ExprYield) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36063,8 +35997,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_field<'ast, V>(v: &mut V, node: &'ast ::syntax::Field)
-            where
+            pub fn visit_field<'ast, V>(v: &mut V, node: &'ast ::syntax::Field) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36080,16 +36013,14 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_field_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldMutability)
-            where
+            pub fn visit_field_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldMutability) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
                     ::syntax::FieldMutability::None => {}
                 }
             }
-                pub fn visit_field_pat<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldPat)
-            where
+                pub fn visit_field_pat<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldPat) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36101,8 +36032,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_field_value<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldValue)
-            where
+            pub fn visit_field_value<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldValue) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36114,8 +36044,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_fields<'ast, V>(v: &mut V, node: &'ast ::syntax::Fields)
-            where
+            pub fn visit_fields<'ast, V>(v: &mut V, node: &'ast ::syntax::Fields) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36130,8 +36059,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_fields_named<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldsNamed)
-            where
+            pub fn visit_fields_named<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldsNamed) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.brace_token);
@@ -36142,8 +36070,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_fields_unnamed<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldsUnnamed)
-            where
+            pub fn visit_fields_unnamed<'ast, V>(v: &mut V, node: &'ast ::syntax::FieldsUnnamed) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.paren_token);
@@ -36152,8 +36079,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_field(it);
                 }
             }
-                pub fn visit_file<'ast, V>(v: &mut V, node: &'ast ::syntax::File)
-            where
+                pub fn visit_file<'ast, V>(v: &mut V, node: &'ast ::syntax::File) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.shebang);
@@ -36164,8 +36090,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_item(it);
                 }
             }
-                pub fn visit_fn_arg<'ast, V>(v: &mut V, node: &'ast ::syntax::FnArg)
-            where
+                pub fn visit_fn_arg<'ast, V>(v: &mut V, node: &'ast ::syntax::FnArg) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36177,8 +36102,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_foreign_item<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItem)
-            where
+                pub fn visit_foreign_item<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItem) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36199,8 +36123,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_foreign_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItemFn)
-            where
+                pub fn visit_foreign_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItemFn) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36210,8 +36133,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_signature(&node.sig);
                 skip!(node.semi_token);
             }
-                pub fn visit_foreign_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItemMacro)
-            where
+                pub fn visit_foreign_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItemMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36223,8 +36145,7 @@ impl<'a> TypeGenerics<'a> {
                 pub fn visit_foreign_item_static<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::ForeignItemStatic,
-            )
-            where
+            ) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36238,8 +36159,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_type(&*node.ty);
                 skip!(node.semi_token);
             }
-                pub fn visit_foreign_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItemType)
-            where
+                pub fn visit_foreign_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ForeignItemType) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36253,8 +36173,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_generic_argument<'ast, V>(v: &mut V, node: &'ast ::syntax::GenericArgument)
-            where
+            pub fn visit_generic_argument<'ast, V>(v: &mut V, node: &'ast ::syntax::GenericArgument) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36280,8 +36199,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_generic_param<'ast, V>(v: &mut V, node: &'ast ::syntax::GenericParam)
-            where
+            pub fn visit_generic_param<'ast, V>(v: &mut V, node: &'ast ::syntax::GenericParam) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36298,8 +36216,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_generics<'ast, V>(v: &mut V, node: &'ast ::syntax::Generics)
-            where
+            pub fn visit_generics<'ast, V>(v: &mut V, node: &'ast ::syntax::Generics) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.lt_token);
@@ -36312,14 +36229,12 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_where_clause(it);
                 }
             }
-            pub fn visit_ident<'ast, V>(v: &mut V, node: &'ast proc_macro2::Ident)
-            where
+            pub fn visit_ident<'ast, V>(v: &mut V, node: &'ast proc_macro2::Ident) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_span(&node.span());
             }
-                pub fn visit_impl_item<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItem)
-            where
+                pub fn visit_impl_item<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItem) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36340,8 +36255,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_impl_item_const<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemConst)
-            where
+                pub fn visit_impl_item_const<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemConst) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36358,8 +36272,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr(&node.expr);
                 skip!(node.semi_token);
             }
-                pub fn visit_impl_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemFn)
-            where
+                pub fn visit_impl_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemFn) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36370,8 +36283,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_signature(&node.sig);
                 v.visit_block(&node.block);
             }
-                pub fn visit_impl_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemMacro)
-            where
+                pub fn visit_impl_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36380,8 +36292,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_macro(&node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_impl_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemType)
-            where
+                pub fn visit_impl_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplItemType) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36396,23 +36307,20 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_type(&node.ty);
                 skip!(node.semi_token);
             }
-                pub fn visit_impl_restriction<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplRestriction)
-            where
+                pub fn visit_impl_restriction<'ast, V>(v: &mut V, node: &'ast ::syntax::ImplRestriction) where
                 V: Visit<'ast> + ?Sized,
             {
                 match *node {}
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_index<'ast, V>(v: &mut V, node: &'ast ::syntax::Index)
-            where
+            pub fn visit_index<'ast, V>(v: &mut V, node: &'ast ::syntax::Index) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.index);
                 v.visit_span(&node.span);
             }
-                pub fn visit_item<'ast, V>(v: &mut V, node: &'ast ::syntax::Item)
-            where
+                pub fn visit_item<'ast, V>(v: &mut V, node: &'ast ::syntax::Item) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36466,8 +36374,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_item_const<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemConst)
-            where
+                pub fn visit_item_const<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemConst) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36483,8 +36390,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr(&*node.expr);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_enum<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemEnum)
-            where
+                pub fn visit_item_enum<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemEnum) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36500,8 +36406,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_variant(it);
                 }
             }
-                pub fn visit_item_extern_crate<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemExternCrate)
-            where
+                pub fn visit_item_extern_crate<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemExternCrate) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36517,8 +36422,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemFn)
-            where
+                pub fn visit_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemFn) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36528,8 +36432,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_signature(&node.sig);
                 v.visit_block(&*node.block);
             }
-                pub fn visit_item_foreign_mod<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemForeignMod)
-            where
+                pub fn visit_item_foreign_mod<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemForeignMod) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36542,8 +36445,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_foreign_item(it);
                 }
             }
-                pub fn visit_item_impl<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemImpl)
-            where
+                pub fn visit_item_impl<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemImpl) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36564,8 +36466,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_impl_item(it);
                 }
             }
-                pub fn visit_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemMacro)
-            where
+                pub fn visit_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36577,8 +36478,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_macro(&node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_mod<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemMod)
-            where
+                pub fn visit_item_mod<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemMod) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36596,8 +36496,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi);
             }
-                pub fn visit_item_static<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemStatic)
-            where
+                pub fn visit_item_static<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemStatic) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36613,8 +36512,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr(&*node.expr);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemStruct)
-            where
+                pub fn visit_item_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemStruct) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36627,8 +36525,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_fields(&node.fields);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_trait<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemTrait)
-            where
+                pub fn visit_item_trait<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemTrait) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36653,8 +36550,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_trait_item(it);
                 }
             }
-                pub fn visit_item_trait_alias<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemTraitAlias)
-            where
+                pub fn visit_item_trait_alias<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemTraitAlias) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36671,8 +36567,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemType)
-            where
+                pub fn visit_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemType) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36686,8 +36581,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_type(&*node.ty);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_union<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemUnion)
-            where
+                pub fn visit_item_union<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemUnion) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36699,8 +36593,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_generics(&node.generics);
                 v.visit_fields_named(&node.fields);
             }
-                pub fn visit_item_use<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemUse)
-            where
+                pub fn visit_item_use<'ast, V>(v: &mut V, node: &'ast ::syntax::ItemUse) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36712,15 +36605,13 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_use_tree(&node.tree);
                 skip!(node.semi_token);
             }
-                pub fn visit_label<'ast, V>(v: &mut V, node: &'ast ::syntax::Label)
-            where
+                pub fn visit_label<'ast, V>(v: &mut V, node: &'ast ::syntax::Label) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_lifetime(&node.name);
                 skip!(node.colon_token);
             }
-            pub fn visit_lifetime<'ast, V>(v: &mut V, node: &'ast ::syntax::Lifetime)
-            where
+            pub fn visit_lifetime<'ast, V>(v: &mut V, node: &'ast ::syntax::Lifetime) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_span(&node.apostrophe);
@@ -36728,8 +36619,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_lifetime_param<'ast, V>(v: &mut V, node: &'ast ::syntax::LifetimeParam)
-            where
+            pub fn visit_lifetime_param<'ast, V>(v: &mut V, node: &'ast ::syntax::LifetimeParam) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36742,8 +36632,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_lifetime(it);
                 }
             }
-            pub fn visit_lit<'ast, V>(v: &mut V, node: &'ast ::syntax::Lit)
-            where
+            pub fn visit_lit<'ast, V>(v: &mut V, node: &'ast ::syntax::Lit) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36776,43 +36665,34 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-            pub fn visit_lit_bool<'ast, V>(v: &mut V, node: &'ast ::syntax::LitBool)
-            where
+            pub fn visit_lit_bool<'ast, V>(v: &mut V, node: &'ast ::syntax::LitBool) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.value);
                 v.visit_span(&node.span);
             }
-            pub fn visit_lit_byte<'ast, V>(v: &mut V, node: &'ast ::syntax::LitByte)
-            where
+            pub fn visit_lit_byte<'ast, V>(v: &mut V, node: &'ast ::syntax::LitByte) where
                 V: Visit<'ast> + ?Sized,
             {}
-            pub fn visit_lit_byte_str<'ast, V>(v: &mut V, node: &'ast ::syntax::LitByteStr)
-            where
+            pub fn visit_lit_byte_str<'ast, V>(v: &mut V, node: &'ast ::syntax::LitByteStr) where
                 V: Visit<'ast> + ?Sized,
             {}
-            pub fn visit_lit_cstr<'ast, V>(v: &mut V, node: &'ast ::syntax::LitCStr)
-            where
+            pub fn visit_lit_cstr<'ast, V>(v: &mut V, node: &'ast ::syntax::LitCStr) where
                 V: Visit<'ast> + ?Sized,
             {}
-            pub fn visit_lit_char<'ast, V>(v: &mut V, node: &'ast ::syntax::LitChar)
-            where
+            pub fn visit_lit_char<'ast, V>(v: &mut V, node: &'ast ::syntax::LitChar) where
                 V: Visit<'ast> + ?Sized,
             {}
-            pub fn visit_lit_float<'ast, V>(v: &mut V, node: &'ast ::syntax::LitFloat)
-            where
+            pub fn visit_lit_float<'ast, V>(v: &mut V, node: &'ast ::syntax::LitFloat) where
                 V: Visit<'ast> + ?Sized,
             {}
-            pub fn visit_lit_int<'ast, V>(v: &mut V, node: &'ast ::syntax::LitInt)
-            where
+            pub fn visit_lit_int<'ast, V>(v: &mut V, node: &'ast ::syntax::LitInt) where
                 V: Visit<'ast> + ?Sized,
             {}
-            pub fn visit_lit_str<'ast, V>(v: &mut V, node: &'ast ::syntax::LitStr)
-            where
+            pub fn visit_lit_str<'ast, V>(v: &mut V, node: &'ast ::syntax::LitStr) where
                 V: Visit<'ast> + ?Sized,
             {}
-                pub fn visit_local<'ast, V>(v: &mut V, node: &'ast ::syntax::Local)
-            where
+                pub fn visit_local<'ast, V>(v: &mut V, node: &'ast ::syntax::Local) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -36825,8 +36705,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_local_init<'ast, V>(v: &mut V, node: &'ast ::syntax::LocalInit)
-            where
+                pub fn visit_local_init<'ast, V>(v: &mut V, node: &'ast ::syntax::LocalInit) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.eq_token);
@@ -36838,8 +36717,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::Macro)
-            where
+            pub fn visit_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::Macro) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_path(&node.path);
@@ -36849,8 +36727,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_macro_delimiter<'ast, V>(v: &mut V, node: &'ast ::syntax::MacroDelimiter)
-            where
+            pub fn visit_macro_delimiter<'ast, V>(v: &mut V, node: &'ast ::syntax::MacroDelimiter) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36867,8 +36744,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_member<'ast, V>(v: &mut V, node: &'ast ::syntax::Member)
-            where
+            pub fn visit_member<'ast, V>(v: &mut V, node: &'ast ::syntax::Member) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36882,8 +36758,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_meta<'ast, V>(v: &mut V, node: &'ast ::syntax::Meta)
-            where
+            pub fn visit_meta<'ast, V>(v: &mut V, node: &'ast ::syntax::Meta) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36900,8 +36775,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_meta_list<'ast, V>(v: &mut V, node: &'ast ::syntax::MetaList)
-            where
+            pub fn visit_meta_list<'ast, V>(v: &mut V, node: &'ast ::syntax::MetaList) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_path(&node.path);
@@ -36910,8 +36784,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_meta_name_value<'ast, V>(v: &mut V, node: &'ast ::syntax::MetaNameValue)
-            where
+            pub fn visit_meta_name_value<'ast, V>(v: &mut V, node: &'ast ::syntax::MetaNameValue) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_path(&node.path);
@@ -36923,8 +36796,7 @@ impl<'a> TypeGenerics<'a> {
             pub fn visit_parenthesized_generic_arguments<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::ParenthesizedGenericArguments,
-            )
-            where
+            ) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.paren_token);
@@ -36934,8 +36806,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_return_type(&node.output);
             }
-                pub fn visit_pat<'ast, V>(v: &mut V, node: &'ast ::syntax::Pat)
-            where
+                pub fn visit_pat<'ast, V>(v: &mut V, node: &'ast ::syntax::Pat) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -36992,8 +36863,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_pat_ident<'ast, V>(v: &mut V, node: &'ast ::syntax::PatIdent)
-            where
+                pub fn visit_pat_ident<'ast, V>(v: &mut V, node: &'ast ::syntax::PatIdent) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37007,8 +36877,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat(&*(it).1);
                 }
             }
-                pub fn visit_pat_or<'ast, V>(v: &mut V, node: &'ast ::syntax::PatOr)
-            where
+                pub fn visit_pat_or<'ast, V>(v: &mut V, node: &'ast ::syntax::PatOr) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37020,8 +36889,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat(it);
                 }
             }
-                pub fn visit_pat_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::PatParen)
-            where
+                pub fn visit_pat_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::PatParen) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37030,8 +36898,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.paren_token);
                 v.visit_pat(&*node.pat);
             }
-                pub fn visit_pat_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::PatReference)
-            where
+                pub fn visit_pat_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::PatReference) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37041,8 +36908,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.mutability);
                 v.visit_pat(&*node.pat);
             }
-                pub fn visit_pat_rest<'ast, V>(v: &mut V, node: &'ast ::syntax::PatRest)
-            where
+                pub fn visit_pat_rest<'ast, V>(v: &mut V, node: &'ast ::syntax::PatRest) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37050,8 +36916,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.dot2_token);
             }
-                pub fn visit_pat_slice<'ast, V>(v: &mut V, node: &'ast ::syntax::PatSlice)
-            where
+                pub fn visit_pat_slice<'ast, V>(v: &mut V, node: &'ast ::syntax::PatSlice) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37063,8 +36928,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat(it);
                 }
             }
-                pub fn visit_pat_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::PatStruct)
-            where
+                pub fn visit_pat_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::PatStruct) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37083,8 +36947,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_rest(it);
                 }
             }
-                pub fn visit_pat_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::PatTuple)
-            where
+                pub fn visit_pat_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::PatTuple) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37096,8 +36959,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat(it);
                 }
             }
-                pub fn visit_pat_tuple_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::PatTupleStruct)
-            where
+                pub fn visit_pat_tuple_struct<'ast, V>(v: &mut V, node: &'ast ::syntax::PatTupleStruct) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37113,8 +36975,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat(it);
                 }
             }
-                pub fn visit_pat_type<'ast, V>(v: &mut V, node: &'ast ::syntax::PatType)
-            where
+                pub fn visit_pat_type<'ast, V>(v: &mut V, node: &'ast ::syntax::PatType) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37124,8 +36985,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.colon_token);
                 v.visit_type(&*node.ty);
             }
-                pub fn visit_pat_wild<'ast, V>(v: &mut V, node: &'ast ::syntax::PatWild)
-            where
+                pub fn visit_pat_wild<'ast, V>(v: &mut V, node: &'ast ::syntax::PatWild) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37135,8 +36995,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_path<'ast, V>(v: &mut V, node: &'ast ::syntax::Path)
-            where
+            pub fn visit_path<'ast, V>(v: &mut V, node: &'ast ::syntax::Path) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.leading_colon);
@@ -37147,8 +37006,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_path_arguments<'ast, V>(v: &mut V, node: &'ast ::syntax::PathArguments)
-            where
+            pub fn visit_path_arguments<'ast, V>(v: &mut V, node: &'ast ::syntax::PathArguments) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37163,15 +37021,13 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_path_segment<'ast, V>(v: &mut V, node: &'ast ::syntax::PathSegment)
-            where
+            pub fn visit_path_segment<'ast, V>(v: &mut V, node: &'ast ::syntax::PathSegment) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
                 v.visit_path_arguments(&node.arguments);
             }
-                pub fn visit_pointer_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::PointerMutability)
-            where
+                pub fn visit_pointer_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::PointerMutability) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37183,8 +37039,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_precise_capture<'ast, V>(v: &mut V, node: &'ast ::syntax::PreciseCapture)
-            where
+                pub fn visit_precise_capture<'ast, V>(v: &mut V, node: &'ast ::syntax::PreciseCapture) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.use_token);
@@ -37197,8 +37052,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_predicate_lifetime<'ast, V>(v: &mut V, node: &'ast ::syntax::PredicateLifetime)
-            where
+            pub fn visit_predicate_lifetime<'ast, V>(v: &mut V, node: &'ast ::syntax::PredicateLifetime) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_lifetime(&node.lifetime);
@@ -37210,8 +37064,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_predicate_type<'ast, V>(v: &mut V, node: &'ast ::syntax::PredicateType)
-            where
+            pub fn visit_predicate_type<'ast, V>(v: &mut V, node: &'ast ::syntax::PredicateType) where
                 V: Visit<'ast> + ?Sized,
             {
                 if let Some(it) = &node.lifetimes {
@@ -37226,8 +37079,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_qself<'ast, V>(v: &mut V, node: &'ast ::syntax::QSelf)
-            where
+            pub fn visit_qself<'ast, V>(v: &mut V, node: &'ast ::syntax::QSelf) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.lt_token);
@@ -37236,8 +37088,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.as_token);
                 skip!(node.gt_token);
             }
-                pub fn visit_range_limits<'ast, V>(v: &mut V, node: &'ast ::syntax::RangeLimits)
-            where
+                pub fn visit_range_limits<'ast, V>(v: &mut V, node: &'ast ::syntax::RangeLimits) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37249,8 +37100,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_receiver<'ast, V>(v: &mut V, node: &'ast ::syntax::Receiver)
-            where
+                pub fn visit_receiver<'ast, V>(v: &mut V, node: &'ast ::syntax::Receiver) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37269,8 +37119,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_return_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ReturnType)
-            where
+            pub fn visit_return_type<'ast, V>(v: &mut V, node: &'ast ::syntax::ReturnType) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37281,8 +37130,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_signature<'ast, V>(v: &mut V, node: &'ast ::syntax::Signature)
-            where
+                pub fn visit_signature<'ast, V>(v: &mut V, node: &'ast ::syntax::Signature) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.constness);
@@ -37304,12 +37152,10 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_return_type(&node.output);
             }
-            pub fn visit_span<'ast, V>(v: &mut V, node: &proc_macro2::Span)
-            where
+            pub fn visit_span<'ast, V>(v: &mut V, node: &proc_macro2::Span) where
                 V: Visit<'ast> + ?Sized,
             {}
-                pub fn visit_static_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::StaticMutability)
-            where
+                pub fn visit_static_mutability<'ast, V>(v: &mut V, node: &'ast ::syntax::StaticMutability) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37319,8 +37165,7 @@ impl<'a> TypeGenerics<'a> {
                     ::syntax::StaticMutability::None => {}
                 }
             }
-                pub fn visit_stmt<'ast, V>(v: &mut V, node: &'ast ::syntax::Stmt)
-            where
+                pub fn visit_stmt<'ast, V>(v: &mut V, node: &'ast ::syntax::Stmt) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37339,8 +37184,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_stmt_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::StmtMacro)
-            where
+                pub fn visit_stmt_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::StmtMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37351,8 +37195,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_trait_bound<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitBound)
-            where
+            pub fn visit_trait_bound<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitBound) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.paren_token);
@@ -37367,8 +37210,7 @@ impl<'a> TypeGenerics<'a> {
             pub fn visit_trait_bound_modifier<'ast, V>(
                 v: &mut V,
                 node: &'ast ::syntax::TraitBoundModifier,
-            )
-            where
+            ) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37378,8 +37220,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_trait_item<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItem)
-            where
+                pub fn visit_trait_item<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItem) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37400,8 +37241,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_trait_item_const<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemConst)
-            where
+                pub fn visit_trait_item_const<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemConst) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37418,8 +37258,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_trait_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemFn)
-            where
+                pub fn visit_trait_item_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemFn) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37431,8 +37270,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_trait_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemMacro)
-            where
+                pub fn visit_trait_item_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37441,8 +37279,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_macro(&node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_trait_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemType)
-            where
+                pub fn visit_trait_item_type<'ast, V>(v: &mut V, node: &'ast ::syntax::TraitItemType) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37464,8 +37301,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type<'ast, V>(v: &mut V, node: &'ast ::syntax::Type)
-            where
+            pub fn visit_type<'ast, V>(v: &mut V, node: &'ast ::syntax::Type) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37518,8 +37354,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_array<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeArray)
-            where
+            pub fn visit_type_array<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeArray) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.bracket_token);
@@ -37529,8 +37364,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_bare_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeBareFn)
-            where
+            pub fn visit_type_bare_fn<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeBareFn) where
                 V: Visit<'ast> + ?Sized,
             {
                 if let Some(it) = &node.lifetimes {
@@ -37553,8 +37387,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_group<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeGroup)
-            where
+            pub fn visit_type_group<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeGroup) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.group_token);
@@ -37562,8 +37395,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_impl_trait<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeImplTrait)
-            where
+            pub fn visit_type_impl_trait<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeImplTrait) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.impl_token);
@@ -37574,32 +37406,28 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_infer<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeInfer)
-            where
+            pub fn visit_type_infer<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeInfer) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.underscore_token);
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeMacro)
-            where
+            pub fn visit_type_macro<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeMacro) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_macro(&node.mac);
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_never<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeNever)
-            where
+            pub fn visit_type_never<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeNever) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.bang_token);
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_param<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParam)
-            where
+            pub fn visit_type_param<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParam) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37618,8 +37446,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_param_bound<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParamBound)
-            where
+            pub fn visit_type_param_bound<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParamBound) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37639,8 +37466,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParen)
-            where
+            pub fn visit_type_paren<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeParen) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.paren_token);
@@ -37648,8 +37474,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_path<'ast, V>(v: &mut V, node: &'ast ::syntax::TypePath)
-            where
+            pub fn visit_type_path<'ast, V>(v: &mut V, node: &'ast ::syntax::TypePath) where
                 V: Visit<'ast> + ?Sized,
             {
                 if let Some(it) = &node.qself {
@@ -37659,8 +37484,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_ptr<'ast, V>(v: &mut V, node: &'ast ::syntax::TypePtr)
-            where
+            pub fn visit_type_ptr<'ast, V>(v: &mut V, node: &'ast ::syntax::TypePtr) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.star_token);
@@ -37670,8 +37494,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeReference)
-            where
+            pub fn visit_type_reference<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeReference) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.and_token);
@@ -37683,8 +37506,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_slice<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeSlice)
-            where
+            pub fn visit_type_slice<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeSlice) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.bracket_token);
@@ -37692,8 +37514,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_trait_object<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeTraitObject)
-            where
+            pub fn visit_type_trait_object<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeTraitObject) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.dyn_token);
@@ -37704,8 +37525,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeTuple)
-            where
+            pub fn visit_type_tuple<'ast, V>(v: &mut V, node: &'ast ::syntax::TypeTuple) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.paren_token);
@@ -37716,8 +37536,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_un_op<'ast, V>(v: &mut V, node: &'ast ::syntax::UnOp)
-            where
+            pub fn visit_un_op<'ast, V>(v: &mut V, node: &'ast ::syntax::UnOp) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37732,14 +37551,12 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_use_glob<'ast, V>(v: &mut V, node: &'ast ::syntax::UseGlob)
-            where
+                pub fn visit_use_glob<'ast, V>(v: &mut V, node: &'ast ::syntax::UseGlob) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.star_token);
             }
-                pub fn visit_use_group<'ast, V>(v: &mut V, node: &'ast ::syntax::UseGroup)
-            where
+                pub fn visit_use_group<'ast, V>(v: &mut V, node: &'ast ::syntax::UseGroup) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.brace_token);
@@ -37748,30 +37565,26 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_use_tree(it);
                 }
             }
-                pub fn visit_use_name<'ast, V>(v: &mut V, node: &'ast ::syntax::UseName)
-            where
+                pub fn visit_use_name<'ast, V>(v: &mut V, node: &'ast ::syntax::UseName) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
             }
-                pub fn visit_use_path<'ast, V>(v: &mut V, node: &'ast ::syntax::UsePath)
-            where
+                pub fn visit_use_path<'ast, V>(v: &mut V, node: &'ast ::syntax::UsePath) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
                 skip!(node.colon2_token);
                 v.visit_use_tree(&*node.tree);
             }
-                pub fn visit_use_rename<'ast, V>(v: &mut V, node: &'ast ::syntax::UseRename)
-            where
+                pub fn visit_use_rename<'ast, V>(v: &mut V, node: &'ast ::syntax::UseRename) where
                 V: Visit<'ast> + ?Sized,
             {
                 v.visit_ident(&node.ident);
                 skip!(node.as_token);
                 v.visit_ident(&node.rename);
             }
-                pub fn visit_use_tree<'ast, V>(v: &mut V, node: &'ast ::syntax::UseTree)
-            where
+                pub fn visit_use_tree<'ast, V>(v: &mut V, node: &'ast ::syntax::UseTree) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37792,8 +37605,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_variadic<'ast, V>(v: &mut V, node: &'ast ::syntax::Variadic)
-            where
+                pub fn visit_variadic<'ast, V>(v: &mut V, node: &'ast ::syntax::Variadic) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37808,8 +37620,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_variant<'ast, V>(v: &mut V, node: &'ast ::syntax::Variant)
-            where
+            pub fn visit_variant<'ast, V>(v: &mut V, node: &'ast ::syntax::Variant) where
                 V: Visit<'ast> + ?Sized,
             {
                 for it in &node.attrs {
@@ -37824,8 +37635,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_vis_restricted<'ast, V>(v: &mut V, node: &'ast ::syntax::VisRestricted)
-            where
+            pub fn visit_vis_restricted<'ast, V>(v: &mut V, node: &'ast ::syntax::VisRestricted) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.pub_token);
@@ -37835,8 +37645,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_visibility<'ast, V>(v: &mut V, node: &'ast ::syntax::Visibility)
-            where
+            pub fn visit_visibility<'ast, V>(v: &mut V, node: &'ast ::syntax::Visibility) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -37851,8 +37660,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_where_clause<'ast, V>(v: &mut V, node: &'ast ::syntax::WhereClause)
-            where
+            pub fn visit_where_clause<'ast, V>(v: &mut V, node: &'ast ::syntax::WhereClause) where
                 V: Visit<'ast> + ?Sized,
             {
                 skip!(node.where_token);
@@ -37863,8 +37671,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_where_predicate<'ast, V>(v: &mut V, node: &'ast ::syntax::WherePredicate)
-            where
+            pub fn visit_where_predicate<'ast, V>(v: &mut V, node: &'ast ::syntax::WherePredicate) where
                 V: Visit<'ast> + ?Sized,
             {
                 match node {
@@ -38642,8 +38449,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_abi_mut<V>(v: &mut V, node: &mut ::syntax::Abi)
-            where
+            pub fn visit_abi_mut<V>(v: &mut V, node: &mut ::syntax::Abi) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.extern_token);
@@ -38656,8 +38462,7 @@ impl<'a> TypeGenerics<'a> {
             pub fn visit_angle_bracketed_generic_arguments_mut<V>(
                 v: &mut V,
                 node: &mut ::syntax::AngleBracketedGenericArguments,
-            )
-            where
+            ) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.colon2_token);
@@ -38668,8 +38473,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.gt_token);
             }
-                pub fn visit_arm_mut<V>(v: &mut V, node: &mut ::syntax::Arm)
-            where
+                pub fn visit_arm_mut<V>(v: &mut V, node: &mut ::syntax::Arm) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -38684,8 +38488,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_assoc_const_mut<V>(v: &mut V, node: &mut ::syntax::AssocConst)
-            where
+            pub fn visit_assoc_const_mut<V>(v: &mut V, node: &mut ::syntax::AssocConst) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
@@ -38697,8 +38500,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_assoc_type_mut<V>(v: &mut V, node: &mut ::syntax::AssocType)
-            where
+            pub fn visit_assoc_type_mut<V>(v: &mut V, node: &mut ::syntax::AssocType) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
@@ -38710,8 +38512,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_attr_style_mut<V>(v: &mut V, node: &mut ::syntax::AttrStyle)
-            where
+            pub fn visit_attr_style_mut<V>(v: &mut V, node: &mut ::syntax::AttrStyle) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -38723,8 +38524,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_attribute_mut<V>(v: &mut V, node: &mut ::syntax::Attribute)
-            where
+            pub fn visit_attribute_mut<V>(v: &mut V, node: &mut ::syntax::Attribute) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.pound_token);
@@ -38734,8 +38534,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bare_fn_arg_mut<V>(v: &mut V, node: &mut ::syntax::BareFnArg)
-            where
+            pub fn visit_bare_fn_arg_mut<V>(v: &mut V, node: &mut ::syntax::BareFnArg) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -38747,8 +38546,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bare_variadic_mut<V>(v: &mut V, node: &mut ::syntax::BareVariadic)
-            where
+            pub fn visit_bare_variadic_mut<V>(v: &mut V, node: &mut ::syntax::BareVariadic) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -38761,8 +38559,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bin_op_mut<V>(v: &mut V, node: &mut ::syntax::BinOp)
-            where
+            pub fn visit_bin_op_mut<V>(v: &mut V, node: &mut ::syntax::BinOp) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -38852,8 +38649,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_block_mut<V>(v: &mut V, node: &mut ::syntax::Block)
-            where
+                pub fn visit_block_mut<V>(v: &mut V, node: &mut ::syntax::Block) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.brace_token);
@@ -38863,8 +38659,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_bound_lifetimes_mut<V>(v: &mut V, node: &mut ::syntax::BoundLifetimes)
-            where
+            pub fn visit_bound_lifetimes_mut<V>(v: &mut V, node: &mut ::syntax::BoundLifetimes) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.for_token);
@@ -38875,8 +38670,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.gt_token);
             }
-                pub fn visit_captured_param_mut<V>(v: &mut V, node: &mut ::syntax::CapturedParam)
-            where
+                pub fn visit_captured_param_mut<V>(v: &mut V, node: &mut ::syntax::CapturedParam) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -38890,8 +38684,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_const_param_mut<V>(v: &mut V, node: &mut ::syntax::ConstParam)
-            where
+            pub fn visit_const_param_mut<V>(v: &mut V, node: &mut ::syntax::ConstParam) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -38906,8 +38699,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_constraint_mut<V>(v: &mut V, node: &mut ::syntax::Constraint)
-            where
+            pub fn visit_constraint_mut<V>(v: &mut V, node: &mut ::syntax::Constraint) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
@@ -38922,8 +38714,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_mut<V>(v: &mut V, node: &mut ::syntax::Data)
-            where
+            pub fn visit_data_mut<V>(v: &mut V, node: &mut ::syntax::Data) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -38940,8 +38731,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_enum_mut<V>(v: &mut V, node: &mut ::syntax::DataEnum)
-            where
+            pub fn visit_data_enum_mut<V>(v: &mut V, node: &mut ::syntax::DataEnum) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.enum_token);
@@ -38953,8 +38743,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_struct_mut<V>(v: &mut V, node: &mut ::syntax::DataStruct)
-            where
+            pub fn visit_data_struct_mut<V>(v: &mut V, node: &mut ::syntax::DataStruct) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.struct_token);
@@ -38963,8 +38752,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_data_union_mut<V>(v: &mut V, node: &mut ::syntax::DataUnion)
-            where
+            pub fn visit_data_union_mut<V>(v: &mut V, node: &mut ::syntax::DataUnion) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.union_token);
@@ -38972,8 +38760,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(feature = "derive")]
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
-            pub fn visit_derive_input_mut<V>(v: &mut V, node: &mut ::syntax::DeriveInput)
-            where
+            pub fn visit_derive_input_mut<V>(v: &mut V, node: &mut ::syntax::DeriveInput) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -38984,8 +38771,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_mut<V>(v: &mut V, node: &mut ::syntax::Expr)
-            where
+            pub fn visit_expr_mut<V>(v: &mut V, node: &mut ::syntax::Expr) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39111,8 +38897,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_expr_array_mut<V>(v: &mut V, node: &mut ::syntax::ExprArray)
-            where
+                pub fn visit_expr_array_mut<V>(v: &mut V, node: &mut ::syntax::ExprArray) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39122,8 +38907,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_expr_mut(it);
                 }
             }
-                pub fn visit_expr_assign_mut<V>(v: &mut V, node: &mut ::syntax::ExprAssign)
-            where
+                pub fn visit_expr_assign_mut<V>(v: &mut V, node: &mut ::syntax::ExprAssign) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39131,8 +38915,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.eq_token);
                 v.visit_expr_mut(&mut *node.right);
             }
-                pub fn visit_expr_async_mut<V>(v: &mut V, node: &mut ::syntax::ExprAsync)
-            where
+                pub fn visit_expr_async_mut<V>(v: &mut V, node: &mut ::syntax::ExprAsync) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39140,8 +38923,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.capture);
                 v.visit_block_mut(&mut node.block);
             }
-                pub fn visit_expr_await_mut<V>(v: &mut V, node: &mut ::syntax::ExprAwait)
-            where
+                pub fn visit_expr_await_mut<V>(v: &mut V, node: &mut ::syntax::ExprAwait) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39151,8 +38933,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_binary_mut<V>(v: &mut V, node: &mut ::syntax::ExprBinary)
-            where
+            pub fn visit_expr_binary_mut<V>(v: &mut V, node: &mut ::syntax::ExprBinary) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39160,8 +38941,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_bin_op_mut(&mut node.op);
                 v.visit_expr_mut(&mut *node.right);
             }
-                pub fn visit_expr_block_mut<V>(v: &mut V, node: &mut ::syntax::ExprBlock)
-            where
+                pub fn visit_expr_block_mut<V>(v: &mut V, node: &mut ::syntax::ExprBlock) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39170,8 +38950,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_block_mut(&mut node.block);
             }
-                pub fn visit_expr_break_mut<V>(v: &mut V, node: &mut ::syntax::ExprBreak)
-            where
+                pub fn visit_expr_break_mut<V>(v: &mut V, node: &mut ::syntax::ExprBreak) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39185,8 +38964,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_call_mut<V>(v: &mut V, node: &mut ::syntax::ExprCall)
-            where
+            pub fn visit_expr_call_mut<V>(v: &mut V, node: &mut ::syntax::ExprCall) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39199,8 +38977,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_cast_mut<V>(v: &mut V, node: &mut ::syntax::ExprCast)
-            where
+            pub fn visit_expr_cast_mut<V>(v: &mut V, node: &mut ::syntax::ExprCast) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39208,8 +38985,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.as_token);
                 v.visit_type_mut(&mut *node.ty);
             }
-                pub fn visit_expr_closure_mut<V>(v: &mut V, node: &mut ::syntax::ExprClosure)
-            where
+                pub fn visit_expr_closure_mut<V>(v: &mut V, node: &mut ::syntax::ExprClosure) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39229,16 +39005,14 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_return_type_mut(&mut node.output);
                 v.visit_expr_mut(&mut *node.body);
             }
-                pub fn visit_expr_const_mut<V>(v: &mut V, node: &mut ::syntax::ExprConst)
-            where
+                pub fn visit_expr_const_mut<V>(v: &mut V, node: &mut ::syntax::ExprConst) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.const_token);
                 v.visit_block_mut(&mut node.block);
             }
-                pub fn visit_expr_continue_mut<V>(v: &mut V, node: &mut ::syntax::ExprContinue)
-            where
+                pub fn visit_expr_continue_mut<V>(v: &mut V, node: &mut ::syntax::ExprContinue) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39249,8 +39023,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_field_mut<V>(v: &mut V, node: &mut ::syntax::ExprField)
-            where
+            pub fn visit_expr_field_mut<V>(v: &mut V, node: &mut ::syntax::ExprField) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39258,8 +39031,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.dot_token);
                 v.visit_member_mut(&mut node.member);
             }
-                pub fn visit_expr_for_loop_mut<V>(v: &mut V, node: &mut ::syntax::ExprForLoop)
-            where
+                pub fn visit_expr_for_loop_mut<V>(v: &mut V, node: &mut ::syntax::ExprForLoop) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39274,16 +39046,14 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_group_mut<V>(v: &mut V, node: &mut ::syntax::ExprGroup)
-            where
+            pub fn visit_expr_group_mut<V>(v: &mut V, node: &mut ::syntax::ExprGroup) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.group_token);
                 v.visit_expr_mut(&mut *node.expr);
             }
-                pub fn visit_expr_if_mut<V>(v: &mut V, node: &mut ::syntax::ExprIf)
-            where
+                pub fn visit_expr_if_mut<V>(v: &mut V, node: &mut ::syntax::ExprIf) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39297,8 +39067,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_index_mut<V>(v: &mut V, node: &mut ::syntax::ExprIndex)
-            where
+            pub fn visit_expr_index_mut<V>(v: &mut V, node: &mut ::syntax::ExprIndex) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39306,15 +39075,13 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.bracket_token);
                 v.visit_expr_mut(&mut *node.index);
             }
-                pub fn visit_expr_infer_mut<V>(v: &mut V, node: &mut ::syntax::ExprInfer)
-            where
+                pub fn visit_expr_infer_mut<V>(v: &mut V, node: &mut ::syntax::ExprInfer) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.underscore_token);
             }
-                pub fn visit_expr_let_mut<V>(v: &mut V, node: &mut ::syntax::ExprLet)
-            where
+                pub fn visit_expr_let_mut<V>(v: &mut V, node: &mut ::syntax::ExprLet) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39325,15 +39092,13 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_lit_mut<V>(v: &mut V, node: &mut ::syntax::ExprLit)
-            where
+            pub fn visit_expr_lit_mut<V>(v: &mut V, node: &mut ::syntax::ExprLit) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_lit_mut(&mut node.lit);
             }
-                pub fn visit_expr_loop_mut<V>(v: &mut V, node: &mut ::syntax::ExprLoop)
-            where
+                pub fn visit_expr_loop_mut<V>(v: &mut V, node: &mut ::syntax::ExprLoop) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39345,15 +39110,13 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_macro_mut<V>(v: &mut V, node: &mut ::syntax::ExprMacro)
-            where
+            pub fn visit_expr_macro_mut<V>(v: &mut V, node: &mut ::syntax::ExprMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_macro_mut(&mut node.mac);
             }
-                pub fn visit_expr_match_mut<V>(v: &mut V, node: &mut ::syntax::ExprMatch)
-            where
+                pub fn visit_expr_match_mut<V>(v: &mut V, node: &mut ::syntax::ExprMatch) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39366,8 +39129,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_method_call_mut<V>(v: &mut V, node: &mut ::syntax::ExprMethodCall)
-            where
+            pub fn visit_expr_method_call_mut<V>(v: &mut V, node: &mut ::syntax::ExprMethodCall) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39385,8 +39147,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_paren_mut<V>(v: &mut V, node: &mut ::syntax::ExprParen)
-            where
+            pub fn visit_expr_paren_mut<V>(v: &mut V, node: &mut ::syntax::ExprParen) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39395,8 +39156,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_path_mut<V>(v: &mut V, node: &mut ::syntax::ExprPath)
-            where
+            pub fn visit_expr_path_mut<V>(v: &mut V, node: &mut ::syntax::ExprPath) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39405,8 +39165,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_path_mut(&mut node.path);
             }
-                pub fn visit_expr_range_mut<V>(v: &mut V, node: &mut ::syntax::ExprRange)
-            where
+                pub fn visit_expr_range_mut<V>(v: &mut V, node: &mut ::syntax::ExprRange) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39418,8 +39177,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_expr_mut(&mut **it);
                 }
             }
-                pub fn visit_expr_raw_addr_mut<V>(v: &mut V, node: &mut ::syntax::ExprRawAddr)
-            where
+                pub fn visit_expr_raw_addr_mut<V>(v: &mut V, node: &mut ::syntax::ExprRawAddr) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39430,8 +39188,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_reference_mut<V>(v: &mut V, node: &mut ::syntax::ExprReference)
-            where
+            pub fn visit_expr_reference_mut<V>(v: &mut V, node: &mut ::syntax::ExprReference) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39439,8 +39196,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.mutability);
                 v.visit_expr_mut(&mut *node.expr);
             }
-                pub fn visit_expr_repeat_mut<V>(v: &mut V, node: &mut ::syntax::ExprRepeat)
-            where
+                pub fn visit_expr_repeat_mut<V>(v: &mut V, node: &mut ::syntax::ExprRepeat) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39449,8 +39205,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.semi_token);
                 v.visit_expr_mut(&mut *node.len);
             }
-                pub fn visit_expr_return_mut<V>(v: &mut V, node: &mut ::syntax::ExprReturn)
-            where
+                pub fn visit_expr_return_mut<V>(v: &mut V, node: &mut ::syntax::ExprReturn) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39461,8 +39216,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_struct_mut<V>(v: &mut V, node: &mut ::syntax::ExprStruct)
-            where
+            pub fn visit_expr_struct_mut<V>(v: &mut V, node: &mut ::syntax::ExprStruct) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39480,16 +39234,14 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_expr_mut(&mut **it);
                 }
             }
-                pub fn visit_expr_try_mut<V>(v: &mut V, node: &mut ::syntax::ExprTry)
-            where
+                pub fn visit_expr_try_mut<V>(v: &mut V, node: &mut ::syntax::ExprTry) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_expr_mut(&mut *node.expr);
                 skip!(node.question_token);
             }
-                pub fn visit_expr_try_block_mut<V>(v: &mut V, node: &mut ::syntax::ExprTryBlock)
-            where
+                pub fn visit_expr_try_block_mut<V>(v: &mut V, node: &mut ::syntax::ExprTryBlock) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39498,8 +39250,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_tuple_mut<V>(v: &mut V, node: &mut ::syntax::ExprTuple)
-            where
+            pub fn visit_expr_tuple_mut<V>(v: &mut V, node: &mut ::syntax::ExprTuple) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39511,24 +39262,21 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_expr_unary_mut<V>(v: &mut V, node: &mut ::syntax::ExprUnary)
-            where
+            pub fn visit_expr_unary_mut<V>(v: &mut V, node: &mut ::syntax::ExprUnary) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_un_op_mut(&mut node.op);
                 v.visit_expr_mut(&mut *node.expr);
             }
-                pub fn visit_expr_unsafe_mut<V>(v: &mut V, node: &mut ::syntax::ExprUnsafe)
-            where
+                pub fn visit_expr_unsafe_mut<V>(v: &mut V, node: &mut ::syntax::ExprUnsafe) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.unsafe_token);
                 v.visit_block_mut(&mut node.block);
             }
-                pub fn visit_expr_while_mut<V>(v: &mut V, node: &mut ::syntax::ExprWhile)
-            where
+                pub fn visit_expr_while_mut<V>(v: &mut V, node: &mut ::syntax::ExprWhile) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39539,8 +39287,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr_mut(&mut *node.cond);
                 v.visit_block_mut(&mut node.body);
             }
-                pub fn visit_expr_yield_mut<V>(v: &mut V, node: &mut ::syntax::ExprYield)
-            where
+                pub fn visit_expr_yield_mut<V>(v: &mut V, node: &mut ::syntax::ExprYield) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39551,8 +39298,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_field_mut<V>(v: &mut V, node: &mut ::syntax::Field)
-            where
+            pub fn visit_field_mut<V>(v: &mut V, node: &mut ::syntax::Field) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39566,16 +39312,14 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_field_mutability_mut<V>(v: &mut V, node: &mut ::syntax::FieldMutability)
-            where
+            pub fn visit_field_mutability_mut<V>(v: &mut V, node: &mut ::syntax::FieldMutability) where
                 V: VisitMut + ?Sized,
             {
                 match node {
                     ::syntax::FieldMutability::None => {}
                 }
             }
-                pub fn visit_field_pat_mut<V>(v: &mut V, node: &mut ::syntax::FieldPat)
-            where
+                pub fn visit_field_pat_mut<V>(v: &mut V, node: &mut ::syntax::FieldPat) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39585,8 +39329,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_field_value_mut<V>(v: &mut V, node: &mut ::syntax::FieldValue)
-            where
+            pub fn visit_field_value_mut<V>(v: &mut V, node: &mut ::syntax::FieldValue) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39596,8 +39339,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_fields_mut<V>(v: &mut V, node: &mut ::syntax::Fields)
-            where
+            pub fn visit_fields_mut<V>(v: &mut V, node: &mut ::syntax::Fields) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39612,8 +39354,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_fields_named_mut<V>(v: &mut V, node: &mut ::syntax::FieldsNamed)
-            where
+            pub fn visit_fields_named_mut<V>(v: &mut V, node: &mut ::syntax::FieldsNamed) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.brace_token);
@@ -39624,8 +39365,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_fields_unnamed_mut<V>(v: &mut V, node: &mut ::syntax::FieldsUnnamed)
-            where
+            pub fn visit_fields_unnamed_mut<V>(v: &mut V, node: &mut ::syntax::FieldsUnnamed) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.paren_token);
@@ -39634,8 +39374,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_field_mut(it);
                 }
             }
-                pub fn visit_file_mut<V>(v: &mut V, node: &mut ::syntax::File)
-            where
+                pub fn visit_file_mut<V>(v: &mut V, node: &mut ::syntax::File) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.shebang);
@@ -39644,8 +39383,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_item_mut(it);
                 }
             }
-                pub fn visit_fn_arg_mut<V>(v: &mut V, node: &mut ::syntax::FnArg)
-            where
+                pub fn visit_fn_arg_mut<V>(v: &mut V, node: &mut ::syntax::FnArg) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39657,8 +39395,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_foreign_item_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItem)
-            where
+                pub fn visit_foreign_item_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItem) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39679,8 +39416,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_foreign_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemFn)
-            where
+                pub fn visit_foreign_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemFn) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39688,16 +39424,14 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_signature_mut(&mut node.sig);
                 skip!(node.semi_token);
             }
-                pub fn visit_foreign_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemMacro)
-            where
+                pub fn visit_foreign_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_macro_mut(&mut node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_foreign_item_static_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemStatic)
-            where
+                pub fn visit_foreign_item_static_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemStatic) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39709,8 +39443,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_type_mut(&mut *node.ty);
                 skip!(node.semi_token);
             }
-                pub fn visit_foreign_item_type_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemType)
-            where
+                pub fn visit_foreign_item_type_mut<V>(v: &mut V, node: &mut ::syntax::ForeignItemType) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39722,8 +39455,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_generic_argument_mut<V>(v: &mut V, node: &mut ::syntax::GenericArgument)
-            where
+            pub fn visit_generic_argument_mut<V>(v: &mut V, node: &mut ::syntax::GenericArgument) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39749,8 +39481,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_generic_param_mut<V>(v: &mut V, node: &mut ::syntax::GenericParam)
-            where
+            pub fn visit_generic_param_mut<V>(v: &mut V, node: &mut ::syntax::GenericParam) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39767,8 +39498,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_generics_mut<V>(v: &mut V, node: &mut ::syntax::Generics)
-            where
+            pub fn visit_generics_mut<V>(v: &mut V, node: &mut ::syntax::Generics) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.lt_token);
@@ -39781,16 +39511,14 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_where_clause_mut(it);
                 }
             }
-            pub fn visit_ident_mut<V>(v: &mut V, node: &mut proc_macro2::Ident)
-            where
+            pub fn visit_ident_mut<V>(v: &mut V, node: &mut proc_macro2::Ident) where
                 V: VisitMut + ?Sized,
             {
                 let mut span = node.span();
                 v.visit_span_mut(&mut span);
                 node.set_span(span);
             }
-                pub fn visit_impl_item_mut<V>(v: &mut V, node: &mut ::syntax::ImplItem)
-            where
+                pub fn visit_impl_item_mut<V>(v: &mut V, node: &mut ::syntax::ImplItem) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39811,8 +39539,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_impl_item_const_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemConst)
-            where
+                pub fn visit_impl_item_const_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemConst) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39827,8 +39554,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr_mut(&mut node.expr);
                 skip!(node.semi_token);
             }
-                pub fn visit_impl_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemFn)
-            where
+                pub fn visit_impl_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemFn) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39837,16 +39563,14 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_signature_mut(&mut node.sig);
                 v.visit_block_mut(&mut node.block);
             }
-                pub fn visit_impl_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemMacro)
-            where
+                pub fn visit_impl_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_macro_mut(&mut node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_impl_item_type_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemType)
-            where
+                pub fn visit_impl_item_type_mut<V>(v: &mut V, node: &mut ::syntax::ImplItemType) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39859,23 +39583,20 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_type_mut(&mut node.ty);
                 skip!(node.semi_token);
             }
-                pub fn visit_impl_restriction_mut<V>(v: &mut V, node: &mut ::syntax::ImplRestriction)
-            where
+                pub fn visit_impl_restriction_mut<V>(v: &mut V, node: &mut ::syntax::ImplRestriction) where
                 V: VisitMut + ?Sized,
             {
                 match *node {}
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_index_mut<V>(v: &mut V, node: &mut ::syntax::Index)
-            where
+            pub fn visit_index_mut<V>(v: &mut V, node: &mut ::syntax::Index) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.index);
                 v.visit_span_mut(&mut node.span);
             }
-                pub fn visit_item_mut<V>(v: &mut V, node: &mut ::syntax::Item)
-            where
+                pub fn visit_item_mut<V>(v: &mut V, node: &mut ::syntax::Item) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -39929,8 +39650,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_item_const_mut<V>(v: &mut V, node: &mut ::syntax::ItemConst)
-            where
+                pub fn visit_item_const_mut<V>(v: &mut V, node: &mut ::syntax::ItemConst) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39944,8 +39664,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr_mut(&mut *node.expr);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_enum_mut<V>(v: &mut V, node: &mut ::syntax::ItemEnum)
-            where
+                pub fn visit_item_enum_mut<V>(v: &mut V, node: &mut ::syntax::ItemEnum) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39959,8 +39678,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_variant_mut(it);
                 }
             }
-                pub fn visit_item_extern_crate_mut<V>(v: &mut V, node: &mut ::syntax::ItemExternCrate)
-            where
+                pub fn visit_item_extern_crate_mut<V>(v: &mut V, node: &mut ::syntax::ItemExternCrate) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39974,8 +39692,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::ItemFn)
-            where
+                pub fn visit_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::ItemFn) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39983,8 +39700,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_signature_mut(&mut node.sig);
                 v.visit_block_mut(&mut *node.block);
             }
-                pub fn visit_item_foreign_mod_mut<V>(v: &mut V, node: &mut ::syntax::ItemForeignMod)
-            where
+                pub fn visit_item_foreign_mod_mut<V>(v: &mut V, node: &mut ::syntax::ItemForeignMod) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -39995,8 +39711,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_foreign_item_mut(it);
                 }
             }
-                pub fn visit_item_impl_mut<V>(v: &mut V, node: &mut ::syntax::ItemImpl)
-            where
+                pub fn visit_item_impl_mut<V>(v: &mut V, node: &mut ::syntax::ItemImpl) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40015,8 +39730,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_impl_item_mut(it);
                 }
             }
-                pub fn visit_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::ItemMacro)
-            where
+                pub fn visit_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::ItemMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40026,8 +39740,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_macro_mut(&mut node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_mod_mut<V>(v: &mut V, node: &mut ::syntax::ItemMod)
-            where
+                pub fn visit_item_mod_mut<V>(v: &mut V, node: &mut ::syntax::ItemMod) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40043,8 +39756,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi);
             }
-                pub fn visit_item_static_mut<V>(v: &mut V, node: &mut ::syntax::ItemStatic)
-            where
+                pub fn visit_item_static_mut<V>(v: &mut V, node: &mut ::syntax::ItemStatic) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40058,8 +39770,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_expr_mut(&mut *node.expr);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_struct_mut<V>(v: &mut V, node: &mut ::syntax::ItemStruct)
-            where
+                pub fn visit_item_struct_mut<V>(v: &mut V, node: &mut ::syntax::ItemStruct) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40070,8 +39781,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_fields_mut(&mut node.fields);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_trait_mut<V>(v: &mut V, node: &mut ::syntax::ItemTrait)
-            where
+                pub fn visit_item_trait_mut<V>(v: &mut V, node: &mut ::syntax::ItemTrait) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40094,8 +39804,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_trait_item_mut(it);
                 }
             }
-                pub fn visit_item_trait_alias_mut<V>(v: &mut V, node: &mut ::syntax::ItemTraitAlias)
-            where
+                pub fn visit_item_trait_alias_mut<V>(v: &mut V, node: &mut ::syntax::ItemTraitAlias) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40110,8 +39819,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_item_type_mut<V>(v: &mut V, node: &mut ::syntax::ItemType)
-            where
+                pub fn visit_item_type_mut<V>(v: &mut V, node: &mut ::syntax::ItemType) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40123,8 +39831,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_type_mut(&mut *node.ty);
                 skip!(node.semi_token);
             }
-                pub fn visit_item_union_mut<V>(v: &mut V, node: &mut ::syntax::ItemUnion)
-            where
+                pub fn visit_item_union_mut<V>(v: &mut V, node: &mut ::syntax::ItemUnion) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40134,8 +39841,7 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_generics_mut(&mut node.generics);
                 v.visit_fields_named_mut(&mut node.fields);
             }
-                pub fn visit_item_use_mut<V>(v: &mut V, node: &mut ::syntax::ItemUse)
-            where
+                pub fn visit_item_use_mut<V>(v: &mut V, node: &mut ::syntax::ItemUse) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40145,15 +39851,13 @@ impl<'a> TypeGenerics<'a> {
                 v.visit_use_tree_mut(&mut node.tree);
                 skip!(node.semi_token);
             }
-                pub fn visit_label_mut<V>(v: &mut V, node: &mut ::syntax::Label)
-            where
+                pub fn visit_label_mut<V>(v: &mut V, node: &mut ::syntax::Label) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_lifetime_mut(&mut node.name);
                 skip!(node.colon_token);
             }
-            pub fn visit_lifetime_mut<V>(v: &mut V, node: &mut ::syntax::Lifetime)
-            where
+            pub fn visit_lifetime_mut<V>(v: &mut V, node: &mut ::syntax::Lifetime) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_span_mut(&mut node.apostrophe);
@@ -40161,8 +39865,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_lifetime_param_mut<V>(v: &mut V, node: &mut ::syntax::LifetimeParam)
-            where
+            pub fn visit_lifetime_param_mut<V>(v: &mut V, node: &mut ::syntax::LifetimeParam) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40173,8 +39876,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_lifetime_mut(it);
                 }
             }
-            pub fn visit_lit_mut<V>(v: &mut V, node: &mut ::syntax::Lit)
-            where
+            pub fn visit_lit_mut<V>(v: &mut V, node: &mut ::syntax::Lit) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40207,43 +39909,34 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-            pub fn visit_lit_bool_mut<V>(v: &mut V, node: &mut ::syntax::LitBool)
-            where
+            pub fn visit_lit_bool_mut<V>(v: &mut V, node: &mut ::syntax::LitBool) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.value);
                 v.visit_span_mut(&mut node.span);
             }
-            pub fn visit_lit_byte_mut<V>(v: &mut V, node: &mut ::syntax::LitByte)
-            where
+            pub fn visit_lit_byte_mut<V>(v: &mut V, node: &mut ::syntax::LitByte) where
                 V: VisitMut + ?Sized,
             {}
-            pub fn visit_lit_byte_str_mut<V>(v: &mut V, node: &mut ::syntax::LitByteStr)
-            where
+            pub fn visit_lit_byte_str_mut<V>(v: &mut V, node: &mut ::syntax::LitByteStr) where
                 V: VisitMut + ?Sized,
             {}
-            pub fn visit_lit_cstr_mut<V>(v: &mut V, node: &mut ::syntax::LitCStr)
-            where
+            pub fn visit_lit_cstr_mut<V>(v: &mut V, node: &mut ::syntax::LitCStr) where
                 V: VisitMut + ?Sized,
             {}
-            pub fn visit_lit_char_mut<V>(v: &mut V, node: &mut ::syntax::LitChar)
-            where
+            pub fn visit_lit_char_mut<V>(v: &mut V, node: &mut ::syntax::LitChar) where
                 V: VisitMut + ?Sized,
             {}
-            pub fn visit_lit_float_mut<V>(v: &mut V, node: &mut ::syntax::LitFloat)
-            where
+            pub fn visit_lit_float_mut<V>(v: &mut V, node: &mut ::syntax::LitFloat) where
                 V: VisitMut + ?Sized,
             {}
-            pub fn visit_lit_int_mut<V>(v: &mut V, node: &mut ::syntax::LitInt)
-            where
+            pub fn visit_lit_int_mut<V>(v: &mut V, node: &mut ::syntax::LitInt) where
                 V: VisitMut + ?Sized,
             {}
-            pub fn visit_lit_str_mut<V>(v: &mut V, node: &mut ::syntax::LitStr)
-            where
+            pub fn visit_lit_str_mut<V>(v: &mut V, node: &mut ::syntax::LitStr) where
                 V: VisitMut + ?Sized,
             {}
-                pub fn visit_local_mut<V>(v: &mut V, node: &mut ::syntax::Local)
-            where
+                pub fn visit_local_mut<V>(v: &mut V, node: &mut ::syntax::Local) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40254,8 +39947,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_local_init_mut<V>(v: &mut V, node: &mut ::syntax::LocalInit)
-            where
+                pub fn visit_local_init_mut<V>(v: &mut V, node: &mut ::syntax::LocalInit) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.eq_token);
@@ -40267,8 +39959,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_macro_mut<V>(v: &mut V, node: &mut ::syntax::Macro)
-            where
+            pub fn visit_macro_mut<V>(v: &mut V, node: &mut ::syntax::Macro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_path_mut(&mut node.path);
@@ -40278,8 +39969,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_macro_delimiter_mut<V>(v: &mut V, node: &mut ::syntax::MacroDelimiter)
-            where
+            pub fn visit_macro_delimiter_mut<V>(v: &mut V, node: &mut ::syntax::MacroDelimiter) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40296,8 +39986,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_member_mut<V>(v: &mut V, node: &mut ::syntax::Member)
-            where
+            pub fn visit_member_mut<V>(v: &mut V, node: &mut ::syntax::Member) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40311,8 +40000,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_meta_mut<V>(v: &mut V, node: &mut ::syntax::Meta)
-            where
+            pub fn visit_meta_mut<V>(v: &mut V, node: &mut ::syntax::Meta) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40329,8 +40017,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_meta_list_mut<V>(v: &mut V, node: &mut ::syntax::MetaList)
-            where
+            pub fn visit_meta_list_mut<V>(v: &mut V, node: &mut ::syntax::MetaList) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_path_mut(&mut node.path);
@@ -40339,8 +40026,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_meta_name_value_mut<V>(v: &mut V, node: &mut ::syntax::MetaNameValue)
-            where
+            pub fn visit_meta_name_value_mut<V>(v: &mut V, node: &mut ::syntax::MetaNameValue) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_path_mut(&mut node.path);
@@ -40352,8 +40038,7 @@ impl<'a> TypeGenerics<'a> {
             pub fn visit_parenthesized_generic_arguments_mut<V>(
                 v: &mut V,
                 node: &mut ::syntax::ParenthesizedGenericArguments,
-            )
-            where
+            ) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.paren_token);
@@ -40363,8 +40048,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_return_type_mut(&mut node.output);
             }
-                pub fn visit_pat_mut<V>(v: &mut V, node: &mut ::syntax::Pat)
-            where
+                pub fn visit_pat_mut<V>(v: &mut V, node: &mut ::syntax::Pat) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40421,8 +40105,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_pat_ident_mut<V>(v: &mut V, node: &mut ::syntax::PatIdent)
-            where
+                pub fn visit_pat_ident_mut<V>(v: &mut V, node: &mut ::syntax::PatIdent) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40434,8 +40117,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_mut(&mut *(it).1);
                 }
             }
-                pub fn visit_pat_or_mut<V>(v: &mut V, node: &mut ::syntax::PatOr)
-            where
+                pub fn visit_pat_or_mut<V>(v: &mut V, node: &mut ::syntax::PatOr) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40445,16 +40127,14 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_mut(it);
                 }
             }
-                pub fn visit_pat_paren_mut<V>(v: &mut V, node: &mut ::syntax::PatParen)
-            where
+                pub fn visit_pat_paren_mut<V>(v: &mut V, node: &mut ::syntax::PatParen) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.paren_token);
                 v.visit_pat_mut(&mut *node.pat);
             }
-                pub fn visit_pat_reference_mut<V>(v: &mut V, node: &mut ::syntax::PatReference)
-            where
+                pub fn visit_pat_reference_mut<V>(v: &mut V, node: &mut ::syntax::PatReference) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40462,15 +40142,13 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.mutability);
                 v.visit_pat_mut(&mut *node.pat);
             }
-                pub fn visit_pat_rest_mut<V>(v: &mut V, node: &mut ::syntax::PatRest)
-            where
+                pub fn visit_pat_rest_mut<V>(v: &mut V, node: &mut ::syntax::PatRest) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 skip!(node.dot2_token);
             }
-                pub fn visit_pat_slice_mut<V>(v: &mut V, node: &mut ::syntax::PatSlice)
-            where
+                pub fn visit_pat_slice_mut<V>(v: &mut V, node: &mut ::syntax::PatSlice) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40480,8 +40158,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_mut(it);
                 }
             }
-                pub fn visit_pat_struct_mut<V>(v: &mut V, node: &mut ::syntax::PatStruct)
-            where
+                pub fn visit_pat_struct_mut<V>(v: &mut V, node: &mut ::syntax::PatStruct) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40498,8 +40175,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_rest_mut(it);
                 }
             }
-                pub fn visit_pat_tuple_mut<V>(v: &mut V, node: &mut ::syntax::PatTuple)
-            where
+                pub fn visit_pat_tuple_mut<V>(v: &mut V, node: &mut ::syntax::PatTuple) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40509,8 +40185,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_mut(it);
                 }
             }
-                pub fn visit_pat_tuple_struct_mut<V>(v: &mut V, node: &mut ::syntax::PatTupleStruct)
-            where
+                pub fn visit_pat_tuple_struct_mut<V>(v: &mut V, node: &mut ::syntax::PatTupleStruct) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40524,8 +40199,7 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_pat_mut(it);
                 }
             }
-                pub fn visit_pat_type_mut<V>(v: &mut V, node: &mut ::syntax::PatType)
-            where
+                pub fn visit_pat_type_mut<V>(v: &mut V, node: &mut ::syntax::PatType) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40533,8 +40207,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.colon_token);
                 v.visit_type_mut(&mut *node.ty);
             }
-                pub fn visit_pat_wild_mut<V>(v: &mut V, node: &mut ::syntax::PatWild)
-            where
+                pub fn visit_pat_wild_mut<V>(v: &mut V, node: &mut ::syntax::PatWild) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40542,8 +40215,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_path_mut<V>(v: &mut V, node: &mut ::syntax::Path)
-            where
+            pub fn visit_path_mut<V>(v: &mut V, node: &mut ::syntax::Path) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.leading_colon);
@@ -40554,8 +40226,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_path_arguments_mut<V>(v: &mut V, node: &mut ::syntax::PathArguments)
-            where
+            pub fn visit_path_arguments_mut<V>(v: &mut V, node: &mut ::syntax::PathArguments) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40570,15 +40241,13 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_path_segment_mut<V>(v: &mut V, node: &mut ::syntax::PathSegment)
-            where
+            pub fn visit_path_segment_mut<V>(v: &mut V, node: &mut ::syntax::PathSegment) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
                 v.visit_path_arguments_mut(&mut node.arguments);
             }
-                pub fn visit_pointer_mutability_mut<V>(v: &mut V, node: &mut ::syntax::PointerMutability)
-            where
+                pub fn visit_pointer_mutability_mut<V>(v: &mut V, node: &mut ::syntax::PointerMutability) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40590,8 +40259,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_precise_capture_mut<V>(v: &mut V, node: &mut ::syntax::PreciseCapture)
-            where
+                pub fn visit_precise_capture_mut<V>(v: &mut V, node: &mut ::syntax::PreciseCapture) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.use_token);
@@ -40604,8 +40272,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_predicate_lifetime_mut<V>(v: &mut V, node: &mut ::syntax::PredicateLifetime)
-            where
+            pub fn visit_predicate_lifetime_mut<V>(v: &mut V, node: &mut ::syntax::PredicateLifetime) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_lifetime_mut(&mut node.lifetime);
@@ -40617,8 +40284,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_predicate_type_mut<V>(v: &mut V, node: &mut ::syntax::PredicateType)
-            where
+            pub fn visit_predicate_type_mut<V>(v: &mut V, node: &mut ::syntax::PredicateType) where
                 V: VisitMut + ?Sized,
             {
                 if let Some(it) = &mut node.lifetimes {
@@ -40633,8 +40299,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_qself_mut<V>(v: &mut V, node: &mut ::syntax::QSelf)
-            where
+            pub fn visit_qself_mut<V>(v: &mut V, node: &mut ::syntax::QSelf) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.lt_token);
@@ -40643,8 +40308,7 @@ impl<'a> TypeGenerics<'a> {
                 skip!(node.as_token);
                 skip!(node.gt_token);
             }
-                pub fn visit_range_limits_mut<V>(v: &mut V, node: &mut ::syntax::RangeLimits)
-            where
+                pub fn visit_range_limits_mut<V>(v: &mut V, node: &mut ::syntax::RangeLimits) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40656,8 +40320,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_receiver_mut<V>(v: &mut V, node: &mut ::syntax::Receiver)
-            where
+                pub fn visit_receiver_mut<V>(v: &mut V, node: &mut ::syntax::Receiver) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40674,8 +40337,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_return_type_mut<V>(v: &mut V, node: &mut ::syntax::ReturnType)
-            where
+            pub fn visit_return_type_mut<V>(v: &mut V, node: &mut ::syntax::ReturnType) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40686,8 +40348,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_signature_mut<V>(v: &mut V, node: &mut ::syntax::Signature)
-            where
+                pub fn visit_signature_mut<V>(v: &mut V, node: &mut ::syntax::Signature) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.constness);
@@ -40709,12 +40370,10 @@ impl<'a> TypeGenerics<'a> {
                 }
                 v.visit_return_type_mut(&mut node.output);
             }
-            pub fn visit_span_mut<V>(v: &mut V, node: &mut proc_macro2::Span)
-            where
+            pub fn visit_span_mut<V>(v: &mut V, node: &mut proc_macro2::Span) where
                 V: VisitMut + ?Sized,
             {}
-                pub fn visit_static_mutability_mut<V>(v: &mut V, node: &mut ::syntax::StaticMutability)
-            where
+                pub fn visit_static_mutability_mut<V>(v: &mut V, node: &mut ::syntax::StaticMutability) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40724,8 +40383,7 @@ impl<'a> TypeGenerics<'a> {
                     ::syntax::StaticMutability::None => {}
                 }
             }
-                pub fn visit_stmt_mut<V>(v: &mut V, node: &mut ::syntax::Stmt)
-            where
+                pub fn visit_stmt_mut<V>(v: &mut V, node: &mut ::syntax::Stmt) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40744,8 +40402,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_stmt_macro_mut<V>(v: &mut V, node: &mut ::syntax::StmtMacro)
-            where
+                pub fn visit_stmt_macro_mut<V>(v: &mut V, node: &mut ::syntax::StmtMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40754,8 +40411,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_trait_bound_mut<V>(v: &mut V, node: &mut ::syntax::TraitBound)
-            where
+            pub fn visit_trait_bound_mut<V>(v: &mut V, node: &mut ::syntax::TraitBound) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.paren_token);
@@ -40767,8 +40423,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_trait_bound_modifier_mut<V>(v: &mut V, node: &mut ::syntax::TraitBoundModifier)
-            where
+            pub fn visit_trait_bound_modifier_mut<V>(v: &mut V, node: &mut ::syntax::TraitBoundModifier) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40778,8 +40433,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_trait_item_mut<V>(v: &mut V, node: &mut ::syntax::TraitItem)
-            where
+                pub fn visit_trait_item_mut<V>(v: &mut V, node: &mut ::syntax::TraitItem) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40800,8 +40454,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_trait_item_const_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemConst)
-            where
+                pub fn visit_trait_item_const_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemConst) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40816,8 +40469,7 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_trait_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemFn)
-            where
+                pub fn visit_trait_item_fn_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemFn) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40827,16 +40479,14 @@ impl<'a> TypeGenerics<'a> {
                 }
                 skip!(node.semi_token);
             }
-                pub fn visit_trait_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemMacro)
-            where
+                pub fn visit_trait_item_macro_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
                 v.visit_macro_mut(&mut node.mac);
                 skip!(node.semi_token);
             }
-                pub fn visit_trait_item_type_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemType)
-            where
+                pub fn visit_trait_item_type_mut<V>(v: &mut V, node: &mut ::syntax::TraitItemType) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -40856,8 +40506,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_mut<V>(v: &mut V, node: &mut ::syntax::Type)
-            where
+            pub fn visit_type_mut<V>(v: &mut V, node: &mut ::syntax::Type) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -40910,8 +40559,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_array_mut<V>(v: &mut V, node: &mut ::syntax::TypeArray)
-            where
+            pub fn visit_type_array_mut<V>(v: &mut V, node: &mut ::syntax::TypeArray) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.bracket_token);
@@ -40921,8 +40569,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_bare_fn_mut<V>(v: &mut V, node: &mut ::syntax::TypeBareFn)
-            where
+            pub fn visit_type_bare_fn_mut<V>(v: &mut V, node: &mut ::syntax::TypeBareFn) where
                 V: VisitMut + ?Sized,
             {
                 if let Some(it) = &mut node.lifetimes {
@@ -40945,8 +40592,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_group_mut<V>(v: &mut V, node: &mut ::syntax::TypeGroup)
-            where
+            pub fn visit_type_group_mut<V>(v: &mut V, node: &mut ::syntax::TypeGroup) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.group_token);
@@ -40954,8 +40600,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_impl_trait_mut<V>(v: &mut V, node: &mut ::syntax::TypeImplTrait)
-            where
+            pub fn visit_type_impl_trait_mut<V>(v: &mut V, node: &mut ::syntax::TypeImplTrait) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.impl_token);
@@ -40966,32 +40611,28 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_infer_mut<V>(v: &mut V, node: &mut ::syntax::TypeInfer)
-            where
+            pub fn visit_type_infer_mut<V>(v: &mut V, node: &mut ::syntax::TypeInfer) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.underscore_token);
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_macro_mut<V>(v: &mut V, node: &mut ::syntax::TypeMacro)
-            where
+            pub fn visit_type_macro_mut<V>(v: &mut V, node: &mut ::syntax::TypeMacro) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_macro_mut(&mut node.mac);
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_never_mut<V>(v: &mut V, node: &mut ::syntax::TypeNever)
-            where
+            pub fn visit_type_never_mut<V>(v: &mut V, node: &mut ::syntax::TypeNever) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.bang_token);
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_param_mut<V>(v: &mut V, node: &mut ::syntax::TypeParam)
-            where
+            pub fn visit_type_param_mut<V>(v: &mut V, node: &mut ::syntax::TypeParam) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -41008,8 +40649,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_param_bound_mut<V>(v: &mut V, node: &mut ::syntax::TypeParamBound)
-            where
+            pub fn visit_type_param_bound_mut<V>(v: &mut V, node: &mut ::syntax::TypeParamBound) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -41029,8 +40669,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_paren_mut<V>(v: &mut V, node: &mut ::syntax::TypeParen)
-            where
+            pub fn visit_type_paren_mut<V>(v: &mut V, node: &mut ::syntax::TypeParen) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.paren_token);
@@ -41038,8 +40677,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_path_mut<V>(v: &mut V, node: &mut ::syntax::TypePath)
-            where
+            pub fn visit_type_path_mut<V>(v: &mut V, node: &mut ::syntax::TypePath) where
                 V: VisitMut + ?Sized,
             {
                 if let Some(it) = &mut node.qself {
@@ -41049,8 +40687,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_ptr_mut<V>(v: &mut V, node: &mut ::syntax::TypePtr)
-            where
+            pub fn visit_type_ptr_mut<V>(v: &mut V, node: &mut ::syntax::TypePtr) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.star_token);
@@ -41060,8 +40697,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_reference_mut<V>(v: &mut V, node: &mut ::syntax::TypeReference)
-            where
+            pub fn visit_type_reference_mut<V>(v: &mut V, node: &mut ::syntax::TypeReference) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.and_token);
@@ -41073,8 +40709,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_slice_mut<V>(v: &mut V, node: &mut ::syntax::TypeSlice)
-            where
+            pub fn visit_type_slice_mut<V>(v: &mut V, node: &mut ::syntax::TypeSlice) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.bracket_token);
@@ -41082,8 +40717,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_trait_object_mut<V>(v: &mut V, node: &mut ::syntax::TypeTraitObject)
-            where
+            pub fn visit_type_trait_object_mut<V>(v: &mut V, node: &mut ::syntax::TypeTraitObject) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.dyn_token);
@@ -41094,8 +40728,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_type_tuple_mut<V>(v: &mut V, node: &mut ::syntax::TypeTuple)
-            where
+            pub fn visit_type_tuple_mut<V>(v: &mut V, node: &mut ::syntax::TypeTuple) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.paren_token);
@@ -41106,8 +40739,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_un_op_mut<V>(v: &mut V, node: &mut ::syntax::UnOp)
-            where
+            pub fn visit_un_op_mut<V>(v: &mut V, node: &mut ::syntax::UnOp) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -41122,14 +40754,12 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_use_glob_mut<V>(v: &mut V, node: &mut ::syntax::UseGlob)
-            where
+                pub fn visit_use_glob_mut<V>(v: &mut V, node: &mut ::syntax::UseGlob) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.star_token);
             }
-                pub fn visit_use_group_mut<V>(v: &mut V, node: &mut ::syntax::UseGroup)
-            where
+                pub fn visit_use_group_mut<V>(v: &mut V, node: &mut ::syntax::UseGroup) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.brace_token);
@@ -41138,30 +40768,26 @@ impl<'a> TypeGenerics<'a> {
                     v.visit_use_tree_mut(it);
                 }
             }
-                pub fn visit_use_name_mut<V>(v: &mut V, node: &mut ::syntax::UseName)
-            where
+                pub fn visit_use_name_mut<V>(v: &mut V, node: &mut ::syntax::UseName) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
             }
-                pub fn visit_use_path_mut<V>(v: &mut V, node: &mut ::syntax::UsePath)
-            where
+                pub fn visit_use_path_mut<V>(v: &mut V, node: &mut ::syntax::UsePath) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
                 skip!(node.colon2_token);
                 v.visit_use_tree_mut(&mut *node.tree);
             }
-                pub fn visit_use_rename_mut<V>(v: &mut V, node: &mut ::syntax::UseRename)
-            where
+                pub fn visit_use_rename_mut<V>(v: &mut V, node: &mut ::syntax::UseRename) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_ident_mut(&mut node.ident);
                 skip!(node.as_token);
                 v.visit_ident_mut(&mut node.rename);
             }
-                pub fn visit_use_tree_mut<V>(v: &mut V, node: &mut ::syntax::UseTree)
-            where
+                pub fn visit_use_tree_mut<V>(v: &mut V, node: &mut ::syntax::UseTree) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -41182,8 +40808,7 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                pub fn visit_variadic_mut<V>(v: &mut V, node: &mut ::syntax::Variadic)
-            where
+                pub fn visit_variadic_mut<V>(v: &mut V, node: &mut ::syntax::Variadic) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -41196,8 +40821,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_variant_mut<V>(v: &mut V, node: &mut ::syntax::Variant)
-            where
+            pub fn visit_variant_mut<V>(v: &mut V, node: &mut ::syntax::Variant) where
                 V: VisitMut + ?Sized,
             {
                 v.visit_attributes_mut(&mut node.attrs);
@@ -41210,8 +40834,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_vis_restricted_mut<V>(v: &mut V, node: &mut ::syntax::VisRestricted)
-            where
+            pub fn visit_vis_restricted_mut<V>(v: &mut V, node: &mut ::syntax::VisRestricted) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.pub_token);
@@ -41221,8 +40844,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_visibility_mut<V>(v: &mut V, node: &mut ::syntax::Visibility)
-            where
+            pub fn visit_visibility_mut<V>(v: &mut V, node: &mut ::syntax::Visibility) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -41237,8 +40859,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_where_clause_mut<V>(v: &mut V, node: &mut ::syntax::WhereClause)
-            where
+            pub fn visit_where_clause_mut<V>(v: &mut V, node: &mut ::syntax::WhereClause) where
                 V: VisitMut + ?Sized,
             {
                 skip!(node.where_token);
@@ -41249,8 +40870,7 @@ impl<'a> TypeGenerics<'a> {
             }
             #[cfg(any(feature = "derive", feature = "full"))]
             #[cfg_attr(docsrs, doc(cfg(any(feature = "derive", feature = "full"))))]
-            pub fn visit_where_predicate_mut<V>(v: &mut V, node: &mut ::syntax::WherePredicate)
-            where
+            pub fn visit_where_predicate_mut<V>(v: &mut V, node: &mut ::syntax::WherePredicate) where
                 V: VisitMut + ?Sized,
             {
                 match node {
@@ -43761,7 +43381,8 @@ impl<'a> TypeGenerics<'a> {
                             formatter.field(v0);
                             formatter.finish()
                         }
-                                        ::syntax::Expr::While(v0) => v0.debug(formatter, "While"),
+                        
+                        ::syntax::Expr::While(v0) => v0.debug(formatter, "While"),
                                         ::syntax::Expr::Yield(v0) => v0.debug(formatter, "Yield"),
                         #[cfg(not(feature = "full"))]
                         _ => unreachable!(),
@@ -47747,26 +47368,25 @@ impl<'a> TypeGenerics<'a> {
             use std::hash::{Hash, Hasher};
             */
             impl Hash for ::syntax::Abi {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.name.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::AngleBracketedGenericArguments {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.colon2_token.hash(state);
                     self.args.hash(state);
                 }
             }
-                impl  Hash for ::syntax::Arm {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Arm {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.pat.hash(state);
@@ -47775,200 +47395,231 @@ impl<'a> TypeGenerics<'a> {
                     self.comma.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::AssocConst {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                     self.generics.hash(state);
                     self.value.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::AssocType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                     self.generics.hash(state);
                     self.ty.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::AttrStyle {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
                         ::syntax::AttrStyle::Outer => {
                             state.write_u8(0u8);
                         }
-                        ::syntax::AttrStyle::Inner(_) => {
+                        ::syntax::AttrStyle::Inner(_) =>
+                        {
                             state.write_u8(1u8);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::Attribute {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.style.hash(state);
                     self.meta.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::BareFnArg {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.name.hash(state);
                     self.ty.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::BareVariadic {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.name.hash(state);
                     self.comma.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::BinOp {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::BinOp::Add(_) => {
+                        ::syntax::BinOp::Add(_) =>
+                        {
                             state.write_u8(0u8);
                         }
-                        ::syntax::BinOp::Sub(_) => {
+                        ::syntax::BinOp::Sub(_) =>
+                        {
                             state.write_u8(1u8);
                         }
-                        ::syntax::BinOp::Mul(_) => {
+                        ::syntax::BinOp::Mul(_) =>
+                        {
                             state.write_u8(2u8);
                         }
-                        ::syntax::BinOp::Div(_) => {
+                        ::syntax::BinOp::Div(_) =>
+                        {
                             state.write_u8(3u8);
                         }
-                        ::syntax::BinOp::Rem(_) => {
+                        ::syntax::BinOp::Rem(_) =>
+                        {
                             state.write_u8(4u8);
                         }
-                        ::syntax::BinOp::And(_) => {
+                        ::syntax::BinOp::And(_) =>
+                        {
                             state.write_u8(5u8);
                         }
-                        ::syntax::BinOp::Or(_) => {
+                        ::syntax::BinOp::Or(_) =>
+                        {
                             state.write_u8(6u8);
                         }
-                        ::syntax::BinOp::BitXor(_) => {
+                        ::syntax::BinOp::BitXor(_) =>
+                        {
                             state.write_u8(7u8);
                         }
-                        ::syntax::BinOp::BitAnd(_) => {
+                        ::syntax::BinOp::BitAnd(_) =>
+                        {
                             state.write_u8(8u8);
                         }
-                        ::syntax::BinOp::BitOr(_) => {
+                        ::syntax::BinOp::BitOr(_) =>
+                        {
                             state.write_u8(9u8);
                         }
-                        ::syntax::BinOp::Shl(_) => {
+                        ::syntax::BinOp::Shl(_) =>
+                        {
                             state.write_u8(10u8);
                         }
-                        ::syntax::BinOp::Shr(_) => {
+                        ::syntax::BinOp::Shr(_) =>
+                        {
                             state.write_u8(11u8);
                         }
-                        ::syntax::BinOp::Eq(_) => {
+                        ::syntax::BinOp::Eq(_) =>
+                        {
                             state.write_u8(12u8);
                         }
-                        ::syntax::BinOp::Lt(_) => {
+                        ::syntax::BinOp::Lt(_) =>
+                        {
                             state.write_u8(13u8);
                         }
-                        ::syntax::BinOp::Le(_) => {
+                        ::syntax::BinOp::Le(_) =>
+                        {
                             state.write_u8(14u8);
                         }
-                        ::syntax::BinOp::Ne(_) => {
+                        ::syntax::BinOp::Ne(_) =>
+                        {
                             state.write_u8(15u8);
                         }
-                        ::syntax::BinOp::Ge(_) => {
+                        ::syntax::BinOp::Ge(_) =>
+                        {
                             state.write_u8(16u8);
                         }
-                        ::syntax::BinOp::Gt(_) => {
+                        ::syntax::BinOp::Gt(_) =>
+                        {
                             state.write_u8(17u8);
                         }
-                        ::syntax::BinOp::AddAssign(_) => {
+                        ::syntax::BinOp::AddAssign(_) =>
+                        {
                             state.write_u8(18u8);
                         }
-                        ::syntax::BinOp::SubAssign(_) => {
+                        ::syntax::BinOp::SubAssign(_) =>
+                        {
                             state.write_u8(19u8);
                         }
-                        ::syntax::BinOp::MulAssign(_) => {
+                        ::syntax::BinOp::MulAssign(_) =>
+                        {
                             state.write_u8(20u8);
                         }
-                        ::syntax::BinOp::DivAssign(_) => {
+                        ::syntax::BinOp::DivAssign(_) =>
+                        {
                             state.write_u8(21u8);
                         }
-                        ::syntax::BinOp::RemAssign(_) => {
+                        ::syntax::BinOp::RemAssign(_) =>
+                        {
                             state.write_u8(22u8);
                         }
-                        ::syntax::BinOp::BitXorAssign(_) => {
+                        ::syntax::BinOp::BitXorAssign(_) =>
+                        {
                             state.write_u8(23u8);
                         }
-                        ::syntax::BinOp::BitAndAssign(_) => {
+                        ::syntax::BinOp::BitAndAssign(_) =>
+                        {
                             state.write_u8(24u8);
                         }
-                        ::syntax::BinOp::BitOrAssign(_) => {
+                        ::syntax::BinOp::BitOrAssign(_) =>
+                        {
                             state.write_u8(25u8);
                         }
-                        ::syntax::BinOp::ShlAssign(_) => {
+                        ::syntax::BinOp::ShlAssign(_) =>
+                        {
                             state.write_u8(26u8);
                         }
-                        ::syntax::BinOp::ShrAssign(_) => {
+                        ::syntax::BinOp::ShrAssign(_) =>
+                        {
                             state.write_u8(27u8);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::Block {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Block {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.stmts.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::BoundLifetimes {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.lifetimes.hash(state);
                 }
             }
-                impl  Hash for ::syntax::CapturedParam {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::CapturedParam {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::CapturedParam::Lifetime(v0) => {
+                        ::syntax::CapturedParam::Lifetime(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::CapturedParam::Ident(v0) => {
+                        ::syntax::CapturedParam::Ident(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::ConstParam {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.ident.hash(state);
@@ -47977,10 +47628,10 @@ impl<'a> TypeGenerics<'a> {
                     self.default.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Constraint {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                     self.generics.hash(state);
@@ -47988,21 +47639,23 @@ impl<'a> TypeGenerics<'a> {
                 }
             }
             #[cfg(feature = "derive")]
-            impl  Hash for ::syntax::Data {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            impl Hash for ::syntax::Data {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Data::Struct(v0) => {
+                        ::syntax::Data::Struct(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Data::Enum(v0) => {
+                        ::syntax::Data::Enum(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Data::Union(v0) => {
+                        ::syntax::Data::Union(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
@@ -48010,38 +47663,34 @@ impl<'a> TypeGenerics<'a> {
                 }
             }
             #[cfg(feature = "derive")]
-            impl  Hash for ::syntax::DataEnum {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            impl Hash for ::syntax::DataEnum {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.variants.hash(state);
                 }
             }
             #[cfg(feature = "derive")]
-            impl  Hash for ::syntax::DataStruct {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            impl Hash for ::syntax::DataStruct {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.fields.hash(state);
                     self.semi_token.hash(state);
                 }
             }
             #[cfg(feature = "derive")]
-            impl  Hash for ::syntax::DataUnion {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            impl Hash for ::syntax::DataUnion {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.fields.hash(state);
                 }
             }
             #[cfg(feature = "derive")]
-            impl  Hash for ::syntax::DeriveInput {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            impl Hash for ::syntax::DeriveInput {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48050,219 +47699,302 @@ impl<'a> TypeGenerics<'a> {
                     self.data.hash(state);
                 }
             }
-            impl Hash for ::syntax::Expr {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Expr
+            {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
-                    match self {
-                                        ::syntax::Expr::Array(v0) => {
+                    match self
+                    {
+                        ::syntax::Expr::Array(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Assign(v0) => {
+                        
+                        ::syntax::Expr::Assign(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Async(v0) => {
+                        
+                        ::syntax::Expr::Async(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Await(v0) => {
+                        
+                        ::syntax::Expr::Await(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Binary(v0) => {
+                        
+                        ::syntax::Expr::Binary(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Block(v0) => {
+                        
+                        ::syntax::Expr::Block(v0) =>
+                        {
                             state.write_u8(5u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Break(v0) => {
+                        
+                        ::syntax::Expr::Break(v0) =>
+                        {
                             state.write_u8(6u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Call(v0) => {
+                        
+                        ::syntax::Expr::Call(v0) =>
+                        {
                             state.write_u8(7u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Cast(v0) => {
+
+                        ::syntax::Expr::Cast(v0) =>
+                        {
                             state.write_u8(8u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Closure(v0) => {
+                        
+                        ::syntax::Expr::Closure(v0) =>
+                        {
                             state.write_u8(9u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Const(v0) => {
+                        
+                        ::syntax::Expr::Const(v0) =>
+                        {
                             state.write_u8(10u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Continue(v0) => {
+                        
+                        ::syntax::Expr::Continue(v0) =>
+                        {
                             state.write_u8(11u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Field(v0) => {
+
+                        ::syntax::Expr::Field(v0) =>
+                        {
                             state.write_u8(12u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::ForLoop(v0) => {
+                        
+                        ::syntax::Expr::ForLoop(v0) =>
+                        {
                             state.write_u8(13u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Group(v0) => {
+
+                        ::syntax::Expr::Group(v0) =>
+                        {
                             state.write_u8(14u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::If(v0) => {
+                        
+                        ::syntax::Expr::If(v0) =>
+                        {
                             state.write_u8(15u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Index(v0) => {
+
+                        ::syntax::Expr::Index(v0) =>
+                        {
                             state.write_u8(16u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Infer(v0) => {
+                        
+                        ::syntax::Expr::Infer(v0) =>
+                        {
                             state.write_u8(17u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Let(v0) => {
+                        
+                        ::syntax::Expr::Let(v0) =>
+                        {
                             state.write_u8(18u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Lit(v0) => {
+                        
+                        ::syntax::Expr::Lit(v0) =>
+                        {
                             state.write_u8(19u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Loop(v0) => {
+                        
+                        ::syntax::Expr::Loop(v0) =>
+                        {
                             state.write_u8(20u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Macro(v0) => {
+                        
+                        ::syntax::Expr::Macro(v0) =>
+                        {
                             state.write_u8(21u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Match(v0) => {
+                        
+                        ::syntax::Expr::Match(v0) =>
+                        {
                             state.write_u8(22u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::MethodCall(v0) => {
+                        
+                        ::syntax::Expr::MethodCall(v0) =>
+                        {
                             state.write_u8(23u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Paren(v0) => {
+                        
+                        ::syntax::Expr::Paren(v0) =>
+                        {
                             state.write_u8(24u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Path(v0) => {
+                        
+                        ::syntax::Expr::Path(v0) =>
+                        {
                             state.write_u8(25u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Range(v0) => {
+                        
+                        ::syntax::Expr::Range(v0) =>
+                        {
                             state.write_u8(26u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::RawAddr(v0) => {
+                        
+                        ::syntax::Expr::RawAddr(v0) =>
+                        {
                             state.write_u8(27u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Reference(v0) => {
+                        
+                        ::syntax::Expr::Reference(v0) =>
+                        {
                             state.write_u8(28u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Repeat(v0) => {
+                        
+                        ::syntax::Expr::Repeat(v0) =>
+                        {
                             state.write_u8(29u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Return(v0) => {
+                        
+                        ::syntax::Expr::Return(v0) =>
+                        {
                             state.write_u8(30u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Struct(v0) => {
+                        
+                        ::syntax::Expr::Struct(v0) =>
+                        {
                             state.write_u8(31u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Try(v0) => {
+                        
+                        ::syntax::Expr::Try(v0) =>
+                        {
                             state.write_u8(32u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::TryBlock(v0) => {
+                        
+                        ::syntax::Expr::TryBlock(v0) =>
+                        {
                             state.write_u8(33u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Tuple(v0) => {
+                        
+                        ::syntax::Expr::Tuple(v0) =>
+                        {
                             state.write_u8(34u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Unary(v0) => {
+                        
+                        ::syntax::Expr::Unary(v0) =>
+                        {
                             state.write_u8(35u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Unsafe(v0) => {
+                        
+                        ::syntax::Expr::Unsafe(v0) =>
+                        {
                             state.write_u8(36u8);
                             v0.hash(state);
                         }
-                        ::syntax::Expr::Verbatim(v0) => {
+                        
+                        ::syntax::Expr::Verbatim(v0) =>
+                        {
                             state.write_u8(37u8);
                             TokenStreamHelper(v0).hash(state);
                         }
-                                        ::syntax::Expr::While(v0) => {
+                        
+                        ::syntax::Expr::While(v0) =>
+                        {
                             state.write_u8(38u8);
                             v0.hash(state);
                         }
-                                        ::syntax::Expr::Yield(v0) => {
+                        
+                        ::syntax::Expr::Yield(v0) =>
+                        {
                             state.write_u8(39u8);
                             v0.hash(state);
                         }
-                        #[cfg(not(feature = "full"))]
+                        
                         _ => unreachable!(),
                     }
                 }
             }
-                impl  Hash for ::syntax::ExprArray {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprArray
+            {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.elems.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprAssign {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprAssign
+            {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.left.hash(state);
                     self.right.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprAsync {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprAsync {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.capture.hash(state);
                     self.block.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprAwait {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprAwait {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.base.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprBinary {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.left.hash(state);
@@ -48270,50 +48002,50 @@ impl<'a> TypeGenerics<'a> {
                     self.right.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprBlock {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprBlock {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.label.hash(state);
                     self.block.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprBreak {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprBreak {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.label.hash(state);
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprCall {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.func.hash(state);
                     self.args.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprCast {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                     self.ty.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprClosure {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprClosure {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.lifetimes.hash(state);
@@ -48326,38 +48058,38 @@ impl<'a> TypeGenerics<'a> {
                     self.body.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprConst {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprConst {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.block.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprContinue {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprContinue {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.label.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprField {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.base.hash(state);
                     self.member.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprForLoop {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprForLoop {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.label.hash(state);
@@ -48366,19 +48098,19 @@ impl<'a> TypeGenerics<'a> {
                     self.body.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprGroup {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprIf {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprIf {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.cond.hash(state);
@@ -48386,76 +48118,76 @@ impl<'a> TypeGenerics<'a> {
                     self.else_branch.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprIndex {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                     self.index.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprInfer {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprInfer {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprLet {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprLet {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.pat.hash(state);
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprLit {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.lit.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprLoop {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprLoop {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.label.hash(state);
                     self.body.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mac.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprMatch {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprMatch {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                     self.arms.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprMethodCall {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.receiver.hash(state);
@@ -48464,29 +48196,29 @@ impl<'a> TypeGenerics<'a> {
                     self.args.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprParen {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprPath {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.qself.hash(state);
                     self.path.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprRange {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprRange {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.start.hash(state);
@@ -48494,49 +48226,49 @@ impl<'a> TypeGenerics<'a> {
                     self.end.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprRawAddr {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprRawAddr {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mutability.hash(state);
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprReference {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mutability.hash(state);
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprRepeat {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprRepeat {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                     self.len.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprReturn {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprReturn {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprStruct {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.qself.hash(state);
@@ -48546,56 +48278,56 @@ impl<'a> TypeGenerics<'a> {
                     self.rest.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprTry {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprTry {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprTryBlock {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprTryBlock {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.block.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprTuple {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.elems.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ExprUnary {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.op.hash(state);
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprUnsafe {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprUnsafe {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.block.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprWhile {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprWhile {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.label.hash(state);
@@ -48603,19 +48335,19 @@ impl<'a> TypeGenerics<'a> {
                     self.body.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ExprYield {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ExprYield {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Field {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48625,10 +48357,10 @@ impl<'a> TypeGenerics<'a> {
                     self.ty.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::FieldMutability {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
                         ::syntax::FieldMutability::None => {
@@ -48637,10 +48369,10 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                impl  Hash for ::syntax::FieldPat {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::FieldPat {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.member.hash(state);
@@ -48648,10 +48380,10 @@ impl<'a> TypeGenerics<'a> {
                     self.pat.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::FieldValue {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.member.hash(state);
@@ -48659,17 +48391,19 @@ impl<'a> TypeGenerics<'a> {
                     self.expr.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Fields {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Fields::Named(v0) => {
+                        ::syntax::Fields::Named(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Fields::Unnamed(v0) => {
+                        ::syntax::Fields::Unnamed(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
@@ -48679,102 +48413,109 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
+            
             impl Hash for ::syntax::FieldsNamed {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.named.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::FieldsUnnamed {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.unnamed.hash(state);
                 }
             }
-                impl  Hash for ::syntax::File {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::File {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.shebang.hash(state);
                     self.attrs.hash(state);
                     self.items.hash(state);
                 }
             }
-                impl  Hash for ::syntax::FnArg {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::FnArg {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::FnArg::Receiver(v0) => {
+                        ::syntax::FnArg::Receiver(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::FnArg::Typed(v0) => {
+                        ::syntax::FnArg::Typed(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::ForeignItem {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ForeignItem {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::ForeignItem::Fn(v0) => {
+                        ::syntax::ForeignItem::Fn(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::ForeignItem::Static(v0) => {
+                        ::syntax::ForeignItem::Static(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::ForeignItem::Type(v0) => {
+                        ::syntax::ForeignItem::Type(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::ForeignItem::Macro(v0) => {
+                        ::syntax::ForeignItem::Macro(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::ForeignItem::Verbatim(v0) => {
+                        ::syntax::ForeignItem::Verbatim(v0) =>
+                        {
                             state.write_u8(4u8);
                             TokenStreamHelper(v0).hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::ForeignItemFn {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ForeignItemFn {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
                     self.sig.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ForeignItemMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ForeignItemMacro {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mac.hash(state);
                     self.semi_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ForeignItemStatic {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ForeignItemStatic {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48783,10 +48524,10 @@ impl<'a> TypeGenerics<'a> {
                     self.ty.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ForeignItemType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ForeignItemType {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48794,64 +48535,73 @@ impl<'a> TypeGenerics<'a> {
                     self.generics.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::GenericArgument {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::GenericArgument::Lifetime(v0) => {
+                        ::syntax::GenericArgument::Lifetime(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericArgument::Type(v0) => {
+                        ::syntax::GenericArgument::Type(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericArgument::Const(v0) => {
+                        ::syntax::GenericArgument::Const(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericArgument::AssocType(v0) => {
+                        ::syntax::GenericArgument::AssocType(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericArgument::AssocConst(v0) => {
+                        ::syntax::GenericArgument::AssocConst(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericArgument::Constraint(v0) => {
+                        ::syntax::GenericArgument::Constraint(v0) =>
+                        {
                             state.write_u8(5u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::GenericParam {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::GenericParam::Lifetime(v0) => {
+                        ::syntax::GenericParam::Lifetime(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericParam::Type(v0) => {
+                        ::syntax::GenericParam::Type(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::GenericParam::Const(v0) => {
+                        ::syntax::GenericParam::Const(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::Generics {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.lt_token.hash(state);
                     self.params.hash(state);
@@ -48859,39 +48609,44 @@ impl<'a> TypeGenerics<'a> {
                     self.where_clause.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ImplItem {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ImplItem {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::ImplItem::Const(v0) => {
+                        ::syntax::ImplItem::Const(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::ImplItem::Fn(v0) => {
+                        ::syntax::ImplItem::Fn(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::ImplItem::Type(v0) => {
+                        ::syntax::ImplItem::Type(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::ImplItem::Macro(v0) => {
+                        ::syntax::ImplItem::Macro(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::ImplItem::Verbatim(v0) => {
+                        ::syntax::ImplItem::Verbatim(v0) =>
+                        {
                             state.write_u8(4u8);
                             TokenStreamHelper(v0).hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::ImplItemConst {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ImplItemConst {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48902,10 +48657,10 @@ impl<'a> TypeGenerics<'a> {
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ImplItemFn {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ImplItemFn {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48914,20 +48669,20 @@ impl<'a> TypeGenerics<'a> {
                     self.block.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ImplItemMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ImplItemMacro {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mac.hash(state);
                     self.semi_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ImplItemType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ImplItemType {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -48937,91 +48692,107 @@ impl<'a> TypeGenerics<'a> {
                     self.ty.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ImplRestriction {
-                fn hash<H>(&self, _state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ImplRestriction {
+                fn hash<H>(&self, _state: &mut H) where
+                H: Hasher
                 {
                     match *self {}
                 }
             }
-                impl  Hash for ::syntax::Item {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Item {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Item::Const(v0) => {
+                        ::syntax::Item::Const(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Enum(v0) => {
+                        ::syntax::Item::Enum(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::ExternCrate(v0) => {
+                        ::syntax::Item::ExternCrate(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Fn(v0) => {
+                        ::syntax::Item::Fn(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::ForeignMod(v0) => {
+                        ::syntax::Item::ForeignMod(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Impl(v0) => {
+                        ::syntax::Item::Impl(v0) =>
+                        {
                             state.write_u8(5u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Macro(v0) => {
+                        ::syntax::Item::Macro(v0) =>
+                        {
                             state.write_u8(6u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Mod(v0) => {
+                        ::syntax::Item::Mod(v0) =>
+                        {
                             state.write_u8(7u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Static(v0) => {
+                        ::syntax::Item::Static(v0) =>
+                        {
                             state.write_u8(8u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Struct(v0) => {
+                        ::syntax::Item::Struct(v0) =>
+                        {
                             state.write_u8(9u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Trait(v0) => {
+                        ::syntax::Item::Trait(v0) =>
+                        {
                             state.write_u8(10u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::TraitAlias(v0) => {
+                        ::syntax::Item::TraitAlias(v0) =>
+                        {
                             state.write_u8(11u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Type(v0) => {
+                        ::syntax::Item::Type(v0) =>
+                        {
                             state.write_u8(12u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Union(v0) => {
+                        ::syntax::Item::Union(v0) =>
+                        {
                             state.write_u8(13u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Use(v0) => {
+                        ::syntax::Item::Use(v0) =>
+                        {
                             state.write_u8(14u8);
                             v0.hash(state);
                         }
-                        ::syntax::Item::Verbatim(v0) => {
+                        ::syntax::Item::Verbatim(v0) =>
+                        {
                             state.write_u8(15u8);
                             TokenStreamHelper(v0).hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::ItemConst {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemConst {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49031,10 +48802,10 @@ impl<'a> TypeGenerics<'a> {
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemEnum {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemEnum {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49043,10 +48814,10 @@ impl<'a> TypeGenerics<'a> {
                     self.variants.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemExternCrate {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemExternCrate {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49054,10 +48825,10 @@ impl<'a> TypeGenerics<'a> {
                     self.rename.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemFn {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemFn {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49065,10 +48836,10 @@ impl<'a> TypeGenerics<'a> {
                     self.block.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemForeignMod {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemForeignMod {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.unsafety.hash(state);
@@ -49076,10 +48847,10 @@ impl<'a> TypeGenerics<'a> {
                     self.items.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemImpl {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemImpl {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.defaultness.hash(state);
@@ -49090,10 +48861,10 @@ impl<'a> TypeGenerics<'a> {
                     self.items.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemMacro {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.ident.hash(state);
@@ -49101,10 +48872,10 @@ impl<'a> TypeGenerics<'a> {
                     self.semi_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemMod {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemMod {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49114,10 +48885,10 @@ impl<'a> TypeGenerics<'a> {
                     self.semi.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemStatic {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemStatic {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49127,10 +48898,10 @@ impl<'a> TypeGenerics<'a> {
                     self.expr.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemStruct {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemStruct {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49140,10 +48911,10 @@ impl<'a> TypeGenerics<'a> {
                     self.semi_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemTrait {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemTrait {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49157,10 +48928,10 @@ impl<'a> TypeGenerics<'a> {
                     self.items.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemTraitAlias {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemTraitAlias {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49169,10 +48940,10 @@ impl<'a> TypeGenerics<'a> {
                     self.bounds.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemType {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49181,10 +48952,10 @@ impl<'a> TypeGenerics<'a> {
                     self.ty.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemUnion {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemUnion {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49193,10 +48964,10 @@ impl<'a> TypeGenerics<'a> {
                     self.fields.hash(state);
                 }
             }
-                impl  Hash for ::syntax::ItemUse {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::ItemUse {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.vis.hash(state);
@@ -49204,18 +48975,18 @@ impl<'a> TypeGenerics<'a> {
                     self.tree.hash(state);
                 }
             }
-                impl  Hash for ::syntax::Label {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Label {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.name.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::LifetimeParam {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.lifetime.hash(state);
@@ -49223,236 +48994,268 @@ impl<'a> TypeGenerics<'a> {
                     self.bounds.hash(state);
                 }
             }
-            impl  Hash for ::syntax::Lit {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Lit {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Lit::Str(v0) => {
+                        ::syntax::Lit::Str(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::ByteStr(v0) => {
+                        ::syntax::Lit::ByteStr(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::CStr(v0) => {
+                        ::syntax::Lit::CStr(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::Byte(v0) => {
+                        ::syntax::Lit::Byte(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::Char(v0) => {
+                        ::syntax::Lit::Char(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::Int(v0) => {
+                        ::syntax::Lit::Int(v0) =>
+                        {
                             state.write_u8(5u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::Float(v0) => {
+                        ::syntax::Lit::Float(v0) =>
+                        {
                             state.write_u8(6u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::Bool(v0) => {
+                        ::syntax::Lit::Bool(v0) =>
+                        {
                             state.write_u8(7u8);
                             v0.hash(state);
                         }
-                        ::syntax::Lit::Verbatim(v0) => {
+                        ::syntax::Lit::Verbatim(v0) =>
+                        {
                             state.write_u8(8u8);
                             v0.to_string().hash(state);
                         }
                     }
                 }
             }
-            impl  Hash for ::syntax::LitBool {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::LitBool {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.value.hash(state);
                 }
             }
-                impl  Hash for ::syntax::Local {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Local {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.pat.hash(state);
                     self.init.hash(state);
                 }
             }
-                impl  Hash for ::syntax::LocalInit {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::LocalInit {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.expr.hash(state);
                     self.diverge.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Macro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.path.hash(state);
                     self.delimiter.hash(state);
                     TokenStreamHelper(&self.tokens).hash(state);
                 }
             }
+            
             impl Hash for ::syntax::MacroDelimiter {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::MacroDelimiter::Paren(_) => {
+                        ::syntax::MacroDelimiter::Paren(_) =>
+                        {
                             state.write_u8(0u8);
                         }
-                        ::syntax::MacroDelimiter::Brace(_) => {
+                        ::syntax::MacroDelimiter::Brace(_) =>
+                        {
                             state.write_u8(1u8);
                         }
-                        ::syntax::MacroDelimiter::Bracket(_) => {
+                        ::syntax::MacroDelimiter::Bracket(_) =>
+                        {
                             state.write_u8(2u8);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::Meta {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Meta::Path(v0) => {
+                        ::syntax::Meta::Path(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Meta::List(v0) => {
+                        ::syntax::Meta::List(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Meta::NameValue(v0) => {
+                        ::syntax::Meta::NameValue(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::MetaList {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.path.hash(state);
                     self.delimiter.hash(state);
                     TokenStreamHelper(&self.tokens).hash(state);
                 }
             }
+            
             impl Hash for ::syntax::MetaNameValue {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.path.hash(state);
                     self.value.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ParenthesizedGenericArguments {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.inputs.hash(state);
                     self.output.hash(state);
                 }
             }
-                impl  Hash for ::syntax::Pat {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Pat {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Pat::Const(v0) => {
+                        ::syntax::Pat::Const(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Ident(v0) => {
+                        ::syntax::Pat::Ident(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Lit(v0) => {
+                        ::syntax::Pat::Lit(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Macro(v0) => {
+                        ::syntax::Pat::Macro(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Or(v0) => {
+                        ::syntax::Pat::Or(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Paren(v0) => {
+                        ::syntax::Pat::Paren(v0) =>
+                        {
                             state.write_u8(5u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Path(v0) => {
+                        ::syntax::Pat::Path(v0) =>
+                        {
                             state.write_u8(6u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Range(v0) => {
+                        ::syntax::Pat::Range(v0) =>
+                        {
                             state.write_u8(7u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Reference(v0) => {
+                        ::syntax::Pat::Reference(v0) =>
+                        {
                             state.write_u8(8u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Rest(v0) => {
+                        ::syntax::Pat::Rest(v0) =>
+                        {
                             state.write_u8(9u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Slice(v0) => {
+                        ::syntax::Pat::Slice(v0) =>
+                        {
                             state.write_u8(10u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Struct(v0) => {
+                        ::syntax::Pat::Struct(v0) =>
+                        {
                             state.write_u8(11u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Tuple(v0) => {
+                        ::syntax::Pat::Tuple(v0) =>
+                        {
                             state.write_u8(12u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::TupleStruct(v0) => {
+                        ::syntax::Pat::TupleStruct(v0) =>
+                        {
                             state.write_u8(13u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Type(v0) => {
+                        ::syntax::Pat::Type(v0) =>
+                        {
                             state.write_u8(14u8);
                             v0.hash(state);
                         }
-                        ::syntax::Pat::Verbatim(v0) => {
+                        ::syntax::Pat::Verbatim(v0) =>
+                        {
                             state.write_u8(15u8);
                             TokenStreamHelper(v0).hash(state);
                         }
-                        ::syntax::Pat::Wild(v0) => {
+                        ::syntax::Pat::Wild(v0) =>
+                        {
                             state.write_u8(16u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::PatIdent {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatIdent {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.by_ref.hash(state);
@@ -49461,56 +49264,56 @@ impl<'a> TypeGenerics<'a> {
                     self.subpat.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatOr {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatOr {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.leading_vert.hash(state);
                     self.cases.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatParen {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatParen {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.pat.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatReference {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatReference {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mutability.hash(state);
                     self.pat.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatRest {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatRest {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatSlice {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatSlice {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.elems.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatStruct {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatStruct {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.qself.hash(state);
@@ -49519,19 +49322,19 @@ impl<'a> TypeGenerics<'a> {
                     self.rest.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatTuple {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatTuple {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.elems.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatTupleStruct {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatTupleStruct {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.qself.hash(state);
@@ -49539,133 +49342,139 @@ impl<'a> TypeGenerics<'a> {
                     self.elems.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatType {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.pat.hash(state);
                     self.ty.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PatWild {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PatWild {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Path {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.leading_colon.hash(state);
                     self.segments.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::PathArguments {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
                         ::syntax::PathArguments::None => {
                             state.write_u8(0u8);
                         }
-                        ::syntax::PathArguments::AngleBracketed(v0) => {
+                        ::syntax::PathArguments::AngleBracketed(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::PathArguments::Parenthesized(v0) => {
+                        ::syntax::PathArguments::Parenthesized(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::PathSegment {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                     self.arguments.hash(state);
                 }
             }
-                impl  Hash for ::syntax::PointerMutability {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PointerMutability {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::PointerMutability::Const(_) => {
+                        ::syntax::PointerMutability::Const(_) =>
+                        {
                             state.write_u8(0u8);
                         }
-                        ::syntax::PointerMutability::Mut(_) => {
+                        ::syntax::PointerMutability::Mut(_) =>
+                        {
                             state.write_u8(1u8);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::PreciseCapture {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::PreciseCapture {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.params.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::PredicateLifetime {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.lifetime.hash(state);
                     self.bounds.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::PredicateType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.lifetimes.hash(state);
                     self.bounded_ty.hash(state);
                     self.bounds.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::QSelf {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ty.hash(state);
                     self.position.hash(state);
                     self.as_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::RangeLimits {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::RangeLimits {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::RangeLimits::HalfOpen(_) => {
+                        ::syntax::RangeLimits::HalfOpen(_) =>
+                        {
                             state.write_u8(0u8);
                         }
-                        ::syntax::RangeLimits::Closed(_) => {
+                        ::syntax::RangeLimits::Closed(_) =>
+                        {
                             state.write_u8(1u8);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::Receiver {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Receiver {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.reference.hash(state);
@@ -49674,26 +49483,27 @@ impl<'a> TypeGenerics<'a> {
                     self.ty.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::ReturnType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
                         ::syntax::ReturnType::Default => {
                             state.write_u8(0u8);
                         }
-                        ::syntax::ReturnType::Type(_, v1) => {
+                        ::syntax::ReturnType::Type(_, v1) =>
+                        {
                             state.write_u8(1u8);
                             v1.hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::Signature {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Signature {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.constness.hash(state);
                     self.asyncness.hash(state);
@@ -49706,13 +49516,14 @@ impl<'a> TypeGenerics<'a> {
                     self.output.hash(state);
                 }
             }
-                impl  Hash for ::syntax::StaticMutability {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::StaticMutability {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::StaticMutability::Mut(_) => {
+                        ::syntax::StaticMutability::Mut(_) =>
+                        {
                             state.write_u8(0u8);
                         }
                         ::syntax::StaticMutability::None => {
@@ -49721,46 +49532,50 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
-                impl  Hash for ::syntax::Stmt {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Stmt {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Stmt::Local(v0) => {
+                        ::syntax::Stmt::Local(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Stmt::Item(v0) => {
+                        ::syntax::Stmt::Item(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Stmt::Expr(v0, v1) => {
+                        ::syntax::Stmt::Expr(v0, v1) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                             v1.hash(state);
                         }
-                        ::syntax::Stmt::Macro(v0) => {
+                        ::syntax::Stmt::Macro(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::StmtMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::StmtMacro {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mac.hash(state);
                     self.semi_token.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TraitBound {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.paren_token.hash(state);
                     self.modifier.hash(state);
@@ -49768,54 +49583,60 @@ impl<'a> TypeGenerics<'a> {
                     self.path.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TraitBoundModifier {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
                         ::syntax::TraitBoundModifier::None => {
                             state.write_u8(0u8);
                         }
-                        ::syntax::TraitBoundModifier::Maybe(_) => {
+                        ::syntax::TraitBoundModifier::Maybe(_) =>
+                        {
                             state.write_u8(1u8);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::TraitItem {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::TraitItem {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::TraitItem::Const(v0) => {
+                        ::syntax::TraitItem::Const(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::TraitItem::Fn(v0) => {
+                        ::syntax::TraitItem::Fn(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::TraitItem::Type(v0) => {
+                        ::syntax::TraitItem::Type(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::TraitItem::Macro(v0) => {
+                        ::syntax::TraitItem::Macro(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::TraitItem::Verbatim(v0) => {
+                        ::syntax::TraitItem::Verbatim(v0) =>
+                        {
                             state.write_u8(4u8);
                             TokenStreamHelper(v0).hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::TraitItemConst {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::TraitItemConst {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.ident.hash(state);
@@ -49824,10 +49645,10 @@ impl<'a> TypeGenerics<'a> {
                     self.default.hash(state);
                 }
             }
-                impl  Hash for ::syntax::TraitItemFn {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::TraitItemFn {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.sig.hash(state);
@@ -49835,20 +49656,20 @@ impl<'a> TypeGenerics<'a> {
                     self.semi_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::TraitItemMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::TraitItemMacro {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.mac.hash(state);
                     self.semi_token.hash(state);
                 }
             }
-                impl  Hash for ::syntax::TraitItemType {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::TraitItemType {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.ident.hash(state);
@@ -49858,88 +49679,103 @@ impl<'a> TypeGenerics<'a> {
                     self.default.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Type {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Type::Array(v0) => {
+                        ::syntax::Type::Array(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::BareFn(v0) => {
+                        ::syntax::Type::BareFn(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Group(v0) => {
+                        ::syntax::Type::Group(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::ImplTrait(v0) => {
+                        ::syntax::Type::ImplTrait(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Infer(v0) => {
+                        ::syntax::Type::Infer(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Macro(v0) => {
+                        ::syntax::Type::Macro(v0) =>
+                        {
                             state.write_u8(5u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Never(v0) => {
+                        ::syntax::Type::Never(v0) =>
+                        {
                             state.write_u8(6u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Paren(v0) => {
+                        ::syntax::Type::Paren(v0) =>
+                        {
                             state.write_u8(7u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Path(v0) => {
+                        ::syntax::Type::Path(v0) =>
+                        {
                             state.write_u8(8u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Ptr(v0) => {
+                        ::syntax::Type::Ptr(v0) =>
+                        {
                             state.write_u8(9u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Reference(v0) => {
+                        ::syntax::Type::Reference(v0) =>
+                        {
                             state.write_u8(10u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Slice(v0) => {
+                        ::syntax::Type::Slice(v0) =>
+                        {
                             state.write_u8(11u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::TraitObject(v0) => {
+                        ::syntax::Type::TraitObject(v0) =>
+                        {
                             state.write_u8(12u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Tuple(v0) => {
+                        ::syntax::Type::Tuple(v0) =>
+                        {
                             state.write_u8(13u8);
                             v0.hash(state);
                         }
-                        ::syntax::Type::Verbatim(v0) => {
+                        ::syntax::Type::Verbatim(v0) =>
+                        {
                             state.write_u8(14u8);
                             TokenStreamHelper(v0).hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::TypeArray {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.elem.hash(state);
                     self.len.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeBareFn {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.lifetimes.hash(state);
                     self.unsafety.hash(state);
@@ -49949,46 +49785,46 @@ impl<'a> TypeGenerics<'a> {
                     self.output.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeGroup {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.elem.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeImplTrait {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.bounds.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeInfer {
-                fn hash<H>(&self, _state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, _state: &mut H) where
+                H: Hasher
                 {}
             }
+            
             impl Hash for ::syntax::TypeMacro {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.mac.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeNever {
-                fn hash<H>(&self, _state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, _state: &mut H) where
+                H: Hasher
                 {}
             }
+            
             impl Hash for ::syntax::TypeParam {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.ident.hash(state);
@@ -49998,195 +49834,207 @@ impl<'a> TypeGenerics<'a> {
                     self.default.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeParamBound {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self 
                     {
-                        ::syntax::TypeParamBound::Trait(v0) => {
+                        ::syntax::TypeParamBound::Trait(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::TypeParamBound::Lifetime(v0) => {
+                        ::syntax::TypeParamBound::Lifetime(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                                        ::syntax::TypeParamBound::PreciseCapture(v0) => {
+                                        ::syntax::TypeParamBound::PreciseCapture(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::TypeParamBound::Verbatim(v0) => {
+                        ::syntax::TypeParamBound::Verbatim(v0) =>
+                        {
                             state.write_u8(3u8);
                             TokenStreamHelper(v0).hash(state);
                         }
                     }
                 }
             }
+            
             impl Hash for ::syntax::TypeParen {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.elem.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypePath {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.qself.hash(state);
                     self.path.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypePtr {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.const_token.hash(state);
                     self.mutability.hash(state);
                     self.elem.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeReference {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.lifetime.hash(state);
                     self.mutability.hash(state);
                     self.elem.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeSlice {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.elem.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeTraitObject {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.dyn_token.hash(state);
                     self.bounds.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::TypeTuple {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.elems.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::UnOp {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::UnOp::Deref(_) => {
+                        ::syntax::UnOp::Deref(_) =>
+                        {
                             state.write_u8(0u8);
                         }
-                        ::syntax::UnOp::Not(_) => {
+                        ::syntax::UnOp::Not(_) =>
+                        {
                             state.write_u8(1u8);
                         }
-                        ::syntax::UnOp::Neg(_) => {
+                        ::syntax::UnOp::Neg(_) =>
+                        {
                             state.write_u8(2u8);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::UseGlob {
-                fn hash<H>(&self, _state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::UseGlob {
+                fn hash<H>(&self, _state: &mut H) where
+                H: Hasher
                 {}
             }
-                impl  Hash for ::syntax::UseGroup {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::UseGroup {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.items.hash(state);
                 }
             }
-                impl  Hash for ::syntax::UseName {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::UseName {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                 }
             }
-                impl  Hash for ::syntax::UsePath {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::UsePath {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                     self.tree.hash(state);
                 }
             }
-                impl  Hash for ::syntax::UseRename {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::UseRename {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.ident.hash(state);
                     self.rename.hash(state);
                 }
             }
-                impl  Hash for ::syntax::UseTree {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::UseTree {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::UseTree::Path(v0) => {
+                        ::syntax::UseTree::Path(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::UseTree::Name(v0) => {
+                        ::syntax::UseTree::Name(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
-                        ::syntax::UseTree::Rename(v0) => {
+                        ::syntax::UseTree::Rename(v0) =>
+                        {
                             state.write_u8(2u8);
                             v0.hash(state);
                         }
-                        ::syntax::UseTree::Glob(v0) => {
+                        ::syntax::UseTree::Glob(v0) =>
+                        {
                             state.write_u8(3u8);
                             v0.hash(state);
                         }
-                        ::syntax::UseTree::Group(v0) => {
+                        ::syntax::UseTree::Group(v0) =>
+                        {
                             state.write_u8(4u8);
                             v0.hash(state);
                         }
                     }
                 }
             }
-                impl  Hash for ::syntax::Variadic {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+            
+            impl Hash for ::syntax::Variadic {
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.pat.hash(state);
                     self.comma.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Variant {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.attrs.hash(state);
                     self.ident.hash(state);
@@ -50194,25 +50042,27 @@ impl<'a> TypeGenerics<'a> {
                     self.discriminant.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::VisRestricted {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.in_token.hash(state);
                     self.path.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::Visibility {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::Visibility::Public(_) => {
+                        ::syntax::Visibility::Public(_) =>
+                        {
                             state.write_u8(0u8);
                         }
-                        ::syntax::Visibility::Restricted(v0) => {
+                        ::syntax::Visibility::Restricted(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
@@ -50222,25 +50072,27 @@ impl<'a> TypeGenerics<'a> {
                     }
                 }
             }
+            
             impl Hash for ::syntax::WhereClause {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     self.predicates.hash(state);
                 }
             }
+            
             impl Hash for ::syntax::WherePredicate {
-                fn hash<H>(&self, state: &mut H)
-                where
-                    H: Hasher,
+                fn hash<H>(&self, state: &mut H) where
+                H: Hasher
                 {
                     match self {
-                        ::syntax::WherePredicate::Lifetime(v0) => {
+                        ::syntax::WherePredicate::Lifetime(v0) =>
+                        {
                             state.write_u8(0u8);
                             v0.hash(state);
                         }
-                        ::syntax::WherePredicate::Type(v0) => {
+                        ::syntax::WherePredicate::Type(v0) =>
+                        {
                             state.write_u8(1u8);
                             v0.hash(state);
                         }
@@ -50344,4 +50196,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 50347 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 50199 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
