@@ -7,8 +7,12 @@
 
 #![allow
 (
+    bare_trait_objects,
+    mismatched_lifetime_syntaxes,
     non_camel_case_types,
+    non_fmt_panics,
     non_snake_case,
+    non_upper_case_globals,
     unused_attributes,
     unused_imports,
     unused_variables,
@@ -6778,19 +6782,15 @@ pub mod process
             pub fn stream( &self ) -> TokenStream {
                 TokenStream::_new(self.inner.stream())
             }
-            /// Returns the span for the delimiters of this token stream, spanning the
-            /// entire `Group`
-            /// ```
+            /// Returns the span for the delimiters of this token stream, spanning the entire `Group`
             pub fn span( &self ) -> Span {
                 Span::_new(self.inner.span())
             }
             /// Returns the span pointing to the opening delimiter of this group
-            /// ```
             pub fn span_open( &self ) -> Span {
                 Span::_new(self.inner.span_open())
             }
             /// Returns the span pointing to the closing delimiter of this group
-            /// ```
             pub fn span_close( &self ) -> Span {
                 Span::_new(self.inner.span_close())
             }
@@ -7300,8 +7300,6 @@ pub mod quote
             /// Format this value as an identifier fragment.
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result;
             /// Span associated with this `IdentFragment`.
-            ///
-            /// If non-`None`, may be inherited by formatted identifiers.
             fn span(&self) -> Option<Span> {
                 None
             }
@@ -8944,8 +8942,8 @@ pub mod syntax
                         unsafe { &*(self as *const Self).cast::<WithSpan>() }
                     }
                 }
-
-                impl DerefMut for $name
+            
+            impl DerefMut for $name
                 {
                     fn deref_mut(&mut self) -> &mut Self::Target
                     {
@@ -9805,10 +9803,7 @@ pub mod syntax
                     }
                 }
             }
-            /// Creates a `TokenBuffer` containing all the tokens from the input
-            /// `proc_macro::TokenStream`.
-            #[cfg(feature = "proc-macro")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "proc-macro")))]
+            /// Creates a `TokenBuffer` containing all the tokens from the input `proc_macro::TokenStream`.
             pub fn new(stream: proc_macro::TokenStream) -> Self {
                 Self::new2(stream.into())
             }
@@ -9895,8 +9890,6 @@ pub mod syntax
             /// While the cursor is looking at a `None`-delimited group, move it to look
             /// at the first token inside instead. If the group is empty, this will move
             /// the cursor past the `None`-delimited group.
-            ///
-            /// WARNING: This mutates its argument.
             fn ignore_none(&mut self) {
                 while let Entry::Group(group, _) = self.entry() {
                     if group.delimiter() == Delimiter::None {
@@ -10063,8 +10056,6 @@ pub mod syntax
             }
             /// Skip over the next token that is not a None-delimited group, without
             /// cloning it. Returns `None` if this cursor points to eof.
-            ///
-            /// This method treats `'lifetimes` as a single token.
             pub fn skip(mut self) -> Option<Cursor<'a>>
             {
                 self.ignore_none();
@@ -10510,8 +10501,6 @@ pub mod syntax
 
         ast_enum_of_structs! {
             /// Data stored within an enum variant or struct.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             pub enum Fields {
                 /// Named fields of a struct or struct variant such as `Point { x: f64,
                 /// y: f64 }`.
@@ -10632,8 +10621,6 @@ pub mod syntax
 
                 pub mutability: FieldMutability,
                 /// Name of the field, if any.
-                ///
-                /// Fields of tuple structs have no names.
                 pub ident: Option<Ident>,
 
                 pub colon_token: Option<Token![:]>,
@@ -10788,7 +10775,6 @@ pub mod syntax
                         ty,
                     })
                 }
-
                 /// Parses an unnamed (tuple struct) field.
                     pub fn parse_unnamed(input: ParseStream) -> Result<Self>
                 {
@@ -10897,8 +10883,6 @@ pub mod syntax
         ast_enum! 
         {
             /// The storage of a struct, enum or union data structure.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[cfg_attr(docsrs, doc(cfg(feature = "derive")))]
             pub enum Data {
                 Struct(DataStruct),
@@ -11535,53 +11519,6 @@ pub mod syntax
         ast_enum_of_structs!
         {
             /// A Rust expression.
-            /// are designed to be traversed using the following rebinding idiom.
-            /// # };
-            /// match expr {
-            ///     Expr::MethodCall(expr) => {
-            ///         /* ... */
-            ///     }
-            ///     Expr::Cast(expr) => {
-            ///         /* ... */
-            ///     }
-            ///     Expr::If(expr) => {
-            ///         /* ... */
-            ///     }
-            ///
-            ///     /* ... */
-            ///     # _ => {}
-            /// # }
-            /// # }
-            /// ```
-            ///
-            /// We begin with a variable `expr` of type `Expr` that has no fields
-            /// (because it is an enum), and by matching on it and rebinding a variable
-            /// with the same name `expr` we effectively imbue our variable with all of
-            /// the data fields provided by the variant that it turned out to be. So for
-            /// example above if we ended up in the `MethodCall` case then we get to use
-            /// `expr.receiver`, `expr.args` etc; if we ended up in the `If` case we get
-            /// to use `expr.cond`, `expr.then_branch`, `expr.else_branch`.
-            /// #
-            /// # fn example(expr: Expr) {
-            ///
-            /// match expr {
-            ///     Expr::MethodCall(ExprMethodCall { method, args, .. }) => {
-            /// # }
-            /// # _ => {}
-            /// # }
-            /// # }
-            /// ```
-            ///
-            /// In general, the name to which a syntax tree enum variant is bound should
-            /// be a suitable name for the complete syntax tree enum type.
-            /// if let Expr::Tuple(base) = *discriminant.base {
-            /// # }
-            /// # }
-            /// ```
-            ///
-            /// A sign that you may not be choosing the right variable names is if you
-            /// see names getting repeated in your code, like accessing
-            /// `receiver.receiver` or `pat.pat` or `cond.cond`.
             #[non_exhaustive]
             pub enum Expr {
                 /// A slice literal expression: `[a, b, c, d]`.
@@ -11615,16 +11552,10 @@ pub mod syntax
                 /// A for loop: `for pat in expr { ... }`.
                 ForLoop(ExprForLoop),
                 /// An expression contained within invisible delimiters.
-                ///
-                /// This variant is important for faithfully representing the precedence
-                /// of expressions and is related to `None`-delimited spans in a
                 /// `TokenStream`.
                 Group(ExprGroup),
                 /// An `if` expression with an optional `else` block: `if expr { ... }
                 /// else { ... }`.
-                ///
-                /// The `else` branch expression may only be an `If` or `Block`
-                /// expression, not any of the other types of expression.
                 If(ExprIf),
                 /// A square bracketed indexing expression: `vector[2]`.
                 Index(ExprIndex),
@@ -11646,8 +11577,6 @@ pub mod syntax
                 Paren(ExprParen),
                 /// A path like `std::mem::replace` possibly containing generic
                 /// parameters and a qualified self-type.
-                ///
-                /// A plain identifier like `x` is a path of length 1.
                 Path(ExprPath),
                 /// A range expression: `1..2`, `1..`, `..2`, `1..=2`, `..=2`.
                 Range(ExprRange),
@@ -11660,9 +11589,6 @@ pub mod syntax
                 /// A `return`, with an optional value to be returned.
                 Return(ExprReturn),
                 /// A struct literal expression: `Point { x: 1, y: 1 }`.
-                ///
-                /// The `rest` provides the value of the remaining fields as in `S { a:
-                /// 1, b: 1, ..rest }`.
                 Struct(ExprStruct),
                 /// A try-expression: `expr?`.
                 Try(ExprTry),
@@ -11988,8 +11914,6 @@ pub mod syntax
         {
             /// A path like `std::mem::replace` possibly containing generic
             /// parameters and a qualified self-type.
-            ///
-            /// A plain identifier like `x` is a path of length 1.
             pub struct ExprPath {
                 pub attrs: Vec<Attribute>,
                 pub qself: Option<QSelf>,
@@ -12141,21 +12065,6 @@ pub mod syntax
         impl Expr 
         {
             /// An unspecified invalid expression.
-            /// use std::mem;
-            /// use syn::{parse_quote, Expr};
-            ///
-            /// fn unparenthesize(e: &mut Expr) {
-            ///     while let Expr::Paren(paren) = e {
-            ///         *e = mem::replace(&mut *paren.expr, Expr::PLACEHOLDER);
-            ///     }
-            /// }
-            ///
-            /// fn main() {
-            ///     let mut e: Expr = parse_quote! { ((1 + 1)) };
-            ///     unparenthesize(&mut e);
-            ///     assert_eq!("1 + 1", e.to_token_stream().to_string());
-            /// }
-            /// ```
             pub const PLACEHOLDER: Self = Expr::Path(ExprPath {
                 attrs: Vec::new(),
                 qself: None,
@@ -12168,120 +12077,19 @@ pub mod syntax
             /// An alternative to the primary `Expr::parse` parser (from the [`Parse`]
             /// trait) for ambiguous syntactic positions in which a trailing brace
             /// should not be taken as part of the expression.
-            /// following code, the expression `S {}` is one expression. Presumably
-            /// there is an empty struct `struct S {}` defined somewhere which it is
-            /// instantiating.
-            /// #     }
-            /// # }
-            /// let _ = *S {};
-            ///
-            ///
-            /// ```
-            ///
-            /// We would want to parse the above using `Expr::parse` after the `=`
-            /// token.
-            /// if *S {} {}
-            ///
-            ///
-            /// //
-            ///
-            ///
-            ///
-            ///
-            ///
-            ///
-            /// ```
-            ///
-            /// For that reason we would want to parse if-conditions using
-            /// `Expr::parse_without_eager_brace` after the `if` token. Same for similar
-            /// syntactic positions such as the condition expr after a `while` token or
-            /// the expr at the top of a `match`.
-            /// behavior could work in most positions, and language designers just
-            /// decide each case based on which is more likely to be what the programmer
-            /// had in mind most of the time.
-            ///
-            ///
-            /// //
-            ///
-            /// //
-            ///
-            ///
-            ///
-            /// ```
-            ///
-            /// Note the grammar ambiguity on trailing braces is distinct from
-            /// precedence and is not captured by assigning a precedence level to the
-            /// braced struct init expr in relation to other operators. This can be
-            /// illustrated by `return 0..S {}` vs `match 0..S {}`. The former parses as
-            /// `return (0..(S {}))` implying tighter precedence for struct init than
-            /// `..`, while the latter parses as `match (0..S) {}` implying tighter
-            /// precedence for `..` than struct init, a contradiction.
-            #[cfg(all(feature = "full", feature = "parsing"))]
-            #[cfg_attr(docsrs, doc(cfg(all(feature = "full", feature = "parsing"))))]
             pub fn parse_without_eager_brace(input: ParseStream) -> Result<Expr> {
                 parsing::ambiguous_expr(input, parsing::AllowStruct(false))
             }
             /// An alternative to the primary `Expr::parse` parser (from the [`Parse`]
             /// trait) for syntactic positions in which expression boundaries are placed
-            /// more eagerly than done by the typical expression grammar. This includes
-            /// expressions at the head of a statement or in the right-hand side of a
-            /// `match` arm.
-            ///
-            /// 1.
-            ///   ```
-            ///   # let result = ();
-            ///   # let guard = false;
-            ///   # let cond = true;
-            ///   # let f = true;
-            ///   # let g = f;
-            ///   #
-            ///   let _ = match result {
-            ///       () if guard => if cond { f } else { g }
-            ///       () => false,
-            ///   };
-            ///   ```
-            ///
-            /// 2.
-            ///   ```
-            ///   # let cond = true;
-            ///   # let f = ();
-            ///   # let g = f;
-            ///   #
-            ///   let _ = || {
-            ///       if cond { f } else { g }
-            ///       ()
-            ///   };
-            ///   ```
-            ///
-            /// 3.
-            ///   ```
-            ///   # let cond = true;
-            ///   # let f = || ();
-            ///   # let g = f;
-            ///   #
-            ///   let _ = [if cond { f } else { g } ()];
-            ///   ```
-            ///
-            /// The same sequence of tokens `if cond { f } else { g } ()` appears in
-            /// expression position 3 times. The first two syntactic positions use eager
-            /// placement of expression boundaries, and parse as `Expr::If`, with the
-            /// adjacent `()` becoming `Pat::Tuple` or `Expr::Tuple`. In contrast, the
-            /// third case uses standard expression boundaries and parses as
-            /// `Expr::Call`.
-            ///
-            /// [`parse_without_eager_brace`]: Self::parse_without_eager_brace
-            #[cfg(all(feature = "full", feature = "parsing"))]
-            #[cfg_attr(docsrs, doc(cfg(all(feature = "full", feature = "parsing"))))]
+            /// more eagerly than done by the typical expression grammar.
             pub fn parse_with_earlier_boundary_rule(input: ParseStream) -> Result<Expr> {
                 parsing::parse_with_earlier_boundary_rule(input)
             }
-            /// Returns whether the next token in the parse stream is one that might
-            /// possibly form the beginning of an expr.
-            /// operator because it cannot be a starting token for any Rust expression.
-             
-                pub fn peek(input: ParseStream) -> bool
-        {
-                input.peek(Ident::peek_any) && !input.peek(Token![as])
+            /// Returns whether the next token in the parsing might possibly form the beginning of an expr.
+            pub fn peek(input: ParseStream) -> bool
+            {
+                    input.peek(Ident::peek_any) && !input.peek(Token![as])
                     || input.peek(token::Paren)
                     || input.peek(token::Bracket)
                     || input.peek(token::Brace)
@@ -12296,9 +12104,8 @@ pub mod syntax
                     || input.peek(Token![::])
                     || input.peek(Lifetime)
                     || input.peek(Token![#])
-            }
-
-            #[cfg(all(feature = "parsing", feature = "full"))]
+                }
+            
             pub fn replace_attrs(&mut self, new: Vec<Attribute>) -> Vec<Attribute>
             {
                 match self {
@@ -12512,17 +12319,6 @@ pub mod syntax
         ast_struct! 
         {
             /// One arm of a `match` expression: `0..=10 => { return true; }`.
-            /// #     let n = 0;
-            /// match n {
-            ///     0..=10 => {
-            ///         return true;
-            ///     }
-            ///    
-            ///     # _ => {}
-            /// }
-            /// #   false
-            /// # }
-            /// ```
             pub struct Arm {
                 pub attrs: Vec<Attribute>,
                 pub pat: Pat,
@@ -12606,8 +12402,8 @@ pub mod syntax
                     )
                 }
             }
-
-                pub fn parse_with_earlier_boundary_rule(input: ParseStream) -> Result<Expr>
+            
+            pub fn parse_with_earlier_boundary_rule(input: ParseStream) -> Result<Expr>
             {
                 let mut attrs = input.call(expr_attrs)?;
                 let mut expr = if input.peek(token::Group) {
@@ -12667,10 +12463,10 @@ pub mod syntax
                 expr.replace_attrs(attrs);
                 Ok(expr)
             }
-
-                impl Copy for AllowStruct {}
-
-                impl Clone for AllowStruct {
+            
+            impl Copy for AllowStruct {}
+            
+            impl Clone for AllowStruct {
                 fn clone(&self) -> Self {
                     *self
                 }
@@ -12761,7 +12557,7 @@ pub mod syntax
             fn parse_binop_rhs
             (
                 input: ParseStream,
-                #[cfg(feature = "full")] allow_struct: AllowStruct,
+                allow_struct: AllowStruct,
                 precedence: Precedence,
             ) -> Result<Box<Expr>>
             {
@@ -12809,7 +12605,7 @@ pub mod syntax
 
             pub fn ambiguous_expr(
                 input: ParseStream,
-                #[cfg(feature = "full")] allow_struct: AllowStruct,
+                allow_struct: AllowStruct,
             ) -> Result<Expr>
             {
                 let lhs = unary_expr(
@@ -13131,7 +12927,7 @@ pub mod syntax
 
             fn path_or_macro_or_struct(
                 input: ParseStream,
-                #[cfg(feature = "full")] allow_struct: AllowStruct,
+                allow_struct: AllowStruct,
             ) -> Result<Expr>
             {
                 let expr_style = true;
@@ -13292,8 +13088,8 @@ pub mod syntax
                     Err(content.error("expected `,` or `;`"))
                 }
             }
-
-                impl Parse for ExprArray
+            
+            impl Parse for ExprArray
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let content;
@@ -13317,8 +13113,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprRepeat
+            
+            impl Parse for ExprRepeat
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let content;
@@ -13365,7 +13161,7 @@ pub mod syntax
 
             fn expr_group(
                 input: ParseStream,
-                #[cfg(feature = "full")] allow_struct: AllowStruct,
+                allow_struct: AllowStruct,
             ) -> Result<Expr>
             {
                 let group = ::syntax::group::parse_group(input)?;
@@ -13396,8 +13192,8 @@ pub mod syntax
                     expr: Box::new(inner),
                 }))
             }
-
-                impl Parse for ExprParen
+            
+            impl Parse for ExprParen
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let content;
@@ -13408,8 +13204,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprLet
+            
+            impl Parse for ExprLet
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let allow_struct = AllowStruct(true);
@@ -13431,8 +13227,8 @@ pub mod syntax
                     }),
                 })
             }
-
-                impl Parse for ExprIf
+            
+            impl Parse for ExprIf
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let attrs = input.call(Attribute::parse_outer)?;
@@ -13484,8 +13280,8 @@ pub mod syntax
                     Ok(expr)
                 }
             }
-
-                impl Parse for ExprInfer
+            
+            impl Parse for ExprInfer
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13496,8 +13292,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprForLoop
+            
+            impl Parse for ExprForLoop
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let mut attrs = input.call(Attribute::parse_outer)?;
@@ -13525,8 +13321,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprLoop
+            
+            impl Parse for ExprLoop
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let mut attrs = input.call(Attribute::parse_outer)?;
@@ -13546,8 +13342,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprMatch
+            
+            impl Parse for ExprMatch
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let mut attrs = input.call(Attribute::parse_outer)?;
@@ -13607,8 +13403,8 @@ pub mod syntax
                 ExprTry, Try, "expected try expression",
                 ExprTuple, Tuple, "expected tuple expression",
             }
-
-                impl Parse for ExprUnary
+            
+            impl Parse for ExprUnary
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let attrs = Vec::new();
@@ -13630,16 +13426,16 @@ pub mod syntax
                     expr: Box::new(unary_expr(input, allow_struct)?),
                 })
             }
-
-                impl Parse for ExprClosure
+            
+            impl Parse for ExprClosure
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let allow_struct = AllowStruct(true);
                     expr_closure(input, allow_struct)
                 }
             }
-
-                impl Parse for ExprRawAddr
+            
+            impl Parse for ExprRawAddr
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let allow_struct = AllowStruct(true);
@@ -13652,8 +13448,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprReference
+            
+            impl Parse for ExprReference
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let allow_struct = AllowStruct(true);
@@ -13665,16 +13461,16 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprBreak
+            
+            impl Parse for ExprBreak
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let allow_struct = AllowStruct(true);
                     expr_break(input, allow_struct)
                 }
             }
-
-                impl Parse for ExprReturn
+            
+            impl Parse for ExprReturn
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13700,8 +13496,8 @@ pub mod syntax
                 input.parse::<Expr>()?;
                 Ok(Expr::Verbatim(verbatim::between(&begin, input)))
             }
-
-                impl Parse for ExprTryBlock
+            
+            impl Parse for ExprTryBlock
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13713,8 +13509,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprYield
+            
+            impl Parse for ExprYield
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13788,8 +13584,8 @@ pub mod syntax
                     body: Box::new(body),
                 })
             }
-
-                impl Parse for ExprAsync
+            
+            impl Parse for ExprAsync
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13838,8 +13634,8 @@ pub mod syntax
                     Ok(pat)
                 }
             }
-
-                impl Parse for ExprWhile
+            
+            impl Parse for ExprWhile
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let mut attrs = input.call(Attribute::parse_outer)?;
@@ -13861,8 +13657,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprConst
+            
+            impl Parse for ExprConst
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let const_token: Token![const] = input.parse()?;
@@ -13879,8 +13675,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for Label
+            
+            impl Parse for Label
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13891,8 +13687,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for Option<Label>
+            
+            impl Parse for Option<Label>
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -13903,8 +13699,8 @@ pub mod syntax
                     }
                 }
             }
-
-                impl Parse for ExprContinue
+            
+            impl Parse for ExprContinue
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
@@ -14034,8 +13830,8 @@ pub mod syntax
                     rest: None,
                 })
             }
-
-                impl Parse for ExprUnsafe
+            
+            impl Parse for ExprUnsafe
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let unsafe_token: Token![unsafe] = input.parse()?;
@@ -14052,8 +13848,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for ExprBlock
+            
+            impl Parse for ExprBlock
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let mut attrs = input.call(Attribute::parse_outer)?;
@@ -14118,8 +13914,8 @@ pub mod syntax
                     Ok(Some(end))
                 }
             }
-
-                impl Parse for RangeLimits
+            
+            impl Parse for RangeLimits
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let lookahead = input.lookahead1();
@@ -14135,8 +13931,8 @@ pub mod syntax
                     }
                 }
             }
-
-                impl RangeLimits {
+            
+            impl RangeLimits {
                 pub fn parse_obsolete(input: ParseStream) -> Result<Self> {
                     let lookahead = input.lookahead1();
                     let dot_dot = lookahead.peek(Token![..]);
@@ -14179,8 +13975,8 @@ pub mod syntax
                     }
                 }
             }
-
-                impl Arm {
+            
+            impl Arm {
                 pub fn parse_multiple(input: ParseStream) -> Result<Vec<Self>> {
                     let mut arms = Vec::new();
                     while !input.is_empty() {
@@ -14189,8 +13985,8 @@ pub mod syntax
                     Ok(arms)
                 }
             }
-
-                impl Parse for Arm
+            
+            impl Parse for Arm
             {
                 fn parse(input: ParseStream) -> Result<Arm> {
                     let requires_comma;
@@ -14275,8 +14071,8 @@ pub mod syntax
 
                 Ok(!trailing_dot)
             }
-
-                impl Parse for PointerMutability
+            
+            impl Parse for PointerMutability
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let lookahead = input.lookahead1();
@@ -14446,8 +14242,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprAssign {
+            
+            impl ToTokens for ExprAssign {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_assign(self, tokens, FixupContext::NONE);
                 }
@@ -14483,8 +14279,8 @@ pub mod syntax
                     do_print_expr(tokens);
                 }
             }
-
-                impl ToTokens for ExprAsync {
+            
+            impl ToTokens for ExprAsync {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.async_token.to_tokens(tokens);
@@ -14492,8 +14288,8 @@ pub mod syntax
                     self.block.to_tokens(tokens);
                 }
             }
-
-                impl ToTokens for ExprAwait {
+            
+            impl ToTokens for ExprAwait {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_await(self, tokens, FixupContext::NONE);
                 }
@@ -14572,8 +14368,8 @@ pub mod syntax
                     do_print_expr(tokens);
                 }
             }
-
-                impl ToTokens for ExprBlock {
+            
+            impl ToTokens for ExprBlock {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.label.to_tokens(tokens);
@@ -14583,8 +14379,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprBreak {
+            
+            impl ToTokens for ExprBreak {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_break(self, tokens, FixupContext::NONE);
                 }
@@ -14665,8 +14461,8 @@ pub mod syntax
                     do_print_expr(tokens);
                 }
             }
-
-                impl ToTokens for ExprClosure {
+            
+            impl ToTokens for ExprClosure {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_closure(self, tokens, FixupContext::NONE);
                 }
@@ -14697,8 +14493,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprConst {
+            
+            impl ToTokens for ExprConst {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.const_token.to_tokens(tokens);
@@ -14708,8 +14504,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprContinue {
+            
+            impl ToTokens for ExprContinue {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.continue_token.to_tokens(tokens);
@@ -14735,8 +14531,8 @@ pub mod syntax
                 e.dot_token.to_tokens(tokens);
                 e.member.to_tokens(tokens);
             }
-
-                impl ToTokens for ExprForLoop {
+            
+            impl ToTokens for ExprForLoop {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.label.to_tokens(tokens);
@@ -14759,8 +14555,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprIf {
+            
+            impl ToTokens for ExprIf {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
 
@@ -14821,15 +14617,15 @@ pub mod syntax
                     e.index.to_tokens(tokens);
                 });
             }
-
-                impl ToTokens for ExprInfer {
+            
+            impl ToTokens for ExprInfer {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.underscore_token.to_tokens(tokens);
                 }
             }
-
-                impl ToTokens for ExprLet {
+            
+            impl ToTokens for ExprLet {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_let(self, tokens, FixupContext::NONE);
                 }
@@ -14850,8 +14646,8 @@ pub mod syntax
                     self.lit.to_tokens(tokens);
                 }
             }
-
-                impl ToTokens for ExprLoop {
+            
+            impl ToTokens for ExprLoop {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.label.to_tokens(tokens);
@@ -14869,8 +14665,8 @@ pub mod syntax
                     self.mac.to_tokens(tokens);
                 }
             }
-
-                impl ToTokens for ExprMatch {
+            
+            impl ToTokens for ExprMatch {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.match_token.to_tokens(tokens);
@@ -14937,8 +14733,8 @@ pub mod syntax
                     path::printing::print_qpath(tokens, &self.qself, &self.path, PathStyle::Expr);
                 }
             }
-
-                impl ToTokens for ExprRange {
+            
+            impl ToTokens for ExprRange {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_range(self, tokens, FixupContext::NONE);
                 }
@@ -14977,8 +14773,8 @@ pub mod syntax
                     do_print_expr(tokens);
                 }
             }
-
-                impl ToTokens for ExprRawAddr {
+            
+            impl ToTokens for ExprRawAddr {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_raw_addr(self, tokens, FixupContext::NONE);
                 }
@@ -15019,8 +14815,8 @@ pub mod syntax
                     right_fixup,
                 );
             }
-
-                impl ToTokens for ExprRepeat {
+            
+            impl ToTokens for ExprRepeat {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.bracket_token.surround(tokens, |tokens| {
@@ -15030,8 +14826,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprReturn {
+            
+            impl ToTokens for ExprReturn {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_return(self, tokens, FixupContext::NONE);
                 }
@@ -15064,8 +14860,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprTry {
+            
+            impl ToTokens for ExprTry {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_try(self, tokens, FixupContext::NONE);
                 }
@@ -15082,8 +14878,8 @@ pub mod syntax
                 );
                 e.question_token.to_tokens(tokens);
             }
-
-                impl ToTokens for ExprTryBlock {
+            
+            impl ToTokens for ExprTryBlock {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.try_token.to_tokens(tokens);
@@ -15125,8 +14921,8 @@ pub mod syntax
                     right_fixup,
                 );
             }
-
-                impl ToTokens for ExprUnsafe {
+            
+            impl ToTokens for ExprUnsafe {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.unsafe_token.to_tokens(tokens);
@@ -15136,8 +14932,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprWhile {
+            
+            impl ToTokens for ExprWhile {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     outer_attrs_to_tokens(&self.attrs, tokens);
                     self.label.to_tokens(tokens);
@@ -15149,8 +14945,8 @@ pub mod syntax
                     });
                 }
             }
-
-                impl ToTokens for ExprYield {
+            
+            impl ToTokens for ExprYield {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     print_expr_yield(self, tokens, FixupContext::NONE);
                 }
@@ -15167,8 +14963,8 @@ pub mod syntax
                     );
                 }
             }
-
-                impl ToTokens for Arm {
+            
+            impl ToTokens for Arm {
                 fn to_tokens(&self, tokens: &mut TokenStream)
                 {
                     tokens.append_all(&self.attrs);
@@ -15201,8 +14997,8 @@ pub mod syntax
                     tokens.append(lit);
                 }
             }
-
-                impl ToTokens for Label {
+            
+            impl ToTokens for Label {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     self.name.to_tokens(tokens);
                     self.colon_token.to_tokens(tokens);
@@ -15218,8 +15014,8 @@ pub mod syntax
                     }
                 }
             }
-
-                impl ToTokens for RangeLimits {
+            
+            impl ToTokens for RangeLimits {
                 fn to_tokens(&self, tokens: &mut TokenStream )
                 {
                     match self {
@@ -15228,8 +15024,8 @@ pub mod syntax
                     }
                 }
             }
-
-                impl ToTokens for PointerMutability {
+            
+            impl ToTokens for PointerMutability {
                 fn to_tokens(&self, tokens: &mut TokenStream )
                 {
                     match self {
@@ -15270,23 +15066,13 @@ pub mod syntax
         /*
         */
         /// Additional methods for `Ident` not provided by proc-macro2 or libproc_macro.
-        pub trait IdentExt: Sized + private::Sealed {
+        pub trait IdentExt: Sized + private::Sealed
+        {
             /// Parses any identifier including keywords.
             fn parse_any(input: ParseStream) -> Result<Self>;
-
             /// Peeks any identifier including keywords.
             const peek_any: private::PeekFn = private::PeekFn;
-
             /// Strips the raw marker `r#`, if any, from the beginning of an ident.
-            /// invalid identifiers like `__pyo3_get_r#move`.
-            /// use syn::Ident;
-            /// use syn::ext::IdentExt;
-            ///
-            /// fn ident_for_getter(variable: &Ident) -> Ident {
-            ///     let getter = format!("__pyo3_get_{}", variable.unraw());
-            ///     Ident::new(&getter, Span::call_site())
-            /// }
-            /// ```
             fn unraw(&self) -> Ident;
         }
 
@@ -15360,71 +15146,6 @@ pub mod syntax
         ast_struct!
         {
             /// A complete file of Rust source code.
-            ///
-            /// # Example
-            ///
-            /// Parse a Rust source file into a `syn::File` and print out a debug
-            /// representation of the syntax tree.
-            /// use std::fs;
-            /// use std::process;
-            ///
-            /// fn main() {
-            /// # }
-            /// #
-            /// # fn fake_main() {
-            ///     let mut args = env::args();
-            ///     let _ = args.next();
-            ///
-            ///     let filename = match (args.next(), args.next()) {
-            ///         (Some(filename), None) => filename,
-            ///         _ => {
-            ///             eprintln!("Usage: dump-syntax path/to/filename.rs");
-            ///             process::exit(1);
-            ///         }
-            ///     };
-            ///
-            ///     let src = fs::read_to_string(&filename).expect("unable to read file");
-            ///     let syntax = syn::parse_file(&src).expect("unable to parse file");
-            ///
-            ///    
-            ///     println!("{:#?}", syntax);
-            /// }
-            /// ```
-            ///
-            /// Running with its own source code as input, this program prints output
-            /// that begins with:
-            ///
-            /// ```text
-            /// File {
-            ///     shebang: None,
-            ///     attrs: [],
-            ///     items: [
-            ///         Use(
-            ///             ItemUse {
-            ///                 attrs: [],
-            ///                 vis: Inherited,
-            ///                 use_token: Use,
-            ///                 leading_colon: None,
-            ///                 tree: Path(
-            ///                     UsePath {
-            ///                         ident: Ident(
-            ///                             std,
-            ///                         ),
-            ///                         colon2_token: Colon2,
-            ///                         tree: Name(
-            ///                             UseName {
-            ///                                 ident: Ident(
-            ///                                     env,
-            ///                                 ),
-            ///                             },
-            ///                         ),
-            ///                     },
-            ///                 ),
-            ///                 semi_token: Semi,
-            ///             },
-            ///         ),
-            /// ...
-            /// ```
             pub struct File {
                 pub shebang: Option<String>,
                 pub attrs: Vec<Attribute>,
@@ -15683,15 +15404,13 @@ pub mod syntax
             }
             /// Transform this fixup into the one that should apply when printing the
             /// leftmost subexpression of the current expression.
-            ///
-            /// For example in `$a + $b` and `$a.method()`, the subexpression `$a` is a
             /// leftmost subexpression.
             pub fn leftmost_subexpression_with_operator(
                 self,
                 expr: &Expr,
-                #[cfg(feature = "full")] next_operator_can_begin_expr: bool,
+                next_operator_can_begin_expr: bool,
                 next_operator_can_begin_generics: bool,
-                #[cfg(feature = "full")] precedence: Precedence,
+                precedence: Precedence,
             ) -> (Precedence, Self) {
                 let fixup = FixupContext {
                                 next_operator: precedence,
@@ -15743,13 +15462,11 @@ pub mod syntax
             }
             /// Transform this fixup into the one that should apply when printing the
             /// rightmost subexpression of the current expression.
-            ///
-            /// For example in `$a + $b` and `-$b`, the subexpression `$b` is a
             /// rightmost subexpression.
             pub fn rightmost_subexpression(
                 self,
                 expr: &Expr,
-                #[cfg(feature = "full")] precedence: Precedence,
+                precedence: Precedence,
             ) -> (Precedence, Self) {
                 let fixup = self.rightmost_subexpression_fixup(
                                 false,
@@ -15761,9 +15478,9 @@ pub mod syntax
 
             pub fn rightmost_subexpression_fixup(
                 self,
-                #[cfg(feature = "full")] reset_allow_struct: bool,
-                #[cfg(feature = "full")] optional_operand: bool,
-                #[cfg(feature = "full")] precedence: Precedence,
+                reset_allow_struct: bool,
+                optional_operand: bool,
+                precedence: Precedence,
             ) -> Self {
                 FixupContext {
                                 previous_operator: precedence,
@@ -16244,8 +15961,6 @@ pub mod syntax
         {
             /// A generic type parameter, lifetime, or const generic: `T: Into<String>`,
             /// `'a: 'b`, `const LEN: usize`.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             pub enum GenericParam {
                 /// A lifetime parameter: `'a: 'b + 'c + 'd`.
                 Lifetime(LifetimeParam),
@@ -16627,8 +16342,6 @@ pub mod syntax
 
         ast_enum_of_structs! {
             /// A single predicate in a `where` clause: `T: Deserialize<'de>`.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum WherePredicate {
                 /// A lifetime predicate in a `where` clause: `'a: 'b + 'c`.
@@ -16681,7 +16394,7 @@ pub mod syntax
                     path::{ self, ParenthesizedGenericArguments, Path, PathArguments },
                     punctuated::{ Punctuated },
                     ty::{ Type },
-                    token, verbatim,
+                    *,
 
                 },
                 *,
@@ -17138,73 +16851,88 @@ pub mod syntax
             {
                 fn parse(input: ParseStream) -> Result<Self>
                 {
-                    if input.peek(Lifetime) && input.peek2(Token![:]) {
-                        Ok(WherePredicate::Lifetime(PredicateLifetime {
-                            lifetime: input.parse()?,
-                            colon_token: input.parse()?,
-                            bounds: {
-                                let mut bounds = Punctuated::new();
-                                loop {
-                                    if input.is_empty()
-                                        || input.peek(token::Brace)
-                                        || input.peek(Token![,])
-                                        || input.peek(Token![;])
-                                        || input.peek(Token![:])
-                                        || input.peek(Token![=])
+                    if input.peek(Lifetime) && input.peek2(Token![:])
+                    {
+                        Ok(WherePredicate::Lifetime
+                        (
+                            PredicateLifetime
+                            {
+                                lifetime: input.parse()?,
+                                colon_token: input.parse()?,
+                                bounds:
+                                {
+                                    let mut bounds = Punctuated::new();
+                                    loop {
+                                        if input.is_empty()
+                                            || input.peek(token::Brace)
+                                            || input.peek(Token![,])
+                                            || input.peek(Token![;])
+                                            || input.peek(Token![:])
+                                            || input.peek(Token![=])
+                                        {
+                                            break;
+                                        }
+                                        let value = input.parse()?;
+                                        bounds.push_value(value);
+                                        if !input.peek(Token![+]) {
+                                            break;
+                                        }
+                                        let punct = input.parse()?;
+                                        bounds.push_punct(punct);
+                                    }
+                                    bounds
+                                },
+                            } ) )
+                    }
+                    else
+                    {
+                        Ok
+                        (
+                            WherePredicate::Type
+                            (
+                                PredicateType
+                                {
+                                    lifetimes: input.parse()?,
+                                    bounded_ty: input.parse()?,
+                                    colon_token: input.parse()?,
+                                    bounds:
                                     {
-                                        break;
-                                    }
-                                    let value = input.parse()?;
-                                    bounds.push_value(value);
-                                    if !input.peek(Token![+]) {
-                                        break;
-                                    }
-                                    let punct = input.parse()?;
-                                    bounds.push_punct(punct);
+                                        let mut bounds = Punctuated::new();
+                                        loop
+                                        {
+                                            if input.is_empty()
+                                            || input.peek(token::Brace)
+                                            || input.peek(Token![,])
+                                            || input.peek(Token![;])
+                                            || input.peek(Token![:]) && !input.peek(Token![::])
+                                            || input.peek(Token![=])
+                                            { break; }
+
+                                            bounds.push_value({
+                                                let allow_precise_capture = false;
+                                                let allow_const = true;
+                                                TypeParamBound::parse_single(
+                                                    input,
+                                                    allow_precise_capture,
+                                                    allow_const,
+                                                )?
+                                            });
+                                            if !input.peek(Token![+]) {
+                                                break;
+                                            }
+                                            let punct = input.parse()?;
+                                            bounds.push_punct(punct);
+                                        }
+                                        bounds
+                                    },
                                 }
-                                bounds
-                            },
-                        }))
-                    } else {
-                        Ok(WherePredicate::Type(PredicateType {
-                            lifetimes: input.parse()?,
-                            bounded_ty: input.parse()?,
-                            colon_token: input.parse()?,
-                            bounds: {
-                                let mut bounds = Punctuated::new();
-                                loop {
-                                    if input.is_empty()
-                                        || input.peek(token::Brace)
-                                        || input.peek(Token![,])
-                                        || input.peek(Token![;])
-                                        || input.peek(Token![:]) && !input.peek(Token![::])
-                                        || input.peek(Token![=])
-                                    {
-                                        break;
-                                    }
-                                    bounds.push_value({
-                                        let allow_precise_capture = false;
-                                        let allow_const = true;
-                                        TypeParamBound::parse_single(
-                                            input,
-                                            allow_precise_capture,
-                                            allow_const,
-                                        )?
-                                    });
-                                    if !input.peek(Token![+]) {
-                                        break;
-                                    }
-                                    let punct = input.parse()?;
-                                    bounds.push_punct(punct);
-                                }
-                                bounds
-                            },
-                        }))
+                            )
+                        )
                     }
                 }
             }
-
-                impl Parse for PreciseCapture
+            
+            impl Parse for PreciseCapture
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let use_token: Token![use] = input.parse()?;
@@ -17240,8 +16968,8 @@ pub mod syntax
                     })
                 }
             }
-
-                impl Parse for CapturedParam
+            
+            impl Parse for CapturedParam
             {
                 fn parse(input: ParseStream) -> Result<Self> {
                     let lookahead = input.lookahead1();
@@ -17256,42 +16984,20 @@ pub mod syntax
             }
 
             pub fn choose_generics_over_qpath(input: ParseStream) -> bool
-        {
-               
-               
-               
-               
-                //
-               
-               
-                //
-               
-               
-               
-               
-               
-               
-               
-                //
-               
-                //
-               
-                //
-               
-               
+            {
                 input.peek(Token![<])
-                    && (input.peek2(Token![>])
-                        || input.peek2(Token![#])
-                        || (input.peek2(Lifetime) || input.peek2(Ident))
-                            && (input.peek3(Token![>])
-                                || input.peek3(Token![,])
-                                || input.peek3(Token![:]) && !input.peek3(Token![::])
-                                || input.peek3(Token![=]))
-                        || input.peek2(Token![const]))
+                        && (input.peek2(Token![>])
+                            || input.peek2(Token![#])
+                            || (input.peek2(Lifetime) || input.peek2(Ident))
+                                && (input.peek3(Token![>])
+                                    || input.peek3(Token![,])
+                                    || input.peek3(Token![:]) && !input.peek3(Token![::])
+                                    || input.peek3(Token![=]))
+                            || input.peek2(Token![const]))
             }
-
-                pub fn choose_generics_over_qpath_after_keyword(input: ParseStream) -> bool
-        {
+            
+            pub fn choose_generics_over_qpath_after_keyword(input: ParseStream) -> bool
+            {
                 let input = input.fork();
                 input.call(Ident::parse_any).unwrap();
                 choose_generics_over_qpath(&input)
@@ -17563,8 +17269,8 @@ pub mod syntax
                     self.bounds.to_tokens(tokens);
                 }
             }
-
-                impl ToTokens for PreciseCapture {
+            
+            impl ToTokens for PreciseCapture {
                 fn to_tokens(&self, tokens: &mut TokenStream) {
                     self.use_token.to_tokens(tokens);
                     self.lt_token.to_tokens(tokens);
@@ -17591,8 +17297,8 @@ pub mod syntax
                     self.gt_token.to_tokens(tokens);
                 }
             }
-
-                impl ToTokens for CapturedParam {
+            
+            impl ToTokens for CapturedParam {
                 fn to_tokens(&self, tokens: &mut TokenStream )
                 {
                     match self {
@@ -17635,17 +17341,21 @@ pub mod syntax
     {
         use ::
         {
-            process::macros::{ Ident },
             syntax::{ lookahead },
             *,
         };
+
+        pub use process::macros::Ident;
         /*
         */
         macro_rules! ident_from_token
         {
-            ($token:ident) => {
-                impl From<Token![$token]> for Ident {
-                    fn from(token: Token![$token]) -> Ident {
+            ($token:ident) =>
+            {
+                impl From<Token![$token]> for Ident
+                {
+                    fn from(token: Token![$token]) -> Ident
+                    {
                         Ident::new(stringify!($token), token.span)
                     }
                 }
@@ -17787,8 +17497,6 @@ pub mod syntax
         ast_enum_of_structs!
         {
             /// Things that can appear directly inside of a module or scope.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum Item {
                 /// A constant item: `const MAX: u16 = 65535`.
@@ -18178,8 +17886,6 @@ pub mod syntax
         ast_enum_of_structs! 
         {
             /// A suffix of an import tree in a `use` item: `Type as Renamed` or `*`.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             pub enum UseTree {
                 /// A path prefix of imports in a `use` item: `std::...`.
                 Path(UsePath),
@@ -18242,8 +17948,6 @@ pub mod syntax
         ast_enum_of_structs! 
         {
             /// An item within an `extern` block.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum ForeignItem {
                 /// A foreign function in an `extern` block.
@@ -18329,8 +18033,6 @@ pub mod syntax
         ast_enum_of_structs! 
         {
             /// An item declaration within the definition of a trait.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum TraitItem {
                 /// An associated constant within the definition of a trait.
@@ -18418,8 +18120,6 @@ pub mod syntax
         ast_enum_of_structs! 
         {
             /// An item within an impl block.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum ImplItem {
                 /// An associated constant within an impl block.
@@ -18579,9 +18279,6 @@ pub mod syntax
         ast_struct! 
         {
             /// The variadic argument of a foreign function.
-            ///    
-            /// }
-            /// ```
             pub struct Variadic {
                 pub attrs: Vec<Attribute>,
                 pub pat: Option<(Box<Pat>, Token![:])>,
@@ -21287,15 +20984,6 @@ pub mod syntax
 
         impl Lifetime 
         {
-            /// # Panics
-            ///
-            /// Panics if the lifetime does not conform to the bulleted rules above.
-            /// # use syn::Lifetime;
-            /// #
-            /// # fn f() -> Lifetime {
-            /// Lifetime::new("'a", Span::call_site())
-            /// # }
-            /// ```
             pub fn new(symbol: &str, span: Span) -> Self {
                 if !symbol.starts_with('\'') {
                     panic!(
@@ -21461,8 +21149,6 @@ pub mod syntax
         ast_enum_of_structs!
         {
             /// A Rust literal such as a string or integer or boolean.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum Lit {
                 /// A UTF-8 string literal: `"foo"`.
@@ -21478,8 +21164,6 @@ pub mod syntax
                 /// An integer literal: `1` or `1u16`.
                 Int(LitInt),
                 /// A floating point literal: `1f64` or `1.0e10f64`.
-                ///
-                /// Must be finite. May not be infinite or NaN.
                 Float(LitFloat),
                 /// A boolean literal: `true` or `false`.
                 Bool(LitBool),
@@ -21543,8 +21227,6 @@ pub mod syntax
 
         ast_struct! {
             /// A floating point literal: `1f64` or `1.0e10f64`.
-            ///
-            /// Must be finite. May not be infinite or NaN.
             pub struct LitFloat {
                 repr: Box<LitFloatRepr>,
             }
@@ -21582,40 +21264,7 @@ pub mod syntax
                 String::from(value)
             }
             /// Parse a syntax tree node from the content of this string literal.
-            ///         return Ok(None);
-            ///     }
-            ///
-            ///     if let Meta::NameValue(meta) = &attr.meta {
-            ///         if let Expr::Lit(expr) = &meta.value {
-            ///             if let Lit::Str(lit_str) = &expr.lit {
-            ///                 return lit_str.parse().map(Some);
-            ///             }
-            ///         }
-            ///     }
-            ///
-            ///     let message = "expected #[path = \"...\"]";
-            ///     Err(Error::new_spanned(attr, message))
-            /// }
-            /// ```
-             
-                pub fn parse<T: Parse>(&self) -> Result<T>
-            {
-                self.parse_with(T::parse)
-            }
-            /// Invoke parser on the content of this string literal.
-            /// #     const IGNORE: &str = stringify! {
-            /// let lit_str: LitStr = /* ... */;
-            /// #     };
-            ///
-            ///
-            ///
-            /// let basic_path = lit_str.parse_with(syn::Path::parse_mod_style)?;
-            /// #
-            /// #     Ok(())
-            /// # }
-            /// ```
-             
-                pub fn parse_with<F: Parser>(&self, parser: F) -> Result<F::Output> {
+            pub fn parse_with<F: Parser>(&self, parser: F) -> Result<F::Output> {
                 use ::process::macros::Group;
 
                
@@ -21854,21 +21503,6 @@ pub mod syntax
                 &self.repr.digits
             }
             /// Parses the literal into a selected number type.
-            /// in the macro input.
-            /// use syn::parse::{Parse, ParseStream, Result};
-            ///
-            /// struct Port {
-            ///     value: u16,
-            /// }
-            ///
-            /// impl Parse for Port {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let lit: LitInt = input.parse()?;
-            ///         let value = lit.base10_parse::<u16>()?;
-            ///         Ok(Port { value })
-            ///     }
-            /// }
-            /// ```
             pub fn base10_parse<N>(&self) -> Result<N> where
                 N: FromStr,
                 N::Err: Display,
@@ -22243,8 +21877,6 @@ pub mod syntax
             /// An ordinary string like `"data"`.
             Cooked,
             /// A raw string like `r##"data"##`.
-            ///
-            /// The unsigned integer is the number of `#` symbols used.
             Raw(usize),
         }
 
@@ -23346,7 +22978,7 @@ pub mod syntax
             }
             /// Triggers an error at the current position of the parse stream.
             pub fn error(self) -> Error {
-                let mut comparisons = self.comparisons.into_inner();
+                let mut comparisons = self.comparisons.clone().into_inner();
                 comparisons.retain_mut(|display| {
                     if *display == "`)`" {
                         *display = match self.cursor.scope_delimiter() {
@@ -23388,121 +23020,6 @@ pub mod syntax
                 type Token: Token;
         }
         /// Pseudo-token used for peeking the end of a parse stream.
-        /// - [`ParseStream::peek2`][::syntax::parse::ParseBuffer::peek2]
-        /// - [`ParseStream::peek3`][::syntax::parse::ParseBuffer::peek3]
-        /// - [`Lookahead1::peek`]
-        ///
-        /// The peek will return `true` if there are no remaining tokens after that
-        /// point in the parse stream.
-        /// arguments:
-        ///
-        /// - `#[fmt("simple example")]`
-        /// - `#[fmt("interpolation e{}ample", self.x)]`
-        /// - `#[fmt("interpolation e{x}ample")]`
-        ///
-        /// and we want to recognize the cases where no interpolation occurs so that
-        /// more efficient code can be generated.
-        /// consuming the comma from the parse stream, because if it isn't a trailing
-        /// comma, that same comma needs to be parsed as part of `args`.
-        /// use ::quote::quote;
-        /// use syn::parse::{End, Parse, ParseStream, Result};
-        /// use syn::{parse_quote, Attribute, LitStr, Token};
-        ///
-        /// struct FormatArgs {
-        ///     template: LitStr, 
-        ///     args: TokenStream,
-        /// }
-        ///
-        /// impl Parse for FormatArgs {
-        ///     fn parse(input: ParseStream) -> Result<Self> {
-        ///         let template: LitStr = input.parse()?;
-        ///
-        ///         let args = if input.is_empty()
-        ///             || input.peek(Token![,]) && input.peek2(End)
-        ///         {
-        ///             input.parse::<Option<Token![,]>>()?;
-        ///             TokenStream::new()
-        ///         } else {
-        ///             input.parse()?
-        ///         };
-        ///
-        ///         Ok(FormatArgs {
-        ///             template,
-        ///             args,
-        ///         })
-        ///     }
-        /// }
-        ///
-        /// fn main() -> Result<()> {
-        ///     let attrs: Vec<Attribute> = parse_quote! {
-        ///         #[fmt("simple example")]
-        ///         #[fmt("interpolation e{}ample", self.x)]
-        ///         #[fmt("interpolation e{x}ample")]
-        ///     };
-        ///
-        ///     for attr in &attrs {
-        ///         let FormatArgs { template, args } = attr.parse_args()?;
-        ///         let requires_fmt_machinery =
-        ///             !args.is_empty() || template.value().contains(['{', '}']);
-        ///         let out = if requires_fmt_machinery {
-        ///             quote! {
-        ///                 ::core::write!(__formatter, #template #args)
-        ///             }
-        ///         } else {
-        ///             quote! {
-        ///                 __formatter.write_str(#template)
-        ///             }
-        ///         };
-        ///         println!("{}", out);
-        ///     }
-        ///     Ok(())
-        /// }
-        /// ```
-        ///
-        /// Implementing this parsing logic without `peek2(End)` is more clumsy because
-        /// we'd need a parse stream actually advanced past the comma before being able
-        /// to find out whether there is anything after it. It would look something
-        /// like:
-        ///
-        /// ```
-        /// # use ::process::macros::TokenStream;
-        /// # use syn::parse::{ParseStream, Result};
-        /// # use syn::Token;
-        /// #
-        /// # fn parse(input: ParseStream) -> Result<()> {
-        /// use syn::parse::discouraged::Speculative as _;
-        ///
-        /// let ahead = input.fork();
-        /// ahead.parse::<Option<Token![,]>>()?;
-        /// let args = if ahead.is_empty() {
-        ///     input.advance_to(&ahead);
-        ///     TokenStream::new()
-        /// } else {
-        ///     input.parse()?
-        /// };
-        /// # Ok(())
-        /// # }
-        /// ```
-        ///
-        /// or:
-        ///
-        /// ```
-        /// # use ::process::macros::TokenStream;
-        /// # use syn::parse::{ParseStream, Result};
-        /// # use syn::Token;
-        /// #
-        /// # fn parse(input: ParseStream) -> Result<()> {
-        /// use ::quote::ToTokens as _;
-        ///
-        /// let comma: Option<Token![,]> = input.parse()?;
-        /// let mut args = TokenStream::new();
-        /// if !input.is_empty() {
-        ///     comma.to_tokens(&mut args);
-        ///     input.parse::<TokenStream>()?.to_tokens(&mut args);
-        /// }
-        /// # Ok(())
-        /// # }
-        /// ```
         pub struct End;
 
         impl Copy for End {}
@@ -23587,18 +23104,19 @@ pub mod syntax
 
         impl MacroDelimiter 
         {
-            pub fn span(&self) -> &DelimSpan {
+            pub fn span(&self) -> &DelimSpan
+            {
                 match self {
                     MacroDelimiter::Paren(token) => &token.span,
                     MacroDelimiter::Brace(token) => &token.span,
                     MacroDelimiter::Bracket(token) => &token.span,
                 }
             }
-
-            #[cfg(all(feature = "full", any(feature = "parsing", feature = "printing")))]
+            
             pub fn is_brace(&self) -> bool
-        {
-                match self {
+            {
+                match self
+                {
                     MacroDelimiter::Brace(_) => true,
                     MacroDelimiter::Paren(_) | MacroDelimiter::Bracket(_) => false,
                 }
@@ -23607,89 +23125,14 @@ pub mod syntax
 
         impl Macro 
         {
-            /// Parse the tokens within the macro invocation's delimiters into a syntax
-            /// tree.
-            /// use syn::ext::IdentExt;
-            /// use syn::parse::{Error, Parse, ParseStream, Result};
-            /// use syn::punctuated::Punctuated;
-            ///
-            ///
-            ///
-            /// //
-            ///
-            /// struct FormatArgs {
-            ///     format_string: Expr,
-            ///     positional_args: Vec<Expr>,
-            ///     named_args: Vec<(Ident, Expr)>,
-            /// }
-            ///
-            /// impl Parse for FormatArgs {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let format_string: Expr;
-            ///         let mut positional_args = Vec::new();
-            ///         let mut named_args = Vec::new();
-            ///
-            ///         format_string = input.parse()?;
-            ///         while !input.is_empty() {
-            ///             input.parse::<Token![,]>()?;
-            ///             if input.is_empty() {
-            ///                 break;
-            ///             }
-            ///             if input.peek(Ident::peek_any) && input.peek2(Token![=]) {
-            ///                 while !input.is_empty() {
-            ///                     let name: Ident = input.call(Ident::parse_any)?;
-            ///                     input.parse::<Token![=]>()?;
-            ///                     let value: Expr = input.parse()?;
-            ///                     named_args.push((name, value));
-            ///                     if input.is_empty() {
-            ///                         break;
-            ///                     }
-            ///                     input.parse::<Token![,]>()?;
-            ///                 }
-            ///                 break;
-            ///             }
-            ///             positional_args.push(input.parse()?);
-            ///         }
-            ///
-            ///         Ok(FormatArgs {
-            ///             format_string,
-            ///             positional_args,
-            ///             named_args,
-            ///         })
-            ///     }
-            /// }
-            ///
-            ///
-            ///
-            /// fn get_format_string(m: &Macro) -> Result<LitStr> {
-            ///     let args: FormatArgs = m.parse_body()?;
-            ///     match args.format_string {
-            ///         Expr::Lit(ExprLit { lit: Lit::Str(lit), .. }) => Ok(lit),
-            ///         other => {
-            ///            
-            ///            
-            ///             Err(Error::new_spanned(other, "format string must be a string literal"))
-            ///         }
-            ///     }
-            /// }
-            ///
-            /// fn main() {
-            ///     let invocation = parse_quote! {
-            ///         println!("{:?}", Instant::now())
-            ///     };
-            ///     let lit = get_format_string(&invocation).unwrap();
-            ///     assert_eq!(lit.value(), "{:?}");
-            /// }
-            /// ```
-             
-                pub fn parse_body<T: Parse>(&self) -> Result<T>
+            /// Parse the tokens within the macro invocation's delimiters into a syntax tree.
+            pub fn parse_body<T: Parse>(&self) -> Result<T>
             {
                 self.parse_body_with(T::parse)
             }
             /// Parse the tokens within the macro invocation's delimiters using the
             /// given parser.
-             
-                pub fn parse_body_with<F: Parser>(&self, parser: F) -> Result<F::Output>
+            pub fn parse_body_with<F: Parser>(&self, parser: F) -> Result<F::Output>
             {
                 let scope = self.delimiter.span().close();
                 ::syntax::parse::parse_scoped(parser, scope, self.tokens.clone())
@@ -23825,22 +23268,6 @@ pub mod syntax
 
         impl<'a> ParseNestedMeta<'a> {
             /// Used when parsing `key = "value"` syntax.
-            /// `meta.parse::<Token![=]>()?`, so at most it is a minor convenience to
-            /// use `meta.value()?`.
-            ///         if meta.path.is_ident("kind") { 
-            ///             let value = meta.value()?;  
-            ///             let s: LitStr = value.parse()?; 
-            ///             if s.value() == "EarlGrey" {
-            ///                
-            ///             }
-            ///             Ok(())
-            ///         } else {
-            ///             Err(meta.error("unsupported attribute"))
-            ///         }
-            ///     })?;
-            /// }
-            /// # anyhow::Ok(())
-            /// ```
             pub fn value(&self) -> Result<ParseStream<'a>>
             {
                 self.input.parse::<Token![=]>()?;
@@ -23849,56 +23276,6 @@ pub mod syntax
             /// Used when parsing `list(...)` syntax **if** the content inside the
             /// nested parentheses is also expected to conform to Rust's structured
             /// attribute convention.
-            /// };
-            ///
-            /// if attr.path().is_ident("tea") {
-            ///     attr.parse_nested_meta(|meta| {
-            ///         if meta.path.is_ident("with") {
-            ///             meta.parse_nested_meta(|meta| { 
-            ///                 if meta.path.is_ident("sugar") {
-            ///                    
-            ///                     Ok(())
-            ///                 } else if meta.path.is_ident("milk") {
-            ///                     Ok(())
-            ///                 } else {
-            ///                     Err(meta.error("unsupported ingredient"))
-            ///                 }
-            ///             })
-            ///         } else {
-            ///             Err(meta.error("unsupported tea property"))
-            ///         }
-            ///     })?;
-            /// }
-            /// # anyhow::Ok(())
-            /// ```
-            ///
-            /// # Counterexample
-            ///
-            /// If you don't need `parse_nested_meta`'s help in parsing the content
-            /// written within the nested parentheses, keep in mind that you can always
-            /// just parse it yourself from the exposed ParseStream. Rust syntax permits
-            /// arbitrary tokens within those parentheses so for the crazier stuff,
-            /// `parse_nested_meta` is not what you want.
-            ///
-            /// let attr: Attribute = parse_quote! {
-            ///     #[repr(align(32))]
-            /// };
-            ///
-            /// let mut align: Option<LitInt> = None;
-            /// if attr.path().is_ident("repr") {
-            ///     attr.parse_nested_meta(|meta| {
-            ///         if meta.path.is_ident("align") {
-            ///             let content;
-            ///             parenthesized!(content in meta.input);
-            ///             align = Some(content.parse()?);
-            ///             Ok(())
-            ///         } else {
-            ///             Err(meta.error("unsupported repr"))
-            ///         }
-            ///     })?;
-            /// }
-            /// # anyhow::Ok(())
-            /// ```
             pub fn parse_nested_meta(
                 &self,
                 logic: impl FnMut(ParseNestedMeta) -> Result<()>,
@@ -23909,93 +23286,6 @@ pub mod syntax
                 parse_nested_meta(&content, logic)
             }
             /// Report that the attribute's content did not conform to expectations.
-            ///
-            /// There are 2 ways you might call this. First, if `meta.path` is not
-            /// something you recognize:
-            ///
-            /// ```
-            /// # use syn::Attribute;
-            /// #
-            /// # fn example(attr: &Attribute) -> syn::Result<()> {
-            /// attr.parse_nested_meta(|meta| {
-            ///     if meta.path.is_ident("kind") {
-            ///        
-            ///         Ok(())
-            ///     } else {
-            ///         Err(meta.error("unsupported tea property"))
-            ///     }
-            /// })?;
-            /// # Ok(())
-            /// # }
-            /// ```
-            ///
-            /// In this case, it behaves exactly like
-            /// `syn::Error::new_spanned(&meta.path, "message...")`.
-            /// ```
-            ///
-            /// More usefully, the second place is if you've already parsed a value but
-            /// have decided not to accept the value:
-            ///
-            /// ```
-            /// # use syn::Attribute;
-            /// #
-            /// # fn example(attr: &Attribute) -> syn::Result<()> {
-            /// use syn::Expr;
-            ///
-            /// attr.parse_nested_meta(|meta| {
-            ///     if meta.path.is_ident("kind") {
-            ///         let expr: Expr = meta.value()?.parse()?;
-            ///         match expr {
-            ///             Expr::Lit(expr) => /* ... */
-            /// #               unimplemented!(),
-            ///             Expr::Path(expr) => /* ... */
-            /// #               unimplemented!(),
-            ///             Expr::Macro(expr) => /* ... */
-            /// #               unimplemented!(),
-            ///             _ => Err(meta.error("tea kind must be a string literal, path, or macro")),
-            ///         }
-            ///     } else /* as above */
-            /// #       { unimplemented!() }
-            ///
-            /// })?;
-            /// # Ok(())
-            /// # }
-            /// ```
-            ///
-            /// ```console
-            /// error: tea kind must be a string literal, path, or macro
-            ///  --> src/main.rs:3:7
-            ///   |
-            /// 3 | #[tea(kind = async { replicator.await })]
-            ///   |       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-            /// ```
-            ///
-            /// Often you may want to use `syn::Error::new_spanned` even in this
-            /// situation. In the above code, that would be:
-            ///
-            /// ```
-            /// # use syn::{Error, Expr};
-            /// #
-            /// # fn example(expr: Expr) -> syn::Result<()> {
-            ///     match expr {
-            ///         Expr::Lit(expr) => /* ... */
-            /// #           unimplemented!(),
-            ///         Expr::Path(expr) => /* ... */
-            /// #           unimplemented!(),
-            ///         Expr::Macro(expr) => /* ... */
-            /// #           unimplemented!(),
-            ///         _ => Err(Error::new_spanned(expr, "unsupported expression type for `kind`")),
-            ///     }
-            /// # }
-            /// ```
-            ///
-            /// ```console
-            /// error: unsupported expression type for `kind`
-            ///  --> src/main.rs:3:14
-            ///   |
-            /// 3 | #[tea(kind = async { replicator.await })]
-            ///   |              ^^^^^^^^^^^^^^^^^^^^^^^^^^
-            /// ```
             pub fn error(&self, msg: impl Display) -> Error {
                 let start_span = self.path.segments[0].ident.span();
                 let end_span = self.input.cursor().prev_span();
@@ -24347,155 +23637,6 @@ pub mod syntax
             /// Extensions to the `ParseStream` API to support speculative parsing.
             pub trait Speculative {
                 /// Advance this parse stream to the position of a forked parse stream.
-                ///
-                /// This is the opposite operation to [`ParseStream::fork`]. You can fork a
-                /// parse stream, perform some speculative parsing, then join the original
-                /// stream to the fork to "commit" the parsing from the fork to the main
-                /// stream.
-                ///
-                /// If you can avoid doing this, you should, as it limits the ability to
-                /// generate useful errors. That said, it is often the only way to parse
-                /// syntax of the form `A* B*` for arbitrary syntax `A` and `B`. The problem
-                /// is that when the fork fails to parse an `A`, it's impossible to tell
-                /// whether that was because of a syntax error and the user meant to provide
-                /// an `A`, or that the `A`s are finished and it's time to start parsing
-                /// `B`s. Use with care.
-                ///
-                /// Also note that if `A` is a subset of `B`, `A* B*` can be parsed by
-                /// parsing `B*` and removing the leading members of `A` from the
-                /// repetition, bypassing the need to involve the downsides associated with
-                /// speculative parsing.
-                ///
-                /// [`ParseStream::fork`]: ParseBuffer::fork
-                ///
-                /// # Example
-                ///
-                /// There has been chatter about the possibility of making the colons in the
-                /// turbofish syntax like `path::to::<T>` no longer required by accepting
-                /// `path::to<T>` in expression position. Specifically, according to [RFC
-                /// 2544], [`PathSegment`] parsing should always try to consume a following
-                /// `<` token as the start of generic arguments, and reset to the `<` if
-                /// that fails (e.g. the token is acting as a less-than operator).
-                ///
-                /// This is the exact kind of parsing behavior which requires the "fork,
-                /// try, commit" behavior that [`ParseStream::fork`] discourages. With
-                /// `advance_to`, we can avoid having to parse the speculatively parsed
-                /// content a second time.
-                ///
-                /// This change in behavior can be implemented in syn by replacing just the
-                /// `Parse` implementation for `PathSegment`:
-                ///
-                /// ```
-                /// # use syn::ext::IdentExt;
-                /// use syn::parse::discouraged::Speculative;
-                /// # use syn::parse::{Parse, ParseStream};
-                /// # use syn::{Ident, PathArguments, Result, Token};
-                ///
-                /// pub struct PathSegment {
-                ///     pub ident: Ident,
-                ///     pub arguments: PathArguments,
-                /// }
-                /// #
-                /// # impl<T> From<T> for PathSegment
-                /// # where
-                /// #     T: Into<Ident>,
-                /// # {
-                /// #     fn from(ident: T) -> Self {
-                /// #         PathSegment {
-                /// #             ident: ident.into(),
-                /// #             arguments: PathArguments::None,
-                /// #         }
-                /// #     }
-                /// # }
-                ///
-                /// impl Parse for PathSegment {
-                ///     fn parse(input: ParseStream) -> Result<Self> {
-                ///         if input.peek(Token![super])
-                ///             || input.peek(Token![self])
-                ///             || input.peek(Token![Self])
-                ///             || input.peek(Token![crate])
-                ///         {
-                ///             let ident = input.call(Ident::parse_any)?;
-                ///             return Ok(PathSegment::from(ident));
-                ///         }
-                ///
-                ///         let ident = input.parse()?;
-                ///         if input.peek(Token![::]) && input.peek3(Token![<]) {
-                ///             return Ok(PathSegment {
-                ///                 ident,
-                ///                 arguments: PathArguments::AngleBracketed(input.parse()?),
-                ///             });
-                ///         }
-                ///         if input.peek(Token![<]) && !input.peek(Token![<=]) {
-                ///             let fork = input.fork();
-                ///             if let Ok(arguments) = fork.parse() {
-                ///                 input.advance_to(&fork);
-                ///                 return Ok(PathSegment {
-                ///                     ident,
-                ///                     arguments: PathArguments::AngleBracketed(arguments),
-                ///                 });
-                ///             }
-                ///         }
-                ///         Ok(PathSegment::from(ident))
-                ///     }
-                /// }
-                ///
-                /// # syn::parse_str::<PathSegment>("a<b,c>").unwrap();
-                /// ```
-                ///
-                /// # Drawbacks
-                ///
-                /// The main drawback of this style of speculative parsing is in error
-                /// presentation. Even if the lookahead is the "correct" parse, the error
-                /// that is shown is that of the "fallback" parse. To use the same example
-                /// as the turbofish above, take the following unfinished "turbofish":
-                ///
-                /// ```text
-                /// let _ = f<&'a fn(), for<'a> serde::>();
-                /// ```
-                ///
-                /// If this is parsed as generic arguments, we can provide the error message
-                ///
-                /// ```text
-                /// error: expected identifier
-                ///  --> src.rs:L:C
-                ///   |
-                /// L | let _ = f<&'a fn(), for<'a> serde::>();
-                ///   |                                    ^
-                /// ```
-                ///
-                /// but if parsed using the above speculative parsing, it falls back to
-                /// assuming that the `<` is a less-than when it fails to parse the generic
-                /// arguments, and tries to interpret the `&'a` as the start of a labelled
-                /// loop, resulting in the much less helpful error
-                ///
-                /// ```text
-                /// error: expected `:`
-                ///  --> src.rs:L:C
-                ///   |
-                /// L | let _ = f<&'a fn(), for<'a> serde::>();
-                ///   |               ^^
-                /// ```
-                ///
-                /// This can be mitigated with various heuristics (two examples: show both
-                /// forks' parse errors, or show the one that consumed more tokens), but
-                /// when you can control the grammar, sticking to something that can be
-                /// parsed LL(3) and without the LL(*) speculative parsing this makes
-                /// possible, displaying reasonable errors becomes much more simple.
-                ///
-                /// [RFC 2544]: https://github.com/rust-lang/rfcs/pull/2544
-                /// [`PathSegment`]: ::syntax::PathSegment
-                ///
-                /// # Performance
-                ///
-                /// This method performs a cheap fixed amount of work that does not depend
-                /// on how far apart the two streams are positioned.
-                ///
-                /// # Panics
-                ///
-                /// The forked stream in the argument of `advance_to` must have been
-                /// obtained by forking `self`. Attempting to advance to any other stream
-                /// will cause a panic.
                 fn advance_to(&self, fork: &Self);
             }
 
@@ -24747,115 +23888,17 @@ pub mod syntax
             }
             /// Calls the given parser function to parse a syntax tree node of type `T`
             /// from this stream.
-            /// use syn::{Attribute, Ident, Result, Token};
-            /// use syn::parse::{Parse, ParseStream};
-            ///
-            ///
-            /// //
-            ///
-            ///
-            /// struct UnitStruct {
-            ///     attrs: Vec<Attribute>,
-            ///     struct_token: Token![struct],
-            ///     name: Ident,
-            ///     semi_token: Token![;],
-            /// }
-            ///
-            /// impl Parse for UnitStruct {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         Ok(UnitStruct {
-            ///             attrs: input.call(Attribute::parse_outer)?,
-            ///             struct_token: input.parse()?,
-            ///             name: input.parse()?,
-            ///             semi_token: input.parse()?,
-            ///         })
-            ///     }
-            /// }
-            /// ```
             pub fn call<T>(&'a self, function: fn(ParseStream<'a>) -> Result<T>) -> Result<T> {
                 function(self)
             }
             /// Looks at the next token in the parse stream to determine whether it
             /// matches the requested type of token.
-            ///
-            /// In this example we finish parsing the list of supertraits when the next
-            /// token in the input is either `where` or an opening curly brace.
-            /// use syn::parse::{Parse, ParseStream};
-            /// use syn::punctuated::Punctuated;
-            ///
-            ///
-            /// //
-            ///
-            /// struct MarkerTrait {
-            ///     trait_token: Token![trait],
-            ///     ident: Ident,
-            ///     generics: Generics,
-            ///     colon_token: Option<Token![:]>,
-            ///     supertraits: Punctuated<TypeParamBound, Token![+]>,
-            ///     brace_token: token::Brace,
-            /// }
-            ///
-            /// impl Parse for MarkerTrait {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let trait_token: Token![trait] = input.parse()?;
-            ///         let ident: Ident = input.parse()?;
-            ///         let mut generics: Generics = input.parse()?;
-            ///         let colon_token: Option<Token![:]> = input.parse()?;
-            ///
-            ///         let mut supertraits = Punctuated::new();
-            ///         if colon_token.is_some() {
-            ///             loop {
-            ///                 supertraits.push_value(input.parse()?);
-            ///                 if input.peek(Token![where]) || input.peek(token::Brace) {
-            ///                     break;
-            ///                 }
-            ///                 supertraits.push_punct(input.parse()?);
-            ///             }
-            ///         }
-            ///
-            ///         generics.where_clause = input.parse()?;
-            ///         let content;
-            ///         let empty_brace_token = braced!(content in input);
-            ///
-            ///         Ok(MarkerTrait {
-            ///             trait_token,
-            ///             ident,
-            ///             generics,
-            ///             colon_token,
-            ///             supertraits,
-            ///             brace_token: empty_brace_token,
-            ///         })
-            ///     }
-            /// }
-            /// ```
             pub fn peek<T: Peek>(&self, token: T) -> bool
         {
                 let _ = token;
                 T::Token::peek(self.cursor())
             }
             /// Looks at the second-next token in the parse stream.
-            /// union` and a macro invocation that looks like `union::some_macro! { ...
-            /// }`. In other words `union` is a contextual keyword.
-            /// use syn::parse::{Parse, ParseStream};
-            ///
-            ///
-            /// enum UnionOrMacro {
-            ///    
-            ///     Union(ItemUnion),
-            ///    
-            ///     Macro(Macro),
-            /// }
-            ///
-            /// impl Parse for UnionOrMacro {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         if input.peek(Token![union]) && input.peek2(Ident) {
-            ///             input.parse().map(UnionOrMacro::Union)
-            ///         } else {
-            ///             input.parse().map(UnionOrMacro::Macro)
-            ///         }
-            ///     }
-            /// }
-            /// ```
             pub fn peek2<T: Peek>(&self, token: T) -> bool
         {
                 fn peek2(buffer: &ParseBuffer, peek: fn(Cursor) -> bool) -> bool
@@ -24883,77 +23926,6 @@ pub mod syntax
             }
             /// Parses zero or more occurrences of `T` separated by punctuation of type
             /// `P`, with optional trailing punctuation.
-            ///
-            /// struct TupleStruct {
-            ///     struct_token: Token![struct],
-            ///     ident: Ident,
-            ///     paren_token: token::Paren,
-            ///     fields: Punctuated<Type, Token![,]>,
-            ///     semi_token: Token![;],
-            /// }
-            ///
-            /// impl Parse for TupleStruct {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let content;
-            ///         Ok(TupleStruct {
-            ///             struct_token: input.parse()?,
-            ///             ident: input.parse()?,
-            ///             paren_token: parenthesized!(content in input),
-            ///             fields: content.parse_terminated(Type::parse, Token![,])?,
-            ///             semi_token: input.parse()?,
-            ///         })
-            ///     }
-            /// }
-            /// #
-            /// # let input = quote! {
-            /// #     struct S(A, B);
-            /// # };
-            /// # syn::parse2::<TupleStruct>(input).unwrap();
-            /// ```
-            ///
-            /// # See also
-            ///
-            /// If your separator is anything more complicated than an invocation of the
-            /// `Token!` macro, this method won't be applicable and you can instead
-            /// directly use `Punctuated`'s parser functions: [`parse_terminated`],
-            /// [`parse_separated_nonempty`] etc.
-            ///
-            /// ```
-            /// use syn::{custom_keyword, Expr, Result, Token};
-            /// use syn::parse::{Parse, ParseStream};
-            /// use syn::punctuated::Punctuated;
-            ///
-            /// mod kw {
-            ///     syn::custom_keyword!(fin);
-            /// }
-            ///
-            /// struct Fin(kw::fin, Token![;]);
-            ///
-            /// impl Parse for Fin {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         Ok(Self(input.parse()?, input.parse()?))
-            ///     }
-            /// }
-            ///
-            /// struct Thing {
-            ///     steps: Punctuated<Expr, Fin>,
-            /// }
-            ///
-            /// impl Parse for Thing {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            /// # if true {
-            ///         Ok(Thing {
-            ///             steps: Punctuated::parse_terminated(input)?,
-            ///         })
-            /// # } else {
-            ///        
-            /// #       Ok(Thing {
-            ///             steps: input.call(Punctuated::parse_terminated)?,
-            /// #       })
-            /// # }
-            ///     }
-            /// }
-            /// ```
             pub fn parse_terminated<T, P>(
                 &'a self,
                 parser: fn(ParseStream<'a>) -> Result<T>,
@@ -24967,172 +23939,17 @@ pub mod syntax
             }
             /// Returns whether there are no more tokens remaining to be parsed from
             /// this stream.
-            /// outermost parsing entry point.
-            /// Use `.peek2(End)` or `.peek3(End)` to look for the end of a parse stream
-            /// further ahead than the current position.
-            /// use syn::parse::{Parse, ParseStream};
-            ///
-            ///
-            /// struct Mod {
-            ///     mod_token: Token![mod],
-            ///     name: Ident,
-            ///     brace_token: token::Brace,
-            ///     items: Vec<Item>,
-            /// }
-            ///
-            /// impl Parse for Mod {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let content;
-            ///         Ok(Mod {
-            ///             mod_token: input.parse()?,
-            ///             name: input.parse()?,
-            ///             brace_token: braced!(content in input),
-            ///             items: {
-            ///                 let mut items = Vec::new();
-            ///                 while !content.is_empty() {
-            ///                     items.push(content.parse()?);
-            ///                 }
-            ///                 items
-            ///             },
-            ///         })
-            ///     }
-            /// }
-            /// ```
             pub fn is_empty(&self) -> bool
             {
                 self.cursor().eof()
             }
             /// Constructs a helper for peeking at the next token in this stream and
             /// building an error message if it is not one of a set of expected tokens.
-            /// use syn::parse::{Parse, ParseStream};
-            ///
-            ///
-            ///
-            /// //
-            ///
-            /// //
-            ///
-            /// //
-            ///
-            ///
-            ///
-            ///
-            /// enum GenericParam {
-            ///     Type(TypeParam),
-            ///     Lifetime(LifetimeParam),
-            ///     Const(ConstParam),
-            /// }
-            ///
-            /// impl Parse for GenericParam {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let lookahead = input.lookahead1();
-            ///         if lookahead.peek(Ident) {
-            ///             input.parse().map(GenericParam::Type)
-            ///         } else if lookahead.peek(Lifetime) {
-            ///             input.parse().map(GenericParam::Lifetime)
-            ///         } else if lookahead.peek(Token![const]) {
-            ///             input.parse().map(GenericParam::Const)
-            ///         } else {
-            ///             Err(lookahead.error())
-            ///         }
-            ///     }
-            /// }
-            /// ```
             pub fn lookahead1(&self) -> Lookahead1<'a> {
                 lookahead::new(self.scope, self.cursor())
             }
             /// Forks a parse stream so that parsing tokens out of either the original
             /// or the fork does not advance the position of the other.
-            /// is if your macro ends up parsing a large amount of content more than
-            /// once.
-            /// if input.fork().parse::<Expr>().is_ok() {
-            ///     return input.parse::<Expr>();
-            /// }
-            /// # unimplemented!()
-            /// # }
-            /// ```
-            ///
-            /// As a rule, avoid parsing an unbounded amount of tokens out of a forked
-            /// parse stream. Only use a fork when the amount of work performed against
-            /// the fork is small and bounded.
-            /// original stream once the fork's parse is determined to have been
-            /// successful.
-            ///
-            /// [`parse::discouraged::Speculative`]: discouraged::Speculative
-            /// [`ParseStream::step`]: ParseBuffer::step
-            ///
-            /// # Example
-            ///
-            /// The parse implementation shown here parses possibly restricted `pub`
-            /// visibilities.
-            /// - `pub(self)`
-            /// - `pub(super)`
-            /// - `pub(in some::path)`
-            ///
-            /// To handle the case of visibilities inside of tuple structs, the parser
-            /// needs to distinguish parentheses that specify visibility restrictions
-            /// from parentheses that form part of a tuple type.
-            /// ```
-            ///
-            /// In this example input the first tuple struct element of `S` has
-            /// `pub(crate)` visibility while the second tuple struct element has `pub`
-            /// visibility; the parentheses around `(B, C)` are part of the type rather
-            /// than part of a visibility restriction.
-            /// work performed against the forked parse stream.
-            /// use syn::ext::IdentExt;
-            /// use syn::parse::{Parse, ParseStream};
-            ///
-            /// struct PubVisibility {
-            ///     pub_token: Token![pub],
-            ///     restricted: Option<Restricted>,
-            /// }
-            ///
-            /// struct Restricted {
-            ///     paren_token: token::Paren,
-            ///     in_token: Option<Token![in]>,
-            ///     path: Path,
-            /// }
-            ///
-            /// impl Parse for PubVisibility {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         let pub_token: Token![pub] = input.parse()?;
-            ///
-            ///         if input.peek(token::Paren) {
-            ///             let ahead = input.fork();
-            ///             let mut content;
-            ///             parenthesized!(content in ahead);
-            ///
-            ///             if content.peek(Token![crate])
-            ///                 || content.peek(Token![self])
-            ///                 || content.peek(Token![super])
-            ///             {
-            ///                 return Ok(PubVisibility {
-            ///                     pub_token,
-            ///                     restricted: Some(Restricted {
-            ///                         paren_token: parenthesized!(content in input),
-            ///                         in_token: None,
-            ///                         path: Path::from(content.call(Ident::parse_any)?),
-            ///                     }),
-            ///                 });
-            ///             } else if content.peek(Token![in]) {
-            ///                 return Ok(PubVisibility {
-            ///                     pub_token,
-            ///                     restricted: Some(Restricted {
-            ///                         paren_token: parenthesized!(content in input),
-            ///                         in_token: Some(content.parse()?),
-            ///                         path: content.call(Path::parse_mod_style)?,
-            ///                     }),
-            ///                 });
-            ///             }
-            ///         }
-            ///
-            ///         Ok(PubVisibility {
-            ///             pub_token,
-            ///             restricted: None,
-            ///         })
-            ///     }
-            /// }
-            /// ```
             pub fn fork(&self) -> Self {
                 ParseBuffer {
                     scope: self.scope,
@@ -25144,68 +23961,10 @@ pub mod syntax
                 }
             }
             /// Triggers an error at the current position of the parse stream.
-            /// use syn::parse::{Parse, ParseStream};
-            ///
-            ///
-            /// struct Loop {
-            ///     expr: Expr,
-            /// }
-            ///
-            /// impl Parse for Loop {
-            ///     fn parse(input: ParseStream) -> Result<Self> {
-            ///         if input.peek(Token![while])
-            ///             || input.peek(Token![for])
-            ///             || input.peek(Token![loop])
-            ///         {
-            ///             Ok(Loop {
-            ///                 expr: input.parse()?,
-            ///             })
-            ///         } else {
-            ///             Err(input.error("expected some kind of loop"))
-            ///         }
-            ///     }
-            /// }
-            /// ```
             pub fn error<T: Display>(&self, message: T) -> Error {
                 error::new_at(self.scope, self.cursor(), message)
             }
-            /// Speculatively parses tokens from this parse stream, advancing the
-            /// position of this stream only if parsing succeeds.
-            /// widely outside of the Syn codebase.
-            /// use syn::Result;
-            /// use syn::parse::ParseStream;
-            ///
-            ///
-            ///
-            ///
-            /// fn skip_past_next_at(input: ParseStream) -> Result<()> {
-            ///     input.step(|cursor| {
-            ///         let mut rest = *cursor;
-            ///         while let Some((tt, next)) = rest.token_tree() {
-            ///             match &tt {
-            ///                 TokenTree::Punct(punct) if punct.as_char() == '@' => {
-            ///                     return Ok(((), next));
-            ///                 }
-            ///                 _ => rest = next,
-            ///             }
-            ///         }
-            ///         Err(cursor.error("no `@` was found after this point"))
-            ///     })
-            /// }
-            /// #
-            /// # fn remainder_after_skipping_past_next_at(
-            /// #     input: ParseStream,
-            /// # ) -> Result<process::macros::TokenStream> {
-            /// #     skip_past_next_at(input)?;
-            /// #     input.parse()
-            /// # }
-            /// #
-            /// # use syn::parse::Parser;
-            /// # let remainder = remainder_after_skipping_past_next_at
-            /// #     .parse_str("a @ b c")
-            /// #     .unwrap();
-            /// # assert_eq!(remainder.to_string(), "b c");
-            /// ```
+            /// Speculatively parses tokens from this parse stream, advancing the position of this stream only if parsing succeeds.
             pub fn step<F, R>(&self, function: F) -> Result<R> where
                 F: for<'c> FnOnce(StepCursor<'c, 'a>) -> Result<(R, Cursor<'c>)>,
             {
@@ -25245,55 +24004,7 @@ pub mod syntax
                     ::syntax::buffer::open_span_of_group(cursor)
                 }
             }
-            /// Provides low-level access to the token representation underlying this
-            /// parse stream.
-            /// use syn::buffer::Cursor;
-            /// use syn::parse::{ParseStream, Result};
-            ///
-            ///
-            ///
-            /// fn recognize_token_stream<T>(
-            ///     recognizer: fn(ParseStream) -> Result<T>,
-            /// ) -> impl Fn(ParseStream) -> Result<TokenStream> {
-            ///     move |input| {
-            ///         let begin = input.cursor();
-            ///         recognizer(input)?;
-            ///         let end = input.cursor();
-            ///         Ok(tokens_between(begin, end))
-            ///     }
-            /// }
-            ///
-            ///
-            /// fn tokens_between(begin: Cursor, end: Cursor) -> TokenStream {
-            ///     assert!(begin <= end);
-            ///
-            ///     let mut cursor = begin;
-            ///     let mut tokens = TokenStream::new();
-            ///     while cursor < end {
-            ///         let (token, next) = cursor.token_tree().unwrap();
-            ///         tokens.extend(std::iter::once(token));
-            ///         cursor = next;
-            ///     }
-            ///     tokens
-            /// }
-            ///
-            /// fn main() {
-            ///     use ::quote::quote;
-            ///     use syn::parse::{Parse, Parser};
-            ///     use syn::Token;
-            ///
-            ///    
-            ///     fn example(input: ParseStream) -> Result<TokenStream> {
-            ///         let _langle: Token![<] = input.parse()?;
-            ///         let ty = recognize_token_stream(syn::Type::parse)(input)?;
-            ///         let _rangle: Token![>] = input.parse()?;
-            ///         Ok(ty)
-            ///     }
-            ///
-            ///     let tokens = quote! { <fn() -> u8> };
-            ///     println!("{}", example.parse2(tokens).unwrap());
-            /// }
-            /// ```
+            /// Provides low-level access to the token representation underlying this parse stream.
             pub fn cursor(&self) -> Cursor<'a>
             {
                 self.cell.get()
@@ -25377,7 +24088,7 @@ pub mod syntax
             }
         }
         /// Parser that can parse Rust tokens into a particular syntax tree node.
-        pub trait Parser: Sized 
+        pub trait Parser:Sized 
         {
             type Output;
 
@@ -25385,8 +24096,6 @@ pub mod syntax
             fn parse2(self, tokens: TokenStream) -> Result<Self::Output>;
 
             /// Parse tokens of source code into the chosen syntax tree node.
-            #[cfg(feature = "proc-macro")]
-            #[cfg_attr(docsrs, doc(cfg(feature = "proc-macro")))]
             fn parse(self, tokens: proc_macro::TokenStream) -> Result<Self::Output>
             {
                 self.parse2(process::macros::TokenStream::from(tokens))
@@ -25520,7 +24229,6 @@ pub mod syntax
     
     pub mod parse_quote
     {
-       
         /// type inference to figure out a return type for those tokens.
         use ::
         {
@@ -25529,13 +24237,15 @@ pub mod syntax
             {
                 error::Result,
                 parse::{Parse, ParseStream, Parser},
+                punctuated::Punctuated,
                 Arm, Block, Pat, Stmt, attr, Attribute, Field, FieldMutability, Ident, Type, Visibility,
             },
             *,
         };
         /*
         Can parse any type that implements Parse. */       
-        #[track_caller] pub fn parse<T: ParseQuote>(token_stream: TokenStream) -> T {
+        #[track_caller] pub fn parse<T: ParseQuote>(token_stream: TokenStream) -> T
+        {
             let parser = T::parse;
             match parser.parse2(token_stream) {
                 Ok(t) => t,
@@ -25543,17 +24253,20 @@ pub mod syntax
             }
         }
 
-        pub trait ParseQuote: Sized {
+        pub trait ParseQuote: Sized 
+        {
             fn parse(input: ParseStream) -> Result<Self>;
         }
 
-        impl<T: Parse> ParseQuote for T {
+        impl<T: Parse> ParseQuote for T 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 <T as Parse>::parse(input)
             }
         }
         
-        impl ParseQuote for Attribute {
+        impl ParseQuote for Attribute 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 if input.peek(Token![#]) && input.peek2(Token![!]) {
                     attr::parsing::single_parse_inner(input)
@@ -25563,7 +24276,8 @@ pub mod syntax
             }
         }
 
-        impl ParseQuote for Vec<Attribute> {
+        impl ParseQuote for Vec<Attribute> 
+        {
             fn parse(input: ParseStream) -> Result<Self>
             {
                 let mut attrs = Vec::new();
@@ -25574,7 +24288,8 @@ pub mod syntax
             }
         }
 
-        impl ParseQuote for Field {
+        impl ParseQuote for Field 
+        {
             fn parse(input: ParseStream) -> Result<Self>
             {
                 let attrs = input.call(Attribute::parse_outer)?;
@@ -25604,31 +24319,36 @@ pub mod syntax
             }
         }
 
-        impl ParseQuote for Pat {
+        impl ParseQuote for Pat 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 Pat::parse_multi_with_leading_vert(input)
             }
         }
 
-        impl ParseQuote for Box<Pat> {
+        impl ParseQuote for Box<Pat> 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 <Pat as ParseQuote>::parse(input).map(Box::new)
             }
         }
 
-        impl<T: Parse, P: Parse> ParseQuote for Punctuated<T, P> {
+        impl<T: Parse, P: Parse> ParseQuote for Punctuated<T, P> 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 Self::parse_terminated(input)
             }
         }
 
-        impl ParseQuote for Vec<Stmt> {
+        impl ParseQuote for Vec<Stmt> 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 Block::parse_within(input)
             }
         }
 
-        impl ParseQuote for Vec<Arm> {
+        impl ParseQuote for Vec<Arm> 
+        {
             fn parse(input: ParseStream) -> Result<Self> {
                 Arm::parse_multiple(input)
             }
@@ -25667,8 +24387,6 @@ pub mod syntax
         {
             /// A pattern in a local binding, function signature, match expression, or
             /// various other places.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum Pat {
                 /// A const block: `const { ... }`.
@@ -25685,9 +24403,6 @@ pub mod syntax
                 Paren(PatParen),
                 /// A path pattern like `Color::Red`, optionally qualified with a
                 /// self-type.
-                ///
-                /// Unqualified path patterns can legally refer to variants, structs,
-                /// constants or associated constants. Qualified path patterns like
                 /// `<A>::B::C` and `<A as Trait>::B::C` can only legally refer to
                 /// associated constants.
                 Path(PatPath),
@@ -25893,29 +24608,6 @@ pub mod syntax
 
             impl Pat {
                 /// Parse a pattern that does _not_ involve `|` at the top level.
-                ///
-                /// This parser matches the behavior of the `$:pat_param` macro_rules
-                /// matcher, and on editions prior to Rust 2021, the behavior of
-                /// `$:pat`.
-                ///
-                /// In Rust syntax, some examples of where this syntax would occur are
-                /// in the argument pattern of functions and closures. Patterns using
-                /// `|` are not allowed to occur in these positions.
-                ///
-                /// ```compile_fail
-                /// fn f(Some(_) | None: Option<T>) {
-                ///     let _ = |Some(_) | None: Option<T>| {};
-                ///    
-                /// }
-                /// ```
-                ///
-                /// ```console
-                /// error: top-level or-patterns are not allowed in function parameters
-                ///  --> src/main.rs:1:6
-                ///   |
-                /// 1 | fn f(Some(_) | None: Option<T>) {
-                ///   |      ^^^^^^^^^^^^^^ help: wrap the pattern in parentheses: `(Some(_) | None)`
-                /// ```
                 pub fn parse_single(input: ParseStream) -> Result<Self> {
                     let begin = input.fork();
                     let lookahead = input.lookahead1();
@@ -25960,54 +24652,11 @@ pub mod syntax
                         Err(lookahead.error())
                     }
                 }
-
                 /// Parse a pattern, possibly involving `|`, but not a leading `|`.
                 pub fn parse_multi(input: ParseStream) -> Result<Self> {
                     multi_pat_impl(input, None)
                 }
-
-                /// Parse a pattern, possibly involving `|`, possibly including a
-                /// leading `|`.
-                ///
-                /// This parser matches the behavior of the Rust 2021 edition's `$:pat`
-                /// macro_rules matcher.
-                ///
-                /// In Rust syntax, an example of where this syntax would occur is in
-                /// the pattern of a `match` arm, where the language permits an optional
-                /// leading `|`, although it is not idiomatic to write one there in
-                /// handwritten code.
-                ///
-                /// ```
-                /// # let wat = None;
-                /// match wat {
-                ///     | None | Some(false) => {}
-                ///     | Some(true) => {}
-                /// }
-                /// ```
-                ///
-                /// The compiler accepts it only to facilitate some situations in
-                /// macro-generated code where a macro author might need to write:
-                ///
-                /// ```
-                /// # macro_rules! doc {
-                /// #     ($value:expr, ($($conditions1:pat),*), ($($conditions2:pat),*), $then:expr) => {
-                /// match $value {
-                ///     $(| $conditions1)* $(| $conditions2)* => $then
-                /// }
-                /// #     };
-                /// # }
-                /// #
-                /// # doc!(true, (true), (false), {});
-                /// # doc!(true, (), (true, false), {});
-                /// # doc!(true, (true, false), (), {});
-                /// ```
-                ///
-                /// Expressing the same thing correctly in the case that either one (but
-                /// not both) of `$conditions1` and `$conditions2` might be empty,
-                /// without leading `|`, is complex.
-                ///
-                /// Use [`Pat::parse_multi`] instead if you are not intending to support
-                /// macro-generated macro input.
+                /// Parse a pattern, possibly involving `|`, possibly including a leading `|`.
                 pub fn parse_multi_with_leading_vert(input: ParseStream) -> Result<Self> {
                     let leading_vert: Option<Token![|]> = input.parse()?;
                     multi_pat_impl(input, leading_vert)
@@ -26673,24 +25322,7 @@ pub mod syntax
 
         impl Path 
         {
-            /// Determines whether this is a path of length 1 equal to the given
-            /// ident.
-            /// - the first path segment has no angle bracketed or parenthesized
-            ///   path arguments, and
-            /// - the ident of the first path segment is equal to the given one.
-            /// use syn::{Attribute, Error, Meta, Result};
-            ///
-            /// fn get_serde_meta_item(attr: &Attribute) -> Result<Option<&TokenStream>> {
-            ///     if attr.path().is_ident("serde") {
-            ///         match &attr.meta {
-            ///             Meta::List(meta) => Ok(Some(&meta.tokens)),
-            ///             bad => Err(Error::new_spanned(bad, "unrecognized attribute")),
-            ///         }
-            ///     } else {
-            ///         Ok(None)
-            ///     }
-            /// }
-            /// ```
+            /// Determines whether this is a path of length 1 equal to the given ident.
             pub fn is_ident<I>(&self, ident: &I) -> bool
             where
                 I: ?Sized,
@@ -26702,8 +25334,6 @@ pub mod syntax
                 }
             }
             /// If this path consists of a single ident, returns the ident.
-            /// - the first path segment has no angle bracketed or parenthesized
-            ///   path arguments.
             pub fn get_ident(&self) -> Option<&Ident> {
                 if self.leading_colon.is_none()
                     && self.segments.len() == 1
@@ -26715,8 +25345,7 @@ pub mod syntax
                 }
             }
             /// An error if this path is not a single ident, as defined in `get_ident`.
-             
-                pub fn require_ident(&self) -> Result<&Ident>
+            pub fn require_ident(&self) -> Result<&Ident>
             {
                 self.get_ident().ok_or_else(|| {
                     ::syntax::error::new2(
@@ -26751,8 +25380,6 @@ pub mod syntax
         ast_enum! 
         {
             /// Angle bracketed or parenthesized arguments of a path segment.
-            ///
-            /// ## Parenthesized
             ///
             /// The `(A, B) -> C` in `Fn(A, B) -> C`.
             pub enum PathArguments {
@@ -26801,9 +25428,6 @@ pub mod syntax
                 /// A type argument.
                 Type(Type),
                 /// A const expression. Must be inside of a block.
-                ///
-                /// NOTE: Identity expressions are represented as Type arguments, as
-                /// they are indistinguishable syntactically.
                 Const(Expr),
                 /// A binding (equality constraint) on an associated type: the `Item =
                 /// u8` in `Iterator<Item = u8>`.
@@ -26878,16 +25502,7 @@ pub mod syntax
 
         ast_struct! 
         {
-            /// The explicit Self type in a qualified path: the `T` in `<T as
-            /// Display>::fmt`.
-            /// item qualified with this Self type.
-            ///  ^~~~~~    ~~~~~~~~~~~~~~^
-            ///  ty        position = 3
-            ///
-            /// <Vec<T>>::AssociatedItem
-            ///  ^~~~~~   ^
-            ///  ty       position = 0
-            /// ```
+            /// The explicit Self type in a qualified path: the `T` in `<T as Display>::fmt`.
             pub struct QSelf {
                 pub lt_token: Token![<],
                 pub ty: Box<Type>,
@@ -27054,9 +25669,6 @@ pub mod syntax
 
             impl AngleBracketedGenericArguments {
                 /// Parse `::<…>` with mandatory leading `::`.
-                ///
-                /// The ordinary [`Parse`] impl for `AngleBracketedGenericArguments`
-                /// parses optional leading `::`.
                         #[cfg_attr(docsrs, doc(cfg(all(feature = "parsing", feature = "full"))))]
                 pub fn parse_turbofish(input: ParseStream) -> Result<Self> {
                     let colon2_token: Token![::] = input.parse()?;
@@ -27157,36 +25769,7 @@ pub mod syntax
 
             impl Path {
                 /// Parse a `Path` containing no path arguments on any of its segments.
-                ///
-                /// # Example
-                ///
-                /// ```
-                /// use syn::{Path, Result, Token};
-                /// use syn::parse::{Parse, ParseStream};
-                ///
-                ///
-                /// //
-                ///
-                /// //
-                ///
-                ///
-                /// //
-                ///
-                /// struct SingleUse {
-                ///     use_token: Token![use],
-                ///     path: Path,
-                /// }
-                ///
-                /// impl Parse for SingleUse {
-                ///     fn parse(input: ParseStream) -> Result<Self> {
-                ///         Ok(SingleUse {
-                ///             use_token: input.parse()?,
-                ///             path: input.call(Path::parse_mod_style)?,
-                ///         })
-                ///     }
-                /// }
-                /// ```
-                    pub fn parse_mod_style(input: ParseStream) -> Result<Self>
+                pub fn parse_mod_style(input: ParseStream) -> Result<Self>
                 {
                     Ok
                     (Path {
@@ -27914,8 +26497,6 @@ pub mod syntax
             }
             /// Appends a syntax tree node onto the end of this punctuated sequence. The
             /// sequence must already have a trailing punctuation, or be empty.
-            ///
-            /// Panics if the sequence is nonempty and does not already have a trailing
             /// punctuation.
             pub fn push_value(&mut self, value: T) {
                 assert!(
@@ -27965,8 +26546,6 @@ pub mod syntax
             }
             /// Returns true if either this `Punctuated` is empty, or it has a trailing
             /// punctuation.
-            ///
-            /// Equivalent to `punctuated.is_empty() || punctuated.trailing_punct()`.
             pub fn empty_or_trailing(&self) -> bool
             {
                 self.last.is_none()
@@ -28014,8 +26593,6 @@ pub mod syntax
             /// Parses zero or more occurrences of `T` using the given parse function,
             /// separated by punctuation of type `P`, with optional trailing
             /// punctuation.
-            ///
-            /// [`parse_terminated`]: Punctuated::parse_terminated
              
                 pub fn parse_terminated_with<'a>(
                 input: ParseStream<'a>,
@@ -28042,10 +26619,7 @@ pub mod syntax
             }
             /// Parses one or more occurrences of `T` separated by punctuation of type
             /// `P`, not accepting trailing punctuation.
-            /// is not followed by a `P`, even if there are remaining tokens in the
-            /// stream.
-             
-                pub fn parse_separated_nonempty(input: ParseStream) -> Result<Self> where
+            pub fn parse_separated_nonempty(input: ParseStream) -> Result<Self> where
                 T: Parse,
                 P: Token + Parse,
             {
@@ -28054,10 +26628,7 @@ pub mod syntax
             /// Parses one or more occurrences of `T` using the given parse function,
             /// separated by punctuation of type `P`, not accepting trailing
             /// punctuation.
-            ///
-            /// [`parse_separated_nonempty`]: Punctuated::parse_separated_nonempty
-             
-                pub fn parse_separated_nonempty_with<'a>(
+            pub fn parse_separated_nonempty_with<'a>(
                 input: ParseStream<'a>,
                 parser: fn(ParseStream<'a>) -> Result<T>,
             ) -> Result<Self> where
@@ -28690,17 +27261,6 @@ pub mod syntax
             }
             /// Mutably borrows the punctuation from this punctuated pair, unless the
             /// pair is the final one and there is no trailing punctuation.
-            /// # use syn::punctuated::Punctuated;
-            /// # use syn::{parse_quote, Token, TypeParamBound};
-            /// #
-            /// # let mut punctuated = Punctuated::<TypeParamBound, Token![+]>::new();
-            /// # let span = Span::call_site();
-            /// #
-            /// punctuated.insert(0, parse_quote!('lifetime));
-            /// if let Some(punct) = punctuated.pairs_mut().next().unwrap().punct_mut() {
-            ///     punct.span = span;
-            /// }
-            /// ```
             pub fn punct_mut(&mut self) -> Option<&mut P>
             {
                 match self {
@@ -28865,8 +27425,6 @@ pub mod syntax
         {
             /// The visibility level of an item: inherited or `pub` or
             /// `pub(restricted)`.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             pub enum Visibility {
                 /// A public visibility level: `pub`.
                 Public(Token![pub]),
@@ -29462,8 +28020,8 @@ pub mod syntax
             
             pub trait Sealed {}
             impl<T: ?Sized + ToTokens> Sealed for T {}
-
-                impl Sealed for ::syntax::QSelf {}
+            
+            impl Sealed for ::syntax::QSelf {}
         }
     }
     
@@ -29507,10 +28065,6 @@ pub mod syntax
                 /// Expression, with or without trailing semicolon.
                 Expr(Expr, Option<Token![;]>),
                 /// A macro invocation in statement position.
-                ///
-                /// Syntactically it's ambiguous which other kind of statement this
-                /// macro would expand to. It can be any of local variable (`let`),
-                /// item, or expression.
                 Macro(StmtMacro),
             }
         }
@@ -29580,53 +28134,6 @@ pub mod syntax
             {
                 /// Parse the body of a block as zero or more statements, possibly
                 /// including one trailing expression.
-                ///
-                /// # Example
-                ///
-                /// ```
-                /// use syn::{braced, token, Attribute, Block, Ident, Result, Stmt, Token};
-                /// use syn::parse::{Parse, ParseStream};
-                ///
-                ///
-                /// //
-                ///
-                ///
-                ///
-                ///
-                ///
-                /// struct MiniFunction {
-                ///     attrs: Vec<Attribute>,
-                ///     fn_token: Token![fn],
-                ///     name: Ident,
-                ///     brace_token: token::Brace,
-                ///     stmts: Vec<Stmt>,
-                /// }
-                ///
-                /// impl Parse for MiniFunction {
-                ///     fn parse(input: ParseStream) -> Result<Self> {
-                ///         let outer_attrs = input.call(Attribute::parse_outer)?;
-                ///         let fn_token: Token![fn] = input.parse()?;
-                ///         let name: Ident = input.parse()?;
-                ///
-                ///         let content;
-                ///         let brace_token = braced!(content in input);
-                ///         let inner_attrs = content.call(Attribute::parse_inner)?;
-                ///         let stmts = content.call(Block::parse_within)?;
-                ///
-                ///         Ok(MiniFunction {
-                ///             attrs: {
-                ///                 let mut attrs = outer_attrs;
-                ///                 attrs.extend(inner_attrs);
-                ///                 attrs
-                ///             },
-                ///             fn_token,
-                ///             name,
-                ///             brace_token,
-                ///             stmts,
-                ///         })
-                ///     }
-                /// }
-                /// ```
                     pub fn parse_within(input: ParseStream) -> Result<Vec<Stmt>> {
                     let mut stmts = Vec::new();
                     loop {
@@ -30183,8 +28690,6 @@ pub mod syntax
         ast_enum_of_structs! 
         {
             /// The possible types that a Rust value could have.
-            ///
-            /// [syntax tree enum]: ::syntax::expr::Expr#syntax-tree-enums
             #[non_exhaustive]
             pub enum Type {
                 /// A fixed size array type: `[T; n]`.
@@ -30220,24 +28725,6 @@ pub mod syntax
                 Tuple(TypeTuple),
                 /// Tokens in type position not interpreted by Syn.
                 Verbatim(TokenStream),
-
-               
-                //
-               
-               
-                //
-               
-               
-               
-               
-                //
-               
-               
-                //
-               
-               
-               
-               
             }
         }
 
@@ -50207,4 +48694,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 50210 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 48697 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
