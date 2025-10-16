@@ -34,6 +34,7 @@ pub mod __
 }
 */
 extern crate proc_macro;
+extern crate rand;
 
 #[macro_use] pub mod macros
 {
@@ -1528,6 +1529,11 @@ extern crate proc_macro;
     }
 }
 
+pub mod arch
+{
+    pub use std::arch::{ * };
+}
+
 pub mod ascii
 {
     pub use std::ascii::{ * };
@@ -2355,8 +2361,8 @@ pub mod marker
     };
     /*
     use alloc::rc::Rc;
-    use core::marker::PhantomData;
-    use core::panic::{RefUnwindSafe, UnwindSafe};
+    use ::marker::PhantomData;
+    use ::panic::{RefUnwindSafe, UnwindSafe};
     */
     pub const MARKER: ProcMacroAutoTraits = ProcMacroAutoTraits(PhantomData);
     /// Zero sized marker with the correct set of autotrait impls we want all proc macro types to have.
@@ -3304,10 +3310,6 @@ pub mod num
                 }
             }
             /// Cast from one machine scalar to another.
-            /// # use num_traits as num;
-            /// let twenty: f32 = num::cast(0x14).unwrap();
-            /// assert_eq!(twenty, 20f32);
-            /// ```
             ///
             #[inline]
             pub fn cast<T: NumCast, U: NumCast>(n: T) -> Option<U> {
@@ -3388,10 +3390,6 @@ pub mod num
             }
             /// A generic interface for casting between machine scalars with the
             /// `as` operator, which admits narrowing and precision loss.
-            /// Implementers of this trait `AsPrimitive` should behave like a primitive
-            /// numeric type (e.g. a newtype around another primitive), and the
-            /// intended conversion must never fail.
-            /// # use num_traits::AsPrimitive;
             /// let three: i32 = (3.14159265f32).as_();
             /// assert_eq!(three, 3);
             /// ```
@@ -3399,10 +3397,6 @@ pub mod num
             /// # Safety
             ///
             /// **In Rust versions before 1.45.0**, some uses of the `as` operator were not entirely safe.
-            /// In particular, it was undefined behavior if
-            /// a truncated floating point value could not fit in the target integer
-            /// type ([#10184](https://github.com/rust-lang/rust/issues/10184)).
-            /// let x: u8 = (1.04E+17).as_();
             /// ```
             ///
             pub trait AsPrimitive<T>: 'static + Copy
@@ -3452,21 +3446,18 @@ pub mod num
         {
             use ::
             {
+                cmp::{ Ordering },
+                num::
+                {
+                    traits::{ Num, NumCast, ToPrimitive },
+                    FpCategory
+                },
+                ops::{ Add, Div, Neg },
                 *,
             };
             /*
-                use core::cmp::Ordering;
-                use core::num::FpCategory;
-                use core::ops::{Add, Div, Neg};
-
-                use core::f32;
-                use core::f64;
-
-                use crate::{Num, NumCast, ToPrimitive};
             */
             /// Generic trait for floating point numbers that works with `no_std`.
-            ///
-            /// This trait implements a subset of the `Float` trait.
             pub trait FloatCore: Num + NumCast + Neg<Output = Self> + PartialOrd + Copy {
                 /// Returns positive infinity.
                 ///
@@ -3921,8 +3912,8 @@ pub mod num
                     }
                 }
 
-                /// Computes the absolute value of `self`. Returns `FloatCore::nan()` if the
-                /// number is `FloatCore::nan()`.
+                /// Computes the absolute value of `self`. Returns `Float::nan()` if the
+                /// number is `Float::nan()`.
                 ///
                 /// # Examples
                 ///
@@ -3954,9 +3945,9 @@ pub mod num
 
                 /// Returns a number that represents the sign of `self`.
                 ///
-                /// - `1.0` if the number is positive, `+0.0` or `FloatCore::infinity()`
-                /// - `-1.0` if the number is negative, `-0.0` or `FloatCore::neg_infinity()`
-                /// - `FloatCore::nan()` if the number is `FloatCore::nan()`
+                /// - `1.0` if the number is positive, `+0.0` or `Float::infinity()`
+                /// - `-1.0` if the number is negative, `-0.0` or `Float::neg_infinity()`
+                /// - `Float::nan()` if the number is `Float::nan()`
                 ///
                 /// # Examples
                 ///
@@ -3987,7 +3978,7 @@ pub mod num
                 }
 
                 /// Returns `true` if `self` is positive, including `+0.0` and
-                /// `FloatCore::infinity()`, and `FloatCore::nan()`.
+                /// `Float::infinity()`, and `Float::nan()`.
                 ///
                 /// # Examples
                 ///
@@ -4014,7 +4005,7 @@ pub mod num
                 }
 
                 /// Returns `true` if `self` is negative, including `-0.0` and
-                /// `FloatCore::neg_infinity()`, and `-FloatCore::nan()`.
+                /// `Float::neg_infinity()`, and `-Float::nan()`.
                 ///
                 /// # Examples
                 ///
@@ -4289,8 +4280,7 @@ pub mod num
                     Self::to_radians(self) -> Self;
                 }
 
-                #[cfg(feature = "std")]
-                forward! {
+                    forward! {
                     Self::floor(self) -> Self;
                     Self::ceil(self) -> Self;
                     Self::round(self) -> Self;
@@ -4351,8 +4341,7 @@ pub mod num
                     Self::to_radians(self) -> Self;
                 }
 
-                #[cfg(feature = "std")]
-                forward! {
+                    forward! {
                     Self::floor(self) -> Self;
                     Self::ceil(self) -> Self;
                     Self::round(self) -> Self;
@@ -4378,14 +4367,9 @@ pub mod num
                     self - libm::trunc(self)
                 }
             }
-
-           
-           
-
             /// Generic trait for floating point numbers
             ///
             /// This trait is only available with the `std` feature, or with the `libm` feature otherwise.
-            #[cfg(any(feature = "std", feature = "libm"))]
             pub trait Float: Num + Copy + NumCast + PartialOrd + Neg<Output = Self> {
                 /// Returns the `NaN` value.
                 ///
@@ -5368,7 +5352,6 @@ pub mod num
                 }
             }
 
-            #[cfg(feature = "std")]
             macro_rules! float_impl_std {
                 ($T:ident $decode:ident) => {
                     impl Float for $T {
@@ -5449,60 +5432,7 @@ pub mod num
                     }
                 };
             }
-
-            #[cfg(all(not(feature = "std"), feature = "libm"))]
-            macro_rules! float_impl_libm {
-                ($T:ident $decode:ident) => {
-                    constant! {
-                        nan() -> $T::NAN;
-                        infinity() -> $T::INFINITY;
-                        neg_infinity() -> $T::NEG_INFINITY;
-                        neg_zero() -> -0.0;
-                        min_value() -> $T::MIN;
-                        min_positive_value() -> $T::MIN_POSITIVE;
-                        epsilon() -> $T::EPSILON;
-                        max_value() -> $T::MAX;
-                    }
-
-                    #[inline]
-                    fn integer_decode(self) -> (u64, i16, i8) {
-                        $decode(self)
-                    }
-
-                    #[inline]
-                    fn fract(self) -> Self {
-                        self - Float::trunc(self)
-                    }
-
-                    #[inline]
-                    fn log(self, base: Self) -> Self {
-                        self.ln() / base.ln()
-                    }
-
-                    forward! {
-                        Self::is_nan(self) -> bool;
-                        Self::is_infinite(self) -> bool;
-                        Self::is_finite(self) -> bool;
-                        Self::is_normal(self) -> bool;
-                        Self::is_subnormal(self) -> bool;
-                        Self::clamp(self, min: Self, max: Self) -> Self;
-                        Self::classify(self) -> FpCategory;
-                        Self::is_sign_positive(self) -> bool;
-                        Self::is_sign_negative(self) -> bool;
-                        Self::min(self, other: Self) -> Self;
-                        Self::max(self, other: Self) -> Self;
-                        Self::recip(self) -> Self;
-                        Self::to_degrees(self) -> Self;
-                        Self::to_radians(self) -> Self;
-                    }
-
-                    forward! {
-                        FloatCore::signum(self) -> Self;
-                        FloatCore::powi(self, n: i32) -> Self;
-                    }
-                };
-            }
-
+            
             fn integer_decode_f32(f: f32) -> (u64, i16, i8) {
                 let bits: u32 = f.to_bits();
                 let sign: i8 = if bits >> 31 == 0 { 1 } else { -1 };
@@ -5531,103 +5461,9 @@ pub mod num
                 (mantissa, exponent, sign)
             }
 
-            #[cfg(feature = "std")]
             float_impl_std!(f32 integer_decode_f32);
-            #[cfg(feature = "std")]
             float_impl_std!(f64 integer_decode_f64);
-
-            #[cfg(all(not(feature = "std"), feature = "libm"))]
-            impl Float for f32 {
-                float_impl_libm!(f32 integer_decode_f32);
-
-                #[inline]
-                #[allow(deprecated)]
-                fn abs_sub(self, other: Self) -> Self {
-                    libm::fdimf(self, other)
-                }
-
-                forward! {
-                    libm::floorf as floor(self) -> Self;
-                    libm::ceilf as ceil(self) -> Self;
-                    libm::roundf as round(self) -> Self;
-                    libm::truncf as trunc(self) -> Self;
-                    libm::fabsf as abs(self) -> Self;
-                    libm::fmaf as mul_add(self, a: Self, b: Self) -> Self;
-                    libm::powf as powf(self, n: Self) -> Self;
-                    libm::sqrtf as sqrt(self) -> Self;
-                    libm::expf as exp(self) -> Self;
-                    libm::exp2f as exp2(self) -> Self;
-                    libm::logf as ln(self) -> Self;
-                    libm::log2f as log2(self) -> Self;
-                    libm::log10f as log10(self) -> Self;
-                    libm::cbrtf as cbrt(self) -> Self;
-                    libm::hypotf as hypot(self, other: Self) -> Self;
-                    libm::sinf as sin(self) -> Self;
-                    libm::cosf as cos(self) -> Self;
-                    libm::tanf as tan(self) -> Self;
-                    libm::asinf as asin(self) -> Self;
-                    libm::acosf as acos(self) -> Self;
-                    libm::atanf as atan(self) -> Self;
-                    libm::atan2f as atan2(self, other: Self) -> Self;
-                    libm::sincosf as sin_cos(self) -> (Self, Self);
-                    libm::expm1f as exp_m1(self) -> Self;
-                    libm::log1pf as ln_1p(self) -> Self;
-                    libm::sinhf as sinh(self) -> Self;
-                    libm::coshf as cosh(self) -> Self;
-                    libm::tanhf as tanh(self) -> Self;
-                    libm::asinhf as asinh(self) -> Self;
-                    libm::acoshf as acosh(self) -> Self;
-                    libm::atanhf as atanh(self) -> Self;
-                    libm::copysignf as copysign(self, other: Self) -> Self;
-                }
-            }
-
-            #[cfg(all(not(feature = "std"), feature = "libm"))]
-            impl Float for f64 {
-                float_impl_libm!(f64 integer_decode_f64);
-
-                #[inline]
-                #[allow(deprecated)]
-                fn abs_sub(self, other: Self) -> Self {
-                    libm::fdim(self, other)
-                }
-
-                forward! {
-                    libm::floor as floor(self) -> Self;
-                    libm::ceil as ceil(self) -> Self;
-                    libm::round as round(self) -> Self;
-                    libm::trunc as trunc(self) -> Self;
-                    libm::fabs as abs(self) -> Self;
-                    libm::fma as mul_add(self, a: Self, b: Self) -> Self;
-                    libm::pow as powf(self, n: Self) -> Self;
-                    libm::sqrt as sqrt(self) -> Self;
-                    libm::exp as exp(self) -> Self;
-                    libm::exp2 as exp2(self) -> Self;
-                    libm::log as ln(self) -> Self;
-                    libm::log2 as log2(self) -> Self;
-                    libm::log10 as log10(self) -> Self;
-                    libm::cbrt as cbrt(self) -> Self;
-                    libm::hypot as hypot(self, other: Self) -> Self;
-                    libm::sin as sin(self) -> Self;
-                    libm::cos as cos(self) -> Self;
-                    libm::tan as tan(self) -> Self;
-                    libm::asin as asin(self) -> Self;
-                    libm::acos as acos(self) -> Self;
-                    libm::atan as atan(self) -> Self;
-                    libm::atan2 as atan2(self, other: Self) -> Self;
-                    libm::sincos as sin_cos(self) -> (Self, Self);
-                    libm::expm1 as exp_m1(self) -> Self;
-                    libm::log1p as ln_1p(self) -> Self;
-                    libm::sinh as sinh(self) -> Self;
-                    libm::cosh as cosh(self) -> Self;
-                    libm::tanh as tanh(self) -> Self;
-                    libm::asinh as asinh(self) -> Self;
-                    libm::acosh as acosh(self) -> Self;
-                    libm::atanh as atanh(self) -> Self;
-                    libm::copysign as copysign(self, sign: Self) -> Self;
-                }
-            }
-
+            
             macro_rules! float_const_impl {
                 ($(#[$doc:meta] $constant:ident,)+) => (
                     #[allow(non_snake_case)]
@@ -5789,11 +5625,11 @@ pub mod num
                 *,
             };
             /*
-                use core::num::Wrapping;
-                use core::ops::{Add, Mul};
+                use ::num::Wrapping;
+                use ::ops::{Add, Mul};
 
                 #[cfg(has_num_saturating)]
-                use core::num::Saturating;
+                use ::num::Saturating;
             */
             /// Defines an additive identity element for `Self`.
             /// a + 0 = a       ∀ a ∈ Self
@@ -6043,20 +5879,25 @@ pub mod num
         {
             use ::
             {
+                num::
+                {
+                    traits::
+                    {
+                        bounds::Bounded,
+                        ops::
+                        {
+                            checked::*,
+                            saturating::Saturating,
+                        },
+                        Num, NumCast,
+                    },
+                },
+                ops::{BitAnd, BitOr, BitXor, Not, Shl, Shr},
                 *,
             };
             /*
-                use core::ops::{BitAnd, BitOr, BitXor, Not, Shl, Shr};
-                use crate::bounds::Bounded;
-                use crate::ops::checked::*;
-                use crate::ops::saturating::Saturating;
-                use crate::{Num, NumCast};
             */
             /// Generic trait for primitive integers.
-            /// bitwise operators and non-wrapping arithmetic.
-            /// compile-time.
-            /// implement the trait was well.
-            /// standard library.
             pub trait PrimInt:
                 Sized
                 + Copy
@@ -6517,8 +6358,7 @@ pub mod num
                     }
                 };
             }
-
-           
+            
             prim_int_impl!(u8, i8, u8);
             prim_int_impl!(u16, i16, u16);
             prim_int_impl!(u32, i32, u32);
@@ -6550,10 +6390,10 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::borrow::{Borrow, BorrowMut};
-                    use core::cmp::{Eq, Ord, PartialEq, PartialOrd};
-                    use core::fmt::Debug;
-                    use core::hash::Hash;
+                    use ::borrow::{Borrow, BorrowMut};
+                    use ::cmp::{Eq, Ord, PartialEq, PartialOrd};
+                    use ::fmt::Debug;
+                    use ::hash::Hash;
                 */
                 pub trait NumBytes:
                     Debug
@@ -6817,7 +6657,7 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::ops::{Add, Div, Mul, Rem, Shl, Shr, Sub};
+                    use ::ops::{Add, Div, Mul, Rem, Shl, Shr, Sub};
                 */
                 /// Performs addition, returning `None` if overflow occurred.
                 pub trait CheckedAdd: Sized + Add<Self, Output = Self> {
@@ -7088,7 +6928,7 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::ops::{Div, Rem};
+                    use ::ops::{Div, Rem};
                 */
                 pub trait Euclid: Sized + Div<Self, Output = Self> + Rem<Self, Output = Self> {
                     /// Calculates Euclidean division, the matching method for `rem_euclid`.
@@ -7178,8 +7018,7 @@ pub mod num
                 euclid_forward_impl!(isize i8 i16 i32 i64 i128);
                 euclid_forward_impl!(usize u8 u16 u32 u64 u128);
 
-                #[cfg(feature = "std")]
-                euclid_forward_impl!(f32 f64);
+                    euclid_forward_impl!(f32 f64);
 
                 #[cfg(not(feature = "std"))]
                 impl Euclid for f32 {
@@ -7382,8 +7221,7 @@ pub mod num
                     fn mul_add_assign(&mut self, a: A, b: B);
                 }
 
-                #[cfg(any(feature = "std", feature = "libm"))]
-                impl MulAdd<f32, f32> for f32 {
+                    impl MulAdd<f32, f32> for f32 {
                     type Output = Self;
 
                     #[inline]
@@ -7392,8 +7230,7 @@ pub mod num
                     }
                 }
 
-                #[cfg(any(feature = "std", feature = "libm"))]
-                impl MulAdd<f64, f64> for f64 {
+                    impl MulAdd<f64, f64> for f64 {
                     type Output = Self;
 
                     #[inline]
@@ -7418,16 +7255,14 @@ pub mod num
                 mul_add_impl!(MulAdd for isize i8 i16 i32 i64 i128);
                 mul_add_impl!(MulAdd for usize u8 u16 u32 u64 u128);
 
-                #[cfg(any(feature = "std", feature = "libm"))]
-                impl MulAddAssign<f32, f32> for f32 {
+                    impl MulAddAssign<f32, f32> for f32 {
                     #[inline]
                     fn mul_add_assign(&mut self, a: Self, b: Self) {
                         *self = <Self as crate::Float>::mul_add(*self, a, b)
                     }
                 }
 
-                #[cfg(any(feature = "std", feature = "libm"))]
-                impl MulAddAssign<f64, f64> for f64 {
+                    impl MulAddAssign<f64, f64> for f64 {
                     #[inline]
                     fn mul_add_assign(&mut self, a: Self, b: Self) {
                         *self = <Self as crate::Float>::mul_add(*self, a, b)
@@ -7458,9 +7293,9 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::ops::{Add, Mul, Sub};
-                    use core::{i128, i16, i32, i64, i8, isize};
-                    use core::{u128, u16, u32, u64, u8, usize};
+                    use ::ops::{Add, Mul, Sub};
+                    use ::{i128, i16, i32, i64, i8, isize};
+                    use ::{u128, u16, u32, u64, u8, usize};
                 */
                 macro_rules! overflowing_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
@@ -7546,7 +7381,7 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::ops::{Add, Mul, Sub};
+                    use ::ops::{Add, Mul, Sub};
                 */
                 /// Saturating math operations. Deprecated, use `SaturatingAdd`, `SaturatingSub` and
                 /// `SaturatingMul` instead.
@@ -7663,8 +7498,8 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::num::Wrapping;
-                    use core::ops::{Add, Mul, Neg, Shl, Shr, Sub};
+                    use ::num::Wrapping;
+                    use ::ops::{Add, Mul, Neg, Shl, Shr, Sub};
                 */
                 macro_rules! wrapping_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
@@ -7936,15 +7771,18 @@ pub mod num
         {
             use ::
             {
+                num::
+                {
+                    traits::{ CheckedMul, One, Float }, Wrapping
+                },
+                ops::{ Mul },
                 *,
             };
             /*
-            use crate::{CheckedMul, One};
-            use core::num::Wrapping;
-            use core::ops::Mul;
             */
             /// Binary operator for raising a value to a power.
-            pub trait Pow<RHS> {
+            pub trait Pow<RHS>
+            {
                 /// The result after applying the operator.
                 type Output;
 
@@ -7960,14 +7798,10 @@ pub mod num
             }
 
             macro_rules! pow_impl {
-                ($t:ty) => {
+                ($t:ty) =>
+                {
                     pow_impl!($t, u8);
                     pow_impl!($t, usize);
-
-                   
-                   
-                   
-                   
                 };
                 ($t:ty, $rhs:ty) => {
                     pow_impl!($t, $rhs, usize, pow);
@@ -8071,40 +7905,21 @@ pub mod num
             pow_impl!(Wrapping<usize>);
             pow_impl!(Wrapping<isize>);
 
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-           
-
-            #[cfg(any(feature = "std", feature = "libm"))]
-            mod float_impls {
-                use super::Pow;
-                use crate::Float;
-
-                pow_impl!(f32, i8, i32, <f32 as Float>::powi);
-                pow_impl!(f32, u8, i32, <f32 as Float>::powi);
-                pow_impl!(f32, i16, i32, <f32 as Float>::powi);
-                pow_impl!(f32, u16, i32, <f32 as Float>::powi);
-                pow_impl!(f32, i32, i32, <f32 as Float>::powi);
-                pow_impl!(f64, i8, i32, <f64 as Float>::powi);
-                pow_impl!(f64, u8, i32, <f64 as Float>::powi);
-                pow_impl!(f64, i16, i32, <f64 as Float>::powi);
-                pow_impl!(f64, u16, i32, <f64 as Float>::powi);
-                pow_impl!(f64, i32, i32, <f64 as Float>::powi);
-                pow_impl!(f32, f32, f32, <f32 as Float>::powf);
-                pow_impl!(f64, f32, f64, <f64 as Float>::powf);
-                pow_impl!(f64, f64, f64, <f64 as Float>::powf);
-            }
+            pow_impl!(f32, i8, i32, <f32 as Float>::powi);
+            pow_impl!(f32, u8, i32, <f32 as Float>::powi);
+            pow_impl!(f32, i16, i32, <f32 as Float>::powi);
+            pow_impl!(f32, u16, i32, <f32 as Float>::powi);
+            pow_impl!(f32, i32, i32, <f32 as Float>::powi);
+            pow_impl!(f64, i8, i32, <f64 as Float>::powi);
+            pow_impl!(f64, u8, i32, <f64 as Float>::powi);
+            pow_impl!(f64, i16, i32, <f64 as Float>::powi);
+            pow_impl!(f64, u16, i32, <f64 as Float>::powi);
+            pow_impl!(f64, i32, i32, <f64 as Float>::powi);
+            pow_impl!(f32, f32, f32, <f32 as Float>::powf);
+            pow_impl!(f64, f32, f64, <f64 as Float>::powf);
+            pow_impl!(f64, f64, f64, <f64 as Float>::powf);
+            
             /// Raises a value to the power of exp, using exponentiation by squaring.
-            ///
-            /// assert_eq!(pow(2i8, 4), 16);
             /// assert_eq!(pow(6u8, 3), 216);
             /// assert_eq!(pow(0u8, 0), 1);
             /// ```
@@ -8133,8 +7948,6 @@ pub mod num
                 acc
             }
             /// Raises a value to the power of exp, returning `None` if an overflow occurred.
-            ///
-            /// # Example
             ///
             /// ```rust
             /// use num_traits::checked_pow;
@@ -8175,16 +7988,14 @@ pub mod num
         {
             use ::
             {
+                num::traits::{Float, Num, NumCast},
+                ops::{ Neg },
                 *,
             };
-            /*	
-                use core::ops::Neg;
-                use crate::{Float, Num, NumCast};
+            /*
             */
             /// A trait for real number types that do not necessarily have
             /// floating-point-specific characteristics such as NaN and infinity.
-            ///
-            /// This trait is only available with the `std` feature, or with the `libm` feature otherwise.
             pub trait Real: Num + Copy + NumCast + PartialOrd + Neg<Output = Self> {
                 /// Returns the smallest finite value that this type can represent.
                 ///
@@ -9010,14 +8821,14 @@ pub mod num
         {
             use ::
             {
+                num::
+                {
+                    traits::{ float::FloatCore, Num },
+                },
+                ops::{ Neg },
                 *,
             };
             /*
-                use core::num::Wrapping;
-                use core::ops::Neg;
-
-                use crate::float::FloatCore;
-                use crate::Num;
             */
             /// Useful functions for signed numbers (i.e. numbers that can be negative).
             pub trait Signed: Sized + Num + Neg<Output = Self>
@@ -9126,7 +8937,7 @@ pub mod num
                         /// Computes the absolute value. Returns `NAN` if the number is `NAN`.
                         #[inline]
                         fn abs(&self) -> $t {
-                            FloatCore::abs(*self)
+                            Float::abs(*self)
                         }
 
                         /// The positive difference of two numbers. Returns `0.0` if the number is
@@ -9148,19 +8959,19 @@ pub mod num
                         /// - `NAN` if the number is NaN
                         #[inline]
                         fn signum(&self) -> $t {
-                            FloatCore::signum(*self)
+                            Float::signum(*self)
                         }
 
                         /// Returns `true` if the number is positive, including `+0.0` and `INFINITY`
                         #[inline]
                         fn is_positive(&self) -> bool {
-                            FloatCore::is_sign_positive(*self)
+                            Float::is_sign_positive(*self)
                         }
 
                         /// Returns `true` if the number is negative, including `-0.0` and `NEG_INFINITY`
                         #[inline]
                         fn is_negative(&self) -> bool {
-                            FloatCore::is_sign_negative(*self)
+                            Float::is_sign_negative(*self)
                         }
                     }
                 };
@@ -9243,21 +9054,13 @@ pub mod num
         }
         /// The trait for `Num` types which also implement numeric operations taking
         /// the second operand by reference.
-        ///
-        /// This is automatically implemented for types which implement the operators.
         pub trait NumRef: Num + for<'r> NumOps<&'r Self> {}
         impl<T> NumRef for T where T: Num + for<'r> NumOps<&'r T> {}
         /// The trait for `Num` references which implement numeric operations, taking the
         /// second operand either by value or by reference.
-        ///
-        /// This is automatically implemented for all types which implement the operators. It covers
-        /// every type implementing the operations though, regardless of it being a reference or
-        /// related to `Num`.
         pub trait RefNum<Base>: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
         impl<T, Base> RefNum<Base> for T where T: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
         /// Generic trait for types implementing numeric assignment operators (like `+=`).
-        ///
-        /// This is automatically implemented for types which implement the operators.
         pub trait NumAssignOps<Rhs = Self>:
         AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
         {
@@ -9268,24 +9071,20 @@ pub mod num
         {
         }
         /// The trait for `Num` types which also implement assignment operators.
-        ///
-        /// This is automatically implemented for types which implement the operators.
         pub trait NumAssign: Num + NumAssignOps {}
         impl<T> NumAssign for T where T: Num + NumAssignOps {}
         /// The trait for `NumAssign` types which also implement assignment operations
         /// taking the second operand by reference.
-        ///
-        /// This is automatically implemented for types which implement the operators.
         pub trait NumAssignRef: NumAssign + for<'r> NumAssignOps<&'r Self> {}
         impl<T> NumAssignRef for T where T: NumAssign + for<'r> NumAssignOps<&'r T> {}
 
         macro_rules! int_trait_impl {
             ($name:ident for $($t:ty)*) => ($(
                 impl $name for $t {
-                    type FromStrRadixErr = ::core::num::ParseIntError;
+                    type FromStrRadixErr = ::::num::ParseIntError;
                     #[inline]
                     fn from_str_radix(s: &str, radix: u32)
-                                    -> Result<Self, ::core::num::ParseIntError>
+                                    -> Result<Self, ::::num::ParseIntError>
                     {
                         <$t>::from_str_radix(s, radix)
                     }
@@ -9306,13 +9105,13 @@ pub mod num
         }
 
         #[cfg(has_num_saturating)]
-        impl<T: Num> Num for core::num::Saturating<T>
+        impl<T: Num> Num for ::num::Saturating<T>
         where
-            core::num::Saturating<T>: NumOps,
+            ::num::Saturating<T>: NumOps,
         {
             type FromStrRadixErr = T::FromStrRadixErr;
             fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
-                T::from_str_radix(str, radix).map(core::num::Saturating)
+                T::from_str_radix(str, radix).map(::num::Saturating)
             }
         }
 
@@ -9372,15 +9171,15 @@ pub mod num
                         if str_to_ascii_lower_eq_str(src, "inf")
                             || str_to_ascii_lower_eq_str(src, "infinity")
                         {
-                            return Ok(core::$t::INFINITY);
+                            return Ok(::$t::INFINITY);
                         } else if str_to_ascii_lower_eq_str(src, "-inf")
                             || str_to_ascii_lower_eq_str(src, "-infinity")
                         {
-                            return Ok(core::$t::NEG_INFINITY);
+                            return Ok(::$t::NEG_INFINITY);
                         } else if str_to_ascii_lower_eq_str(src, "nan") {
-                            return Ok(core::$t::NAN);
+                            return Ok(::$t::NAN);
                         } else if str_to_ascii_lower_eq_str(src, "-nan") {
-                            return Ok(-core::$t::NAN);
+                            return Ok(-::$t::NAN);
                         }
 
                         fn slice_shift_char(src: &str) -> Option<(char, &str)> {
@@ -9421,15 +9220,15 @@ pub mod num
                                    
                                     if prev_sig != 0.0 {
                                         if is_positive && sig <= prev_sig
-                                            { return Ok(core::$t::INFINITY); }
+                                            { return Ok(::$t::INFINITY); }
                                         if !is_positive && sig >= prev_sig
-                                            { return Ok(core::$t::NEG_INFINITY); }
+                                            { return Ok(::$t::NEG_INFINITY); }
 
                                        
                                         if is_positive && (prev_sig != (sig - digit as $t) / radix as $t)
-                                            { return Ok(core::$t::INFINITY); }
+                                            { return Ok(::$t::INFINITY); }
                                         if !is_positive && (prev_sig != (sig + digit as $t) / radix as $t)
-                                            { return Ok(core::$t::NEG_INFINITY); }
+                                            { return Ok(::$t::NEG_INFINITY); }
                                     }
                                     prev_sig = sig;
                                 },
@@ -9465,9 +9264,9 @@ pub mod num
                                         };
                                        
                                         if is_positive && sig < prev_sig
-                                            { return Ok(core::$t::INFINITY); }
+                                            { return Ok(::$t::INFINITY); }
                                         if !is_positive && sig > prev_sig
-                                            { return Ok(core::$t::NEG_INFINITY); }
+                                            { return Ok(::$t::NEG_INFINITY); }
                                         prev_sig = sig;
                                     },
                                     None => match c {
@@ -9501,8 +9300,7 @@ pub mod num
                                     None             => return Err(PFE { kind: Invalid }),
                                 };
 
-                                #[cfg(feature = "std")]
-                                fn pow(base: $t, exp: usize) -> $t {
+                                                    fn pow(base: $t, exp: usize) -> $t {
                                     Float::powi(base, exp as i32)
                                 }
                                
@@ -9524,12 +9322,6 @@ pub mod num
         float_trait_impl!(Num for f32 f64);
 
         /// A value bounded by a minimum and a maximum
-        ///
-        ///  If input is less than min then this returns min.
-        ///  If input is greater than max then this returns max.
-        ///  Otherwise this returns input.
-        ///
-        /// **Panics** in debug mode if `!(min <= max)`.
         #[inline]
         pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
             debug_assert!(min <= max, "min must be less than or equal to max");
@@ -9542,12 +9334,6 @@ pub mod num
             }
         }
         /// A value bounded by a minimum value
-        ///
-        ///  If input is less than min then this returns min.
-        ///  Otherwise this returns input.
-        ///  `clamp_min(std::f32::NAN, 1.0)` preserves `NAN` different from `f32::min(std::f32::NAN, 1.0)`.
-        ///
-        /// **Panics** in debug mode if `!(min == min)`. (This occurs if `min` is `NAN`.)
         #[inline]
         #[allow(clippy::eq_op)]
         pub fn clamp_min<T: PartialOrd>(input: T, min: T) -> T {
@@ -9559,12 +9345,6 @@ pub mod num
             }
         }
         /// A value bounded by a maximum value
-        ///
-        ///  If input is greater than max then this returns max.
-        ///  Otherwise this returns input.
-        ///  `clamp_max(std::f32::NAN, 1.0)` preserves `NAN` different from `f32::max(std::f32::NAN, 1.0)`.
-        ///
-        /// **Panics** in debug mode if `!(max == max)`. (This occurs if `max` is `NAN`.)
         #[inline]
         #[allow(clippy::eq_op)]
         pub fn clamp_max<T: PartialOrd>(input: T, max: T) -> T {
@@ -9583,35 +9363,23 @@ pub mod num
         //! Integer trait and functions.
         use ::
         {
+            num::{ traits::{ Num, Signed, Zero } },
+            ops::{ Add },
             *,
         };
         /*
-        #![doc(html_root_url = "https://docs.rs/num-integer/0.1")]
-        #![no_std]
-
-        use core::mem;
-        use core::ops::Add;
-
-        use num_traits::{Num, Signed, Zero}; 
-
-        mod roots;
-        pub use crate::roots::Roots;
-        pub use crate::roots::{cbrt, nth_root, sqrt};
-
-        mod average;
-        pub use crate::average::Average;
-        pub use crate::average::{average_ceil, average_floor}; */
+        */
         pub mod average
         {
             /*!
             */
             use ::
             {
+                num::integers::{ Integer },
+                ops::{BitAnd, BitOr, BitXor, Shr},
                 *,
             };
             /*
-            use crate::Integer;
-            use core::ops::{BitAnd, BitOr, BitXor, Shr};
             */
             /// Provides methods to compute the average of two integers, without overflows.
             pub trait Average: Integer {
@@ -9687,7 +9455,7 @@ pub mod num
             pub fn average_ceil<T: Average>(x: T, y: T) -> T {
                 x.average_ceil(&y)
             }
-        }
+        } pub use self::average::{average_ceil, average_floor, Average};
 
         pub mod roots
         {
@@ -9695,12 +9463,14 @@ pub mod num
             */
             use ::
             {
+                num::
+                {
+                    traits::{checked_pow, PrimInt},
+                    integers::{ Integer },
+                },
                 *,
             };
             /*
-            use crate::Integer;
-            use core::mem;
-            use num_traits::{checked_pow, PrimInt};
             */
             /// Provides methods to compute an integer's square root, cube root,
             /// and arbitrary `n`th root.
@@ -9915,7 +9685,7 @@ pub mod num
 
                                 if bits::<$T>() > 64 {
                                    
-                                    return if a <= core::u64::MAX as $T {
+                                    return if a <= ::u64::MAX as $T {
                                         (a as u64).nth_root(n) as $T
                                     } else {
                                         let lo = (a >> n).nth_root(n) << 1;
@@ -9937,11 +9707,10 @@ pub mod num
                                     };
                                 }
 
-                                #[cfg(feature = "std")]
-                                #[inline]
+                                                    #[inline]
                                 fn guess(x: $T, n: u32) -> $T {
                                    
-                                    if bits::<$T>() <= 32 || x <= core::u32::MAX as $T {
+                                    if bits::<$T>() <= 32 || x <= ::u32::MAX as $T {
                                         1 << ((log2(x) + n - 1) / n)
                                     } else {
                                         ((x as f64).ln() / f64::from(n)).exp() as $T
@@ -9973,7 +9742,7 @@ pub mod num
                             fn go(a: $T) -> $T {
                                 if bits::<$T>() > 64 {
                                    
-                                    return if a <= core::u64::MAX as $T {
+                                    return if a <= ::u64::MAX as $T {
                                         (a as u64).sqrt() as $T
                                     } else {
                                         let lo = (a >> 2u32).sqrt() << 1;
@@ -9990,8 +9759,7 @@ pub mod num
                                     return (a > 0) as $T;
                                 }
 
-                                #[cfg(feature = "std")]
-                                #[inline]
+                                                    #[inline]
                                 fn guess(x: $T) -> $T {
                                     (x as f64).sqrt() as $T
                                 }
@@ -10014,7 +9782,7 @@ pub mod num
                             fn go(a: $T) -> $T {
                                 if bits::<$T>() > 64 {
                                    
-                                    return if a <= core::u64::MAX as $T {
+                                    return if a <= ::u64::MAX as $T {
                                         (a as u64).cbrt() as $T
                                     } else {
                                         let lo = (a >> 3u32).cbrt() << 1;
@@ -10050,12 +9818,11 @@ pub mod num
                                 if a < 8 {
                                     return (a > 0) as $T;
                                 }
-                                if a <= core::u32::MAX as $T {
+                                if a <= ::u32::MAX as $T {
                                     return (a as u32).cbrt() as $T;
                                 }
 
-                                #[cfg(feature = "std")]
-                                #[inline]
+                                                    #[inline]
                                 fn guess(x: $T) -> $T {
                                     (x as f64).cbrt() as $T
                                 }
@@ -10082,14 +9849,10 @@ pub mod num
             unsigned_roots!(u64);
             unsigned_roots!(u128);
             unsigned_roots!(usize);
-        }
+        } pub use self::roots::{cbrt, nth_root, sqrt, Roots};
 
         pub trait Integer: Sized + Num + PartialOrd + Ord + Eq {
             /// Floored integer division.
-            /// # use num_integer::Integer;
-            /// assert!(( 8).div_floor(& 3) ==  2);
-            /// assert!(( 8).div_floor(&-3) == -3);
-            /// assert!((-8).div_floor(& 3) == -3);
             /// assert!((-8).div_floor(&-3) ==  2);
             ///
             /// assert!(( 1).div_floor(& 2) ==  0);
@@ -10124,10 +9887,6 @@ pub mod num
             fn mod_floor(&self, other: &Self) -> Self;
 
             /// Ceiled integer division.
-            /// # use num_integer::Integer;
-            /// assert_eq!(( 8).div_ceil( &3),  3);
-            /// assert_eq!(( 8).div_ceil(&-3), -2);
-            /// assert_eq!((-8).div_ceil( &3), -2);
             /// assert_eq!((-8).div_ceil(&-3),  3);
             ///
             /// assert_eq!(( 1).div_ceil( &2), 1);
@@ -10144,35 +9903,19 @@ pub mod num
                 }
             }
             /// Greatest Common Divisor (GCD).
-            /// # use num_integer::Integer;
-            /// assert_eq!(6.gcd(&8), 2);
-            /// assert_eq!(7.gcd(&3), 1);
-            /// ~~~
             fn gcd(&self, other: &Self) -> Self;
 
             /// Lowest Common Multiple (LCM).
-            /// # use num_integer::Integer;
-            /// assert_eq!(7.lcm(&3), 21);
-            /// assert_eq!(2.lcm(&4), 4);
-            /// assert_eq!(0.lcm(&0), 0);
             /// ~~~
             fn lcm(&self, other: &Self) -> Self;
 
             /// Greatest Common Divisor (GCD) and
             /// Lowest Common Multiple (LCM) together.
-            /// # use num_integer::Integer;
-            /// assert_eq!(10.gcd_lcm(&4), (2, 20));
-            /// assert_eq!(8.gcd_lcm(&9), (1, 72));
-            /// ~~~
             #[inline]
             fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
                 (self.gcd(other), self.lcm(other))
             }
             /// Greatest common divisor and Bézout coefficients.
-            /// # fn main() {
-            /// # use num_integer::{ExtendedGcd, Integer};
-            /// # use num_traits::NumAssign;
-            /// fn check<A: Copy + Integer + NumAssign>(a: A, b: A) -> bool {
             ///     let ExtendedGcd { gcd, x, y, .. } = a.extended_gcd(&b);
             ///     gcd == x * a + y * b
             /// }
@@ -10230,31 +9973,15 @@ pub mod num
                 self.is_multiple_of(other)
             }
             /// Returns `true` if `self` is a multiple of `other`.
-            /// # use num_integer::Integer;
-            /// assert_eq!(9.is_multiple_of(&3), true);
-            /// assert_eq!(3.is_multiple_of(&9), false);
-            /// ~~~
             fn is_multiple_of(&self, other: &Self) -> bool;
 
             /// Returns `true` if the number is even.
-            /// # use num_integer::Integer;
-            /// assert_eq!(3.is_even(), false);
-            /// assert_eq!(4.is_even(), true);
-            /// ~~~
             fn is_even(&self) -> bool;
 
             /// Returns `true` if the number is odd.
-            /// # use num_integer::Integer;
-            /// assert_eq!(3.is_odd(), true);
-            /// assert_eq!(4.is_odd(), false);
-            /// ~~~
             fn is_odd(&self) -> bool;
 
             /// Simultaneous truncated integer division and modulus.
-            /// Returns `(quotient, remainder)`.
-            /// # use num_integer::Integer;
-            /// assert_eq!(( 8).div_rem( &3), ( 2,  2));
-            /// assert_eq!(( 8).div_rem(&-3), (-2,  2));
             /// assert_eq!((-8).div_rem( &3), (-2, -2));
             /// assert_eq!((-8).div_rem(&-3), ( 2, -2));
             ///
@@ -10265,10 +9992,6 @@ pub mod num
             /// ~~~
             fn div_rem(&self, other: &Self) -> (Self, Self);
             /// Simultaneous floored integer division and modulus.
-            /// Returns `(quotient, remainder)`.
-            /// # use num_integer::Integer;
-            /// assert_eq!(( 8).div_mod_floor( &3), ( 2,  2));
-            /// assert_eq!(( 8).div_mod_floor(&-3), (-3, -1));
             /// assert_eq!((-8).div_mod_floor( &3), (-3,  1));
             /// assert_eq!((-8).div_mod_floor(&-3), ( 2, -2));
             ///
@@ -10281,8 +10004,6 @@ pub mod num
                 (self.div_floor(other), self.mod_floor(other))
             }
             /// Rounds up to nearest multiple of argument.
-            ///
-            /// # Examples
             ///
             /// ~~~
             /// # use num_integer::Integer;
@@ -10310,8 +10031,6 @@ pub mod num
             }
             /// Rounds down to nearest multiple of argument.
             ///
-            /// # Examples
-            ///
             /// ~~~
             /// # use num_integer::Integer;
             /// assert_eq!(( 16).prev_multiple_of(& 8),  16);
@@ -10331,10 +10050,6 @@ pub mod num
                 self.clone() - self.mod_floor(other)
             }
             /// Decrements self by one.
-            /// # use num_integer::Integer;
-            /// let mut x: i32 = 43;
-            /// x.dec();
-            /// assert_eq!(x, 42);
             /// ~~~
             fn dec(&mut self)
             where
@@ -10343,10 +10058,6 @@ pub mod num
                 *self = self.clone() - Self::one()
             }
             /// Increments self by one.
-            /// # use num_integer::Integer;
-            /// let mut x: i32 = 41;
-            /// x.inc();
-            /// assert_eq!(x, 42);
             /// ~~~
             fn inc(&mut self)
             where
@@ -10775,17 +10486,12 @@ pub mod num
             }
         }
         /// Calculate r * a / b, avoiding overflows and fractions.
-        ///
-        /// Assumes that b divides r * a evenly.
         fn multiply_and_divide<T: Integer + Clone>(r: T, a: T, b: T) -> T {
            
             let g = gcd(r.clone(), b.clone());
             r / g.clone() * (a / (b / g))
         }
         /// Calculate the binomial coefficient.
-        ///
-        /// Note that this might overflow, depending on `T`. For the primitive integer
-        /// types, the following n are the largest ones possible such that there will
         /// be no overflow for any k:
         ///
         /// type | n
@@ -10849,49 +10555,47 @@ pub mod num
         {
             use ::
             {
+                cmp::{ Ordering::{self, Equal} },
+                default::{ Default },
+                num::
+                {
+                    traits::{ ConstZero, Num, One, Pow, Signed, Zero },
+                    integers::{Integer, Roots},
+                    big::
+                    {
+                        big_digit::BigDigit,
+                        biguint::to_str_radix_reversed,
+                        biguint::{BigUint, IntDigits, U32Digits, U64Digits},
+                    },
+                },
+                ops::{ Neg, Not },
+                string::{ String },
+                vec::{ Vec },
                 *,
             };
             /*
-                use alloc::string::String;
-                use alloc::vec::Vec;
-                use core::cmp::Ordering::{self, Equal};
-                use core::default::Default;
-                use core::fmt;
-                use core::hash;
-                use core::ops::{Neg, Not};
-                use core::str;
-
-                use num_integer::{Integer, Roots};
-                use num_traits::{ConstZero, Num, One, Pow, Signed, Zero};
-
-                use self::Sign::{Minus, NoSign, Plus};
-
-                use crate::big_digit::BigDigit;
-                use crate::biguint::to_str_radix_reversed;
-                use crate::biguint::{BigUint, IntDigits, U32Digits, U64Digits};
             */
+            use self::Sign::{Minus, NoSign, Plus};
+
             pub mod addition
             {
                 use ::
                 {
+                    cmp::Ordering::{ Equal, Greater, Less },
+                    iter::{ Sum },
+                    num::
+                    {
+                        big::{ IsizePromotion, UsizePromotion },
+                        traits::{ CheckedAdd },
+                    },
+                    ops::{ Add, AddAssign },
                     *,
                 };
+                use super::CheckedUnsignedAbs::{ Negative, Positive };
+                use super::Sign::{ Minus, NoSign, Plus };
+                use super::{ BigInt, UnsignedAbs };
                 /*
-                    use super::CheckedUnsignedAbs::{Negative, Positive};
-                    use super::Sign::{Minus, NoSign, Plus};
-                    use super::{BigInt, UnsignedAbs};
-
-                    use crate::{IsizePromotion, UsizePromotion};
-
-                    use core::cmp::Ordering::{Equal, Greater, Less};
-                    use core::iter::Sum;
-                    use core::mem;
-                    use core::ops::{Add, AddAssign};
-                    use num_traits::CheckedAdd;
                 */
-               
-               
-               
                 macro_rules! bigint_add {
                     ($a:expr, $a_owned:expr, $a_data:expr, $b:expr, $b_owned:expr, $b_data:expr) => {
                         match ($a.sign, $b.sign) {
@@ -11123,18 +10827,19 @@ pub mod num
             {
                 use ::
                 {
+                    num::
+                    {
+                        big::{IsizePromotion, UsizePromotion},
+                        integers::{ Integer },
+                        traits::{ CheckedDiv, CheckedEuclid, Euclid, Signed, ToPrimitive, Zero },
+                    },
+                    ops::{ Div, DivAssign, Rem, RemAssign },
                     *,
                 };
+                use super::CheckedUnsignedAbs::{Negative, Positive};
+                use super::Sign::NoSign;
+                use super::{BigInt, UnsignedAbs};
                 /*
-                    use super::CheckedUnsignedAbs::{Negative, Positive};
-                    use super::Sign::NoSign;
-                    use super::{BigInt, UnsignedAbs};
-
-                    use crate::{IsizePromotion, UsizePromotion};
-
-                    use core::ops::{Div, DivAssign, Rem, RemAssign};
-                    use num_integer::Integer;
-                    use num_traits::{CheckedDiv, CheckedEuclid, Euclid, Signed, ToPrimitive, Zero};
                 */
                 forward_all_binop_to_ref_ref!(impl Div for BigInt, div);
 
@@ -11646,18 +11351,19 @@ pub mod num
             {
                 use ::
                 {
+                    iter::{ Product },
+                    num::
+                    {
+                        big::{IsizePromotion, UsizePromotion},
+                        traits::{CheckedMul, One, Zero},
+                    },
+                    ops::{ Mul, MulAssign },
                     *,
                 };
+                use super::CheckedUnsignedAbs::{Negative, Positive};
+                use super::Sign::{self, Minus, NoSign, Plus};
+                use super::{BigInt, UnsignedAbs};
                 /*
-                    use super::CheckedUnsignedAbs::{Negative, Positive};
-                    use super::Sign::{self, Minus, NoSign, Plus};
-                    use super::{BigInt, UnsignedAbs};
-
-                    use crate::{IsizePromotion, UsizePromotion};
-
-                    use core::iter::Product;
-                    use core::ops::{Mul, MulAssign};
-                    use num_traits::{CheckedMul, One, Zero};
                 */
                 impl Mul<Sign> for Sign {
                     type Output = Sign;
@@ -11873,24 +11579,18 @@ pub mod num
             {
                 use ::
                 {
+                    cmp::{ Ordering::{ Equal, Greater, Less } },
+                    num::{ traits::CheckedSub },
+                    ops::{ Sub, SubAssign },
                     *,
                 };
+                use super::CheckedUnsignedAbs::{Negative, Positive};
+                use super::Sign::{Minus, NoSign, Plus};
+                use super::{BigInt, UnsignedAbs};
                 /*
-                    use super::CheckedUnsignedAbs::{Negative, Positive};
-                    use super::Sign::{Minus, NoSign, Plus};
-                    use super::{BigInt, UnsignedAbs};
-
-                    use crate::{IsizePromotion, UsizePromotion};
-
-                    use core::cmp::Ordering::{Equal, Greater, Less};
-                    use core::mem;
-                    use core::ops::{Sub, SubAssign};
-                    use num_traits::CheckedSub;
                 */
-               
-               
-               
-                macro_rules! bigint_sub {
+                macro_rules! bigint_sub
+                {
                     ($a:expr, $a_owned:expr, $a_data:expr, $b:expr, $b_owned:expr, $b_data:expr) => {
                         match ($a.sign, $b.sign) {
                             (_, NoSign) => $a_owned,
@@ -12183,47 +11883,23 @@ pub mod num
             {
                 use ::
                 {
+                    cmp::{ Ordering::{ Equal, Greater, Less } },
+                    num::traits::{ToPrimitive, Zero},
+                    ops::{ BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign },
+                    vec::{ Vec },
                     *,
                 };
+                use super::BigInt;
+                use super::Sign::{Minus, NoSign, Plus};
                 /*
-                    use super::BigInt;
-                    use super::Sign::{Minus, NoSign, Plus};
-
-                    use crate::big_digit::{self, BigDigit, DoubleBigDigit};
-                    use crate::biguint::IntDigits;
-
-                    use alloc::vec::Vec;
-                    use core::cmp::Ordering::{Equal, Greater, Less};
-                    use core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign};
-                    use num_traits::{ToPrimitive, Zero};
                 */
-               
-               
-                //
-               
-               
-               
-               
-                //
-               
-               
-               
-               
-               
-               
-               
-               
-                #[inline]
-                fn negate_carry(a: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit {
+                #[inline] fn negate_carry(a: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit {
                     *acc += DoubleBigDigit::from(!a);
                     let lo = *acc as BigDigit;
                     *acc >>= big_digit::BITS;
                     lo
                 }
-
-               
-               
-               
+                
                 fn bitand_pos_neg(a: &mut [BigDigit], b: &[BigDigit]) {
                     let mut carry_b = 1;
                     for (ai, &bi) in a.iter_mut().zip(b.iter()) {
@@ -12724,20 +12400,20 @@ pub mod num
             {
                 use ::
                 {
+                    cmp::{ Ordering::{ Equal, Greater, Less } },
+                    convert::{ TryFrom },
+                    num::
+                    {
+                        big::{ BigUint, ParseBigIntError, ToBigUint, TryFromBigIntError },
+                        traits::{ FromPrimitive, Num, One, ToPrimitive, Zero },
+                    },
+                    str::{ self, FromStr },
+                    vec::{ Vec },
                     *,
                 };
-                /*
                 use super::Sign::{self, Minus, NoSign, Plus};
                 use super::{BigInt, ToBigInt};
-
-                use crate::TryFromBigIntError;
-                use crate::{BigUint, ParseBigIntError, ToBigUint};
-
-                use alloc::vec::Vec;
-                use core::cmp::Ordering::{Equal, Greater, Less};
-                use core::convert::TryFrom;
-                use core::str::{self, FromStr};
-                use num_traits::{FromPrimitive, Num, One, ToPrimitive, Zero};
+                /*
                 */
                 impl FromStr for BigInt {
                     type Err = ParseBigIntError;
@@ -13206,16 +12882,17 @@ pub mod num
             {
                 use ::
                 {
+                    num::
+                    {
+                        big::{ BigUint }, 
+                        integers::Integer,
+                        traits::{Pow, Signed, Zero},
+                    },
                     *,
                 };
-                /*
                 use super::BigInt;
                 use super::Sign::{self, Minus, Plus};
-
-                use crate::BigUint;
-
-                use num_integer::Integer;
-                use num_traits::{Pow, Signed, Zero};
+                /*
                 */
                 /// Help function for pow
                 ///
@@ -13316,7 +12993,7 @@ pub mod num
                 use super::BigInt;
                 use super::Sign::NoSign;
 
-                use core::ops::{Shl, ShlAssign, Shr, ShrAssign};
+                use ::ops::{Shl, ShlAssign, Shr, ShrAssign};
                 use num_traits::{PrimInt, Signed, Zero};
                 */
                 macro_rules! impl_shift {
@@ -13448,9 +13125,7 @@ pub mod num
                 sign: Sign,
                 data: BigUint,
             }
-
-           
-           
+                       
             impl Clone for BigInt {
                 #[inline]
                 fn clone(&self) -> Self {
@@ -13558,11 +13233,7 @@ pub mod num
                     f.pad_integral(!self.is_negative(), "0x", &s)
                 }
             }
-
-           
-           
-           
-           
+            
             impl Not for BigInt {
                 type Output = BigInt;
 
@@ -14574,28 +14245,28 @@ pub mod num
             //! Randomization of big integers
             use ::
             {
+                num::
+                {
+                    big::
+                    {
+                        BigInt, BigUint, Sign::*,
+                        biguint::biguint_from_vec,
+                    },
+                    integers::Integer,
+                    traits::{ ToPrimitive, Zero },
+                },
+                rand::
+                {
+                    distributions::uniform::{SampleBorrow, SampleUniform, UniformSampler},
+                    prelude::*,
+                },
                 *,
             };
             /*
-                #![cfg(feature = "rand")]
-                #![cfg_attr(docsrs, doc(cfg(feature = "rand")))]
-
-                use rand::distributions::uniform::{SampleBorrow, SampleUniform, UniformSampler};
-                use rand::prelude::*;
-
-                use crate::BigInt;
-                use crate::BigUint;
-                use crate::Sign::*;
-
-                use crate::biguint::biguint_from_vec;
-
-                use num_integer::Integer;
-                use num_traits::{ToPrimitive, Zero};
             */
             /// A trait for sampling random big integers.
-            ///
-            /// The `rand` feature must be enabled to use this. See crate-level documentation for details.
-            pub trait RandBigInt {
+            pub trait RandBigInt
+            {
                 /// Generate a random [`BigUint`] of the given bit size.
                 fn gen_biguint(&mut self, bit_size: u64) -> BigUint;
 
@@ -14639,7 +14310,7 @@ pub mod num
                     }
 
                     fn gen_biguint(&mut self, bit_size: u64) -> BigUint {
-                        use core::slice;
+                        use ::slice;
 
                         let (digits, rem) = bit_size.div_rem(&32);
                         let len = (digits + (rem > 0) as u64)
@@ -14831,8 +14502,6 @@ pub mod num
                 type Sampler = UniformBigInt;
             }
             /// A random distribution for [`BigUint`] and [`BigInt`] values of a particular bit size.
-            ///
-            /// The `rand` feature must be enabled to use this. See crate-level documentation for details.
             #[derive(Clone, Copy, Debug)]
             pub struct RandomBits {
                 bits: u64,
@@ -14865,50 +14534,50 @@ pub mod num
         {
             use ::
             {
+                cmp::{ self, Ordering },
+                default::{ Default },
+                num::
+                {
+                    big::big_digit::{self, BigDigit},
+                    integers::{Integer, Roots},
+                    traits::{ConstZero, Num, One, Pow, ToPrimitive, Unsigned, Zero},
+                },
+                string::{ String },
+                vec::{ Vec },
                 *,
             };
             /*
-            use crate::big_digit::{self, BigDigit};
-            use alloc::string::String;
-            use alloc::vec::Vec;
-            use core::cmp;
-            use core::cmp::Ordering;
-            use core::default::Default;
-            use core::fmt;
-            use core::hash;
-            use core::mem;
-            use core::str;
-            use num_integer::{Integer, Roots};
-            use num_traits::{ConstZero, Num, One, Pow, ToPrimitive, Unsigned, Zero};
-
-            pub(crate) use self::convert::to_str_radix_reversed;
-            pub use self::iter::{U32Digits, U64Digits};
             */
+            pub use self::convert::to_str_radix_reversed;
+            pub use self::iter::{U32Digits, U64Digits};
             pub mod addition
             {
                 /*!
                 */
                 use ::
                 {
+                    iter::{ Sum },
+                    num::
+                    {
+                        big::
+                        {
+                            big_digit::{self, BigDigit}, UsizePromotion
+                        },
+                        traits::CheckedAdd,
+                    },
+                    ops::{ Add, AddAssign },
                     *,
                 };
-                /*
+
                 use super::{BigUint, IntDigits};
-
-                use crate::big_digit::{self, BigDigit};
-                use crate::UsizePromotion;
-
-                use core::iter::Sum;
-                use core::ops::{Add, AddAssign};
-                use num_traits::CheckedAdd;
-
+                /*
+                */
                 #[cfg(target_arch = "x86_64")]
-                use core::arch::x86_64 as arch;
+                use ::arch::x86_64 as arch;
 
                 #[cfg(target_arch = "x86")]
-                use core::arch::x86 as arch;
-                */
-               
+                use ::arch::x86 as arch;
+
                 #[cfg(target_arch = "x86_64")]
                 cfg_64!(
                     #[inline]
@@ -15158,21 +14827,23 @@ pub mod num
                 */
                 use ::
                 {
+                    cmp::Ordering::{Equal, Greater, Less},
+                    num::
+                    {
+                        big::
+                        {
+                            big_digit::{self, BigDigit, DoubleBigDigit}, UsizePromotion
+                        },
+                        integers::Integer,
+                        traits::{CheckedDiv, CheckedEuclid, Euclid, One, ToPrimitive, Zero},
+                    },
+                    ops::{Div, DivAssign, Rem, RemAssign},
                     *,
                 };
-                /*
+                
                 use super::addition::__add2;
                 use super::{cmp_slice, BigUint};
-
-                use crate::big_digit::{self, BigDigit, DoubleBigDigit};
-                use crate::UsizePromotion;
-
-                use core::cmp::Ordering::{Equal, Greater, Less};
-                use core::mem;
-                use core::ops::{Div, DivAssign, Rem, RemAssign};
-                use num_integer::Integer;
-                use num_traits::{CheckedDiv, CheckedEuclid, Euclid, One, ToPrimitive, Zero};
-
+                /*
                 */
                 pub(super) const FAST_DIV_WIDE: bool = cfg!(any(target_arch = "x86", target_arch = "x86_64"));
 
@@ -15221,7 +14892,7 @@ pub mod num
                             }
                         );
 
-                        core::arch::asm!(
+                        ::arch::asm!(
                             div!(),
                             in(reg) divisor,
                             inout("dx") hi => rem,
@@ -15237,7 +14908,7 @@ pub mod num
                 /// using half-size pieces of digit, like long-division.
                 #[inline]
                 fn div_half(rem: BigDigit, digit: BigDigit, divisor: BigDigit) -> (BigDigit, BigDigit) {
-                    use crate::big_digit::{HALF, HALF_BITS};
+                    use ::num::big::big_digit::{HALF, HALF_BITS};
 
                     debug_assert!(rem < divisor && divisor <= HALF);
                     let (hi, rem) = ((rem << HALF_BITS) | (digit >> HALF_BITS)).div_rem(&divisor);
@@ -15875,21 +15546,25 @@ pub mod num
                 */
                 use ::
                 {
+                    cmp::{ Ordering },
+                    iter::{ Product },
+                    num::
+                    {
+                        big::
+                        {
+                            big_digit::{self, BigDigit, DoubleBigDigit},
+                            Sign::{self, Minus, NoSign, Plus},
+                            {BigInt, UsizePromotion},
+                        },
+                        traits::{ CheckedMul, FromPrimitive, One, Zero },
+                    },
+                    ops::{Mul, MulAssign},
                     *,
                 };
-                /*
                 use super::addition::{__add2, add2};
                 use super::subtraction::sub2;
                 use super::{biguint_from_vec, cmp_slice, BigUint, IntDigits};
-
-                use crate::big_digit::{self, BigDigit, DoubleBigDigit};
-                use crate::Sign::{self, Minus, NoSign, Plus};
-                use crate::{BigInt, UsizePromotion};
-
-                use core::cmp::Ordering;
-                use core::iter::Product;
-                use core::ops::{Mul, MulAssign};
-                use num_traits::{CheckedMul, FromPrimitive, One, Zero};
+                /*
                 */
                 #[inline]
                 pub(super) fn mac_with_carry(
@@ -16493,25 +16168,28 @@ pub mod num
                 */
                 use ::
                 {
+                    cmp::Ordering::{ Equal, Greater, Less },
+                    num::
+                    {
+                        big::
+                        {
+                            big_digit::{self, BigDigit}, UsizePromotion
+                        },
+                        traits::{ CheckedSub },
+                    },
+                    ops::{ Sub, SubAssign },
                     *,
                 };
-                /*
+                
                 use super::BigUint;
-
-                use crate::big_digit::{self, BigDigit};
-                use crate::UsizePromotion;
-
-                use core::cmp::Ordering::{Equal, Greater, Less};
-                use core::ops::{Sub, SubAssign};
-                use num_traits::CheckedSub;
-
+                /*
+                */
                 #[cfg(target_arch = "x86_64")]
-                use core::arch::x86_64 as arch;
+                use ::arch::x86_64 as arch;
 
                 #[cfg(target_arch = "x86")]
-                use core::arch::x86 as arch;
-                */
-               
+                use ::arch::x86 as arch;
+
                 #[cfg(target_arch = "x86_64")]
                 cfg_64!(
                     #[inline]
@@ -16821,7 +16499,7 @@ pub mod num
                 };
                 /*
                 use super::{BigUint, IntDigits};
-                use core::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign};
+                use ::ops::{BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign};
                 */
                 forward_val_val_binop!(impl BitAnd for BigUint, bitand);
                 forward_ref_val_binop!(impl BitAnd for BigUint, bitand);
@@ -16921,27 +16599,31 @@ pub mod num
                 */
                 use ::
                 {
+                    vec::{ Vec },
+                    cmp::Ordering::{ Equal, Greater, Less },
+                    convert::{ TryFrom },
+                    num::
+                    {
+                        big::
+                        {
+                            big_digit::{self, BigDigit},
+                            ParseBigIntError,
+                            TryFromBigIntError,
+                        },
+                        integers::{ Integer, Roots },
+                        traits::
+                        {
+                            float::FloatCore, FromPrimitive, Num, One, PrimInt, ToPrimitive, Zero,
+                        },
+                    },
+                    str::{ FromStr },
                     *,
                 };
-                /*
                 use super::{biguint_from_vec, BigUint, ToBigUint};
-
                 use super::addition::add2;
                 use super::division::{div_rem_digit, FAST_DIV_WIDE};
                 use super::multiplication::mac_with_carry;
-
-                use crate::big_digit::{self, BigDigit};
-                use crate::ParseBigIntError;
-                use crate::TryFromBigIntError;
-
-                use alloc::vec::Vec;
-                use core::cmp::Ordering::{Equal, Greater, Less};
-                use core::convert::TryFrom;
-                use core::mem;
-                use core::str::FromStr;
-                use num_integer::{Integer, Roots};
-                use num_traits::float::FloatCore;
-                use num_traits::{FromPrimitive, Num, One, PrimInt, ToPrimitive, Zero};
+                /*
                 */
                 /// Find last set bit
                 /// fls(0) == 0, fls(u32::MAX) == 32
@@ -16961,9 +16643,7 @@ pub mod num
                         BigUint::from_str_radix(s, 10)
                     }
                 }
-
-               
-               
+                
                 pub(super) fn from_bitwise_digits_le(v: &[u8], bits: u8) -> BigUint {
                     debug_assert!(!v.is_empty() && bits <= 8 && big_digit::BITS % bits == 0);
                     debug_assert!(v.iter().all(|&c| BigDigit::from(c) < (1 << bits)));
@@ -17027,8 +16707,7 @@ pub mod num
                     debug_assert!(v.iter().all(|&c| u32::from(c) < radix));
 
                    
-                    #[cfg(feature = "std")]
-                    let big_digits = {
+                            let big_digits = {
                         let radix_log2 = f64::from(radix).log2();
                         let bits = radix_log2 * v.len() as f64;
                         (bits / big_digit::BITS as f64).ceil()
@@ -17394,7 +17073,7 @@ pub mod num
                             return Some(Self::ZERO);
                         }
 
-                        let (mantissa, exponent, sign) = FloatCore::integer_decode(n);
+                        let (mantissa, exponent, sign) = Float::integer_decode(n);
 
                         if sign == -1 {
                             return None;
@@ -17594,8 +17273,7 @@ pub mod num
                 pub(super) fn to_radix_digits_le(u: &BigUint, radix: u32) -> Vec<u8> {
                     debug_assert!(!u.is_zero() && !radix.is_power_of_two());
 
-                    #[cfg(feature = "std")]
-                    let radix_digits = {
+                            let radix_digits = {
                         let radix_log2 = f64::from(radix).log2();
                         ((u.bits() as f64) / radix_log2).ceil()
                     };
@@ -17773,13 +17451,13 @@ pub mod num
                     *,
                 };
                 /*
-                    use core::iter::FusedIterator;
+                    use ::iter::FusedIterator;
                 */
                 cfg_digit!(
                     /// An iterator of `u32` digits representation of a `BigUint` or `BigInt`,
                     /// ordered least significant digit first.
                     pub struct U32Digits<'a> {
-                        it: core::slice::Iter<'a, u32>,
+                        it: ::slice::Iter<'a, u32>,
                     }
 
                     /// An iterator of `u32` digits representation of a `BigUint` or `BigInt`,
@@ -17948,13 +17626,13 @@ pub mod num
                     /// An iterator of `u64` digits representation of a `BigUint` or `BigInt`,
                     /// ordered least significant digit first.
                     pub struct U64Digits<'a> {
-                        it: core::slice::Chunks<'a, u32>,
+                        it: ::slice::Chunks<'a, u32>,
                     }
 
                     /// An iterator of `u64` digits representation of a `BigUint` or `BigInt`,
                     /// ordered least significant digit first.
                     pub struct U64Digits<'a> {
-                        it: core::slice::Iter<'a, u64>,
+                        it: ::slice::Iter<'a, u64>,
                     }
                 );
 
@@ -18059,16 +17737,20 @@ pub mod num
                 */
                 use ::
                 {
+                    vec::{ Vec },
+                    ops::{ Shl },
+                    num::
+                    {
+                        big::
+                        {
+                            big_digit::{self, BigDigit, DoubleBigDigit},
+                            biguint::BigUint,
+                        },
+                        traits::One,
+                    },
                     *,
                 };
                 /*
-                use alloc::vec::Vec;
-                use core::mem;
-                use core::ops::Shl;
-                use num_traits::One;
-
-                use crate::big_digit::{self, BigDigit, DoubleBigDigit};
-                use crate::biguint::BigUint
                 */
                 struct MontyReducer {
                     n0inv: BigDigit,
@@ -18297,16 +17979,17 @@ pub mod num
                 */
                 use ::
                 {
+                    num::
+                    {
+                        big::big_digit::{self, BigDigit},
+                        integers::Integer,
+                        traits::{One, Pow, ToPrimitive, Zero},
+                    },
                     *,
                 };
-                /*
                 use super::monty::monty_modpow;
                 use super::BigUint;
-
-                use crate::big_digit::{self, BigDigit};
-
-                use num_integer::Integer;
-                use num_traits::{One, Pow, ToPrimitive, Zero};
+                /*
                 */
                 impl Pow<&BigUint> for BigUint {
                     type Output = BigUint;
@@ -18526,18 +18209,19 @@ pub mod num
                 */
                 use ::
                 {
+                    borrow::{ Cow },
+                    num::
+                    {
+                        big::{ big_digit },
+                        traits::{PrimInt, Zero},
+                    },
+                    ops::{Shl, ShlAssign, Shr, ShrAssign},
+                    vec::{ Vec },
                     *,
                 };
-                /*
+
                 use super::{biguint_from_vec, BigUint};
-
-                use crate::big_digit;
-
-                use alloc::borrow::Cow;
-                use alloc::vec::Vec;
-                use core::mem;
-                use core::ops::{Shl, ShlAssign, Shr, ShrAssign};
-                use num_traits::{PrimInt, Zero};
+                /*
                 */
                 #[inline]
                 fn biguint_shl<T: PrimInt>(n: Cow<'_, BigUint>, shift: T) -> BigUint {
@@ -18730,7 +18414,7 @@ pub mod num
 
         impl ParseBigIntError {
             fn __description(&self) -> &str {
-                use crate::BigIntErrorKind::*;
+                use ::num::big::BigIntErrorKind::*;
                 match self.kind {
                     Empty => "cannot parse integer from empty string",
                     InvalidDigit => "invalid digit found in string",
@@ -18801,18 +18485,18 @@ pub mod num
             }
         }
 
-        pub use crate::biguint::BigUint;
-        pub use crate::biguint::ToBigUint;
-        pub use crate::biguint::U32Digits;
-        pub use crate::biguint::U64Digits;
+        pub use self::biguint::BigUint;
+        pub use self::biguint::ToBigUint;
+        pub use self::biguint::U32Digits;
+        pub use self::biguint::U64Digits;
 
-        pub use crate::bigint::BigInt;
-        pub use crate::bigint::Sign;
-        pub use crate::bigint::ToBigInt;
+        pub use self::bigint::BigInt;
+        pub use self::bigint::Sign;
+        pub use self::bigint::ToBigInt;
 
         #[cfg(feature = "rand")]
         #[cfg_attr(docsrs, doc(cfg(feature = "rand")))]
-        pub use crate::bigrand::{RandBigInt, RandomBits, UniformBigInt, UniformBigUint};
+        pub use self::bigrand::{RandBigInt, RandomBits, UniformBigInt, UniformBigUint};
 
         mod big_digit {
            
@@ -18863,50 +18547,38 @@ pub mod num
         //! Rational numbers
         use ::
         {
+            error::{ Error },
+            fmt::{ Binary, Display, Formatter, LowerExp, LowerHex, Octal, UpperExp, UpperHex },
+            hash::{Hash, Hasher},
+            num::
+            {
+                big::{ BigInt, BigUint, Sign, ToBigInt },
+                integers::{ Integer },
+                traits::
+                {
+                    Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, ConstOne, ConstZero, FromPrimitive, Inv,
+                    Num, NumCast, One, Pow, Signed, ToPrimitive, Unsigned, Zero,
+                },
+            },
+            ops::{Add, Div, Mul, Neg, Rem, ShlAssign, Sub},
+            str::{ FromStr },
             *,
         };
         /*
-        #![doc(html_root_url = "https://docs.rs/num-rational/0.4")]
-        #![no_std]
-       
-        #![allow(clippy::suspicious_arithmetic_impl)]
-        #![allow(clippy::suspicious_op_assign_impl)]
-
-        #[cfg(feature = "std")]
-        #[macro_use]
-        extern crate std;
-
-        use core::cmp;
-        use core::fmt;
-        use core::fmt::{Binary, Display, Formatter, LowerExp, LowerHex, Octal, UpperExp, UpperHex};
-        use core::hash::{Hash, Hasher};
-        use core::ops::{Add, Div, Mul, Neg, Rem, ShlAssign, Sub};
-        use core::str::FromStr;
-        #[cfg(feature = "std")]
-        use std::error::Error;
-
-        #[cfg(feature = "num-bigint")]
-        use num_bigint::{BigInt, BigUint, Sign, ToBigInt};
-
-        use num_integer::Integer;
-        use num_traits::float::FloatCore;
-        use num_traits::{
-            Bounded, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub, ConstOne, ConstZero, FromPrimitive,
-            Inv, Num, NumCast, One, Pow, Signed, ToPrimitive, Unsigned, Zero,
-        };
         */
         pub mod pow
         {
             use ::
             {
+                num::
+                {
+                    integers::{ Integer },
+                    rational::{ Ratio },
+                    traits::{ One, Pow },
+                },
                 *,
             };
             /*
-                use crate::Ratio;
-
-                use core::cmp;
-                use num_integer::Integer;
-                use num_traits::{One, Pow};
             */
             macro_rules! pow_unsigned_impl {
                 (@ $exp:ty) => {
@@ -19127,8 +18799,6 @@ pub mod num
 
         impl<T: Clone + Integer> Ratio<T> {
             /// Creates a new `Ratio`.
-            ///
-            /// **Panics if `denom` is zero.**
             #[inline]
             pub fn new(numer: T, denom: T) -> Ratio<T> {
                 let mut ret = Ratio::new_raw(numer, denom);
@@ -19151,8 +18821,6 @@ pub mod num
                 self.denom.is_one()
             }
             /// Puts self into lowest terms, with `denom` > 0.
-            ///
-            /// **Panics if `denom` is zero.**
             fn reduce(&mut self) {
                 if self.denom.is_zero() {
                     panic!("denominator == 0");
@@ -19172,7 +18840,7 @@ pub mod num
 
                 #[inline]
                 fn replace_with<T: Zero>(x: &mut T, f: impl FnOnce(T) -> T) {
-                    let y = core::mem::replace(x, T::zero());
+                    let y = ::mem::replace(x, T::zero());
                     *x = f(y);
                 }
 
@@ -19189,16 +18857,12 @@ pub mod num
                 }
             }
             /// Returns a reduced copy of self.
-            ///
-            /// **Panics if `denom` is zero.**
             pub fn reduced(&self) -> Ratio<T> {
                 let mut ret = self.clone();
                 ret.reduce();
                 ret
             }
             /// Returns the reciprocal.
-            ///
-            /// **Panics if the `Ratio` is zero.**
             #[inline]
             pub fn recip(&self) -> Ratio<T> {
                 self.clone().into_recip()
@@ -19275,8 +18939,6 @@ pub mod num
                 Ratio::from_integer(self.numer.clone() / self.denom.clone())
             }
             /// Returns the fractional part of a number, with division rounded towards zero.
-            ///
-            /// Satisfies `self == self.trunc() + self.fract()`.
             #[inline]
             pub fn fract(&self) -> Ratio<T> {
                 Ratio::new_raw(self.numer.clone() % self.denom.clone(), self.denom.clone())
@@ -19435,11 +19097,19 @@ pub mod num
             }
         }
 
-        mod iter_sum_product {
-            use crate::Ratio;
-            use core::iter::{Product, Sum};
-            use num_integer::Integer;
-            use num_traits::{One, Zero};
+        mod iter_sum_product
+        {
+            use ::
+            {
+                iter::{Product, Sum},
+                num::
+                {
+                    integers::{ Integer },
+                    rational::{ Ratio },
+                    traits::{ One, Zero },
+                },
+                *,
+            };
 
             impl<T: Integer + Clone> Sum for Ratio<T> {
                 fn sum<I>(iter: I) -> Self
@@ -19478,12 +19148,19 @@ pub mod num
             }
         }
 
-        mod opassign {
-            use core::ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign};
-
-            use crate::Ratio;
-            use num_integer::Integer;
-            use num_traits::NumAssign;
+        mod opassign
+        {
+            use ::
+            {
+                ops::{AddAssign, DivAssign, MulAssign, RemAssign, SubAssign},
+                num::
+                {
+                    integers::Integer,
+                    rational::{ Ratio },
+                    traits::NumAssign,
+                },
+                *,
+            };
 
             impl<T: Clone + Integer + NumAssign> AddAssign for Ratio<T> {
                 fn add_assign(&mut self, other: Ratio<T>) {
@@ -20059,8 +19736,7 @@ pub mod num
         macro_rules! impl_formatting {
             ($fmt_trait:ident, $prefix:expr, $fmt_str:expr, $fmt_alt:expr) => {
                 impl<T: $fmt_trait + Clone + Integer> $fmt_trait for Ratio<T> {
-                    #[cfg(feature = "std")]
-                    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+                            fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
                         let pre_pad = if self.denom.is_one() {
                             format!($fmt_str, self.numer)
                         } else {
@@ -20555,14 +20231,11 @@ pub mod num
             }
         }
         /// Converts a ratio of `T` to an f64.
-        ///
-        /// In addition to stated trait bounds, `T` must be able to hold numbers 56 bits larger than
-        /// the largest of `numer` and `denom`. This is automatically true if `T` is `BigInt`.
         fn ratio_to_f64<T: Bits + Clone + Integer + Signed + ShlAssign<usize> + ToPrimitive>(
             numer: T,
             denom: T,
         ) -> f64 {
-            use core::f64::{INFINITY, MANTISSA_DIGITS, MAX_EXP, MIN_EXP, RADIX};
+            use ::f64::{INFINITY, MANTISSA_DIGITS, MAX_EXP, MIN_EXP, RADIX};
 
             assert_eq!(
                 RADIX, 2,
@@ -20652,7 +20325,7 @@ pub mod num
         /// Multiply `x` by 2 to the power of `exp`. Returns an accurate result even if `2^exp` is not
         /// representable.
         fn ldexp(x: f64, exp: i32) -> f64 {
-            use core::f64::{INFINITY, MANTISSA_DIGITS, MAX_EXP, RADIX};
+            use ::f64::{INFINITY, MANTISSA_DIGITS, MAX_EXP, RADIX};
 
             assert_eq!(
                 RADIX, 2,
@@ -20769,12 +20442,12 @@ pub mod process
         /*
             use ::process::macros::extra::DelimSpan;
             use ::process::macros::marker::{ProcMacroAutoTraits, MARKER};
-            use core::cmp::Ordering;
-            use core::fmt::{self, Debug, Display};
-            use core::hash::{Hash, Hasher};
-            use core::ops::Range;
-            use core::ops::RangeBounds;
-            use core::str::FromStr;
+            use ::cmp::Ordering;
+            use ::fmt::{self, Debug, Display};
+            use ::hash::{Hash, Hasher};
+            use ::ops::Range;
+            use ::ops::RangeBounds;
+            use ::str::FromStr;
             use std::error::Error;
             use std::ffi::CStr;
             use std::path::PathBuf;
@@ -24583,9 +24256,9 @@ pub mod process
             /*
             use alloc::rc::Rc;
             use alloc::vec;
-            use core::mem;
-            use core::panic::RefUnwindSafe;
-            use core::slice;
+            use ::mem;
+            use ::panic::RefUnwindSafe;
+            use ::slice;
             */
             pub struct RcVec<T>
             {
@@ -26584,6 +26257,11 @@ pub mod slice
 pub mod str
 {
     pub use std::str::{ * };
+}
+
+pub mod string
+{
+    pub use std::string::{ * };
 }
 
 pub mod sync
@@ -43816,8 +43494,6 @@ pub mod syntax
         ast_enum! 
         {
             /// Angle bracketed or parenthesized arguments of a path segment.
-            ///
-            /// The `(A, B) -> C` in `Fn(A, B) -> C`.
             pub enum PathArguments {
                 None,
                 /// The `<'a, T>` in `std::slice::iter<'a, T>`.
@@ -67160,4 +66836,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 48697 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 66839 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
