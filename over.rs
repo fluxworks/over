@@ -1213,7 +1213,6 @@ extern crate proc_macro;
                 #[allow(dead_code)]
                 pub spans: ::syntax::custom_punctuation_repr!($($tt)+),
             }
-
                 #[allow(dead_code, non_snake_case)]
             pub fn $ident<__S: ::syntax::__private::IntoSpans<::syntax::custom_punctuation_repr!($($tt)+)>>(
                 spans: __S,
@@ -1223,14 +1222,12 @@ extern crate proc_macro;
                     spans: ::syntax::__private::IntoSpans::into_spans(spans)
                 }
             }
-
             const _: () = {
                 impl ::syntax::__private::Default for $ident {
                     fn default() -> Self {
                         $ident(::syntax::__private::Span::call_site())
                     }
                 }
-
                 ::syntax::impl_parse_for_custom_punctuation!($ident, $($tt)+);
                 ::syntax::impl_to_tokens_for_custom_punctuation!($ident, $($tt)+);
                 ::syntax::impl_clone_for_custom_punctuation!($ident, $($tt)+);
@@ -1246,12 +1243,10 @@ extern crate proc_macro;
                 fn peek(cursor: ::syntax::buffer::Cursor) -> ::syntax::__private::bool {
                     ::syntax::__private::peek_punct(cursor, ::syntax::stringify_punct!($($tt)+))
                 }
-
                 fn display() -> &'static ::syntax::__private::str {
                     ::syntax::__private::concat!("`", ::syntax::stringify_punct!($($tt)+), "`")
                 }
             }
-
             impl ::syntax::parse::Parse for $ident
             {
                 fn parse(input: ::syntax::parse::ParseStream) -> ::syntax::parse::Result<$ident> {
@@ -1278,7 +1273,6 @@ extern crate proc_macro;
     {
         ($ident:ident, $($tt:tt)+) => {
             impl ::syntax::__private::Copy for $ident {}
-
             #[allow(clippy::expl_impl_clone_on_copy)]
             impl ::syntax::__private::Clone for $ident {
                 fn clone(&self) -> Self {
@@ -1296,15 +1290,12 @@ extern crate proc_macro;
                     ::syntax::__private::Formatter::write_str(f, ::syntax::__private::stringify!($ident))
                 }
             }
-
             impl ::syntax::__private::Eq for $ident {}
-
             impl ::syntax::__private::PartialEq for $ident {
                 fn eq(&self, _other: &Self) -> ::syntax::__private::bool {
                     true
                 }
             }
-
             impl ::syntax::__private::Hash for $ident {
                 fn hash<__H: ::syntax::__private::Hasher>(&self, _state: &mut __H) {}
             }
@@ -1390,7 +1381,6 @@ extern crate proc_macro;
                 #[allow(dead_code)]
                 pub span: ::syntax::__private::Span,
             }
-
                 #[allow(dead_code, non_snake_case)]
             pub fn $ident<__S: ::syntax::__private::IntoSpans<::syntax::__private::Span>>(
                 span: __S,
@@ -1399,7 +1389,6 @@ extern crate proc_macro;
                     span: ::syntax::__private::IntoSpans::into_spans(span),
                 }
             }
-
             const _: () = {
                 impl ::syntax::__private::Default for $ident {
                     fn default() -> Self {
@@ -1408,7 +1397,6 @@ extern crate proc_macro;
                         }
                     }
                 }
-
                 ::syntax::impl_parse_for_custom_keyword!($ident);
                 ::syntax::impl_to_tokens_for_custom_keyword!($ident);
                 ::syntax::impl_clone_for_custom_keyword!($ident);
@@ -1429,12 +1417,10 @@ extern crate proc_macro;
                         false
                     }
                 }
-
                 fn display() -> &'static ::syntax::__private::str {
                     ::syntax::__private::concat!("`", ::syntax::__private::stringify!($ident), "`")
                 }
             }
-
             impl ::syntax::parse::Parse for $ident
             {
                 fn parse(input: ::syntax::parse::ParseStream) -> ::syntax::parse::Result<$ident> {
@@ -1471,7 +1457,6 @@ extern crate proc_macro;
     {
         ($ident:ident) => {
             impl ::syntax::__private::Copy for $ident {}
-
             #[allow(clippy::expl_impl_clone_on_copy)]
             impl ::syntax::__private::Clone for $ident {
                 fn clone(&self) -> Self {
@@ -1496,15 +1481,12 @@ extern crate proc_macro;
                     )
                 }
             }
-
             impl ::syntax::__private::Eq for $ident {}
-
             impl ::syntax::__private::PartialEq for $ident {
                 fn eq(&self, _other: &Self) -> ::syntax::__private::bool {
                     true
                 }
             }
-
             impl ::syntax::__private::Hash for $ident {
                 fn hash<__H: ::syntax::__private::Hasher>(&self, _state: &mut __H) {}
             }
@@ -1595,7 +1577,6 @@ extern crate proc_macro;
                 type Output = Ratio<T>;
                 #[inline] fn $method(self, other: Ratio<T>) -> Ratio<T> { self.clone().$method(other) }
             }
-
             impl<'a, T> $imp<T> for &'a Ratio<T> where
             T: Clone + Integer,
             {
@@ -1819,7 +1800,6 @@ extern crate proc_macro;
                     $imp::$method(&self, other)
                 }
             }
-
             impl $imp<$res> for $scalar {
                 type Output = $res;
 
@@ -1840,7 +1820,6 @@ extern crate proc_macro;
                     $imp::$method(self, *other)
                 }
             }
-
             impl $imp<&$res> for &$scalar {
                 type Output = $res;
 
@@ -1861,7 +1840,6 @@ extern crate proc_macro;
                     $imp::$method(&self, *other)
                 }
             }
-
             impl $imp<$res> for &$scalar {
                 type Output = $res;
 
@@ -1882,7 +1860,6 @@ extern crate proc_macro;
                     $imp::$method(self, *other)
                 }
             }
-
             impl $imp<$res> for &$scalar {
                 type Output = $res;
 
@@ -1903,7 +1880,6 @@ extern crate proc_macro;
                     $imp::$method(self.clone(), other)
                 }
             }
-
             impl $imp<&$res> for $scalar {
                 type Output = $res;
 
@@ -1924,7 +1900,6 @@ extern crate proc_macro;
                     $imp::$method(self.clone(), *other)
                 }
             }
-
             impl $imp<&$res> for &$scalar {
                 type Output = $res;
 
@@ -1949,7 +1924,6 @@ extern crate proc_macro;
                         $imp::$method(self, other as $promo)
                     }
                 }
-
                 impl $imp<$res> for $scalar {
                     type Output = $res;
 
@@ -2119,7 +2093,7 @@ extern crate proc_macro;
         { } => { ::collections::HashMap::new() };
         { $( $key:expr => $value:expr ),+ , } =>
         {
-            // Rule with trailing comma.
+           
             map!{ $( $key => $value),+ }
         };
         { $( $key:expr => $value:expr ),* } =>
@@ -2160,20 +2134,19 @@ extern crate proc_macro;
             $crate::arr::Arr::from_vec(vec![]).unwrap()
         };
         [ $( $elem:expr ),+ , ] => {
-            // Rule with trailing comma.
+           
             try_arr![ $( $elem ),+ ].unwrap()
         };
         [ $( $elem:expr ),+ ] => {
             try_arr![ $( $elem ),+ ].unwrap()
         };
     }
-
     /// Given a list of elements, converts each element to a `Value` and returns an `Arr` containing a
     /// vector of the values. Returns an `OverResult` instead of panicking on error. To create an empty
     /// `Arr`, use `arr!` as it will never fail.
     #[macro_export] macro_rules! try_arr {
         [ $( $elem:expr ),+ , ] => {
-            // Rule with trailing comma.
+           
             try_arr![ $( $elem ),+ ]
         };
         [ $( $elem:expr ),+ ] => {
@@ -2204,7 +2177,7 @@ extern crate proc_macro;
             $crate::obj::Obj::from_map_unchecked(::std::collections::HashMap::new())
         };
         { $( $field:expr => $inner:expr ),+ , } => {
-            // Rule with trailing comma.
+           
             try_obj!{ $( $field => $inner ),+ }.unwrap()
         };
         { $( $field:expr => $inner:expr ),+ } => {
@@ -2216,7 +2189,7 @@ extern crate proc_macro;
     /// it will never fail.
     #[macro_export] macro_rules! try_obj {
         { $( $field:expr => $inner:expr ),+ , } => {
-            // Rule with trailing comma.
+           
             try_obj!{ $( $field => $inner ),* };
         };
         { $( $field:expr => $inner:expr ),+ } => {
@@ -2304,38 +2277,29 @@ pub mod arrays
                     return Err(OverError::ArrTypeMismatch(tcur, tnew));
                 }
             }
-
             Ok(Arr {
                 inner: Arc::new(ArrInner { vec, inner_t: tcur }),
             })
         }
-
         /// Returns a new `Arr` from the given vector of `Value`s without checking whether every value
         /// in `vec` is the same type.
-        ///
-        /// It is much faster than the safe version, [`from_vec`], if you know every element in `vec` is
-        /// of type `inner_t`.
         pub fn from_vec_unchecked(vec: Vec<Value>, inner_t: Type) -> Arr {
             Arr {
                 inner: Arc::new(ArrInner { vec, inner_t }),
             }
         }
-
         /// Returns a reference to the inner vec of this `Arr`.
         pub fn vec_ref(&self) -> &Vec<Value> {
             &self.inner.vec
         }
-
         /// Iterates over each `Value` in `self`, applying `Fn` `f`.
-        pub fn with_each<F>(&self, mut f: F)
-        where
+        pub fn with_each<F>(&self, mut f: F) where
             F: FnMut(&Value),
         {
             for value in &self.inner.vec {
                 f(value)
             }
         }
-
         /// Gets the value at `index`.
         /// Returns an error if `index` is out of bounds.
         pub fn get(&self, index: usize) -> OverResult<Value> {
@@ -2345,27 +2309,22 @@ pub mod arrays
                 Ok(self.inner.vec[index].clone())
             }
         }
-
         /// Returns the type of all elements in this `Arr`.
         pub fn inner_type(&self) -> Type {
             self.inner.inner_t.clone()
         }
-
         /// Returns the length of this `Arr`.
         pub fn len(&self) -> usize {
             self.inner.vec.len()
         }
-
         /// Returns whether this `Arr` is empty.
         pub fn is_empty(&self) -> bool {
             self.inner.vec.is_empty()
         }
-
         /// Returns whether `self` and `other` point to the same data.
         pub fn ptr_eq(&self, other: &Self) -> bool {
             Arc::ptr_eq(&self.inner, &other.inner)
         }
-
         /// Returns an iterator over the Arr.
         pub fn iter(&self) -> Iter<Value> {
             self.vec_ref().iter()
@@ -2389,11 +2348,10 @@ pub mod arrays
     impl PartialEq for Arr 
     {
         fn eq(&self, other: &Self) -> bool {
-            // Quickly return false if the types don't match.
+           
             if self.inner.inner_t != other.inner.inner_t {
                 return false;
             }
-
             self.inner.vec == other.inner.vec
         }
     }
@@ -3086,20 +3044,20 @@ pub mod char
     pub use std::char::{ * };
     use ::
     {
+        cell::{ RefCell },
+        fs::{ File },
+        io::{ self, Read },
+        iter::{ Peekable },
+        rc::{ Rc },
+        str::{ Chars },
         *,
     };
     /*
-    use std::cell::RefCell;
-    use std::fs::File;
-    use std::io;
-    use std::io::Read;
-    use std::iter::Peekable;
-    use std::mem;
-    use std::rc::Rc;
-    use std::str::Chars;
     */
+    #[allow( dead_code )]
     #[derive(Clone, Debug)]
-    struct Inner {
+    struct Inner 
+    {
         file: Option<String>,
         contents: String,
         stream: Peekable<Chars<'static>>,
@@ -3108,12 +3066,15 @@ pub mod char
     }
 
     #[derive(Clone, Debug)]
-    pub struct CharStream {
+    pub struct CharStream 
+    {
         inner: Rc<RefCell<Inner>>,
     }
 
-    impl CharStream {
-        pub fn from_file(path: &str) -> io::Result<CharStream> {
+    impl CharStream 
+    {
+        pub fn from_file(path: &str) -> io::Result<CharStream> 
+        {
             let mut file = File::open(path)?;
 
             let len = file.metadata()?.len();
@@ -3124,11 +3085,13 @@ pub mod char
             Self::from_string_impl(Some(String::from(path)), contents)
         }
 
-        pub fn from_string(contents: String) -> io::Result<CharStream> {
+        pub fn from_string(contents: String) -> io::Result<CharStream> 
+        {
             Self::from_string_impl(None, contents)
         }
 
-        fn from_string_impl(file: Option<String>, contents: String) -> io::Result<CharStream> {
+        fn from_string_impl(file: Option<String>, contents: String) -> io::Result<CharStream> 
+        {
             let chars: Chars = unsafe { mem::transmute(contents.chars()) };
             let stream = chars.peekable();
 
@@ -3143,7 +3106,8 @@ pub mod char
             })
         }
 
-        pub fn peek(&self) -> Option<char> {
+        pub fn peek(&self) -> Option<char> 
+        {
             let mut inner = self.inner.borrow_mut();
             let opt = inner.stream.peek();
 
@@ -3153,33 +3117,39 @@ pub mod char
             }
         }
 
-        pub fn file(&self) -> Option<String> {
+        pub fn file(&self) -> Option<String> 
+        {
             let inner = self.inner.borrow();
             inner.file.clone()
         }
 
-        pub fn line(&self) -> usize {
+        pub fn line(&self) -> usize 
+        {
             let inner = self.inner.borrow();
             inner.line
         }
 
-        pub fn col(&self) -> usize {
+        pub fn col(&self) -> usize 
+        {
             let inner = self.inner.borrow();
             inner.col
         }
 
-        fn set_line(&mut self, value: usize) {
+        fn set_line(&mut self, value: usize) 
+        {
             let mut inner = self.inner.borrow_mut();
             inner.line = value;
         }
 
-        fn set_col(&mut self, value: usize) {
+        fn set_col(&mut self, value: usize) 
+        {
             let mut inner = self.inner.borrow_mut();
             inner.col = value;
         }
     }
 
-    impl Iterator for CharStream {
+    impl Iterator for CharStream 
+    {
         type Item = char;
 
         fn next(&mut self) -> Option<Self::Item> {
@@ -3205,7 +3175,8 @@ pub mod char
         }
     }
 
-    pub fn format(ch: char) -> String {
+    pub fn format(ch: char) -> String 
+    {
         match ch {
             '\n' => String::from("\\n"),
             ch => format!("{}", ch),
@@ -3292,7 +3263,6 @@ pub mod error
                 TypeMismatch(ref expected, ref found) => {
                     write!(f, "Type mismatch: expected {}, found {}", expected, found)
                 }
-
                 ParseError(ref error) | IoError(ref error) => write!(f, "{}", error),
             }
         }
@@ -3340,41 +3310,27 @@ pub mod error
         use ::
         {
             char::{ format },
+            error::{ Error, OverError },
+            num::
+            {
+                big::{ BigInt, ParseBigIntError },
+                ParseIntError
+            },
+            objects::{ Obj },
+            parses::{ MAX_DEPTH, object_file, object_from_str },
+            result::{ ParseResult },
+            types::{ Type },
             *,
         };
-
-        use super::{ ParseResult };
-        const MAX_DEPTH: usize = 64;
-        /*
-        use super::misc::format_char;
-        use super::ParseResult;
-        use super::MAX_DEPTH;
-        use crate::types::Type;
-        use crate::OverError;
-        use num_bigint::{BigInt, ParseBigIntError};
-        use std::error::Error;
-        use std::fmt;
-        use std::io;
-        use std::num::ParseIntError;
-        */
-        type ParseResult<T> = Result<T, ParseError>;
-        /// Load an `Obj` from a file.
-        pub fn load_from_file(path: &str) -> ParseResult<Obj> {
-            parse_obj_file(path)
-        }
-        /// Load an `Obj` from a &str.
-        pub fn load_from_str(contents: &str) -> ParseResult<Obj> {
-            parse_obj_str(contents)
-        }
 
         pub fn parse_err<T>(file: Option<String>, kind: ParseErrorKind) -> ParseResult<T>
         {
             Err(ParseError { file, kind })
         }
-
         /// Error kind.
         #[derive(Debug)]
-        pub enum ParseErrorKind {
+        pub enum ParseErrorKind
+        {
             BinaryOperatorError(Type, Type, char, usize, usize),
             CyclicInclude(String, usize, usize),
             DuplicateField(String, usize, usize),
@@ -3402,25 +3358,28 @@ pub mod error
             OverError(String),
             ParseIntError(String),
         }
-
         /// Parse error.
         #[derive(Debug)]
-        pub struct ParseError {
+        pub struct ParseError 
+        {
             /// The file this error occurred in.
             pub file: Option<String>,
             /// Error kind.
             pub kind: ParseErrorKind,
         }
 
-        impl fmt::Display for ParseError {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        impl fmt::Display for ParseError 
+        {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+            {
                 use self::ParseErrorKind::*;
 
-                if let Some(ref file) = (*self).file {
+                if let Some(ref file) = (*self).file
+                {
                     write!(f, "{}: ", file)?;
                 }
-
-                match (*self).kind {
+                match (*self).kind
+                {
                     BinaryOperatorError(ref expected, ref found, ref op, ref line, ref col) => write!(
                         f,
                         "Could not apply operator {} on types {} and {} at line {}, column {}",
@@ -3472,14 +3431,14 @@ pub mod error
                         f,
                         "Invalid escape character '\\{}' at line {}, column {}. \
                         If you meant to write a backslash, use '\\\\'",
-                        format_char(*ch),
+                        format(*ch),
                         line,
                         col
                     ),
                     InvalidFieldChar(ref ch, ref line, ref col) => write!(
                         f,
                         "Invalid character '{}' for field at line {}, column {}",
-                        format_char(*ch),
+                        format(*ch),
                         line,
                         col
                     ),
@@ -3521,7 +3480,7 @@ pub mod error
                     InvalidValueChar(ref ch, ref line, ref col) => write!(
                         f,
                         "Invalid character '{}' for value at line {}, column {}",
-                        format_char(*ch),
+                        format(*ch),
                         line,
                         col
                     ),
@@ -3549,7 +3508,8 @@ pub mod error
             }
         }
 
-        impl Error for ParseError {
+        impl Error for ParseError 
+        {
             fn description(&self) -> &str {
                 use self::ParseErrorKind::*;
 
@@ -3557,7 +3517,6 @@ pub mod error
                     BinaryOperatorError(_, _, _, _, _) | UnaryOperatorError(_, _, _, _) => {
                         "Could not apply operator"
                     }
-
                     CyclicInclude(_, _, _) => "Tried to cyclically include file",
                     DuplicateField(_, _, _) => "Duplicate field",
                     DuplicateGlobal(_, _, _) => "Duplicate global",
@@ -3584,7 +3543,8 @@ pub mod error
             }
         }
 
-        impl ParseError {
+        impl ParseError 
+        {
             /// Convert an `OverError` to a `ParseError` given line and column numbers.
             pub fn from_over(e: &OverError, file: Option<String>, line: usize, col: usize) -> Self {
                 ParseError {
@@ -3594,7 +3554,8 @@ pub mod error
             }
         }
 
-        impl From<io::Error> for ParseError {
+        impl From<io::Error> for ParseError 
+        {
             fn from(e: io::Error) -> Self {
                 ParseError {
                     file: None,
@@ -3603,7 +3564,8 @@ pub mod error
             }
         }
 
-        impl From<ParseIntError> for ParseError {
+        impl From<ParseIntError> for ParseError 
+        {
             fn from(e: ParseIntError) -> Self {
                 ParseError {
                     file: None,
@@ -3612,7 +3574,8 @@ pub mod error
             }
         }
 
-        impl From<ParseBigIntError> for ParseError {
+        impl From<ParseBigIntError> for ParseError 
+        {
             fn from(e: ParseBigIntError) -> Self {
                 ParseError {
                     file: None,
@@ -3634,7 +3597,7 @@ pub mod get
     /*
     */
     /// If `ch` preceded by a backslash together form an escape character, then return this char. Otherwise, return None.
-    // pub fn get_escape_char(ch: char) -> Option<char>
+   
     pub fn escaped_character(ch: char) -> Option<char>
     {
         match ch
@@ -3673,24 +3636,29 @@ pub mod fmt
     pub use std::fmt::{ * };    
     use ::
     {
+        arrays::{ Arr },
+        num::
+        {
+            big::{ BigInt },
+            rational::{ BigRational },
+            traits::{ One },
+        },
+        objects::{ Obj },
+        tuples::{ Tup },
+        values::{ Value },
         *,
     };
     /*
-    use crate::arr::Arr;
-    use crate::obj::Obj;
-    use crate::tup::Tup;
-    use crate::value::Value;
     use crate::INDENT_STEP;
-    use num_bigint::BigInt;
-    use num_rational::BigRational;
-    use num_traits::One;
     */
-    // Returns a `String` with the given amount of spaces.
-    fn indent(amount: usize) -> String {
+   
+    fn indent(amount: usize) -> String 
+    {
         " ".repeat(amount)
     }
 
-    fn get_char_map(ch: char) -> Option<&'static str> {
+    fn get_char_map(ch: char) -> Option<&'static str> 
+    {
         match ch {
             '\\' => Some("\\\\"),
             '\"' => Some("\\\""),
@@ -3703,7 +3671,8 @@ pub mod fmt
         }
     }
 
-    fn replace_all(s: &str) -> String {
+    fn replace_all(s: &str) -> String 
+    {
         let mut string = String::with_capacity(s.len());
 
         for ch in s.chars() {
@@ -3716,11 +3685,13 @@ pub mod fmt
         string
     }
     /// Trait for formatting a .over representation of an object.
-    pub trait Format {
+    pub trait Format 
+    {
         fn format(&self, full: bool, indent_amt: usize) -> String;
     }
 
-    impl Format for BigRational {
+    impl Format for BigRational 
+    {
         fn format(&self, _full: bool, _indent_amt: usize) -> String {
             let frac_fmt = format!("{}", *self);
 
@@ -3732,7 +3703,8 @@ pub mod fmt
         }
     }
 
-    impl Format for char {
+    impl Format for char 
+    {
         fn format(&self, _full: bool, _indent_amt: usize) -> String {
             if let Some(s) = get_char_map(*self) {
                 format!("\'{}\'", s)
@@ -3742,13 +3714,15 @@ pub mod fmt
         }
     }
 
-    impl Format for String {
+    impl Format for String 
+    {
         fn format(&self, _full: bool, _indent_amt: usize) -> String {
             format!("\"{}\"", replace_all(self))
         }
     }
 
-    impl Format for Value {
+    impl Format for Value 
+    {
         fn format(&self, _full: bool, indent_amt: usize) -> String {
             match *self {
                 Value::Null => String::from("null"),
@@ -3760,7 +3734,6 @@ pub mod fmt
                         String::from("false")
                     }
                 }
-
                 Value::Int(ref inner) => format!("{}", inner),
 
                 Value::Frac(ref inner) => inner.format(true, indent_amt),
@@ -3773,7 +3746,8 @@ pub mod fmt
         }
     }
 
-    impl Format for Arr {
+    impl Format for Arr 
+    {
         fn format(&self, full: bool, indent_amt: usize) -> String {
             match self.len() {
                 0 => {
@@ -3820,7 +3794,8 @@ pub mod fmt
         }
     }
 
-    impl Format for Tup {
+    impl Format for Tup 
+    {
         fn format(&self, full: bool, indent_amt: usize) -> String {
             match self.len() {
                 0 => {
@@ -3862,7 +3837,8 @@ pub mod fmt
         }
     }
 
-    impl Format for Obj {
+    impl Format for Obj 
+    {
         fn format(&self, full: bool, indent_amt: usize) -> String {
             if self.is_empty() && !self.has_parent() {
                 if full {
@@ -3884,7 +3860,6 @@ pub mod fmt
                         parent.format(true, indent_amt + INDENT_STEP)
                     ));
                 }
-
                 self.with_each(|field, value| {
                     s.push_str(&format!(
                         "{}{}: {}\n",
@@ -3944,23 +3919,23 @@ pub mod is
     /*
     */
     /// Returns true if this character signifies the legal end of a value.
-    // pub fn is_value_end_char(ch: char) -> bool {
+   
     pub fn value_end_char(ch: char) -> bool {
         whitespace(ch) || end_delimiter(ch) || operator(ch)
     }
     /// Returns true if the character is either whitespace or '#' (start of a comment).
-    // pub fn is_whitespace(ch: char) -> bool {
+   
     pub fn whitespace(ch: char) -> bool {
         ch.is_whitespace() || ch == '#'
     }
-    // pub fn is_end_delimiter(ch: char) -> bool {
+   
     pub fn end_delimiter(ch: char) -> bool {
         match ch {
             ')' | ']' | '}' | '>' => true,
             _ => false,
         }
     }
-    // pub fn is_numeric_char(ch: char) -> bool {
+   
     pub fn numeric_char(ch: char) -> bool {
         match ch {
             _ch if digit(_ch) => true,
@@ -3968,14 +3943,14 @@ pub mod is
             _ => false,
         }
     }
-    // pub fn is_priority_operator(ch: char) -> bool {
+   
     pub fn priority_operator(ch: char) -> bool {
         match ch {
             '*' | '/' | '%' => true,
             _ => false,
         }
     }
-    // pub fn is_operator(ch: char) -> bool {
+   
     pub fn operator(ch: char) -> bool {
         match ch {
             '+' | '-' | '*' | '/' | '%' => true,
@@ -3990,7 +3965,7 @@ pub mod is
             _ => false,
         }
     }
-    // pub fn is_reserved(field: &str) -> bool {
+   
     pub fn reserved(field: &str) -> bool {
         match field {
             "@" | "null" | "true" | "false" | "Obj" | "Str" | "Arr" | "Tup" => true,
@@ -4138,7 +4113,6 @@ pub mod num
                     Bounded::max_value()
                 }
             }
-
             macro_rules! bounded_impl
             {
                 ($t:ty, $min:expr, $max:expr) =>
@@ -4148,7 +4122,6 @@ pub mod num
                         fn min_value() -> $t {
                             $min
                         }
-
                         #[inline]
                         fn max_value() -> $t {
                             $max
@@ -4156,7 +4129,6 @@ pub mod num
                     }
                 };
             }
-
             bounded_impl!(usize, usize::MIN, usize::MAX);
             bounded_impl!(u8, u8::MIN, u8::MAX);
             bounded_impl!(u16, u16::MIN, u16::MAX);
@@ -4180,7 +4152,6 @@ pub mod num
                     };
                 };
             }
-
             macro_rules! bounded_impl_nonzero 
             {
                 ($t:ty, $min:expr, $max:expr) => {
@@ -4191,7 +4162,6 @@ pub mod num
                             bounded_impl_nonzero_const!($t, $min, MIN);
                             MIN
                         }
-
                         #[inline]
                         fn max_value() -> $t {
                            
@@ -4201,7 +4171,6 @@ pub mod num
                     }
                 };
             }
-
             bounded_impl_nonzero!(NonZeroUsize, 1, usize::MAX);
             bounded_impl_nonzero!(NonZeroU8, 1, u8::MAX);
             bounded_impl_nonzero!(NonZeroU16, 1, u16::MAX);
@@ -4225,7 +4194,6 @@ pub mod num
                     Wrapping(T::max_value())
                 }
             }
-
             bounded_impl!(f32, f32::MIN, f32::MAX);
 
             macro_rules! for_each_tuple_ 
@@ -4238,14 +4206,12 @@ pub mod num
                     for_each_tuple_! { $m !! $($t,)* }
                 );
             }
-
             macro_rules! for_each_tuple 
             {
                 ($m:ident) => {
                     for_each_tuple_! { $m !! A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, }
                 };
             }
-
             macro_rules! bounded_tuple 
             {
                 ( $($name:ident)* ) => (
@@ -4261,7 +4227,6 @@ pub mod num
                     }
                 );
             }
-
             for_each_tuple!(bounded_tuple);
             bounded_impl!(f64, f64::MIN, f64::MAX);
         } pub use self::bounds::Bounded;
@@ -4357,7 +4322,6 @@ pub mod num
                     }
                 }
             }
-
             macro_rules! impl_to_primitive_int_to_int 
             {
                 ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
@@ -4372,7 +4336,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_int_to_uint 
             {
                 ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
@@ -4386,7 +4349,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_int 
             {
                 ($T:ident) => {
@@ -4399,7 +4361,6 @@ pub mod num
                             fn to_i64 -> i64;
                             fn to_i128 -> i128;
                         }
-
                         impl_to_primitive_int_to_uint! { $T:
                             fn to_usize -> usize;
                             fn to_u8 -> u8;
@@ -4408,7 +4369,6 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
-
                         #[inline]
                         fn to_f32(&self) -> Option<f32> {
                             Some(*self as f32)
@@ -4420,7 +4380,6 @@ pub mod num
                     }
                 };
             }
-
             impl_to_primitive_int!(isize);
             impl_to_primitive_int!(i8);
             impl_to_primitive_int!(i16);
@@ -4441,7 +4400,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_uint_to_uint 
             {
                 ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
@@ -4455,7 +4413,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_uint 
             {
                 ($T:ident) => {
@@ -4468,7 +4425,6 @@ pub mod num
                             fn to_i64 -> i64;
                             fn to_i128 -> i128;
                         }
-
                         impl_to_primitive_uint_to_uint! { $T:
                             fn to_usize -> usize;
                             fn to_u8 -> u8;
@@ -4477,7 +4433,6 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
-
                         #[inline]
                         fn to_f32(&self) -> Option<f32> {
                             Some(*self as f32)
@@ -4489,7 +4444,6 @@ pub mod num
                     }
                 };
             }
-
             impl_to_primitive_uint!(usize);
             impl_to_primitive_uint!(u8);
             impl_to_primitive_uint!(u16);
@@ -4505,7 +4459,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_nonzero 
             {
                 ($T:ident) => {
@@ -4531,7 +4484,6 @@ pub mod num
                     }
                 };
             }
-
             impl_to_primitive_nonzero!(NonZeroUsize);
             impl_to_primitive_nonzero!(NonZeroU8);
             impl_to_primitive_nonzero!(NonZeroU16);
@@ -4556,7 +4508,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! float_to_int_unchecked 
             {
                
@@ -4565,7 +4516,6 @@ pub mod num
                     unsafe { $float.to_int_unchecked::<$int>() }
                 };
             }
-
             macro_rules! impl_to_primitive_float_to_signed_int 
             {
                 ($f:ident : $( fn $method:ident -> $i:ident ; )*) => {$(
@@ -4594,7 +4544,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_float_to_unsigned_int 
             {
                 ($f:ident : $( fn $method:ident -> $u:ident ; )*) => {$(
@@ -4620,7 +4569,6 @@ pub mod num
                     }
                 )*}
             }
-
             macro_rules! impl_to_primitive_float 
             {
                 ($T:ident) => {
@@ -4633,7 +4581,6 @@ pub mod num
                             fn to_i64 -> i64;
                             fn to_i128 -> i128;
                         }
-
                         impl_to_primitive_float_to_unsigned_int! { $T:
                             fn to_usize -> usize;
                             fn to_u8 -> u8;
@@ -4642,7 +4589,6 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
-
                         impl_to_primitive_float_to_float! { $T:
                             fn to_f32 -> f32;
                             fn to_f64 -> f64;
@@ -4650,7 +4596,6 @@ pub mod num
                     }
                 };
             }
-
             impl_to_primitive_float!(f32);
             impl_to_primitive_float!(f64);
             /// A generic trait for converting a number to a value.
@@ -4727,7 +4672,6 @@ pub mod num
                     }
                 }
             }
-
             macro_rules! impl_from_primitive
             {
                 ($T:ty, $to_ty:ident) => {
@@ -4756,7 +4700,6 @@ pub mod num
                         fn from_i128(n: i128) -> Option<$T> {
                             n.$to_ty()
                         }
-
                         #[inline]
                         fn from_usize(n: usize) -> Option<$T> {
                             n.$to_ty()
@@ -4781,7 +4724,6 @@ pub mod num
                         fn from_u128(n: u128) -> Option<$T> {
                             n.$to_ty()
                         }
-
                         #[inline]
                         fn from_f32(n: f32) -> Option<$T> {
                             n.$to_ty()
@@ -4793,7 +4735,6 @@ pub mod num
                     }
                 };
             }
-
             impl_from_primitive!(isize, to_isize);
             impl_from_primitive!(i8, to_i8);
             impl_from_primitive!(i16, to_i16);
@@ -4837,7 +4778,6 @@ pub mod num
                         fn from_i128(n: i128) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-
                         #[inline]
                         fn from_usize(n: usize) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
@@ -4862,7 +4802,6 @@ pub mod num
                         fn from_u128(n: u128) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-
                         #[inline]
                         fn from_f32(n: f32) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
@@ -4874,7 +4813,6 @@ pub mod num
                     }
                 };
             }
-
             impl_from_primitive_nonzero!(NonZeroIsize, to_isize);
             impl_from_primitive_nonzero!(NonZeroI8, to_i8);
             impl_from_primitive_nonzero!(NonZeroI16, to_i16);
@@ -4896,7 +4834,6 @@ pub mod num
                     }
                 )*}
             }
-
             impl<T: ToPrimitive> ToPrimitive for Wrapping<T> 
             {
                 impl_to_primitive_wrapping! {
@@ -4918,7 +4855,6 @@ pub mod num
                     fn to_f64 -> f64;
                 }
             }
-
             macro_rules! impl_from_primitive_wrapping 
             {
                 ($( fn $method:ident ( $i:ident ); )*) => {$(
@@ -4927,7 +4863,6 @@ pub mod num
                     }
                 )*}
             }
-
             impl<T: FromPrimitive> FromPrimitive for Wrapping<T> 
             {
                 impl_from_primitive_wrapping! {
@@ -4962,7 +4897,6 @@ pub mod num
                 /// represented by the target type, then `None` is returned.
                 fn from<T: ToPrimitive>(n: T) -> Option<Self>;
             }
-
             macro_rules! impl_num_cast
             {
                 ($T:ty, $conv:ident) => {
@@ -4974,7 +4908,6 @@ pub mod num
                     }
                 };
             }
-
             impl_num_cast!(u8, to_u8);
             impl_num_cast!(u16, to_u16);
             impl_num_cast!(u32, to_u32);
@@ -5000,7 +4933,6 @@ pub mod num
                     }
                 };
             }
-
             impl_num_cast_nonzero!(NonZeroUsize, to_usize);
             impl_num_cast_nonzero!(NonZeroU8, to_u8);
             impl_num_cast_nonzero!(NonZeroU16, to_u16);
@@ -5029,7 +4961,6 @@ pub mod num
                 /// Convert a value to another, using the `as` operator.
                 fn as_(self) -> T;
             }
-
             macro_rules! impl_as_primitive
             {
                 (@ $T: ty =>  impl $U: ty ) => {
@@ -5046,7 +4977,6 @@ pub mod num
                     impl_as_primitive!(@ $T => { i8, i16, i32, i64, i128, isize });
                 };
             }
-
             impl_as_primitive!(u8 => { char, f32, f64 });
             impl_as_primitive!(i8 => { f32, f64 });
             impl_as_primitive!(u16 => { f32, f64 });
@@ -5263,7 +5193,6 @@ pub mod num
                 /// Returns the mantissa, base 2 exponent, and sign as integers, respectively.
                 fn integer_decode(self) -> (u64, i16, i8);
             }
-
             impl FloatCore for f32
             {
                 constant!
@@ -5277,12 +5206,10 @@ pub mod num
                     epsilon() -> f32::EPSILON;
                     max_value() -> f32::MAX;
                 }
-
                 #[inline] fn integer_decode(self) -> (u64, i16, i8)
                 {
                     integer_decode_f32(self)
                 }
-
                 forward!
                 {
                     Self::is_nan(self) -> bool;
@@ -5313,7 +5240,6 @@ pub mod num
                     Self::powi(self, n: i32) -> Self;
                 }
             }
-
             impl FloatCore for f64
             {
                 constant!
@@ -5327,12 +5253,10 @@ pub mod num
                     epsilon() -> f64::EPSILON;
                     max_value() -> f64::MAX;
                 }
-
                 #[inline] fn integer_decode(self) -> (u64, i16, i8)
                 {
                     integer_decode_f64(self)
                 }
-
                 forward!
                 {
                     Self::is_nan(self) -> bool;
@@ -5507,7 +5431,6 @@ pub mod num
                     }
                 }
             }
-
             macro_rules! float_impl_std
             {
                 ($T:ident $decode:ident) => {
@@ -5522,18 +5445,15 @@ pub mod num
                             epsilon() -> $T::EPSILON;
                             max_value() -> $T::MAX;
                         }
-
                         #[inline]
                         #[allow(deprecated)]
                         fn abs_sub(self, other: Self) -> Self {
                             <$T>::abs_sub(self, other)
                         }
-
                         #[inline]
                         fn integer_decode(self) -> (u64, i16, i8) {
                             $decode(self)
                         }
-
                         forward! {
                             Self::is_nan(self) -> bool;
                             Self::is_infinite(self) -> bool;
@@ -5604,7 +5524,6 @@ pub mod num
                 exponent -= 127 + 23;
                 (mantissa as u64, exponent, sign)
             }
-
             fn integer_decode_f64(f: f64) -> (u64, i16, i8)
             {
                 let bits: u64 = f.to_bits();
@@ -5619,7 +5538,6 @@ pub mod num
                 exponent -= 1023 + 52;
                 (mantissa, exponent, sign)
             }
-
             float_impl_std!(f32 integer_decode_f32);
             float_impl_std!(f64 integer_decode_f64);
             
@@ -5659,7 +5577,6 @@ pub mod num
                     }
                 );
             }
-
             float_const_impl!
             {
                 #[doc = "Return Euler’s number."]
@@ -5701,7 +5618,6 @@ pub mod num
                 /// Return the ordering between `self` and `other`.
                 fn total_cmp(&self, other: &Self) -> Ordering;
             }
-
             macro_rules! totalorder_impl
             {
                 ($T:ident, $I:ident, $U:ident, $bits:expr) => {
@@ -5727,7 +5643,6 @@ pub mod num
                     }
                 };
             }
-
             totalorder_impl!(f64, i64, u64, 64);
             totalorder_impl!(f32, i32, u32, 32);
         } pub use self::float::{ Float, FloatConst };
@@ -5761,7 +5676,6 @@ pub mod num
                 /// The additive identity element of `Self`, `0`.
                 const ZERO: Self;
             }
-
             macro_rules! zero_impl
             {
                 ($t:ty, $v:expr) => {
@@ -5775,13 +5689,11 @@ pub mod num
                             *self == $v
                         }
                     }
-
                     impl ConstZero for $t {
                         const ZERO: Self = $v;
                     }
                 };
             }
-
             zero_impl!(usize, 0);
             zero_impl!(u8, 0);
             zero_impl!(u16, 0);
@@ -5805,22 +5717,18 @@ pub mod num
                 fn is_zero(&self) -> bool {
                     self.0.is_zero()
                 }
-
                 fn set_zero(&mut self) {
                     self.0.set_zero();
                 }
-
                 fn zero() -> Self {
                     Wrapping(T::zero())
                 }
             }
-
             impl<T: ConstZero> ConstZero for Wrapping<T> where
                 Wrapping<T>: Add<Output = Wrapping<T>>,
             {
                 const ZERO: Self = Wrapping(T::ZERO);
             }
-
             #[cfg(has_num_saturating)]
             impl<T: Zero> Zero for Saturating<T> where
                 Saturating<T>: Add<Output = Saturating<T>>,
@@ -5828,16 +5736,13 @@ pub mod num
                 fn is_zero(&self) -> bool {
                     self.0.is_zero()
                 }
-
                 fn set_zero(&mut self) {
                     self.0.set_zero();
                 }
-
                 fn zero() -> Self {
                     Saturating(T::zero())
                 }
             }
-
             #[cfg(has_num_saturating)]
             impl<T: ConstZero> ConstZero for Saturating<T> where
                 Saturating<T>: Add<Output = Saturating<T>>,
@@ -5870,7 +5775,6 @@ pub mod num
                 /// The multiplicative identity element of `Self`, `1`.
                 const ONE: Self;
             }
-
             macro_rules! one_impl {
                 ($t:ty, $v:expr) => {
                     impl One for $t {
@@ -5883,13 +5787,11 @@ pub mod num
                             *self == $v
                         }
                     }
-
                     impl ConstOne for $t {
                         const ONE: Self = $v;
                     }
                 };
             }
-
             one_impl!(usize, 1);
             one_impl!(u8, 1);
             one_impl!(u16, 1);
@@ -5913,18 +5815,15 @@ pub mod num
                 fn set_one(&mut self) {
                     self.0.set_one();
                 }
-
                 fn one() -> Self {
                     Wrapping(T::one())
                 }
             }
-
             impl<T: ConstOne> ConstOne for Wrapping<T> where
                 Wrapping<T>: Mul<Output = Wrapping<T>>,
             {
                 const ONE: Self = Wrapping(T::ONE);
             }
-
             #[cfg(has_num_saturating)]
             impl<T: One> One for Saturating<T> where
                 Saturating<T>: Mul<Output = Saturating<T>>,
@@ -5932,19 +5831,16 @@ pub mod num
                 fn set_one(&mut self) {
                     self.0.set_one();
                 }
-
                 fn one() -> Self {
                     Saturating(T::one())
                 }
             }
-
             #[cfg(has_num_saturating)]
             impl<T: ConstOne> ConstOne for Saturating<T> where
                 Saturating<T>: Mul<Output = Saturating<T>>,
             {
                 const ONE: Self = Saturating(T::ONE);
             }
-
            
 
             /// Returns the additive identity, `0`.
@@ -6056,7 +5952,6 @@ pub mod num
                 /// Raises self to the power of `exp`, using exponentiation by squaring.
                 fn pow(self, exp: u32) -> Self;
             }
-
             fn one_per_byte<P: PrimInt>() -> P {
                
                
@@ -6072,7 +5967,6 @@ pub mod num
                 }
                 ret
             }
-
             fn reverse_bits_fallback<P: PrimInt>(i: P) -> P {
                 let rep_01: P = one_per_byte();
                 let rep_03 = (rep_01 << 1) | rep_01;
@@ -6089,7 +5983,6 @@ pub mod num
                 ret = ((ret & rep_55) << 1) | ((ret >> 1) & rep_55);
                 ret
             }
-
             macro_rules! prim_int_impl {
                 ($T:ty, $S:ty, $U:ty) => {
                     impl PrimInt for $T {
@@ -6097,92 +5990,74 @@ pub mod num
                         fn count_ones(self) -> u32 {
                             <$T>::count_ones(self)
                         }
-
                         #[inline]
                         fn count_zeros(self) -> u32 {
                             <$T>::count_zeros(self)
                         }
-
                         #[inline]
                         fn leading_ones(self) -> u32 {
                             <$T>::leading_ones(self)
                         }
-
                         #[inline]
                         fn leading_zeros(self) -> u32 {
                             <$T>::leading_zeros(self)
                         }
-
                         #[inline]
                         fn trailing_ones(self) -> u32 {
                             <$T>::trailing_ones(self)
                         }
-
                         #[inline]
                         fn trailing_zeros(self) -> u32 {
                             <$T>::trailing_zeros(self)
                         }
-
                         #[inline]
                         fn rotate_left(self, n: u32) -> Self {
                             <$T>::rotate_left(self, n)
                         }
-
                         #[inline]
                         fn rotate_right(self, n: u32) -> Self {
                             <$T>::rotate_right(self, n)
                         }
-
                         #[inline]
                         fn signed_shl(self, n: u32) -> Self {
                             ((self as $S) << n) as $T
                         }
-
                         #[inline]
                         fn signed_shr(self, n: u32) -> Self {
                             ((self as $S) >> n) as $T
                         }
-
                         #[inline]
                         fn unsigned_shl(self, n: u32) -> Self {
                             ((self as $U) << n) as $T
                         }
-
                         #[inline]
                         fn unsigned_shr(self, n: u32) -> Self {
                             ((self as $U) >> n) as $T
                         }
-
                         #[inline]
                         fn swap_bytes(self) -> Self {
                             <$T>::swap_bytes(self)
                         }
-
                         #[inline]
                         fn reverse_bits(self) -> Self {
                             <$T>::reverse_bits(self)
                         }
-
                         #[inline]
                         fn from_be(x: Self) -> Self {
                             <$T>::from_be(x)
                         }
-
                         #[inline]
                         fn from_le(x: Self) -> Self {
                             <$T>::from_le(x)
                         }
-
                         #[inline]
                         fn to_be(self) -> Self {
                             <$T>::to_be(self)
                         }
-
                         #[inline]
                         fn to_le(self) -> Self {
                             <$T>::to_le(self)
                         }
-
                         #[inline]
                         fn pow(self, exp: u32) -> Self {
                             <$T>::pow(self, exp)
@@ -6240,7 +6115,6 @@ pub mod num
                     + BorrowMut<[u8]>
                 {
                 }
-
                 impl<T> NumBytes for T where
                     T: Debug
                         + AsRef<[u8]>
@@ -6255,7 +6129,6 @@ pub mod num
                         + ?Sized
                 {
                 }
-
                 pub trait ToBytes {
                     type Bytes: NumBytes;
 
@@ -6313,7 +6186,6 @@ pub mod num
                         bytes
                     }
                 }
-
                 pub trait FromBytes: Sized {
                     type Bytes: NumBytes + ?Sized;
 
@@ -6371,7 +6243,6 @@ pub mod num
                         this
                     }
                 }
-
                 macro_rules! float_to_from_bytes_impl {
                     ($T:ty, $L:expr) => {
                         impl ToBytes for $T {
@@ -6381,18 +6252,15 @@ pub mod num
                             fn to_be_bytes(&self) -> Self::Bytes {
                                 <$T>::to_be_bytes(*self)
                             }
-
                             #[inline]
                             fn to_le_bytes(&self) -> Self::Bytes {
                                 <$T>::to_le_bytes(*self)
                             }
-
                             #[inline]
                             fn to_ne_bytes(&self) -> Self::Bytes {
                                 <$T>::to_ne_bytes(*self)
                             }
                         }
-
                         impl FromBytes for $T {
                             type Bytes = [u8; $L];
 
@@ -6400,12 +6268,10 @@ pub mod num
                             fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_be_bytes(*bytes)
                             }
-
                             #[inline]
                             fn from_le_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_le_bytes(*bytes)
                             }
-
                             #[inline]
                             fn from_ne_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_ne_bytes(*bytes)
@@ -6413,7 +6279,6 @@ pub mod num
                         }
                     };
                 }
-
                 macro_rules! int_to_from_bytes_impl {
                     ($T:ty, $L:expr) => {
                         impl ToBytes for $T {
@@ -6423,18 +6288,15 @@ pub mod num
                             fn to_be_bytes(&self) -> Self::Bytes {
                                 <$T>::to_be_bytes(*self)
                             }
-
                             #[inline]
                             fn to_le_bytes(&self) -> Self::Bytes {
                                 <$T>::to_le_bytes(*self)
                             }
-
                             #[inline]
                             fn to_ne_bytes(&self) -> Self::Bytes {
                                 <$T>::to_ne_bytes(*self)
                             }
                         }
-
                         impl FromBytes for $T {
                             type Bytes = [u8; $L];
 
@@ -6442,12 +6304,10 @@ pub mod num
                             fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_be_bytes(*bytes)
                             }
-
                             #[inline]
                             fn from_le_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_le_bytes(*bytes)
                             }
-
                             #[inline]
                             fn from_ne_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_ne_bytes(*bytes)
@@ -6455,7 +6315,6 @@ pub mod num
                         }
                     };
                 }
-
                 int_to_from_bytes_impl!(u8, 1);
                 int_to_from_bytes_impl!(u16, 2);
                 int_to_from_bytes_impl!(u32, 4);
@@ -6497,7 +6356,6 @@ pub mod num
                     /// returned.
                     fn checked_add(&self, v: &Self) -> Option<Self>;
                 }
-
                 macro_rules! checked_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
@@ -6508,7 +6366,6 @@ pub mod num
                         }
                     };
                 }
-
                 checked_impl!(CheckedAdd, checked_add, u8);
                 checked_impl!(CheckedAdd, checked_add, u16);
                 checked_impl!(CheckedAdd, checked_add, u32);
@@ -6528,7 +6385,6 @@ pub mod num
                     /// `None` is returned.
                     fn checked_sub(&self, v: &Self) -> Option<Self>;
                 }
-
                 checked_impl!(CheckedSub, checked_sub, u8);
                 checked_impl!(CheckedSub, checked_sub, u16);
                 checked_impl!(CheckedSub, checked_sub, u32);
@@ -6548,7 +6404,6 @@ pub mod num
                     /// `None` is returned.
                     fn checked_mul(&self, v: &Self) -> Option<Self>;
                 }
-
                 checked_impl!(CheckedMul, checked_mul, u8);
                 checked_impl!(CheckedMul, checked_mul, u16);
                 checked_impl!(CheckedMul, checked_mul, u32);
@@ -6569,7 +6424,6 @@ pub mod num
                     /// zero. If any of that happens, `None` is returned.
                     fn checked_div(&self, v: &Self) -> Option<Self>;
                 }
-
                 checked_impl!(CheckedDiv, checked_div, u8);
                 checked_impl!(CheckedDiv, checked_div, u16);
                 checked_impl!(CheckedDiv, checked_div, u32);
@@ -6607,7 +6461,6 @@ pub mod num
                     /// ```
                     fn checked_rem(&self, v: &Self) -> Option<Self>;
                 }
-
                 checked_impl!(CheckedRem, checked_rem, u8);
                 checked_impl!(CheckedRem, checked_rem, u16);
                 checked_impl!(CheckedRem, checked_rem, u32);
@@ -6652,7 +6505,6 @@ pub mod num
                     /// ```
                     fn checked_neg(&self) -> Option<Self>;
                 }
-
                 checked_impl_unary!(CheckedNeg, checked_neg, u8);
                 checked_impl_unary!(CheckedNeg, checked_neg, u16);
                 checked_impl_unary!(CheckedNeg, checked_neg, u32);
@@ -6684,7 +6536,6 @@ pub mod num
                     /// ```
                     fn checked_shl(&self, rhs: u32) -> Option<Self>;
                 }
-
                 macro_rules! checked_shift_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
@@ -6695,7 +6546,6 @@ pub mod num
                         }
                     };
                 }
-
                 checked_shift_impl!(CheckedShl, checked_shl, u8);
                 checked_shift_impl!(CheckedShl, checked_shl, u16);
                 checked_shift_impl!(CheckedShl, checked_shl, u32);
@@ -6727,7 +6577,6 @@ pub mod num
                     /// ```
                     fn checked_shr(&self, rhs: u32) -> Option<Self>;
                 }
-
                 checked_shift_impl!(CheckedShr, checked_shr, u8);
                 checked_shift_impl!(CheckedShr, checked_shr, u16);
                 checked_shift_impl!(CheckedShr, checked_shr, u32);
@@ -6823,7 +6672,6 @@ pub mod num
                         (self.div_euclid(v), self.rem_euclid(v))
                     }
                 }
-
                 macro_rules! euclid_forward_impl 
                 {
                     ($($t:ty)*) => {$(
@@ -6832,7 +6680,6 @@ pub mod num
                             fn div_euclid(&self, v: &$t) -> Self {
                                 <$t>::div_euclid(*self, *v)
                             }
-
                             #[inline]
                             fn rem_euclid(&self, v: &$t) -> Self {
                                 <$t>::rem_euclid(*self, *v)
@@ -6840,7 +6687,6 @@ pub mod num
                         }
                     )*}
                 }
-
                 euclid_forward_impl!(isize i8 i16 i32 i64 i128);
                 euclid_forward_impl!(usize u8 u16 u32 u64 u128);
                 euclid_forward_impl!(f32 f64);
@@ -6876,7 +6722,6 @@ pub mod num
                         Some((self.checked_div_euclid(v)?, self.checked_rem_euclid(v)?))
                     }
                 }
-
                 macro_rules! checked_euclid_forward_impl 
                 {
                     ($($t:ty)*) => {$(
@@ -6885,7 +6730,6 @@ pub mod num
                             fn checked_div_euclid(&self, v: &$t) -> Option<Self> {
                                 <$t>::checked_div_euclid(*self, *v)
                             }
-
                             #[inline]
                             fn checked_rem_euclid(&self, v: &$t) -> Option<Self> {
                                 <$t>::checked_rem_euclid(*self, *v)
@@ -6893,7 +6737,6 @@ pub mod num
                         }
                     )*}
                 }
-
                 checked_euclid_forward_impl!(isize i8 i16 i32 i64 i128);
                 checked_euclid_forward_impl!(usize u8 u16 u32 u64 u128);
             }
@@ -6926,7 +6769,6 @@ pub mod num
                     /// ```
                     fn inv(self) -> Self::Output;
                 }
-
                 impl Inv for f32 {
                     type Output = f32;
                     #[inline] fn inv(self) -> f32 {
@@ -6951,7 +6793,6 @@ pub mod num
                         1.0 / *self
                     }
                 }
-
             }
             
             pub mod mul_add
@@ -6997,7 +6838,6 @@ pub mod num
                         <Self as ::num::traits::Float>::mul_add(self, a, b)
                     }
                 }
-
                 macro_rules! mul_add_impl 
                 {
                     ($trait_name:ident for $($t:ty)*) => {$(
@@ -7011,7 +6851,6 @@ pub mod num
                         }
                     )*}
                 }
-
                 mul_add_impl!(MulAdd for isize i8 i16 i32 i64 i128);
                 mul_add_impl!(MulAdd for usize u8 u16 u32 u64 u128);
                 
@@ -7028,7 +6867,6 @@ pub mod num
                         *self = <Self as ::num::traits::Float>::mul_add(*self, a, b)
                     }
                 }
-
                 macro_rules! mul_add_assign_impl
                 {
                     ($trait_name:ident for $($t:ty)*) => {$(
@@ -7040,7 +6878,6 @@ pub mod num
                         }
                     )*}
                 }
-
                 mul_add_assign_impl!(MulAddAssign for isize i8 i16 i32 i64 i128);
                 mul_add_assign_impl!(MulAddAssign for usize u8 u16 u32 u64 u128);
             }
@@ -7072,7 +6909,6 @@ pub mod num
                     /// If an overflow would have occurred then the wrapped value is returned.
                     fn overflowing_add(&self, v: &Self) -> (Self, bool);
                 }
-
                 overflowing_impl!(OverflowingAdd, overflowing_add, u8);
                 overflowing_impl!(OverflowingAdd, overflowing_add, u16);
                 overflowing_impl!(OverflowingAdd, overflowing_add, u32);
@@ -7092,7 +6928,6 @@ pub mod num
                     /// If an overflow would have occurred then the wrapped value is returned.
                     fn overflowing_sub(&self, v: &Self) -> (Self, bool);
                 }
-
                 overflowing_impl!(OverflowingSub, overflowing_sub, u8);
                 overflowing_impl!(OverflowingSub, overflowing_sub, u16);
                 overflowing_impl!(OverflowingSub, overflowing_sub, u32);
@@ -7112,7 +6947,6 @@ pub mod num
                     /// If an overflow would have occurred then the wrapped value is returned.
                     fn overflowing_mul(&self, v: &Self) -> (Self, bool);
                 }
-
                 overflowing_impl!(OverflowingMul, overflowing_mul, u8);
                 overflowing_impl!(OverflowingMul, overflowing_mul, u16);
                 overflowing_impl!(OverflowingMul, overflowing_mul, u32);
@@ -7150,7 +6984,6 @@ pub mod num
                     /// Returns a-b, saturating at the numeric bounds instead of overflowing.
                     fn saturating_sub(self, v: Self) -> Self;
                 }
-
                 macro_rules! deprecated_saturating_impl
                 {
                     ($trait_name:ident for $($t:ty)*) => {$(
@@ -7159,7 +6992,6 @@ pub mod num
                             fn saturating_add(self, v: Self) -> Self {
                                 Self::saturating_add(self, v)
                             }
-
                             #[inline]
                             fn saturating_sub(self, v: Self) -> Self {
                                 Self::saturating_sub(self, v)
@@ -7167,7 +6999,6 @@ pub mod num
                         }
                     )*}
                 }
-
                 deprecated_saturating_impl!(Saturating for isize i8 i16 i32 i64 i128);
                 deprecated_saturating_impl!(Saturating for usize u8 u16 u32 u64 u128);
 
@@ -7189,7 +7020,6 @@ pub mod num
                     /// the type.
                     fn saturating_add(&self, v: &Self) -> Self;
                 }
-
                 saturating_impl!(SaturatingAdd, saturating_add, u8);
                 saturating_impl!(SaturatingAdd, saturating_add, u16);
                 saturating_impl!(SaturatingAdd, saturating_add, u32);
@@ -7210,7 +7040,6 @@ pub mod num
                     /// the type.
                     fn saturating_sub(&self, v: &Self) -> Self;
                 }
-
                 saturating_impl!(SaturatingSub, saturating_sub, u8);
                 saturating_impl!(SaturatingSub, saturating_sub, u16);
                 saturating_impl!(SaturatingSub, saturating_sub, u32);
@@ -7231,7 +7060,6 @@ pub mod num
                     /// the type.
                     fn saturating_mul(&self, v: &Self) -> Self;
                 }
-
                 saturating_impl!(SaturatingMul, saturating_mul, u8);
                 saturating_impl!(SaturatingMul, saturating_mul, u16);
                 saturating_impl!(SaturatingMul, saturating_mul, u32);
@@ -7285,7 +7113,6 @@ pub mod num
                     /// the type.
                     fn wrapping_add(&self, v: &Self) -> Self;
                 }
-
                 wrapping_impl!(WrappingAdd, wrapping_add, u8);
                 wrapping_impl!(WrappingAdd, wrapping_add, u16);
                 wrapping_impl!(WrappingAdd, wrapping_add, u32);
@@ -7306,7 +7133,6 @@ pub mod num
                     /// of the type.
                     fn wrapping_sub(&self, v: &Self) -> Self;
                 }
-
                 wrapping_impl!(WrappingSub, wrapping_sub, u8);
                 wrapping_impl!(WrappingSub, wrapping_sub, u16);
                 wrapping_impl!(WrappingSub, wrapping_sub, u32);
@@ -7327,7 +7153,6 @@ pub mod num
                     /// of the type.
                     fn wrapping_mul(&self, v: &Self) -> Self;
                 }
-
                 wrapping_impl!(WrappingMul, wrapping_mul, u8);
                 wrapping_impl!(WrappingMul, wrapping_mul, u16);
                 wrapping_impl!(WrappingMul, wrapping_mul, u32);
@@ -7375,7 +7200,6 @@ pub mod num
                     /// ```
                     fn wrapping_neg(&self) -> Self;
                 }
-
                 wrapping_unary_impl!(WrappingNeg, wrapping_neg, u8);
                 wrapping_unary_impl!(WrappingNeg, wrapping_neg, u16);
                 wrapping_unary_impl!(WrappingNeg, wrapping_neg, u32);
@@ -7419,7 +7243,6 @@ pub mod num
                     /// ```
                     fn wrapping_shl(&self, rhs: u32) -> Self;
                 }
-
                 wrapping_shift_impl!(WrappingShl, wrapping_shl, u8);
                 wrapping_shift_impl!(WrappingShl, wrapping_shl, u16);
                 wrapping_shift_impl!(WrappingShl, wrapping_shl, u32);
@@ -7452,7 +7275,6 @@ pub mod num
                     /// ```
                     fn wrapping_shr(&self, rhs: u32) -> Self;
                 }
-
                 wrapping_shift_impl!(WrappingShr, wrapping_shr, u8);
                 wrapping_shift_impl!(WrappingShr, wrapping_shr, u16);
                 wrapping_shift_impl!(WrappingShr, wrapping_shr, u32);
@@ -7482,7 +7304,6 @@ pub mod num
                         Wrapping(self.0.wrapping_sub(&v.0))
                     }
                 }
-
                 impl<T: WrappingMul> WrappingMul for Wrapping<T> where
                     Wrapping<T>: Mul<Output = Wrapping<T>>,
                 {
@@ -7490,7 +7311,6 @@ pub mod num
                         Wrapping(self.0.wrapping_mul(&v.0))
                     }
                 }
-
                 impl<T: WrappingNeg> WrappingNeg for Wrapping<T> where
                     Wrapping<T>: Neg<Output = Wrapping<T>>,
                 {
@@ -7498,7 +7318,6 @@ pub mod num
                         Wrapping(self.0.wrapping_neg())
                     }
                 }
-
                 impl<T: WrappingShl> WrappingShl for Wrapping<T> where
                     Wrapping<T>: Shl<usize, Output = Wrapping<T>>,
                 {
@@ -7506,7 +7325,6 @@ pub mod num
                         Wrapping(self.0.wrapping_shl(rhs))
                     }
                 }
-
                 impl<T: WrappingShr> WrappingShr for Wrapping<T> where
                     Wrapping<T>: Shr<usize, Output = Wrapping<T>>,
                 {
@@ -7547,7 +7365,6 @@ pub mod num
                 /// Returns `self` to the power `rhs`.
                 fn pow(self, rhs: RHS) -> Self::Output;
             }
-
             macro_rules! pow_impl {
                 ($t:ty) =>
                 {
@@ -7565,7 +7382,6 @@ pub mod num
                             ($method)(self, <$desired_rhs>::from(rhs))
                         }
                     }
-
                     impl<'a> Pow<&'a $rhs> for $t {
                         type Output = $t;
                         #[inline]
@@ -7573,7 +7389,6 @@ pub mod num
                             ($method)(self, <$desired_rhs>::from(*rhs))
                         }
                     }
-
                     impl<'a> Pow<$rhs> for &'a $t {
                         type Output = $t;
                         #[inline]
@@ -7581,7 +7396,6 @@ pub mod num
                             ($method)(*self, <$desired_rhs>::from(rhs))
                         }
                     }
-
                     impl<'a, 'b> Pow<&'a $rhs> for &'b $t {
                         type Output = $t;
                         #[inline]
@@ -7591,7 +7405,6 @@ pub mod num
                     }
                 };
             }
-
             pow_impl!(u8, u8, u32, u8::pow);
             pow_impl!(u8, u16, u32, u8::pow);
             pow_impl!(u8, u32, u32, u8::pow);
@@ -7675,7 +7488,6 @@ pub mod num
                 if exp == 0 {
                     return T::one();
                 }
-
                 while exp & 1 == 0 {
                     base = base.clone() * base;
                     exp >>= 1;
@@ -7683,7 +7495,6 @@ pub mod num
                 if exp == 1 {
                     return base;
                 }
-
                 let mut acc = base.clone();
                 while exp > 1 {
                     exp >>= 1;
@@ -7700,7 +7511,6 @@ pub mod num
                 if exp == 0 {
                     return Some(T::one());
                 }
-
                 while exp & 1 == 0 {
                     base = base.checked_mul(&base)?;
                     exp >>= 1;
@@ -7708,7 +7518,6 @@ pub mod num
                 if exp == 1 {
                     return Some(base);
                 }
-
                 let mut acc = base.clone();
                 while exp > 1 {
                     exp >>= 1;
@@ -7833,7 +7642,6 @@ pub mod num
                 /// Inverse hyperbolic tangent function.
                 fn atanh(self) -> Self;
             }
-
             impl<T: Float> Real for T
             {
                 forward! {
@@ -7918,7 +7726,6 @@ pub mod num
                 /// Returns true if the number is negative and false if the number is zero or positive.
                 fn is_negative(&self) -> bool;
             }
-
             macro_rules! signed_impl {
                 ($($t:ty)*) => ($(
                     impl Signed for $t {
@@ -7926,12 +7733,10 @@ pub mod num
                         fn abs(&self) -> $t {
                             if self.is_negative() { -*self } else { *self }
                         }
-
                         #[inline]
                         fn abs_sub(&self, other: &$t) -> $t {
                             if *self <= *other { 0 } else { *self - *other }
                         }
-
                         #[inline]
                         fn signum(&self) -> $t {
                             match *self {
@@ -7940,16 +7745,13 @@ pub mod num
                                 _ => -1,
                             }
                         }
-
                         #[inline]
                         fn is_positive(&self) -> bool { *self > 0 }
-
                         #[inline]
                         fn is_negative(&self) -> bool { *self < 0 }
                     }
                 )*)
             }
-
             signed_impl!(isize i8 i16 i32 i64 i128);
 
             impl<T: Signed> Signed for Wrapping<T> where
@@ -7958,24 +7760,19 @@ pub mod num
                 #[inline] fn abs(&self) -> Self {
                     Wrapping(self.0.abs())
                 }
-
                 #[inline] fn abs_sub(&self, other: &Self) -> Self {
                     Wrapping(self.0.abs_sub(&other.0))
                 }
-
                 #[inline] fn signum(&self) -> Self {
                     Wrapping(self.0.signum())
                 }
-
                 #[inline] fn is_positive(&self) -> bool {
                     self.0.is_positive()
                 }
-
                 #[inline] fn is_negative(&self) -> bool {
                     self.0.is_negative()
                 }
             }
-
             macro_rules! signed_float_impl {
                 ($t:ty) => {
                     impl Signed for $t {
@@ -7984,7 +7781,6 @@ pub mod num
                         fn abs(&self) -> $t {
                             Float::abs(*self)
                         }
-
                         /// The positive difference of two numbers. Returns `0.0` if the number is
                         /// less than or equal to `other`, otherwise the difference between`self`
                         /// and `other` is returned.
@@ -7996,7 +7792,6 @@ pub mod num
                                 *self - *other
                             }
                         }
-
                         /// # Returns
                         ///
                         /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
@@ -8006,13 +7801,11 @@ pub mod num
                         fn signum(&self) -> $t {
                             Float::signum(*self)
                         }
-
                         /// Returns `true` if the number is positive, including `+0.0` and `INFINITY`
                         #[inline]
                         fn is_positive(&self) -> bool {
                             Float::is_sign_positive(*self)
                         }
-
                         /// Returns `true` if the number is negative, including `-0.0` and `NEG_INFINITY`
                         #[inline]
                         fn is_negative(&self) -> bool {
@@ -8021,7 +7814,6 @@ pub mod num
                     }
                 };
             }
-
             signed_float_impl!(f32);
             signed_float_impl!(f64);
             /// Computes the absolute value.
@@ -8038,14 +7830,12 @@ pub mod num
             }
             /// A trait for values which cannot be negative
             pub trait Unsigned: Num {}
-
             macro_rules! empty_trait_impl
             {
                 ($name:ident for $($t:ty)*) => ($(
                     impl $name for $t {}
                 )*)
             }
-
             empty_trait_impl!(Unsigned for usize u8 u16 u32 u64 u128);
 
             impl<T: Unsigned> Unsigned for Wrapping<T> where Wrapping<T>: Num {}
@@ -8195,7 +7985,6 @@ pub mod num
                                 kind: if src.is_empty() { Empty } else { Invalid },
                             });
                         }
-
                        
                         if str_to_ascii_lower_eq_str(src, "inf")
                             || str_to_ascii_lower_eq_str(src, "infinity")
@@ -8210,12 +7999,10 @@ pub mod num
                         } else if str_to_ascii_lower_eq_str(src, "-nan") {
                             return Ok(-::$t::NAN);
                         }
-
                         fn slice_shift_char(src: &str) -> Option<(char, &str)> {
                             let mut chars = src.chars();
                             Some((chars.next()?, chars.as_str()))
                         }
-
                         let (is_positive, src) =  match slice_shift_char(src) {
                             None             => return Err(PFE { kind: Empty }),
                             Some(('-', ""))  => return Err(PFE { kind: Empty }),
@@ -8244,7 +8031,6 @@ pub mod num
                                     } else {
                                         sig -= (digit as isize) as $t;
                                     }
-
                                    
                                    
                                     if prev_sig != 0.0 {
@@ -8252,7 +8038,6 @@ pub mod num
                                             { return Ok(::$t::INFINITY); }
                                         if !is_positive && sig >= prev_sig
                                             { return Ok(::$t::NEG_INFINITY); }
-
                                        
                                         if is_positive && (prev_sig != (sig - digit as $t) / radix as $t)
                                             { return Ok(::$t::INFINITY); }
@@ -8275,7 +8060,6 @@ pub mod num
                                 },
                             }
                         }
-
                        
                        
                         if exp_info.is_none() {
@@ -8310,7 +8094,6 @@ pub mod num
                                 }
                             }
                         }
-
                        
                         let exp = match exp_info {
                             Some((c, offset)) => {
@@ -8423,7 +8206,6 @@ pub mod num
                 ///
                 fn average_floor(&self, other: &Self) -> Self;
             }
-
             impl<I> Average for I
             where
                 I: Integer + Shr<usize, Output = I>,
@@ -8527,7 +8309,6 @@ pub mod num
             #[inline] pub fn nth_root<T: Roots>(x: T, n: u32) -> T {
                 x.nth_root(n)
             }
-
             macro_rules! signed_roots {
                 ($T:ty, $U:ty) => {
                     impl Roots for $T {
@@ -8540,13 +8321,11 @@ pub mod num
                                 -((self.wrapping_neg() as $U).nth_root(n) as Self)
                             }
                         }
-
                         #[inline]
                         fn sqrt(&self) -> Self {
                             assert!(*self >= 0, "the square root of a negative is imaginary");
                             (*self as $U).sqrt() as Self
                         }
-
                         #[inline]
                         fn cbrt(&self) -> Self {
                             if *self >= 0 {
@@ -8558,7 +8337,6 @@ pub mod num
                     }
                 };
             }
-
             signed_roots!(i8, u8);
             signed_roots!(i16, u16);
             signed_roots!(i32, u32);
@@ -8582,17 +8360,14 @@ pub mod num
                 }
                 x
             }
-
             #[inline] fn bits<T>() -> u32 {
                 8 * mem::size_of::<T>() as u32
             }
-
             #[inline] fn log2<T: PrimInt>(x: T) -> u32
             {
                 debug_assert!(x > T::zero());
                 bits::<T>() - 1 - x.leading_zeros()
             }
-
             macro_rules! unsigned_roots {
                 ($T:ident) => {
                     impl Roots for $T {
@@ -8607,12 +8382,10 @@ pub mod num
                                     3 => return a.cbrt(),
                                     _ => (),
                                 }
-
                                
                                 if bits::<$T>() <= n || a < (1 << n) {
                                     return (a > 0) as $T;
                                 }
-
                                 if bits::<$T>() > 64 {
                                    
                                     return if a <= ::u64::MAX as $T {
@@ -8658,7 +8431,6 @@ pub mod num
                             }
                             go(*self, n)
                         }
-
                         #[inline]
                         fn sqrt(&self) -> Self {
                             fn go(a: $T) -> $T {
@@ -8676,11 +8448,9 @@ pub mod num
                                         }
                                     };
                                 }
-
                                 if a < 4 {
                                     return (a > 0) as $T;
                                 }
-
                                                     #[inline]
                                 fn guess(x: $T) -> $T {
                                     (x as f64).sqrt() as $T
@@ -8691,7 +8461,6 @@ pub mod num
                             }
                             go(*self)
                         }
-
                         #[inline]
                         fn cbrt(&self) -> Self {
                             fn go(a: $T) -> $T {
@@ -8709,7 +8478,6 @@ pub mod num
                                         }
                                     };
                                 }
-
                                 if bits::<$T>() <= 32 {
                                    
                                     let mut x = a;
@@ -8729,14 +8497,12 @@ pub mod num
                                     }
                                     return y;
                                 }
-
                                 if a < 8 {
                                     return (a > 0) as $T;
                                 }
                                 if a <= ::u32::MAX as $T {
                                     return (a as u32).cbrt() as $T;
                                 }
-
                                                     #[inline]
                                 fn guess(x: $T) -> $T {
                                     (x as f64).cbrt() as $T
@@ -8750,7 +8516,6 @@ pub mod num
                     }
                 };
             }
-
             unsigned_roots!(u8);
             unsigned_roots!(u16);
             unsigned_roots!(u32);
@@ -8849,7 +8614,6 @@ pub mod num
                     s = f(s);
                     t = f(t);
                 }
-
                 if r.1 >= Self::zero() {
                     ExtendedGcd {
                         gcd: r.1,
@@ -9032,7 +8796,6 @@ pub mod num
                             d
                         }
                     }
-
                     /// Floored integer modulo
                     #[inline] fn mod_floor(&self, other: &Self) -> Self {
                        
@@ -9044,7 +8807,6 @@ pub mod num
                             r
                         }
                     }
-
                     /// Calculates `div_floor` and `mod_floor` simultaneously
                     #[inline] fn div_mod_floor(&self, other: &Self) -> (Self, Self) {
                        
@@ -9056,7 +8818,6 @@ pub mod num
                             (d, r)
                         }
                     }
-
                     #[inline] fn div_ceil(&self, other: &Self) -> Self {
                         let (d, r) = self.div_rem(other);
                         if (r > 0 && *other > 0) || (r < 0 && *other < 0) {
@@ -9065,7 +8826,6 @@ pub mod num
                             d
                         }
                     }
-
                     /// Calculates the Greatest Common Divisor (GCD) of the number and
                     /// `other`. The result is always non-negative.
                     #[inline] fn gcd(&self, other: &Self) -> Self {
@@ -9075,7 +8835,6 @@ pub mod num
                         if m == 0 || n == 0 {
                             return (m | n).abs();
                         }
-
                        
                         let shift = (m | n).trailing_zeros();
 
@@ -9090,7 +8849,6 @@ pub mod num
                         if m == Self::min_value() || n == Self::min_value() {
                             return (1 << shift).abs();
                         }
-
                        
                         m = m.abs();
                         n = n.abs();
@@ -9110,7 +8868,6 @@ pub mod num
                         }
                         m << shift
                     }
-
                     #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self) {
                         let egcd = self.extended_gcd(other);
                        
@@ -9121,13 +8878,11 @@ pub mod num
                         };
                         (egcd, lcm)
                     }
-
                     /// Calculates the Lowest Common Multiple (LCM) of the number and
                     /// `other`.
                     #[inline] fn lcm(&self, other: &Self) -> Self {
                         self.gcd_lcm(other).1
                     }
-
                     /// Calculates the Greatest Common Divisor (GCD) and
                     /// Lowest Common Multiple (LCM) of the number and `other`.
                     #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
@@ -9139,7 +8894,6 @@ pub mod num
                         let lcm = (*self * (*other / gcd)).abs();
                         (gcd, lcm)
                     }
-
                     /// Returns `true` if the number is a multiple of `other`.
                     #[inline] fn is_multiple_of(&self, other: &Self) -> bool {
                         if other.is_zero() {
@@ -9147,40 +8901,33 @@ pub mod num
                         }
                         *self % *other == 0
                     }
-
                     /// Returns `true` if the number is divisible by `2`
                     #[inline] fn is_even(&self) -> bool {
                         (*self) & 1 == 0
                     }
-
                     /// Returns `true` if the number is not divisible by `2`
                     #[inline] fn is_odd(&self) -> bool {
                         !self.is_even()
                     }
-
                     /// Simultaneous truncated integer division and modulus.
                     #[inline] fn div_rem(&self, other: &Self) -> (Self, Self) {
                         (*self / *other, *self % *other)
                     }
-
                     /// Rounds up to nearest multiple of argument.
                     #[inline] fn next_multiple_of(&self, other: &Self) -> Self {
                        
                         if *other == -1 {
                             return *self;
                         }
-
                         let m = Integer::mod_floor(self, other);
                         *self + if m == 0 { 0 } else { other - m }
                     }
-
                     /// Rounds down to nearest multiple of argument.
                     #[inline] fn prev_multiple_of(&self, other: &Self) -> Self {
                        
                         if *other == -1 {
                             return *self;
                         }
-
                         *self - Integer::mod_floor(self, other)
                     }
                 }
@@ -9202,16 +8949,13 @@ pub mod num
                     #[inline] fn div_floor(&self, other: &Self) -> Self {
                         *self / *other
                     }
-
                     /// Unsigned integer modulo operation. Returns the same result as `rem` (`%`).
                     #[inline] fn mod_floor(&self, other: &Self) -> Self {
                         *self % *other
                     }
-
                     #[inline] fn div_ceil(&self, other: &Self) -> Self {
                         *self / *other + (0 != *self % *other) as Self
                     }
-
                     /// Calculates the Greatest Common Divisor (GCD) of the number and `other`
                     #[inline] fn gcd(&self, other: &Self) -> Self {
                        
@@ -9220,7 +8964,6 @@ pub mod num
                         if m == 0 || n == 0 {
                             return m | n;
                         }
-
                        
                         let shift = (m | n).trailing_zeros();
 
@@ -9239,7 +8982,6 @@ pub mod num
                         }
                         m << shift
                     }
-
                     #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self) {
                         let egcd = self.extended_gcd(other);
                        
@@ -9250,12 +8992,10 @@ pub mod num
                         };
                         (egcd, lcm)
                     }
-
                     /// Calculates the Lowest Common Multiple (LCM) of the number and `other`.
                     #[inline] fn lcm(&self, other: &Self) -> Self {
                         self.gcd_lcm(other).1
                     }
-
                     /// Calculates the Greatest Common Divisor (GCD) and
                     /// Lowest Common Multiple (LCM) of the number and `other`.
                     #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
@@ -9266,7 +9006,6 @@ pub mod num
                         let lcm = *self * (*other / gcd);
                         (gcd, lcm)
                     }
-
                     /// Returns `true` if the number is a multiple of `other`.
                     #[inline] fn is_multiple_of(&self, other: &Self) -> bool {
                         if other.is_zero() {
@@ -9274,17 +9013,14 @@ pub mod num
                         }
                         *self % *other == 0
                     }
-
                     /// Returns `true` if the number is divisible by `2`.
                     #[inline] fn is_even(&self) -> bool {
                         *self % 2 == 0
                     }
-
                     /// Returns `true` if the number is not divisible by `2`.
                     #[inline] fn is_odd(&self) -> bool {
                         !self.is_even()
                     }
-
                     /// Simultaneous truncated integer division and modulus.
                     #[inline] fn div_rem(&self, other: &Self) -> (Self, Self) {
                         (*self / *other, *self % *other)
@@ -9470,7 +9206,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl Add<&BigInt> for &BigInt 
                 {
                     type Output = BigInt;
@@ -9486,7 +9221,6 @@ pub mod num
                         )
                     }
                 }
-
                 impl Add<BigInt> for &BigInt 
                 {
                     type Output = BigInt;
@@ -9495,7 +9229,6 @@ pub mod num
                         bigint_add!(self, self.clone(), &self.data, other, other, other.data)
                     }
                 }
-
                 impl Add<&BigInt> for BigInt
                 {
                     type Output = BigInt;
@@ -9504,7 +9237,6 @@ pub mod num
                         bigint_add!(self, self, self.data, other, other.clone(), &other.data)
                     }
                 }
-
                 impl Add<BigInt> for BigInt
                 {
                     type Output = BigInt;
@@ -9513,7 +9245,6 @@ pub mod num
                         bigint_add!(self, self, self.data, other, other, other.data)
                     }
                 }
-
                 impl AddAssign<&BigInt> for BigInt 
                 {
                     #[inline] fn add_assign(&mut self, other: &BigInt) {
@@ -9521,7 +9252,6 @@ pub mod num
                         *self = n + other;
                     }
                 }
-
                 forward_val_assign!(impl AddAssign for BigInt, add_assign);
 
                 promote_all_scalars!(impl Add for BigInt, add);
@@ -9546,7 +9276,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl AddAssign<u32> for BigInt
                 {
                     #[inline] fn add_assign(&mut self, other: u32) {
@@ -9554,7 +9283,6 @@ pub mod num
                         *self = n + other;
                     }
                 }
-
                 impl Add<u64> for BigInt
                 {
                     type Output = BigInt;
@@ -9571,7 +9299,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl AddAssign<u64> for BigInt
                 {
                     #[inline] fn add_assign(&mut self, other: u64) {
@@ -9579,7 +9306,6 @@ pub mod num
                         *self = n + other;
                     }
                 }
-
                 impl Add<u128> for BigInt
                 {
                     type Output = BigInt;
@@ -9603,7 +9329,6 @@ pub mod num
                         *self = n + other;
                     }
                 }
-
                 forward_all_scalar_binop_to_val_val_commutative!(impl Add<i32> for BigInt, add);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Add<i64> for BigInt, add);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Add<i128> for BigInt, add);
@@ -9628,7 +9353,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Add<i64> for BigInt
                 {
                     type Output = BigInt;
@@ -9649,7 +9373,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Add<i128> for BigInt
                 {
                     type Output = BigInt;
@@ -9670,17 +9393,14 @@ pub mod num
                         }
                     }
                 }
-
                 impl CheckedAdd for BigInt
                 {
                     #[inline] fn checked_add(&self, v: &BigInt) -> Option<BigInt> {
                         Some(self.add(v))
                     }
                 }
-
                 impl_sum_iter_type!(BigInt);
             }
-
             pub mod division
             {
                 use ::
@@ -9710,7 +9430,6 @@ pub mod num
                         q
                     }
                 }
-
                 impl DivAssign<&BigInt> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: &BigInt) {
@@ -9733,7 +9452,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data / other)
                     }
                 }
-
                 impl DivAssign<u32> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: u32) {
@@ -9743,7 +9461,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<BigInt> for u32 {
                     type Output = BigInt;
 
@@ -9751,7 +9468,6 @@ pub mod num
                         BigInt::from_biguint(other.sign, self / other.data)
                     }
                 }
-
                 impl Div<u64> for BigInt
                 {
                     type Output = BigInt;
@@ -9760,7 +9476,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data / other)
                     }
                 }
-
                 impl DivAssign<u64> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: u64) {
@@ -9770,7 +9485,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<BigInt> for u64 {
                     type Output = BigInt;
 
@@ -9778,7 +9492,6 @@ pub mod num
                         BigInt::from_biguint(other.sign, self / other.data)
                     }
                 }
-
                 impl Div<u128> for BigInt
                 {
                     type Output = BigInt;
@@ -9787,7 +9500,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data / other)
                     }
                 }
-
                 impl DivAssign<u128> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: u128) {
@@ -9797,7 +9509,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<BigInt> for u128 {
                     type Output = BigInt;
 
@@ -9805,7 +9516,6 @@ pub mod num
                         BigInt::from_biguint(other.sign, self / other.data)
                     }
                 }
-
                 forward_all_scalar_binop_to_val_val!(impl Div<i32> for BigInt, div);
                 forward_all_scalar_binop_to_val_val!(impl Div<i64> for BigInt, div);
                 forward_all_scalar_binop_to_val_val!(impl Div<i128> for BigInt, div);
@@ -9821,7 +9531,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl DivAssign<i32> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: i32) {
@@ -9834,7 +9543,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<BigInt> for i32 {
                     type Output = BigInt;
 
@@ -9845,7 +9553,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<i64> for BigInt
                 {
                     type Output = BigInt;
@@ -9857,7 +9564,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl DivAssign<i64> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: i64) {
@@ -9870,7 +9576,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<BigInt> for i64 {
                     type Output = BigInt;
 
@@ -9881,7 +9586,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<i128> for BigInt
                 {
                     type Output = BigInt;
@@ -9893,7 +9597,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl DivAssign<i128> for BigInt
                 {
                     #[inline] fn div_assign(&mut self, other: i128) {
@@ -9906,7 +9609,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<BigInt> for i128 {
                     type Output = BigInt;
 
@@ -9917,7 +9619,6 @@ pub mod num
                         }
                     }
                 }
-
                 forward_all_binop_to_ref_ref!(impl Rem for BigInt, rem);
 
                 impl Rem<&BigInt> for &BigInt
@@ -9935,7 +9636,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl RemAssign<&BigInt> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: &BigInt) {
@@ -9958,7 +9658,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data % other)
                     }
                 }
-
                 impl RemAssign<u32> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: u32) {
@@ -9968,7 +9667,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Rem<BigInt> for u32 {
                     type Output = BigInt;
 
@@ -9976,7 +9674,6 @@ pub mod num
                         BigInt::from(self % other.data)
                     }
                 }
-
                 impl Rem<u64> for BigInt
                 {
                     type Output = BigInt;
@@ -9985,7 +9682,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data % other)
                     }
                 }
-
                 impl RemAssign<u64> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: u64) {
@@ -9995,7 +9691,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Rem<BigInt> for u64 {
                     type Output = BigInt;
 
@@ -10003,7 +9698,6 @@ pub mod num
                         BigInt::from(self % other.data)
                     }
                 }
-
                 impl Rem<u128> for BigInt
                 {
                     type Output = BigInt;
@@ -10012,7 +9706,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data % other)
                     }
                 }
-
                 impl RemAssign<u128> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: u128) {
@@ -10022,7 +9715,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Rem<BigInt> for u128 {
                     type Output = BigInt;
 
@@ -10030,7 +9722,6 @@ pub mod num
                         BigInt::from(self % other.data)
                     }
                 }
-
                 forward_all_scalar_binop_to_val_val!(impl Rem<i32> for BigInt, rem);
                 forward_all_scalar_binop_to_val_val!(impl Rem<i64> for BigInt, rem);
                 forward_all_scalar_binop_to_val_val!(impl Rem<i128> for BigInt, rem);
@@ -10043,14 +9734,12 @@ pub mod num
                         self % other.unsigned_abs()
                     }
                 }
-
                 impl RemAssign<i32> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: i32) {
                         *self %= other.unsigned_abs();
                     }
                 }
-
                 impl Rem<BigInt> for i32 {
                     type Output = BigInt;
 
@@ -10061,7 +9750,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Rem<i64> for BigInt
                 {
                     type Output = BigInt;
@@ -10070,14 +9758,12 @@ pub mod num
                         self % other.unsigned_abs()
                     }
                 }
-
                 impl RemAssign<i64> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: i64) {
                         *self %= other.unsigned_abs();
                     }
                 }
-
                 impl Rem<BigInt> for i64 {
                     type Output = BigInt;
 
@@ -10088,7 +9774,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Rem<i128> for BigInt
                 {
                     type Output = BigInt;
@@ -10097,14 +9782,12 @@ pub mod num
                         self % other.unsigned_abs()
                     }
                 }
-
                 impl RemAssign<i128> for BigInt
                 {
                     #[inline] fn rem_assign(&mut self, other: i128) {
                         *self %= other.unsigned_abs();
                     }
                 }
-
                 impl Rem<BigInt> for i128 {
                     type Output = BigInt;
 
@@ -10115,7 +9798,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl CheckedDiv for BigInt
                 {
                     #[inline] fn checked_div(&self, v: &BigInt) -> Option<BigInt> {
@@ -10125,7 +9807,6 @@ pub mod num
                         Some(self.div(v))
                     }
                 }
-
                 impl CheckedEuclid for BigInt
                 {
                     #[inline] fn checked_div_euclid(&self, v: &BigInt) -> Option<BigInt> {
@@ -10134,19 +9815,16 @@ pub mod num
                         }
                         Some(self.div_euclid(v))
                     }
-
                     #[inline] fn checked_rem_euclid(&self, v: &BigInt) -> Option<BigInt> {
                         if v.is_zero() {
                             return None;
                         }
                         Some(self.rem_euclid(v))
                     }
-
                     fn checked_div_rem_euclid(&self, v: &Self) -> Option<(Self, Self)> {
                         Some(self.div_rem_euclid(v))
                     }
                 }
-
                 impl Euclid for BigInt
                 {
                     #[inline] fn div_euclid(&self, v: &BigInt) -> BigInt {
@@ -10161,7 +9839,6 @@ pub mod num
                             q
                         }
                     }
-
                     #[inline] fn rem_euclid(&self, v: &BigInt) -> BigInt {
                         let r = self % v;
                         if r.is_negative() {
@@ -10174,7 +9851,6 @@ pub mod num
                             r
                         }
                     }
-
                     fn div_rem_euclid(&self, v: &Self) -> (Self, Self) {
                         let (q, r) = self.div_rem(v);
                         if r.is_negative() {
@@ -10188,7 +9864,6 @@ pub mod num
                         }
                     }
                 }
-
             }
             
             pub mod multiplication
@@ -10220,7 +9895,6 @@ pub mod num
                         }
                     }
                 }
-
                 macro_rules! impl_mul {
                     ($(impl Mul<$Other:ty> for $Self:ty;)*) => {$(
                         impl Mul<$Other> for $Self {
@@ -10242,7 +9916,6 @@ pub mod num
                     impl Mul<&BigInt> for BigInt;
                     impl Mul<&BigInt> for &BigInt;
                 }
-
                 macro_rules! impl_mul_assign {
                     ($(impl MulAssign<$Other:ty> for BigInt;)*) => {$(
                         impl MulAssign<$Other> for BigInt {
@@ -10264,7 +9937,6 @@ pub mod num
                     impl MulAssign<BigInt> for BigInt;
                     impl MulAssign<&BigInt> for BigInt;
                 }
-
                 promote_all_scalars!(impl Mul for BigInt, mul);
                 promote_all_scalars_assign!(impl MulAssign for BigInt, mul_assign);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<u32> for BigInt, mul);
@@ -10279,7 +9951,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data * other)
                     }
                 }
-
                 impl MulAssign<u32> for BigInt
                 {
                     #[inline] fn mul_assign(&mut self, other: u32) {
@@ -10289,7 +9960,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Mul<u64> for BigInt
                 {
                     type Output = BigInt;
@@ -10298,7 +9968,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data * other)
                     }
                 }
-
                 impl MulAssign<u64> for BigInt
                 {
                     #[inline] fn mul_assign(&mut self, other: u64) {
@@ -10308,7 +9977,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Mul<u128> for BigInt
                 {
                     type Output = BigInt;
@@ -10317,7 +9985,6 @@ pub mod num
                         BigInt::from_biguint(self.sign, self.data * other)
                     }
                 }
-
                 impl MulAssign<u128> for BigInt
                 {
                     #[inline] fn mul_assign(&mut self, other: u128) {
@@ -10327,7 +9994,6 @@ pub mod num
                         }
                     }
                 }
-
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<i32> for BigInt, mul);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<i64> for BigInt, mul);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<i128> for BigInt, mul);
@@ -10343,7 +10009,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl MulAssign<i32> for BigInt
                 {
                     #[inline] fn mul_assign(&mut self, other: i32) {
@@ -10356,7 +10021,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Mul<i64> for BigInt
                 {
                     type Output = BigInt;
@@ -10368,7 +10032,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl MulAssign<i64> for BigInt
                 {
                     #[inline] fn mul_assign(&mut self, other: i64) {
@@ -10381,7 +10044,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Mul<i128> for BigInt
                 {
                     type Output = BigInt;
@@ -10393,7 +10055,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl MulAssign<i128> for BigInt
                 {
                     #[inline] fn mul_assign(&mut self, other: i128) {
@@ -10406,18 +10067,15 @@ pub mod num
                         }
                     }
                 }
-
                 impl CheckedMul for BigInt
                 {
                     #[inline] fn checked_mul(&self, v: &BigInt) -> Option<BigInt> {
                         Some(self.mul(v))
                     }
                 }
-
                 impl_product_iter_type!(BigInt);
 
             }
-
             pub mod subtraction
             {
                 use ::
@@ -10449,7 +10107,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl Sub<&BigInt> for &BigInt
                 {
                     type Output = BigInt;
@@ -10465,7 +10122,6 @@ pub mod num
                         )
                     }
                 }
-
                 impl Sub<BigInt> for &BigInt
                 {
                     type Output = BigInt;
@@ -10474,7 +10130,6 @@ pub mod num
                         bigint_sub!(self, self.clone(), &self.data, other, other, other.data)
                     }
                 }
-
                 impl Sub<&BigInt> for BigInt
                 {
                     type Output = BigInt;
@@ -10483,7 +10138,6 @@ pub mod num
                         bigint_sub!(self, self, self.data, other, other.clone(), &other.data)
                     }
                 }
-
                 impl Sub<BigInt> for BigInt
                 {
                     type Output = BigInt;
@@ -10492,7 +10146,6 @@ pub mod num
                         bigint_sub!(self, self, self.data, other, other, other.data)
                     }
                 }
-
                 impl SubAssign<&BigInt> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: &BigInt) {
@@ -10531,7 +10184,6 @@ pub mod num
                         *self = n - other;
                     }
                 }
-
                 impl Sub<BigInt> for u32 {
                     type Output = BigInt;
 
@@ -10539,7 +10191,6 @@ pub mod num
                         -(other - self)
                     }
                 }
-
                 impl Sub<BigInt> for u64 {
                     type Output = BigInt;
 
@@ -10547,7 +10198,6 @@ pub mod num
                         -(other - self)
                     }
                 }
-
                 impl Sub<BigInt> for u128 {
                     type Output = BigInt;
 
@@ -10555,7 +10205,6 @@ pub mod num
                         -(other - self)
                     }
                 }
-
                 impl Sub<u64> for BigInt
                 {
                     type Output = BigInt;
@@ -10572,7 +10221,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl SubAssign<u64> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: u64) {
@@ -10580,7 +10228,6 @@ pub mod num
                         *self = n - other;
                     }
                 }
-
                 impl Sub<u128> for BigInt
                 {
                     type Output = BigInt;
@@ -10597,7 +10244,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl SubAssign<u128> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: u128) {
@@ -10605,7 +10251,6 @@ pub mod num
                         *self = n - other;
                     }
                 }
-
                 forward_all_scalar_binop_to_val_val!(impl Sub<i32> for BigInt, sub);
                 forward_all_scalar_binop_to_val_val!(impl Sub<i64> for BigInt, sub);
                 forward_all_scalar_binop_to_val_val!(impl Sub<i128> for BigInt, sub);
@@ -10630,7 +10275,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Sub<BigInt> for i32 {
                     type Output = BigInt;
 
@@ -10641,7 +10285,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Sub<i64> for BigInt
                 {
                     type Output = BigInt;
@@ -10662,7 +10305,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Sub<BigInt> for i64 {
                     type Output = BigInt;
 
@@ -10673,7 +10315,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Sub<i128> for BigInt
                 {
                     type Output = BigInt;
@@ -10685,7 +10326,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl SubAssign<i128> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: i128) {
@@ -10695,7 +10335,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Sub<BigInt> for i128 {
                     type Output = BigInt;
 
@@ -10706,16 +10345,13 @@ pub mod num
                         }
                     }
                 }
-
                 impl CheckedSub for BigInt
                 {
                     #[inline] fn checked_sub(&self, v: &BigInt) -> Option<BigInt> {
                         Some(self.sub(v))
                     }
                 }
-
             }
-
             pub mod bits
             {
                 use ::
@@ -10755,7 +10391,6 @@ pub mod num
                     }
                     debug_assert!(b.len() > a.len() || carry_b == 0);
                 }
-
                 fn bitand_neg_pos(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -10773,7 +10408,6 @@ pub mod num
                         }
                     }
                 }
-
                 fn bitand_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -10808,7 +10442,6 @@ pub mod num
                         a.push(1);
                     }
                 }
-
                 forward_val_val_binop!(impl BitAnd for BigInt, bitand);
                 forward_ref_val_binop_big!(impl BitAnd for BigInt, bitand);
                 
@@ -10833,7 +10466,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl BitAnd<&BigInt> for BigInt
                 {
                     type Output = BigInt;
@@ -10843,7 +10475,6 @@ pub mod num
                         self
                     }
                 }
-
                 forward_val_assign!(impl BitAndAssign for BigInt, bitand_assign);
 
                 impl BitAndAssign<&BigInt> for BigInt {
@@ -10873,7 +10504,6 @@ pub mod num
                         }
                     }
                 }
-
                 fn bitor_pos_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_b = 1;
@@ -10900,7 +10530,6 @@ pub mod num
                    
                     debug_assert!(carry_or == 0);
                 }
-
                 fn bitor_neg_pos(a: &mut [BigDigit], b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -10920,7 +10549,6 @@ pub mod num
                    
                     debug_assert!(carry_or == 0);
                 }
-
                 fn bitor_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -10939,7 +10567,6 @@ pub mod num
                    
                     debug_assert!(carry_or == 0);
                 }
-
                 forward_val_val_binop!(impl BitOr for BigInt, bitor);
                 forward_ref_val_binop_big!(impl BitOr for BigInt, bitor);               
                
@@ -10965,7 +10592,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl BitOr<&BigInt> for BigInt
                 {
                     type Output = BigInt;
@@ -10975,7 +10601,6 @@ pub mod num
                         self
                     }
                 }
-
                 forward_val_assign!(impl BitOrAssign for BigInt, bitor_assign);
 
                 impl BitOrAssign<&BigInt> for BigInt {
@@ -11000,7 +10625,6 @@ pub mod num
                         }
                     }
                 }
-
                 fn bitxor_pos_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_b = 1;
@@ -11031,7 +10655,6 @@ pub mod num
                         a.push(1);
                     }
                 }
-
                 fn bitxor_neg_pos(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -11062,7 +10685,6 @@ pub mod num
                         a.push(1);
                     }
                 }
-
                 fn bitxor_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -11095,7 +10717,6 @@ pub mod num
                         }
                     }
                 }
-
                 forward_all_binop_to_val_ref_commutative!(impl BitXor for BigInt, bitxor);
 
                 impl BitXor<&BigInt> for BigInt
@@ -11107,7 +10728,6 @@ pub mod num
                         self
                     }
                 }
-
                 forward_val_assign!(impl BitXorAssign for BigInt, bitxor_assign);
 
                 impl BitXorAssign<&BigInt> for BigInt
@@ -11139,7 +10759,6 @@ pub mod num
                         }
                     }
                 }
-
                 pub fn set_negative_bit(x: &mut BigInt, bit: u64, value: bool)
                 {
                     debug_assert_eq!(x.sign, Minus);
@@ -11185,7 +10804,6 @@ pub mod num
                                 let twos = negate_carry(*digit, &mut carry_in);
                                 *digit = negate_carry(twos, &mut carry_out);
                             }
-
                             if carry_out != 0 {
                                
                                 debug_assert_eq!(carry_in, 0);
@@ -11221,9 +10839,7 @@ pub mod num
                         }
                     }
                 }
-
             }
-
             pub mod convert
             {
                 use ::
@@ -11251,7 +10867,6 @@ pub mod num
                         BigInt::from_str_radix(s, 10)
                     }
                 }
-
                 impl Num for BigInt
                 {
                     type FromStrRadixErr = ParseBigIntError;
@@ -11270,7 +10885,6 @@ pub mod num
                         Ok(BigInt::from_biguint(sign, bu))
                     }
                 }
-
                 impl ToPrimitive for BigInt
                 {
                     #[inline] fn to_i64(&self) -> Option<i64> {
@@ -11288,7 +10902,6 @@ pub mod num
                             }
                         }
                     }
-
                     #[inline] fn to_i128(&self) -> Option<i128> {
                         match self.sign {
                             Plus => self.data.to_i128(),
@@ -11304,7 +10917,6 @@ pub mod num
                             }
                         }
                     }
-
                     #[inline] fn to_u64(&self) -> Option<u64> {
                         match self.sign {
                             Plus => self.data.to_u64(),
@@ -11312,7 +10924,6 @@ pub mod num
                             Minus => None,
                         }
                     }
-
                     #[inline] fn to_u128(&self) -> Option<u128> {
                         match self.sign {
                             Plus => self.data.to_u128(),
@@ -11320,18 +10931,15 @@ pub mod num
                             Minus => None,
                         }
                     }
-
                     #[inline] fn to_f32(&self) -> Option<f32> {
                         let n = self.data.to_f32()?;
                         Some(if self.sign == Minus { -n } else { n })
                     }
-
                     #[inline] fn to_f64(&self) -> Option<f64> {
                         let n = self.data.to_f64()?;
                         Some(if self.sign == Minus { -n } else { n })
                     }
                 }
-
                 macro_rules! impl_try_from_bigint 
                 {
                     ($T:ty, $to_ty:path) => {
@@ -11343,7 +10951,6 @@ pub mod num
                                 $to_ty(value).ok_or(TryFromBigIntError::new(()))
                             }
                         }
-
                         impl TryFrom<BigInt> for $T {
                             type Error = TryFromBigIntError<BigInt>;
 
@@ -11354,7 +10961,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_try_from_bigint!(u8, ToPrimitive::to_u8);
                 impl_try_from_bigint!(u16, ToPrimitive::to_u16);
                 impl_try_from_bigint!(u32, ToPrimitive::to_u32);
@@ -11374,19 +10980,15 @@ pub mod num
                     #[inline] fn from_i64(n: i64) -> Option<BigInt> {
                         Some(BigInt::from(n))
                     }
-
                     #[inline] fn from_i128(n: i128) -> Option<BigInt> {
                         Some(BigInt::from(n))
                     }
-
                     #[inline] fn from_u64(n: u64) -> Option<BigInt> {
                         Some(BigInt::from(n))
                     }
-
                     #[inline] fn from_u128(n: u128) -> Option<BigInt> {
                         Some(BigInt::from(n))
                     }
-
                     #[inline] fn from_f64(n: f64) -> Option<BigInt> {
                         if n >= 0.0 {
                             BigUint::from_f64(n).map(BigInt::from)
@@ -11396,7 +10998,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl From<i64> for BigInt
                 {
                     #[inline] fn from(n: i64) -> Self {
@@ -11411,7 +11012,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl From<i128> for BigInt
                 {
                     #[inline] fn from(n: i128) -> Self {
@@ -11426,7 +11026,6 @@ pub mod num
                         }
                     }
                 }
-
                 macro_rules! impl_bigint_from_int 
                 {
                     ($T:ty) => {
@@ -11438,7 +11037,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_bigint_from_int!(i8);
                 impl_bigint_from_int!(i16);
                 impl_bigint_from_int!(i32);
@@ -11457,7 +11055,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl From<u128> for BigInt
                 {
                     #[inline] fn from(n: u128) -> Self {
@@ -11471,7 +11068,6 @@ pub mod num
                         }
                     }
                 }
-
                 macro_rules! impl_bigint_from_uint 
                 {
                     ($T:ty) => {
@@ -11483,7 +11079,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_bigint_from_uint!(u8);
                 impl_bigint_from_uint!(u16);
                 impl_bigint_from_uint!(u32);
@@ -11502,14 +11097,12 @@ pub mod num
                         }
                     }
                 }
-
                 impl ToBigInt for BigInt
                 {
                     #[inline] fn to_bigint(&self) -> Option<BigInt> {
                         Some(self.clone())
                     }
                 }
-
                 impl ToBigInt for BigUint
                 {
                     #[inline] fn to_bigint(&self) -> Option<BigInt> {
@@ -11523,7 +11116,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl ToBigUint for BigInt
                 {
                     #[inline] fn to_biguint(&self) -> Option<BigUint> {
@@ -11534,7 +11126,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl TryFrom<&BigInt> for BigUint
                 {
                     type Error = TryFromBigIntError<()>;
@@ -11545,7 +11136,6 @@ pub mod num
                             .ok_or_else(|| TryFromBigIntError::new(()))
                     }
                 }
-
                 impl TryFrom<BigInt> for BigUint
                 {
                     type Error = TryFromBigIntError<BigInt>;
@@ -11558,7 +11148,6 @@ pub mod num
                         }
                     }
                 }
-
                 macro_rules! impl_to_bigint
                 {
                     ($T:ty, $from_ty:path) => {
@@ -11570,7 +11159,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_to_bigint!(isize, FromPrimitive::from_isize);
                 impl_to_bigint!(i8, FromPrimitive::from_i8);
                 impl_to_bigint!(i16, FromPrimitive::from_i16);
@@ -11598,7 +11186,6 @@ pub mod num
                         }
                     }
                 }
-
                 #[inline] pub fn from_signed_bytes_be(digits: &[u8]) -> BigInt 
                 {
                     let sign = match digits.first() {
@@ -11616,7 +11203,6 @@ pub mod num
                         BigInt::from_biguint(sign, BigUint::from_bytes_be(digits))
                     }
                 }
-
                 #[inline] pub fn from_signed_bytes_le(digits: &[u8]) -> BigInt 
                 {
                     let sign = match digits.last() {
@@ -11634,7 +11220,6 @@ pub mod num
                         BigInt::from_biguint(sign, BigUint::from_bytes_le(digits))
                     }
                 }
-
                 #[inline] pub fn to_signed_bytes_be(x: &BigInt) -> Vec<u8> 
                 {
                     let mut bytes = x.data.to_bytes_be();
@@ -11650,7 +11235,6 @@ pub mod num
                     }
                     bytes
                 }
-
                 #[inline] pub fn to_signed_bytes_le(x: &BigInt) -> Vec<u8> 
                 {
                     let mut bytes = x.data.to_bytes_le();
@@ -11691,9 +11275,7 @@ pub mod num
                         }
                     }
                 }
-
             }
-
             pub mod power
             {
                 use ::
@@ -11722,7 +11304,6 @@ pub mod num
                         -sign
                     }
                 }
-
                 macro_rules! pow_impl {
                     ($T:ty) => {
                         impl Pow<$T> for BigInt {
@@ -11733,7 +11314,6 @@ pub mod num
                                 BigInt::from_biguint(powsign(self.sign, &rhs), self.data.pow(rhs))
                             }
                         }
-
                         impl Pow<&$T> for BigInt {
                             type Output = BigInt;
 
@@ -11742,7 +11322,6 @@ pub mod num
                                 BigInt::from_biguint(powsign(self.sign, rhs), self.data.pow(rhs))
                             }
                         }
-
                         impl Pow<$T> for &BigInt {
                             type Output = BigInt;
 
@@ -11751,7 +11330,6 @@ pub mod num
                                 BigInt::from_biguint(powsign(self.sign, &rhs), Pow::pow(&self.data, rhs))
                             }
                         }
-
                         impl Pow<&$T> for &BigInt {
                             type Output = BigInt;
 
@@ -11762,7 +11340,6 @@ pub mod num
                         }
                     };
                 }
-
                 pow_impl!(u8);
                 pow_impl!(u16);
                 pow_impl!(u32);
@@ -11785,7 +11362,6 @@ pub mod num
                     if result.is_zero() {
                         return BigInt::ZERO;
                     }
-
                    
                     let (sign, mag) = match (x.is_negative() && exponent.is_odd(), modulus.is_negative()) {
                         (false, false) => (Plus, result),
@@ -11795,9 +11371,7 @@ pub mod num
                     };
                     BigInt::from_biguint(sign, mag)
                 }
-
             }
-
             pub mod shift
             {
                 use ::
@@ -11860,7 +11434,6 @@ pub mod num
                             }
                         }
                         impl_shift! { @ref Shl::shl, ShlAssign::shl_assign, $rhs }
-
                         impl Shr<$rhs> for BigInt {
                             type Output = BigInt;
 
@@ -11898,7 +11471,6 @@ pub mod num
                         impl_shift! { @ref Shr::shr, ShrAssign::shr_assign, $rhs }
                     )*};
                 }
-
                 impl_shift! { u8, u16, u32, u64, u128, usize }
                 impl_shift! { i8, i16, i32, i64, i128, isize }
                 
@@ -11920,7 +11492,6 @@ pub mod num
                 NoSign,
                 Plus,
             }
-
             impl Neg for Sign 
             {
                 type Output = Sign;
@@ -11948,13 +11519,11 @@ pub mod num
                         data: self.data.clone(),
                     }
                 }
-
                 #[inline] fn clone_from(&mut self, other: &Self) {
                     self.sign = other.sign;
                     self.data.clone_from(&other.data);
                 }
             }
-
             impl hash::Hash for BigInt
             {
                 #[inline] fn hash<H: hash::Hasher>(&self, state: &mut H) {
@@ -11965,7 +11534,6 @@ pub mod num
                     }
                 }
             }
-
             impl PartialEq for BigInt
             {
                 #[inline] fn eq(&self, other: &BigInt) -> bool {
@@ -11974,16 +11542,13 @@ pub mod num
                     self.sign == other.sign && (self.sign == NoSign || self.data == other.data)
                 }
             }
-
             impl Eq for BigInt {}
-
             impl PartialOrd for BigInt
             {
                 #[inline] fn partial_cmp(&self, other: &BigInt) -> Option<Ordering> {
                     Some(self.cmp(other))
                 }
             }
-
             impl Ord for BigInt
             {
                 #[inline] fn cmp(&self, other: &BigInt) -> Ordering {
@@ -11993,7 +11558,6 @@ pub mod num
                     if scmp != Equal {
                         return scmp;
                     }
-
                     match self.sign {
                         NoSign => Equal,
                         Plus => self.data.cmp(&other.data),
@@ -12001,49 +11565,42 @@ pub mod num
                     }
                 }
             }
-
             impl Default for BigInt
             {
                 #[inline] fn default() -> BigInt {
                     Self::ZERO
                 }
             }
-
             impl fmt::Debug for BigInt
             {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
                 {    fmt::Display::fmt(self, f)
                 }
             }
-
             impl fmt::Display for BigInt
             {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
                 {    f.pad_integral(!self.is_negative(), "", &self.data.to_str_radix(10))
                 }
             }
-
             impl fmt::Binary for BigInt
             {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
                 {    f.pad_integral(!self.is_negative(), "0b", &self.data.to_str_radix(2))
                 }
             }
-
             impl fmt::Octal for BigInt
             {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
                 {    f.pad_integral(!self.is_negative(), "0o", &self.data.to_str_radix(8))
                 }
             }
-
             impl fmt::LowerHex for BigInt
             {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
                 {    f.pad_integral(!self.is_negative(), "0x", &self.data.to_str_radix(16))
                 }
             }
-
             impl fmt::UpperHex for BigInt
             {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
@@ -12071,7 +11628,6 @@ pub mod num
                     self
                 }
             }
-
             impl Not for &BigInt
             {
                 type  Output = BigInt;
@@ -12084,29 +11640,24 @@ pub mod num
                     }
                 }
             }
-
             impl Zero for BigInt
             {
                 #[inline] fn zero() -> BigInt {
                     Self::ZERO
                 }
-
                 #[inline] fn set_zero(&mut self) {
                     self.data.set_zero();
                     self.sign = NoSign;
                 }
-
                 #[inline] fn is_zero(&self) -> bool {
                     self.sign == NoSign
                 }
             }
-
             impl ConstZero for BigInt 
             {
                
                 const ZERO: Self = Self::ZERO;
             }
-
             impl One for BigInt
             {
                 #[inline] fn one() -> BigInt {
@@ -12115,17 +11666,14 @@ pub mod num
                         data: BigUint::one(),
                     }
                 }
-
                 #[inline] fn set_one(&mut self) {
                     self.data.set_one();
                     self.sign = Plus;
                 }
-
                 #[inline] fn is_one(&self) -> bool {
                     self.sign == Plus && self.data.is_one()
                 }
             }
-
             impl Signed for BigInt
             {
                 #[inline] fn abs(&self) -> BigInt {
@@ -12134,7 +11682,6 @@ pub mod num
                         Minus => BigInt::from(self.data.clone()),
                     }
                 }
-
                 #[inline] fn abs_sub(&self, other: &BigInt) -> BigInt {
                     if *self <= *other {
                         Self::ZERO
@@ -12142,7 +11689,6 @@ pub mod num
                         self - other
                     }
                 }
-
                 #[inline] fn signum(&self) -> BigInt {
                     match self.sign {
                         Plus => BigInt::one(),
@@ -12150,23 +11696,19 @@ pub mod num
                         NoSign => Self::ZERO,
                     }
                 }
-
                 #[inline] fn is_positive(&self) -> bool {
                     self.sign == Plus
                 }
-
                 #[inline] fn is_negative(&self) -> bool {
                     self.sign == Minus
                 }
             }
-
             trait UnsignedAbs 
             {
                 type Unsigned;
 
                 fn checked_uabs(self) -> CheckedUnsignedAbs<Self::Unsigned>;
             }
-
             enum CheckedUnsignedAbs<T> 
             {
                 Positive(T),
@@ -12190,7 +11732,6 @@ pub mod num
                     }
                 };
             }
-
             impl_unsigned_abs!(i8, u8);
             impl_unsigned_abs!(i16, u16);
             impl_unsigned_abs!(i32, u32);
@@ -12207,7 +11748,6 @@ pub mod num
                     self
                 }
             }
-
             impl Neg for &BigInt
             {
                 type Output = BigInt;
@@ -12217,7 +11757,6 @@ pub mod num
                     -self.clone()
                 }
             }
-
             impl Integer for BigInt
             {
                 #[inline] fn div_rem(&self, other: &BigInt) -> (BigInt, BigInt) {
@@ -12231,7 +11770,6 @@ pub mod num
                         (d, r)
                     }
                 }
-
                 #[inline] fn div_floor(&self, other: &BigInt) -> BigInt {
                     let (d_ui, m) = self.data.div_mod_floor(&other.data);
                     let d = BigInt::from(d_ui);
@@ -12247,7 +11785,6 @@ pub mod num
                         (_, NoSign) => unreachable!(),
                     }
                 }
-
                 #[inline] fn mod_floor(&self, other: &BigInt) -> BigInt {
                    
                     let m_ui = self.data.mod_floor(&other.data);
@@ -12264,7 +11801,6 @@ pub mod num
                         (_, NoSign) => unreachable!(),
                     }
                 }
-
                 fn div_mod_floor(&self, other: &BigInt) -> (BigInt, BigInt) {
                    
                     let (d_ui, m_ui) = self.data.div_mod_floor(&other.data);
@@ -12282,7 +11818,6 @@ pub mod num
                         (_, NoSign) => unreachable!(),
                     }
                 }
-
                 #[inline] fn div_ceil(&self, other: &Self) -> Self {
                     let (d_ui, m) = self.data.div_mod_floor(&other.data);
                     let d = BigInt::from(d_ui);
@@ -12351,16 +11886,13 @@ pub mod num
                 #[inline] fn prev_multiple_of(&self, other: &Self) -> Self {
                     self - self.mod_floor(other)
                 }
-
                 fn dec(&mut self) {
                     *self -= 1u32;
                 }
-
                 fn inc(&mut self) {
                     *self += 1u32;
                 }
             }
-
             impl Roots for BigInt
             {
                 fn nth_root(&self, n: u32) -> Self
@@ -12373,20 +11905,17 @@ pub mod num
 
                     BigInt::from_biguint(self.sign, self.data.nth_root(n))
                 }
-
                 fn sqrt(&self) -> Self
                 {
                     assert!(!self.is_negative(), "square root is imaginary");
 
                     BigInt::from_biguint(self.sign, self.data.sqrt())
                 }
-
                 fn cbrt(&self) -> Self
                 {
                     BigInt::from_biguint(self.sign, self.data.cbrt())
                 }
             }
-
             impl IntDigits for BigInt
             {
                 #[inline] fn digits(&self) -> &[BigDigit] { self.data.digits() }
@@ -12407,7 +11936,6 @@ pub mod num
                 /// Converts the value of `self` to a [`BigInt`].
                 fn to_bigint(&self) -> Option<BigInt>;
             }
-
             impl BigInt
             {
                 /// A constant `BigInt` with value 0, useful for static initialization.
@@ -12426,7 +11954,6 @@ pub mod num
                     } else if data.is_zero() {
                         sign = NoSign;
                     }
-
                     BigInt { sign, data }
                 }
                 /// Creates and initializes a [`BigInt`].
@@ -12521,7 +12048,6 @@ pub mod num
                     if self.is_negative() {
                         v.push(b'-');
                     }
-
                     v.reverse();
                     unsafe { String::from_utf8_unchecked(v) }
                 }
@@ -12559,19 +12085,15 @@ pub mod num
                         Minus => None,
                     }
                 }
-
                 #[inline] pub fn checked_add(&self, v: &BigInt) -> Option<BigInt> {
                     Some(self + v)
                 }
-
                 #[inline] pub fn checked_sub(&self, v: &BigInt) -> Option<BigInt> {
                     Some(self - v)
                 }
-
                 #[inline] pub fn checked_mul(&self, v: &BigInt) -> Option<BigInt> {
                     Some(self * v)
                 }
-
                 #[inline] pub fn checked_div(&self, v: &BigInt) -> Option<BigInt> {
                     if v.is_zero() {
                         return None;
@@ -12695,7 +12217,6 @@ pub mod num
                     self.normalize();
                 }
             }
-
             impl ::num::traits::FromBytes for BigInt
             {
                 type  Bytes = [u8];
@@ -12703,12 +12224,10 @@ pub mod num
                 fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                     Self::from_signed_bytes_be(bytes)
                 }
-
                 fn from_le_bytes(bytes: &Self::Bytes) -> Self {
                     Self::from_signed_bytes_le(bytes)
                 }
             }
-
             impl ::num::traits::ToBytes for BigInt
             {
                 type  Bytes = Vec<u8>;
@@ -12716,7 +12235,6 @@ pub mod num
                 fn to_be_bytes(&self) -> Self::Bytes {
                     self.to_signed_bytes_be()
                 }
-
                 fn to_le_bytes(&self) -> Self::Bytes {
                     self.to_signed_bytes_le()
                 }
@@ -12763,7 +12281,6 @@ pub mod num
                 /// the upper bound is not greater than the lower bound.
                 fn gen_bigint_range(&mut self, lbound: &BigInt, ubound: &BigInt) -> BigInt;
             }
-
             fn gen_bits<R: Rng + ?Sized>( rng: &mut R, data: &mut [u32], rem: u64 ) 
             {
                
@@ -12773,7 +12290,6 @@ pub mod num
                     data[last] >>= 32 - rem;
                 }
             }
-
             impl<R: Rng + ?Sized> RandBigInt for R 
             {
                 cfg_digit!(
@@ -12786,7 +12302,6 @@ pub mod num
                         gen_bits(self, &mut data, rem);
                         biguint_from_vec(data)
                     }
-
                     fn gen_biguint(&mut self, bit_size: u64) -> BigUint {
                         use ::slice;
 
@@ -12836,7 +12351,6 @@ pub mod num
                         return BigInt::from_biguint(sign, biguint);
                     }
                 }
-
                 fn gen_biguint_below(&mut self, bound: &BigUint) -> BigUint {
                     assert!(!bound.is_zero());
                     let bits = bound.bits();
@@ -12847,7 +12361,6 @@ pub mod num
                         }
                     }
                 }
-
                 fn gen_biguint_range(&mut self, lbound: &BigUint, ubound: &BigUint) -> BigUint {
                     assert!(*lbound < *ubound);
                     if lbound.is_zero() {
@@ -12856,7 +12369,6 @@ pub mod num
                         lbound + self.gen_biguint_below(&(ubound - lbound))
                     }
                 }
-
                 fn gen_bigint_range(&mut self, lbound: &BigInt, ubound: &BigInt) -> BigInt {
                     assert!(*lbound < *ubound);
                     if lbound.is_zero() {
@@ -12876,7 +12388,6 @@ pub mod num
                 base: BigUint,
                 len: BigUint,
             }
-
             impl UniformSampler for UniformBigUint 
             {
                 type X = BigUint;
@@ -12894,7 +12405,6 @@ pub mod num
                         base: low.clone(),
                     }
                 }
-
                 #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self
                 where
                     B1: SampleBorrow<Self::X> + Sized,
@@ -12905,11 +12415,9 @@ pub mod num
                     assert!(low <= high);
                     Self::new(low, high + 1u32)
                 }
-
                 #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
                     &self.base + rng.gen_biguint_below(&self.len)
                 }
-
                 #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
                 where
                     B1: SampleBorrow<Self::X> + Sized,
@@ -12918,7 +12426,6 @@ pub mod num
                     rng.gen_biguint_range(low.borrow(), high.borrow())
                 }
             }
-
             impl SampleUniform for BigUint 
             {
                 type Sampler = UniformBigUint;
@@ -12930,7 +12437,6 @@ pub mod num
                 base: BigInt,
                 len: BigUint,
             }
-
             impl UniformSampler for UniformBigInt 
             {
                 type X = BigInt;
@@ -12948,7 +12454,6 @@ pub mod num
                         base: low.clone(),
                     }
                 }
-
                 #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self
                 where
                     B1: SampleBorrow<Self::X> + Sized,
@@ -12959,11 +12464,9 @@ pub mod num
                     assert!(low <= high);
                     Self::new(low, high + 1u32)
                 }
-
                 #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
                     &self.base + BigInt::from(rng.gen_biguint_below(&self.len))
                 }
-
                 #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
                 where
                     B1: SampleBorrow<Self::X> + Sized,
@@ -12972,7 +12475,6 @@ pub mod num
                     rng.gen_bigint_range(low.borrow(), high.borrow())
                 }
             }
-
             impl SampleUniform for BigInt 
             {
                 type Sampler = UniformBigInt;
@@ -12983,21 +12485,18 @@ pub mod num
             {
                 bits: u64,
             }
-
             impl RandomBits 
             {
                 #[inline] pub fn new(bits: u64) -> RandomBits {
                     RandomBits { bits }
                 }
             }
-
             impl Distribution<BigUint> for RandomBits 
             {
                 #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> BigUint {
                     rng.gen_biguint(self.bits)
                 }
             }
-
             impl Distribution<BigInt> for RandomBits 
             {
                 #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> BigInt {
@@ -13065,7 +12564,6 @@ pub mod num
                     for (a, b) in a_lo.iter_mut().zip(b) {
                         carry = adc(carry, *a, *b, a);
                     }
-
                     if carry != 0 {
                         for a in a_hi {
                             carry = adc(carry, *a, 0, a);
@@ -13074,7 +12572,6 @@ pub mod num
                             }
                         }
                     }
-
                     carry as BigDigit
                 }
                 /// Two argument addition of raw slices:
@@ -13087,7 +12584,6 @@ pub mod num
 
                     debug_assert!(carry == 0);
                 }
-
                 forward_all_binop_to_val_ref_commutative!(impl Add for BigUint, add);
                 forward_val_assign!(impl AddAssign for BigUint, add_assign);
 
@@ -13116,7 +12612,6 @@ pub mod num
                         }
                     }
                 }
-
                 promote_unsigned_scalars!(impl Add for BigUint, add);
                 promote_unsigned_scalars_assign!(impl AddAssign for BigUint, add_assign);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Add<u32> for BigUint, add);
@@ -13132,7 +12627,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl AddAssign<u32> for BigUint
                 {
                     #[inline] fn add_assign(&mut self, other: u32) {
@@ -13140,7 +12634,6 @@ pub mod num
                             if self.data.is_empty() {
                                 self.data.push(0);
                             }
-
                             let carry = __add2(&mut self.data, &[other as BigDigit]);
                             if carry != 0 {
                                 self.data.push(carry);
@@ -13148,7 +12641,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Add<u64> for BigUint
                 {
                     type Output = BigUint;
@@ -13158,7 +12650,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl AddAssign<u64> for BigUint {
                     cfg_digit!(
                         #[inline]
@@ -13170,21 +12661,18 @@ pub mod num
                                 while self.data.len() < 2 {
                                     self.data.push(0);
                                 }
-
                                 let carry = __add2(&mut self.data, &[lo, hi]);
                                 if carry != 0 {
                                     self.data.push(carry);
                                 }
                             }
                         }
-
                         #[inline]
                         fn add_assign(&mut self, other: u64) {
                             if other != 0 {
                                 if self.data.is_empty() {
                                     self.data.push(0);
                                 }
-
                                 let carry = __add2(&mut self.data, &[other as BigDigit]);
                                 if carry != 0 {
                                     self.data.push(carry);
@@ -13193,7 +12681,6 @@ pub mod num
                         }
                     );
                 }
-
                 impl Add<u128> for BigUint
                 {
                     type Output = BigUint;
@@ -13203,7 +12690,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl AddAssign<u128> for BigUint {
                     cfg_digit!(
                         #[inline]
@@ -13230,7 +12716,6 @@ pub mod num
                                 }
                             }
                         }
-
                         #[inline]
                         fn add_assign(&mut self, other: u128) {
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
@@ -13240,7 +12725,6 @@ pub mod num
                                 while self.data.len() < 2 {
                                     self.data.push(0);
                                 }
-
                                 let carry = __add2(&mut self.data, &[lo, hi]);
                                 if carry != 0 {
                                     self.data.push(carry);
@@ -13249,18 +12733,15 @@ pub mod num
                         }
                     );
                 }
-
                 impl CheckedAdd for BigUint
                 {
                     #[inline] fn checked_add(&self, v: &BigUint) -> Option<BigUint> {
                         Some(self.add(v))
                     }
                 }
-
                 impl_sum_iter_type!(BigUint);
 
             }
-
             pub mod division
             {
                 /*!
@@ -13335,13 +12816,11 @@ pub mod num
                     let (lo, rem) = ((rem << HALF_BITS) | (digit & HALF)).div_rem(&divisor);
                     ((hi << HALF_BITS) | lo, rem)
                 }
-
                 #[inline] pub fn div_rem_digit(mut a: BigUint, b: BigDigit) -> (BigUint, BigDigit)
                 {
                     if b == 0 {
                         panic!("attempt to divide by zero")
                     }
-
                     let mut rem = 0;
 
                     if !FAST_DIV_WIDE && b <= ::num::big::digit::HALF {
@@ -13357,16 +12836,13 @@ pub mod num
                             rem = r;
                         }
                     }
-
                     (a.normalized(), rem)
                 }
-
                 #[inline] fn rem_digit(a: &BigUint, b: BigDigit) -> BigDigit
                 {
                     if b == 0 {
                         panic!("attempt to divide by zero")
                     }
-
                     let mut rem = 0;
 
                     if !FAST_DIV_WIDE && b <= ::num::big::digit::HALF {
@@ -13380,7 +12856,6 @@ pub mod num
                             rem = r;
                         }
                     }
-
                     rem
                 }
                 /// Subtract a multiple.
@@ -13406,11 +12881,9 @@ pub mod num
                         offset_carry = new_offset_carry;
                         *x = new_x;
                     }
-
                    
                     ::num::big::digit::MAX - offset_carry
                 }
-
                 fn div_rem(mut u: BigUint, mut d: BigUint) -> (BigUint, BigUint)
                 {
                     if d.is_zero() {
@@ -13419,7 +12892,6 @@ pub mod num
                     if u.is_zero() {
                         return (BigUint::ZERO, BigUint::ZERO);
                     }
-
                     if d.data.len() == 1 {
                         if d.data == [1] {
                             return (u, BigUint::ZERO);
@@ -13430,7 +12902,6 @@ pub mod num
                         d += rem;
                         return (div, d);
                     }
-
                    
                     match u.cmp(&d) {
                         Less => return (BigUint::ZERO, u),
@@ -13440,7 +12911,6 @@ pub mod num
                         }
                         Greater => {}
                     }
-
                    
                     //
                    
@@ -13458,7 +12928,6 @@ pub mod num
                         (q, r >> shift)
                     }
                 }
-
                 pub(super) fn div_rem_ref(u: &BigUint, d: &BigUint) -> (BigUint, BigUint)
                 {
                     if d.is_zero() {
@@ -13467,23 +12936,19 @@ pub mod num
                     if u.is_zero() {
                         return (BigUint::ZERO, BigUint::ZERO);
                     }
-
                     if d.data.len() == 1 {
                         if d.data == [1] {
                             return (u.clone(), BigUint::ZERO);
                         }
-
                         let (div, rem) = div_rem_digit(u.clone(), d.data[0]);
                         return (div, rem.into());
                     }
-
                    
                     match u.cmp(d) {
                         Less => return (BigUint::ZERO, u.clone()),
                         Equal => return (One::one(), BigUint::ZERO),
                         Greater => {}
                     }
-
                    
                     //
                    
@@ -13569,7 +13034,6 @@ pub mod num
                             q0 -= 1;
                             r += b0 as DoubleBigDigit;
                         }
-
                        
                        
 
@@ -13587,7 +13051,6 @@ pub mod num
                        
                         a0 = a.data.pop().unwrap();
                     }
-
                     a.data.push(a0);
                     a.normalize();
 
@@ -13595,7 +13058,6 @@ pub mod num
 
                     (q.normalized(), a)
                 }
-
                 forward_val_ref_binop_big!(impl Div for BigUint, div);
                 forward_ref_val_binop_big!(impl Div for BigUint, div);
                 forward_val_assign!(impl DivAssign for BigUint, div_assign);
@@ -13609,7 +13071,6 @@ pub mod num
                         q
                     }
                 }
-
                 impl Div<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
@@ -13625,7 +13086,6 @@ pub mod num
                         *self = &*self / other;
                     }
                 }
-
                 promote_unsigned_scalars!(impl Div for BigUint, div);
                 promote_unsigned_scalars_assign!(impl DivAssign for BigUint, div_assign);
                 forward_all_scalar_binop_to_val_val!(impl Div<u32> for BigUint, div);
@@ -13647,7 +13107,6 @@ pub mod num
                         *self = &*self / other;
                     }
                 }
-
                 impl Div<BigUint> for u32 {
                     type Output = BigUint;
 
@@ -13659,7 +13118,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Div<u64> for BigUint
                 {
                     type Output = BigUint;
@@ -13677,7 +13135,6 @@ pub mod num
                         *self = temp / other;
                     }
                 }
-
                 impl Div<BigUint> for u64 {
                     type Output = BigUint;
 
@@ -13691,7 +13148,6 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
-
                         #[inline]
                         fn div(self, other: BigUint) -> BigUint {
                             match other.data.len() {
@@ -13702,7 +13158,6 @@ pub mod num
                         }
                     );
                 }
-
                 impl Div<u128> for BigUint
                 {
                     type Output = BigUint;
@@ -13712,14 +13167,12 @@ pub mod num
                         q
                     }
                 }
-
                 impl DivAssign<u128> for BigUint
                 {
                     #[inline] fn div_assign(&mut self, other: u128) {
                         *self = &*self / other;
                     }
                 }
-
                 impl Div<BigUint> for u128 {
                     type Output = BigUint;
 
@@ -13740,7 +13193,6 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
-
                         #[inline]
                         fn div(self, other: BigUint) -> BigUint {
                             match other.data.len() {
@@ -13752,7 +13204,6 @@ pub mod num
                         }
                     );
                 }
-
                 forward_val_ref_binop_big!(impl Rem for BigUint, rem);
                 forward_ref_val_binop_big!(impl Rem for BigUint, rem);
                 forward_val_assign!(impl RemAssign for BigUint, rem_assign);
@@ -13770,7 +13221,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Rem<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
@@ -13790,7 +13240,6 @@ pub mod num
                         *self = &*self % other;
                     }
                 }
-
                 promote_unsigned_scalars!(impl Rem for BigUint, rem);
                 promote_unsigned_scalars_assign!(impl RemAssign for BigUint, rem_assign);
                 forward_all_scalar_binop_to_ref_val!(impl Rem<u32> for BigUint, rem);
@@ -13811,7 +13260,6 @@ pub mod num
                         *self = &*self % other;
                     }
                 }
-
                 impl Rem<&BigUint> for u32 {
                     type Output = BigUint;
 
@@ -13820,7 +13268,6 @@ pub mod num
                         From::from(self)
                     }
                 }
-
                 macro_rules! impl_rem_assign_scalar {
                     ($scalar:ty, $to_scalar:ident) => {
                         forward_val_assign_scalar!(impl RemAssign for BigUint, $scalar, rem_assign);
@@ -13836,7 +13283,6 @@ pub mod num
                         }
                     }
                 }
-
                
                 impl_rem_assign_scalar!(u128, to_u128);
                 impl_rem_assign_scalar!(usize, to_usize);
@@ -13866,7 +13312,6 @@ pub mod num
                         *self = &*self % other;
                     }
                 }
-
                 impl Rem<BigUint> for u64 {
                     type Output = BigUint;
 
@@ -13875,7 +13320,6 @@ pub mod num
                         From::from(self)
                     }
                 }
-
                 impl Rem<u128> for BigUint
                 {
                     type Output = BigUint;
@@ -13885,14 +13329,12 @@ pub mod num
                         r
                     }
                 }
-
                 impl RemAssign<u128> for BigUint
                 {
                     #[inline] fn rem_assign(&mut self, other: u128) {
                         *self = &*self % other;
                     }
                 }
-
                 impl Rem<BigUint> for u128 {
                     type Output = BigUint;
 
@@ -13901,7 +13343,6 @@ pub mod num
                         From::from(self)
                     }
                 }
-
                 impl CheckedDiv for BigUint
                 {
                     #[inline] fn checked_div(&self, v: &BigUint) -> Option<BigUint> {
@@ -13911,7 +13352,6 @@ pub mod num
                         Some(self.div(v))
                     }
                 }
-
                 impl CheckedEuclid for BigUint
                 {
                     #[inline] fn checked_div_euclid(&self, v: &BigUint) -> Option<BigUint> {
@@ -13920,39 +13360,32 @@ pub mod num
                         }
                         Some(self.div_euclid(v))
                     }
-
                     #[inline] fn checked_rem_euclid(&self, v: &BigUint) -> Option<BigUint> {
                         if v.is_zero() {
                             return None;
                         }
                         Some(self.rem_euclid(v))
                     }
-
                     fn checked_div_rem_euclid(&self, v: &Self) -> Option<(Self, Self)> {
                         Some(self.div_rem_euclid(v))
                     }
                 }
-
                 impl Euclid for BigUint
                 {
                     #[inline] fn div_euclid(&self, v: &BigUint) -> BigUint {
                        
                         self / v
                     }
-
                     #[inline] fn rem_euclid(&self, v: &BigUint) -> BigUint {
                        
                         self % v
                     }
-
                     fn div_rem_euclid(&self, v: &Self) -> (Self, Self) {
                        
                         self.div_rem(v)
                     }
                 }
-
             }
-
             pub mod multiplication
             {
                 /*!
@@ -13991,7 +13424,6 @@ pub mod num
                     *acc >>= ::num::big::digit::BITS;
                     lo
                 }
-
                 #[inline] fn mul_with_carry(a: BigDigit, b: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit {
                     *acc += DoubleBigDigit::from(a) * DoubleBigDigit::from(b);
                     let lo = *acc as BigDigit;
@@ -14004,14 +13436,12 @@ pub mod num
                     if c == 0 {
                         return;
                     }
-
                     let mut carry = 0;
                     let (a_lo, a_hi) = acc.split_at_mut(b.len());
 
                     for (a, &b) in a_lo.iter_mut().zip(b) {
                         *a = mac_with_carry(*a, b, c, &mut carry);
                     }
-
                     let (carry_hi, carry_lo) = ::num::big::digit::from_doublebigdigit(carry);
 
                     let final_carry = if carry_hi == 0 {
@@ -14021,7 +13451,6 @@ pub mod num
                     };
                     assert_eq!(final_carry, 0, "carry overflow during multiplication!");
                 }
-
                 fn bigint_from_slice(slice: &[BigDigit]) -> BigInt {
                     BigInt::from(biguint_from_vec(slice.to_vec()))
                 }
@@ -14046,7 +13475,6 @@ pub mod num
                             return;
                         }
                     }
-
                     let acc = acc;
                     let (x, y) = if b.len() < c.len() { (b, c) } else { (c, b) };
 
@@ -14370,7 +13798,6 @@ pub mod num
                         }
                     }
                 }
-
                 fn mul3(x: &[BigDigit], y: &[BigDigit]) -> BigUint {
                     let len = x.len() + y.len() + 1;
                     let mut prod = BigUint { data: vec![0; len] };
@@ -14378,7 +13805,6 @@ pub mod num
                     mac3(&mut prod.data, x, y);
                     prod.normalized()
                 }
-
                 fn scalar_mul(a: &mut BigUint, b: BigDigit) {
                     match b {
                         0 => a.set_zero(),
@@ -14398,7 +13824,6 @@ pub mod num
                         }
                     }
                 }
-
                 fn sub_sign(mut a: &[BigDigit], mut b: &[BigDigit]) -> (Sign, BigUint) {
                    
                     if let Some(&0) = a.last() {
@@ -14407,7 +13832,6 @@ pub mod num
                     if let Some(&0) = b.last() {
                         b = &b[..b.iter().rposition(|&x| x != 0).map_or(0, |i| i + 1)];
                     }
-
                     match cmp_slice(a, b) {
                         Ordering::Greater => {
                             let mut a = a.to_vec();
@@ -14422,7 +13846,6 @@ pub mod num
                         Ordering::Equal => (NoSign, BigUint::ZERO),
                     }
                 }
-
                 macro_rules! impl_mul {
                     ($(impl Mul<$Other:ty> for $Self:ty;)*) => {$(
                         impl Mul<$Other> for $Self {
@@ -14449,7 +13872,6 @@ pub mod num
                     impl Mul<&BigUint> for BigUint;
                     impl Mul<&BigUint> for &BigUint;
                 }
-
                 macro_rules! impl_mul_assign {
                     ($(impl MulAssign<$Other:ty> for BigUint;)*) => {$(
                         impl MulAssign<$Other> for BigUint {
@@ -14473,7 +13895,6 @@ pub mod num
                     impl MulAssign<BigUint> for BigUint;
                     impl MulAssign<&BigUint> for BigUint;
                 }
-
                 promote_unsigned_scalars!(impl Mul for BigUint, mul);
                 promote_unsigned_scalars_assign!(impl MulAssign for BigUint, mul_assign);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<u32> for BigUint, mul);
@@ -14495,7 +13916,6 @@ pub mod num
                         scalar_mul(self, other as BigDigit);
                     }
                 }
-
                 impl Mul<u64> for BigUint
                 {
                     type Output = BigUint;
@@ -14516,14 +13936,12 @@ pub mod num
                                 *self = mul3(&self.data, &[lo, hi]);
                             }
                         }
-
                         #[inline]
                         fn mul_assign(&mut self, other: u64) {
                             scalar_mul(self, other);
                         }
                     );
                 }
-
                 impl Mul<u128> for BigUint
                 {
                     type Output = BigUint;
@@ -14533,7 +13951,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl MulAssign<u128> for BigUint {
                     cfg_digit!(
                         #[inline]
@@ -14548,7 +13965,6 @@ pub mod num
                                 };
                             }
                         }
-
                         #[inline]
                         fn mul_assign(&mut self, other: u128) {
                             if let Some(other) = BigDigit::from_u128(other) {
@@ -14560,17 +13976,14 @@ pub mod num
                         }
                     );
                 }
-
                 impl CheckedMul for BigUint
                 {
                     #[inline] fn checked_mul(&self, v: &BigUint) -> Option<BigUint> {
                         Some(self.mul(v))
                     }
                 }
-
                 impl_product_iter_type!(BigUint);
             }
-
             pub mod subtraction
             {
                 /*!
@@ -14621,7 +14034,6 @@ pub mod num
                     for (a, b) in a_lo.iter_mut().zip(b_lo) {
                         borrow = sbb(borrow, *a, *b, a);
                     }
-
                     if borrow != 0 {
                         for a in a_hi {
                             borrow = sbb(borrow, *a, 0, a);
@@ -14630,14 +14042,12 @@ pub mod num
                             }
                         }
                     }
-
                    
                     assert!(
                         borrow == 0 && b_hi.iter().all(|x| *x == 0),
                         "Cannot subtract b from a because b is larger than a."
                     );
                 }
-
                
                 #[inline] fn __sub2rev(a: &[BigDigit], b: &mut [BigDigit]) -> u8 {
                     debug_assert!(b.len() == a.len());
@@ -14647,10 +14057,8 @@ pub mod num
                     for (ai, bi) in a.iter().zip(b) {
                         borrow = sbb(borrow, *ai, *bi, bi);
                     }
-
                     borrow
                 }
-
                 fn sub2rev(a: &[BigDigit], b: &mut [BigDigit]) {
                     debug_assert!(b.len() >= a.len());
 
@@ -14668,7 +14076,6 @@ pub mod num
                         "Cannot subtract b from a because b is larger than a."
                     );
                 }
-
                 forward_val_val_binop!(impl Sub for BigUint, sub);
                 forward_ref_ref_binop_big!(impl Sub for BigUint, sub);
                 forward_val_assign!(impl SubAssign for BigUint, sub_assign);
@@ -14682,7 +14089,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl SubAssign<&BigUint> for BigUint
                 {
                     fn sub_assign(&mut self, other: &BigUint) {
@@ -14690,7 +14096,6 @@ pub mod num
                         self.normalize();
                     }
                 }
-
                 impl Sub<BigUint> for &BigUint
                 {
                     type Output = BigUint;
@@ -14709,7 +14114,6 @@ pub mod num
                         other.normalized()
                     }
                 }
-
                 promote_unsigned_scalars!(impl Sub for BigUint, sub);
                 promote_unsigned_scalars_assign!(impl SubAssign for BigUint, sub_assign);
                 forward_all_scalar_binop_to_val_val!(impl Sub<u32> for BigUint, sub);
@@ -14725,7 +14129,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl SubAssign<u32> for BigUint 
                 {
                     fn sub_assign(&mut self, other: u32) {
@@ -14733,7 +14136,6 @@ pub mod num
                         self.normalize();
                     }
                 }
-
                 impl Sub<BigUint> for u32 
                 {
                     type Output = BigUint;
@@ -14748,7 +14150,6 @@ pub mod num
                             }
                             other.normalized()
                         }
-
                         #[inline]
                         fn sub(self, mut other: BigUint) -> BigUint {
                             if other.data.is_empty() {
@@ -14760,7 +14161,6 @@ pub mod num
                         }
                     );
                 }
-
                 impl Sub<u64> for BigUint
                 {
                     type Output = BigUint;
@@ -14770,7 +14170,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl SubAssign<u64> for BigUint 
                 {
                     cfg_digit!(
@@ -14780,7 +14179,6 @@ pub mod num
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
                         }
-
                         #[inline]
                         fn sub_assign(&mut self, other: u64) {
                             sub2(&mut self.data[..], &[other as BigDigit]);
@@ -14788,7 +14186,6 @@ pub mod num
                         }
                     );
                 }
-
                 impl Sub<BigUint> for u64 
                 {
                     type Output = BigUint;
@@ -14799,12 +14196,10 @@ pub mod num
                             while other.data.len() < 2 {
                                 other.data.push(0);
                             }
-
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(self);
                             sub2rev(&[lo, hi], &mut other.data[..]);
                             other.normalized()
                         }
-
                         #[inline]
                         fn sub(self, mut other: BigUint) -> BigUint {
                             if other.data.is_empty() {
@@ -14816,7 +14211,6 @@ pub mod num
                         }
                     );
                 }
-
                 impl Sub<u128> for BigUint
                 {
                     type Output = BigUint;
@@ -14826,7 +14220,6 @@ pub mod num
                         self
                     }
                 }
-
                 impl SubAssign<u128> for BigUint 
                 {
                     cfg_digit!(
@@ -14836,7 +14229,6 @@ pub mod num
                             sub2(&mut self.data[..], &[d, c, b, a]);
                             self.normalize();
                         }
-
                         #[inline]
                         fn sub_assign(&mut self, other: u128) {
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
@@ -14845,7 +14237,6 @@ pub mod num
                         }
                     );
                 }
-
                 impl Sub<BigUint> for u128 
                 {
                     type Output = BigUint;
@@ -14856,25 +14247,21 @@ pub mod num
                             while other.data.len() < 4 {
                                 other.data.push(0);
                             }
-
                             let (a, b, c, d) = super::u32_from_u128(self);
                             sub2rev(&[d, c, b, a], &mut other.data[..]);
                             other.normalized()
                         }
-
                         #[inline]
                         fn sub(self, mut other: BigUint) -> BigUint {
                             while other.data.len() < 2 {
                                 other.data.push(0);
                             }
-
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(self);
                             sub2rev(&[lo, hi], &mut other.data[..]);
                             other.normalized()
                         }
                     );
                 }
-
                 impl CheckedSub for BigUint
                 {
                     #[inline] fn checked_sub(&self, v: &BigUint) -> Option<BigUint> {
@@ -14886,7 +14273,6 @@ pub mod num
                     }
                 }
             }
-
             pub mod bits
             {
                 /*!
@@ -14915,7 +14301,6 @@ pub mod num
                         }
                     }
                 }
-
                 forward_val_assign!(impl BitAndAssign for BigUint, bitand_assign);
 
                 impl BitAnd<&BigUint> for BigUint
@@ -14937,7 +14322,6 @@ pub mod num
                         self.normalize();
                     }
                 }
-
                 forward_all_binop_to_val_ref_commutative!(impl BitOr for BigUint, bitor);
                 forward_val_assign!(impl BitOrAssign for BigUint, bitor_assign);
 
@@ -14962,7 +14346,6 @@ pub mod num
                         }
                     }
                 }
-
                 forward_all_binop_to_val_ref_commutative!(impl BitXor for BigUint, bitxor);
                 forward_val_assign!(impl BitXorAssign for BigUint, bitxor_assign);
 
@@ -14988,9 +14371,7 @@ pub mod num
                         self.normalize();
                     }
                 }
-
             }
-
             pub mod convert
             {
                 /*!
@@ -15027,11 +14408,9 @@ pub mod num
                 fn fls<T: PrimInt>(v: T) -> u8 {
                     mem::size_of::<T>() as u8 * 8 - v.leading_zeros() as u8
                 }
-
                 fn ilog2<T: PrimInt>(v: T) -> u8 {
                     fls(v) - 1
                 }
-
                 impl FromStr for BigUint
                 {
                     type Err = ParseBigIntError;
@@ -15059,7 +14438,6 @@ pub mod num
 
                     biguint_from_vec(data)
                 }
-
                
                
                 fn from_inexact_bitwise_digits_le(v: &[u8], bits: u8) -> BigUint {
@@ -15089,15 +14467,12 @@ pub mod num
                             d = BigDigit::from(c) >> (bits - dbits);
                         }
                     }
-
                     if dbits > 0 {
                         debug_assert!(dbits < ::num::big::digit::BITS);
                         data.push(d as BigDigit);
                     }
-
                     biguint_from_vec(data)
                 }
-
                
                 fn from_radix_digits_be(v: &[u8], radix: u32) -> BigUint {
                     debug_assert!(!v.is_empty() && !radix.is_power_of_two());
@@ -15129,7 +14504,6 @@ pub mod num
                         if data.last() != Some(&0) {
                             data.push(0);
                         }
-
                         let mut carry = 0;
                         for d in data.iter_mut() {
                             *d = mac_with_carry(0, *d, base, &mut carry);
@@ -15141,10 +14515,8 @@ pub mod num
                             .fold(0, |acc, &d| acc * radix + BigDigit::from(d));
                         add2(&mut data, &[n]);
                     }
-
                     biguint_from_vec(data)
                 }
-
                 pub(super) fn from_radix_be(buf: &[u8], radix: u32) -> Option<BigUint> {
                     assert!(
                         2 <= radix && radix <= 256,
@@ -15154,11 +14526,9 @@ pub mod num
                     if buf.is_empty() {
                         return Some(BigUint::ZERO);
                     }
-
                     if radix != 256 && buf.iter().any(|&b| b >= radix as u8) {
                         return None;
                     }
-
                     let res = if radix.is_power_of_two() {
                        
                         let bits = ilog2(radix);
@@ -15175,7 +14545,6 @@ pub mod num
 
                     Some(res)
                 }
-
                 pub(super) fn from_radix_le(buf: &[u8], radix: u32) -> Option<BigUint> {
                     assert!(
                         2 <= radix && radix <= 256,
@@ -15185,11 +14554,9 @@ pub mod num
                     if buf.is_empty() {
                         return Some(BigUint::ZERO);
                     }
-
                     if radix != 256 && buf.iter().any(|&b| b >= radix as u8) {
                         return None;
                     }
-
                     let res = if radix.is_power_of_two() {
                        
                         let bits = ilog2(radix);
@@ -15206,7 +14573,6 @@ pub mod num
 
                     Some(res)
                 }
-
                 impl Num for BigUint
                 {
                     type FromStrRadixErr = ParseBigIntError;
@@ -15220,16 +14586,13 @@ pub mod num
                                 s = tail
                             }
                         }
-
                         if s.is_empty() {
                             return Err(ParseBigIntError::empty());
                         }
-
                         if s.starts_with('_') {
                            
                             return Err(ParseBigIntError::invalid());
                         }
-
                        
                         let mut v = Vec::with_capacity(s.len());
                         for b in s.bytes() {
@@ -15246,7 +14609,6 @@ pub mod num
                                 return Err(ParseBigIntError::invalid());
                             }
                         }
-
                         let res = if radix.is_power_of_two() {
                            
                             let bits = ilog2(radix);
@@ -15262,7 +14624,6 @@ pub mod num
                         Ok(res)
                     }
                 }
-
                 fn high_bits_to_u64(v: &BigUint) -> u64 {
                     match v.data.len() {
                         0 => 0,
@@ -15290,7 +14651,6 @@ pub mod num
                                     let d0 = u64::from(*d) >> (digit_bits - bits_want);
                                     ret |= d0;
                                 }
-
                                
                                
                                
@@ -15303,26 +14663,21 @@ pub mod num
                                     let masked = u64::from(*d) << (64 - (digit_bits - bits_want) as u32);
                                     ret |= (masked != 0) as u64;
                                 }
-
                                 ret_bits += bits_want;
                                 bits -= bits_want;
                             }
-
                             ret
                         }
                     }
                 }
-
                 impl ToPrimitive for BigUint
                 {
                     #[inline] fn to_i64(&self) -> Option<i64> {
                         self.to_u64().as_ref().and_then(u64::to_i64)
                     }
-
                     #[inline] fn to_i128(&self) -> Option<i128> {
                         self.to_u128().as_ref().and_then(u128::to_i128)
                     }
-
                     #[allow(clippy::useless_conversion)]
                     #[inline] fn to_u64(&self) -> Option<u64> {
                         let mut ret: u64 = 0;
@@ -15332,15 +14687,12 @@ pub mod num
                             if bits >= 64 {
                                 return None;
                             }
-
                            
                             ret += u64::from(*i) << bits;
                             bits += ::num::big::digit::BITS;
                         }
-
                         Some(ret)
                     }
-
                     #[inline] fn to_u128(&self) -> Option<u128> {
                         let mut ret: u128 = 0;
                         let mut bits = 0;
@@ -15349,14 +14701,11 @@ pub mod num
                             if bits >= 128 {
                                 return None;
                             }
-
                             ret |= u128::from(*i) << bits;
                             bits += ::num::big::digit::BITS;
                         }
-
                         Some(ret)
                     }
-
                     #[inline] fn to_f32(&self) -> Option<f32> {
                         let mantissa = high_bits_to_u64(self);
                         let exponent = self.bits() - u64::from(fls(mantissa));
@@ -15367,7 +14716,6 @@ pub mod num
                             Some((mantissa as f32) * 2.0f32.powi(exponent as i32))
                         }
                     }
-
                     #[inline] fn to_f64(&self) -> Option<f64> {
                         let mantissa = high_bits_to_u64(self);
                         let exponent = self.bits() - u64::from(fls(mantissa));
@@ -15379,7 +14727,6 @@ pub mod num
                         }
                     }
                 }
-
                 macro_rules! impl_try_from_biguint {
                     ($T:ty, $to_ty:path) => {
                         impl TryFrom<&BigUint> for $T {
@@ -15390,7 +14737,6 @@ pub mod num
                                 $to_ty(value).ok_or(TryFromBigIntError::new(()))
                             }
                         }
-
                         impl TryFrom<BigUint> for $T {
                             type Error = TryFromBigIntError<BigUint>;
 
@@ -15401,7 +14747,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_try_from_biguint!(u8, ToPrimitive::to_u8);
                 impl_try_from_biguint!(u16, ToPrimitive::to_u16);
                 impl_try_from_biguint!(u32, ToPrimitive::to_u32);
@@ -15425,7 +14770,6 @@ pub mod num
                             None
                         }
                     }
-
                     #[inline] fn from_i128(n: i128) -> Option<BigUint> {
                         if n >= 0 {
                             Some(BigUint::from(n as u128))
@@ -15433,21 +14777,17 @@ pub mod num
                             None
                         }
                     }
-
                     #[inline] fn from_u64(n: u64) -> Option<BigUint> {
                         Some(BigUint::from(n))
                     }
-
                     #[inline] fn from_u128(n: u128) -> Option<BigUint> {
                         Some(BigUint::from(n))
                     }
-
                     #[inline] fn from_f64(mut n: f64) -> Option<BigUint> {
                        
                         if !n.is_finite() {
                             return None;
                         }
-
                        
                         n = n.trunc();
 
@@ -15455,13 +14795,11 @@ pub mod num
                         if n.is_zero() {
                             return Some(Self::ZERO);
                         }
-
                         let (mantissa, exponent, sign) = Float::integer_decode(n);
 
                         if sign == -1 {
                             return None;
                         }
-
                         let mut ret = BigUint::from(mantissa);
                         match exponent.cmp(&0) {
                             Greater => ret <<= exponent as usize,
@@ -15471,7 +14809,6 @@ pub mod num
                         Some(ret)
                     }
                 }
-
                 impl From<u64> for BigUint
                 {
                     #[inline] fn from(mut n: u64) -> Self {
@@ -15482,11 +14819,9 @@ pub mod num
                            
                             n = (n >> 1) >> (::num::big::digit::BITS - 1);
                         }
-
                         ret
                     }
                 }
-
                 impl From<u128> for BigUint
                 {
                     #[inline] fn from(mut n: u128) -> Self {
@@ -15496,11 +14831,9 @@ pub mod num
                             ret.data.push(n as BigDigit);
                             n >>= ::num::big::digit::BITS;
                         }
-
                         ret
                     }
                 }
-
                 macro_rules! impl_biguint_from_uint {
                     ($T:ty) => {
                         impl From<$T> for BigUint {
@@ -15511,7 +14844,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_biguint_from_uint!(u8);
                 impl_biguint_from_uint!(u16);
                 impl_biguint_from_uint!(u32);
@@ -15529,7 +14861,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_biguint_try_from_int!(i8, FromPrimitive::from_i8);
                 impl_biguint_try_from_int!(i16, FromPrimitive::from_i16);
                 impl_biguint_try_from_int!(i32, FromPrimitive::from_i32);
@@ -15543,7 +14874,6 @@ pub mod num
                         Some(self.clone())
                     }
                 }
-
                 macro_rules! impl_to_biguint {
                     ($T:ty, $from_ty:path) => {
                         impl ToBigUint for $T {
@@ -15554,7 +14884,6 @@ pub mod num
                         }
                     };
                 }
-
                 impl_to_biguint!(isize, FromPrimitive::from_isize);
                 impl_to_biguint!(i8, FromPrimitive::from_i8);
                 impl_to_biguint!(i16, FromPrimitive::from_i16);
@@ -15581,7 +14910,6 @@ pub mod num
                         }
                     }
                 }
-
                
                 pub(super) fn to_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> {
                     debug_assert!(!u.is_zero() && bits <= 8 && ::num::big::digit::BITS % bits == 0);
@@ -15600,16 +14928,13 @@ pub mod num
                             r >>= bits;
                         }
                     }
-
                     let mut r = u.data[last_i];
                     while r != 0 {
                         res.push((r & mask) as u8);
                         r >>= bits;
                     }
-
                     res
                 }
-
                
                 fn to_inexact_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> {
                     debug_assert!(!u.is_zero() && bits <= 8 && ::num::big::digit::BITS % bits != 0);
@@ -15635,22 +14960,17 @@ pub mod num
                             if rbits > ::num::big::digit::BITS {
                                 r = *c >> (::num::big::digit::BITS - (rbits - bits));
                             }
-
                             rbits -= bits;
                         }
                     }
-
                     if rbits != 0 {
                         res.push(r as u8);
                     }
-
                     while let Some(&0) = res.last() {
                         res.pop();
                     }
-
                     res
                 }
-
                
                 #[inline(always)]
                 pub(super) fn to_radix_digits_le(u: &BigUint, radix: u32) -> Vec<u8> {
@@ -15688,7 +15008,6 @@ pub mod num
                             big_base = &big_base * &big_base;
                             big_power *= 2;
                         }
-
                        
                         while digits > big_base {
                            
@@ -15706,7 +15025,6 @@ pub mod num
                             }
                         }
                     }
-
                     while digits.data.len() > 1 {
                         let (q, mut r) = div_rem_digit(digits, base);
                         for _ in 0..power {
@@ -15715,16 +15033,13 @@ pub mod num
                         }
                         digits = q;
                     }
-
                     let mut r = digits.data[0];
                     while r != 0 {
                         res.push((r % radix) as u8);
                         r /= radix;
                     }
-
                     res
                 }
-
                 pub(super) fn to_radix_le(u: &BigUint, radix: u32) -> Vec<u8> {
                     if u.is_zero() {
                         vec![0]
@@ -15744,14 +15059,12 @@ pub mod num
                         to_radix_digits_le(u, radix)
                     }
                 }
-
                 pub fn to_str_radix_reversed(u: &BigUint, radix: u32) -> Vec<u8> {
                     assert!(2 <= radix && radix <= 36, "The radix must be within 2...36");
 
                     if u.is_zero() {
                         return vec![b'0'];
                     }
-
                     let mut res = to_radix_le(u, radix);
 
                    
@@ -15802,10 +15115,8 @@ pub mod num
                         }
                         radix += 1;
                     }
-
                     bases
                 }
-
             } pub use self::convert::to_str_radix_reversed;
 
             pub mod iter
@@ -15827,7 +15138,6 @@ pub mod num
                     pub struct U32Digits<'a> {
                         it: ::slice::Iter<'a, u32>,
                     }
-
                     /// An iterator of `u32` digits representation of a `BigUint` or `BigInt`,
                     /// ordered least significant digit first.
                     pub struct U32Digits<'a> {
@@ -15846,41 +15156,34 @@ pub mod num
                                 Self { it: data.iter() }
                             }
                         }
-
                         impl Iterator for U32Digits<'_> {
                             type Item = u32;
                             #[inline]
                             fn next(&mut self) -> Option<u32> {
                                 self.it.next().cloned()
                             }
-
                             #[inline]
                             fn size_hint(&self) -> (usize, Option<usize>) {
                                 self.it.size_hint()
                             }
-
                             #[inline]
                             fn nth(&mut self, n: usize) -> Option<u32> {
                                 self.it.nth(n).cloned()
                             }
-
                             #[inline]
                             fn last(self) -> Option<u32> {
                                 self.it.last().cloned()
                             }
-
                             #[inline]
                             fn count(self) -> usize {
                                 self.it.count()
                             }
                         }
-
                         impl DoubleEndedIterator for U32Digits<'_> {
                             fn next_back(&mut self) -> Option<Self::Item> {
                                 self.it.next_back().cloned()
                             }
                         }
-
                         impl ExactSizeIterator for U32Digits<'_> {
                             #[inline]
                             fn len(&self) -> usize {
@@ -15907,7 +15210,6 @@ pub mod num
                                 }
                             }
                         }
-
                         impl Iterator for U32Digits<'_> {
                             type Item = u32;
                             #[inline]
@@ -15931,13 +15233,11 @@ pub mod num
                                     None => None,
                                 }
                             }
-
                             #[inline]
                             fn size_hint(&self) -> (usize, Option<usize>) {
                                 let len = self.len();
                                 (len, Some(len))
                             }
-
                             #[inline]
                             fn last(self) -> Option<u32> {
                                 self.data.last().map(|&last| {
@@ -15948,13 +15248,11 @@ pub mod num
                                     }
                                 })
                             }
-
                             #[inline]
                             fn count(self) -> usize {
                                 self.len()
                             }
                         }
-
                         impl DoubleEndedIterator for U32Digits<'_> {
                             fn next_back(&mut self) -> Option<Self::Item> {
                                 match self.data.split_last() {
@@ -15977,7 +15275,6 @@ pub mod num
                                 }
                             }
                         }
-
                         impl ExactSizeIterator for U32Digits<'_> {
                             #[inline]
                             fn len(&self) -> usize {
@@ -15990,7 +15287,6 @@ pub mod num
                 );
 
                 impl FusedIterator for U32Digits<'_> {}
-
                 cfg_digit!
                 (
                     /// An iterator of `u64` digits representation of a `BigUint` or `BigInt`,
@@ -15998,7 +15294,6 @@ pub mod num
                     pub struct U64Digits<'a> {
                         it: ::slice::Chunks<'a, u32>,
                     }
-
                     /// An iterator of `u64` digits representation of a `BigUint` or `BigInt`,
                     /// ordered least significant digit first.
                     pub struct U64Digits<'a> {
@@ -16015,31 +15310,26 @@ pub mod num
                                 U64Digits { it: data.chunks(2) }
                             }
                         }
-
                         impl Iterator for U64Digits<'_> {
                             type Item = u64;
                             #[inline]
                             fn next(&mut self) -> Option<u64> {
                                 self.it.next().map(super::u32_chunk_to_u64)
                             }
-
                             #[inline]
                             fn size_hint(&self) -> (usize, Option<usize>) {
                                 let len = self.len();
                                 (len, Some(len))
                             }
-
                             #[inline]
                             fn last(self) -> Option<u64> {
                                 self.it.last().map(super::u32_chunk_to_u64)
                             }
-
                             #[inline]
                             fn count(self) -> usize {
                                 self.len()
                             }
                         }
-
                         impl DoubleEndedIterator for U64Digits<'_> {
                             fn next_back(&mut self) -> Option<Self::Item> {
                                 self.it.next_back().map(super::u32_chunk_to_u64)
@@ -16054,35 +15344,29 @@ pub mod num
                                 Self { it: data.iter() }
                             }
                         }
-
                         impl Iterator for U64Digits<'_> {
                             type Item = u64;
                             #[inline]
                             fn next(&mut self) -> Option<u64> {
                                 self.it.next().cloned()
                             }
-
                             #[inline]
                             fn size_hint(&self) -> (usize, Option<usize>) {
                                 self.it.size_hint()
                             }
-
                             #[inline]
                             fn nth(&mut self, n: usize) -> Option<u64> {
                                 self.it.nth(n).cloned()
                             }
-
                             #[inline]
                             fn last(self) -> Option<u64> {
                                 self.it.last().cloned()
                             }
-
                             #[inline]
                             fn count(self) -> usize {
                                 self.it.count()
                             }
                         }
-
                         impl DoubleEndedIterator for U64Digits<'_> {
                             fn next_back(&mut self) -> Option<Self::Item> {
                                 self.it.next_back().cloned()
@@ -16097,11 +15381,8 @@ pub mod num
                         self.it.len()
                     }
                 }
-
                 impl FusedIterator for U64Digits<'_> {}
-
             }
-
             pub mod monty
             {
                 /*!
@@ -16126,7 +15407,6 @@ pub mod num
                 struct MontyReducer {
                     n0inv: BigDigit,
                 }
-
                
                
                 fn inv_mod_alt(b: BigDigit) -> BigDigit {
@@ -16144,7 +15424,6 @@ pub mod num
                     debug_assert_eq!(k0.wrapping_mul(b), 1);
                     k0.wrapping_neg()
                 }
-
                 impl MontyReducer {
                     fn new(n: &BigUint) -> Self {
                         let n0inv = inv_mod_alt(n.data[0]);
@@ -16186,7 +15465,6 @@ pub mod num
                             c = 0;
                         }
                     }
-
                     if c == 0 {
                         z.data = z.data[n..].to_vec();
                     } else {
@@ -16196,10 +15474,8 @@ pub mod num
                         }
                         z.data = z.data[..n].to_vec();
                     }
-
                     z
                 }
-
                 #[inline( always )] fn add_mul_vvw(z: &mut [BigDigit], x: &[BigDigit], y: BigDigit) -> BigDigit {
                     let mut c = 0;
                     for (zi, xi) in z.iter_mut().zip(x.iter()) {
@@ -16208,7 +15484,6 @@ pub mod num
                         *zi = zi_;
                         c = c_ + z1;
                     }
-
                     c
                 }
                 /// The resulting carry c is either 0 or 1.
@@ -16220,7 +15495,6 @@ pub mod num
                        
                         c = ((yi & !xi) | ((yi | !xi) & zi)) >> (::num::big::digit::BITS - 1)
                     }
-
                     c
                 }
                 /// z1<<_W + z0 = x+y+c, with c == 0 or 1
@@ -16254,7 +15528,6 @@ pub mod num
                     if x.data.len() < num_words {
                         x.data.resize(num_words, 0);
                     }
-
                    
                     let mut rr = BigUint::one();
                     rr = (rr.shl(2 * num_words as u64 * u64::from(::num::big::digit::BITS))) % m;
@@ -16274,7 +15547,6 @@ pub mod num
                         let r = montgomery(&powers[i - 1], &powers[1], m, mr.n0inv, num_words);
                         powers.push(r);
                     }
-
                    
                     let mut z = powers[0].clone();
                     z.data.resize(num_words, 0);
@@ -16304,7 +15576,6 @@ pub mod num
                             j += n;
                         }
                     }
-
                    
                     zz = montgomery(&z, &one, m, mr.n0inv, num_words);
 
@@ -16324,11 +15595,9 @@ pub mod num
                             zz %= m;
                         }
                     }
-
                     zz.normalize();
                     zz
                 }
-
             } pub use self::iter::{U32Digits, U64Digits};
 
             pub mod power
@@ -16369,7 +15638,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Pow<BigUint> for BigUint
                 {
                     type Output = BigUint;
@@ -16378,7 +15646,6 @@ pub mod num
                         Pow::pow(self, &exp)
                     }
                 }
-
                 impl Pow<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
@@ -16393,7 +15660,6 @@ pub mod num
                         }
                     }
                 }
-
                 impl Pow<BigUint> for &BigUint
                 {
                     type Output = BigUint;
@@ -16402,7 +15668,6 @@ pub mod num
                         Pow::pow(self, &exp)
                     }
                 }
-
                 macro_rules! pow_impl 
                 {
                     ($T:ty) => {
@@ -16419,11 +15684,9 @@ pub mod num
                                     base = &base * &base;
                                     exp >>= 1;
                                 }
-
                                 if exp == 1 {
                                     return base;
                                 }
-
                                 let mut acc = base.clone();
                                 while exp > 1 {
                                     exp >>= 1;
@@ -16435,7 +15698,6 @@ pub mod num
                                 acc
                             }
                         }
-
                         impl Pow<&$T> for BigUint {
                             type Output = BigUint;
 
@@ -16444,7 +15706,6 @@ pub mod num
                                 Pow::pow(self, *exp)
                             }
                         }
-
                         impl Pow<$T> for &BigUint {
                             type Output = BigUint;
 
@@ -16456,7 +15717,6 @@ pub mod num
                                 Pow::pow(self.clone(), exp)
                             }
                         }
-
                         impl Pow<&$T> for &BigUint {
                             type Output = BigUint;
 
@@ -16467,7 +15727,6 @@ pub mod num
                         }
                     };
                 }
-
                 pow_impl!(u8);
                 pow_impl!(u16);
                 pow_impl!(u32);
@@ -16490,7 +15749,6 @@ pub mod num
                         plain_modpow(x, &exponent.data, modulus)
                     }
                 }
-
                 pub fn plain_modpow(base: &BigUint, exp_data: &[BigDigit], modulus: &BigUint) -> BigUint 
                 {
                     assert!(
@@ -16509,7 +15767,6 @@ pub mod num
                             base = &base * &base % modulus;
                         }
                     }
-
                     let mut r = exp_data[i];
                     let mut b = 0u8;
                     while r.is_even() {
@@ -16517,12 +15774,10 @@ pub mod num
                         r >>= 1;
                         b += 1;
                     }
-
                     let mut exp_iter = exp_data[i + 1..].iter();
                     if exp_iter.len() == 0 && r.is_one() {
                         return base;
                     }
-
                     let mut acc = base.clone();
                     r >>= 1;
                     b += 1;
@@ -16542,7 +15797,6 @@ pub mod num
                                 unit(r.is_odd());
                                 r >>= 1;
                             }
-
                            
                             for &r in exp_iter {
                                 let mut r = r;
@@ -16553,7 +15807,6 @@ pub mod num
                             }
                             r = last;
                         }
-
                         debug_assert_ne!(r, 0);
                         while !r.is_zero() {
                             unit(r.is_odd());
@@ -16563,7 +15816,6 @@ pub mod num
                     acc
                 }
             }
-
             pub mod shift
             {
                 /*!
@@ -16596,7 +15848,6 @@ pub mod num
                     let shift = (shift % bits).to_u8().unwrap();
                     biguint_shl2(n, digits, shift)
                 }
-
                 fn biguint_shl2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint {
                     let mut data = match digits {
                         0 => n.into_owned().data,
@@ -16621,10 +15872,8 @@ pub mod num
                             data.push(carry);
                         }
                     }
-
                     biguint_from_vec(data)
                 }
-
                 #[inline] fn biguint_shr<T: PrimInt>(n: Cow<'_, BigUint>, shift: T) -> BigUint {
                     if shift < T::zero() {
                         panic!("attempt to shift right with negative");
@@ -16637,7 +15886,6 @@ pub mod num
                     let shift = (shift % bits).to_u8().unwrap();
                     biguint_shr2(n, digits, shift)
                 }
-
                 fn biguint_shr2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint {
                     if digits >= n.data.len() {
                         let mut n = n.into_owned();
@@ -16661,10 +15909,8 @@ pub mod num
                             borrow = new_borrow;
                         }
                     }
-
                     biguint_from_vec(data)
                 }
-
                 macro_rules! impl_shift {
                     (@ref $Shx:ident :: $shx:ident, $ShxAssign:ident :: $shx_assign:ident, $rhs:ty) => {
                         impl $Shx<&$rhs> for BigUint {
@@ -16715,7 +15961,6 @@ pub mod num
                             }
                         }
                         impl_shift! { @ref Shl::shl, ShlAssign::shl_assign, $rhs }
-
                         impl Shr<$rhs> for BigUint {
                             type Output = BigUint;
 
@@ -16742,10 +15987,8 @@ pub mod num
                         impl_shift! { @ref Shr::shr, ShrAssign::shr_assign, $rhs }
                     )*};
                 }
-
                 impl_shift! { u8, u16, u32, u64, u128, usize }
                 impl_shift! { i8, i16, i32, i64, i128, isize }
-
             }
             /// A big unsigned integer type.
             pub struct BigUint
@@ -16760,12 +16003,10 @@ pub mod num
                         data: self.data.clone(),
                     }
                 }
-
                 #[inline] fn clone_from(&mut self, other: &Self) {
                     self.data.clone_from(&other.data);
                 }
             }
-
             impl hash::Hash for BigUint
             {
                 #[inline] fn hash<H: hash::Hasher>(&self, state: &mut H) {
@@ -16773,7 +16014,6 @@ pub mod num
                     self.data.hash(state);
                 }
             }
-
             impl PartialEq for BigUint
             {
                 #[inline] fn eq(&self, other: &BigUint) -> bool {
@@ -16782,23 +16022,19 @@ pub mod num
                     self.data == other.data
                 }
             }
-
             impl Eq for BigUint {}
-
             impl PartialOrd for BigUint
             {
                 #[inline] fn partial_cmp(&self, other: &BigUint) -> Option<Ordering> {
                     Some(self.cmp(other))
                 }
             }
-
             impl Ord for BigUint
             {
                 #[inline] fn cmp(&self, other: &BigUint) -> Ordering {
                     cmp_slice(&self.data[..], &other.data[..])
                 }
             }
-
             #[inline] fn cmp_slice(a: &[BigDigit], b: &[BigDigit]) -> Ordering
             {
                 debug_assert!(a.last() != Some(&0));
@@ -16809,32 +16045,27 @@ pub mod num
                     other => other,
                 }
             }
-
             impl Default for BigUint
             {
                 #[inline] fn default() -> BigUint {
                     Self::ZERO
                 }
             }
-
             impl fmt::Debug for BigUint {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     fmt::Display::fmt(self, f)
                 }
             }
-
             impl fmt::Display for BigUint {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     f.pad_integral(true, "", &self.to_str_radix(10))
                 }
             }
-
             impl fmt::LowerHex for BigUint {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     f.pad_integral(true, "0x", &self.to_str_radix(16))
                 }
             }
-
             impl fmt::UpperHex for BigUint {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     let mut s = self.to_str_radix(16);
@@ -16842,77 +16073,62 @@ pub mod num
                     f.pad_integral(true, "0x", &s)
                 }
             }
-
             impl fmt::Binary for BigUint {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     f.pad_integral(true, "0b", &self.to_str_radix(2))
                 }
             }
-
             impl fmt::Octal for BigUint {
                 fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     f.pad_integral(true, "0o", &self.to_str_radix(8))
                 }
             }
-
             impl Zero for BigUint
             {
                 #[inline] fn zero() -> BigUint {
                     Self::ZERO
                 }
-
                 #[inline] fn set_zero(&mut self) {
                     self.data.clear();
                 }
-
                 #[inline] fn is_zero(&self) -> bool {
                     self.data.is_empty()
                 }
             }
-
             impl ConstZero for BigUint {
                
                 const ZERO: Self = Self::ZERO;
             }
-
             impl One for BigUint
             {
                 #[inline] fn one() -> BigUint {
                     BigUint { data: vec![1] }
                 }
-
                 #[inline] fn set_one(&mut self) {
                     self.data.clear();
                     self.data.push(1);
                 }
-
                 #[inline] fn is_one(&self) -> bool {
                     self.data[..] == [1]
                 }
             }
-
             impl Unsigned for BigUint {}
-
             impl Integer for BigUint
             {
                 #[inline] fn div_rem(&self, other: &BigUint) -> (BigUint, BigUint) {
                     division::div_rem_ref(self, other)
                 }
-
                 #[inline] fn div_floor(&self, other: &BigUint) -> BigUint {
                     let (d, _) = division::div_rem_ref(self, other);
                     d
                 }
-
                 #[inline] fn mod_floor(&self, other: &BigUint) -> BigUint {
                     let (_, m) = division::div_rem_ref(self, other);
                     m
                 }
-
                 #[inline] fn div_mod_floor(&self, other: &BigUint) -> (BigUint, BigUint) {
                     division::div_rem_ref(self, other)
                 }
-
                 #[inline] fn div_ceil(&self, other: &BigUint) -> BigUint {
                     let (d, m) = division::div_rem_ref(self, other);
                     if m.is_zero() {
@@ -16927,7 +16143,6 @@ pub mod num
                     #[inline] fn twos(x: &BigUint) -> u64 {
                         x.trailing_zeros().unwrap_or(0)
                     }
-
                    
                     if self.is_zero() {
                         return other.clone();
@@ -16952,7 +16167,6 @@ pub mod num
                         }
                         m -= &n;
                     }
-
                     n << shift
                 }
                 /// Calculates the Lowest Common Multiple (LCM) of the number and `other`.
@@ -17011,16 +16225,13 @@ pub mod num
                 #[inline] fn prev_multiple_of(&self, other: &Self) -> Self {
                     self - self.mod_floor(other)
                 }
-
                 fn dec(&mut self) {
                     *self -= 1u32;
                 }
-
                 fn inc(&mut self) {
                     *self += 1u32;
                 }
             }
-
             #[inline] fn fixpoint<F>(mut x: BigUint, max_bits: u64, f: F) -> BigUint where
                 F: Fn(&BigUint) -> BigUint,
             {
@@ -17039,7 +16250,6 @@ pub mod num
                     };
                     xn = f(&x);
                 }
-
                
                 while x > xn {
                     x = xn;
@@ -17047,7 +16257,6 @@ pub mod num
                 }
                 x
             }
-
             impl Roots for BigUint
             {  
                 fn nth_root(&self, n: u32) -> Self {
@@ -17056,7 +16265,6 @@ pub mod num
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
-
                     match n {
                        
                         1 => return self.clone(),
@@ -17064,19 +16272,16 @@ pub mod num
                         3 => return self.cbrt(),
                         _ => (),
                     }
-
                    
                     let bits = self.bits();
                     let n64 = u64::from(n);
                     if bits <= n64 {
                         return BigUint::one();
                     }
-
                    
                     if let Some(x) = self.to_u64() {
                         return x.nth_root(n).into();
                     }
-
                     let max_bits = bits / n64 + 1;
 
                     #[cfg(feature = "std")]
@@ -17111,19 +16316,16 @@ pub mod num
                         t / n
                     })
                 }
-
                
                
                 fn sqrt(&self) -> Self {
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
-
                    
                     if let Some(x) = self.to_u64() {
                         return x.sqrt().into();
                     }
-
                     let bits = self.bits();
                     let max_bits = bits / 2 + 1;
 
@@ -17154,17 +16356,14 @@ pub mod num
                         t >> 1
                     })
                 }
-
                 fn cbrt(&self) -> Self {
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
-
                    
                     if let Some(x) = self.to_u64() {
                         return x.cbrt().into();
                     }
-
                     let bits = self.bits();
                     let max_bits = bits / 3 + 1;
 
@@ -17207,7 +16406,6 @@ pub mod num
             {
                 BigUint { data: digits }.normalized()
             }
-
             impl BigUint
             {
                 /// A constant `BigUint` with value 0, useful for static initialization.
@@ -17374,7 +16572,6 @@ pub mod num
                     if modulus.is_one() {
                         return Some(Self::zero());
                     }
-
                     let mut r0;
                     let mut r1 = self % modulus;
                     let mut t0;
@@ -17395,7 +16592,6 @@ pub mod num
                         t0 = Self::one();
                         t1 = modulus - q;
                     }
-
                     while !r1.is_zero() {
                         let (q, r2) = r0.div_rem(&r1);
                         r0 = r1;
@@ -17411,7 +16607,6 @@ pub mod num
                         t0 = t1;
                         t1 = t2;
                     }
-
                     if r0.is_one() {
                         Some(t0)
                     } else {
@@ -17481,31 +16676,26 @@ pub mod num
                     }
                 }
             }
-
             impl ::num::traits::FromBytes for BigUint {
                 type Bytes = [u8];
 
                 fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                     Self::from_bytes_be(bytes)
                 }
-
                 fn from_le_bytes(bytes: &Self::Bytes) -> Self {
                     Self::from_bytes_le(bytes)
                 }
             }
-
             impl ::num::traits::ToBytes for BigUint {
                 type Bytes = Vec<u8>;
 
                 fn to_be_bytes(&self) -> Self::Bytes {
                     self.to_bytes_be()
                 }
-
                 fn to_le_bytes(&self) -> Self::Bytes {
                     self.to_bytes_le()
                 }
             }
-
             pub trait IntDigits {
                 fn digits(&self) -> &[BigDigit];
                 fn digits_mut(&mut self) -> &mut Vec<BigDigit>;
@@ -17513,7 +16703,6 @@ pub mod num
                 fn capacity(&self) -> usize;
                 fn len(&self) -> usize;
             }
-
             impl IntDigits for BigUint
             {
                 #[inline] fn digits(&self) -> &[BigDigit] {
@@ -17541,7 +16730,6 @@ pub mod num
                 }
                 digit
             }
-
             cfg_32_or_test!(
                 /// Combine four `u32`s into a single `u128`.
                 #[inline] fn u32_to_u128(a: u32, b: u32, c: u32, d: u32) -> u128 {
@@ -17594,13 +16782,11 @@ pub mod num
                     InvalidDigit => "invalid digit found in string",
                 }
             }
-
             fn empty() -> Self {
                 ParseBigIntError {
                     kind: BigIntErrorKind::Empty,
                 }
             }
-
             fn invalid() -> Self {
                 ParseBigIntError {
                     kind: BigIntErrorKind::InvalidDigit,
@@ -17633,7 +16819,6 @@ pub mod num
             fn new(original: T) -> Self {
                 TryFromBigIntError { original }
             }
-
             fn __description(&self) -> &str {
                 "out of range conversion regarding big integer attempted"
             }
@@ -17882,7 +17067,6 @@ pub mod num
                 {
                     pow_unsigned_impl!(@ &'b BigUint);
                 }
-
                 impl<T: Clone + Integer + for<'b> Pow<&'b BigUint, Output = T>> Pow<BigInt> for Ratio<T> {
                     type Output = Ratio<T>;
                     #[inline] fn pow(self, expon: BigInt) -> Ratio<T> {
@@ -17992,7 +17176,6 @@ pub mod num
                     let y = ::mem::replace(x, T::zero());
                     *x = f(y);
                 }
-
                
                 replace_with(&mut self.numer, |x| x / g.clone());
 
@@ -18015,7 +17198,6 @@ pub mod num
             #[inline] pub fn recip(&self) -> Ratio<T> {
                 self.clone().into_recip()
             }
-
             #[inline] fn into_recip(self) -> Ratio<T> {
                 match self.numer.cmp(&T::zero()) {
                     cmp::Ordering::Equal => panic!("division by zero"),
@@ -18154,7 +17336,6 @@ pub mod num
                         ord
                     };
                 }
-
                
                 if self.numer == other.numer {
                     if self.numer.is_zero() {
@@ -18167,7 +17348,6 @@ pub mod num
                         ord.reverse()
                     };
                 }
-
                
                
                
@@ -18251,7 +17431,6 @@ pub mod num
                     iter.fold(Self::zero(), |sum, num| sum + num)
                 }
             }
-
             impl<'a, T: Integer + Clone> Sum<&'a Ratio<T>> for Ratio<T>
             {
                 fn sum<I>(iter: I) -> Self
@@ -18261,7 +17440,6 @@ pub mod num
                     iter.fold(Self::zero(), |sum, num| sum + num)
                 }
             }
-
             impl<T: Integer + Clone> Product for Ratio<T>
             {
                 fn product<I>(iter: I) -> Self
@@ -18271,7 +17449,6 @@ pub mod num
                     iter.fold(Self::one(), |prod, num| prod * num)
                 }
             }
-
             impl<'a, T: Integer + Clone> Product<&'a Ratio<T>> for Ratio<T>
             {
                 fn product<I>(iter: I) -> Self
@@ -18338,7 +17515,6 @@ pub mod num
                     self.reduce();
                 }
             }
-
             impl<T: Clone + Integer + NumAssign> RemAssign for Ratio<T>
             {
                 fn rem_assign(&mut self, other: Ratio<T>) {
@@ -18354,7 +17530,6 @@ pub mod num
                     self.reduce();
                 }
             }
-
             impl<T: Clone + Integer + NumAssign> SubAssign for Ratio<T>
             {
                 fn sub_assign(&mut self, other: Ratio<T>) {
@@ -18378,7 +17553,6 @@ pub mod num
                     self.reduce();
                 }
             }
-
             impl<T: Clone + Integer + NumAssign> DivAssign<T> for Ratio<T>
             {
                 fn div_assign(&mut self, other: T) {
@@ -18388,7 +17562,6 @@ pub mod num
                     self.reduce();
                 }
             }
-
             impl<T: Clone + Integer + NumAssign> MulAssign<T> for Ratio<T>
             {
                 fn mul_assign(&mut self, other: T) {
@@ -18414,7 +17587,6 @@ pub mod num
                     self.reduce();
                 }
             }
-
             macro_rules! forward_op_assign {
                 (impl $imp:ident, $method:ident) => {
                     impl<'a, T: Clone + Integer + NumAssign> $imp<&'a Ratio<T>> for Ratio<T> {
@@ -18431,7 +17603,6 @@ pub mod num
                     }
                 };
             }
-
             forward_op_assign!(impl AddAssign, add_assign);
             forward_op_assign!(impl DivAssign, div_assign);
             forward_op_assign!(impl MulAssign, mul_assign);
@@ -18657,11 +17828,9 @@ pub mod num
             #[inline] fn zero() -> Ratio<T> {
                 Ratio::new_raw(Zero::zero(), One::one())
             }
-
             #[inline] fn is_zero(&self) -> bool {
                 self.numer.is_zero()
             }
-
             #[inline] fn set_zero(&mut self) {
                 self.numer.set_zero();
                 self.denom.set_one();
@@ -18684,11 +17853,9 @@ pub mod num
             #[inline] fn one() -> Ratio<T> {
                 Ratio::new_raw(One::one(), One::one())
             }
-
             #[inline] fn is_one(&self) -> bool {
                 self.numer == self.denom
             }
-
             #[inline] fn set_one(&mut self) {
                 self.numer.set_one();
                 self.denom.set_one();
@@ -18733,7 +17900,6 @@ pub mod num
                     self.clone()
                 }
             }
-
             #[inline] fn abs_sub(&self, other: &Ratio<T>) -> Ratio<T> {
                 if *self <= *other {
                     Zero::zero()
@@ -18741,7 +17907,6 @@ pub mod num
                     self - other
                 }
             }
-
             #[inline] fn signum(&self) -> Ratio<T> {
                 if self.is_positive() {
                     Self::one()
@@ -18751,12 +17916,10 @@ pub mod num
                     -Self::one()
                 }
             }
-
             #[inline] fn is_positive(&self) -> bool {
                 (self.numer.is_positive() && self.denom.is_positive())
                     || (self.numer.is_negative() && self.denom.is_negative())
             }
-
             #[inline] fn is_negative(&self) -> bool {
                 (self.numer.is_negative() && self.denom.is_positive())
                     || (self.numer.is_positive() && self.denom.is_negative())
@@ -18875,23 +18038,18 @@ pub mod num
             fn from_i64(n: i64) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
-
             fn from_i128(n: i128) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
-
             fn from_u64(n: u64) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
-
             fn from_u128(n: u128) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
-
             fn from_f32(n: f32) -> Option<Self> {
                 Ratio::from_float(n)
             }
-
             fn from_f64(n: f64) -> Option<Self> {
                 Ratio::from_float(n)
             }
@@ -18904,23 +18062,18 @@ pub mod num
                     fn from_i64(n: i64) -> Option<Self> {
                         <$typ as FromPrimitive>::from_i64(n).map(Ratio::from_integer)
                     }
-
                     fn from_i128(n: i128) -> Option<Self> {
                         <$typ as FromPrimitive>::from_i128(n).map(Ratio::from_integer)
                     }
-
                     fn from_u64(n: u64) -> Option<Self> {
                         <$typ as FromPrimitive>::from_u64(n).map(Ratio::from_integer)
                     }
-
                     fn from_u128(n: u128) -> Option<Self> {
                         <$typ as FromPrimitive>::from_u128(n).map(Ratio::from_integer)
                     }
-
                     fn from_f32(n: f32) -> Option<Self> {
                         $approx(n, 10e-20, 30)
                     }
-
                     fn from_f64(n: f64) -> Option<Self> {
                         $approx(n, 10e-20, 30)
                     }
@@ -18987,7 +18140,6 @@ pub mod num
             if val < F::zero() || val.is_nan() {
                 return None;
             }
-
             let mut q = val;
             let mut n0 = T::zero();
             let mut d0 = T::one();
@@ -19004,7 +18156,6 @@ pub mod num
             if q > t_max_f {
                 return None;
             }
-
             for _ in 0..max_iterations {
                 let a = match <T as NumCast>::from(q) {
                     None => break,
@@ -19026,7 +18177,6 @@ pub mod num
                 {
                     break;
                 }
-
                 let n = a.clone() * n1.clone() + n0.clone();
                 let d = a.clone() * d1.clone() + d0.clone();
 
@@ -19042,7 +18192,6 @@ pub mod num
                     n1 = n1 / g.clone();
                     d1 = d1 / g.clone();
                 }
-
                
                 let (n_f, d_f) = match (<F as NumCast>::from(n), <F as NumCast>::from(d)) {
                     (Some(n_f), Some(d_f)) => (n_f, d_f),
@@ -19051,19 +18200,16 @@ pub mod num
                 if (n_f / d_f - val).abs() < max_error {
                     break;
                 }
-
                
                 if f < epsilon {
                     break;
                 }
                 q = f.recip();
             }
-
            
             if d1.is_zero() {
                 return None;
             }
-
             Some(Ratio::new(n1, d1))
         }
         
@@ -19072,19 +18218,15 @@ pub mod num
             fn to_i64(&self) -> Option<i64> {
                 self.to_integer().to_i64()
             }
-
             fn to_i128(&self) -> Option<i128> {
                 self.to_integer().to_i128()
             }
-
             fn to_u64(&self) -> Option<u64> {
                 self.to_integer().to_u64()
             }
-
             fn to_u128(&self) -> Option<u128> {
                 self.to_integer().to_u128()
             }
-
             fn to_f64(&self) -> Option<f64> {
                 let float = match (self.numer.to_i64(), self.denom.to_i64()) {
                     (Some(numer), Some(denom)) => ratio_to_f64(
@@ -19143,7 +18285,6 @@ pub mod num
             if !flo_sign.is_normal() {
                 return flo_sign;
             }
-
            
            
            
@@ -19153,7 +18294,6 @@ pub mod num
                     return n.to_f64().unwrap() / d.to_f64().unwrap();
                 }
             }
-
            
            
            
@@ -19232,14 +18372,12 @@ pub mod num
             if x.is_zero() || x.is_infinite() || x.is_nan() {
                 return x;
             }
-
            
             if exp > 3 * MAX_EXP {
                 return INFINITY * x.signum();
             } else if exp < -3 * MAX_EXP {
                 return 0.0 * x.signum();
             }
-
            
             let (bits, curr_exp) = if !x.is_normal() {
                
@@ -19302,50 +18440,52 @@ pub mod objects
     Object | A hashmap of keys to values, where values can be any type, including other objects. */
     use ::
     {
+        arrays::{ Arr },
+        collections::{ hash_map::{Iter, Keys, Values}, HashMap },
+        error::{ OverError },
+        fmt::{ Format },
+        num::
+        {
+            big::{ BigInt },
+            rational::{ BigRational },
+            traits::{ Zero },
+        },
+        result::{ OverResult },
+        str::{ FromStr },
+        sync::{ Arc, atomic::{ AtomicUsize, Ordering } },
+        tuples::{ Tup },
+        types::{ Type },
+        values::{ Value },
         *,
     };
     /*
-    use crate::arr::Arr;
-    use crate::error::OverError;
-    use crate::parse;
-    use crate::parse::format::Format;
-    use crate::tup::Tup;
-    use crate::types::Type;
-    use crate::util::{is_digit, write_file_str};
-    use crate::value::Value;
-    use crate::{OverResult, INDENT_STEP};
-    use num_bigint::BigInt;
-    use num_rational::BigRational;
-    use num_traits::Zero;
-    use std::collections::hash_map::{Iter, Keys, Values};
-    use std::collections::HashMap;
-    use std::str::FromStr;
-    use std::sync::atomic::{AtomicUsize, Ordering};
-    use std::sync::Arc;
-    use std::{convert, fmt, io};
     */
-    lazy_static! {
+    lazy_static! 
+    {
         static ref CUR_ID: AtomicUsize = AtomicUsize::new(0);
     }
 
-    fn get_id() -> usize {
+    fn get_id() -> usize 
+    {
         CUR_ID.fetch_add(1, Ordering::Relaxed)
     }
 
     #[derive(Clone, Debug)]
-    struct ObjInner {
+    struct ObjInner 
+    {
         map: HashMap<String, Value>,
         parent: Option<Obj>,
         id: usize,
     }
-
     /// `Obj` struct.
     #[derive(Clone, Debug)]
-    pub struct Obj {
+    pub struct Obj 
+    {
         inner: Arc<ObjInner>,
     }
 
-    macro_rules! get_fn {
+    macro_rules! get_fn 
+    {
         ( $doc:expr, $name:tt, $type:ty ) => {
             #[doc=$doc]
             pub fn $name(&self, field: &str) -> OverResult<$type> {
@@ -19362,13 +18502,11 @@ pub mod objects
         }
     }
 
-    impl Obj {
+    impl Obj 
+    {
         /// Returns a new `Obj` created from the given `HashMap`.
-        ///
-        /// Returns an error if the map contains an invalid field name.
-        /// A valid field name must start with an alphabetic character or '_' and subsequent characters
-        /// must be alphabetic, numeric, or '_'.
-        pub fn from_map(obj_map: HashMap<String, Value>) -> OverResult<Obj> {
+        pub fn from_map(obj_map: HashMap<String, Value>) -> OverResult<Obj> 
+        {
             for field in obj_map.keys() {
                 if !Self::is_valid_field(field) {
                     return Err(OverError::InvalidFieldName((*field).clone()));
@@ -19384,13 +18522,9 @@ pub mod objects
                 }),
             })
         }
-
         /// Returns a new `Obj` created from the given `HashMap` with given `parent`.
-        ///
-        /// Returns an error if the map contains an invalid field name.
-        ///
-        /// See `from_map` for more details.
-        pub fn from_map_with_parent(obj_map: HashMap<String, Value>, parent: Obj) -> OverResult<Obj> {
+        pub fn from_map_with_parent(obj_map: HashMap<String, Value>, parent: Obj) -> OverResult<Obj> 
+        {
             for field in obj_map.keys() {
                 if !Self::is_valid_field(field) {
                     return Err(OverError::InvalidFieldName(field.clone()));
@@ -19406,14 +18540,9 @@ pub mod objects
                 }),
             })
         }
-
         /// Returns a new `Obj` created from the given `HashMap`.
-        ///
-        /// It is faster than the safe version, `from_map`, if you know every field has a valid name.
-        /// You can check ahead of time whether a field is valid with `is_valid_field`.
-        ///
-        /// See `from_map` for more details.
-        pub fn from_map_unchecked(obj_map: HashMap<String, Value>) -> Obj {
+        pub fn from_map_unchecked(obj_map: HashMap<String, Value>) -> Obj 
+        {
             let id = get_id();
 
             Obj {
@@ -19424,14 +18553,9 @@ pub mod objects
                 }),
             }
         }
-
         /// Returns a new `Obj` created from the given `HashMap` with given `parent`.
-        ///
-        /// It is faster than the safe version, `from_map_with_parent`, if you know every field has
-        /// a valid name. You can check ahead of time whether a field is valid with `is_valid_field`.
-        ///
-        /// See `from_map` for more details.
-        pub fn from_map_with_parent_unchecked(obj_map: HashMap<String, Value>, parent: Obj) -> Obj {
+        pub fn from_map_with_parent_unchecked(obj_map: HashMap<String, Value>, parent: Obj) -> Obj 
+        {
             let id = get_id();
 
             Obj {
@@ -19442,79 +18566,63 @@ pub mod objects
                 }),
             }
         }
-
         /// Returns the ID of this `Obj`.
-        ///
-        /// Every `Obj` is assigned its own globally unique ID. IDs are generated incrementally,
-        /// starting at 0 for the first `Obj` created.
-        ///
-        /// # Notes
-        /// The ID is ignored when testing `Obj` equality.
-        pub fn id(&self) -> usize {
+        pub fn id(&self) -> usize 
+        {
             self.inner.id
         }
-
         /// Returns a reference to the inner map of this `Obj`.
-        pub fn map_ref(&self) -> &HashMap<String, Value> {
+        pub fn map_ref(&self) -> &HashMap<String, Value> 
+        {
             &self.inner.map
         }
-
         /// Returns a new `Obj` loaded from a file.
-        pub fn from_file(path: &str) -> OverResult<Obj> {
-            Ok(parse::load_from_file(path)?)
+        pub fn from_file(path: &str) -> OverResult<Obj> 
+        {
+            Ok(parses::load_from_file(path)?)
         }
-
         /// Writes this `Obj` to given file in `.over` representation.
-        ///
-        /// # Notes
-        /// Note that the fields of the `Obj` will be output in an unpredictable order.
-        /// Also note that shorthand in the original file, including variables and file includes,
-        /// is not preserved when parsing the file, and will not appear when writing to another file.
-        pub fn write_to_file(&self, path: &str) -> OverResult<()> {
-            write_file_str(path, &self.write_str())?;
+        pub fn write_to_file(&self, path: &str) -> OverResult<()>
+        {
+            str::write_file_from(path, &self.write_str())?;
             Ok(())
         }
-
         /// Writes this `Obj` to a `String`.
-        ///
-        /// # Notes
-        /// See `write_to_file`.
-        pub fn write_str(&self) -> String {
+        pub fn write_str(&self) -> String 
+        {
             self.format(false, 0)
         }
-
         /// Iterates over each `(String, Value)` pair in `self`, applying `f`.
-        pub fn with_each<F>(&self, mut f: F)
-        where
-            F: FnMut(&String, &Value),
+        pub fn with_each<F>(&self, mut f: F) where
+        F: FnMut(&String, &Value),
         {
             for (field, value) in &self.inner.map {
                 f(field, value)
             }
         }
-
         /// Returns the number of fields for this `Obj` (parent fields not included).
-        pub fn len(&self) -> usize {
+        pub fn len(&self) -> usize 
+        {
             self.inner.map.len()
         }
-
         /// Returns whether this `Obj` is empty.
-        pub fn is_empty(&self) -> bool {
+        pub fn is_empty(&self) -> bool 
+        {
             self.inner.map.is_empty()
         }
-
         /// Returns whether `self` and `other` point to the same data.
-        pub fn ptr_eq(&self, other: &Self) -> bool {
+        pub fn ptr_eq(&self, other: &Self) -> bool 
+        {
             Arc::ptr_eq(&self.inner, &other.inner)
         }
-
         /// Returns true if this `Obj` contains `field`.
-        pub fn contains(&self, field: &str) -> bool {
+        pub fn contains(&self, field: &str) -> bool 
+        {
             self.inner.map.contains_key(field)
         }
-
         /// Gets the `Value` associated with `field`.
-        pub fn get(&self, field: &str) -> Option<Value> {
+        pub fn get(&self, field: &str) -> Option<Value> 
+        {
             match self.inner.map.get(field) {
                 Some(value) => Some(value.clone()),
                 None => match self.inner.parent {
@@ -19523,10 +18631,9 @@ pub mod objects
                 },
             }
         }
-
-        /// Gets the `Value` associated with `field` and the `Obj` where it was found (either `self` or
-        /// one of its parents).
-        pub fn get_with_source(&self, field: &str) -> Option<(Value, Obj)> {
+        /// Gets the `Value` associated with `field` and the `Obj` where it was found.
+        pub fn get_with_source(&self, field: &str) -> Option<(Value, Obj)> 
+        {
             match self.inner.map.get(field) {
                 Some(value) => Some((value.clone(), self.clone())),
                 None => match self.inner.parent {
@@ -19536,56 +18643,71 @@ pub mod objects
             }
         }
 
-        get_fn!(
+        get_fn!
+        (
             "Returns the `bool` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Bool`.",
             get_bool,
             bool
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `BigInt` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Int`.",
             get_int,
             BigInt
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `BigRational` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Frac`.",
             get_frac,
             BigRational
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `char` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Char`.",
             get_char,
             char
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `String` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Str`.",
             get_str,
             String
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `Arr` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Arr`.",
             get_arr,
             Arr
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `Tup` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Tup`.",
             get_tup,
             Tup
         );
-        get_fn!(
+
+        get_fn!
+        (
             "Returns the `Obj` found at `field`. \
             Returns an error if the field was not found \
             or if the `Value` at `field` is not `Obj`.",
@@ -19594,23 +18716,21 @@ pub mod objects
         );
 
         /// Returns whether this `Obj` has a parent.
-        pub fn has_parent(&self) -> bool {
+        pub fn has_parent(&self) -> bool 
+        {
             self.inner.parent.is_some()
         }
-
         /// Returns the parent for this `Obj`.
-        pub fn get_parent(&self) -> Option<Obj> {
+        pub fn get_parent(&self) -> Option<Obj> 
+        {
             match self.inner.parent {
                 Some(ref parent) => Some(parent.clone()),
                 None => None,
             }
         }
-
         /// Returns true if `field` is a valid field name for an `Obj`.
-        ///
-        /// The first character must be alphabetic or '_'. Subsequent characters are allowed to be
-        /// alphabetic, digits, or '_'.
-        pub fn is_valid_field(field: &str) -> bool {
+        pub fn is_valid_field(field: &str) -> bool 
+        {
             let mut first = true;
 
             for ch in field.chars() {
@@ -19623,69 +18743,70 @@ pub mod objects
                     return false;
                 }
             }
-
             true
         }
-
-        /// Returns true if the given char is valid for a field, depending on whether it is the first
-        /// char or not.
-        ///
-        /// See `is_valid_field` for more details.
-        pub fn is_valid_field_char(ch: char, first: bool) -> bool {
-            match ch {
+        /// Returns true if the given char is valid for a field, depending on whether it is the first char or not.
+        pub fn is_valid_field_char(ch: char, first: bool) -> bool 
+        {
+            match ch 
+            {
                 ch if ch.is_alphabetic() => true,
-                ch if is_digit(ch) => !first,
+                ch if is::digit(ch) => !first,
                 '_' => true,
                 '^' => first,
                 _ => false,
             }
         }
-
         /// An iterator visiting all fields (keys) in arbitrary order.
-        pub fn keys(&self) -> Keys<String, Value> {
+        pub fn keys(&self) -> Keys<String, Value> 
+        {
             self.map_ref().keys()
         }
-
         /// An iterator visiting all values in arbitrary order.
-        pub fn values(&self) -> Values<String, Value> {
+        pub fn values(&self) -> Values<String, Value> 
+        {
             self.map_ref().values()
         }
-
         /// An iterator visiting all field-value pairs in arbitrary order.
-        pub fn iter(&self) -> Iter<String, Value> {
+        pub fn iter(&self) -> Iter<String, Value> 
+        {
             self.map_ref().iter()
         }
     }
 
-    impl Default for Obj {
+    impl Default for Obj 
+    {
         fn default() -> Self {
             Self::from_map_unchecked(map! {})
         }
     }
 
-    impl fmt::Display for Obj {
+    impl fmt::Display for Obj 
+    {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", self.format(true, INDENT_STEP))
         }
     }
 
-    impl FromStr for Obj {
+    impl FromStr for Obj 
+    {
         type Err = OverError;
 
-        fn from_str(s: &str) -> Result<Self, Self::Err> {
-            Ok(parse::load_from_str(s)?)
+        fn from_str(s: &str) -> Result<Self, Self::Err> 
+        {
+            Ok(parses::load_from_str(s)?)
         }
     }
-
     /// For two Objs to be equal, the following two checks must pass:
     /// 1. If either Obj has a parent, then both must have parents and the parents must be equal.
     /// 2. The two Objs must have all the same fields pointing to the same values.
-    impl PartialEq for Obj {
+    impl PartialEq for Obj 
+    {
         fn eq(&self, other: &Self) -> bool {
             let inner = &self.inner;
             let other_inner = &other.inner;
 
-            // Check parent equality.
+           
             if inner.parent.is_some() && other_inner.parent.is_some() {
                 let parent = self.get_parent().unwrap();
                 let other_parent = other.get_parent().unwrap();
@@ -19695,8 +18816,7 @@ pub mod objects
             } else if !(inner.parent.is_none() && other_inner.parent.is_none()) {
                 return false;
             }
-
-            // Check HashMap equality.
+           
             inner.map == other_inner.map
         }
     }
@@ -19723,6 +18843,23 @@ pub mod parses
     */
     use ::
     {
+        arrays::{ self, Arr },
+        char::{ CharStream },
+        collections::{ HashMap, HashSet, VecDeque },
+        error::{ parse::{ ParseErrorKind::{ * }, ParseError, parse_err } },
+        num::
+        {
+            big::BigInt,
+            rational::{ BigRational, frac_from_whole_and_dec },
+            traits::{ ToPrimitive, Zero },
+        },
+        objects::{ Obj },
+        ops::{ Deref },
+        path::{ Path },
+        result::{ ParseResult },
+        tuples::{ Tup },
+        types::{ Type },
+        values::{ Value },
         *,
     };
     /*
@@ -19731,41 +18868,46 @@ pub mod parses
     use super::error::{parse_err, ParseError};
     use super::util::*;
     use super::{ParseResult, MAX_DEPTH};
-    use crate::arr::{self, Arr};
-    use crate::obj::Obj;
-    use crate::tup::Tup;
-    use crate::types::Type;
-    use crate::value::Value;
-    use num_bigint::BigInt;
-    use num_rational::BigRational;
-    use num_traits::{ToPrimitive, Zero};
-    use std::collections::{HashMap, HashSet, VecDeque};
-    use std::ops::Deref;
-    use std::path::Path;
+    
     */
     type ObjMap = HashMap<String, Value>;
     type GlobalMap = HashMap<String, Value>;
     type IncludedMap = (HashMap<String, Value>, HashSet<String>);
 
-    lazy_static! {
+    lazy_static! 
+    {
         static ref OBJ_SENTINEL: Obj = Obj::from_map_unchecked(HashMap::new());
         static ref STR_SENTINEL: Obj = Obj::from_map_unchecked(HashMap::new());
         static ref ARR_SENTINEL: Obj = Obj::from_map_unchecked(HashMap::new());
         static ref TUP_SENTINEL: Obj = Obj::from_map_unchecked(HashMap::new());
     }
+    pub const MAX_DEPTH: usize = 64;
+    /// Load an `Obj` from a file.
+    pub fn load_from_file( path:&str ) -> ParseResult<Obj>
+    {
+        object_file( path )
+    }
+    /// Load an `Obj` from a &str.
+    pub fn load_from_str(contents: &str) -> ParseResult<Obj>
+    {
+        object_from_str(contents)
+    }
     /// Parses given file as an `Obj`.
-    pub fn parse_obj_file(path: &str) -> ParseResult<Obj> {
+   
+    pub fn object_file(path: &str) -> ParseResult<Obj>
+    {
         let stream = CharStream::from_file(path)?;
         parse_obj_stream(stream, &mut (HashMap::new(), HashSet::new()))
     }
-
-    // Parses given file as an `Obj`, keeping track of already encountered includes.
+   
     fn parse_obj_file_includes(path: &str, included: &mut IncludedMap) -> ParseResult<Obj> {
         let stream = CharStream::from_file(path)?;
         parse_obj_stream(stream, included)
     }
     /// Parses given &str as an `Obj`.
-    pub fn parse_obj_str(contents: &str) -> ParseResult<Obj> {
+   
+    pub fn object_from_str(contents: &str) -> ParseResult<Obj>
+    {
         let contents = String::from(contents);
         let stream = CharStream::from_string(contents)?;
         parse_obj_stream(stream, &mut (HashMap::new(), HashSet::new()))
@@ -19773,8 +18915,7 @@ pub mod parses
     /// Parses an Obj given a character stream.
     #[inline] fn parse_obj_stream(mut stream: CharStream, mut included: &mut IncludedMap) -> ParseResult<Obj> {
         let mut obj: ObjMap = HashMap::new();
-
-        // Go to the first non-whitespace character, or return if there is none.
+       
         if !find_char(stream.clone()) {
             return Ok(Obj::from_map_unchecked(obj));
         }
@@ -19782,7 +18923,7 @@ pub mod parses
         let mut globals: GlobalMap = HashMap::new();
         let mut parent = None;
 
-        // Parse all field/value pairs for this Obj.
+       
         while parse_field_value_pair(
             &mut stream,
             &mut obj,
@@ -19798,24 +18939,24 @@ pub mod parses
             None => Obj::from_map_unchecked(obj),
         })
     }
-
-    // Parses a sub-Obj in a file. It *must* start with { and end with }.
-    fn parse_obj(
+   
+    fn parse_obj
+    (
         mut stream: &mut CharStream,
         globals: &mut GlobalMap,
         mut included: &mut IncludedMap,
         depth: usize,
-    ) -> ParseResult<Value> {
-        // Check depth.
+    ) -> ParseResult<Value> 
+    {
+       
         if depth > MAX_DEPTH {
             return parse_err(stream.file(), MaxDepth(stream.line(), stream.col()));
         }
 
-        // We must already be at a '{'.
+       
         let ch = stream.next().unwrap();
         assert_eq!(ch, '{');
-
-        // Go to the first non-whitespace character, or error if there is none.
+       
         if !find_char(stream.clone()) {
             return parse_err(stream.file(), UnexpectedEnd(stream.line()));
         }
@@ -19823,8 +18964,9 @@ pub mod parses
         let mut obj: ObjMap = HashMap::new();
         let mut parent = None;
 
-        // Parse field/value pairs.
-        while parse_field_value_pair(
+       
+        while parse_field_value_pair
+        (
             &mut stream,
             &mut obj,
             globals,
@@ -19834,15 +18976,16 @@ pub mod parses
             Some('}'),
         )? {}
 
-        let obj = match parent {
+        let obj = match parent 
+        {
             Some(parent) => Obj::from_map_with_parent_unchecked(obj, parent),
             None => Obj::from_map_unchecked(obj),
         };
         Ok(obj.into())
     }
-
-    // Parses a field/value pair.
-    #[inline] fn parse_field_value_pair(
+    /// Parses a field/value pair.
+    #[inline] pub fn parse_field_value_pair
+    (
         mut stream: &mut CharStream,
         obj: &mut ObjMap,
         mut globals: &mut GlobalMap,
@@ -19850,23 +18993,29 @@ pub mod parses
         parent: &mut Option<Obj>,
         depth: usize,
         cur_brace: Option<char>,
-    ) -> ParseResult<bool> {
-        // Check if we're at an end delimiter instead of a field.
+    ) -> ParseResult<bool> 
+    {
+       
         let peek = stream.peek().unwrap();
-        if peek == '}' && cur_brace.is_some() {
+        
+        if peek == '}' && cur_brace.is_some() 
+        {
             let _ = stream.next();
             return Ok(false);
-        } else if is_end_delimiter(peek) {
+        }
+        
+        else if is::end_delimiter(peek) 
+        {
             return parse_err(
                 stream.file(),
                 InvalidClosingBracket(cur_brace, peek, stream.line(), stream.col()),
             );
         }
 
-        // Get the field line/col.
+       
         let (field_line, field_col) = (stream.line(), stream.col());
 
-        // Parse field.
+       
         let (field, is_global, is_parent) = parse_field(stream.clone(), field_line, field_col)?;
 
         if !is_global && !is_parent && obj.contains_key(&field) {
@@ -19878,12 +19027,12 @@ pub mod parses
             );
         }
 
-        // Deal with extra whitespace between field and value.
+       
         if !find_char(stream.clone()) {
             return parse_err(stream.file(), UnexpectedEnd(stream.line()));
         }
 
-        // At a non-whitespace character, parse value.
+       
         let (value_line, value_col) = (stream.line(), stream.col());
         let value = parse_value(
             &mut stream,
@@ -19896,8 +19045,7 @@ pub mod parses
             cur_brace,
             true,
         )?;
-
-        // Add value either to the globals map or to the current Obj.
+       
         if is_global {
             if globals.contains_key(&field) {
                 return parse_err(stream.file(), DuplicateGlobal(field, field_line, field_col));
@@ -19912,7 +19060,7 @@ pub mod parses
             obj.insert(field, value);
         }
 
-        // Go to the next non-whitespace character.
+       
         if !find_char(stream.clone()) {
             match cur_brace {
                 Some(_) => return parse_err(stream.file(), UnexpectedEnd(stream.line())),
@@ -19922,8 +19070,7 @@ pub mod parses
 
         Ok(true)
     }
-
-    // Parses an Arr given a file.
+   
     fn parse_arr_file(path: &str, mut included: &mut IncludedMap) -> ParseResult<Arr> {
         let mut stream = CharStream::from_file(path)?;
 
@@ -19935,12 +19082,11 @@ pub mod parses
         let mut has_any = true;
 
         loop {
-            // Go to the first non-whitespace character, or error if there is none.
+           
             if !find_char(stream.clone()) {
                 break;
             }
-
-            // At a non-whitespace character, parse value.
+           
             let (value_line, value_col) = (stream.line(), stream.col());
             let value = parse_value(
                 &mut stream,
@@ -19975,7 +19121,6 @@ pub mod parses
                     ExpectedType(tcur, tnew, value_line, value_col),
                 );
             }
-
             vec.push(value);
         }
 
@@ -19983,21 +19128,23 @@ pub mod parses
 
         Ok(arr)
     }
-
-    // Parses a sub-Arr in a file. It *must* start with [ and end with ].
-    fn parse_arr(
+   
+    fn parse_arr
+    (
         mut stream: &mut CharStream,
         obj: &ObjMap,
         mut globals: &mut GlobalMap,
         mut included: &mut IncludedMap,
         depth: usize,
-    ) -> ParseResult<Value> {
-        // Check depth.
-        if depth > MAX_DEPTH {
+    ) -> ParseResult<Value> 
+    {
+       
+        if depth > MAX_DEPTH 
+        {
             return parse_err(stream.file(), MaxDepth(stream.line(), stream.col()));
         }
 
-        // We must already be at a '['.
+       
         let ch = stream.next().unwrap();
         assert_eq!(ch, '[');
 
@@ -20005,24 +19152,28 @@ pub mod parses
         let mut tcur = Type::Any;
         let mut has_any = true;
 
-        loop {
-            // Go to the first non-whitespace character, or error if there is none.
-            if !find_char(stream.clone()) {
+        loop 
+        {
+           
+            if !find_char(stream.clone()) 
+            {
                 return parse_err(stream.file(), UnexpectedEnd(stream.line()));
             }
-
             let peek = stream.peek().unwrap();
-            if peek == ']' {
+            if peek == ']' 
+            {
                 let _ = stream.next();
                 break;
-            } else if is_end_delimiter(peek) {
+            } 
+            
+            else if is::end_delimiter(peek) 
+            {
                 return parse_err(
                     stream.file(),
                     InvalidClosingBracket(Some(']'), peek, stream.line(), stream.col()),
                 );
             }
-
-            // At a non-whitespace character, parse value.
+           
             let (value_line, value_col) = (stream.line(), stream.col());
             let value = parse_value(
                 &mut stream,
@@ -20057,7 +19208,6 @@ pub mod parses
                     ExpectedType(tcur, tnew, value_line, value_col),
                 );
             }
-
             vec.push(value);
         }
 
@@ -20065,8 +19215,7 @@ pub mod parses
 
         Ok(arr.into())
     }
-
-    // Parses a Tup given a file.
+   
     fn parse_tup_file(path: &str, mut included: &mut IncludedMap) -> ParseResult<Tup> {
         let mut stream = CharStream::from_file(path)?;
 
@@ -20075,12 +19224,11 @@ pub mod parses
         let mut globals: GlobalMap = HashMap::new();
 
         loop {
-            // Go to the first non-whitespace character, or error if there is none.
+           
             if !find_char(stream.clone()) {
                 break;
             }
-
-            // At a non-whitespace character, parse value.
+           
             let (value_line, value_col) = (stream.line(), stream.col());
             let value = parse_value(
                 &mut stream,
@@ -20099,46 +19247,51 @@ pub mod parses
 
         Ok(vec.into())
     }
-
-    // Parses a sub-Tup in a file. It *must* start with ( and end with ).
-    fn parse_tup(
+   
+    fn parse_tup
+    (
         mut stream: &mut CharStream,
         obj: &ObjMap,
         mut globals: &mut GlobalMap,
         mut included: &mut IncludedMap,
         depth: usize,
-    ) -> ParseResult<Value> {
-        // Check depth.
-        if depth > MAX_DEPTH {
+    ) -> ParseResult<Value> 
+    {        
+        if depth > MAX_DEPTH 
+        {
             return parse_err(stream.file(), MaxDepth(stream.line(), stream.col()));
         }
-
-        // We must already be at a '('.
+        
         let ch = stream.next().unwrap();
         assert_eq!(ch, '(');
 
         let mut vec = Vec::new();
 
-        loop {
-            // Go to the first non-whitespace character, or error if there is none.
-            if !find_char(stream.clone()) {
+        loop 
+        {
+            if !find_char(stream.clone()) 
+            {
                 return parse_err(stream.file(), UnexpectedEnd(stream.line()));
             }
-
             let peek = stream.peek().unwrap();
-            if peek == ')' {
+            
+            if peek == ')' 
+            {
                 let _ = stream.next();
                 break;
-            } else if is_end_delimiter(peek) {
+            } 
+            
+            else if is::end_delimiter(peek)
+            {
                 return parse_err(
                     stream.file(),
                     InvalidClosingBracket(Some(')'), peek, stream.line(), stream.col()),
                 );
             }
-
-            // At a non-whitespace character, parse value.
+           
             let (value_line, value_col) = (stream.line(), stream.col());
-            let value = parse_value(
+            let value = parse_value
+            (
                 &mut stream,
                 obj,
                 &mut globals,
@@ -20157,26 +19310,28 @@ pub mod parses
 
         Ok(tup.into())
     }
-
-    // Gets the next field in the char stream.
-    // Returns Option<(field_name, is_global, is_parent)>.
-    fn parse_field(
+   
+    fn parse_field
+    (
         mut stream: CharStream,
         line: usize,
         col: usize,
-    ) -> ParseResult<(String, bool, bool)> {
+    ) -> ParseResult<(String, bool, bool)> 
+    {
         let mut field = String::new();
         let mut first = true;
         let mut is_global = false;
 
         let ch = stream.peek().unwrap();
+        
         if ch == '@' {
             let ch = stream.next().unwrap();
             is_global = true;
             field.push(ch);
         }
 
-        while let Some(ch) = stream.next() {
+        while let Some(ch) = stream.next() 
+        {
             match ch {
                 ':' if !first => {
                     break;
@@ -20189,25 +19344,26 @@ pub mod parses
                     );
                 }
             }
-
             first = false;
         }
-
-        // Check for invalid field names.
-        match field.as_str() {
-            _field_str if is_reserved(_field_str) => {
+       
+        match field.as_str() 
+        {
+            _field_str if is::reserved(_field_str) => 
+            {
                 parse_err(stream.file(), InvalidFieldName(field.clone(), line, col))
             }
             "^" => Ok((field.clone(), false, true)),
-            bad if bad.starts_with('^') => {
+            bad if bad.starts_with('^') => 
+            {
                 parse_err(stream.file(), InvalidFieldName(field.clone(), line, col))
             }
             _ => Ok((field.clone(), is_global, false)),
         }
     }
-
-    // Gets the next value in the char stream.
-    fn parse_value(
+   
+    fn parse_value
+    (
         mut stream: &mut CharStream,
         obj: &ObjMap,
         mut globals: &mut GlobalMap,
@@ -20217,9 +19373,11 @@ pub mod parses
         depth: usize,
         cur_brace: Option<char>,
         is_first: bool,
-    ) -> ParseResult<Value> {
-        // Peek to determine what kind of value we'll be parsing.
-        let res = match stream.peek().unwrap() {
+    ) -> ParseResult<Value> 
+    {
+       
+        let res = match stream.peek().unwrap() 
+        {
             '"' => parse_str(&mut stream)?,
             '\'' => parse_char(&mut stream)?,
             '{' => parse_obj(&mut stream, &mut globals, included, depth + 1)?,
@@ -20239,7 +19397,7 @@ pub mod parses
             ch @ '+' | ch @ '-' => {
                 parse_unary_op(&mut stream, obj, globals, included, depth, cur_brace, ch)?
             }
-            ch if is_numeric_char(ch) => parse_numeric(&mut stream, line, col)?,
+            ch if is::numeric_char(ch) => parse_numeric(&mut stream, line, col)?,
             ch if Obj::is_valid_field_char(ch, true) => parse_variable(
                 &mut stream,
                 obj,
@@ -20254,24 +19412,26 @@ pub mod parses
                 return parse_err(stream.file(), InvalidValueChar(ch, line, col));
             }
         };
-
-        // Process operations if this is the first value.
-        if is_first {
+       
+        if is_first 
+        {
             let mut val_deque: VecDeque<(Value, usize, usize)> = VecDeque::new();
             let mut op_deque: VecDeque<char> = VecDeque::new();
             val_deque.push_back((res, line, col));
 
-            loop {
-                match stream.peek() {
-                    Some(ch) if is_operator(ch) => {
+            loop 
+            {
+                match stream.peek()
+                {
+                    Some(ch) if is::operator(ch) => 
+                    {
                         let _ = stream.next();
                         if stream.peek().is_none() {
                             return parse_err(stream.file(), UnexpectedEnd(stream.line()));
                         }
-
                         let (line2, col2) = (stream.line(), stream.col());
 
-                        // Parse another value.
+                       
                         let val2 = parse_value(
                             &mut stream,
                             obj,
@@ -20284,11 +19444,15 @@ pub mod parses
                             false,
                         )?;
 
-                        if is_priority_operator(ch) {
+                        if is::priority_operator(ch) 
+                        {
                             let (val1, line1, col1) = val_deque.pop_back().unwrap();
                             let res = binary_op_on_values(stream, val1, val2, ch, line2, col2)?;
                             val_deque.push_back((res, line1, col1));
-                        } else {
+                        }
+                        
+                        else
+                        {
                             val_deque.push_back((val2, line2, col2));
                             op_deque.push_back(ch);
                         }
@@ -20296,8 +19460,7 @@ pub mod parses
                     _ => break,
                 }
             }
-
-            // Check for valid characters after the value.
+           
             check_value_end(stream, cur_brace)?;
 
             let (mut val1, _, _) = val_deque.pop_front().unwrap();
@@ -20313,12 +19476,16 @@ pub mod parses
                 )?;
             }
             Ok(val1)
-        } else {
+        } 
+
+        else 
+        {
             Ok(res)
         }
     }
 
-    fn parse_unary_op(
+    fn parse_unary_op
+    (
         mut stream: &mut CharStream,
         obj: &ObjMap,
         mut globals: &mut GlobalMap,
@@ -20326,7 +19493,8 @@ pub mod parses
         depth: usize,
         cur_brace: Option<char>,
         ch: char,
-    ) -> ParseResult<Value> {
+    ) -> ParseResult<Value> 
+    {
         let _ = stream.next();
         let line = stream.line();
         let col = stream.col();
@@ -20347,9 +19515,9 @@ pub mod parses
         };
         unary_op_on_value(stream, res, ch, line, col)
     }
-
-    // Gets the next numeric (either Int or Frac) in the character stream.
-    fn parse_numeric(stream: &mut CharStream, line: usize, col: usize) -> ParseResult<Value> {
+   
+    fn parse_numeric(stream: &mut CharStream, line: usize, col: usize) -> ParseResult<Value> 
+    {
         let mut s1 = String::new();
         let mut s2 = String::new();
         let mut dec = false;
@@ -20357,8 +19525,8 @@ pub mod parses
 
         while let Some(ch) = stream.peek() {
             match ch {
-                ch if is_value_end_char(ch) => break,
-                ch if is_digit(ch) => {
+                ch if is::value_end_char(ch) => break,
+                ch if is::digit(ch) => {
                     if !dec {
                         s1.push(ch);
                     } else {
@@ -20392,27 +19560,24 @@ pub mod parses
                     );
                 }
             }
-
             if ch != '_' {
                 under = false;
             }
-
             let _ = stream.next();
         }
 
         if dec {
-            // Parse a Frac from a number with a decimal.
+           
             if s1.is_empty() && s2.is_empty() {
                 return parse_err(stream.file(), InvalidNumeric(line, col));
             }
-
             let whole: BigInt = if s1.is_empty() {
                 0u8.into()
             } else {
                 s1.parse()?
             };
 
-            // Remove trailing zeros.
+           
             let s2 = s2.trim_end_matches('0');
 
             let (decimal, dec_len): (BigInt, usize) = if s2.is_empty() {
@@ -20424,18 +19589,17 @@ pub mod parses
             let f = frac_from_whole_and_dec(whole, decimal, dec_len);
             Ok(f.into())
         } else {
-            // Parse an Int.
+           
             if s1.is_empty() {
                 return parse_err(stream.file(), InvalidNumeric(line, col));
             }
-
             let i: BigInt = s1.parse()?;
             Ok(i.into())
         }
     }
-
-    // Parses a variable name and gets a value from the corresponding variable.
-    fn parse_variable(
+   
+    fn parse_variable
+    (
         mut stream: &mut CharStream,
         obj: &ObjMap,
         mut globals: &mut GlobalMap,
@@ -20444,26 +19608,30 @@ pub mod parses
         col: usize,
         depth: usize,
         cur_brace: Option<char>,
-    ) -> ParseResult<Value> {
+    ) -> ParseResult<Value> 
+    {
         let mut var = String::new();
         let mut is_global = false;
         let mut dot = false;
         let mut dot_global = false;
 
         let ch = stream.peek().unwrap();
+        
         if ch == '@' {
             let ch = stream.next().unwrap();
             is_global = true;
             var.push(ch);
         }
 
-        while let Some(ch) = stream.peek() {
-            match ch {
+        while let Some(ch) = stream.peek() 
+        {
+            match ch 
+            {
                 '.' => {
                     let _ = stream.next();
                     match stream.peek() {
                         Some('@') => dot_global = true,
-                        Some(ch) if Obj::is_valid_field_char(ch, true) || is_numeric_char(ch) => (),
+                        Some(ch) if Obj::is_valid_field_char(ch, true) || is::numeric_char(ch) => (),
                         Some(ch) => {
                             return parse_err(
                                 stream.file(),
@@ -20472,11 +19640,10 @@ pub mod parses
                         }
                         None => return parse_err(stream.file(), UnexpectedEnd(stream.line())),
                     }
-
                     dot = true;
                     break;
                 }
-                ch if is_value_end_char(ch) => break,
+                ch if is::value_end_char(ch) => break,
                 ch if Obj::is_valid_field_char(ch, false) => {
                     let _ = stream.next();
                     var.push(ch);
@@ -20490,7 +19657,8 @@ pub mod parses
             }
         }
 
-        let mut value = match var.as_str() {
+        let mut value = match var.as_str() 
+        {
             "null" => Value::Null,
             "true" => Value::Bool(true),
             "false" => Value::Bool(false),
@@ -20501,8 +19669,10 @@ pub mod parses
             "Tup" => Value::Obj(TUP_SENTINEL.clone()),
 
             var @ "@" => return parse_err(stream.file(), InvalidValue(var.into(), line, col)),
-            var if is_global => {
-                // Global variable, get value from globals map.
+            
+            var if is_global => 
+            {
+               
                 match globals.get(var) {
                     Some(value) => value.clone(),
                     None => {
@@ -20511,8 +19681,10 @@ pub mod parses
                     }
                 }
             }
-            var => {
-                // Regular variable, get value from the current Obj.
+            
+            var => 
+            {
+               
                 match obj.get(var) {
                     Some(value) => value.clone(),
                     None => {
@@ -20523,8 +19695,10 @@ pub mod parses
             }
         };
 
-        if dot {
-            value = match value {
+        if dot 
+        {
+            value = match value 
+            {
                 Value::Arr(arr) => {
                     let (line, col) = (stream.line(), stream.col());
                     let value = parse_value(
@@ -20589,7 +19763,6 @@ pub mod parses
                     if dot_global {
                         return parse_err(stream.file(), InvalidValueChar('@', line, col));
                     }
-
                     parse_variable(
                         &mut stream,
                         obj.map_ref(),
@@ -20607,16 +19780,14 @@ pub mod parses
 
         Ok(value)
     }
-
-    // Gets the next Char in the character stream.
-    // Assumes the Char starts and ends with single quote marks.
-    // '\', '\n', '\r', and '\t' must be escaped with '\'.
-    // ''' do not need to be escaped, although they can be.
-    fn parse_char(stream: &mut CharStream) -> ParseResult<Value> {
+   
+    fn parse_char(stream: &mut CharStream) -> ParseResult<Value> 
+    {
         let ch = stream.next().unwrap();
         assert_eq!(ch, '\'');
 
-        let (escape, mut ch) = match stream.next() {
+        let (escape, mut ch) = match stream.next() 
+        {
             Some('\\') => (true, '\0'),
             Some(ch) if ch == '\n' || ch == '\r' || ch == '\t' => {
                 return parse_err(
@@ -20628,9 +19799,12 @@ pub mod parses
             None => return parse_err(stream.file(), UnexpectedEnd(stream.line())),
         };
 
-        if escape {
-            ch = match stream.next() {
-                Some(ch) => match get_escape_char(ch) {
+        if escape 
+        {
+            ch = match stream.next() 
+            {
+                Some(ch) => match get::escaped_character(ch)
+                {
                     Some(ch) => ch,
                     None => {
                         return parse_err(
@@ -20639,11 +19813,13 @@ pub mod parses
                         );
                     }
                 },
+
                 None => return parse_err(stream.file(), UnexpectedEnd(stream.line())),
             }
         }
 
-        match stream.next() {
+        match stream.next() 
+        {
             Some('\'') => (),
             Some(ch) => {
                 return parse_err(
@@ -20657,29 +19833,28 @@ pub mod parses
         Ok(ch.into())
     }
 
-    fn parse_str_file(path: &str) -> ParseResult<String> {
-        // Replace \r\n line endings with \n for consistency in internal handling.
-        let s = read_file_str(path)?.replace("\r\n", "\n");
+    fn parse_str_file(path: &str) -> ParseResult<String> 
+    {
+       
+        let s = str::read_from_file(path)?.replace("\r\n", "\n");
 
         Ok(s)
     }
-
-    // Gets the next Str in the character stream.
-    // Assumes the Str starts and ends with quotation marks and does not include them in the Str.
-    // '"', '\' and '$' must be escaped with '\'.
-    // Newlines can either be the string "\n" ('\' followed by 'n') or the newline character '\n'.
-    fn parse_str(stream: &mut CharStream) -> ParseResult<Value> {
+   
+    fn parse_str(stream: &mut CharStream) -> ParseResult<Value> 
+    {
         let ch = stream.next().unwrap();
         assert_eq!(ch, '"');
 
         let mut s = String::new();
         let mut escape = false;
 
-        loop {
+        loop 
+        {
             match stream.next() {
                 Some(ch) => {
                     if escape {
-                        match get_escape_char(ch) {
+                        match get::escaped_character(ch) {
                             Some(ch) => s.push(ch),
                             None => {
                                 return parse_err(
@@ -20701,19 +19876,21 @@ pub mod parses
             }
         }
 
-        // Replace \r\n line endings with \n for consistency in internal handling.
+       
         let s = s.replace("\r\n", "\n");
 
         Ok(s.into())
     }
 
-    fn parse_include(
+    fn parse_include
+    (
         mut stream: &mut CharStream,
         obj: &ObjMap,
         mut globals: &mut GlobalMap,
         mut included: &mut IncludedMap,
         depth: usize,
-    ) -> ParseResult<Value> {
+    ) -> ParseResult<Value> 
+    {
         enum IncludeType {
             Obj,
             Str,
@@ -20721,15 +19898,14 @@ pub mod parses
             Tup,
         }
 
-        // Check depth.
+       
         if depth > MAX_DEPTH {
             return parse_err(stream.file(), MaxDepth(stream.line(), stream.col()));
         }
 
         let ch = stream.next().unwrap();
         assert_eq!(ch, '<');
-
-        // Go to the next non-whitespace character, or error if there is none.
+       
         if !find_char(stream.clone()) {
             return parse_err(stream.file(), UnexpectedEnd(stream.line()));
         }
@@ -20747,8 +19923,8 @@ pub mod parses
             true,
         )?;
 
-        let mut include_type = IncludeType::Obj; // Default include type if no token is present.
-        let mut parse_again = true; // True if an include token was found.
+        let mut include_type = IncludeType::Obj;
+        let mut parse_again = true;
         match value {
             Value::Obj(ref obj) if obj.ptr_eq(&OBJ_SENTINEL) => include_type = IncludeType::Obj,
             Value::Obj(ref obj) if obj.ptr_eq(&STR_SENTINEL) => include_type = IncludeType::Str,
@@ -20764,11 +19940,10 @@ pub mod parses
         }
 
         if parse_again {
-            // Go to the next non-whitespace character, or error if there is none.
+           
             if !find_char(stream.clone()) {
                 return parse_err(stream.file(), UnexpectedEnd(stream.line()));
             }
-
             line = stream.line();
             col = stream.col();
             value = parse_value(
@@ -20784,7 +19959,7 @@ pub mod parses
             )?;
         }
 
-        // Go to the next non-whitespace character, or error if there is none.
+       
         if !find_char(stream.clone()) {
             return parse_err(stream.file(), UnexpectedEnd(stream.line()));
         }
@@ -20799,7 +19974,7 @@ pub mod parses
             }
         }
 
-        // Get the full path of the include file.
+       
         let include_file = match value {
             Value::Str(s) => s,
             _ => {
@@ -20818,17 +19993,18 @@ pub mod parses
             None => Path::new(&include_file).to_path_buf(),
         };
         let path = pathbuf.as_path();
+        
         if !path.is_file() {
             return parse_err(stream.file(), InvalidIncludePath(include_file, line, col));
         }
 
-        // Get the include file as a path relative to the current working directory.
+       
         let path_str = match path.to_str() {
             Some(path) => path,
             None => return parse_err(stream.file(), InvalidIncludePath(include_file, line, col)),
         };
 
-        // Get the include file as an absolute path.
+       
         let path = match path.canonicalize() {
             Ok(path) => path,
             Err(_) => return parse_err(stream.file(), InvalidIncludePath(include_file, line, col)),
@@ -20838,7 +20014,7 @@ pub mod parses
             None => return parse_err(stream.file(), InvalidIncludePath(include_file, line, col)),
         };
 
-        // Prevent cyclic includes by temporarily storing the current file path.
+       
         let storing = if let Some(file) = stream.file() {
             let full_file = String::from(Path::new(&file).canonicalize().unwrap().to_str().unwrap());
             included.1.insert(full_file.clone());
@@ -20846,11 +20022,12 @@ pub mod parses
         } else {
             None
         };
+        
         if included.1.contains(full_path_str) {
             return parse_err(stream.file(), CyclicInclude(include_file, line, col));
         }
 
-        // Get either the tracked value or parse it if it's our first time seeing the include.
+       
         let value = if included.0.contains_key(full_path_str) {
             let value = &included.0[full_path_str];
             value.clone()
@@ -20861,27 +20038,27 @@ pub mod parses
                 IncludeType::Arr => parse_arr_file(path_str, included)?.into(),
                 IncludeType::Tup => parse_tup_file(path_str, included)?.into(),
             };
-            // Use full path as included key.
+           
             included.0.insert(full_path_str.into(), value.clone());
             value
         };
-
-        // Remove the stored file path.
+       
         if let Some(file) = storing {
             included.1.remove(&file);
         }
 
         Ok(value)
     }
-
-    // Tries to perform a unary operation on a single value.
-    fn unary_op_on_value(
+   
+    fn unary_op_on_value
+    (
         stream: &CharStream,
         val: Value,
         op: char,
         line: usize,
         col: usize,
-    ) -> ParseResult<Value> {
+    ) -> ParseResult<Value> 
+    {
         use crate::types::Type::*;
 
         let t = val.get_type();
@@ -20899,21 +20076,21 @@ pub mod parses
             _ => return parse_err(stream.file(), UnaryOperatorError(t, op, line, col)),
         })
     }
-
-    // Tries to perform an operation on two values.
-    fn binary_op_on_values(
+   
+    fn binary_op_on_values
+    (
         stream: &CharStream,
         mut val1: Value,
         mut val2: Value,
         op: char,
         line: usize,
         col: usize,
-    ) -> ParseResult<Value> {
+    ) -> ParseResult<Value> 
+    {
         use crate::types::Type::*;
 
         let (mut type1, mut type2) = (val1.get_type(), val2.get_type());
-
-        // If one value is an Int and the other is a Frac, promote the Int.
+       
         if type1 == Int && type2 == Frac {
             val1 = Value::Frac(BigRational::new(val1.get_int().unwrap(), 1.into()));
             type1 = Frac;
@@ -20968,10 +20145,10 @@ pub mod parses
                                 vec.append(&mut vec1);
                                 vec.append(&mut vec2);
 
-                                // Get the inner type.
+                               
                                 let arr = if let Arr(ref t) = t {
-                                    // Because we know the type already, we can safely use `_unchecked`.
-                                    arr::Arr::from_vec_unchecked(vec, t.deref().clone())
+                                   
+                                    arrays::Arr::from_vec_unchecked(vec, t.deref().clone())
                                 } else {
                                     panic!("Logic error")
                                 };
@@ -21059,14 +20236,13 @@ pub mod parses
             }
         })
     }
-
-    // Finds the next non-whitespace character, ignoring comments, and update stream position.
-    // Returns true if such a character was found or false if we got to the end of the stream.
-    fn find_char(mut stream: CharStream) -> bool {
+   
+    fn find_char(mut stream: CharStream) -> bool 
+    {
         while let Some(ch) = stream.peek() {
             match ch {
                 '#' => {
-                    // Comment found; eat the rest of the line.
+                   
                     loop {
                         let ch = stream.next();
                         if ch.is_none() {
@@ -21086,22 +20262,31 @@ pub mod parses
 
         false
     }
-
-    // Helper function to make sure values are followed by a correct end delimiter.
-    fn check_value_end(stream: &CharStream, cur_brace: Option<char>) -> ParseResult<()> {
-        match stream.peek() {
-            Some(ch) => match ch {
-                ch if is_value_end_char(ch) => {
-                    if is_end_delimiter(ch) && Some(ch) != cur_brace {
-                        parse_err(
+   
+    fn check_value_end(stream: &CharStream, cur_brace: Option<char>) -> ParseResult<()> 
+    {
+        match stream.peek()
+        {
+            Some(ch) => match ch
+            {
+                ch if is::value_end_char(ch) =>
+                {
+                    if is::end_delimiter(ch) && Some(ch) != cur_brace
+                    {
+                        parse_err
+                        (
                             stream.file(),
                             InvalidClosingBracket(cur_brace, ch, stream.line(), stream.col()),
                         )
-                    } else {
+                    }
+                    
+                    else
+                    {
                         Ok(())
                     }
                 }
-                ch => parse_err(
+                ch => parse_err
+                (
                     stream.file(),
                     InvalidValueChar(ch, stream.line(), stream.col()),
                 ),
@@ -21176,13 +20361,10 @@ pub mod process
                     _ =>
                     {}
                 }
-
                 INIT.call_once(initialize);
                 inside_proc_macro()
             }
-
             pub fn force_fallback() { WORKS.store(1, Ordering::Relaxed); }
-
             pub fn unforce_fallback() { initialize(); }
             
             #[allow(deprecated)]
@@ -21236,7 +20418,6 @@ pub mod process
                 inner: DelimSpanEnum,
                 _marker: ProcMacroAutoTraits,
             }
-
             #[derive(Copy, Clone)]
             enum DelimSpanEnum 
             {
@@ -21247,7 +20428,6 @@ pub mod process
                 },
                 Fallback(fallback::Span),
             }
-
             impl DelimSpan
             {
                 pub fn new(group: &imp::Group) -> Self
@@ -21298,7 +20478,6 @@ pub mod process
                     }
                 }
             }
-
             impl Debug for DelimSpan           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -21343,7 +20522,6 @@ pub mod process
                     }
                 )*)
             }
-
             macro_rules! unsuffixed_numbers
             {
                 ($($name:ident => $kind:ident,)*) => 
@@ -21361,19 +20539,16 @@ pub mod process
             {
                 ::process::macros::detection::unforce_fallback();
             }
-
             #[derive(Clone)]
             pub struct TokenStream 
             {
                 inner: RcVec<TokenTree>,
             }
-
             #[derive(Debug)]
             pub struct LexError 
             {
                 pub span: Span,
             }
-
             impl LexError           
             {
                 pub fn span( &self ) -> Span { self.span }
@@ -21385,7 +20560,6 @@ pub mod process
                     }
                 }
             }
-
             impl TokenStream
             {
                 pub fn new() -> Self
@@ -21395,7 +20569,6 @@ pub mod process
                         inner: RcVecBuilder::new().build(),
                     }
                 }
-
                 pub fn from_str_checked(src: &str) -> Result<Self, LexError>
                
                 {
@@ -21404,26 +20577,22 @@ pub mod process
                     if cursor.starts_with(BYTE_ORDER_MARK) {
                         cursor = cursor.advance(BYTE_ORDER_MARK.len());
                     }
-
                     parse::token_stream(cursor)
                 }
                 
                 pub fn from_str_unchecked(src: &str) -> Self {
                     Self::from_str_checked(src).unwrap()
                 }
-
                 pub fn is_empty( &self ) -> bool
                 {
                     self.inner.len() == 0
                 }
-
                 fn take_inner( self ) -> RcVecBuilder<TokenTree>
                 {
                     let nodrop = ManuallyDrop::new( self );
                     unsafe { ptr::read(&nodrop.inner) }.make_owned()
                 }
             }
-
             fn push_token_from_proc_macro(mut vec: RcVecMut<TokenTree>, token: TokenTree)
             {
                 match token
@@ -21441,7 +20610,6 @@ pub mod process
                     }
                     _ => vec.push(token),
                 }
-
                 #[cold] fn push_negative_literal(mut vec: RcVecMut<TokenTree>, mut literal: Literal)
                 {
                     literal.repr.remove(0);
@@ -21484,11 +20652,9 @@ pub mod process
                     }
                 }
             }
-
             pub struct TokenStreamBuilder {
                 inner: RcVecBuilder<TokenTree>,
             }
-
             impl TokenStreamBuilder
             {
                 pub fn new() -> Self {
@@ -21496,17 +20662,14 @@ pub mod process
                         inner: RcVecBuilder::new(),
                     }
                 }
-
                 pub fn with_capacity(cap: usize) -> Self {
                     TokenStreamBuilder {
                         inner: RcVecBuilder::with_capacity(cap),
                     }
                 }
-
                 pub fn push_token_from_parser(&mut self, tt: TokenTree) {
                     self.inner.push(tt);
                 }
-
                 pub fn build( self ) -> TokenStream {
                     TokenStream {
                         inner: self.inner.build(),
@@ -21527,14 +20690,12 @@ pub mod process
                     }
                 })
             }
-
             impl Display for LexError
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
                 {    f.write_str("cannot parse string into token stream")
                 }
             }
-
             impl Display for TokenStream
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -21556,11 +20717,9 @@ pub mod process
                             TokenTree::Literal(tt) => Display::fmt(tt, f),
                         }?;
                     }
-
                     Ok(())
                 }
             }
-
             impl Debug for TokenStream
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -21582,7 +20741,6 @@ pub mod process
                     proc_macro::TokenStream::from_str_unchecked(&inner.to_string())
                 }
             }
-
             impl From<TokenTree> for TokenStream
             {
                 fn from(tree: TokenTree) -> Self
@@ -21594,7 +20752,6 @@ pub mod process
                     }
                 }
             }
-
             impl iter::FromIterator<TokenTree> for TokenStream
             {
                 fn from_iter<I: IntoIterator<Item = TokenTree>>(tokens: I) -> Self
@@ -21604,7 +20761,6 @@ pub mod process
                     stream
                 }
             }
-
             impl iter::FromIterator<TokenStream> for TokenStream
             {
                 fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self
@@ -21614,11 +20770,9 @@ pub mod process
                     for stream in streams {
                         v.extend(stream.take_inner());
                     }
-
                     TokenStream { inner: v.build() }
                 }
             }
-
             impl Extend<TokenTree> for TokenStream
             {
                 fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, tokens: I)
@@ -21629,14 +20783,12 @@ pub mod process
                         .for_each(|token| push_token_from_proc_macro(vec.as_mut(), token));
                 }
             }
-
             impl Extend<TokenStream> for TokenStream
             {
                 fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, streams: I) {
                     self.inner.make_mut().extend(streams.into_iter().flatten());
                 }
             }
-
             pub type TokenTreeIter = RcVecIntoIter<TokenTree>;
 
             impl IntoIterator for TokenStream {
@@ -21646,7 +20798,6 @@ pub mod process
                     self.take_inner().into_iter()
                 }
             }
-
             thread_local! {
                 static SOURCE_MAP: RefCell<SourceMap> = RefCell::new(SourceMap {
                    
@@ -21659,19 +20810,16 @@ pub mod process
                     }],
                 });
             }
-
             pub fn invalidate_current_thread_spans() {
                 #[cfg(not(fuzzing))]
                 SOURCE_MAP.with(|sm| sm.borrow_mut().files.truncate(1));
             }
-
             struct FileInfo {
                 source_text: String,
                 span: Span,
                 lines: Vec<usize>,
                 char_index_to_byte_offset: BTreeMap<usize, usize>,
             }
-
             impl FileInfo
             {
                 fn offset_line_column( &self, offset: usize) -> LineColumn {
@@ -21691,12 +20839,10 @@ pub mod process
                         },
                     }
                 }
-
                 fn span_within( &self, span: Span) -> bool
         {
                     span.lo >= self.span.lo && span.hi <= self.span.hi
                 }
-
                 fn byte_range(&mut self, span: Span) -> Range<usize>
                 {
                     let lo_char = (span.lo - self.span.lo) as usize;
@@ -21732,7 +20878,6 @@ pub mod process
                         None => self.source_text.len(),
                     }
                 }
-
                 fn source_text(&mut self, span: Span) -> String
                 {
                     let byte_range = self.byte_range(span);
@@ -21751,14 +20896,11 @@ pub mod process
                         lines.push(total);
                     }
                 }
-
                 (total, lines)
             }
-
             struct SourceMap {
                 files: Vec<FileInfo>,
             }
-
             impl SourceMap
             {
                 fn next_start_pos( &self ) -> u32 {
@@ -21767,7 +20909,6 @@ pub mod process
                    
                     self.files.last().unwrap().span.hi + 1
                 }
-
                 fn add_file(&mut self, src: &str) -> Span
                 {
                     let (len, lines) = lines_offsets(src);
@@ -21787,7 +20928,6 @@ pub mod process
 
                     span
                 }
-
                 fn find( &self, span: Span) -> usize {
                     match self.files.binary_search_by(|file| {
                         if file.span.hi < span.lo {
@@ -21803,7 +20943,6 @@ pub mod process
                         Err(_) => unreachable!("Invalid span with no related FileInfo!"),
                     }
                 }
-
                 fn filepath( &self, span: Span) -> String
                 {
                     let i = self.find(span);
@@ -21813,32 +20952,27 @@ pub mod process
                         format!("<parsed string {}>", i)
                     }
                 }
-
                 fn fileinfo( &self, span: Span) -> &FileInfo
                 {
                     let i = self.find(span);
                     &self.files[i]
                 }
-
                 fn fileinfo_mut(&mut self, span: Span) -> &mut FileInfo
                 {
                     let i = self.find(span);
                     &mut self.files[i]
                 }
             }
-
             #[derive(Clone, Copy, PartialEq, Eq)]
             pub struct Span {
                     pub lo: u32,
                     pub hi: u32,
             }
-
             impl Span 
             {
                 pub fn call_site() -> Self {
                     Span { lo: 0, hi: 0 }
                 }
-
                 pub fn mixed_site() -> Self {
                     Span::call_site()
                 }
@@ -21846,15 +20980,12 @@ pub mod process
                 pub fn def_site() -> Self {
                     Span::call_site()
                 }
-
                 pub fn resolved_at( &self, _other: Span) -> Span {
                     *self
                 }
-
                 pub fn located_at( &self, other: Span) -> Span {
                     other
                 }
-
                 pub fn byte_range( &self ) -> Range<usize>
                     {
                     #[cfg(fuzzing)]
@@ -21869,7 +21000,6 @@ pub mod process
                         }
                     }
                 }
-
                 pub fn start( &self ) -> LineColumn {
                     #[cfg(fuzzing)]
                     return LineColumn { line: 0, column: 0 };
@@ -21881,7 +21011,6 @@ pub mod process
                         fi.offset_line_column(self.lo as usize)
                     })
                 }
-
                 pub fn end( &self ) -> LineColumn {
                     #[cfg(fuzzing)]
                     return LineColumn { line: 0, column: 0 };
@@ -21893,7 +21022,6 @@ pub mod process
                         fi.offset_line_column(self.hi as usize)
                     })
                 }
-
                 pub fn file( &self ) -> String {
                     #[cfg(fuzzing)]
                     return "<unspecified>".to_owned();
@@ -21904,12 +21032,10 @@ pub mod process
                         sm.filepath(*self)
                     })
                 }
-
                 pub fn local_file( &self ) -> Option<PathBuf>
                     {
                     None
                 }
-
                 pub fn join( &self, other: Span) -> Option<Span>
                     {
                     #[cfg(fuzzing)]
@@ -21953,7 +21079,6 @@ pub mod process
                         hi: cmp::min(self.lo.saturating_add(1), self.hi),
                     }
                 }
-
                 pub fn last_byte( self ) -> Self {
                     Span {
                         lo: cmp::max(self.hi.saturating_sub(1), self.lo),
@@ -21966,7 +21091,6 @@ pub mod process
                     self.lo == 0 && self.hi == 0
                 }
             }
-
             impl Debug for Span
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -21974,26 +21098,22 @@ pub mod process
 
                 }
             }
-
             pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) {
                     {
                     if span.is_call_site() {
                         return;
                     }
                 }
-
                 if cfg!(span_locations) {
                     debug.field("span", &span);
                 }
             }
-
             #[derive(Clone)]
             pub struct Group {
                 delimiter: Delimiter,
                 stream: TokenStream,
                 span: Span,
             }
-
             impl Group
             {
                 pub fn new(delimiter: Delimiter, stream: TokenStream) -> Self {
@@ -22003,32 +21123,25 @@ pub mod process
                         span: Span::call_site(),
                     }
                 }
-
                 pub fn delimiter( &self ) -> Delimiter {
                     self.delimiter
                 }
-
                 pub fn stream( &self ) -> TokenStream {
                     self.stream.clone()
                 }
-
                 pub fn span( &self ) -> Span {
                     self.span
                 }
-
                 pub fn span_open( &self ) -> Span {
                     self.span.first_byte()
                 }
-
                 pub fn span_close( &self ) -> Span {
                     self.span.last_byte()
                 }
-
                 pub fn set_span(&mut self, span: Span) {
                     self.span = span;
                 }
             }
-
             impl Display for Group 
             {
                
@@ -22058,7 +21171,6 @@ pub mod process
                     Ok(())
                 }
             }
-
             impl Debug for Group
             {
                 fn fmt( &self, fmt: &mut fmt::Formatter) -> fmt::Result
@@ -22070,7 +21182,6 @@ pub mod process
                     debug.finish()
                 }
             }
-
             #[derive(Clone)]
             pub struct Ident 
             {
@@ -22078,7 +21189,6 @@ pub mod process
                 span: Span,
                 raw: bool,
             }
-
             impl Ident 
             {
                 #[track_caller]
@@ -22086,7 +21196,6 @@ pub mod process
                     validate_ident(string);
                     Ident::new_unchecked(string, span)
                 }
-
                 pub fn new_unchecked(string: &str, span: Span) -> Self {
                     Ident {
                         sym: Box::from(string),
@@ -22094,13 +21203,11 @@ pub mod process
                         raw: false,
                     }
                 }
-
                 #[track_caller]
                 pub fn new_raw_checked(string: &str, span: Span) -> Self {
                     validate_ident_raw(string);
                     Ident::new_raw_unchecked(string, span)
                 }
-
                 pub fn new_raw_unchecked(string: &str, span: Span) -> Self {
                     Ident {
                         sym: Box::from(string),
@@ -22108,25 +21215,20 @@ pub mod process
                         raw: true,
                     }
                 }
-
                 pub fn span( &self ) -> Span {
                     self.span
                 }
-
                 pub fn set_span(&mut self, span: Span) {
                     self.span = span;
                 }
             }
-
             #[track_caller] fn validate_ident(string: &str) {
                 if string.is_empty() {
                     panic!("Ident is not allowed to be empty; use Option<Ident>");
                 }
-
                 if string.bytes().all(|digit| b'0' <= digit && digit <= b'9') {
                     panic!("Ident cannot be a number; use Literal instead");
                 }
-
                 fn ident_ok(string: &str) -> bool
                 {
                     let mut chars = string.chars();
@@ -22141,12 +21243,10 @@ pub mod process
                     }
                     true
                 }
-
                 if !ident_ok(string) {
                     panic!("{:?} is not a valid Ident", string);
                 }
             }
-
             #[track_caller] fn validate_ident_raw(string: &str) {
                 validate_ident(string);
 
@@ -22159,7 +21259,6 @@ pub mod process
                     {}
                 }
             }
-
             impl PartialEq for Ident
             {
                 fn eq( &self, other: &Ident) -> bool
@@ -22167,7 +21266,6 @@ pub mod process
                     self.sym == other.sym && self.raw == other.raw
                 }
             }
-
             impl<T> PartialEq<T> for Ident where
             T: ?Sized + AsRef<str>
             {
@@ -22181,7 +21279,6 @@ pub mod process
                     }
                 }
             }
-
             impl Display for Ident
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -22203,13 +21300,11 @@ pub mod process
                     debug.finish()
                 }
             }
-
             #[derive(Clone)]
             pub struct Literal {
                 pub repr: String,
                 span: Span,
             }
-
             impl Literal
             {
                 pub fn _new(repr: String) -> Self {
@@ -22218,7 +21313,6 @@ pub mod process
                         span: Span::call_site(),
                     }
                 }
-
                 pub fn from_str_checked(repr: &str) -> Result<Self, LexError>
                 {
                     let mut cursor = get_cursor(repr);
@@ -22231,7 +21325,6 @@ pub mod process
                             return Err(LexError::call_site());
                         }
                     }
-
                     if let Ok((rest, mut literal)) = parse::literal(cursor) {
                         if rest.is_empty() {
                             if negative {
@@ -22246,11 +21339,9 @@ pub mod process
                     }
                     Err(LexError::call_site())
                 }
-
                 pub unsafe fn from_str_unchecked(repr: &str) -> Self {
                     Literal::_new(repr.to_owned())
                 }
-
                 suffixed_numbers! {
                     u8_suffixed => u8,
                     u16_suffixed => u16,
@@ -22268,7 +21359,6 @@ pub mod process
                     f32_suffixed => f32,
                     f64_suffixed => f64,
                 }
-
                 unsuffixed_numbers! {
                     u8_unsuffixed => u8,
                     u16_unsuffixed => u16,
@@ -22283,7 +21373,6 @@ pub mod process
                     i128_unsuffixed => i128,
                     isize_unsuffixed => isize,
                 }
-
                 pub fn f32_unsuffixed(f: f32) -> Literal
                 {
                     let mut s = f.to_string();
@@ -22292,7 +21381,6 @@ pub mod process
                     }
                     Literal::_new(s)
                 }
-
                 pub fn f64_unsuffixed(f: f64) -> Literal
                 {
                     let mut s = f.to_string();
@@ -22301,7 +21389,6 @@ pub mod process
                     }
                     Literal::_new(s)
                 }
-
                 pub fn string(string: &str) -> Literal
                 {
                     let mut repr = String::with_capacity(string.len() + 2);
@@ -22310,7 +21397,6 @@ pub mod process
                     repr.push('"');
                     Literal::_new(repr)
                 }
-
                 pub fn character(ch: char) -> Literal
                 {
                     let mut repr = String::new();
@@ -22324,7 +21410,6 @@ pub mod process
                     repr.push('\'');
                     Literal::_new(repr)
                 }
-
                 pub fn byte_character(byte: u8) -> Literal
                 {
                     let mut repr = "b'".to_string();
@@ -22345,7 +21430,6 @@ pub mod process
                     repr.push('\'');
                     Literal::_new(repr)
                 }
-
                 pub fn byte_string(bytes: &[u8]) -> Literal
                 {
                     let mut repr = "b\"".to_string();
@@ -22373,7 +21457,6 @@ pub mod process
                     repr.push('"');
                     Literal::_new(repr)
                 }
-
                 pub fn c_string(string: &CStr) -> Literal
                 {
                     let mut repr = "c\"".to_string();
@@ -22404,15 +21487,12 @@ pub mod process
                     repr.push('"');
                     Literal::_new(repr)
                 }
-
                 pub fn span( &self ) -> Span {
                     self.span
                 }
-
                 pub fn set_span(&mut self, span: Span) {
                     self.span = span;
                 }
-
                 pub fn subspan<R: RangeBounds<usize>>( &self, range: R) -> Option<Span> 
                 {
                     use ::ops::Bound;
@@ -22450,14 +21530,12 @@ pub mod process
                     }
                 }
             }
-
             impl Display for Literal
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
                 {    Display::fmt(&self.repr, f)
                 }
             }
-
             impl Debug for Literal
             {
                 fn fmt( &self, fmt: &mut fmt::Formatter) -> fmt::Result
@@ -22481,7 +21559,6 @@ pub mod process
                     if !Self::valid(src) {
                         return Err(imp::LexError::CompilerPanic);
                     }
-
                    
                     match panic::catch_unwind(|| Self::from_str(src)) {
                         Ok(Ok(ok)) => Ok(ok),
@@ -22489,7 +21566,6 @@ pub mod process
                         Err(_panic) => Err(imp::LexError::CompilerPanic),
                     }
                 }
-
                 fn from_str_unchecked(src: &str) -> Self {
                     Self::from_str(src).unwrap()
                 }
@@ -22510,7 +21586,6 @@ pub mod process
                     Literal::from_str_checked(src).is_ok()
                 }
             }
-
             fn escape_utf8(string: &str, repr: &mut String)
             {
                 let mut chars = string.chars();
@@ -22566,27 +21641,23 @@ pub mod process
                 Compiler(DeferredTokenStream),
                 Fallback(fallback::TokenStream),
             }
-
             #[derive(Clone)]
             pub struct DeferredTokenStream 
             {
                 stream: proc_macro::TokenStream,
                 extra: Vec<proc_macro::TokenTree>,
             }
-
             pub enum LexError
             {
                 Compiler(proc_macro::LexError),
                 Fallback(fallback::LexError),
                 CompilerPanic,
             }
-
             #[cold] fn mismatch(line: u32) -> !
             {
                 let backtrace = ::backtrace::Backtrace::force_capture();
                 panic!("compiler/fallback mismatch L{}\n\n{}", line, backtrace)
             }
-
             impl DeferredTokenStream           
             {
                 fn new(stream: proc_macro::TokenStream) -> Self
@@ -22597,21 +21668,17 @@ pub mod process
                         extra: Vec::new(),
                     }
                 }
-
                 fn is_empty( &self ) -> bool { self.stream.is_empty() && self.extra.is_empty() }
-
                 fn evaluate_now( &mut self )
                 {
                     if !self.extra.is_empty() { self.stream.extend(self.extra.drain(..)); }
                 }
-
                 fn into_token_stream(mut self) -> proc_macro::TokenStream
                 {
                     self.evaluate_now();
                     self.stream
                 }
             }
-
             impl TokenStream           
             {
                 pub fn new() -> Self
@@ -22622,7 +21689,6 @@ pub mod process
                         TokenStream::Fallback(fallback::TokenStream::new())
                     }
                 }
-
                 pub fn from_str_checked(src: &str) -> Result<Self, LexError>
                     {
                     if inside_proc_macro() {
@@ -22635,7 +21701,6 @@ pub mod process
                         ))
                     }
                 }
-
                 pub fn is_empty( &self ) -> bool
                 {
                     match self {
@@ -22643,7 +21708,6 @@ pub mod process
                         TokenStream::Fallback(tts) => tts.is_empty(),
                     }
                 }
-
                 fn unwrap_nightly( self ) -> proc_macro::TokenStream
                 {
                     match self {
@@ -22651,7 +21715,6 @@ pub mod process
                         TokenStream::Fallback(_) => mismatch(line!()),
                     }
                 }
-
                 fn unwrap_stable( self ) -> fallback::TokenStream           
                 {
                     match self {
@@ -22660,7 +21723,6 @@ pub mod process
                     }
                 }
             }
-
             impl Display for TokenStream                  
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -22671,7 +21733,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<proc_macro::TokenStream> for TokenStream           
             {
                 fn from(inner: proc_macro::TokenStream) -> Self
@@ -22679,7 +21740,6 @@ pub mod process
                     TokenStream::Compiler(DeferredTokenStream::new(inner))
                 }
             }
-
             impl From<TokenStream> for proc_macro::TokenStream           
             {
                 fn from(inner: TokenStream) -> Self
@@ -22693,7 +21753,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<fallback::TokenStream> for TokenStream           
             {
                 fn from(inner: fallback::TokenStream) -> Self
@@ -22720,7 +21779,6 @@ pub mod process
                     TokenTree::Literal(tt) => proc_macro::TokenTree::Literal(tt.inner.unwrap_nightly()),
                 }
             }
-
             impl From<TokenTree> for TokenStream           
             {
                 fn from(token: TokenTree) -> Self
@@ -22734,7 +21792,6 @@ pub mod process
                     }
                 }
             }
-
             impl iter::FromIterator<TokenTree> for TokenStream           
             {
                 fn from_iter<I: IntoIterator<Item = TokenTree>>(trees: I) -> Self
@@ -22748,7 +21805,6 @@ pub mod process
                     }
                 }
             }
-
             impl iter::FromIterator<TokenStream> for TokenStream
             {
                 fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self
@@ -22777,7 +21833,6 @@ pub mod process
                     }
                 }
             }
-
             impl Extend<TokenTree> for TokenStream           
             {
                 fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, stream: I)
@@ -22794,7 +21849,6 @@ pub mod process
                     }
                 }
             }
-
             impl Extend<TokenStream> for TokenStream           
             {
                 fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, streams: I)
@@ -22813,7 +21867,6 @@ pub mod process
                     }
                 }
             }
-
             impl Debug for TokenStream           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -22824,7 +21877,6 @@ pub mod process
                     }
                 }
             }
-
             impl LexError
             {
                 pub fn span( &self ) -> Span
@@ -22835,7 +21887,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<proc_macro::LexError> for LexError           
             {
                 fn from(e: proc_macro::LexError) -> Self
@@ -22843,7 +21894,6 @@ pub mod process
                     LexError::Compiler(e)
                 }
             }
-
             impl From<fallback::LexError> for LexError           
             {
                 fn from(e: fallback::LexError) -> Self
@@ -22851,7 +21901,6 @@ pub mod process
                     LexError::Fallback(e)
                 }
             }
-
             impl Debug for LexError           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -22867,7 +21916,6 @@ pub mod process
                     }
                 }
             }
-
             impl Display for LexError           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -22883,14 +21931,12 @@ pub mod process
                     }
                 }
             }
-
             #[derive(Clone)]
             pub enum TokenTreeIter 
             {
                 Compiler(proc_macro::token_stream::IntoIter),
                 Fallback(fallback::TokenTreeIter),
             }
-
             impl IntoIterator for TokenStream
             {
                 type Item = TokenTree;
@@ -22906,7 +21952,6 @@ pub mod process
                     }
                 }
             }
-
             impl Iterator for TokenTreeIter
             {
                 type Item = TokenTree;
@@ -22941,7 +21986,6 @@ pub mod process
                         }
                     })
                 }
-
                 fn size_hint( &self ) -> (usize, Option<usize>)
                 {
                     match self {
@@ -22950,14 +21994,12 @@ pub mod process
                     }
                 }
             }
-
             #[derive(Copy, Clone)]
             pub enum Span
             {
                 Compiler(proc_macro::Span),
                 Fallback(fallback::Span),
             }
-
             impl Span           
             {
                 pub fn call_site() -> Self
@@ -22968,7 +22010,6 @@ pub mod process
                         Span::Fallback(fallback::Span::call_site())
                     }
                 }
-
                 pub fn mixed_site() -> Self
                 {
                     if inside_proc_macro() {
@@ -22988,7 +22029,6 @@ pub mod process
                         Span::Fallback(fallback::Span::def_site())
                     } */
                 }
-
                 pub fn resolved_at( &self, other: Span) -> Span 
                 {
                     match (self, other) {
@@ -22998,7 +22038,6 @@ pub mod process
                         (Span::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
                     }
                 }
-
                 pub fn located_at( &self, other: Span) -> Span 
                 {
                     match (self, other) {
@@ -23008,7 +22047,6 @@ pub mod process
                         (Span::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
                     }
                 }
-
                 pub fn unwrap( self ) -> proc_macro::Span
                 {
                     match self {
@@ -23016,7 +22054,6 @@ pub mod process
                         Span::Fallback(_) => panic!("proc_macro::Span is only available in procedural macros"),
                     }
                 }
-
                 pub fn byte_range( &self ) -> Range<usize>
                 {
                     match self {
@@ -23027,7 +22064,6 @@ pub mod process
                         Span::Fallback(s) => s.byte_range(),
                     }
                 }
-
                 pub fn start( &self ) -> LineColumn
                 {
                     match self {
@@ -23041,7 +22077,6 @@ pub mod process
                         Span::Fallback(s) => s.start(),
                     }
                 }
-
                 pub fn end( &self ) -> LineColumn
                 {
                     match self {
@@ -23059,7 +22094,6 @@ pub mod process
                         Span::Fallback(s) => s.end(),
                     }
                 }
-
                 pub fn file( &self ) -> String
                 {
                     match self {
@@ -23070,7 +22104,6 @@ pub mod process
                         Span::Fallback(s) => s.file(),
                     }
                 }
-
                 pub fn local_file( &self ) -> Option<PathBuf>
                 {
                     match self {
@@ -23081,7 +22114,6 @@ pub mod process
                         Span::Fallback(s) => s.local_file(),
                     }
                 }
-
                 pub fn join( &self, other: Span) -> Option<Span> 
                
                 {
@@ -23103,7 +22135,6 @@ pub mod process
                         _ => false,
                     }
                 }
-
                 pub fn source_text( &self ) -> Option<String>
                 {
                     match self {
@@ -23114,7 +22145,6 @@ pub mod process
                         Span::Fallback(s) => s.source_text(),
                     }
                 }
-
                 fn unwrap_nightly( self ) -> proc_macro::Span
                 {
                     match self {
@@ -23123,7 +22153,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<proc_macro::Span> for ::process::macros::Span           
             {
                 fn from(proc_span: proc_macro::Span) -> Self
@@ -23131,7 +22160,6 @@ pub mod process
                     ::process::macros::Span::_new(Span::Compiler(proc_span))
                 }
             }
-
             impl From<fallback::Span> for Span           
             {
                 fn from(inner: fallback::Span) -> Self
@@ -23139,7 +22167,6 @@ pub mod process
                     Span::Fallback(inner)
                 }
             }
-
             impl Debug for Span           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -23150,7 +22177,6 @@ pub mod process
                     }
                 }
             }
-
             pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span)
             {
                 match span {
@@ -23161,14 +22187,12 @@ pub mod process
                     Span::Fallback(s) => fallback::debug_span_field_if_nontrivial(debug, s),
                 }
             }
-
             #[derive(Clone)]
             pub enum Group
             {
                 Compiler(proc_macro::Group),
                 Fallback(fallback::Group),
             }
-
             impl Group           
             {
                 pub fn new(delimiter: Delimiter, stream: TokenStream) -> Self
@@ -23190,7 +22214,6 @@ pub mod process
                         }
                     }
                 }
-
                 pub fn delimiter( &self ) -> Delimiter
                 {
                     match self {
@@ -23203,7 +22226,6 @@ pub mod process
                         Group::Fallback(g) => g.delimiter(),
                     }
                 }
-
                 pub fn stream( &self ) -> TokenStream
                 {
                     match self {
@@ -23211,7 +22233,6 @@ pub mod process
                         Group::Fallback(g) => TokenStream::Fallback(g.stream()),
                     }
                 }
-
                 pub fn span( &self ) -> Span
                 {
                     match self {
@@ -23219,7 +22240,6 @@ pub mod process
                         Group::Fallback(g) => Span::Fallback(g.span()),
                     }
                 }
-
                 pub fn span_open( &self ) -> Span
                 {
                     match self {
@@ -23227,7 +22247,6 @@ pub mod process
                         Group::Fallback(g) => Span::Fallback(g.span_open()),
                     }
                 }
-
                 pub fn span_close( &self ) -> Span
                 {
                     match self {
@@ -23235,7 +22254,6 @@ pub mod process
                         Group::Fallback(g) => Span::Fallback(g.span_close()),
                     }
                 }
-
                 pub fn set_span(&mut self, span: Span )
                 {
                     match (self, span) {
@@ -23245,7 +22263,6 @@ pub mod process
                         (Group::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
                     }
                 }
-
                 fn unwrap_nightly( self ) -> proc_macro::Group
                 {
                     match self {
@@ -23254,7 +22271,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<fallback::Group> for Group           
             {
                 fn from(g: fallback::Group) -> Self
@@ -23262,7 +22278,6 @@ pub mod process
                     Group::Fallback(g)
                 }
             }
-
             impl Display for Group           
             {
                 fn fmt( &self, formatter: &mut fmt::Formatter) -> fmt::Result
@@ -23273,7 +22288,6 @@ pub mod process
                     }
                 }
             }
-
             impl Debug for Group           
             {
                 fn fmt( &self, formatter: &mut fmt::Formatter) -> fmt::Result
@@ -23284,14 +22298,12 @@ pub mod process
                     }
                 }
             }
-
             #[derive(Clone)]
             pub enum Ident
             {
                 Compiler(proc_macro::Ident),
                 Fallback(fallback::Ident),
             }
-
             impl Ident 
             {
                 #[track_caller]
@@ -23302,7 +22314,6 @@ pub mod process
                         Span::Fallback(s) => Ident::Fallback(fallback::Ident::new_checked(string, s)),
                     }
                 }
-
                 #[track_caller]
                 pub fn new_raw_checked(string: &str, span: Span) -> Self
                 {
@@ -23311,7 +22322,6 @@ pub mod process
                         Span::Fallback(s) => Ident::Fallback(fallback::Ident::new_raw_checked(string, s)),
                     }
                 }
-
                 pub fn span( &self ) -> Span
                 {
                     match self {
@@ -23319,7 +22329,6 @@ pub mod process
                         Ident::Fallback(t) => Span::Fallback(t.span()),
                     }
                 }
-
                 pub fn set_span(&mut self, span: Span )
                 {
                     match (self, span) {
@@ -23329,7 +22338,6 @@ pub mod process
                         (Ident::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
                     }
                 }
-
                 fn unwrap_nightly( self ) -> proc_macro::Ident
                 {
                     match self {
@@ -23338,7 +22346,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<fallback::Ident> for Ident           
             {
                 fn from(inner: fallback::Ident) -> Self
@@ -23346,7 +22353,6 @@ pub mod process
                     Ident::Fallback(inner)
                 }
             }
-
             impl PartialEq for Ident           
             {
                 fn eq( &self, other: &Ident) -> bool
@@ -23359,7 +22365,6 @@ pub mod process
                     }
                 }
             }
-
             impl<T> PartialEq<T> for Ident where
             T: ?Sized + AsRef<str>
             {
@@ -23372,7 +22377,6 @@ pub mod process
                     }
                 }
             }
-
             impl Display for Ident           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -23383,7 +22387,6 @@ pub mod process
                     }
                 }
             }
-
             impl Debug for Ident           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -23394,14 +22397,12 @@ pub mod process
                     }
                 }
             }
-
             #[derive(Clone)]
             pub enum Literal 
             {
                 Compiler(proc_macro::Literal),
                 Fallback(fallback::Literal),
             }
-
             macro_rules! suffixed_numbers 
             {
                 ($($name:ident => $kind:ident,)*) => ($(
@@ -23414,7 +22415,6 @@ pub mod process
                     }
                 )*)
             }
-
             macro_rules! unsuffixed_integers 
             {
                 ($($name:ident => $kind:ident,)*) => ($(
@@ -23427,7 +22427,6 @@ pub mod process
                     }
                 )*)
             }
-
             impl Literal
             {
                 pub fn from_str_checked(repr: &str) -> Result<Self, LexError>
@@ -23440,7 +22439,6 @@ pub mod process
                         Ok(Literal::Fallback(literal))
                     }
                 }
-
                 pub unsafe fn from_str_unchecked(repr: &str) -> Self
                 {
                     if inside_proc_macro() {
@@ -23449,7 +22447,6 @@ pub mod process
                         Literal::Fallback(unsafe { fallback::Literal::from_str_unchecked(repr) })
                     }
                 }
-
                 suffixed_numbers! {
                     u8_suffixed => u8,
                     u16_suffixed => u16,
@@ -23467,7 +22464,6 @@ pub mod process
                     f32_suffixed => f32,
                     f64_suffixed => f64,
                 }
-
                 unsuffixed_integers! {
                     u8_unsuffixed => u8,
                     u16_unsuffixed => u16,
@@ -23482,7 +22478,6 @@ pub mod process
                     i128_unsuffixed => i128,
                     isize_unsuffixed => isize,
                 }
-
                 pub fn f32_unsuffixed(f: f32) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler(proc_macro::Literal::f32_unsuffixed(f))
@@ -23490,7 +22485,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::f32_unsuffixed(f))
                     }
                 }
-
                 pub fn f64_unsuffixed(f: f64) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler(proc_macro::Literal::f64_unsuffixed(f))
@@ -23498,7 +22492,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::f64_unsuffixed(f))
                     }
                 }
-
                 pub fn string(string: &str) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler(proc_macro::Literal::string(string))
@@ -23506,7 +22499,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::string(string))
                     }
                 }
-
                 pub fn character(ch: char) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler(proc_macro::Literal::character(ch))
@@ -23514,7 +22506,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::character(ch))
                     }
                 }
-
                 pub fn byte_character(byte: u8) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler({
@@ -23522,7 +22513,6 @@ pub mod process
                             {
                                 proc_macro::Literal::byte_character(byte)
                             }
-
                             #[cfg(no_literal_byte_character)]
                             {
                                 let fallback = fallback::Literal::byte_character(byte);
@@ -23533,7 +22523,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::byte_character(byte))
                     }
                 }
-
                 pub fn byte_string(bytes: &[u8]) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler(proc_macro::Literal::byte_string(bytes))
@@ -23541,7 +22530,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::byte_string(bytes))
                     }
                 }
-
                 pub fn c_string(string: &CStr) -> Literal {
                     if inside_proc_macro() {
                         Literal::Compiler({
@@ -23549,7 +22537,6 @@ pub mod process
                             {
                                 proc_macro::Literal::c_string(string)
                             }
-
                             #[cfg(no_literal_c_string)]
                             {
                                 let fallback = fallback::Literal::c_string(string);
@@ -23560,7 +22547,6 @@ pub mod process
                         Literal::Fallback(fallback::Literal::c_string(string))
                     }
                 }
-
                 pub fn span( &self ) -> Span
                 {
                     match self {
@@ -23568,7 +22554,6 @@ pub mod process
                         Literal::Fallback(lit) => Span::Fallback(lit.span()),
                     }
                 }
-
                 pub fn set_span(&mut self, span: Span )
                 {
                     match (self, span) {
@@ -23578,7 +22563,6 @@ pub mod process
                         (Literal::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
                     }
                 }
-
                 pub fn subspan<R: RangeBounds<usize>>( &self, range: R) -> Option<Span>
                 {
                     match self {
@@ -23589,7 +22573,6 @@ pub mod process
                         Literal::Fallback(lit) => lit.subspan(range).map(Span::Fallback),
                     }
                 }
-
                 fn unwrap_nightly( self ) -> proc_macro::Literal
                 {
                     match self {
@@ -23598,7 +22581,6 @@ pub mod process
                     }
                 }
             }
-
             impl From<fallback::Literal> for Literal           
             {
                 fn from(s: fallback::Literal) -> Self
@@ -23606,7 +22588,6 @@ pub mod process
                     Literal::Fallback(s)
                 }
             }
-
             impl Display for Literal           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -23617,7 +22598,6 @@ pub mod process
                     }
                 }
             }
-
             impl Debug for Literal           
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -23664,7 +22644,6 @@ pub mod process
                 /// The 0-indexed column (in UT8) in the source file on which the span starts or ends (inclusive).
                 pub column: usize,
             }
-
             impl Ord for LineColumn
             {
                 fn cmp( &self, other: &Self) -> Ordering
@@ -23674,7 +22653,6 @@ pub mod process
                     .then(self.column.cmp(&other.column))
                 }
             }
-
             impl PartialOrd for LineColumn
             {
                 fn partial_cmp( &self, other: &Self) -> Option<Ordering>
@@ -23716,7 +22694,6 @@ pub mod process
                 pub rest: &'a str,
                     pub off: u32,
             }
-
             impl<'a> Cursor<'a>
             {
                 pub fn advance( &self, bytes: usize) -> Cursor<'a>
@@ -23727,52 +22704,42 @@ pub mod process
                                     off: self.off + _front.chars().count() as u32,
                     }
                 }
-
                 pub fn starts_with( &self, s: &str) -> bool
         {
                     self.rest.starts_with(s)
                 }
-
                 pub fn starts_with_char( &self, ch: char) -> bool
         {
                     self.rest.starts_with(ch)
                 }
-
                 pub fn starts_with_fn<Pattern>( &self, f: Pattern) -> bool
                 where
                     Pattern: FnMut(char) -> bool,
                 {
                     self.rest.starts_with(f)
                 }
-
                 pub fn is_empty( &self ) -> bool
         {
                     self.rest.is_empty()
                 }
-
                 fn len( &self ) -> usize {
                     self.rest.len()
                 }
-
                 fn as_bytes( &self ) -> &'a [u8] {
                     self.rest.as_bytes()
                 }
-
                 fn bytes( &self ) -> Bytes<'a>
                     {
                     self.rest.bytes()
                 }
-
                 fn chars( &self ) -> Chars<'a>
                     {
                     self.rest.chars()
                 }
-
                 fn char_indices( &self ) -> CharIndices<'a>
                     {
                     self.rest.char_indices()
                 }
-
                 fn parse( &self, tag: &str) -> Result<Cursor<'a>, Reject>
                     {
                     if self.starts_with(tag) {
@@ -23782,7 +22749,6 @@ pub mod process
                     }
                 }
             }
-
             pub struct Reject;
             
             fn skip_whitespace(input: Cursor) -> Cursor
@@ -23828,7 +22794,6 @@ pub mod process
                             s = s.advance(1);
                             continue;
                         }
-
                         b if b.is_ascii() =>
                     {}
                         _ =>
@@ -23846,13 +22811,11 @@ pub mod process
                 }
                 s
             }
-
             fn block_comment(input: Cursor<'_>) -> PResult<'_, &str>
             {
                 if !input.starts_with("/*") {
                     return Err(Reject);
                 }
-
                 let mut depth = 0usize;
                 let bytes = input.as_bytes();
                 let mut i = 0usize;
@@ -23871,10 +22834,8 @@ pub mod process
                     }
                     i += 1;
                 }
-
                 Err(Reject)
             }
-
             fn word_break(input: Cursor) -> Result<Cursor, Reject>
             {
                 match input.chars().next() {
@@ -23882,7 +22843,6 @@ pub mod process
                     Some(_) | None => Ok(input),
                 }
             }
-
             pub fn token_stream(mut input: Cursor) -> Result<TokenStream, LexError>
             {
                 let mut trees = TokenStreamBuilder::new();
@@ -23895,7 +22855,6 @@ pub mod process
                         input = rest;
                         continue;
                     }
-
                             let lo = input.off;
 
                     let first = match input.bytes().next() {
@@ -23959,7 +22918,6 @@ pub mod process
                     }
                 }
             }
-
             fn lex_error(cursor: Cursor) -> LexError
             {
                 LexError
@@ -23971,7 +22929,6 @@ pub mod process
                     },
                 }
             }
-
             fn leaf_token(input: Cursor) -> PResult<TokenTree>
             {
                 if let Ok((input, l)) = literal(input) {
@@ -23990,7 +22947,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn ident(input: Cursor) -> PResult<::process::macros::Ident>
             {
                 if [
@@ -24004,7 +22960,6 @@ pub mod process
                     ident_any(input)
                 }
             }
-
             fn ident_any(input: Cursor) -> PResult<::process::macros::Ident>
             {
                 let raw = input.starts_with("r#");
@@ -24018,18 +22973,15 @@ pub mod process
                         ::process::macros::Ident::_new_fallback(Ident::new_unchecked(sym, fallback::Span::call_site()));
                     return Ok((rest, ident));
                 }
-
                 match sym {
                     "_" | "super" | "self" | "Self" | "crate" => return Err(Reject),
                     _ =>
                     {}
                 }
-
                 let ident =
                     ::process::macros::Ident::_new_fallback(Ident::new_raw_unchecked(sym, fallback::Span::call_site()));
                 Ok((rest, ident))
             }
-
             fn ident_not_raw(input: Cursor<'_>) -> PResult<'_, &str>
             {
                 let mut chars = input.char_indices();
@@ -24039,7 +22991,6 @@ pub mod process
                     {}
                     _ => return Err(Reject),
                 }
-
                 let mut end = input.len();
                 for (i, ch) in chars {
                     if !is::ident_continue(ch) {
@@ -24047,17 +22998,14 @@ pub mod process
                         break;
                     }
                 }
-
                 Ok((input.advance(end), &input.rest[..end]))
             }
-
             pub fn literal(input: Cursor) -> PResult<Literal>
             {
                 let rest = literal_nocapture(input)?;
                 let end = input.len() - rest.len();
                 Ok((rest, Literal::_new(input.rest[..end].to_string())))
             }
-
             fn literal_nocapture(input: Cursor) -> Result<Cursor, Reject>
             {
                 if let Ok(ok) = string(input) {
@@ -24078,7 +23026,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn literal_suffix(input: Cursor) -> Cursor
             {
                 match ident_not_raw(input) {
@@ -24086,7 +23033,6 @@ pub mod process
                     Err(Reject) => input,
                 }
             }
-
             fn string(input: Cursor) -> Result<Cursor, Reject>
             {
                 if let Ok(input) = input.parse("\"") {
@@ -24097,7 +23043,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn cooked_string(mut input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut chars = input.char_indices();
@@ -24140,7 +23085,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn raw_string(input: Cursor) -> Result<Cursor, Reject>
             {
                 let (input, delimiter) = delimiter_of_raw_string(input)?;
@@ -24164,7 +23108,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn byte_string(input: Cursor) -> Result<Cursor, Reject>
             {
                 if let Ok(input) = input.parse("b\"") {
@@ -24175,7 +23118,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn cooked_byte_string(mut input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut bytes = input.bytes().enumerate();
@@ -24214,7 +23156,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn delimiter_of_raw_string(input: Cursor<'_>) -> PResult<'_, &str>
             {
                 for (i, byte) in input.bytes().enumerate( )
@@ -24235,7 +23176,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn raw_byte_string(input: Cursor) -> Result<Cursor, Reject>
             {
                 let (input, delimiter) = delimiter_of_raw_string(input)?;
@@ -24263,7 +23203,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn c_string(input: Cursor) -> Result<Cursor, Reject>
             {
                 if let Ok(input) = input.parse("c\"") {
@@ -24274,7 +23213,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn raw_c_string(input: Cursor) -> Result<Cursor, Reject>
             {
                 let (input, delimiter) = delimiter_of_raw_string(input)?;
@@ -24299,7 +23237,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn cooked_c_string(mut input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut chars = input.char_indices();
@@ -24345,7 +23282,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn byte(input: Cursor) -> Result<Cursor, Reject>
             {
                 let input = input.parse("b'")?;
@@ -24368,7 +23304,6 @@ pub mod process
                 let input = input.advance(offset).parse("'")?;
                 Ok(literal_suffix(input))
             }
-
             fn character(input: Cursor) -> Result<Cursor, Reject>
             {
                 let input = input.parse("'")?;
@@ -24455,7 +23390,6 @@ pub mod process
 
                 Ok(())
             }
-
             fn backslash_x_nonzero<I>(chars: &mut I) -> Result<(), Reject> where
             I: Iterator<Item = (usize, char)>,
             {
@@ -24485,7 +23419,6 @@ pub mod process
                     Ok(())
                 }
             }
-
             fn backslash_u<I>(chars: &mut I) -> Result<char, Reject> where
             I: Iterator<Item = (usize, char)>,
             {
@@ -24520,7 +23453,6 @@ pub mod process
                 }
                 Err(Reject)
             }
-
             fn trailing_backslash(input: &mut Cursor, mut last: u8) -> Result<(), Reject>
             {
                 let mut whitespace = input.bytes().enumerate();
@@ -24542,7 +23474,6 @@ pub mod process
                     }
                 }
             }
-
             fn float(input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut rest = float_digits(input)?;
@@ -24553,7 +23484,6 @@ pub mod process
                 }
                 word_break(rest)
             }
-
             fn float_digits(input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut chars = input.chars().peekable();
@@ -24562,7 +23492,6 @@ pub mod process
                     {}
                     _ => return Err(Reject),
                 }
-
                 let mut len = 1;
                 let mut has_dot = false;
                 let mut has_exp = false;
@@ -24599,11 +23528,9 @@ pub mod process
                         _ => break,
                     }
                 }
-
                 if !(has_dot || has_exp) {
                     return Err(Reject);
                 }
-
                 if has_exp
                 {
                     let token_before_exp = if has_dot {
@@ -24645,10 +23572,8 @@ pub mod process
                         return token_before_exp;
                     }
                 }
-
                 Ok(input.advance(len))
             }
-
             fn int(input: Cursor) -> Result<Cursor, Reject>
             {
                 let mut rest = digits(input)?;
@@ -24659,7 +23584,6 @@ pub mod process
                 }
                 word_break(rest)
             }
-
             fn digits(mut input: Cursor) -> Result<Cursor, Reject>
             {
                 let base = if input.starts_with("0x") {
@@ -24720,7 +23644,6 @@ pub mod process
                     Ok(input.advance(len))
                 }
             }
-
             fn punct(input: Cursor) -> PResult<Punct>
             {
                 let (rest, ch) = punct_char(input)?;
@@ -24743,14 +23666,12 @@ pub mod process
                     Ok((rest, Punct::new(ch, kind)))
                 }
             }
-
             fn punct_char(input: Cursor) -> PResult<char>
             {
                 if input.starts_with("//") || input.starts_with("/*") {
                    
                     return Err(Reject);
                 }
-
                 let mut chars = input.chars();
                 let first = match chars.next() {
                     Some(ch) => ch,
@@ -24766,7 +23687,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn doc_comment<'a>(input: Cursor<'a>, trees: &mut TokenStreamBuilder) -> PResult<'a, ()>
             {
                 let lo = input.off;
@@ -24786,7 +23706,6 @@ pub mod process
                     }
                     scan_for_bare_cr = rest;
                 }
-
                 let mut pound = Punct::new('#', Spacing::Alone);
                 pound.set_span(span);
                 trees.push_token_from_parser(TokenTree::Punct(pound));
@@ -24797,7 +23716,6 @@ pub mod process
                     bang.set_span(span);
                     trees.push_token_from_parser(TokenTree::Punct(bang));
                 }
-
                 let doc_ident = ::process::macros::Ident::_new_fallback(Ident::new_unchecked("doc", fallback_span));
                 let mut equal = Punct::new('=', Spacing::Alone);
                 equal.set_span(span);
@@ -24814,7 +23732,6 @@ pub mod process
 
                 Ok((rest, ()))
             }
-
             fn doc_comment_contents(input: Cursor<'_>) -> PResult<'_, (&str, bool)>
             {
                 if input.starts_with("//!")
@@ -24842,7 +23759,6 @@ pub mod process
                     Err(Reject)
                 }
             }
-
             fn take_until_newline_or_eof(input: Cursor<'_>) -> (Cursor<'_>, &str) 
             {
                 let chars = input.char_indices();
@@ -24854,7 +23770,6 @@ pub mod process
                         return (input.advance(i + 1), &input.rest[..i]);
                     }
                 }
-
                 (input.advance(input.len()), input.rest)
             }
         }
@@ -24919,7 +23834,6 @@ pub mod process
                 pub fn file(this: &Span) -> String {
                     this.file()
                 }
-
                 pub fn local_file(this: &Span) -> Option<PathBuf>
                     {
                     this.local_file()
@@ -24962,40 +23876,33 @@ pub mod process
             {
                 inner: rc::Rc<Vec<T>>,
             }
-
             pub struct RcVecBuilder<T>
             {
                 inner: Vec<T>,
             }
-
             pub struct RcVecMut<'a, T>
             {
                 inner: &'a mut Vec<T>,
             }
-
             #[derive(Clone)]
             pub struct RcVecIntoIter<T>
             {
                 inner: vec::IntoIter<T>,
             }
-
             impl<T> RcVec<T>
             {
                 pub fn is_empty( &self ) -> bool 
                 {
                     self.inner.is_empty()
                 }
-
                 pub fn len( &self ) -> usize 
                 {
                     self.inner.len()
                 }
-
                 pub fn iter( &self ) -> slice::Iter<'_, T>
                 {
                     self.inner.iter()
                 }
-
                 pub fn make_mut( &mut self ) -> RcVecMut<'_, T> where
                 T: Clone,
                 {
@@ -25003,14 +23910,12 @@ pub mod process
                         inner: rc::Rc::make_mut(&mut self.inner),
                     }
                 }
-
                 pub fn get_mut( &mut self ) -> Option<RcVecMut<'_, T>>
                
                 {
                     let inner = rc::Rc::get_mut(&mut self.inner)?;
                     Some(RcVecMut { inner })
                 }
-
                 pub fn make_owned(mut self) -> RcVecBuilder<T> where
                 T: Clone,
                
@@ -25023,34 +23928,28 @@ pub mod process
                     RcVecBuilder { inner: vec }
                 }
             }
-
             impl<T> RcVecBuilder<T>
             {
                 pub fn new() -> Self {
                     RcVecBuilder { inner: Vec::new() }
                 }
-
                 pub fn with_capacity(cap: usize) -> Self {
                     RcVecBuilder {
                         inner: Vec::with_capacity(cap),
                     }
                 }
-
                 pub fn push(&mut self, element: T) {
                     self.inner.push(element);
                 }
-
                 pub fn extend(&mut self, iter: impl IntoIterator<Item = T>) {
                     self.inner.extend(iter);
                 }
-
                 pub fn as_mut( &mut self ) -> RcVecMut<'_, T>
                 {
                     RcVecMut {
                         inner: &mut self.inner,
                     }
                 }
-
                 pub fn build( self ) -> RcVec<T>
                     {
                     RcVec {
@@ -25058,29 +23957,24 @@ pub mod process
                     }
                 }
             }
-
             impl<'a, T> RcVecMut<'a, T>
             {
                 pub fn push(&mut self, element: T) {
                     self.inner.push(element);
                 }
-
                 pub fn extend(&mut self, iter: impl IntoIterator<Item = T>) {
                     self.inner.extend(iter);
                 }
-
                 pub fn as_mut( &mut self ) -> RcVecMut<'_, T> 
                 {
                     RcVecMut { inner: self.inner }
                 }
-
                 pub fn take( self ) -> RcVecBuilder<T>
                 {
                     let vec = mem::take(self.inner);
                     RcVecBuilder { inner: vec }
                 }
             }
-
             impl<T> Clone for RcVec<T>           
             {
                 fn clone( &self ) -> Self
@@ -25090,7 +23984,6 @@ pub mod process
                     }
                 }
             }
-
             impl<T> IntoIterator for RcVecBuilder<T>
             {
                 type Item = T;
@@ -25103,7 +23996,6 @@ pub mod process
                     }
                 }
             }
-
             impl<T> Iterator for RcVecIntoIter<T>
             {
                 type Item = T;
@@ -25112,7 +24004,6 @@ pub mod process
                 
                 fn size_hint( &self ) -> (usize, Option<usize>) { self.inner.size_hint() }
             }
-
             impl<T> RefUnwindSafe for RcVec<T> where
             T:RefUnwindSafe
             {}
@@ -25137,7 +24028,6 @@ pub mod process
                 inner: imp::TokenTreeIter,
                 _marker: ProcMacroAutoTraits,
             }
-
             impl Iterator for IntoIter
             {
                 type Item = TokenTree;
@@ -25145,13 +24035,11 @@ pub mod process
                 {
                     self.inner.next()
                 }
-
                 fn size_hint( &self ) -> (usize, Option<usize>)
                 {
                     self.inner.size_hint()
                 }
             }
-
             impl Debug for IntoIter
             {
                 fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -25160,7 +24048,6 @@ pub mod process
                     f.debug_list().entries(self.clone()).finish()
                 }
             }
-
             impl IntoIterator for TokenStream
             {
                 type Item = TokenTree;
@@ -25196,7 +24083,6 @@ pub mod process
                     _marker: marker::MARKER,
                 }
             }
-
             fn _new_fallback(inner: fallback::TokenStream) -> Self {
                 TokenStream {
                     inner: imp::TokenStream::from(inner),
@@ -25342,7 +24228,6 @@ pub mod process
                     _marker: marker::MARKER,
                 }
             }
-
             fn _new_fallback(inner: fallback::Span) -> Self 
             {
                 Span {
@@ -25568,7 +24453,6 @@ pub mod process
             fn _new(inner: imp::Group) -> Self {
                 Group { inner }
             }
-
             fn _new_fallback(inner: fallback::Group) -> Self {
                 Group {
                     inner: imp::Group::from(inner),
@@ -25725,7 +24609,6 @@ pub mod process
                     _marker: marker::MARKER,
                 }
             }
-
             fn _new_fallback(inner: fallback::Ident) -> Self {
                 Ident {
                     inner: imp::Ident::from(inner),
@@ -25849,7 +24732,6 @@ pub mod process
                     _marker: ::marker::MARKER,
                 }
             }
-
             fn _new_fallback(inner: fallback::Literal) -> Self 
             {
                 Literal {
@@ -25857,7 +24739,6 @@ pub mod process
                     _marker: ::marker::MARKER,
                 }
             }
-
             suffixed_int_literals! 
             {
                 u8_suffixed => u8,
@@ -25873,7 +24754,6 @@ pub mod process
                 i128_suffixed => i128,
                 isize_suffixed => isize,
             }
-
             unsuffixed_int_literals! 
             {
                 u8_unsuffixed => u8,
@@ -25955,7 +24835,6 @@ pub mod process
             {
                 self.inner.subspan(range).map(Span::_new)
             }
-
             pub unsafe fn from_str_unchecked(repr: &str) -> Self 
             {
                 Literal::_new(unsafe { imp::Literal::from_str_unchecked(repr) })
@@ -26047,7 +24926,6 @@ pub mod quote
             {
                 self.extend(iter::once(token.into()));
             }
-
             fn append_all<I>(&mut self, iter: I) where
                 I: IntoIterator,
                 I::Item: ToTokens,
@@ -26056,7 +24934,6 @@ pub mod quote
                     token.to_tokens(self);
                 }
             }
-
             fn append_separated<I, U>(&mut self, iter: I, op: U) where
                 I: IntoIterator,
                 I::Item: ToTokens,
@@ -26069,7 +24946,6 @@ pub mod quote
                     token.to_tokens(self);
                 }
             }
-
             fn append_terminated<I, U>(&mut self, iter: I, term: U) where
                 I: IntoIterator,
                 I::Item: ToTokens,
@@ -26087,7 +24963,6 @@ pub mod quote
             use ::process::macros::TokenStream;
 
             pub trait Sealed {}
-
             impl Sealed for TokenStream {}
         }
     } pub use self::ext::TokenStreamExt;
@@ -26118,7 +24993,6 @@ pub mod quote
             fn span(&self) -> Option<Span> {
                 <T as IdentFragment>::span(*self)
             }
-
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
                 {IdentFragment::fmt(*self, f)
             }
@@ -26129,7 +25003,6 @@ pub mod quote
             fn span(&self) -> Option<Span> {
                 <T as IdentFragment>::span(*self)
             }
-
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
                 {IdentFragment::fmt(*self, f)
             }
@@ -26140,7 +25013,6 @@ pub mod quote
             fn span(&self) -> Option<Span> {
                 Some(self.span())
             }
-
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
                 {let id = self.to_string();
                 if let Some(id) = id.strip_prefix("r#") {
@@ -26157,7 +25029,6 @@ pub mod quote
             fn span(&self) -> Option<Span> {
                 T::span(self)
             }
-
             fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
                 {T::fmt(self, f)
             }
@@ -26357,7 +25228,6 @@ pub mod quote
             fn to_tokens(&self, dst: &mut TokenStream) {
                 dst.extend(iter::once(self.clone()));
             }
-
             fn into_token_stream(self) -> TokenStream { self }
         }
     } pub use self::to_tokens::ToTokens;
@@ -26474,7 +25344,6 @@ pub mod quote
                     (self, HasIter)
                 }
             }
-
             impl<T: Iterator> RepIteratorExt for T {}
             /// Extension trait providing the `quote_into_iter` method for non-iterable types.
             pub trait RepToTokensExt {
@@ -26482,12 +25351,10 @@ pub mod quote
                 fn next(&self) -> Option<&Self> {
                     Some(self)
                 }
-
                 fn quote_into_iter(&self) -> (&Self, DoesNotHaveIter) {
                     (self, DoesNotHaveIter)
                 }
             }
-
             impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
             /// Extension trait providing the `quote_into_iter` method for types that can be referenced as an iterator.
             pub trait RepAsIteratorExt<'q>
@@ -26495,7 +25362,6 @@ pub mod quote
                 type Iter: Iterator;
                 fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
             }
-
             impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a T
             {
                 type Iter = T::Iter;
@@ -26503,21 +25369,18 @@ pub mod quote
                     <T as RepAsIteratorExt>::quote_into_iter(*self)
                 }
             }
-
             impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a mut T {
                 type Iter = T::Iter;
                 fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
                     <T as RepAsIteratorExt>::quote_into_iter(*self)
                 }
             }
-
             impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
                 type Iter = slice::Iter<'q, T>;
                 fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
                     (self.iter(), HasIter)
                 }
             }
-
             impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T>
             {
                 type Iter = slice::Iter<'q, T>;
@@ -26525,7 +25388,6 @@ pub mod quote
                     (self.iter(), HasIter)
                 }
             }
-
             impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T>
             {
                 type Iter = btree_set::Iter<'q, T>;
@@ -26533,7 +25395,6 @@ pub mod quote
                     (self.iter(), HasIter)
                 }
             }
-
             impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T>
             {
                 type Iter = T::Iter;
@@ -26600,20 +25461,17 @@ pub mod quote
                     ((self.0).0).0
                 }
             }
-
             impl GetSpanInner<DelimSpan> {
                 #[inline] pub fn __into_span(&self) -> Span {
                     (self.0).0.join()
                 }
             }
-
             impl<T> GetSpanBase<T> {
                 #[allow(clippy::unused_self)]
                 pub fn __into_span(&self) -> T {
                     unreachable!()
                 }
             }
-
             impl<T> Deref for GetSpan<T>
             {
                 type Target = GetSpanInner<T>;
@@ -26622,7 +25480,6 @@ pub mod quote
                     &self.0
                 }
             }
-
             impl<T> Deref for GetSpanInner<T>
             {
                 type Target = GetSpanBase<T>;
@@ -26697,7 +25554,6 @@ pub mod quote
                 name: &'a str,
                 state: u8,
             }
-
             impl<'a> Iterator for Lifetime<'a>
             {
                 type Item = TokenTree;
@@ -26715,7 +25571,6 @@ pub mod quote
                     }
                 }
             }
-
             tokens.extend(Lifetime {
                 name: &lifetime[1..],
                 state: 0,
@@ -26729,7 +25584,6 @@ pub mod quote
                 span: Span,
                 state: u8,
             }
-
             impl<'a> Iterator for Lifetime<'a>
             {
                 type Item = TokenTree;
@@ -26749,7 +25603,6 @@ pub mod quote
                     }
                 }
             }
-
             tokens.extend(Lifetime {
                 name: &lifetime[1..],
                 span,
@@ -26941,11 +25794,14 @@ pub mod result
     pub use std::result::{ * };
     use ::
     {
-        error::{ OverError },
+        error::{ OverError, ParseError },
         *,
     };
     /// Result type for this crate.
-    pub type OverResult<T> = Result<T, OverError>;
+    pub type OverResult<T> = Result<T, OverError>;    
+    /*
+    */
+    pub type ParseResult<T> = Result<T, ParseError>;
 }
 
 pub mod slice
@@ -26959,10 +25815,11 @@ pub mod str
     use ::
     {
         fs::{ File },
+        io::{ Read, Write },
         *,
     };
     /// Reads a file and returns its contents in a string.
-    // pub fn read_file_str(fname: &str) -> io::Result<String>
+   
     pub fn read_from_file(fname: &str) -> io::Result<String>
     {
         let mut file = File::open(fname)?;
@@ -26976,7 +25833,7 @@ pub mod str
     //pub fn write_file_str(fname: &str, contents: &str) -> io::Result<()>
     pub fn write_file_from(fname: &str, contents: &str) -> io::Result<()>
     {
-        // Open a file in write-only mode
+       
         let mut file = File::create(fname)?;
 
         file.write_all(contents.as_bytes())?;
@@ -27006,30 +25863,33 @@ pub mod tuples
     Tuple | A container which can hold elements of different types.*/
     use ::
     {
+        error::{ OverError },
+        fmt::{ Format },
+        result::{ OverResult },
+        slice::{ Iter },
+        sync::{ Arc },
+        types::{ Type },
+        values::{ Value },
         *,
     };
     /*
-    use crate::parse::format::Format;
-    use crate::types::Type;
-    use crate::value::Value;
     use crate::{OverError, OverResult, INDENT_STEP};
-    use std::fmt;
-    use std::slice::Iter;
-    use std::sync::Arc;
     */
     #[derive(Clone, Debug)]
-    struct TupInner {
+    struct TupInner 
+    {
         vec: Vec<Value>,
         inner_tvec: Vec<Type>,
     }
-
     /// `Tup` struct.
     #[derive(Clone, Debug)]
-    pub struct Tup {
+    pub struct Tup 
+    {
         inner: Arc<TupInner>,
     }
 
-    impl Tup {
+    impl Tup 
+    {
         /// Returns a new `Tup` from the given vector of `Value`s.
         pub fn from_vec(values: Vec<Value>) -> Tup {
             let tvec: Vec<Type> = values.iter().map(|val| val.get_type()).collect();
@@ -27041,22 +25901,18 @@ pub mod tuples
                 }),
             }
         }
-
         /// Returns a reference to the inner vec of this `Tup`.
         pub fn vec_ref(&self) -> &Vec<Value> {
             &self.inner.vec
         }
-
         /// Iterates over each `Value` in `self`, applying `Fn` `f`.
-        pub fn with_each<F>(&self, mut f: F)
-        where
+        pub fn with_each<F>(&self, mut f: F) where
             F: FnMut(&Value),
         {
             for value in &self.inner.vec {
                 f(value)
             }
         }
-
         /// Gets the value at `index`.
         /// Returns an error if `index` is out of bounds.
         pub fn get(&self, index: usize) -> OverResult<Value> {
@@ -27066,58 +25922,54 @@ pub mod tuples
                 Ok(self.inner.vec[index].clone())
             }
         }
-
         /// Returns the type vector of this `Tup`.
         pub fn inner_type_vec(&self) -> Vec<Type> {
             self.inner.inner_tvec.clone()
         }
-
         /// Returns the length of this `Tup`.
         pub fn len(&self) -> usize {
             self.inner.vec.len()
         }
-
         /// Returns whether this `Tup` is empty.
         pub fn is_empty(&self) -> bool {
             self.inner.vec.is_empty()
         }
-
         /// Returns whether `self` and `other` point to the same data.
         pub fn ptr_eq(&self, other: &Self) -> bool {
             Arc::ptr_eq(&self.inner, &other.inner)
         }
-
         /// Returns an iterator over the Tup.
         pub fn iter(&self) -> Iter<Value> {
             self.vec_ref().iter()
         }
     }
 
-    impl Default for Tup {
-        fn default() -> Self {
-            Self::from_vec(vec![])
-        }
+    impl Default for Tup
+    {
+        fn default() -> Self { Self::from_vec( Vec::new() ) }
     }
 
-    impl fmt::Display for Tup {
+    impl fmt::Display for Tup 
+    {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", self.format(true, INDENT_STEP))
         }
     }
 
-    impl From<Vec<Value>> for Tup {
+    impl From<Vec<Value>> for Tup 
+    {
         fn from(vec: Vec<Value>) -> Self {
             Self::from_vec(vec)
         }
     }
 
-    impl PartialEq for Tup {
+    impl PartialEq for Tup 
+    {
         fn eq(&self, other: &Self) -> bool {
-            // Quickly return false if the types don't match.
+           
             if self.inner.inner_tvec != other.inner.inner_tvec {
                 return false;
             }
-
             self.inner.vec == other.inner.vec
         }
     }
@@ -27163,8 +26015,8 @@ pub mod types
 
     impl Type {
         /// Returns true if this type is strictly the same as `other`.
-        /// Usually you want to use `eq()` instead.
-        pub fn is(&self, other: &Type) -> bool {
+        pub fn is(&self, other: &Type) -> bool 
+        {
             use self::Type::*;
 
             match *self {
@@ -27175,7 +26027,6 @@ pub mod types
                         false
                     }
                 }
-
                 Null => {
                     if let Null = *other {
                         true
@@ -27225,7 +26076,6 @@ pub mod types
                         false
                     }
                 }
-
                 Arr(ref t1) => {
                     if let Arr(ref t2) = *other {
                         t1.is(t2)
@@ -27233,7 +26083,6 @@ pub mod types
                         false
                     }
                 }
-
                 Tup(ref tvec1) => {
                     if let Tup(ref tvec2) = *other {
                         if tvec1.len() != tvec2.len() {
@@ -27246,9 +26095,9 @@ pub mod types
                 }
             }
         }
-
         /// Returns true if this `Type` contains `Any`.
-        pub fn has_any(&self) -> bool {
+        pub fn has_any(&self) -> bool 
+        {
             match *self {
                 Type::Any => true,
                 Type::Arr(ref t) => Self::has_any(t),
@@ -27256,40 +26105,15 @@ pub mod types
                 _ => false,
             }
         }
-
         /// Returns a type with the most specificity that can be applied to the two input types as well
-        /// as `true` if the returned type is not maximally specific, that is, it contains `Any`. If no
-        /// single type can be applied to both input types (e.g. the types are `Str` and `Int`), returns
-        /// `None`.
-        ///
-        /// # Examples
-        ///
-        /// ```
-        /// # #[macro_use] extern crate over;
-        /// # fn main() {
-        ///
-        /// use over::types::Type;
-        /// use over::types::Type::*;
-        /// use over::value::Value;
-        ///
-        /// let val1: Value = tup!(arr![], arr![2]).into();
-        /// let val2: Value = tup!(arr!['c'], arr![]).into();
-        ///
-        /// let (specific_type, has_any) =
-        ///     Type::most_specific(&val1.get_type(), &val2.get_type()).unwrap();
-        ///
-        /// assert_eq!(specific_type, Tup(vec![Arr(Box::new(Char)), Arr(Box::new(Int))]));
-        /// assert!(!has_any);
-        ///
-        /// # }
-        /// ```
-        pub fn most_specific(type1: &Type, type2: &Type) -> Option<(Type, bool)> {
+        /// as `true` if the returned type is not maximally specific, that is, it contains `Any`.
+        pub fn most_specific(type1: &Type, type2: &Type) -> Option<(Type, bool)> 
+        {
             use self::Type::*;
 
             if let Any = *type2 {
                 return Some((type1.clone(), type1.has_any()));
             }
-
             match *type1 {
                 Any => Some((type2.clone(), type2.has_any())),
 
@@ -27300,7 +26124,6 @@ pub mod types
                         None
                     }
                 }
-
                 Tup(ref tvec1) => {
                     if let Tup(ref tvec2) = *type2 {
                         if tvec1.len() == tvec2.len() {
@@ -27327,7 +26150,6 @@ pub mod types
                         None
                     }
                 }
-
                 ref t => {
                     if t == type2 {
                         Some((t.clone(), false))
@@ -27338,18 +26160,15 @@ pub mod types
             }
         }
     }
-
     /// Two types are considered equal if one of them is Any or they have the same variant.
-    /// In the case of `Arr` and `Tup`, the inner types are recursively checked for equality.
     impl PartialEq for Type {
         fn eq(&self, other: &Self) -> bool {
             use self::Type::*;
 
-            // If either is Any, always return `true`.
+           
             if let Any = *other {
                 return true;
             }
-
             match *self {
                 Any => true,
                 Arr(ref box1) => {
@@ -27438,50 +26257,29 @@ pub mod values
     */
     use ::
     {
+        arrays::{ self, Arr },
+        error::{ OverError },
+        fmt::{ Format },
+        num::
+        {
+            big::BigInt,
+            rational::BigRational,
+            traits::ToPrimitive,
+        },
+        objects::{ self, Obj },
+        result::{ OverResult },
+        tuples::{ self, Tup },
+        types::{ Type },
         *,
     };
     /*
-    use crate::arr;
-    use crate::error::OverError;
-    use crate::obj;
-    use crate::parse::format::Format;
-    use crate::tup;
-    use crate::types::Type;
+    
     use crate::{OverResult, INDENT_STEP};
-    use num_bigint::BigInt;
-    use num_rational::BigRational;
-    use num_traits::ToPrimitive;
-    use std::fmt;
     */
-    /// Enum of possible values and their inner types.
-    #[derive(Clone, Debug, PartialEq)]
-    pub enum Value {
-        /// A null value.
-        Null,
-
-        // Copy values.
-        /// A boolean value.
-        Bool(bool),
-        /// A signed integer value.
-        Int(BigInt),
-        /// A fractional value.
-        Frac(BigRational),
-        /// A character value.
-        Char(char),
-        /// A string value.
-        Str(String),
-
-        // Reference values.
-        /// An array value.
-        Arr(arr::Arr),
-        /// A tuple value.
-        Tup(tup::Tup),
-        /// An object value.
-        Obj(obj::Obj),
-    }
-
-    macro_rules! get_fn {
-        ( $doc:expr, $name:tt, $type:ty, $variant:ident ) => {
+    macro_rules! get_fn
+    {
+        ( $doc:expr, $name:tt, $type:ty, $variant:ident ) =>
+        {
             #[doc=$doc]
             pub fn $name(&self) -> OverResult<$type> {
                 if let Value::$variant(ref inner) = *self {
@@ -27493,7 +26291,110 @@ pub mod values
         }
     }
 
-    impl Value {
+    macro_rules! impl_eq
+    {
+        ($valtype:ident, $type:ty) =>
+        {
+            impl PartialEq<$type> for Value
+            {
+                fn eq(&self, other: &$type) -> bool
+                {
+                    match *self
+                    {
+                        Value::$valtype(ref value) => value == other,
+                        _ => false,
+                    }
+                }
+            }
+            
+            impl PartialEq<Value> for $type
+            {
+                fn eq(&self, other: &Value) -> bool
+                {
+                    match *other
+                    {
+                        Value::$valtype(ref value) => value == self,
+                        _ => false,
+                    }
+                }
+            }
+        };
+    }
+    
+    macro_rules! impl_eq_int
+    {
+        ($type:ty, $fn:tt) =>
+        {
+            impl PartialEq<$type> for Value
+            {
+                fn eq(&self, other: &$type) -> bool
+                {
+                    match *self
+                    {
+                        Value::Int(ref value) => match value.$fn()
+                        {
+                            Some(value) => value == *other,
+                            None => false,
+                        },
+                        _ => false,
+                    }
+                }
+            }
+            
+            impl PartialEq<Value> for $type
+            {
+                fn eq(&self, other: &Value) -> bool
+                {
+                    match *other
+                    {
+                        Value::Int(ref value) => match value.$fn()
+                        {
+                            Some(value) => value == *self,
+                            None => false,
+                        },
+                        _ => false,
+                    }
+                }
+            }
+        };
+    }
+
+    macro_rules! impl_from
+    {
+        ($type:ty, $fn:tt) =>
+        {
+            impl From<$type> for Value
+            {
+                fn from(inner: $type) -> Self { Value::$fn(inner.into()) }
+            }
+        };
+    }
+    /// Enum of possible values and their inner types.
+    #[derive(Clone, Debug, PartialEq)]
+    pub enum Value
+    {
+        /// A null value.
+        Null,
+        /// A boolean value.
+        Bool(bool),
+        /// A signed integer value.
+        Int(BigInt),
+        /// A fractional value.
+        Frac(BigRational),
+        /// A character value.
+        Char(char),
+        /// A string value.
+        Str(String),
+        /// An array value.
+        Arr( Arr),
+        /// A tuple value.
+        Tup( Tup),
+        /// An object value.
+        Obj( Obj),
+    }
+
+    impl Value
+    {
         /// Returns true if this `Value` is null.
         pub fn is_null(&self) -> bool {
             if let Value::Null = *self {
@@ -27502,7 +26403,6 @@ pub mod values
                 false
             }
         }
-
         /// Returns the `Type` of this `Value`.
         pub fn get_type(&self) -> Type {
             use self::Value::*;
@@ -27535,8 +26435,8 @@ pub mod values
             Int
         );
         /// Returns the `BigRational` contained in this `Value`.
-        /// Returns an error if this `Value` is not `Frac`.
-        pub fn get_frac(&self) -> OverResult<BigRational> {
+        pub fn get_frac(&self) -> OverResult<BigRational>
+        {
             match *self {
                 Value::Frac(ref inner) => Ok(inner.clone()),
                 Value::Int(ref inner) => Ok(frac!(inner.clone(), 1)),
@@ -27561,130 +26461,91 @@ pub mod values
             "Returns the `Obj` contained in this `Value`. \
             Returns an error if this `Value` is not `Obj`.",
             get_obj,
-            obj::Obj,
+            objects::Obj,
             Obj
         );
-
         /// Returns the `Arr` contained in this `Value`.
-        /// Returns an error if this `Value` is not `Arr`.
-        pub fn get_arr(&self) -> OverResult<arr::Arr> {
-            if let Value::Arr(ref inner) = *self {
+        pub fn get_arr(&self) -> OverResult<arrays::Arr>
+        {
+            if let Value::Arr(ref inner) = *self
+            {
                 Ok(inner.clone())
-            } else {
-                Err(OverError::TypeMismatch(
-                    Type::Arr(Box::new(Type::Any)),
-                    self.get_type(),
-                ))
+            }
+
+            else
+            {
+                Err
+                (
+                    OverError::TypeMismatch
+                    (
+                        Type::Arr(Box::new(Type::Any)),
+                        self.get_type(),
+                    )
+                )
             }
         }
-
         /// Returns the `Tup` contained in this `Value`.
-        /// Returns an error if this `Value` is not `Tup`.
-        pub fn get_tup(&self) -> OverResult<tup::Tup> {
-            if let Value::Tup(ref inner) = *self {
-                Ok(inner.clone())
-            } else {
-                Err(OverError::TypeMismatch(Type::Tup(vec![]), self.get_type()))
-            }
+        pub fn get_tup(&self) -> OverResult<tuples::Tup>
+        {
+            if let Value::Tup(ref inner) = *self { Ok(inner.clone()) }
+            else { Err(OverError::TypeMismatch(Type::Tup(vec![]), self.get_type())) }
         }
     }
 
-    impl fmt::Display for Value {
-        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+    impl fmt::Display for Value
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+        {
             write!(f, "{}", self.format(true, INDENT_STEP))
         }
-    }
-
-    // impl PartialEq
-
-    macro_rules! impl_eq {
-        ($valtype:ident, $type:ty) => {
-            impl PartialEq<$type> for Value {
-                fn eq(&self, other: &$type) -> bool {
-                    match *self {
-                        Value::$valtype(ref value) => value == other,
-                        _ => false,
-                    }
-                }
-            }
-
-            impl PartialEq<Value> for $type {
-                fn eq(&self, other: &Value) -> bool {
-                    match *other {
-                        Value::$valtype(ref value) => value == self,
-                        _ => false,
-                    }
-                }
-            }
-        };
     }
 
     impl_eq!(Bool, bool);
     impl_eq!(Int, BigInt);
     impl_eq!(Frac, BigRational);
     impl_eq!(Char, char);
-    impl_eq!(Arr, arr::Arr);
-    impl_eq!(Tup, tup::Tup);
-    impl_eq!(Obj, obj::Obj);
+    impl_eq!(Arr, arrays::Arr);
+    impl_eq!(Tup, tuples::Tup);
+    impl_eq!(Obj, objects::Obj);
 
-    impl<'a> PartialEq<&'a str> for Value {
-        fn eq(&self, other: &&str) -> bool {
-            match *self {
+    impl<'a> PartialEq<&'a str> for Value
+    {
+        fn eq(&self, other: &&str) -> bool
+        {
+            match *self
+            {
                 Value::Str(ref value) => value == &other.replace("\r\n", "\n"),
                 _ => false,
             }
         }
     }
 
-    impl<'a> PartialEq<Value> for &'a str {
-        fn eq(&self, other: &Value) -> bool {
-            match *other {
+    impl<'a> PartialEq<Value> for &'a str
+    {
+        fn eq(&self, other: &Value) -> bool
+        {
+            match *other
+            {
                 Value::Str(ref value) => value == &self.replace("\r\n", "\n"),
                 _ => false,
             }
         }
     }
 
-    impl PartialEq<String> for Value {
-        fn eq(&self, other: &String) -> bool {
+    impl PartialEq<String> for Value
+    {
+        fn eq(&self, other: &String) -> bool
+        {
             &other.as_str() == self
         }
     }
 
-    impl PartialEq<Value> for String {
-        fn eq(&self, other: &Value) -> bool {
+    impl PartialEq<Value> for String
+    {
+        fn eq(&self, other: &Value) -> bool
+        {
             &self.as_str() == other
         }
-    }
-
-    // PartialEq for integers
-
-    macro_rules! impl_eq_int {
-        ($type:ty, $fn:tt) => {
-            impl PartialEq<$type> for Value {
-                fn eq(&self, other: &$type) -> bool {
-                    match *self {
-                        Value::Int(ref value) => match value.$fn() {
-                            Some(value) => value == *other,
-                            None => false,
-                        },
-                        _ => false,
-                    }
-                }
-            }
-
-            impl PartialEq<Value> for $type {
-                fn eq(&self, other: &Value) -> bool {
-                    match *other {
-                        Value::Int(ref value) => match value.$fn() {
-                            Some(value) => value == *self,
-                            None => false,
-                        },
-                        _ => false,
-                    }
-                }
-            }
-        };
     }
 
     impl_eq_int!(usize, to_usize);
@@ -27696,21 +26557,16 @@ pub mod values
     impl_eq_int!(i16, to_i16);
     impl_eq_int!(i32, to_i32);
     impl_eq_int!(i64, to_i64);
-
-    // impl From
-
-    macro_rules! impl_from {
-        ($type:ty, $fn:tt) => {
-            impl From<$type> for Value {
-                fn from(inner: $type) -> Self {
-                    Value::$fn(inner.into())
-                }
-            }
-        };
+    
+    impl<'a> From<&'a str> for Value 
+    {
+        fn from(inner: &str) -> Self 
+        {
+            Value::Str(inner.into())
+        }
     }
 
     impl_from!(bool, Bool);
-
     impl_from!(usize, Int);
     impl_from!(u8, Int);
     impl_from!(u16, Int);
@@ -27721,35 +26577,12 @@ pub mod values
     impl_from!(i32, Int);
     impl_from!(i64, Int);
     impl_from!(BigInt, Int);
-
-    // This is commented because the resultant values don't pass equality checks.
-    //
-    // impl From<f32> for Value {
-    //     fn from(inner: f32) -> Self {
-    //         Value::Frac(BigRational::from_f32(inner).unwrap())
-    //     }
-    // }
-    // impl From<f64> for Value {
-    //     fn from(inner: f64) -> Self {
-    //         Value::Frac(BigRational::from_f64(inner).unwrap())
-    //     }
-    // }
     impl_from!(BigRational, Frac);
-
     impl_from!(char, Char);
-
     impl_from!(String, Str);
-    impl<'a> From<&'a str> for Value {
-        fn from(inner: &str) -> Self {
-            Value::Str(inner.into())
-        }
-    }
-
-    impl_from!(arr::Arr, Arr);
-
-    impl_from!(tup::Tup, Tup);
-
-    impl_from!(obj::Obj, Obj);
+    impl_from!( arrays::Arr, Arr );
+    impl_from!( tuples::Tup, Tup );
+    impl_from!( objects::Obj, Obj );
 }
 
 pub mod vec
@@ -27758,4 +26591,4 @@ pub mod vec
 }
 /// Indent step in .over files.
 pub const INDENT_STEP: usize = 4;
-// 27761 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 26594 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
