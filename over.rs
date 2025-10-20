@@ -1542,6 +1542,7 @@ extern crate proc_macro;
                     self.clone().$method(other.clone())
                 }
             }
+            
             impl<'a, 'b, T: Clone + Integer> $imp<&'b T> for &'a Ratio<T> {
                 type Output = Ratio<T>;
 
@@ -1577,6 +1578,7 @@ extern crate proc_macro;
                 type Output = Ratio<T>;
                 #[inline] fn $method(self, other: Ratio<T>) -> Ratio<T> { self.clone().$method(other) }
             }
+            
             impl<'a, T> $imp<T> for &'a Ratio<T> where
             T: Clone + Integer,
             {
@@ -1612,6 +1614,7 @@ extern crate proc_macro;
                     self.$method(other.clone())
                 }
             }
+            
             impl<'a, T> $imp<&'a T> for Ratio<T> where
                 T: Clone + Integer,
             {
@@ -2110,7 +2113,8 @@ extern crate proc_macro;
         }
     }
     /// Given an int, creates and returns a `BigInt`.
-    #[macro_export] macro_rules! int {
+    #[macro_export] macro_rules! int 
+    {
         ($int:expr) => {{
             use num_bigint::BigInt;
 
@@ -2119,45 +2123,48 @@ extern crate proc_macro;
         }};
     }
     /// Given two ints, creates and returns a `BigRational`.
-    #[macro_export] macro_rules! frac {
+    #[macro_export] macro_rules! frac 
+    {
         ($int1:expr, $int2:expr) => {{
             ::num::rational::BigRational::new($int1.into(), $int2.into())
         }};
     }
-    /// Given a list of elements, converts each element to a `Value` and returns an `Arr` containing a
-    /// vector of the values. For a non-panicking version, see `try_arr!`.
-    ///
-    /// # Panics
-    /// Panics if the types don't check out.
-    #[macro_export] macro_rules! arr {
-        [] => {
-            $crate::arr::Arr::from_vec(vec![]).unwrap()
+    /// With a list of items, converts each item to a `Value` and returns an `Arr` containing a vector of the values.
+    #[macro_export] macro_rules! arr 
+    {
+        [] => 
+        {
+            $crate::arrays::Arr::from_vec(vec![]).unwrap()
         };
-        [ $( $elem:expr ),+ , ] => {
+
+        [ $( $elem:expr ),+ , ] => 
+        {
            
             try_arr![ $( $elem ),+ ].unwrap()
         };
-        [ $( $elem:expr ),+ ] => {
+
+        [ $( $elem:expr ),+ ] => 
+        {
             try_arr![ $( $elem ),+ ].unwrap()
         };
     }
-    /// Given a list of elements, converts each element to a `Value` and returns an `Arr` containing a
-    /// vector of the values. Returns an `OverResult` instead of panicking on error. To create an empty
-    /// `Arr`, use `arr!` as it will never fail.
-    #[macro_export] macro_rules! try_arr {
-        [ $( $elem:expr ),+ , ] => {
+    /// With a list of items, converts each item to a `Value` and returns an `Arr` containing a vector of the values.
+    #[macro_export] macro_rules! try_arr 
+    {
+        [ $( $elem:expr ),+ , ] => 
+        {
            
             try_arr![ $( $elem ),+ ]
         };
-        [ $( $elem:expr ),+ ] => {
-            {
-                $crate::arr::Arr::from_vec(vec![ $( $elem.into() ),+ ])
-            }
-        };
+
+        [ $( $elem:expr ),+ ] => 
+        {{
+                $crate::arrays::Arr::from_vec(vec![ $( $elem.into() ),+ ])
+        }};
     }
-    /// Given a list of elements, converts each element to `Value`s and returns a `Tup` containing a
-    /// vector of the values.
-    #[macro_export] macro_rules! tup {
+    /// With a list of items, converts each item to `Value`s and returns a `Tup` containing a vector of the values.
+    #[macro_export] macro_rules! tup 
+    {
         ( $( $elem:expr ),* , ) => {
             tup!( $( $elem ),* )
         };
@@ -2167,12 +2174,9 @@ extern crate proc_macro;
             }
         };
     }
-    /// Given a list of field/value pairs, returns an `Obj` containing each pair.
-    /// For a non-panicking version, see `try_obj!`.
-    ///
-    /// # Panics
-    /// Panics if a field name is invalid.
-    #[macro_export] macro_rules! obj {
+    /// With a list of field/value pairs, returns an `Obj` containing each pair.
+    #[macro_export] macro_rules! obj 
+    {
         {} => {
             $crate::obj::Obj::from_map_unchecked(::std::collections::HashMap::new())
         };
@@ -2184,39 +2188,42 @@ extern crate proc_macro;
             try_obj!{ $( $field => $inner ),+ }.unwrap()
         };
     }
-    /// Given a list of field to `Value` pairs, returns an `Obj` with the fields and values.
-    /// Returns an `OverResult` instead of panicking on error. To create an empty `Obj`, use `obj!` as
-    /// it will never fail.
-    #[macro_export] macro_rules! try_obj {
-        { $( $field:expr => $inner:expr ),+ , } => {
+    /// With a list of field to `Value` pairs, returns an `Obj` with the fields and values.
+    #[macro_export] macro_rules! try_obj
+    {
+        { $( $field:expr => $inner:expr ),+ , } =>
+        {
            
             try_obj!{ $( $field => $inner ),* };
         };
-        { $( $field:expr => $inner:expr ),+ } => {
-            #[allow(clippy::useless_let_if_seq)]
-            {
-                use $crate::obj::Obj;
+        
+        { $( $field:expr => $inner:expr ),+ } =>
+        {{
+            use ::objects::Obj;
+            let mut _map = ::collections::HashMap::new();
+            let mut _parent: Option<::values::Value> = None;
 
-                let mut _map = ::std::collections::HashMap::new();
-                let mut _parent: Option<$crate::value::Value> = None;
-
-                $(
-                    if $field == "^" {
-                        _parent = Some($inner.into());
-                    } else {
-                        _map.insert($field.into(), $inner.into());
-                    }
-                )*
-
-                match _parent {
-                    Some(parent) => match parent.get_obj() {
-                        Ok(parent) => Obj::from_map_with_parent(_map, parent),
-                        e @ Err(_) => e,
-                    }
-                    None => Obj::from_map(_map),
+            $(
+                if $field == "^" 
+                {
+                    _parent = Some($inner.into());
+                } 
+                
+                else 
+                {
+                    _map.insert($field.into(), $inner.into());
                 }
+            )*
+
+            match _parent 
+            {
+                Some(parent) => match parent.get_obj() {
+                    Ok(parent) => Obj::from_map_with_parent(_map, parent),
+                    e @ Err(_) => e,
+                }
+                None => Obj::from_map(_map),
             }
-        };
+        }};
     }
 }
 
@@ -2258,7 +2265,8 @@ pub mod arrays
     impl Arr 
     {
         /// Returns a new `Arr` from the given vector of `Value`s.
-        pub fn from_vec(vec: Vec<Value>) -> OverResult<Arr> {
+        pub fn from_vec(vec: Vec<Value>) -> OverResult<Arr> 
+        {
             let mut tcur = Type::Any;
             let mut has_any = true;
 
@@ -2281,15 +2289,17 @@ pub mod arrays
                 inner: Arc::new(ArrInner { vec, inner_t: tcur }),
             })
         }
-        /// Returns a new `Arr` from the given vector of `Value`s without checking whether every value
-        /// in `vec` is the same type.
-        pub fn from_vec_unchecked(vec: Vec<Value>, inner_t: Type) -> Arr {
+        /// Returns a new `Arr` from the given vector of `Value`s without checking 
+        /// whether every value in `vec` is the same type.
+        pub fn from_vec_unchecked(vec: Vec<Value>, inner_t: Type) -> Arr 
+        {
             Arr {
                 inner: Arc::new(ArrInner { vec, inner_t }),
             }
         }
         /// Returns a reference to the inner vec of this `Arr`.
-        pub fn vec_ref(&self) -> &Vec<Value> {
+        pub fn vec_ref(&self) -> &Vec<Value> 
+        {
             &self.inner.vec
         }
         /// Iterates over each `Value` in `self`, applying `Fn` `f`.
@@ -2301,8 +2311,8 @@ pub mod arrays
             }
         }
         /// Gets the value at `index`.
-        /// Returns an error if `index` is out of bounds.
-        pub fn get(&self, index: usize) -> OverResult<Value> {
+        pub fn get(&self, index: usize) -> OverResult<Value> 
+        {
             if index >= self.inner.vec.len() {
                 Err(OverError::ArrOutOfBounds(index))
             } else {
@@ -2322,11 +2332,13 @@ pub mod arrays
             self.inner.vec.is_empty()
         }
         /// Returns whether `self` and `other` point to the same data.
-        pub fn ptr_eq(&self, other: &Self) -> bool {
+        pub fn ptr_eq(&self, other: &Self) -> bool 
+        {
             Arc::ptr_eq(&self.inner, &other.inner)
         }
         /// Returns an iterator over the Arr.
-        pub fn iter(&self) -> Iter<Value> {
+        pub fn iter(&self) -> Iter<Value> 
+        {
             self.vec_ref().iter()
         }
     }
@@ -3085,18 +3097,14 @@ pub mod char
             Self::from_string_impl(Some(String::from(path)), contents)
         }
 
-        pub fn from_string(contents: String) -> io::Result<CharStream> 
-        {
-            Self::from_string_impl(None, contents)
-        }
-
         fn from_string_impl(file: Option<String>, contents: String) -> io::Result<CharStream> 
         {
             let chars: Chars = unsafe { mem::transmute(contents.chars()) };
             let stream = chars.peekable();
-
-            Ok(CharStream {
-                inner: Rc::new(RefCell::new(Inner {
+            Ok(CharStream 
+            {
+                inner: Rc::new(RefCell::new(Inner 
+                {
                     file,
                     contents,
                     stream,
@@ -3104,6 +3112,11 @@ pub mod char
                     col: 1,
                 })),
             })
+        }
+
+        pub fn from_string(contents: String) -> io::Result<CharStream> 
+        {
+            Self::from_string_impl(None, contents)
         }
 
         pub fn peek(&self) -> Option<char> 
@@ -3659,7 +3672,8 @@ pub mod fmt
 
     fn get_char_map(ch: char) -> Option<&'static str> 
     {
-        match ch {
+        match ch
+        {
             '\\' => Some("\\\\"),
             '\"' => Some("\\\""),
             '\'' => Some("\\\'"),
@@ -3675,13 +3689,12 @@ pub mod fmt
     {
         let mut string = String::with_capacity(s.len());
 
-        for ch in s.chars() {
-            if let Some(s) = get_char_map(ch) {
-                string.push_str(s);
-            } else {
-                string.push(ch);
-            }
+        for ch in s.chars() 
+        {
+            if let Some(s) = get_char_map( ch ) { string.push_str(s); }            
+            else { string.push( ch ); }
         }
+
         string
     }
     /// Trait for formatting a .over representation of an object.
@@ -3920,23 +3933,26 @@ pub mod is
     */
     /// Returns true if this character signifies the legal end of a value.
    
-    pub fn value_end_char(ch: char) -> bool {
+    pub fn value_end_char(ch: char) -> bool 
+    {
         whitespace(ch) || end_delimiter(ch) || operator(ch)
     }
-    /// Returns true if the character is either whitespace or '#' (start of a comment).
-   
-    pub fn whitespace(ch: char) -> bool {
+    /// Returns true if the character is either whitespace or '#' (start of a comment).   
+    pub fn whitespace(ch: char) -> bool 
+    {
         ch.is_whitespace() || ch == '#'
     }
    
-    pub fn end_delimiter(ch: char) -> bool {
+    pub fn end_delimiter(ch: char) -> bool 
+    {
         match ch {
             ')' | ']' | '}' | '>' => true,
             _ => false,
         }
     }
    
-    pub fn numeric_char(ch: char) -> bool {
+    pub fn numeric_char(ch: char) -> bool 
+    {
         match ch {
             _ch if digit(_ch) => true,
             '.' | ',' => true,
@@ -3944,14 +3960,16 @@ pub mod is
         }
     }
    
-    pub fn priority_operator(ch: char) -> bool {
+    pub fn priority_operator(ch: char) -> bool 
+    {
         match ch {
             '*' | '/' | '%' => true,
             _ => false,
         }
     }
    
-    pub fn operator(ch: char) -> bool {
+    pub fn operator(ch: char) -> bool 
+    {
         match ch {
             '+' | '-' | '*' | '/' | '%' => true,
             _ => false,
@@ -3959,14 +3977,16 @@ pub mod is
     }
     /// Returns true if `ch` is an ASCII decimal digit.
     //pub fn is_digit(ch: char) -> bool {
-    pub fn digit(ch: char) -> bool {
+    pub fn digit(ch: char) -> bool 
+    {
         match ch {
             '0'..='9' => true,
             _ => false,
         }
     }
    
-    pub fn reserved(field: &str) -> bool {
+    pub fn reserved(field: &str) -> bool 
+    {
         match field {
             "@" | "null" | "true" | "false" | "Obj" | "Str" | "Arr" | "Tup" => true,
             _ => false,
@@ -4834,6 +4854,7 @@ pub mod num
                     }
                 )*}
             }
+            
             impl<T: ToPrimitive> ToPrimitive for Wrapping<T> 
             {
                 impl_to_primitive_wrapping! {
@@ -4863,6 +4884,7 @@ pub mod num
                     }
                 )*}
             }
+            
             impl<T: FromPrimitive> FromPrimitive for Wrapping<T> 
             {
                 impl_from_primitive_wrapping! {
@@ -5724,6 +5746,7 @@ pub mod num
                     Wrapping(T::zero())
                 }
             }
+            
             impl<T: ConstZero> ConstZero for Wrapping<T> where
                 Wrapping<T>: Add<Output = Wrapping<T>>,
             {
@@ -5819,6 +5842,7 @@ pub mod num
                     Wrapping(T::one())
                 }
             }
+            
             impl<T: ConstOne> ConstOne for Wrapping<T> where
                 Wrapping<T>: Mul<Output = Wrapping<T>>,
             {
@@ -7642,6 +7666,7 @@ pub mod num
                 /// Inverse hyperbolic tangent function.
                 fn atanh(self) -> Self;
             }
+            
             impl<T: Float> Real for T
             {
                 forward! {
@@ -8206,6 +8231,7 @@ pub mod num
                 ///
                 fn average_floor(&self, other: &Self) -> Self;
             }
+            
             impl<I> Average for I
             where
                 I: Integer + Shr<usize, Output = I>,
@@ -12290,6 +12316,7 @@ pub mod num
                     data[last] >>= 32 - rem;
                 }
             }
+            
             impl<R: Rng + ?Sized> RandBigInt for R 
             {
                 cfg_digit!(
@@ -17431,6 +17458,7 @@ pub mod num
                     iter.fold(Self::zero(), |sum, num| sum + num)
                 }
             }
+            
             impl<'a, T: Integer + Clone> Sum<&'a Ratio<T>> for Ratio<T>
             {
                 fn sum<I>(iter: I) -> Self
@@ -17440,6 +17468,7 @@ pub mod num
                     iter.fold(Self::zero(), |sum, num| sum + num)
                 }
             }
+            
             impl<T: Integer + Clone> Product for Ratio<T>
             {
                 fn product<I>(iter: I) -> Self
@@ -17449,6 +17478,7 @@ pub mod num
                     iter.fold(Self::one(), |prod, num| prod * num)
                 }
             }
+            
             impl<'a, T: Integer + Clone> Product<&'a Ratio<T>> for Ratio<T>
             {
                 fn product<I>(iter: I) -> Self
@@ -17515,6 +17545,7 @@ pub mod num
                     self.reduce();
                 }
             }
+            
             impl<T: Clone + Integer + NumAssign> RemAssign for Ratio<T>
             {
                 fn rem_assign(&mut self, other: Ratio<T>) {
@@ -17530,6 +17561,7 @@ pub mod num
                     self.reduce();
                 }
             }
+            
             impl<T: Clone + Integer + NumAssign> SubAssign for Ratio<T>
             {
                 fn sub_assign(&mut self, other: Ratio<T>) {
@@ -17553,6 +17585,7 @@ pub mod num
                     self.reduce();
                 }
             }
+            
             impl<T: Clone + Integer + NumAssign> DivAssign<T> for Ratio<T>
             {
                 fn div_assign(&mut self, other: T) {
@@ -17562,6 +17595,7 @@ pub mod num
                     self.reduce();
                 }
             }
+            
             impl<T: Clone + Integer + NumAssign> MulAssign<T> for Ratio<T>
             {
                 fn mul_assign(&mut self, other: T) {
@@ -18577,9 +18611,9 @@ pub mod objects
             &self.inner.map
         }
         /// Returns a new `Obj` loaded from a file.
-        pub fn from_file(path: &str) -> OverResult<Obj> 
+        pub fn from_file( path:&str ) -> OverResult<Obj> 
         {
-            Ok(parses::load_from_file(path)?)
+            Ok( parses::load_from_file(path)? )
         }
         /// Writes this `Obj` to given file in `.over` representation.
         pub fn write_to_file(&self, path: &str) -> OverResult<()>
@@ -18863,12 +18897,6 @@ pub mod parses
         *,
     };
     /*
-    use super::char_stream::CharStream;
-    use super::error::ParseErrorKind::*;
-    use super::error::{parse_err, ParseError};
-    use super::util::*;
-    use super::{ParseResult, MAX_DEPTH};
-    
     */
     type ObjMap = HashMap<String, Value>;
     type GlobalMap = HashMap<String, Value>;
@@ -21266,6 +21294,7 @@ pub mod process
                     self.sym == other.sym && self.raw == other.raw
                 }
             }
+            
             impl<T> PartialEq<T> for Ident where
             T: ?Sized + AsRef<str>
             {
@@ -22365,6 +22394,7 @@ pub mod process
                     }
                 }
             }
+            
             impl<T> PartialEq<T> for Ident where
             T: ?Sized + AsRef<str>
             {
@@ -22694,6 +22724,7 @@ pub mod process
                 pub rest: &'a str,
                     pub off: u32,
             }
+            
             impl<'a> Cursor<'a>
             {
                 pub fn advance( &self, bytes: usize) -> Cursor<'a>
@@ -23889,6 +23920,7 @@ pub mod process
             {
                 inner: vec::IntoIter<T>,
             }
+            
             impl<T> RcVec<T>
             {
                 pub fn is_empty( &self ) -> bool 
@@ -23928,6 +23960,7 @@ pub mod process
                     RcVecBuilder { inner: vec }
                 }
             }
+            
             impl<T> RcVecBuilder<T>
             {
                 pub fn new() -> Self {
@@ -23957,6 +23990,7 @@ pub mod process
                     }
                 }
             }
+            
             impl<'a, T> RcVecMut<'a, T>
             {
                 pub fn push(&mut self, element: T) {
@@ -23975,6 +24009,7 @@ pub mod process
                     RcVecBuilder { inner: vec }
                 }
             }
+            
             impl<T> Clone for RcVec<T>           
             {
                 fn clone( &self ) -> Self
@@ -23984,6 +24019,7 @@ pub mod process
                     }
                 }
             }
+            
             impl<T> IntoIterator for RcVecBuilder<T>
             {
                 type Item = T;
@@ -23996,6 +24032,7 @@ pub mod process
                     }
                 }
             }
+            
             impl<T> Iterator for RcVecIntoIter<T>
             {
                 type Item = T;
@@ -24004,6 +24041,7 @@ pub mod process
                 
                 fn size_hint( &self ) -> (usize, Option<usize>) { self.inner.size_hint() }
             }
+            
             impl<T> RefUnwindSafe for RcVec<T> where
             T:RefUnwindSafe
             {}
@@ -24172,10 +24210,14 @@ pub mod process
                 TokenStream::_new(streams.into_iter().map(|i| i.inner).collect())
             }
         }
-        /// Prints the token stream as a string that is supposed to be losslessly
-        /// convertible back into the same token stream (modulo spans), except for
-        /// possibly `TokenTree::Group`s with `Delimiter::None` delimiters and negative
-        /// numeric literals.
+        /*
+        Prints the token stream as a string that should be losslessly convertible back into the same token stream
+        (modulo spans), except for possibly `TokenTree::Group`s with `Delimiter::None` delimiters 
+        and negative numeric literals. */
+        /// 
+        /// 
+        /// 
+        /// 
         impl Display for TokenStream       
         {
             fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
@@ -25344,6 +25386,7 @@ pub mod quote
                     (self, HasIter)
                 }
             }
+            
             impl<T: Iterator> RepIteratorExt for T {}
             /// Extension trait providing the `quote_into_iter` method for non-iterable types.
             pub trait RepToTokensExt {
@@ -25355,6 +25398,7 @@ pub mod quote
                     (self, DoesNotHaveIter)
                 }
             }
+            
             impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
             /// Extension trait providing the `quote_into_iter` method for types that can be referenced as an iterator.
             pub trait RepAsIteratorExt<'q>
@@ -25362,6 +25406,7 @@ pub mod quote
                 type Iter: Iterator;
                 fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
             }
+            
             impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a T
             {
                 type Iter = T::Iter;
@@ -25369,18 +25414,21 @@ pub mod quote
                     <T as RepAsIteratorExt>::quote_into_iter(*self)
                 }
             }
+            
             impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a mut T {
                 type Iter = T::Iter;
                 fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
                     <T as RepAsIteratorExt>::quote_into_iter(*self)
                 }
             }
+            
             impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
                 type Iter = slice::Iter<'q, T>;
                 fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
                     (self.iter(), HasIter)
                 }
             }
+            
             impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T>
             {
                 type Iter = slice::Iter<'q, T>;
@@ -25388,6 +25436,7 @@ pub mod quote
                     (self.iter(), HasIter)
                 }
             }
+            
             impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T>
             {
                 type Iter = btree_set::Iter<'q, T>;
@@ -25395,6 +25444,7 @@ pub mod quote
                     (self.iter(), HasIter)
                 }
             }
+            
             impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T>
             {
                 type Iter = T::Iter;
@@ -25466,12 +25516,14 @@ pub mod quote
                     (self.0).0.join()
                 }
             }
+            
             impl<T> GetSpanBase<T> {
                 #[allow(clippy::unused_self)]
                 pub fn __into_span(&self) -> T {
                     unreachable!()
                 }
             }
+            
             impl<T> Deref for GetSpan<T>
             {
                 type Target = GetSpanInner<T>;
@@ -25480,6 +25532,7 @@ pub mod quote
                     &self.0
                 }
             }
+            
             impl<T> Deref for GetSpanInner<T>
             {
                 type Target = GetSpanBase<T>;
@@ -25554,6 +25607,7 @@ pub mod quote
                 name: &'a str,
                 state: u8,
             }
+            
             impl<'a> Iterator for Lifetime<'a>
             {
                 type Item = TokenTree;
@@ -25584,6 +25638,7 @@ pub mod quote
                 span: Span,
                 state: u8,
             }
+            
             impl<'a> Iterator for Lifetime<'a>
             {
                 type Item = TokenTree;
@@ -25778,6 +25833,7 @@ pub mod quote
             pub trait Sealed {}
             impl Sealed for Span {}
             impl Sealed for DelimSpan {}
+            
             impl<T: ?Sized + ToTokens> Sealed for T {}
         }
     }
@@ -26404,10 +26460,12 @@ pub mod values
             }
         }
         /// Returns the `Type` of this `Value`.
-        pub fn get_type(&self) -> Type {
+        pub fn get_type(&self) -> Type
+        {
             use self::Value::*;
 
-            match *self {
+            match *self
+            {
                 Null => Type::Null,
                 Bool(_) => Type::Bool,
                 Int(_) => Type::Int,
@@ -26420,58 +26478,27 @@ pub mod values
             }
         }
 
-        get_fn!(
-            "Returns the `bool` contained in this `Value`. \
-            Returns an error if this `Value` is not `Bool`.",
-            get_bool,
-            bool,
-            Bool
-        );
-        get_fn!(
-            "Returns the `BigInt` contained in this `Value`. \
-            Returns an error if this `Value` is not `Int`.",
-            get_int,
-            BigInt,
-            Int
-        );
+        get_fn!( r#"Returns the `bool` contained in this `Value`."#, get_bool, bool, Bool );        
+        get_fn! ( "Returns the `BigInt` contained in this `Value`.", get_int, BigInt, Int );
         /// Returns the `BigRational` contained in this `Value`.
-        pub fn get_frac(&self) -> OverResult<BigRational>
+        pub fn get_frac( &self ) -> OverResult<BigRational>
         {
-            match *self {
+            match *self 
+            {
                 Value::Frac(ref inner) => Ok(inner.clone()),
                 Value::Int(ref inner) => Ok(frac!(inner.clone(), 1)),
                 _ => Err(OverError::TypeMismatch(Type::Frac, self.get_type())),
             }
         }
-        get_fn!(
-            "Returns the `char` contained in this `Value`. \
-            Returns an error if this `Value` is not `Char`.",
-            get_char,
-            char,
-            Char
-        );
-        get_fn!(
-            "Returns the `String` contained in this `Value`. \
-            Returns an error if this `Value` is not `Str`.",
-            get_str,
-            String,
-            Str
-        );
-        get_fn!(
-            "Returns the `Obj` contained in this `Value`. \
-            Returns an error if this `Value` is not `Obj`.",
-            get_obj,
-            objects::Obj,
-            Obj
-        );
+
+        get_fn!( "Returns the `char` contained in this `Value`.", get_char, char, Char );        
+        get_fn!( r#"Returns the `String` contained in this `Value`."#, get_str, String, Str );        
+        get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj );
+
         /// Returns the `Arr` contained in this `Value`.
         pub fn get_arr(&self) -> OverResult<arrays::Arr>
         {
-            if let Value::Arr(ref inner) = *self
-            {
-                Ok(inner.clone())
-            }
-
+            if let Value::Arr(ref inner) = *self { Ok(inner.clone()) }
             else
             {
                 Err
@@ -26591,4 +26618,87 @@ pub mod vec
 }
 /// Indent step in .over files.
 pub const INDENT_STEP: usize = 4;
-// 26594 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+pub fn main() -> Result<(), ::io::Error>
+{
+    let document = ::parses::load_from_str(r#"receipt: "Oz-Ware Purchase Invoice"
+date:    "2012-08-06"
+customer: {
+    first_name:  "Dorothy"
+    family_name: "Gale"
+}
+
+items: [
+        {
+         part_no:  "A4786"
+         descrip:  "Water Bucket (Filled)"
+         price:    01.47
+         quantity: 4
+        }
+        {
+         part_no:  "E1628"
+         descrip:  "High Heeled \"Ruby\" Slippers"
+         size:     8
+         price:    133.70
+         quantity: 1
+        }
+       ]
+
+bill_to: {
+    street:
+    # A multi-line string. Can also be written as "123 Tornado Alley\nSuite16"
+"123 Tornado Alley
+Suite 16"
+    city:  "East Centerville"
+    state: "KS"
+}
+
+ship_to: bill_to
+
+specialDelivery:
+"Follow the Yellow Brick Road to the Emerald City. Pay no attention to the man behind the curtain.""#);
+    /*
+    let obj = ::objects::Obj::from_file("tests/test_files/example.over").unwrap();
+
+    assert_eq!(obj.get("receipt").unwrap(), "Oz-Ware Purchase Invoice");
+    assert_eq!(obj.get("date").unwrap(), "2012-08-06");
+    assert_eq!(
+        obj.get("customer").unwrap(),
+        obj!{"first_name" => "Dorothy",
+             "family_name" => "Gale"}
+    );
+
+    assert_eq!(
+        obj.get("items").unwrap(),
+        arr![
+            obj!{"part_no" => "A4786",
+                 "descrip" => "Water Bucket (Filled)",
+                 "price" => frac!(147,100),
+                 "quantity" => 4},
+            obj!{"part_no" => "E1628",
+                 "descrip" => "High Heeled \"Ruby\" Slippers",
+                 "size" => 8,
+                 "price" => frac!(1337,10),
+                 "quantity" => 1},
+        ]
+    );
+
+    assert_eq!(
+        obj.get("bill_to").unwrap(),
+        obj!{"street" => "123 Tornado Alley\nSuite 16",
+             "city" => "East Centerville",
+             "state" => "KS",
+        }
+    );
+
+    assert_eq!(obj.get("ship_to").unwrap(), obj.get("bill_to").unwrap());
+
+    assert_eq!(
+        obj.get("specialDelivery").unwrap(),
+        "Follow the Yellow Brick Road to the Emerald City. \
+         Pay no attention to the man behind the curtain."
+    ); */
+
+    Ok(())
+}
+// 27761 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
