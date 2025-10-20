@@ -3567,6 +3567,17 @@ pub mod error
             }
         }
 
+        impl From<()> for ParseError 
+        {
+            fn from(e:()) -> Self {
+                ParseError {
+                    file: None,
+                    kind: ParseErrorKind::IoError(format!("()")),
+                }
+            }
+        }
+
+
         impl From<io::Error> for ParseError 
         {
             fn from(e: io::Error) -> Self {
@@ -18538,6 +18549,20 @@ pub mod objects
 
     impl Obj 
     {
+        /// Gets the `Value` associated with `field`.
+        pub fn read(&self, field: &str) -> Result<Value, ()> 
+        {
+            match self.inner.map.get(field)
+            {
+                Some(value) => Ok( value.clone() ),
+                None => match self.inner.parent
+                {
+                    Some( ref parent ) => Ok( parent.get( field ).unwrap_or( Value::Null ) ),
+                    None => Err( () ),
+                },
+            }
+        }
+
         /// Returns a new `Obj` created from the given `HashMap`.
         pub fn from_map(obj_map: HashMap<String, Value>) -> OverResult<Obj> 
         {
@@ -26619,86 +26644,109 @@ pub mod vec
 /// Indent step in .over files.
 pub const INDENT_STEP: usize = 4;
 
-pub fn main() -> Result<(), ::io::Error>
+pub fn main() -> Result<(), error::parse::ParseError>
 {
-    let document = ::parses::load_from_str(r#"receipt: "Oz-Ware Purchase Invoice"
-date:    "2012-08-06"
-customer: {
-    first_name:  "Dorothy"
-    family_name: "Gale"
-}
+    let document = ::parses::load_from_str
+    (
+        r#"receipt: "Oz-Ware Purchase Invoice"
+            date:    "2012-08-06"
+            customer: {
+                first_name:  "Dorothy"
+                family_name: "Gale"
+            }
 
-items: [
-        {
-         part_no:  "A4786"
-         descrip:  "Water Bucket (Filled)"
-         price:    01.47
-         quantity: 4
+            items: [
+                    {
+                    part_no:  "A4786"
+                    descrip:  "Water Bucket (Filled)"
+                    price:    01.47
+                    quantity: 4
+                    }
+                    {
+                    part_no:  "E1628"
+                    descrip:  "High Heeled \"Ruby\" Slippers"
+                    size:     8
+                    price:    133.70
+                    quantity: 1
+                    }
+                ]
+
+            bill_to: {
+                street:
+                # A multi-line string. Can also be written as "123 Tornado Alley\nSuite16"
+            "123 Tornado Alley
+            Suite 16"
+                city:  "East Centerville"
+                state: "KS"
+            }
+
+            ship_to: bill_to
+
+            specialDelivery:
+            "Follow the Yellow Brick Road to the Emerald City. Pay no attention to the man behind the curtain."
+    "#)?;
+    
+    assert_eq!( document.read( "receipt" )?, "Oz-Ware Purchase Invoice");
+    assert_eq!( document.read( "date"    )?, "2012-08-06"              );
+    assert_eq!
+    (
+        document.read("customer")?,
+        obj!
+        { 
+            "first_name"  => "Dorothy", 
+            "family_name" => "Gale"
         }
-        {
-         part_no:  "E1628"
-         descrip:  "High Heeled \"Ruby\" Slippers"
-         size:     8
-         price:    133.70
-         quantity: 1
-        }
-       ]
-
-bill_to: {
-    street:
-    # A multi-line string. Can also be written as "123 Tornado Alley\nSuite16"
-"123 Tornado Alley
-Suite 16"
-    city:  "East Centerville"
-    state: "KS"
-}
-
-ship_to: bill_to
-
-specialDelivery:
-"Follow the Yellow Brick Road to the Emerald City. Pay no attention to the man behind the curtain.""#);
-    /*
-    let obj = ::objects::Obj::from_file("tests/test_files/example.over").unwrap();
-
-    assert_eq!(obj.get("receipt").unwrap(), "Oz-Ware Purchase Invoice");
-    assert_eq!(obj.get("date").unwrap(), "2012-08-06");
-    assert_eq!(
-        obj.get("customer").unwrap(),
-        obj!{"first_name" => "Dorothy",
-             "family_name" => "Gale"}
     );
 
-    assert_eq!(
-        obj.get("items").unwrap(),
-        arr![
-            obj!{"part_no" => "A4786",
-                 "descrip" => "Water Bucket (Filled)",
-                 "price" => frac!(147,100),
-                 "quantity" => 4},
-            obj!{"part_no" => "E1628",
-                 "descrip" => "High Heeled \"Ruby\" Slippers",
-                 "size" => 8,
-                 "price" => frac!(1337,10),
-                 "quantity" => 1},
+    assert_eq!
+    (
+        document.read("items")?,
+        arr!
+        [
+            obj!
+            {
+                "part_no" => "A4786",
+                "descrip" => "Water Bucket (Filled)",
+                "price" => frac!(147,100),
+                "quantity" => 4
+            },
+
+            obj!
+            {
+                "part_no" => "E1628",
+                "descrip" => "High Heeled \"Ruby\" Slippers",
+                "size" => 8,
+                "price" => frac!(1337,10),
+                "quantity" => 1
+            },
         ]
     );
 
-    assert_eq!(
-        obj.get("bill_to").unwrap(),
-        obj!{"street" => "123 Tornado Alley\nSuite 16",
-             "city" => "East Centerville",
-             "state" => "KS",
+    assert_eq!
+    (
+        document.read("bill_to")?,
+        obj!
+        {
+            "street" => "123 Tornado Alley\nSuite 16",
+            "city" => "East Centerville",
+            "state" => "KS",
         }
     );
 
-    assert_eq!(obj.get("ship_to").unwrap(), obj.get("bill_to").unwrap());
+    assert_eq!
+    (
+        document.read("ship_to")?,
+        document.read("bill_to")?,
+    );
 
-    assert_eq!(
-        obj.get("specialDelivery").unwrap(),
-        "Follow the Yellow Brick Road to the Emerald City. \
-         Pay no attention to the man behind the curtain."
-    ); */
-
+    assert_eq!
+    (
+        document.read("specialDelivery")?,
+        r#"Follow the Yellow Brick Road to the Emerald City.
+        Pay no attention to the man behind the curtain."#
+    );
+    /*
+    */
     Ok(())
 }
 // 27761 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
