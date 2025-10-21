@@ -69,9 +69,12 @@ version = "0.3"
 features = ["local-offset"]
 */
 #[macro_use] extern crate lazy_static;
+#[macro_use] extern crate nix;
 #[macro_use] extern crate rand;
 #[macro_use] extern crate regex as re;
-#[macro_use] extern crate proc_macro;
+#[macro_use] extern crate time as temporal;
+#[macro_use] extern crate unicode_normalization;
+#[macro_use] extern crate unicode_width;
 
 #[macro_use] pub mod macros
 {
@@ -2275,35 +2278,48 @@ features = ["local-offset"]
 
     #[macro_export] macro_rules! log
     {
-        ($fmt:expr) => (
-            let log_file = if let Ok(x) = std::env::var("CICADA_LOG_FILE") {
+        ($fmt:expr) => 
+        (
+            let log_file = if let Ok(x) = ::env::var("CICADA_LOG_FILE") 
+            {
                 x.clone()
-            } else {
+            }
+            
+            else 
+            {
                 String::new()
             };
 
-            if !log_file.is_empty() {
-                use std::io::Write as _;
+            if !log_file.is_empty() 
+            {
+                use ::io::Write as _;
 
                 let msg = $fmt;
-                match std::fs::OpenOptions::new().append(true).create(true).open(&log_file) {
-                    Ok(mut cfile) => {
-                        let pid = $crate::tlog::getpid();
-                        let now = $crate::ctime::DateTime::now();
+
+                match ::fs::OpenOptions::new().append(true).create(true).open(&log_file) 
+                {
+                    Ok(mut cfile) => 
+                    {
+                        let pid = ::process::read_id();
+                        let now = ::time::DateTime::now();
                         let msg = format!("[{}][{}] {}", now, pid, msg);
                         let msg = if msg.ends_with('\n') { msg } else { format!("{}\n", msg) };
-                        match cfile.write_all(msg.as_bytes()) {
+                        
+                        match cfile.write_all(msg.as_bytes()) 
+                        {
                             Ok(_) => {}
                             Err(_) => println!("tlog: write_all error")
                         }
                     }
+
                     Err(_) => println!("tlog: open file error"),
                 }
 
             }
         );
 
-        ($fmt:expr, $($arg:tt)*) => (
+        ($fmt:expr, $($arg:tt)*) => 
+        (
             let msg = format!($fmt, $($arg)*);
             log!(&msg);
         );
@@ -2316,10 +2332,1214 @@ pub mod api
     */
     use ::
     {
+        io::{ self, Error, Write },
+        os::fd::{ AsRawFd },
+        path::{ Path },
+        regex::{ Regex },
+        shell::{ Shell },
+        types::{ Command, CommandLine, CommandResult },
         *,
     };
     /*
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::shell;
+    use crate::tools;
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::jobc;
+    use crate::libc;
+    use crate::shell::Shell;
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::parsers;
+    use crate::shell;
+    use crate::tools;
+    
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::history;
+    use crate::libs;
+    use crate::rcfile;
+    use crate::shell::Shell;
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::parsers;
+    use crate::shell::Shell;
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    
+    use crate::libs;
+    use crate::parsers;
+    use crate::tools;
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::ctime;
+    use crate::history;
+    use crate::parsers;
+    use crate::shell::Shell;
+    
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::shell::Shell;
+    
+
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::shell::Shell;
+    
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::::regex::re_contains;
+    use crate::shell::Shell;
+    use crate::tools;
+    
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::parsers;
+    use crate::shell::Shell;
+    
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::parsers;
+    use crate::scripting;
+    use crate::shell::Shell;
+    
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::parsers;
+    use crate::shell::Shell;
+    
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    
+    use crate::shell::Shell;
+    
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    
     */
+    pub fn run_alias( sh: &mut shell::Shell, cl: &CommandLine, cmd: &Command, capture: bool ) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        if tokens.len() == 1 {
+            return show_alias_list(sh, cmd, cl, capture);
+        }
+
+        if tokens.len() > 2 {
+            let info = "alias syntax error: usage: alias foo='echo foo'";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        let re_single_read = Regex::new(r"^[a-zA-Z0-9_\.-]+$").unwrap();
+        if re_single_read.is_match(input) {
+            return show_single_alias(sh, input, cmd, cl, capture);
+        }
+
+        let re_to_add = Regex::new(r"^([a-zA-Z0-9_\.-]+)=(.*)$").unwrap();
+        for cap in re_to_add.captures_iter(input) {
+            let name = tools::unquote(&cap[1]);
+            // due to limitation of `parses::parser_line`,
+            // `alias foo-bar='foo bar'` will become 'foo-bar=foo bar'
+            // while `alias foo_bar='foo bar'` keeps foo_bar='foo bar'
+            let value = if cap[2].starts_with('"') || cap[2].starts_with('\'') {
+                tools::unquote(&cap[2])
+            } else {
+                cap[2].to_string()
+            };
+            sh.add_alias(name.as_str(), value.as_str());
+        }
+
+        CommandResult::new()
+    }
+    
+    pub fn run_bg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if sh.jobs.is_empty() {
+            let info = "cicada: bg: no job found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut job_id = -1;
+        if tokens.len() == 1 {
+            if let Some((gid, _)) = sh.jobs.iter().next() {
+                job_id = *gid;
+            }
+        }
+
+        if tokens.len() >= 2 {
+            let mut job_str = tokens[1].1.clone();
+            if job_str.starts_with("%") {
+                job_str = job_str.trim_start_matches('%').to_string();
+            }
+
+            match job_str.parse::<i32>() {
+                Ok(n) => job_id = n,
+                Err(_) => {
+                    let info = "cicada: bg: invalid job id";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+        if job_id == -1 {
+            let info = "cicada: bg: not such job";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let gid: i32;
+
+        {
+            let mut result = sh.get_job_by_id(job_id);
+            // fall back to find job by using prcess group id
+            if result.is_none() {
+                result = sh.get_job_by_gid(job_id);
+            }
+
+            match result {
+                Some(job) => {
+                    unsafe {
+                        nix::libc::killpg(job.gid, libc::SIGCONT);
+                        gid = job.gid;
+                        if job.status == "Running" {
+                            let info = format!("cicada: bg: job {} already in background", job.id);
+                            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                            return cr;
+                        }
+                    }
+
+                    let info_cmd = format!("[{}]  {} &", job.id, job.cmd);
+                    print_stderr_with_capture(&info_cmd, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                }
+                None => {
+                    let info = "cicada: bg: not such job";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        jobc::mark_job_as_running(sh, gid, true);
+        cr
+    }
+
+    pub fn run_cd
+    (
+        sh: &mut shell::Shell,
+        cl: &CommandLine,
+        cmd: &Command,
+        capture: bool,
+    ) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+        let args = parses::lines::tokens_to_args(&tokens);
+
+        if args.len() > 2 {
+            let info = "cicada: cd: too many argument";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let str_current_dir = tools::get_current_dir();
+
+        let mut dir_to = if args.len() == 1 {
+            let home = tools::get_user_home();
+            home.to_string()
+        } else {
+            args[1..].join("")
+        };
+
+        if dir_to == "-" {
+            if sh.previous_dir.is_empty() {
+                let info = "no previous dir";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+            dir_to = sh.previous_dir.clone();
+        } else if !dir_to.starts_with('/') {
+            dir_to = format!("{}/{}", str_current_dir, dir_to);
+        }
+
+        if !Path::new(&dir_to).exists() {
+            let info = format!("cicada: cd: {}: No such file or directory", &args[1]);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        match Path::new(&dir_to).canonicalize() {
+            Ok(p) => {
+                dir_to = p.as_path().to_string_lossy().to_string();
+            }
+            Err(e) => {
+                let info = format!("cicada: cd: error: {}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        match env::set_current_dir(&dir_to) {
+            Ok(_) => {
+                sh.current_dir = dir_to.clone();
+                if str_current_dir != dir_to {
+                    sh.previous_dir = str_current_dir.clone();
+                    env::set_var("PWD", &sh.current_dir);
+                };
+                cr.status = 0;
+                cr
+            }
+            Err(e) => {
+                let info = format!("cicada: cd: {}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                cr
+            }
+        }
+    }
+
+    pub fn run_info(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut info = vec![];
+        const VERSION: &str = "0.0.0"; //env!("CARGO_PKG_VERSION");
+        info.push(("version", VERSION));
+
+        let os_name = ::get::os_name();
+        info.push(("os-name", &os_name));
+
+        let hfile = history::read_file();
+        info.push(("history-file", &hfile));
+
+        let rcf = rcfile::get_rc_file();
+        info.push(("rc-file", &rcf));
+
+        let git_hash = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //env!("GIT_HASH");
+        if !git_hash.is_empty() {
+            info.push(( "git-commit", "ABCDEFGHIJKLMNOPQRSTUVWXYZ" ));
+        }
+
+        let git_branch = "main"; //env!("GIT_BRANCH");
+        let mut branch = String::new();
+        if !git_branch.is_empty() {
+            branch.push_str(git_branch);
+            let git_status = " (clean)"; //env!("GIT_STATUS");
+            if git_status != "0" {
+                branch.push_str(" (dirty)");
+            }
+            info.push(("git-branch", &branch));
+        }
+
+        info.push(("built-with", "0.0.0"));
+        info.push(("built-at", "2025.10.21"));
+
+        let mut lines = Vec::new();
+        for (k, v) in &info {
+            // longest key above is 12-char length
+            lines.push(format!("{: >12}: {}", k, v));
+        }
+        let buffer = lines.join("\n");
+        let mut cr = CommandResult::new();
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_exec(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        let args = parses::lines::tokens_to_args(&tokens);
+        let len = args.len();
+        if len == 1 {
+            print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut _cmd = exec::Command::new(&args[1]);
+        let err = _cmd.args(&args[2..len]).exec();
+        let info = format!("cicada: exec: {}", err);
+        print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_exit(sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        if tokens.len() > 2 {
+            let info = "cicada: exit: too many arguments";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        if tokens.len() == 2 {
+            let _code = &tokens[1].1;
+            match _code.parse::<i32>() {
+                Ok(x) => {
+                    process::exit(x);
+                }
+                Err(_) => {
+                    let info = format!("cicada: exit: {}: numeric argument required", _code);
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    process::exit(255);
+                }
+            }
+        }
+
+        for (_i, job) in sh.jobs.iter() {
+            if !job.cmd.starts_with("nohup ") {
+                let mut info = String::new();
+                info.push_str("There are background jobs.");
+                info.push_str("Run `jobs` to see details; `exit 1` to force quit.");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        process::exit(0);
+        cr
+    }
+
+    pub fn run_export(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        let re_name_ptn = Regex::new(r"^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$").unwrap();
+        for (_, text) in tokens.iter() {
+            if text == "export" {
+                continue;
+            }
+
+            if !tools::is_env(text) {
+                let mut info = String::new();
+                info.push_str("export: invalid command\n");
+                info.push_str("usage: export XXX=YYY");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            if !re_name_ptn.is_match(text) {
+                let mut info = String::new();
+                info.push_str("export: invalid command\n");
+                info.push_str("usage: export XXX=YYY ZZ=123");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            for cap in re_name_ptn.captures_iter(text) {
+                let name = cap[1].to_string();
+                let token = parses::lines::unquote(&cap[2]);
+                let value = libs::path::expand_home(&token);
+                env::set_var(name, &value);
+            }
+        }
+        cr
+    }
+
+    pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if sh.jobs.is_empty() {
+            let info = "cicada: fg: no job found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut job_id = -1;
+        if tokens.len() == 1 {
+            if let Some((gid, _)) = sh.jobs.iter().next() {
+                job_id = *gid;
+            }
+        }
+
+        if tokens.len() >= 2 {
+            let mut job_str = tokens[1].1.clone();
+            if job_str.starts_with("%") {
+                job_str = job_str.trim_start_matches('%').to_string();
+            }
+
+            match job_str.parse::<i32>() {
+                Ok(n) => job_id = n,
+                Err(_) => {
+                    let info = "cicada: fg: invalid job id";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        if job_id == -1 {
+            let info = "cicada: not job id found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let gid: i32;
+        let pid_list: Vec<i32>;
+
+        {
+            let mut result = sh.get_job_by_id(job_id);
+            // fall back to find job by using prcess group id
+            if result.is_none() {
+                result = sh.get_job_by_gid(job_id);
+            }
+
+            match result {
+                Some(job) => {
+                    print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+
+                    unsafe {
+                        if !shell::give_terminal_to(job.gid) {
+                            return CommandResult::error();
+                        }
+
+                        libc::killpg(job.gid, libc::SIGCONT);
+                        pid_list = job.pids.clone();
+                        gid = job.gid;
+                    }
+                }
+                None => {
+                    let info = "cicada: fg: no such job";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        unsafe {
+            jobc::mark_job_as_running(sh, gid, false);
+
+            let cr = jobc::wait_fg_job(sh, gid, &pid_list);
+
+            let gid_shell = libc::getpgid(0);
+            if !shell::give_terminal_to(gid_shell) {
+                log!("failed to give term to back to shell : {}", gid_shell);
+            }
+
+            cr
+        }
+    }
+
+    pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let hfile = history::get_history_file();
+        let path = Path::new(hfile.as_str());
+        if !path.exists() {
+            let info = "no history file";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        let conn = match Conn::open(&hfile) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: sqlite error: {:?}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        };
+
+        let tokens = cmd.tokens.clone();
+        let args = parses::lines::tokens_to_args(&tokens);
+
+        let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+        let opt = OptMain::from_iter_safe(args);
+        match opt {
+            Ok(opt) => match opt.cmd {
+                Some(SubCommand::Delete { rowid: rowids }) => {
+                    let mut _count = 0;
+                    for rowid in rowids {
+                        let _deleted = delete_history_item(&conn, rowid);
+                        if _deleted {
+                            _count += 1;
+                        }
+                    }
+                    if _count > 0 {
+                        let info = format!("deleted {} items", _count);
+                        print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    }
+                    cr
+                }
+                Some(SubCommand::Add {
+                    timestamp: ts,
+                    input,
+                }) => {
+                    let ts = ts.unwrap_or(0 as f64);
+                    add_history(sh, ts, &input);
+                    cr
+                }
+                None => {
+                    let (str_out, str_err) = list_current_history(sh, &conn, &opt);
+                    if !str_out.is_empty() {
+                        print_stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
+                    }
+                    if !str_err.is_empty() {
+                        print_stderr_with_capture(&str_err, &mut cr, cl, cmd, capture);
+                    }
+                    cr
+                }
+            },
+            Err(e) => {
+                let info = format!("{}", e);
+                if show_usage {
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                } else {
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 1;
+                }
+                cr
+            }
+        }
+    }
+
+    pub fn run_jobs(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        if sh.jobs.is_empty() {
+            return cr;
+        }
+
+        // update status of jobs if any
+        jobc::try_wait_bg_jobs(sh, false, false);
+
+        let mut lines = Vec::new();
+        let jobs = sh.jobs.clone();
+        let no_trim = cmd.tokens.len() >= 2 && cmd.tokens[1].1 == "-f";
+        for (_i, job) in jobs.iter() {
+            let line = jobc::get_job_line(job, !no_trim);
+            lines.push(line);
+        }
+        let buffer = lines.join("\n");
+
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_minfd(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+
+        let fd = nix::fcntl::open(
+            "/dev/null",
+            nix::fcntl::OFlag::empty(),
+            nix::sys::stat::Mode::empty(),
+        );
+        match fd {
+            Ok(fd) => {
+                let info = format!("{}", fd.as_raw_fd());
+                print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+            }
+            Err(e) => {
+                println_stderr!("cicada: minfd: error: {}", e);
+            }
+        }
+
+        cr
+    }
+
+    pub fn run_read(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        let name_list: Vec<String>;
+        if tokens.len() <= 1 {
+            name_list = vec!["REPLY".to_string()];
+        } else {
+            name_list = tokens[1..].iter().map(|x| x.1.clone()).collect();
+            if let Some(id_) = _find_invalid_identifier(&name_list) {
+                let info = format!("cicada: read: `{}': not a valid identifier", id_);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        let mut buffer = String::new();
+
+        if cmd.has_here_string() {
+            if let Some(redirect_from) = &cmd.redirect_from {
+                buffer.push_str(&redirect_from.1);
+                buffer.push('\n');
+            }
+        } else {
+            match io::stdin().read_line(&mut buffer) {
+                Ok(_) => {}
+                Err(e) => {
+                    let info = format!("cicada: read: error in reading stdin: {:?}", e);
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        let envs = cl.envs.clone();
+        let value_list = tools::split_into_fields(sh, buffer.trim(), &envs);
+
+        let idx_2rd_last = name_list.len() - 1;
+        for i in 0..idx_2rd_last {
+            let name = name_list.get(i);
+            if name.is_none() {
+                let info = "cicada: read: name index error";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+            let name = name.unwrap();
+
+            let value = value_list.get(i).unwrap_or(&String::new()).clone();
+            sh.set_env(name, &value);
+        }
+
+        let name_last = &name_list[idx_2rd_last];
+        let value_left: String = if value_list.len() > idx_2rd_last {
+            value_list[idx_2rd_last..].join(" ")
+        } else {
+            String::new()
+        };
+        sh.set_env(name_last, &value_left);
+        cr
+    }
+
+    pub fn run_set(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parses::lines::tokens_to_args(tokens);
+        let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+
+        let opt = OptMain::from_iter_safe(args);
+        match opt {
+            Ok(opt) => {
+                if opt.exit_on_error {
+                    sh.exit_on_error = true;
+                    cr
+                } else {
+                    let info = "cicada: set: option not implemented";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    cr
+                }
+            }
+            Err(e) => {
+                let info = format!("{}", e);
+                if show_usage {
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                } else {
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 1;
+                }
+                cr
+            }
+        }
+    }
+
+    pub fn run_source(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parses::lines::tokens_to_args(tokens);
+
+        if args.len() < 2 {
+            let info = "cicada: source: no file specified";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let status = scripting::run_script(sh, &args);
+        cr.status = status;
+        cr
+    }
+    
+    pub fn run_ulimit(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parses::lines::tokens_to_args(tokens);
+
+        if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
+            App::command().print_help().unwrap();
+            println!();
+            return cr;
+        }
+
+        let app = App::parse_from(args);
+
+        if app.H && app.S {
+            println!("cicada: ulimit: Cannot both hard and soft.");
+            cr.status = 1;
+            return cr;
+        }
+
+        let mut all_stdout = String::new();
+        let mut all_stderr = String::new();
+
+        if app.a {
+            report_all(&app, &mut all_stdout, &mut all_stderr);
+        } else if handle_limit(app.n, "open_files", app.H, &mut all_stdout, &mut all_stderr)
+            || handle_limit(
+                app.c,
+                "core_file_size",
+                app.H,
+                &mut all_stdout,
+                &mut all_stderr,
+            )
+        {
+        } else {
+            report_all(&app, &mut all_stdout, &mut all_stderr);
+        }
+
+        if !all_stdout.is_empty() {
+            print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
+        }
+        if !all_stderr.is_empty() {
+            print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
+        }
+
+        cr
+    }
+
+    pub fn run_unalias(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = "cicada: unalias: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        if !sh.remove_alias(input) {
+            let info = format!("cicada: unalias: {}: not found", input);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        cr
+    }
+
+    pub fn run_unpath(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = "cicada: unpath: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        sh.remove_path(input);
+        cr
+    }
+
+    pub fn run_unset(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = "cicada: unset: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        if !sh.remove_env(input) {
+            let info = format!("cicada: unset: invalid varname: {:?}", input);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        cr
+    }
+
+    pub fn run_vox(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        let args = parses::lines::tokens_to_args(&tokens);
+        let len = args.len();
+        let subcmd = if len > 1 { &args[1] } else { "" };
+
+        if len == 1 || (len == 2 && subcmd == "ls") {
+            match get_all_venvs() {
+                Ok(venvs) => {
+                    let info = venvs.join("\n");
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+                Err(reason) => {
+                    print_stderr_with_capture(&reason, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        if len == 3 && subcmd == "create" {
+            let pybin = match env::var("VIRTUALENV_PYBIN") {
+                Ok(x) => x,
+                Err(_) => "python3".to_string(),
+            };
+            let dir_venv = get_envs_home();
+            let venv_name = args[2].to_string();
+            let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
+            print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
+            let cr_list = execute::run_command_line(sh, &line, false, false);
+            return cr_list[0].clone();
+        }
+
+        if len == 3 && subcmd == "enter" {
+            let _err = enter_env(sh, args[2].as_str());
+            if !_err.is_empty() {
+                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+            }
+            cr
+        } else if len == 2 && subcmd == "exit" {
+            let _err = exit_env(sh);
+            if !_err.is_empty() {
+                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+            }
+            cr
+        } else {
+            let info = "cicada: vox: invalid option";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            cr
+        }
+    }
+
+    fn add_history(sh: &Shell, ts: f64, input: &str) 
+    {
+        let (tsb, tse) = (ts, ts + 1.0);
+        history::add_raw(sh, input, 0, tsb, tse);
+    }
+
+    fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
+    {
+        let mut result_stderr = String::new();
+        let result_stdout = String::new();
+
+        let history_table = history::get_history_table();
+        let mut sql = format!(
+            "SELECT ROWID, inp, tsb FROM {} WHERE ROWID > 0",
+            history_table
+        );
+        if !opt.pattern.is_empty() {
+            sql = format!("{} AND inp LIKE '%{}%'", sql, opt.pattern)
+        }
+        if opt.session {
+            sql = format!("{} AND sessionid = '{}'", sql, sh.session_id)
+        }
+        if opt.pwd {
+            sql = format!("{} AND info like '%dir:{}|%'", sql, sh.current_dir)
+        }
+
+        if opt.asc {
+            sql = format!("{} ORDER BY tsb", sql);
+        } else {
+            sql = format!("{} order by tsb desc", sql);
+        };
+        sql = format!("{} limit {} ", sql, opt.limit);
+
+        let mut stmt = match conn.prepare(&sql) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: prepare select error: {:?}", e);
+                result_stderr.push_str(&info);
+                return (result_stdout, result_stderr);
+            }
+        };
+
+        let mut rows = match stmt.query([]) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: query error: {:?}", e);
+                result_stderr.push_str(&info);
+                return (result_stdout, result_stderr);
+            }
+        };
+
+        let mut lines = Vec::new();
+        loop {
+            match rows.next() {
+                Ok(_rows) => {
+                    if let Some(row) = _rows {
+                        let row_id: i32 = match row.get(0) {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let info = format!("history: error: {:?}", e);
+                                result_stderr.push_str(&info);
+                                return (result_stdout, result_stderr);
+                            }
+                        };
+                        let inp: String = match row.get(1) {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let info = format!("history: error: {:?}", e);
+                                result_stderr.push_str(&info);
+                                return (result_stdout, result_stderr);
+                            }
+                        };
+
+                        if opt.no_id {
+                            lines.push(inp.to_string());
+                        } else if opt.only_id {
+                            lines.push(row_id.to_string());
+                        } else if opt.show_date {
+                            let tsb: f64 = match row.get(2) {
+                                Ok(x) => x,
+                                Err(e) => {
+                                    let info = format!("history: error: {:?}", e);
+                                    result_stderr.push_str(&info);
+                                    return (result_stdout, result_stderr);
+                                }
+                            };
+                            let dt = ctime::DateTime::from_timestamp(tsb);
+                            lines.push(format!("{}: {}: {}", row_id, dt, inp));
+                        } else {
+                            lines.push(format!("{}: {}", row_id, inp));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    let info = format!("history: rows next error: {:?}", e);
+                    result_stderr.push_str(&info);
+                    return (result_stdout, result_stderr);
+                }
+            }
+        }
+
+        if !opt.asc {
+            lines.reverse();
+        }
+
+        let buffer = lines.join("\n");
+
+        (buffer, result_stderr)
+    }
+
+    fn delete_history_item(conn: &Conn, rowid: usize) -> bool 
+    {
+        let history_table = history::get_history_table();
+        let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
+        match conn.execute(&sql, []) {
+            Ok(_) => true,
+            Err(e) => {
+                log!("history: error when delete: {:?}", e);
+                false
+            }
+        }
+    }
+    
+    fn show_alias_list
+    (
+        sh: &shell::Shell,
+        cmd: &Command,
+        cl: &CommandLine,
+        capture: bool,
+    ) -> CommandResult 
+    {
+        let mut lines = Vec::new();
+        for (name, value) in sh.get_alias_list() {
+            let line = format!("alias {}='{}'", name, value);
+            lines.push(line);
+        }
+        let buffer = lines.join("\n");
+        let mut cr = CommandResult::new();
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    fn show_single_alias
+    (
+        sh: &shell::Shell,
+        name_to_find: &str,
+        cmd: &Command,
+        cl: &CommandLine,
+        capture: bool,
+    ) -> CommandResult 
+    {
+        let mut cr = CommandResult::new();
+        if let Some(content) = sh.get_alias_content(name_to_find) {
+            let info = format!("alias {}='{}'", name_to_find, content);
+            print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+        } else {
+            let info = format!("cicada: alias: {}: not found", name_to_find);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        }
+        cr
+    }
+
+    fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
+    {
+        for id_ in name_list {
+            if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
+                return Some(id_.to_string());
+            }
+        }
+        None
+    }
+
+    fn set_limit(limit_name: &str, value: u64, for_hard: bool) -> String
+    {
+        let limit_id = match limit_name {
+            "open_files" => libc::RLIMIT_NOFILE,
+            "core_file_size" => libc::RLIMIT_CORE,
+            _ => return String::from("invalid limit name"),
+        };
+
+        let mut rlp = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+
+        unsafe {
+            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+                return format!(
+                    "cicada: ulimit: error getting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+        }
+
+        // to support armv7-linux-gnueabihf & 32-bit musl systems
+        if for_hard {
+            #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+            {
+                rlp.rlim_max = value as u32;
+            }
+            #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+            {
+                rlp.rlim_max = value;
+            }
+        } else {
+            #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+            {
+                rlp.rlim_cur = value as u32;
+            }
+            #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+            {
+                rlp.rlim_cur = value;
+            }
+        }
+
+        unsafe {
+            if libc::setrlimit(limit_id, &rlp) != 0 {
+                return format!(
+                    "cicada: ulimit: error setting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+        }
+
+        String::new()
+    }
+
+    fn get_limit(limit_name: &str, single_print: bool, for_hard: bool) -> (String, String)
+    {
+        let (desc, limit_id) = match limit_name {
+            "open_files" => ("open files", libc::RLIMIT_NOFILE),
+            "core_file_size" => ("core file size", libc::RLIMIT_CORE),
+            _ => {
+                return (
+                    String::new(),
+                    String::from("ulimit: error: invalid limit name"),
+                )
+            }
+        };
+
+        let mut rlp = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+
+        let mut result_stdout = String::new();
+        let mut result_stderr = String::new();
+
+        unsafe {
+            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+                result_stderr.push_str(&format!("error getting limit: {}", Error::last_os_error()));
+                return (result_stdout, result_stderr);
+            }
+
+            let to_print = if for_hard { rlp.rlim_max } else { rlp.rlim_cur };
+
+            let info = if to_print == libc::RLIM_INFINITY {
+                if single_print {
+                    "unlimited\n".to_string()
+                } else {
+                    format!("{}\t\tunlimited\n", desc)
+                }
+            } else if single_print {
+                format!("{}\n", to_print)
+            } else {
+                format!("{}\t\t{}\n", desc, to_print)
+            };
+
+            result_stdout.push_str(&info);
+        }
+
+        (result_stdout, result_stderr)
+    }
+
+    fn report_all(app: &App, all_stdout: &mut String, all_stderr: &mut String)
+    {
+        for limit_name in &["open_files", "core_file_size"] {
+            let (out, err) = get_limit(limit_name, false, app.H);
+            all_stdout.push_str(&out);
+            all_stderr.push_str(&err);
+        }
+    }
+
+    fn handle_limit
+    (
+        limit_option: Option<Option<u64>>,
+        limit_name: &str,
+        for_hard: bool,
+        all_stdout: &mut String,
+        all_stderr: &mut String,
+    ) -> bool
+    {
+        match limit_option
+        {
+            None => false,
+            Some(None) => {
+                let (out, err) = get_limit(limit_name, true, for_hard);
+                all_stdout.push_str(&out);
+                all_stderr.push_str(&err);
+                true
+            }
+            Some(Some(value)) => {
+                let err = set_limit(limit_name, value, for_hard);
+                if !err.is_empty() {
+                    all_stderr.push_str(&err);
+                }
+                true
+            }
+        }
+    }
 }
 
 pub mod arch
@@ -3290,6 +4510,13 @@ pub mod char
             ch => format!("{}", ch),
         }
     }
+    /// Returns the width of a character in the terminal.
+    // #[inline] pub fn char_width(ch: char) -> Option<usize>
+    #[inline] pub fn width(ch: char) -> Option<usize>
+    {
+        use unicode_width::UnicodeWidthChar;
+        ch.width()
+    }
 }
 
 pub mod clone
@@ -3476,7 +4703,7 @@ pub mod completions
     fn for_dots(line: &str) -> bool
     {
         /*
-        let args = parsers::parser_line::line_to_plain_tokens(line);
+        let args = parses::lines::line_to_plain_tokens(line);
         let len = args.len();
         if len == 0 {
             return false;
@@ -3496,6 +4723,107 @@ pub mod convert
 pub mod default
 {
     pub use std::default::{ * };
+}
+
+pub mod emit
+{
+    /*!
+    */
+    use ::
+    {
+        *,
+    };
+    /*
+    */
+    //pub fn print_stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        let fd = _get_dupped_stdout_fd(cmd, cl);
+        if fd == -1 {
+            return;
+        }
+
+        unsafe {
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            match f.write_all(info.as_bytes()) {
+                Ok(_) => {}
+                Err(e) => {
+                    println_stderr!("write_all: error: {}", e);
+                }
+            }
+            if !info.is_empty() {
+                match f.write_all(b"\n") {
+                    Ok(_) => {}
+                    Err(e) => {
+                        println_stderr!("write_all: error: {}", e);
+                    }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        let fd = _get_dupped_stderr_fd(cmd, cl);
+        if fd == -1 {
+            return;
+        }
+
+        unsafe {
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            match f.write_all(info.as_bytes()) {
+                Ok(_) => (),
+                Err(e) => {
+                    println_stderr!("write_all: error: {}", e);
+                }
+            }
+
+            if !info.is_empty() {
+                match f.write_all(b"\n") {
+                    Ok(_) => (),
+                    Err(e) => {
+                        println_stderr!("write_all: error: {}", e);
+                    }
+                }
+            }
+        }
+    }
+    //pub fn print_stderr_with_capture
+    pub fn stderr_with_capture
+    (
+        info: &str,
+        cr: &mut CommandResult,
+        cl: &CommandLine,
+        cmd: &Command,
+        capture: bool,
+    ) 
+    {
+        cr.status = 1;
+        if capture {
+            cr.stderr = info.to_string();
+        } else {
+            print_stderr(info, cmd, cl);
+        }
+    }
+    // print_stdout_with_capture
+    pub fn stdout_with_capture
+    (
+        info: &str,
+        cr: &mut CommandResult,
+        cl: &CommandLine,
+        cmd: &Command,
+        capture: bool,
+    ) 
+    {
+        cr.status = 0;
+        if capture {
+            cr.stdout = info.to_string();
+        } else {
+            print_stdout(info, cmd, cl);
+        }
+    }
 }
 
 pub mod env
@@ -3544,6 +4872,64 @@ pub mod env
         }
 
         result
+    }
+    // pub fn in_env() -> bool
+    pub fn inside() -> bool
+    {
+        env::var("VIRTUAL_ENV").is_ok_and(|x| !x.is_empty())
+    }
+    // pub fn enter_env(sh: &Shell, path: &str) -> String
+    pub fn enter(sh: &Shell, path: &str) -> String
+    {
+        if in_env() {
+            return "vox: already in env".to_string();
+        }
+
+        let home_envs = get_envs_home();
+        let full_path = format!("{}/{}/bin/activate", home_envs, path);
+        if !Path::new(full_path.as_str()).exists() {
+            return format!("no such env: {}", full_path);
+        }
+
+        let path_env = format!("{}/{}", home_envs, path);
+        env::set_var("VIRTUAL_ENV", &path_env);
+        let path_new = String::from("${VIRTUAL_ENV}/bin:$PATH");
+        let mut tokens: types::Tokens = Vec::new();
+        tokens.push((String::new(), path_new));
+        shell::expand_env(sh, &mut tokens);
+        env::set_var("PATH", &tokens[0].1);
+        String::new()
+    }
+    // fn exit_env(sh: &Shell) -> String
+    pub fn exit(sh: &Shell) -> String
+    {
+        if !in_env() {
+            return String::from("vox: not in an env");
+        }
+
+        let env_path = match env::var("PATH") {
+            Ok(x) => x,
+            Err(_) => {
+                return String::from("vox: cannot read PATH env");
+            }
+        };
+
+        let mut vec_path: Vec<PathBuf> = env::split_paths(&env_path).collect();
+        let path_virtual_env = String::from("${VIRTUAL_ENV}/bin");
+        // shell::extend_env(sh, &mut path_virtual_env);
+        let mut tokens: types::Tokens = Vec::new();
+        tokens.push((String::new(), path_virtual_env));
+        shell::expand_env(sh, &mut tokens);
+        let pathbuf_virtual_env = PathBuf::from(tokens[0].1.clone());
+        vec_path
+            .iter()
+            .position(|n| n == &pathbuf_virtual_env)
+            .map(|e| vec_path.remove(e));
+        let env_path_new = env::join_paths(vec_path).unwrap_or_default();
+        env::set_var("PATH", &env_path_new);
+        env::set_var("VIRTUAL_ENV", "");
+
+        String::new()
     }
 }
 
@@ -3935,6 +5321,185 @@ pub mod error
     } pub use self::parse::{ ParseError };
 }
 
+pub mod exec
+{
+    /*!
+    */
+    use ::
+    {
+        error::{ self, Error as ErrorTrait },
+        ffi::{CString, NulError, OsStr, OsString},
+        iter::{IntoIterator, Iterator},
+        os::unix::ffi::OsStrExt,
+        *,
+    };
+    /*
+    extern crate errno;
+    extern crate libc;
+    use errno::{Errno, errno};
+    */
+    /// Represents an error calling `exec`.
+    ///
+    /// This is marked `#[must_use]`, which is unusual for error types.
+    /// Normally, the fact that `Result` is marked in this fashion is
+    /// sufficient, but in this case, this error is returned bare from
+    /// functions that only return a result if they fail.
+    #[derive(Debug)]
+    #[must_use]
+    pub enum Error {
+        /// One of the strings passed to `execv` contained an internal null byte
+        /// and can't be passed correctly to C.
+        BadArgument(NulError),
+        /// An error was returned by the system.
+        Errno(Errno),
+    }
+
+    impl error::Error for Error {
+        fn description(&self) -> &str {
+            match self {
+                &Error::BadArgument(_) => "bad argument to exec",
+                &Error::Errno(_) => "couldn't exec process",
+            }
+        }
+        fn cause(&self) -> Option<&error::Error> {
+            match self {
+                &Error::BadArgument(ref err) => Some(err),
+                &Error::Errno(_) => None,
+            }
+        }
+    }
+
+    impl fmt::Display for Error {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            match self {
+                &Error::BadArgument(ref err) =>
+                    write!(f, "{}: {}", self.description(), err),
+                &Error::Errno(err) =>
+                    write!(f, "{}: {}", self.description(), err),
+            }
+        }
+    }
+
+    impl From<NulError> for Error {
+        /// Convert a `NulError` into an `ExecError`.
+        fn from(err: NulError) -> Error {
+            Error::BadArgument(err)
+        }
+    }
+
+    /// Like `try!`, but it just returns the error directly without wrapping it
+    /// in `Err`.  For functions that only return if something goes wrong.
+    macro_rules! exec_try {
+        ( $ expr : expr ) => {
+            match $expr {
+                Ok(val) => val,
+                Err(err) => return From::from(err),
+            }
+        };
+    }
+
+    /// Run `program` with `args`, completely replacing the currently running
+    /// program.  If it returns at all, it always returns an error.
+    ///
+    /// Note that `program` and the first element of `args` will normally be
+    /// identical.  The former is the program we ask the operating system to
+    /// run, and the latter is the value that will show up in `argv[0]` when
+    /// the program executes.  On POSIX systems, these can technically be
+    /// completely different, and we've perserved that much of the low-level
+    /// API here.
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// let err = exec::execvp("echo", &["echo", "foo"]);
+    /// println!("Error: {}", err);
+    /// ```
+    pub fn execvp<S, I>(program: S, args: I) -> Error
+        where S: AsRef<OsStr>, I: IntoIterator, I::Item: AsRef<OsStr>
+    {
+        // Add null terminations to our strings and our argument array,
+        // converting them into a C-compatible format.
+        let program_cstring =
+            exec_try!(CString::new(program.as_ref().as_bytes()));
+        let arg_cstrings = exec_try!(args.into_iter().map(|arg| {
+            CString::new(arg.as_ref().as_bytes())
+        }).collect::<Result<Vec<_>, _>>());
+        let mut arg_charptrs: Vec<_> = arg_cstrings.iter().map(|arg| {
+            arg.as_bytes_with_nul().as_ptr() as *const i8
+        }).collect();
+        arg_charptrs.push(ptr::null());
+
+        // Use an `unsafe` block so that we can call directly into C.
+        let res = unsafe {
+            libc::execvp(program_cstring.as_bytes_with_nul().as_ptr() as *const i8,
+                        arg_charptrs.as_ptr())
+        };
+
+        // Handle our error result.
+        if res < 0 {
+            Error::Errno(errno())
+        } else {
+            // Should never happen.
+            panic!("execvp returned unexpectedly")
+        }
+    }
+
+    /// Build a command to execute.  This has an API which is deliberately
+    /// similar to `std::process::Command`.
+    ///
+    /// ```no_run
+    /// let err = exec::Command::new("echo")
+    ///     .arg("hello")
+    ///     .arg("world")
+    ///     .exec();
+    /// println!("Error: {}", err);
+    /// ```
+    ///
+    /// If the `exec` function succeeds, it will never return.
+    pub struct Command {
+        /// The program name and arguments, in typical C `argv` style.
+        argv: Vec<OsString>,
+    }
+
+    impl Command {
+        /// Create a new command builder, specifying the program to run.  The
+        /// program will be searched for using the usual rules for `PATH`.
+        pub fn new<S: AsRef<OsStr>>(program: S) -> Command {
+            Command {
+                argv: vec!(program.as_ref().to_owned()),
+            }
+        }
+
+        /// Add an argument to the command builder.  This can be chained.
+        pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Command {
+            self.argv.push(arg.as_ref().to_owned());
+            self
+        }
+
+        /// Add multiple arguments to the command builder.  This can be
+        /// chained.
+        ///
+        /// ```no_run
+        /// let err = exec::Command::new("echo")
+        ///     .args(&["hello", "world"])
+        ///     .exec();
+        /// println!("Error: {}", err);
+        /// ```
+        pub fn args<S: AsRef<OsStr>>(&mut self, args: &[S]) -> &mut Command {
+            for arg in args {
+                self.arg(arg.as_ref());
+            }
+            self
+        }
+
+        /// Execute the command we built.  If this function succeeds, it will
+        /// never return.
+        pub fn exec(&mut self) -> Error {
+            execvp(&self.argv[0], &self.argv)
+        }
+    }
+}
+
 pub mod expand
 {
     /*!
@@ -3977,7 +5542,7 @@ pub mod expand
         }
         let ptn = r"^\$([A-Za-z_][A-Za-z0-9_]*)";
         let mut env_value = String::new();
-        match libs::re::find_first_group(ptn, text) {
+        match ::regex::find_first_group(ptn, text) {
             Some(x) => {
                 if let Ok(val) = env::var(&x) {
                     env_value = val;
@@ -3992,7 +5557,7 @@ pub mod expand
             return;
         }
         let t = text.clone();
-        *text = libs::re::replace_all(&t, ptn, &env_value);
+        *text = ::regex::replace_all(&t, ptn, &env_value);
     }
 }
 
@@ -4019,7 +5584,7 @@ pub mod extend
         let re = Regex::new(r"!!").unwrap();
         let mut replaced = false;
         let mut new_line = String::new();
-        let linfo = parsers::parser_line::parse_line(line);
+        let linfo = parses::lines::parse_line(line);
         for (sep, token) in linfo.tokens {
             if !sep.is_empty() {
                 new_line.push_str(&sep);
@@ -4315,7 +5880,16 @@ pub mod fmt
 pub mod fs
 {
     pub use std::fs::{ * };
+    /*
+    use std::fs::File;
+    use std::io::Write;
+    use std::os::unix::io::{FromRawFd, RawFd};
 
+    use errno::errno;
+
+    use crate::tools;
+    use crate::types::{Command, CommandLine, CommandResult, Redirection};
+    */
     pub fn create_raw_fd_from_file(file_name: &str, append: bool) -> Result<i32, String> 
     {
         let mut oos = OpenOptions::new();
@@ -4333,6 +5907,126 @@ pub mod fs
             Err(e) => Err(format!("{}", e)),
         }
     }
+    /// Helper function to get (stdout, stderr) pairs for redirections.
+    pub fn _get_std_fds(redirects: &[Redirection]) -> (Option<RawFd>, Option<RawFd>) 
+    {
+        if redirects.is_empty() {
+            return (None, None);
+        }
+
+        let mut fd_out = None;
+        let mut fd_err = None;
+
+        for i in 0..redirects.len() {
+            let item = &redirects[i];
+            if item.0 == "1" {
+                // 1>&2
+                let mut _fd_candidate = None;
+
+                if item.2 == "&2" {
+                    let (_fd_out, _fd_err) = _get_std_fds(&redirects[i + 1..]);
+                    if let Some(fd) = _fd_err {
+                        _fd_candidate = Some(fd);
+                    } else {
+                        _fd_candidate = unsafe { Some(libc::dup(2)) };
+                    }
+                } else {
+                    // 1> foo.log
+                    let append = item.1 == ">>";
+                    if let Ok(fd) = tools::create_raw_fd_from_file(&item.2, append) {
+                        _fd_candidate = Some(fd);
+                    }
+                }
+
+                // for command like this: `alias > a.txt > b.txt > c.txt`,
+                // we need to return the last one, but close the previous two.
+                if let Some(fd) = fd_out {
+                    unsafe {
+                        libc::close(fd);
+                    }
+                }
+
+                fd_out = _fd_candidate;
+            }
+
+            if item.0 == "2" {
+                // 2>&1
+                let mut _fd_candidate = None;
+
+                if item.2 == "&1" {
+                    if let Some(fd) = fd_out {
+                        _fd_candidate = unsafe { Some(libc::dup(fd)) };
+                    }
+                } else {
+                    // 2>foo.log
+                    let append = item.1 == ">>";
+                    if let Ok(fd) = tools::create_raw_fd_from_file(&item.2, append) {
+                        _fd_candidate = Some(fd);
+                    }
+                }
+
+                if let Some(fd) = fd_err {
+                    unsafe {
+                        libc::close(fd);
+                    }
+                }
+
+                fd_err = _fd_candidate;
+            }
+        }
+
+        (fd_out, fd_err)
+    }
+
+    pub fn _get_dupped_stdout_fd(cmd: &Command, cl: &CommandLine) -> RawFd 
+    {
+        if cl.with_pipeline() {
+            return 1;
+        }
+
+        let (_fd_out, _fd_err) = _get_std_fds(&cmd.redirects_to);
+        if let Some(fd) = _fd_err {
+            unsafe {
+                libc::close(fd);
+            }
+        }
+        if let Some(fd) = _fd_out {
+            fd
+        } else {
+            let fd = unsafe { libc::dup(1) };
+            if fd == -1 {
+                let eno = errno();
+                println_stderr!("cicada: dup: {}", eno);
+            }
+            fd
+        }
+    }
+
+    pub fn _get_dupped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd 
+    {
+        if cl.with_pipeline() {
+            return 2;
+        }
+
+        let (_fd_out, _fd_err) = _get_std_fds(&cmd.redirects_to);
+        if let Some(fd) = _fd_out {
+            unsafe {
+                libc::close(fd);
+            }
+        }
+
+        if let Some(fd) = _fd_err {
+            fd
+        } else {
+            let fd = unsafe { libc::dup(2) };
+            if fd == -1 {
+                let eno = errno();
+                println_stderr!("cicada: dup: {}", eno);
+            }
+            fd
+        }
+    }
+
 }
 
 pub mod get
@@ -4368,7 +6062,7 @@ pub mod get
     pub fn dot_file( line:&str ) -> (String, String)
     {
         /*
-        let args = parsers::parser_line::line_to_plain_tokens(line);
+        let args = parses::lines::line_to_plain_tokens(line);
         let dir = tools::get_user_completer_dir();
         let dot_file = format!("{}/{}.yaml", dir, args[0]);
         if !Path::new(&dot_file).exists() {
@@ -4500,6 +6194,46 @@ pub mod get
         } else {
             get_other_os_name()
         }
+    }
+    // pub fn get_envs_home() -> String
+    pub fn virtual_home() -> String
+    {
+        env::var("VIRTUALENV_HOME").unwrap_or_default()
+    }
+    // pub fn get_all_venvs() -> Result<Vec<String>, String>
+    pub fn all_virtual_environments() -> Result<Vec<String>, String>
+    {
+        let home_envs = get_envs_home();
+        if home_envs.is_empty() {
+            let info = String::from("you need to set VIRTUALENV_HOME to use vox");
+            return Err(info);
+        }
+        if !Path::new(home_envs.as_str()).exists() {
+            match fs::create_dir_all(home_envs.as_str()) {
+                Ok(_) => {}
+                Err(e) => {
+                    let info = format!("fs create_dir_all failed: {:?}", e);
+                    return Err(info);
+                }
+            }
+        }
+
+        let mut venvs = Vec::new();
+        let pdir = home_envs.clone();
+        if let Ok(list) = fs::read_dir(home_envs) {
+            for ent in list.flatten() {
+                let ent_name = ent.file_name();
+                if let Ok(path) = ent_name.into_string() {
+                    let full_path = format!("{}/{}/bin/activate", pdir, path);
+                    if !Path::new(full_path.as_str()).exists() {
+                        continue;
+                    }
+                    venvs.push(path);
+                }
+            }
+        }
+
+        Ok(venvs)
     }
     // fn get_other_os_name() -> String
     fn other_os_name() -> String
@@ -5046,6 +6780,19 @@ pub mod is
     pub fn non_tty() -> bool 
     {
         unsafe { libc::isatty(0) == 0 }
+    }
+    /// Returns whether the given character is a combining mark.
+    //pub fn is_combining_mark(ch: char) -> bool
+    #[inline] pub fn combining_mark(ch: char) -> bool
+    {
+        use unicode_normalization::char::is_combining_mark;
+        is_combining_mark(ch)
+    }
+    //pub fn is_wide(ch: char) -> bool
+    pub fn is_wide(ch: char) -> bool
+    {
+        //use ::system::util::char_width;
+        char::width(ch) == Some(2)
     }
 }
 
@@ -19917,6 +21664,11 @@ pub mod option
     pub use std::option::{ * };
 }
 
+pub mod os
+{
+    pub use std::os::{ * };
+}
+
 pub mod panic
 {
     pub use std::panic::{ * };
@@ -19994,46 +21746,6 @@ pub mod parses
         use crate::tools;
         use crate::types::{LineInfo, Redirection, Tokens};
         */
-        pub mod complete
-        {
-            /*!
-            Provides utilities for implementing word completion. */
-            use ::
-            {
-                *,
-            };
-            /*
-            use std::borrow::Cow::{self, Borrowed, Owned};
-            use std::fs::read_dir;
-            use std::path::{is_separator, MAIN_SEPARATOR};
-
-            use crate::prompter::Prompter;
-            use crate::terminal::Terminal;
-            */
-            /// Specifies an optional suffix to override the default value
-            #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-            pub enum Suffix
-            {
-                /// Use the default suffix
-                Default,
-                /// Use no suffix
-                None,
-                /// Use the given suffix
-                Some(char),
-            }
-            /// Represents a single possible completion
-            #[derive(Clone, Debug)]
-            pub struct Completion
-            {
-                /// Whole completion text
-                pub completion: String,
-                /// Listing display string; `None` if matches completion
-                pub display: Option<String>,
-                /// Completion suffix; replaces append character
-                pub suffix: Suffix,
-            }
-        }
-
         pub mod chars
         {
             /*!
@@ -22380,7 +24092,7 @@ pub mod parses
             use std::sync::Arc;
             use std::time::Instant;
 
-            use mortal::FindResult;
+            use ::system::FindResult;
 
             use crate::chars::{is_ctrl, is_printable, DELETE, EOF};
             use crate::command::{Category, Command};
@@ -22822,8 +24534,9 @@ pub mod parses
                     self.find_binding(&s) == FindResult::Found(Command::Abort)
                 }
 
-                fn execute_command(&mut self, cmd: Command, n: i32, ch: char) -> io::Result<()> {
-                    use crate::command::Command::*;
+                fn execute_command(&mut self, cmd: Command, n: i32, ch: char) -> io::Result<()>
+                {
+                    use ::parses::lines::command::Command::*;
 
                     let mut category = cmd.category();
 
@@ -23894,7 +25607,7 @@ pub mod parses
             use std::sync::{Arc, MutexGuard};
             use std::time::{Duration, Instant};
 
-            use mortal::SequenceMap;
+            use ::system::SequenceMap;
 
             use crate::command::{Category, Command};
             use crate::complete::{Completer, Completion, DummyCompleter};
@@ -24767,34 +26480,41 @@ pub mod parses
                     r
                 }
 
-                pub fn bindings(&self) -> BindingIter {
+                pub fn bindings(&self) -> BindingIter 
+                {
                     BindingIter(self.bindings.sequences().iter())
                 }
 
-                pub fn variables(&self) -> VariableIter {
+                pub fn variables(&self) -> VariableIter 
+                {
                     self.variables.iter()
                 }
 
-                fn take_resize(&mut self) -> Option<Size> {
+                fn take_resize(&mut self) -> Option<Size> 
+                {
                     self.last_resize.take()
                 }
 
-                fn take_signal(&mut self) -> Option<Signal> {
+                fn take_signal(&mut self) -> Option<Signal> 
+                {
                     self.last_signal.take()
                 }
 
-                pub fn queue_input(&mut self, seq: &str) {
+                pub fn queue_input(&mut self, seq: &str) 
+                {
                     self.macro_buffer.insert_str(0, seq);
                 }
 
-                pub fn is_active(&self) -> bool {
+                pub fn is_active(&self) -> bool 
+                {
                     match self.state {
                         InputState::Inactive => false,
                         _ => true
                     }
                 }
 
-                pub fn reset_data(&mut self) {
+                pub fn reset_data(&mut self) 
+                {
                     self.state = InputState::NewSequence;
                     self.input_accepted = false;
                     self.overwrite_mode = false;
@@ -24811,18 +26531,22 @@ pub mod parses
                     self.last_signal = None;
                 }
 
-                pub fn bind_sequence<T>(&mut self, seq: T, cmd: Command) -> Option<Command>
-                        where T: Into<Cow<'static, str>> {
-                    self.bindings.insert(seq.into(), cmd)
+                pub fn bind_sequence<T>(&mut self, seq: T, cmd: Command) -> Option<Command> where
+                T: Into<Cow<'static, str>>
+                {
+                    self.bindings.insert(seq.into(), cmd) 
                 }
 
-                pub fn bind_sequence_if_unbound<T>(&mut self, seq: T, cmd: Command) -> bool
-                        where T: Into<Cow<'static, str>> {
-                    use mortal::sequence::Entry;
-
-                    match self.bindings.entry(seq.into()) {
+                pub fn bind_sequence_if_unbound<T>(&mut self, seq: T, cmd: Command) -> bool where
+                T: Into<Cow<'static, str>>
+                {
+                    use ::system::sequence::Entry;
+                    
+                    match self.bindings.entry(seq.into())
+                    {
                         Entry::Occupied(_) => false,
-                        Entry::Vacant(ent) => {
+                        Entry::Vacant(ent) =>
+                        {
                             ent.insert(cmd);
                             true
                         }
@@ -24938,7 +26662,8 @@ pub mod parses
                 }
             }
 
-            impl<'a> DoubleEndedIterator for BindingIter<'a> {
+            impl<'a> DoubleEndedIterator for BindingIter<'a> 
+            {
                 #[inline]
                 fn next_back(&mut self) -> Option<Self::Item> {
                     self.0.next_back().map(|&(ref s, ref cmd)| (&s[..], cmd))
@@ -24946,7 +26671,7 @@ pub mod parses
             }
 
             fn default_bindings() -> SequenceMap<Cow<'static, str>, Command> {
-                use crate::command::Command::*;
+                use super::command::Command::*;
 
                 SequenceMap::from(vec![
                     // Carriage return and line feed
@@ -25267,13 +26992,13 @@ pub mod parses
             use std::io;
             use std::time::Duration;
 
-            use mortal::{self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard};
+            use ::system::{self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard};
             use crate::sys;
 
-            pub use mortal::{CursorMode, Signal, SignalSet, Size};
+            pub use ::system::{CursorMode, Signal, SignalSet, Size};
             */
             /// Default `Terminal` interface
-            pub struct DefaultTerminal(mortal::Terminal);
+            pub struct DefaultTerminal(::system::Terminal);
 
             /// Represents the result of a `Terminal` read operation
             pub enum RawRead {
@@ -25426,12 +27151,12 @@ pub mod parses
             impl DefaultTerminal {
                 /// Opens access to the terminal device associated with standard output.
                 pub fn new() -> io::Result<DefaultTerminal> {
-                    mortal::Terminal::new().map(DefaultTerminal)
+                    ::system::Terminal::new().map(DefaultTerminal)
                 }
 
                 /// Opens access to the terminal device associated with standard error.
                 pub fn stderr() -> io::Result<DefaultTerminal> {
-                    mortal::Terminal::stderr().map(DefaultTerminal)
+                    ::system::Terminal::stderr().map(DefaultTerminal)
                 }
 
                 unsafe fn cast_writer<'a>(writer: &'a mut dyn TerminalWriter<Self>)
@@ -25564,7 +27289,7 @@ pub mod parses
             */
             pub fn filter_visible(s: &str) -> Cow<str>
             {
-                use crate::reader::{START_INVISIBLE, END_INVISIBLE};
+                use super::reader::{START_INVISIBLE, END_INVISIBLE};
 
                 if !s.contains(START_INVISIBLE) {
                     return Cow::Borrowed(s);
@@ -25897,18 +27622,6 @@ pub mod parses
                 }
 
                 None
-            }
-
-            pub fn is_combining_mark(ch: char) -> bool {
-                use mortal::util::is_combining_mark;
-
-                is_combining_mark(ch)
-            }
-
-            pub fn is_wide(ch: char) -> bool {
-                use mortal::util::char_width;
-
-                char_width(ch) == Some(2)
             }
 
             pub fn match_name(name: &str, value: &str) -> bool {
@@ -27747,8 +29460,8 @@ pub mod parses
                     use std::io;
                     use std::time::Duration;
 
-                    use mortal::{Event, TerminalReadGuard};
-                    use mortal::unix::TerminalExt;
+                    use ::system::{Event, TerminalReadGuard};
+                    use ::system::unix::TerminalExt;
 
                     use crate::terminal::RawRead;
                     */
@@ -28187,7 +29900,7 @@ pub mod parses
                     }
 
                     if sep.is_empty() {
-                        let is_an_env = libs::re::re_contains(&token, r"^[a-zA-Z0-9_]+=.*$");
+                        let is_an_env = ::regex::re_contains(&token, r"^[a-zA-Z0-9_]+=.*$");
                         if !is_an_env && (c == '\'' || c == '"') {
                             sep = c.to_string();
                             continue;
@@ -28267,7 +29980,7 @@ pub mod parses
                     }
 
                     let s3 = word.to_string();
-                    if libs::re::re_contains(&to_be_continued_s1, r"^\d+$") {
+                    if ::regex::re_contains(&to_be_continued_s1, r"^\d+$") {
                         if to_be_continued_s1 != "1" && to_be_continued_s1 != "2" {
                             return Err(String::from("Bad file descriptor #3"));
                         }
@@ -28287,9 +30000,9 @@ pub mod parses
 
                 let ptn1 = r"^([^>]*)(>>?)([^>]+)$";
                 let ptn2 = r"^([^>]*)(>>?)$";
-                if !libs::re::re_contains(word, r">") {
+                if !::regex::re_contains(word, r">") {
                     tokens_new.push(token.clone());
-                } else if libs::re::re_contains(word, ptn1) {
+                } else if ::regex::re_contains(word, ptn1) {
                     let re;
                     if let Ok(x) = Regex::new(ptn1) {
                         re = x;
@@ -28305,7 +30018,7 @@ pub mod parses
                             return Err(String::from("Bad file descriptor #1"));
                         }
 
-                        if libs::re::re_contains(s1, r"^\d+$") {
+                        if ::regex::re_contains(s1, r"^\d+$") {
                             if s1 != "1" && s1 != "2" {
                                 return Err(String::from("Bad file descriptor #2"));
                             }
@@ -28317,7 +30030,7 @@ pub mod parses
                             redirects.push((String::from("1"), s2.to_string(), s3.to_string()));
                         }
                     }
-                } else if libs::re::re_contains(word, ptn2) {
+                } else if ::regex::re_contains(word, ptn2) {
                     let re;
                     if let Ok(x) = Regex::new(ptn2) {
                         re = x;
@@ -29885,4581 +31598,6 @@ pub mod primitive
 pub mod process
 {
     pub use std::process::{ * };
-
-    pub mod macros
-    {
-        use ::
-        {
-            cmp::{ Ordering },
-            error::{ Error },
-            fmt::{ self, Debug, Display },
-            hash::{ Hash, Hasher },
-            ops::{ Range, RangeBounds },
-            path::{ PathBuf },
-            *,
-        };
-        /*
-            use ::process::macros::extra::DelimSpan;
-            use ::process::macros::marker::{ProcMacroAutoTraits, MARKER};
-            use ::cmp::Ordering;
-            use ::fmt::{self, Debug, Display};
-            use ::hash::{Hash, Hasher};
-            use ::ops::Range;
-            use ::ops::RangeBounds;
-            use ::str::FromStr;
-            use ::error::Error;
-            use ::ffi::CStr;
-            use ::path::PathBuf;
-            pub use ::process::macros::location::LineColumn;
-        */        
-        pub mod detection
-        {
-            use ::
-            {
-                sync::
-                {
-                    atomic::{ AtomicUsize, Ordering },
-                    Once
-                },
-                *,
-            };
-            /*
-            */
-            static WORKS: AtomicUsize = AtomicUsize::new(0);
-            static INIT: Once = Once::new();
-
-            pub fn inside_proc_macro() -> bool
-            {
-                match WORKS.load(Ordering::Relaxed)
-                {
-                    1 => return false,
-                    2 => return true,
-                    _ =>
-                    {}
-                }
-                INIT.call_once(initialize);
-                inside_proc_macro()
-            }
-            pub fn force_fallback() { WORKS.store(1, Ordering::Relaxed); }
-            pub fn unforce_fallback() { initialize(); }
-            
-            #[allow(deprecated)]
-            fn initialize()
-            {
-                use ::panic::{self, PanicInfo};
-
-                type PanicHook = dyn Fn(&PanicInfo) + Sync + Send + 'static;
-
-                let null_hook: Box<PanicHook> = Box::new(|_panic_info| { /* ignore */ });
-                let sanity_check = &*null_hook as *const PanicHook;
-                let original_hook = panic::take_hook();
-                panic::set_hook(null_hook);
-
-                let works = panic::catch_unwind(proc_macro::Span::call_site).is_ok();
-                WORKS.store(works as usize + 1, Ordering::Relaxed);
-
-                let hopefully_null_hook = panic::take_hook();
-                panic::set_hook(original_hook);
-                if sanity_check != &*hopefully_null_hook
-                {
-                    panic!("observed race condition in process::macros::inside_proc_macro");
-                }
-            }
-        }
-
-        pub mod extra
-        {
-            use ::
-            {
-                fmt::{ self, Debug },
-                process::macros::
-                {
-                    fallback, imp, Span, 
-                },
-                marker::{ ProcMacroAutoTraits, MARKER },
-                *,
-            };
-            /*
-            */
-            /// Invalidate any `process::macros::Span` that exist on the current thread.
-            pub fn invalidate_current_thread_spans()
-            {
-                ::process::macros::imp::invalidate_current_thread_spans();
-            }
-            /// An object that holds a [`Group`]'s `span_open()` and `span_close()` together
-            /// in a more compact representation than holding those 2 spans individually.
-            #[derive(Copy, Clone)]
-            pub struct DelimSpan 
-            {
-                inner: DelimSpanEnum,
-                _marker: ProcMacroAutoTraits,
-            }
-            #[derive(Copy, Clone)]
-            enum DelimSpanEnum 
-            {
-                    Compiler {
-                    join: proc_macro::Span,
-                    open: proc_macro::Span,
-                    close: proc_macro::Span,
-                },
-                Fallback(fallback::Span),
-            }
-            impl DelimSpan
-            {
-                pub fn new(group: &imp::Group) -> Self
-               
-                {
-                    let inner = match group
-                    {
-                        imp::Group::Compiler(group) => DelimSpanEnum::Compiler
-                        {
-                            join: group.span(),
-                            open: group.span_open(),
-                            close: group.span_close(),
-                        },
-                        imp::Group::Fallback(group) => DelimSpanEnum::Fallback(group.span()),
-                    };
-
-                    DelimSpan
-                    {
-                        inner,
-                        _marker: marker::MARKER,
-                    }
-                }
-                /// Returns a span covering the entire delimited group.
-                pub fn join( &self ) -> Span
-                {
-                    match &self.inner
-                    {
-                        DelimSpanEnum::Compiler { join, .. } => Span::_new(imp::Span::Compiler(*join)),
-                        DelimSpanEnum::Fallback(span) => Span::_new_fallback(*span),
-                    }
-                }
-                /// Returns a span for the opening punctuation of the group only.
-                pub fn open( &self ) -> Span
-                {
-                    match &self.inner
-                    {
-                        DelimSpanEnum::Compiler { open, .. } => Span::_new(imp::Span::Compiler(*open)),
-                        DelimSpanEnum::Fallback(span) => Span::_new_fallback(span.first_byte()),
-                    }
-                }
-                /// Returns a span for the closing punctuation of the group only.
-                pub fn close( &self ) -> Span
-                {
-                    match &self.inner
-                    {
-                        DelimSpanEnum::Compiler { close, .. } => Span::_new(imp::Span::Compiler(*close)),
-                        DelimSpanEnum::Fallback(span) => Span::_new_fallback(span.last_byte()),
-                    }
-                }
-            }
-            impl Debug for DelimSpan           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    Debug::fmt(&self.join(), f)
-                }
-            }
-        }
-        
-        pub mod fallback
-        {
-            use ::
-            {
-                cell::{ RefCell },
-                collections::{ BTreeMap },
-                convert::{ TryFrom },
-                cmp::{ Ordering },
-                fmt::{ self, Debug, Display, Write },
-                ffi::{ CStr },
-                mem::{ ManuallyDrop },
-                ops::{ Range, RangeBounds },
-                path::{ PathBuf },
-                process::macros::
-                {
-                    location::LineColumn,
-                    parse::{self, Cursor},
-                    rcvec::{RcVec, RcVecBuilder, RcVecIntoIter, RcVecMut},
-                    imp, Delimiter, Spacing, TokenTree,
-                },
-                str::{ FromStr },
-                *,
-            };
-            /*
-            */
-            macro_rules! suffixed_numbers
-            {
-                ($($name:ident => $kind:ident,)*) => 
-                ($(
-                    pub fn $name(n: $kind) -> Literal 
-                    {
-                        Literal::_new(format!(concat!("{}", stringify!($kind)), n))
-                    }
-                )*)
-            }
-            macro_rules! unsuffixed_numbers
-            {
-                ($($name:ident => $kind:ident,)*) => 
-                ($(
-                    pub fn $name(n: $kind) -> Literal { Literal::_new(n.to_string()) }
-                )*)
-            }
-            /// Force use of proc-macro2's fallback for now, even if the compiler's implementation is available.
-            pub fn force()
-            {
-                ::process::macros::detection::force_fallback();
-            }
-            /// Resume using the compiler's implementation of the proc macro API if it is available.
-            pub fn unforce()
-            {
-                ::process::macros::detection::unforce_fallback();
-            }
-            #[derive(Clone)]
-            pub struct TokenStream 
-            {
-                inner: RcVec<TokenTree>,
-            }
-            #[derive(Debug)]
-            pub struct LexError 
-            {
-                pub span: Span,
-            }
-            impl LexError           
-            {
-                pub fn span( &self ) -> Span { self.span }
-                pub fn call_site() -> Self
-                {
-                    LexError
-                    {
-                        span: Span::call_site(),
-                    }
-                }
-            }
-            impl TokenStream
-            {
-                pub fn new() -> Self
-                {
-                    TokenStream
-                    {
-                        inner: RcVecBuilder::new().build(),
-                    }
-                }
-                pub fn from_str_checked(src: &str) -> Result<Self, LexError>
-               
-                {
-                    let mut cursor = get_cursor(src);
-                    const BYTE_ORDER_MARK: &str = "\u{feff}";
-                    if cursor.starts_with(BYTE_ORDER_MARK) {
-                        cursor = cursor.advance(BYTE_ORDER_MARK.len());
-                    }
-                    parse::token_stream(cursor)
-                }
-                
-                pub fn from_str_unchecked(src: &str) -> Self {
-                    Self::from_str_checked(src).unwrap()
-                }
-                pub fn is_empty( &self ) -> bool
-                {
-                    self.inner.len() == 0
-                }
-                fn take_inner( self ) -> RcVecBuilder<TokenTree>
-                {
-                    let nodrop = ManuallyDrop::new( self );
-                    unsafe { ptr::read(&nodrop.inner) }.make_owned()
-                }
-            }
-            fn push_token_from_proc_macro(mut vec: RcVecMut<TokenTree>, token: TokenTree)
-            {
-                match token
-                {
-                    TokenTree::Literal
-                    (
-                        ::process::macros::Literal
-                        {
-                            inner: ::process::macros::imp::Literal::Fallback(literal),
-                            _marker: marker::ProcMacroAutoTraits(_),
-                        }
-                    ) if literal.repr.starts_with('-') =>
-                    {
-                        push_negative_literal(vec, literal);
-                    }
-                    _ => vec.push(token),
-                }
-                #[cold] fn push_negative_literal(mut vec: RcVecMut<TokenTree>, mut literal: Literal)
-                {
-                    literal.repr.remove(0);
-                    let mut punct = ::process::macros::Punct::new('-', Spacing::Alone);
-                    punct.set_span(::process::macros::Span::_new_fallback(literal.span));
-                    vec.push(TokenTree::Punct(punct));
-                    vec.push(TokenTree::Literal(::process::macros::Literal::_new_fallback(literal)));
-                }
-            }
-            
-            impl Drop for TokenStream           
-            {
-                fn drop( &mut self )
-                {
-                    let mut stack = Vec::new();
-                    let mut current = match self.inner.get_mut() {
-                        Some(inner) => inner.take().into_iter(),
-                        None => return,
-                    };
-                    loop {
-                        while let Some(token) = current.next() {
-                            let group = match token {
-                                TokenTree::Group(group) => group.inner,
-                                _ => continue,
-                            };
-                                            let group = match group {
-                                ::process::macros::imp::Group::Fallback(group) => group,
-                                ::process::macros::imp::Group::Compiler(_) => continue,
-                            };
-                            let mut group = group;
-                            if let Some(inner) = group.stream.inner.get_mut() {
-                                stack.push(current);
-                                current = inner.take().into_iter();
-                            }
-                        }
-                        match stack.pop() {
-                            Some(next) => current = next,
-                            None => return,
-                        }
-                    }
-                }
-            }
-            pub struct TokenStreamBuilder {
-                inner: RcVecBuilder<TokenTree>,
-            }
-            impl TokenStreamBuilder
-            {
-                pub fn new() -> Self {
-                    TokenStreamBuilder {
-                        inner: RcVecBuilder::new(),
-                    }
-                }
-                pub fn with_capacity(cap: usize) -> Self {
-                    TokenStreamBuilder {
-                        inner: RcVecBuilder::with_capacity(cap),
-                    }
-                }
-                pub fn push_token_from_parser(&mut self, tt: TokenTree) {
-                    self.inner.push(tt);
-                }
-                pub fn build( self ) -> TokenStream {
-                    TokenStream {
-                        inner: self.inner.build(),
-                    }
-                }
-            }
-            
-            fn get_cursor(src: &str) -> Cursor<'_>
-            {
-                SOURCE_MAP.with(|sm|
-               
-                {
-                    let mut sm = sm.borrow_mut();
-                    let span = sm.add_file(src);
-                    Cursor {
-                        rest: src,
-                        off: span.lo,
-                    }
-                })
-            }
-            impl Display for LexError
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {    f.write_str("cannot parse string into token stream")
-                }
-            }
-            impl Display for TokenStream
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    let mut joint = false;
-                    for (i, tt) in self.inner.iter().enumerate() {
-                        if i != 0 && !joint {
-                            write!(f, " ")?;
-                        }
-                        joint = false;
-                        match tt {
-                            TokenTree::Group(tt) => Display::fmt(tt, f),
-                            TokenTree::Ident(tt) => Display::fmt(tt, f),
-                            TokenTree::Punct(tt) =>
-                    {
-                                joint = tt.spacing() == Spacing::Joint;
-                                Display::fmt(tt, f)
-                            }
-                            TokenTree::Literal(tt) => Display::fmt(tt, f),
-                        }?;
-                    }
-                    Ok(())
-                }
-            }
-            impl Debug for TokenStream
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {    f.write_str("TokenStream ")?;
-                    f.debug_list().entries(self.clone()).finish()
-                }
-            }
-            
-            impl From<proc_macro::TokenStream> for TokenStream
-            {
-                fn from(inner: proc_macro::TokenStream) -> Self {
-                    TokenStream::from_str_unchecked(&inner.to_string())
-                }
-            }
-            
-            impl From<TokenStream> for proc_macro::TokenStream
-            {
-                fn from(inner: TokenStream) -> Self {
-                    proc_macro::TokenStream::from_str_unchecked(&inner.to_string())
-                }
-            }
-            impl From<TokenTree> for TokenStream
-            {
-                fn from(tree: TokenTree) -> Self
-                {
-                    let mut stream = RcVecBuilder::new();
-                    push_token_from_proc_macro(stream.as_mut(), tree);
-                    TokenStream {
-                        inner: stream.build(),
-                    }
-                }
-            }
-            impl iter::FromIterator<TokenTree> for TokenStream
-            {
-                fn from_iter<I: IntoIterator<Item = TokenTree>>(tokens: I) -> Self
-                {
-                    let mut stream = TokenStream::new();
-                    stream.extend(tokens);
-                    stream
-                }
-            }
-            impl iter::FromIterator<TokenStream> for TokenStream
-            {
-                fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self
-                {
-                    let mut v = RcVecBuilder::new();
-
-                    for stream in streams {
-                        v.extend(stream.take_inner());
-                    }
-                    TokenStream { inner: v.build() }
-                }
-            }
-            impl Extend<TokenTree> for TokenStream
-            {
-                fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, tokens: I)
-                {
-                    let mut vec = self.inner.make_mut();
-                    tokens
-                        .into_iter()
-                        .for_each(|token| push_token_from_proc_macro(vec.as_mut(), token));
-                }
-            }
-            impl Extend<TokenStream> for TokenStream
-            {
-                fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, streams: I) {
-                    self.inner.make_mut().extend(streams.into_iter().flatten());
-                }
-            }
-            pub type TokenTreeIter = RcVecIntoIter<TokenTree>;
-
-            impl IntoIterator for TokenStream {
-                type Item = TokenTree;
-                type IntoIter = TokenTreeIter;
-                fn into_iter( self ) -> TokenTreeIter {
-                    self.take_inner().into_iter()
-                }
-            }
-            thread_local! {
-                static SOURCE_MAP: RefCell<SourceMap> = RefCell::new(SourceMap {
-                   
-                   
-                    files: vec![FileInfo {
-                        source_text: String::new(),
-                        span: Span { lo: 0, hi: 0 },
-                        lines: vec![0],
-                        char_index_to_byte_offset: BTreeMap::new(),
-                    }],
-                });
-            }
-            pub fn invalidate_current_thread_spans() {
-                #[cfg(not(fuzzing))]
-                SOURCE_MAP.with(|sm| sm.borrow_mut().files.truncate(1));
-            }
-            struct FileInfo {
-                source_text: String,
-                span: Span,
-                lines: Vec<usize>,
-                char_index_to_byte_offset: BTreeMap<usize, usize>,
-            }
-            impl FileInfo
-            {
-                fn offset_line_column( &self, offset: usize) -> LineColumn {
-                    assert!(self.span_within(Span {
-                        lo: offset as u32,
-                        hi: offset as u32,
-                    }));
-                    let offset = offset - self.span.lo as usize;
-                    match self.lines.binary_search(&offset) {
-                        Ok(found) => LineColumn {
-                            line: found + 1,
-                            column: 0,
-                        },
-                        Err(idx) => LineColumn {
-                            line: idx,
-                            column: offset - self.lines[idx - 1],
-                        },
-                    }
-                }
-                fn span_within( &self, span: Span) -> bool
-        {
-                    span.lo >= self.span.lo && span.hi <= self.span.hi
-                }
-                fn byte_range(&mut self, span: Span) -> Range<usize>
-                {
-                    let lo_char = (span.lo - self.span.lo) as usize;
-
-                   
-                   
-                   
-                    let (&last_char_index, &last_byte_offset) = self
-                        .char_index_to_byte_offset
-                        .range(..=lo_char)
-                        .next_back()
-                        .unwrap_or((&0, &0));
-
-                    let lo_byte = if last_char_index == lo_char {
-                        last_byte_offset
-                    } else {
-                        let total_byte_offset = match self.source_text[last_byte_offset..]
-                            .char_indices()
-                            .nth(lo_char - last_char_index)
-                        {
-                            Some((additional_offset, _ch)) => last_byte_offset + additional_offset,
-                            None => self.source_text.len(),
-                        };
-                        self.char_index_to_byte_offset
-                            .insert(lo_char, total_byte_offset);
-                        total_byte_offset
-                    };
-
-                    let trunc_lo = &self.source_text[lo_byte..];
-                    let char_len = (span.hi - span.lo) as usize;
-                    lo_byte..match trunc_lo.char_indices().nth(char_len) {
-                        Some((offset, _ch)) => lo_byte + offset,
-                        None => self.source_text.len(),
-                    }
-                }
-                fn source_text(&mut self, span: Span) -> String
-                {
-                    let byte_range = self.byte_range(span);
-                    self.source_text[byte_range].to_owned()
-                }
-            }
-            /// Computes the offsets of each line in the given source string and the total number of characters
-            fn lines_offsets(s: &str) -> (usize, Vec<usize>)
-            {
-                let mut lines = vec![0];
-                let mut total = 0;
-
-                for ch in s.chars() {
-                    total += 1;
-                    if ch == '\n' {
-                        lines.push(total);
-                    }
-                }
-                (total, lines)
-            }
-            struct SourceMap {
-                files: Vec<FileInfo>,
-            }
-            impl SourceMap
-            {
-                fn next_start_pos( &self ) -> u32 {
-
-                   
-                   
-                    self.files.last().unwrap().span.hi + 1
-                }
-                fn add_file(&mut self, src: &str) -> Span
-                {
-                    let (len, lines) = lines_offsets(src);
-                    let lo = self.next_start_pos();
-                    let span = Span {
-                        lo,
-                        hi: lo + (len as u32),
-                    };
-
-                    self.files.push(FileInfo {
-                        source_text: src.to_owned(),
-                        span,
-                        lines,
-                       
-                        char_index_to_byte_offset: BTreeMap::new(),
-                    });
-
-                    span
-                }
-                fn find( &self, span: Span) -> usize {
-                    match self.files.binary_search_by(|file| {
-                        if file.span.hi < span.lo {
-                            Ordering::Less
-                        } else if file.span.lo > span.hi {
-                            Ordering::Greater
-                        } else {
-                            assert!(file.span_within(span));
-                            Ordering::Equal
-                        }
-                    }) {
-                        Ok(i) => i,
-                        Err(_) => unreachable!("Invalid span with no related FileInfo!"),
-                    }
-                }
-                fn filepath( &self, span: Span) -> String
-                {
-                    let i = self.find(span);
-                    if i == 0 {
-                        "<unspecified>".to_owned()
-                    } else {
-                        format!("<parsed string {}>", i)
-                    }
-                }
-                fn fileinfo( &self, span: Span) -> &FileInfo
-                {
-                    let i = self.find(span);
-                    &self.files[i]
-                }
-                fn fileinfo_mut(&mut self, span: Span) -> &mut FileInfo
-                {
-                    let i = self.find(span);
-                    &mut self.files[i]
-                }
-            }
-            #[derive(Clone, Copy, PartialEq, Eq)]
-            pub struct Span {
-                    pub lo: u32,
-                    pub hi: u32,
-            }
-            impl Span 
-            {
-                pub fn call_site() -> Self {
-                    Span { lo: 0, hi: 0 }
-                }
-                pub fn mixed_site() -> Self {
-                    Span::call_site()
-                }
-                
-                pub fn def_site() -> Self {
-                    Span::call_site()
-                }
-                pub fn resolved_at( &self, _other: Span) -> Span {
-                    *self
-                }
-                pub fn located_at( &self, other: Span) -> Span {
-                    other
-                }
-                pub fn byte_range( &self ) -> Range<usize>
-                    {
-                    #[cfg(fuzzing)]
-                    return 0..0;
-
-                    #[cfg(not(fuzzing))]
-                    {
-                        if self.is_call_site() {
-                            0..0
-                        } else {
-                            SOURCE_MAP.with(|sm| sm.borrow_mut().fileinfo_mut(*self).byte_range(*self))
-                        }
-                    }
-                }
-                pub fn start( &self ) -> LineColumn {
-                    #[cfg(fuzzing)]
-                    return LineColumn { line: 0, column: 0 };
-
-                    #[cfg(not(fuzzing))]
-                    SOURCE_MAP.with(|sm| {
-                        let sm = sm.borrow();
-                        let fi = sm.fileinfo(*self);
-                        fi.offset_line_column(self.lo as usize)
-                    })
-                }
-                pub fn end( &self ) -> LineColumn {
-                    #[cfg(fuzzing)]
-                    return LineColumn { line: 0, column: 0 };
-
-                    #[cfg(not(fuzzing))]
-                    SOURCE_MAP.with(|sm| {
-                        let sm = sm.borrow();
-                        let fi = sm.fileinfo(*self);
-                        fi.offset_line_column(self.hi as usize)
-                    })
-                }
-                pub fn file( &self ) -> String {
-                    #[cfg(fuzzing)]
-                    return "<unspecified>".to_owned();
-
-                    #[cfg(not(fuzzing))]
-                    SOURCE_MAP.with(|sm| {
-                        let sm = sm.borrow();
-                        sm.filepath(*self)
-                    })
-                }
-                pub fn local_file( &self ) -> Option<PathBuf>
-                    {
-                    None
-                }
-                pub fn join( &self, other: Span) -> Option<Span>
-                    {
-                    #[cfg(fuzzing)]
-                    return {
-                        let _ = other;
-                        None
-                    };
-
-                    #[cfg(not(fuzzing))]
-                    SOURCE_MAP.with(|sm| {
-                        let sm = sm.borrow();
-                       
-                        if !sm.fileinfo(*self).span_within(other) {
-                            return None;
-                        }
-                        Some(Span {
-                            lo: cmp::min(self.lo, other.lo),
-                            hi: cmp::max(self.hi, other.hi),
-                        })
-                    })
-                }
-                
-                pub fn source_text( &self ) -> Option<String>
-                    {
-                    #[cfg(fuzzing)]
-                    return None;
-
-                    #[cfg(not(fuzzing))]
-                    {
-                        if self.is_call_site() {
-                            None
-                        } else {
-                            Some(SOURCE_MAP.with(|sm| sm.borrow_mut().fileinfo_mut(*self).source_text(*self)))
-                        }
-                    }
-                }
-                
-                pub fn first_byte( self ) -> Self {
-                    Span {
-                        lo: self.lo,
-                        hi: cmp::min(self.lo.saturating_add(1), self.hi),
-                    }
-                }
-                pub fn last_byte( self ) -> Self {
-                    Span {
-                        lo: cmp::max(self.hi.saturating_sub(1), self.lo),
-                        hi: self.hi,
-                    }
-                }
-                
-                fn is_call_site( &self ) -> bool
-        {
-                    self.lo == 0 && self.hi == 0
-                }
-            }
-            impl Debug for Span
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {            return write!(f, "bytes({}..{})", self.lo, self.hi);
-
-                }
-            }
-            pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span) {
-                    {
-                    if span.is_call_site() {
-                        return;
-                    }
-                }
-                if cfg!(span_locations) {
-                    debug.field("span", &span);
-                }
-            }
-            #[derive(Clone)]
-            pub struct Group {
-                delimiter: Delimiter,
-                stream: TokenStream,
-                span: Span,
-            }
-            impl Group
-            {
-                pub fn new(delimiter: Delimiter, stream: TokenStream) -> Self {
-                    Group {
-                        delimiter,
-                        stream,
-                        span: Span::call_site(),
-                    }
-                }
-                pub fn delimiter( &self ) -> Delimiter {
-                    self.delimiter
-                }
-                pub fn stream( &self ) -> TokenStream {
-                    self.stream.clone()
-                }
-                pub fn span( &self ) -> Span {
-                    self.span
-                }
-                pub fn span_open( &self ) -> Span {
-                    self.span.first_byte()
-                }
-                pub fn span_close( &self ) -> Span {
-                    self.span.last_byte()
-                }
-                pub fn set_span(&mut self, span: Span) {
-                    self.span = span;
-                }
-            }
-            impl Display for Group 
-            {
-               
-               
-               
-               
-               
-               
-               
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    let (open, close) = match self.delimiter {
-                        Delimiter::Parenthesis => ("(", ")"),
-                        Delimiter::Brace => ("{ ", "}"),
-                        Delimiter::Bracket => ("[", "]"),
-                        Delimiter::None => ("", ""),
-                    };
-
-                    f.write_str(open)?;
-                    Display::fmt(&self.stream, f)?;
-                    /*
-                    if self.delimiter == Delimiter::Brace && !self.stream.inner.is_empty() {
-                        f.write_str(" ")?;
-                    } */
-                    f.write_str(close)?;
-
-                    Ok(())
-                }
-            }
-            impl Debug for Group
-            {
-                fn fmt( &self, fmt: &mut fmt::Formatter) -> fmt::Result
-                {
-                    let mut debug = fmt.debug_struct("Group");
-                    debug.field("delimiter", &self.delimiter);
-                    debug.field("stream", &self.stream);
-                    debug_span_field_if_nontrivial(&mut debug, self.span);
-                    debug.finish()
-                }
-            }
-            #[derive(Clone)]
-            pub struct Ident 
-            {
-                sym: Box<str>,
-                span: Span,
-                raw: bool,
-            }
-            impl Ident 
-            {
-                #[track_caller]
-                pub fn new_checked(string: &str, span: Span) -> Self {
-                    validate_ident(string);
-                    Ident::new_unchecked(string, span)
-                }
-                pub fn new_unchecked(string: &str, span: Span) -> Self {
-                    Ident {
-                        sym: Box::from(string),
-                        span,
-                        raw: false,
-                    }
-                }
-                #[track_caller]
-                pub fn new_raw_checked(string: &str, span: Span) -> Self {
-                    validate_ident_raw(string);
-                    Ident::new_raw_unchecked(string, span)
-                }
-                pub fn new_raw_unchecked(string: &str, span: Span) -> Self {
-                    Ident {
-                        sym: Box::from(string),
-                        span,
-                        raw: true,
-                    }
-                }
-                pub fn span( &self ) -> Span {
-                    self.span
-                }
-                pub fn set_span(&mut self, span: Span) {
-                    self.span = span;
-                }
-            }
-            #[track_caller] fn validate_ident(string: &str) {
-                if string.is_empty() {
-                    panic!("Ident is not allowed to be empty; use Option<Ident>");
-                }
-                if string.bytes().all(|digit| b'0' <= digit && digit <= b'9') {
-                    panic!("Ident cannot be a number; use Literal instead");
-                }
-                fn ident_ok(string: &str) -> bool
-                {
-                    let mut chars = string.chars();
-                    let first = chars.next().unwrap();
-                    if !::is::ident_start(first) {
-                        return false;
-                    }
-                    for ch in chars {
-                        if !::is::ident_continue(ch) {
-                            return false;
-                        }
-                    }
-                    true
-                }
-                if !ident_ok(string) {
-                    panic!("{:?} is not a valid Ident", string);
-                }
-            }
-            #[track_caller] fn validate_ident_raw(string: &str) {
-                validate_ident(string);
-
-                match string {
-                    "_" | "super" | "self" | "Self" | "crate" =>
-                    {
-                        panic!("`r#{}` cannot be a raw identifier", string);
-                    }
-                    _ =>
-                    {}
-                }
-            }
-            impl PartialEq for Ident
-            {
-                fn eq( &self, other: &Ident) -> bool
-        {
-                    self.sym == other.sym && self.raw == other.raw
-                }
-            }
-            
-            impl<T> PartialEq<T> for Ident where
-            T: ?Sized + AsRef<str>
-            {
-                fn eq( &self, other: &T) -> bool
-                {
-                    let other = other.as_ref();
-                    if self.raw {
-                        other.starts_with("r#") && *self.sym == other[2..]
-                    } else {
-                        *self.sym == *other
-                    }
-                }
-            }
-            impl Display for Ident
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {    if self.raw {
-                        f.write_str("r#")?;
-                    }
-                    Display::fmt(&self.sym, f)
-                }
-            }
-            
-            impl Debug for Ident
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-               
-                {
-                    let mut debug = f.debug_struct("Ident");
-                    debug.field("sym", &format_args!("{}", self));
-                    debug_span_field_if_nontrivial(&mut debug, self.span);
-                    debug.finish()
-                }
-            }
-            #[derive(Clone)]
-            pub struct Literal {
-                pub repr: String,
-                span: Span,
-            }
-            impl Literal
-            {
-                pub fn _new(repr: String) -> Self {
-                    Literal {
-                        repr,
-                        span: Span::call_site(),
-                    }
-                }
-                pub fn from_str_checked(repr: &str) -> Result<Self, LexError>
-                {
-                    let mut cursor = get_cursor(repr);
-                            let lo = cursor.off;
-
-                    let negative = cursor.starts_with_char('-');
-                    if negative {
-                        cursor = cursor.advance(1);
-                        if !cursor.starts_with_fn(|ch| ch.is_ascii_digit()) {
-                            return Err(LexError::call_site());
-                        }
-                    }
-                    if let Ok((rest, mut literal)) = parse::literal(cursor) {
-                        if rest.is_empty() {
-                            if negative {
-                                literal.repr.insert(0, '-');
-                            }
-                            literal.span = Span {
-                                                    lo,
-                                                    hi: rest.off,
-                            };
-                            return Ok(literal);
-                        }
-                    }
-                    Err(LexError::call_site())
-                }
-                pub unsafe fn from_str_unchecked(repr: &str) -> Self {
-                    Literal::_new(repr.to_owned())
-                }
-                suffixed_numbers! {
-                    u8_suffixed => u8,
-                    u16_suffixed => u16,
-                    u32_suffixed => u32,
-                    u64_suffixed => u64,
-                    u128_suffixed => u128,
-                    usize_suffixed => usize,
-                    i8_suffixed => i8,
-                    i16_suffixed => i16,
-                    i32_suffixed => i32,
-                    i64_suffixed => i64,
-                    i128_suffixed => i128,
-                    isize_suffixed => isize,
-
-                    f32_suffixed => f32,
-                    f64_suffixed => f64,
-                }
-                unsuffixed_numbers! {
-                    u8_unsuffixed => u8,
-                    u16_unsuffixed => u16,
-                    u32_unsuffixed => u32,
-                    u64_unsuffixed => u64,
-                    u128_unsuffixed => u128,
-                    usize_unsuffixed => usize,
-                    i8_unsuffixed => i8,
-                    i16_unsuffixed => i16,
-                    i32_unsuffixed => i32,
-                    i64_unsuffixed => i64,
-                    i128_unsuffixed => i128,
-                    isize_unsuffixed => isize,
-                }
-                pub fn f32_unsuffixed(f: f32) -> Literal
-                {
-                    let mut s = f.to_string();
-                    if !s.contains('.') {
-                        s.push_str(".0");
-                    }
-                    Literal::_new(s)
-                }
-                pub fn f64_unsuffixed(f: f64) -> Literal
-                {
-                    let mut s = f.to_string();
-                    if !s.contains('.') {
-                        s.push_str(".0");
-                    }
-                    Literal::_new(s)
-                }
-                pub fn string(string: &str) -> Literal
-                {
-                    let mut repr = String::with_capacity(string.len() + 2);
-                    repr.push('"');
-                    escape_utf8(string, &mut repr);
-                    repr.push('"');
-                    Literal::_new(repr)
-                }
-                pub fn character(ch: char) -> Literal
-                {
-                    let mut repr = String::new();
-                    repr.push('\'');
-                    if ch == '"' {
-                       
-                        repr.push(ch);
-                    } else {
-                        repr.extend(ch.escape_debug());
-                    }
-                    repr.push('\'');
-                    Literal::_new(repr)
-                }
-                pub fn byte_character(byte: u8) -> Literal
-                {
-                    let mut repr = "b'".to_string();
-                    #[allow(clippy::match_overlapping_arm)]
-                    match byte {
-                        b'\0' => repr.push_str(r"\0"),
-                        b'\t' => repr.push_str(r"\t"),
-                        b'\n' => repr.push_str(r"\n"),
-                        b'\r' => repr.push_str(r"\r"),
-                        b'\'' => repr.push_str(r"\'"),
-                        b'\\' => repr.push_str(r"\\"),
-                        b'\x20'..=b'\x7E' => repr.push(byte as char),
-                        _ =>
-                    {
-                            let _ = write!(repr, r"\x{:02X}", byte);
-                        }
-                    }
-                    repr.push('\'');
-                    Literal::_new(repr)
-                }
-                pub fn byte_string(bytes: &[u8]) -> Literal
-                {
-                    let mut repr = "b\"".to_string();
-                    let mut bytes = bytes.iter();
-                    while let Some(&b) = bytes.next() {
-                        #[allow(clippy::match_overlapping_arm)]
-                        match b {
-                            b'\0' => repr.push_str(match bytes.as_slice().first() {
-                               
-                                Some(b'0'..=b'7') => r"\x00",
-                                _ => r"\0",
-                            }),
-                            b'\t' => repr.push_str(r"\t"),
-                            b'\n' => repr.push_str(r"\n"),
-                            b'\r' => repr.push_str(r"\r"),
-                            b'"' => repr.push_str("\\\""),
-                            b'\\' => repr.push_str(r"\\"),
-                            b'\x20'..=b'\x7E' => repr.push(b as char),
-                            _ =>
-                    {
-                                let _ = write!(repr, r"\x{:02X}", b);
-                            }
-                        }
-                    }
-                    repr.push('"');
-                    Literal::_new(repr)
-                }
-                pub fn c_string(string: &CStr) -> Literal
-                {
-                    let mut repr = "c\"".to_string();
-                    let mut bytes = string.to_bytes();
-                    while !bytes.is_empty() {
-                        let (valid, invalid) = match str::from_utf8(bytes) {
-                            Ok(all_valid) =>
-                    {
-                                bytes = b"";
-                                (all_valid, bytes)
-                            }
-                            Err(utf8_error) =>
-                    {
-                                let (valid, rest) = bytes.split_at(utf8_error.valid_up_to());
-                                let valid = str::from_utf8(valid).unwrap();
-                                let invalid = utf8_error
-                                    .error_len()
-                                    .map_or(rest, |error_len| &rest[..error_len]);
-                                bytes = &bytes[valid.len() + invalid.len()..];
-                                (valid, invalid)
-                            }
-                        };
-                        escape_utf8(valid, &mut repr);
-                        for &byte in invalid {
-                            let _ = write!(repr, r"\x{:02X}", byte);
-                        }
-                    }
-                    repr.push('"');
-                    Literal::_new(repr)
-                }
-                pub fn span( &self ) -> Span {
-                    self.span
-                }
-                pub fn set_span(&mut self, span: Span) {
-                    self.span = span;
-                }
-                pub fn subspan<R: RangeBounds<usize>>( &self, range: R) -> Option<Span> 
-                {
-                    use ::ops::Bound;
-
-                    let lo = match range.start_bound() {
-                        Bound::Included(start) =>
-                    {
-                            let start = u32::try_from(*start).ok()?;
-                            self.span.lo.checked_add(start)?
-                        }
-                        Bound::Excluded(start) =>
-                    {
-                            let start = u32::try_from(*start).ok()?;
-                            self.span.lo.checked_add(start)?.checked_add(1)?
-                        }
-                        Bound::Unbounded => self.span.lo,
-                    };
-                    let hi = match range.end_bound() {
-                        Bound::Included(end) =>
-                    {
-                            let end = u32::try_from(*end).ok()?;
-                            self.span.lo.checked_add(end)?.checked_add(1)?
-                        }
-                        Bound::Excluded(end) =>
-                    {
-                            let end = u32::try_from(*end).ok()?;
-                            self.span.lo.checked_add(end)?
-                        }
-                        Bound::Unbounded => self.span.hi,
-                    };
-                    if lo <= hi && hi <= self.span.hi {
-                        Some(Span { lo, hi })
-                    } else {
-                        None
-                    }
-                }
-            }
-            impl Display for Literal
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {    Display::fmt(&self.repr, f)
-                }
-            }
-            impl Debug for Literal
-            {
-                fn fmt( &self, fmt: &mut fmt::Formatter) -> fmt::Result
-                {
-                    let mut debug = fmt.debug_struct("Literal");
-                    debug.field("lit", &format_args!("{}", self.repr));
-                    debug_span_field_if_nontrivial(&mut debug, self.span);
-                    debug.finish()
-                }
-            }
-            
-            pub trait FromStr2: FromStr<Err = proc_macro::LexError>
-            {
-                    fn valid(src: &str) -> bool;
-
-                    fn from_str_checked(src: &str) -> Result<Self, imp::LexError>
-                    {
-                   
-                   
-                   
-                    if !Self::valid(src) {
-                        return Err(imp::LexError::CompilerPanic);
-                    }
-                   
-                    match panic::catch_unwind(|| Self::from_str(src)) {
-                        Ok(Ok(ok)) => Ok(ok),
-                        Ok(Err(lex)) => Err(imp::LexError::Compiler(lex)),
-                        Err(_panic) => Err(imp::LexError::CompilerPanic),
-                    }
-                }
-                fn from_str_unchecked(src: &str) -> Self {
-                    Self::from_str(src).unwrap()
-                }
-            }
-            
-            impl FromStr2 for proc_macro::TokenStream
-            {
-                fn valid(src: &str) -> bool 
-                {
-                    TokenStream::from_str_checked(src).is_ok()
-                }
-            }
-            
-            impl FromStr2 for proc_macro::Literal
-            {
-                fn valid(src: &str) -> bool 
-                {
-                    Literal::from_str_checked(src).is_ok()
-                }
-            }
-            fn escape_utf8(string: &str, repr: &mut String)
-            {
-                let mut chars = string.chars();
-                while let Some(ch) = chars.next() {
-                    if ch == '\0' {
-                        repr.push_str(
-                            if chars
-                                .as_str()
-                                .starts_with(|next| '0' <= next && next <= '7')
-                            {
-                               
-                                r"\x00"
-                            } else {
-                                r"\0"
-                            },
-                        );
-                    } else if ch == '\'' {
-                       
-                        repr.push(ch);
-                    } else {
-                        repr.extend(ch.escape_debug());
-                    }
-                }
-            }
-        }
-           
-        pub mod imp
-        {
-            use ::
-            {
-                ffi::{ CStr },
-                fmt::{ self, Debug, Display },
-                ops::{ Range, RangeBounds },
-                path::{ PathBuf },
-                process::
-                {
-                    macros::
-                    {
-                        detection::inside_proc_macro,
-                        fallback::{self, FromStr2 as _},
-                        location::LineColumn,
-                        probe::{ proc_macro_span, proc_macro_span_file, proc_macro_span_location },
-                        Delimiter, Punct, Spacing, TokenTree,                        
-                    },
-                },
-                *,
-            };
-            /*
-            */
-            #[derive(Clone)]
-            pub enum TokenStream 
-            {
-                Compiler(DeferredTokenStream),
-                Fallback(fallback::TokenStream),
-            }
-            #[derive(Clone)]
-            pub struct DeferredTokenStream 
-            {
-                stream: proc_macro::TokenStream,
-                extra: Vec<proc_macro::TokenTree>,
-            }
-            pub enum LexError
-            {
-                Compiler(proc_macro::LexError),
-                Fallback(fallback::LexError),
-                CompilerPanic,
-            }
-            #[cold] fn mismatch(line: u32) -> !
-            {
-                let backtrace = ::backtrace::Backtrace::force_capture();
-                panic!("compiler/fallback mismatch L{}\n\n{}", line, backtrace)
-            }
-            impl DeferredTokenStream           
-            {
-                fn new(stream: proc_macro::TokenStream) -> Self
-                {
-                    DeferredTokenStream
-                    {
-                        stream,
-                        extra: Vec::new(),
-                    }
-                }
-                fn is_empty( &self ) -> bool { self.stream.is_empty() && self.extra.is_empty() }
-                fn evaluate_now( &mut self )
-                {
-                    if !self.extra.is_empty() { self.stream.extend(self.extra.drain(..)); }
-                }
-                fn into_token_stream(mut self) -> proc_macro::TokenStream
-                {
-                    self.evaluate_now();
-                    self.stream
-                }
-            }
-            impl TokenStream           
-            {
-                pub fn new() -> Self
-                {
-                    if inside_proc_macro() {
-                        TokenStream::Compiler(DeferredTokenStream::new(proc_macro::TokenStream::new()))
-                    } else {
-                        TokenStream::Fallback(fallback::TokenStream::new())
-                    }
-                }
-                pub fn from_str_checked(src: &str) -> Result<Self, LexError>
-                    {
-                    if inside_proc_macro() {
-                        Ok(TokenStream::Compiler(DeferredTokenStream::new(
-                            proc_macro::TokenStream::from_str_checked(src)?,
-                        )))
-                    } else {
-                        Ok(TokenStream::Fallback(
-                            fallback::TokenStream::from_str_checked(src)?,
-                        ))
-                    }
-                }
-                pub fn is_empty( &self ) -> bool
-                {
-                    match self {
-                        TokenStream::Compiler(tts) => tts.is_empty(),
-                        TokenStream::Fallback(tts) => tts.is_empty(),
-                    }
-                }
-                fn unwrap_nightly( self ) -> proc_macro::TokenStream
-                {
-                    match self {
-                        TokenStream::Compiler(s) => s.into_token_stream(),
-                        TokenStream::Fallback(_) => mismatch(line!()),
-                    }
-                }
-                fn unwrap_stable( self ) -> fallback::TokenStream           
-                {
-                    match self {
-                        TokenStream::Compiler(_) => mismatch(line!()),
-                        TokenStream::Fallback(s) => s,
-                    }
-                }
-            }
-            impl Display for TokenStream                  
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        TokenStream::Compiler(tts) => Display::fmt(&tts.clone().into_token_stream(), f),
-                        TokenStream::Fallback(tts) => Display::fmt(tts, f),
-                    }
-                }
-            }
-            impl From<proc_macro::TokenStream> for TokenStream           
-            {
-                fn from(inner: proc_macro::TokenStream) -> Self
-                {
-                    TokenStream::Compiler(DeferredTokenStream::new(inner))
-                }
-            }
-            impl From<TokenStream> for proc_macro::TokenStream           
-            {
-                fn from(inner: TokenStream) -> Self
-                {
-                    match inner {
-                        TokenStream::Compiler(inner) => inner.into_token_stream(),
-                        TokenStream::Fallback(inner) =>
-                    {
-                            proc_macro::TokenStream::from_str_unchecked(&inner.to_string())
-                        }
-                    }
-                }
-            }
-            impl From<fallback::TokenStream> for TokenStream           
-            {
-                fn from(inner: fallback::TokenStream) -> Self
-                {
-                    TokenStream::Fallback(inner)
-                }
-            }
-            
-            fn into_compiler_token(token: TokenTree) -> proc_macro::TokenTree
-            {
-                match token {
-                    TokenTree::Group(tt) => proc_macro::TokenTree::Group(tt.inner.unwrap_nightly()),
-                    TokenTree::Punct(tt) =>
-                    {
-                        let spacing = match tt.spacing() {
-                            Spacing::Joint => proc_macro::Spacing::Joint,
-                            Spacing::Alone => proc_macro::Spacing::Alone,
-                        };
-                        let mut punct = proc_macro::Punct::new(tt.as_char(), spacing);
-                        punct.set_span(tt.span().inner.unwrap_nightly());
-                        proc_macro::TokenTree::Punct(punct)
-                    }
-                    TokenTree::Ident(tt) => proc_macro::TokenTree::Ident(tt.inner.unwrap_nightly()),
-                    TokenTree::Literal(tt) => proc_macro::TokenTree::Literal(tt.inner.unwrap_nightly()),
-                }
-            }
-            impl From<TokenTree> for TokenStream           
-            {
-                fn from(token: TokenTree) -> Self
-                {
-                    if inside_proc_macro() {
-                        TokenStream::Compiler(DeferredTokenStream::new(proc_macro::TokenStream::from(
-                            into_compiler_token(token),
-                        )))
-                    } else {
-                        TokenStream::Fallback(fallback::TokenStream::from(token))
-                    }
-                }
-            }
-            impl iter::FromIterator<TokenTree> for TokenStream           
-            {
-                fn from_iter<I: IntoIterator<Item = TokenTree>>(trees: I) -> Self
-                {
-                    if inside_proc_macro() {
-                        TokenStream::Compiler(DeferredTokenStream::new(
-                            trees.into_iter().map(into_compiler_token).collect(),
-                        ))
-                    } else {
-                        TokenStream::Fallback(trees.into_iter().collect())
-                    }
-                }
-            }
-            impl iter::FromIterator<TokenStream> for TokenStream
-            {
-                fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self
-               
-                {
-                    let mut streams = streams.into_iter();
-                    match streams.next() {
-                        Some(TokenStream::Compiler(mut first)) =>
-                    {
-                            first.evaluate_now();
-                            first.stream.extend(streams.map(|s| match s {
-                                TokenStream::Compiler(s) => s.into_token_stream(),
-                                TokenStream::Fallback(_) => mismatch(line!()),
-                            }));
-                            TokenStream::Compiler(first)
-                        }
-                        Some(TokenStream::Fallback(mut first)) =>
-                    {
-                            first.extend(streams.map(|s| match s {
-                                TokenStream::Fallback(s) => s,
-                                TokenStream::Compiler(_) => mismatch(line!()),
-                            }));
-                            TokenStream::Fallback(first)
-                        }
-                        None => TokenStream::new(),
-                    }
-                }
-            }
-            impl Extend<TokenTree> for TokenStream           
-            {
-                fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, stream: I)
-                {
-                    match self {
-                        TokenStream::Compiler(tts) =>
-                    {
-                           
-                            for token in stream {
-                                tts.extra.push(into_compiler_token(token));
-                            }
-                        }
-                        TokenStream::Fallback(tts) => tts.extend(stream),
-                    }
-                }
-            }
-            impl Extend<TokenStream> for TokenStream           
-            {
-                fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, streams: I)
-                {
-                    match self {
-                        TokenStream::Compiler(tts) =>
-                    {
-                            tts.evaluate_now();
-                            tts.stream
-                                .extend(streams.into_iter().map(TokenStream::unwrap_nightly));
-                        }
-                        TokenStream::Fallback(tts) =>
-                    {
-                            tts.extend(streams.into_iter().map(TokenStream::unwrap_stable));
-                        }
-                    }
-                }
-            }
-            impl Debug for TokenStream           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        TokenStream::Compiler(tts) => Debug::fmt(&tts.clone().into_token_stream(), f),
-                        TokenStream::Fallback(tts) => Debug::fmt(tts, f),
-                    }
-                }
-            }
-            impl LexError
-            {
-                pub fn span( &self ) -> Span
-                {
-                    match self {
-                        LexError::Compiler(_) | LexError::CompilerPanic => Span::call_site(),
-                        LexError::Fallback(e) => Span::Fallback(e.span()),
-                    }
-                }
-            }
-            impl From<proc_macro::LexError> for LexError           
-            {
-                fn from(e: proc_macro::LexError) -> Self
-                {
-                    LexError::Compiler(e)
-                }
-            }
-            impl From<fallback::LexError> for LexError           
-            {
-                fn from(e: fallback::LexError) -> Self
-                {
-                    LexError::Fallback(e)
-                }
-            }
-            impl Debug for LexError           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        LexError::Compiler(e) => Debug::fmt(e, f),
-                        LexError::Fallback(e) => Debug::fmt(e, f),
-                        LexError::CompilerPanic =>
-                    {
-                            let fallback = fallback::LexError::call_site();
-                            Debug::fmt(&fallback, f)
-                        }
-                    }
-                }
-            }
-            impl Display for LexError           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        LexError::Compiler(e) => Display::fmt(e, f),
-                        LexError::Fallback(e) => Display::fmt(e, f),
-                        LexError::CompilerPanic =>
-                    {
-                            let fallback = fallback::LexError::call_site();
-                            Display::fmt(&fallback, f)
-                        }
-                    }
-                }
-            }
-            #[derive(Clone)]
-            pub enum TokenTreeIter 
-            {
-                Compiler(proc_macro::token_stream::IntoIter),
-                Fallback(fallback::TokenTreeIter),
-            }
-            impl IntoIterator for TokenStream
-            {
-                type Item = TokenTree;
-                type IntoIter = TokenTreeIter;
-                fn into_iter( self ) -> TokenTreeIter
-                {
-                    match self {
-                        TokenStream::Compiler(tts) =>
-                    {
-                            TokenTreeIter::Compiler(tts.into_token_stream().into_iter())
-                        }
-                        TokenStream::Fallback(tts) => TokenTreeIter::Fallback(tts.into_iter()),
-                    }
-                }
-            }
-            impl Iterator for TokenTreeIter
-            {
-                type Item = TokenTree;
-                fn next( &mut self ) -> Option<TokenTree>
-                {
-                    let token = match self {
-                        TokenTreeIter::Compiler(iter) => iter.next()?,
-                        TokenTreeIter::Fallback(iter) => return iter.next(),
-                    };
-                    Some(match token {
-                        proc_macro::TokenTree::Group(tt) =>
-                    {
-                            TokenTree::Group(::process::macros::Group::_new(Group::Compiler(tt)))
-                        }
-                        proc_macro::TokenTree::Punct(tt) =>
-                    {
-                            let spacing = match tt.spacing() {
-                                proc_macro::Spacing::Joint => Spacing::Joint,
-                                proc_macro::Spacing::Alone => Spacing::Alone,
-                            };
-                            let mut o = Punct::new(tt.as_char(), spacing);
-                            o.set_span(::process::macros::Span::_new(Span::Compiler(tt.span())));
-                            TokenTree::Punct(o)
-                        }
-                        proc_macro::TokenTree::Ident(s) =>
-                    {
-                            TokenTree::Ident(::process::macros::Ident::_new(Ident::Compiler(s)))
-                        }
-                        proc_macro::TokenTree::Literal(l) =>
-                    {
-                            TokenTree::Literal(::process::macros::Literal::_new(Literal::Compiler(l)))
-                        }
-                    })
-                }
-                fn size_hint( &self ) -> (usize, Option<usize>)
-                {
-                    match self {
-                        TokenTreeIter::Compiler(tts) => tts.size_hint(),
-                        TokenTreeIter::Fallback(tts) => tts.size_hint(),
-                    }
-                }
-            }
-            #[derive(Copy, Clone)]
-            pub enum Span
-            {
-                Compiler(proc_macro::Span),
-                Fallback(fallback::Span),
-            }
-            impl Span           
-            {
-                pub fn call_site() -> Self
-                {
-                    if inside_proc_macro() {
-                        Span::Compiler(proc_macro::Span::call_site())
-                    } else {
-                        Span::Fallback(fallback::Span::call_site())
-                    }
-                }
-                pub fn mixed_site() -> Self
-                {
-                    if inside_proc_macro() {
-                        Span::Compiler(proc_macro::Span::mixed_site())
-                    } else {
-                        Span::Fallback(fallback::Span::mixed_site())
-                    }
-                }
-                
-                pub fn def_site() -> Self
-                {
-                    Span::Fallback(fallback::Span::def_site())
-                    /*
-                    if inside_proc_macro() {
-                        Span::Compiler(proc_macro::Span::def_site())
-                    } else {
-                        Span::Fallback(fallback::Span::def_site())
-                    } */
-                }
-                pub fn resolved_at( &self, other: Span) -> Span 
-                {
-                    match (self, other) {
-                        (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(a.resolved_at(b)),
-                        (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.resolved_at(b)),
-                        (Span::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
-                        (Span::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
-                    }
-                }
-                pub fn located_at( &self, other: Span) -> Span 
-                {
-                    match (self, other) {
-                        (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(a.located_at(b)),
-                        (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.located_at(b)),
-                        (Span::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
-                        (Span::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
-                    }
-                }
-                pub fn unwrap( self ) -> proc_macro::Span
-                {
-                    match self {
-                        Span::Compiler(s) => s,
-                        Span::Fallback(_) => panic!("proc_macro::Span is only available in procedural macros"),
-                    }
-                }
-                pub fn byte_range( &self ) -> Range<usize>
-                {
-                    match self {
-                        #[cfg(proc_macro_span)]
-                        Span::Compiler(s) => proc_macro_span::byte_range(s),
-                        #[cfg(not(proc_macro_span))]
-                        Span::Compiler(_) => 0..0,
-                        Span::Fallback(s) => s.byte_range(),
-                    }
-                }
-                pub fn start( &self ) -> LineColumn
-                {
-                    match self {
-                        #[cfg(proc_macro_span_location)]
-                        Span::Compiler(s) => LineColumn {
-                            line: proc_macro_span_location::line(s),
-                            column: proc_macro_span_location::column(s).saturating_sub(1),
-                        },
-                        #[cfg(not(proc_macro_span_location))]
-                        Span::Compiler(_) => LineColumn { line: 0, column: 0 },
-                        Span::Fallback(s) => s.start(),
-                    }
-                }
-                pub fn end( &self ) -> LineColumn
-                {
-                    match self {
-                        #[cfg(proc_macro_span_location)]
-                        Span::Compiler(s) =>
-                    {
-                            let end = proc_macro_span_location::end(s);
-                            LineColumn {
-                                line: proc_macro_span_location::line(&end),
-                                column: proc_macro_span_location::column(&end).saturating_sub(1),
-                            }
-                        }
-                        #[cfg(not(proc_macro_span_location))]
-                        Span::Compiler(_) => LineColumn { line: 0, column: 0 },
-                        Span::Fallback(s) => s.end(),
-                    }
-                }
-                pub fn file( &self ) -> String
-                {
-                    match self {
-                        #[cfg(proc_macro_span_file)]
-                        Span::Compiler(s) => proc_macro_span_file::file(s),
-                        #[cfg(not(proc_macro_span_file))]
-                        Span::Compiler(_) => "<token stream>".to_owned(),
-                        Span::Fallback(s) => s.file(),
-                    }
-                }
-                pub fn local_file( &self ) -> Option<PathBuf>
-                {
-                    match self {
-                        #[cfg(proc_macro_span_file)]
-                        Span::Compiler(s) => proc_macro_span_file::local_file(s),
-                        #[cfg(not(proc_macro_span_file))]
-                        Span::Compiler(_) => None,
-                        Span::Fallback(s) => s.local_file(),
-                    }
-                }
-                pub fn join( &self, other: Span) -> Option<Span> 
-               
-                {
-                    let ret = match (self, other) {
-                        #[cfg(proc_macro_span)]
-                        (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(proc_macro_span::join(a, b)?),
-                        (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.join(b)?),
-                        _ => return None,
-                    };
-                    Some(ret)
-                }
-                
-                pub fn eq( &self, other: &Span) -> bool 
-                {
-                    match (self, other)
-                    {
-                        //(Span::Compiler(a), Span::Compiler(b)) => a.eq(b),
-                        (Span::Fallback(a), Span::Fallback(b)) => a.eq(b),
-                        _ => false,
-                    }
-                }
-                pub fn source_text( &self ) -> Option<String>
-                {
-                    match self {
-                        #[cfg(not(no_source_text))]
-                        Span::Compiler(s) => s.source_text(),
-                        #[cfg(no_source_text)]
-                        Span::Compiler(_) => None,
-                        Span::Fallback(s) => s.source_text(),
-                    }
-                }
-                fn unwrap_nightly( self ) -> proc_macro::Span
-                {
-                    match self {
-                        Span::Compiler(s) => s,
-                        Span::Fallback(_) => mismatch(line!()),
-                    }
-                }
-            }
-            impl From<proc_macro::Span> for ::process::macros::Span           
-            {
-                fn from(proc_span: proc_macro::Span) -> Self
-                {
-                    ::process::macros::Span::_new(Span::Compiler(proc_span))
-                }
-            }
-            impl From<fallback::Span> for Span           
-            {
-                fn from(inner: fallback::Span) -> Self
-                {
-                    Span::Fallback(inner)
-                }
-            }
-            impl Debug for Span           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Span::Compiler(s) => Debug::fmt(s, f),
-                        Span::Fallback(s) => Debug::fmt(s, f),
-                    }
-                }
-            }
-            pub fn debug_span_field_if_nontrivial(debug: &mut fmt::DebugStruct, span: Span)
-            {
-                match span {
-                    Span::Compiler(s) =>
-                    {
-                        debug.field("span", &s);
-                    }
-                    Span::Fallback(s) => fallback::debug_span_field_if_nontrivial(debug, s),
-                }
-            }
-            #[derive(Clone)]
-            pub enum Group
-            {
-                Compiler(proc_macro::Group),
-                Fallback(fallback::Group),
-            }
-            impl Group           
-            {
-                pub fn new(delimiter: Delimiter, stream: TokenStream) -> Self
-                {
-                    match stream {
-                        TokenStream::Compiler(tts) =>
-                    {
-                            let delimiter = match delimiter {
-                                Delimiter::Parenthesis => proc_macro::Delimiter::Parenthesis,
-                                Delimiter::Bracket => proc_macro::Delimiter::Bracket,
-                                Delimiter::Brace => proc_macro::Delimiter::Brace,
-                                Delimiter::None => proc_macro::Delimiter::None,
-                            };
-                            Group::Compiler(proc_macro::Group::new(delimiter, tts.into_token_stream()))
-                        }
-                        TokenStream::Fallback(stream) =>
-                    {
-                            Group::Fallback(fallback::Group::new(delimiter, stream))
-                        }
-                    }
-                }
-                pub fn delimiter( &self ) -> Delimiter
-                {
-                    match self {
-                        Group::Compiler(g) => match g.delimiter() {
-                            proc_macro::Delimiter::Parenthesis => Delimiter::Parenthesis,
-                            proc_macro::Delimiter::Bracket => Delimiter::Bracket,
-                            proc_macro::Delimiter::Brace => Delimiter::Brace,
-                            proc_macro::Delimiter::None => Delimiter::None,
-                        },
-                        Group::Fallback(g) => g.delimiter(),
-                    }
-                }
-                pub fn stream( &self ) -> TokenStream
-                {
-                    match self {
-                        Group::Compiler(g) => TokenStream::Compiler(DeferredTokenStream::new(g.stream())),
-                        Group::Fallback(g) => TokenStream::Fallback(g.stream()),
-                    }
-                }
-                pub fn span( &self ) -> Span
-                {
-                    match self {
-                        Group::Compiler(g) => Span::Compiler(g.span()),
-                        Group::Fallback(g) => Span::Fallback(g.span()),
-                    }
-                }
-                pub fn span_open( &self ) -> Span
-                {
-                    match self {
-                        Group::Compiler(g) => Span::Compiler(g.span_open()),
-                        Group::Fallback(g) => Span::Fallback(g.span_open()),
-                    }
-                }
-                pub fn span_close( &self ) -> Span
-                {
-                    match self {
-                        Group::Compiler(g) => Span::Compiler(g.span_close()),
-                        Group::Fallback(g) => Span::Fallback(g.span_close()),
-                    }
-                }
-                pub fn set_span(&mut self, span: Span )
-                {
-                    match (self, span) {
-                        (Group::Compiler(g), Span::Compiler(s)) => g.set_span(s),
-                        (Group::Fallback(g), Span::Fallback(s)) => g.set_span(s),
-                        (Group::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
-                        (Group::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
-                    }
-                }
-                fn unwrap_nightly( self ) -> proc_macro::Group
-                {
-                    match self {
-                        Group::Compiler(g) => g,
-                        Group::Fallback(_) => mismatch(line!()),
-                    }
-                }
-            }
-            impl From<fallback::Group> for Group           
-            {
-                fn from(g: fallback::Group) -> Self
-                {
-                    Group::Fallback(g)
-                }
-            }
-            impl Display for Group           
-            {
-                fn fmt( &self, formatter: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Group::Compiler(group) => Display::fmt(group, formatter),
-                        Group::Fallback(group) => Display::fmt(group, formatter),
-                    }
-                }
-            }
-            impl Debug for Group           
-            {
-                fn fmt( &self, formatter: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Group::Compiler(group) => Debug::fmt(group, formatter),
-                        Group::Fallback(group) => Debug::fmt(group, formatter),
-                    }
-                }
-            }
-            #[derive(Clone)]
-            pub enum Ident
-            {
-                Compiler(proc_macro::Ident),
-                Fallback(fallback::Ident),
-            }
-            impl Ident 
-            {
-                #[track_caller]
-                pub fn new_checked(string: &str, span: Span) -> Self
-                {
-                    match span {
-                        Span::Compiler(s) => Ident::Compiler(proc_macro::Ident::new(string, s)),
-                        Span::Fallback(s) => Ident::Fallback(fallback::Ident::new_checked(string, s)),
-                    }
-                }
-                #[track_caller]
-                pub fn new_raw_checked(string: &str, span: Span) -> Self
-                {
-                    match span {
-                        Span::Compiler(s) => Ident::Compiler(proc_macro::Ident::new_raw(string, s)),
-                        Span::Fallback(s) => Ident::Fallback(fallback::Ident::new_raw_checked(string, s)),
-                    }
-                }
-                pub fn span( &self ) -> Span
-                {
-                    match self {
-                        Ident::Compiler(t) => Span::Compiler(t.span()),
-                        Ident::Fallback(t) => Span::Fallback(t.span()),
-                    }
-                }
-                pub fn set_span(&mut self, span: Span )
-                {
-                    match (self, span) {
-                        (Ident::Compiler(t), Span::Compiler(s)) => t.set_span(s),
-                        (Ident::Fallback(t), Span::Fallback(s)) => t.set_span(s),
-                        (Ident::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
-                        (Ident::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
-                    }
-                }
-                fn unwrap_nightly( self ) -> proc_macro::Ident
-                {
-                    match self {
-                        Ident::Compiler(s) => s,
-                        Ident::Fallback(_) => mismatch(line!()),
-                    }
-                }
-            }
-            impl From<fallback::Ident> for Ident           
-            {
-                fn from(inner: fallback::Ident) -> Self
-                {
-                    Ident::Fallback(inner)
-                }
-            }
-            impl PartialEq for Ident           
-            {
-                fn eq( &self, other: &Ident) -> bool
-        {
-                    match (self, other) {
-                        (Ident::Compiler(t), Ident::Compiler(o)) => t.to_string() == o.to_string(),
-                        (Ident::Fallback(t), Ident::Fallback(o)) => t == o,
-                        (Ident::Compiler(_), Ident::Fallback(_)) => mismatch(line!()),
-                        (Ident::Fallback(_), Ident::Compiler(_)) => mismatch(line!()),
-                    }
-                }
-            }
-            
-            impl<T> PartialEq<T> for Ident where
-            T: ?Sized + AsRef<str>
-            {
-                fn eq( &self, other: &T) -> bool
-                {
-                    let other = other.as_ref();
-                    match self {
-                        Ident::Compiler(t) => t.to_string() == other,
-                        Ident::Fallback(t) => t == other,
-                    }
-                }
-            }
-            impl Display for Ident           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Ident::Compiler(t) => Display::fmt(t, f),
-                        Ident::Fallback(t) => Display::fmt(t, f),
-                    }
-                }
-            }
-            impl Debug for Ident           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Ident::Compiler(t) => Debug::fmt(t, f),
-                        Ident::Fallback(t) => Debug::fmt(t, f),
-                    }
-                }
-            }
-            #[derive(Clone)]
-            pub enum Literal 
-            {
-                Compiler(proc_macro::Literal),
-                Fallback(fallback::Literal),
-            }
-            macro_rules! suffixed_numbers 
-            {
-                ($($name:ident => $kind:ident,)*) => ($(
-                    pub fn $name(n: $kind) -> Literal {
-                        if inside_proc_macro() {
-                            Literal::Compiler(proc_macro::Literal::$name(n))
-                        } else {
-                            Literal::Fallback(fallback::Literal::$name(n))
-                        }
-                    }
-                )*)
-            }
-            macro_rules! unsuffixed_integers 
-            {
-                ($($name:ident => $kind:ident,)*) => ($(
-                    pub fn $name(n: $kind) -> Literal {
-                        if inside_proc_macro() {
-                            Literal::Compiler(proc_macro::Literal::$name(n))
-                        } else {
-                            Literal::Fallback(fallback::Literal::$name(n))
-                        }
-                    }
-                )*)
-            }
-            impl Literal
-            {
-                pub fn from_str_checked(repr: &str) -> Result<Self, LexError>
-                    {
-                    if inside_proc_macro() {
-                        let literal = proc_macro::Literal::from_str_checked(repr)?;
-                        Ok(Literal::Compiler(literal))
-                    } else {
-                        let literal = fallback::Literal::from_str_checked(repr)?;
-                        Ok(Literal::Fallback(literal))
-                    }
-                }
-                pub unsafe fn from_str_unchecked(repr: &str) -> Self
-                {
-                    if inside_proc_macro() {
-                        Literal::Compiler(proc_macro::Literal::from_str_unchecked(repr))
-                    } else {
-                        Literal::Fallback(unsafe { fallback::Literal::from_str_unchecked(repr) })
-                    }
-                }
-                suffixed_numbers! {
-                    u8_suffixed => u8,
-                    u16_suffixed => u16,
-                    u32_suffixed => u32,
-                    u64_suffixed => u64,
-                    u128_suffixed => u128,
-                    usize_suffixed => usize,
-                    i8_suffixed => i8,
-                    i16_suffixed => i16,
-                    i32_suffixed => i32,
-                    i64_suffixed => i64,
-                    i128_suffixed => i128,
-                    isize_suffixed => isize,
-
-                    f32_suffixed => f32,
-                    f64_suffixed => f64,
-                }
-                unsuffixed_integers! {
-                    u8_unsuffixed => u8,
-                    u16_unsuffixed => u16,
-                    u32_unsuffixed => u32,
-                    u64_unsuffixed => u64,
-                    u128_unsuffixed => u128,
-                    usize_unsuffixed => usize,
-                    i8_unsuffixed => i8,
-                    i16_unsuffixed => i16,
-                    i32_unsuffixed => i32,
-                    i64_unsuffixed => i64,
-                    i128_unsuffixed => i128,
-                    isize_unsuffixed => isize,
-                }
-                pub fn f32_unsuffixed(f: f32) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler(proc_macro::Literal::f32_unsuffixed(f))
-                    } else {
-                        Literal::Fallback(fallback::Literal::f32_unsuffixed(f))
-                    }
-                }
-                pub fn f64_unsuffixed(f: f64) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler(proc_macro::Literal::f64_unsuffixed(f))
-                    } else {
-                        Literal::Fallback(fallback::Literal::f64_unsuffixed(f))
-                    }
-                }
-                pub fn string(string: &str) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler(proc_macro::Literal::string(string))
-                    } else {
-                        Literal::Fallback(fallback::Literal::string(string))
-                    }
-                }
-                pub fn character(ch: char) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler(proc_macro::Literal::character(ch))
-                    } else {
-                        Literal::Fallback(fallback::Literal::character(ch))
-                    }
-                }
-                pub fn byte_character(byte: u8) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler({
-                            #[cfg(not(no_literal_byte_character))]
-                            {
-                                proc_macro::Literal::byte_character(byte)
-                            }
-                            #[cfg(no_literal_byte_character)]
-                            {
-                                let fallback = fallback::Literal::byte_character(byte);
-                                proc_macro::Literal::from_str_unchecked(&fallback.repr)
-                            }
-                        })
-                    } else {
-                        Literal::Fallback(fallback::Literal::byte_character(byte))
-                    }
-                }
-                pub fn byte_string(bytes: &[u8]) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler(proc_macro::Literal::byte_string(bytes))
-                    } else {
-                        Literal::Fallback(fallback::Literal::byte_string(bytes))
-                    }
-                }
-                pub fn c_string(string: &CStr) -> Literal {
-                    if inside_proc_macro() {
-                        Literal::Compiler({
-                            #[cfg(not(no_literal_c_string))]
-                            {
-                                proc_macro::Literal::c_string(string)
-                            }
-                            #[cfg(no_literal_c_string)]
-                            {
-                                let fallback = fallback::Literal::c_string(string);
-                                proc_macro::Literal::from_str_unchecked(&fallback.repr)
-                            }
-                        })
-                    } else {
-                        Literal::Fallback(fallback::Literal::c_string(string))
-                    }
-                }
-                pub fn span( &self ) -> Span
-                {
-                    match self {
-                        Literal::Compiler(lit) => Span::Compiler(lit.span()),
-                        Literal::Fallback(lit) => Span::Fallback(lit.span()),
-                    }
-                }
-                pub fn set_span(&mut self, span: Span )
-                {
-                    match (self, span) {
-                        (Literal::Compiler(lit), Span::Compiler(s)) => lit.set_span(s),
-                        (Literal::Fallback(lit), Span::Fallback(s)) => lit.set_span(s),
-                        (Literal::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
-                        (Literal::Fallback(_), Span::Compiler(_)) => mismatch(line!()),
-                    }
-                }
-                pub fn subspan<R: RangeBounds<usize>>( &self, range: R) -> Option<Span>
-                {
-                    match self {
-                        #[cfg(proc_macro_span)]
-                        Literal::Compiler(lit) => proc_macro_span::subspan(lit, range).map(Span::Compiler),
-                        #[cfg(not(proc_macro_span))]
-                        Literal::Compiler(_lit) => None,
-                        Literal::Fallback(lit) => lit.subspan(range).map(Span::Fallback),
-                    }
-                }
-                fn unwrap_nightly( self ) -> proc_macro::Literal
-                {
-                    match self {
-                        Literal::Compiler(s) => s,
-                        Literal::Fallback(_) => mismatch(line!()),
-                    }
-                }
-            }
-            impl From<fallback::Literal> for Literal           
-            {
-                fn from(s: fallback::Literal) -> Self
-                {
-                    Literal::Fallback(s)
-                }
-            }
-            impl Display for Literal           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Literal::Compiler(t) => Display::fmt(t, f),
-                        Literal::Fallback(t) => Display::fmt(t, f),
-                    }
-                }
-            }
-            impl Debug for Literal           
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    match self {
-                        Literal::Compiler(t) => Debug::fmt(t, f),
-                        Literal::Fallback(t) => Debug::fmt(t, f),
-                    }
-                }
-            }
-            
-            pub fn invalidate_current_thread_spans()
-            {
-                if inside_proc_macro()
-                {
-                    panic!
-                    (
-                        "process::macros::extra::invalidate_current_thread_spans is not available in procedural macros"
-                    );
-                }
-                
-                else
-                {
-                    ::process::macros::fallback::invalidate_current_thread_spans();
-                }
-            }
-        }
-        
-        pub mod location
-        {
-            use ::
-            {
-                cmp::{ Ordering },
-                *,
-            };
-            /*
-            */
-            /// A line-column pair representing the start or end of a `Span`.
-            #[derive(Copy, Clone, Debug, PartialEq, Eq, Hash)]
-            pub struct LineColumn 
-            {
-                /// The 1-indexed line in the source file on which the span starts or ends (inclusive).
-                pub line: usize,
-                /// The 0-indexed column (in UT8) in the source file on which the span starts or ends (inclusive).
-                pub column: usize,
-            }
-            impl Ord for LineColumn
-            {
-                fn cmp( &self, other: &Self) -> Ordering
-                {
-                    self.line
-                    .cmp(&other.line)
-                    .then(self.column.cmp(&other.column))
-                }
-            }
-            impl PartialOrd for LineColumn
-            {
-                fn partial_cmp( &self, other: &Self) -> Option<Ordering>
-                {
-                    Some(self.cmp(other))
-                }
-            }
-        }
-        /**
-        A wrapper around the procedural macro API of the compiler's [`proc_macro`] crate.*/
-        pub mod parse
-        {
-            use ::
-            {
-                process::
-                {
-                    macros::
-                    {
-                        fallback::
-                        {
-                            self, Group, Ident, LexError, Literal, Span, TokenStream, TokenStreamBuilder,
-                        },
-                        Delimiter, Punct, Spacing, TokenTree,
-                    },
-                },
-                str::{ Bytes, CharIndices, Chars },
-                *,
-            };
-            /*
-            */
-            /// Rustc's representation of a macro expansion error in expression position or type position.
-            pub const ERROR: &str = "(/*ERROR*/)";
-
-            pub type PResult<'a, O> = Result<(Cursor<'a>, O), Reject>;
-
-            #[derive(Copy, Clone, Eq, PartialEq)]
-            pub struct Cursor<'a> 
-            {
-                pub rest: &'a str,
-                    pub off: u32,
-            }
-            
-            impl<'a> Cursor<'a>
-            {
-                pub fn advance( &self, bytes: usize) -> Cursor<'a>
-                {
-                    let (_front, rest) = self.rest.split_at(bytes);
-                    Cursor {
-                        rest,
-                                    off: self.off + _front.chars().count() as u32,
-                    }
-                }
-                pub fn starts_with( &self, s: &str) -> bool
-        {
-                    self.rest.starts_with(s)
-                }
-                pub fn starts_with_char( &self, ch: char) -> bool
-        {
-                    self.rest.starts_with(ch)
-                }
-                pub fn starts_with_fn<Pattern>( &self, f: Pattern) -> bool
-                where
-                    Pattern: FnMut(char) -> bool,
-                {
-                    self.rest.starts_with(f)
-                }
-                pub fn is_empty( &self ) -> bool
-        {
-                    self.rest.is_empty()
-                }
-                fn len( &self ) -> usize {
-                    self.rest.len()
-                }
-                fn as_bytes( &self ) -> &'a [u8] {
-                    self.rest.as_bytes()
-                }
-                fn bytes( &self ) -> Bytes<'a>
-                    {
-                    self.rest.bytes()
-                }
-                fn chars( &self ) -> Chars<'a>
-                    {
-                    self.rest.chars()
-                }
-                fn char_indices( &self ) -> CharIndices<'a>
-                    {
-                    self.rest.char_indices()
-                }
-                fn parse( &self, tag: &str) -> Result<Cursor<'a>, Reject>
-                    {
-                    if self.starts_with(tag) {
-                        Ok(self.advance(tag.len()))
-                    } else {
-                        Err(Reject)
-                    }
-                }
-            }
-            pub struct Reject;
-            
-            fn skip_whitespace(input: Cursor) -> Cursor
-            {
-                let mut s = input;
-
-                while !s.is_empty()
-               
-                {
-                    let byte = s.as_bytes()[0];
-                    
-                    if byte == b'/'
-                    {
-                        if s.starts_with("//")
-                            && (!s.starts_with("///") || s.starts_with("////"))
-                            && !s.starts_with("//!")
-                        {
-                            let (cursor, _) = take_until_newline_or_eof(s);
-                            s = cursor;
-                            continue;
-                        } else if s.starts_with("/**/") {
-                            s = s.advance(4);
-                            continue;
-                        } else if s.starts_with("/*")
-                            && (!s.starts_with("/**") || s.starts_with("/***"))
-                            && !s.starts_with("/*!")
-                        {
-                            match block_comment(s) {
-                                Ok((rest, _)) =>
-                    {
-                                    s = rest;
-                                    continue;
-                                }
-                                Err(Reject) => return s,
-                            }
-                        }
-                    }
-                    
-                    match byte
-                    {
-                        b' ' | 0x09..=0x0d =>
-                        {
-                            s = s.advance(1);
-                            continue;
-                        }
-                        b if b.is_ascii() =>
-                    {}
-                        _ =>
-                        {
-                            let ch = s.chars().next().unwrap();
-
-                            if is::whitespace(ch)
-                            {
-                                s = s.advance(ch.len_utf8());
-                                continue;
-                            }
-                        }
-                    }
-                    return s;
-                }
-                s
-            }
-            fn block_comment(input: Cursor<'_>) -> PResult<'_, &str>
-            {
-                if !input.starts_with("/*") {
-                    return Err(Reject);
-                }
-                let mut depth = 0usize;
-                let bytes = input.as_bytes();
-                let mut i = 0usize;
-                let upper = bytes.len() - 1;
-
-                while i < upper {
-                    if bytes[i] == b'/' && bytes[i + 1] == b'*' {
-                        depth += 1;
-                        i += 1;
-                    } else if bytes[i] == b'*' && bytes[i + 1] == b'/' {
-                        depth -= 1;
-                        if depth == 0 {
-                            return Ok((input.advance(i + 2), &input.rest[..i + 2]));
-                        }
-                        i += 1;
-                    }
-                    i += 1;
-                }
-                Err(Reject)
-            }
-            fn word_break(input: Cursor) -> Result<Cursor, Reject>
-            {
-                match input.chars().next() {
-                    Some(ch) if is::ident_continue(ch) => Err(Reject),
-                    Some(_) | None => Ok(input),
-                }
-            }
-            pub fn token_stream(mut input: Cursor) -> Result<TokenStream, LexError>
-            {
-                let mut trees = TokenStreamBuilder::new();
-                let mut stack = Vec::new();
-
-                loop {
-                    input = skip_whitespace(input);
-
-                    if let Ok((rest, ())) = doc_comment(input, &mut trees) {
-                        input = rest;
-                        continue;
-                    }
-                            let lo = input.off;
-
-                    let first = match input.bytes().next() {
-                        Some(first) => first,
-                        None => match stack.last() {
-                            None => return Ok(trees.build()),
-                                            Some((lo, _frame)) =>
-                    {
-                                return Err(LexError {
-                                    span: Span { lo: *lo, hi: *lo },
-                                })
-                            }
-                        },
-                    };
-
-                    if let Some(open_delimiter) = match first {
-                        b'(' if !input.starts_with(ERROR) => Some(Delimiter::Parenthesis),
-                        b'[' => Some(Delimiter::Bracket),
-                        b'{' => Some(Delimiter::Brace),
-                        _ => None,
-                    } {
-                        input = input.advance(1);
-                        let frame = (open_delimiter, trees);
-                                    let frame = (lo, frame);
-                        stack.push(frame);
-                        trees = TokenStreamBuilder::new();
-                    } else if let Some(close_delimiter) = match first {
-                        b')' => Some(Delimiter::Parenthesis),
-                        b']' => Some(Delimiter::Bracket),
-                        b'}' => Some(Delimiter::Brace),
-                        _ => None,
-                    } {
-                        let frame = match stack.pop() {
-                            Some(frame) => frame,
-                            None => return Err(lex_error(input)),
-                        };
-                                    let (lo, frame) = frame;
-                        let (open_delimiter, outer) = frame;
-                        if open_delimiter != close_delimiter {
-                            return Err(lex_error(input));
-                        }
-                        input = input.advance(1);
-                        let mut g = Group::new(open_delimiter, trees.build());
-                        g.set_span(Span {
-                                            lo,
-                                            hi: input.off,
-                        });
-                        trees = outer;
-                        trees.push_token_from_parser(TokenTree::Group(::process::macros::Group::_new_fallback(g)));
-                    } else {
-                        let (rest, mut tt) = match leaf_token(input) {
-                            Ok((rest, tt)) => (rest, tt),
-                            Err(Reject) => return Err(lex_error(input)),
-                        };
-                        tt.set_span(::process::macros::Span::_new_fallback(Span {
-                                            lo,
-                                            hi: rest.off,
-                        }));
-                        trees.push_token_from_parser(tt);
-                        input = rest;
-                    }
-                }
-            }
-            fn lex_error(cursor: Cursor) -> LexError
-            {
-                LexError
-                {
-                    span: Span
-                    {
-                        lo:cursor.off,
-                        hi:cursor.off,
-                    },
-                }
-            }
-            fn leaf_token(input: Cursor) -> PResult<TokenTree>
-            {
-                if let Ok((input, l)) = literal(input) {
-                   
-                    Ok((input, TokenTree::Literal(::process::macros::Literal::_new_fallback(l))))
-                } else if let Ok((input, p)) = punct(input) {
-                    Ok((input, TokenTree::Punct(p)))
-                } else if let Ok((input, i)) = ident(input) {
-                    Ok((input, TokenTree::Ident(i)))
-                } else if input.starts_with(ERROR)
-                {
-                    let rest = input.advance(ERROR.len());
-                    let repr = ::process::macros::Literal::_new_fallback(Literal::_new(ERROR.to_owned()));
-                    Ok((rest, TokenTree::Literal(repr)))
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn ident(input: Cursor) -> PResult<::process::macros::Ident>
-            {
-                if [
-                    "r\"", "r#\"", "r##", "b\"", "b\'", "br\"", "br#", "c\"", "cr\"", "cr#",
-                ]
-                .iter()
-                .any(|prefix| input.starts_with(prefix))
-                {
-                    Err(Reject)
-                } else {
-                    ident_any(input)
-                }
-            }
-            fn ident_any(input: Cursor) -> PResult<::process::macros::Ident>
-            {
-                let raw = input.starts_with("r#");
-                let rest = input.advance((raw as usize) << 1);
-
-                let (rest, sym) = ident_not_raw(rest)?;
-
-                if !raw
-                {
-                    let ident =
-                        ::process::macros::Ident::_new_fallback(Ident::new_unchecked(sym, fallback::Span::call_site()));
-                    return Ok((rest, ident));
-                }
-                match sym {
-                    "_" | "super" | "self" | "Self" | "crate" => return Err(Reject),
-                    _ =>
-                    {}
-                }
-                let ident =
-                    ::process::macros::Ident::_new_fallback(Ident::new_raw_unchecked(sym, fallback::Span::call_site()));
-                Ok((rest, ident))
-            }
-            fn ident_not_raw(input: Cursor<'_>) -> PResult<'_, &str>
-            {
-                let mut chars = input.char_indices();
-
-                match chars.next() {
-                    Some((_, ch)) if is::ident_start(ch) =>
-                    {}
-                    _ => return Err(Reject),
-                }
-                let mut end = input.len();
-                for (i, ch) in chars {
-                    if !is::ident_continue(ch) {
-                        end = i;
-                        break;
-                    }
-                }
-                Ok((input.advance(end), &input.rest[..end]))
-            }
-            pub fn literal(input: Cursor) -> PResult<Literal>
-            {
-                let rest = literal_nocapture(input)?;
-                let end = input.len() - rest.len();
-                Ok((rest, Literal::_new(input.rest[..end].to_string())))
-            }
-            fn literal_nocapture(input: Cursor) -> Result<Cursor, Reject>
-            {
-                if let Ok(ok) = string(input) {
-                    Ok(ok)
-                } else if let Ok(ok) = byte_string(input) {
-                    Ok(ok)
-                } else if let Ok(ok) = c_string(input) {
-                    Ok(ok)
-                } else if let Ok(ok) = byte(input) {
-                    Ok(ok)
-                } else if let Ok(ok) = character(input) {
-                    Ok(ok)
-                } else if let Ok(ok) = float(input) {
-                    Ok(ok)
-                } else if let Ok(ok) = int(input) {
-                    Ok(ok)
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn literal_suffix(input: Cursor) -> Cursor
-            {
-                match ident_not_raw(input) {
-                    Ok((input, _)) => input,
-                    Err(Reject) => input,
-                }
-            }
-            fn string(input: Cursor) -> Result<Cursor, Reject>
-            {
-                if let Ok(input) = input.parse("\"") {
-                    cooked_string(input)
-                } else if let Ok(input) = input.parse("r") {
-                    raw_string(input)
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn cooked_string(mut input: Cursor) -> Result<Cursor, Reject>
-            {
-                let mut chars = input.char_indices();
-
-                while let Some((i, ch)) = chars.next( )
-                {
-                    match ch {
-                        '"' =>
-                    {
-                            let input = input.advance(i + 1);
-                            return Ok(literal_suffix(input));
-                        }
-                        '\r' => match chars.next() {
-                            Some((_, '\n')) =>
-                    {}
-                            _ => break,
-                        },
-                        '\\' => match chars.next() {
-                            Some((_, 'x')) =>
-                    {
-                                backslash_x_char(&mut chars)?;
-                            }
-                            Some((_, 'n' | 'r' | 't' | '\\' | '\'' | '"' | '0')) =>
-                    {}
-                            Some((_, 'u')) =>
-                    {
-                                backslash_u(&mut chars)?;
-                            }
-                            Some((newline, ch @ ('\n' | '\r'))) =>
-                    {
-                                input = input.advance(newline + 1);
-                                trailing_backslash(&mut input, ch as u8)?;
-                                chars = input.char_indices();
-                            }
-                            _ => break,
-                        },
-                        _ch =>
-                    {}
-                    }
-                }
-                Err(Reject)
-            }
-            fn raw_string(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let (input, delimiter) = delimiter_of_raw_string(input)?;
-                let mut bytes = input.bytes().enumerate();
-                while let Some((i, byte)) = bytes.next( )
-                {
-                    match byte {
-                        b'"' if input.rest[i + 1..].starts_with(delimiter) =>
-                    {
-                            let rest = input.advance(i + 1 + delimiter.len());
-                            return Ok(literal_suffix(rest));
-                        }
-                        b'\r' => match bytes.next() {
-                            Some((_, b'\n')) =>
-                    {}
-                            _ => break,
-                        },
-                        _ =>
-                    {}
-                    }
-                }
-                Err(Reject)
-            }
-            fn byte_string(input: Cursor) -> Result<Cursor, Reject>
-            {
-                if let Ok(input) = input.parse("b\"") {
-                    cooked_byte_string(input)
-                } else if let Ok(input) = input.parse("br") {
-                    raw_byte_string(input)
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn cooked_byte_string(mut input: Cursor) -> Result<Cursor, Reject>
-            {
-                let mut bytes = input.bytes().enumerate();
-                while let Some((offset, b)) = bytes.next( )
-                {
-                    match b {
-                        b'"' =>
-                    {
-                            let input = input.advance(offset + 1);
-                            return Ok(literal_suffix(input));
-                        }
-                        b'\r' => match bytes.next() {
-                            Some((_, b'\n')) =>
-                    {}
-                            _ => break,
-                        },
-                        b'\\' => match bytes.next() {
-                            Some((_, b'x')) =>
-                    {
-                                backslash_x_byte(&mut bytes)?;
-                            }
-                            Some((_, b'n' | b'r' | b't' | b'\\' | b'0' | b'\'' | b'"')) =>
-                    {}
-                            Some((newline, b @ (b'\n' | b'\r'))) =>
-                    {
-                                input = input.advance(newline + 1);
-                                trailing_backslash(&mut input, b)?;
-                                bytes = input.bytes().enumerate();
-                            }
-                            _ => break,
-                        },
-                        b if b.is_ascii() =>
-                    {}
-                        _ => break,
-                    }
-                }
-                Err(Reject)
-            }
-            fn delimiter_of_raw_string(input: Cursor<'_>) -> PResult<'_, &str>
-            {
-                for (i, byte) in input.bytes().enumerate( )
-                {
-                    match byte {
-                        b'"' =>
-                    {
-                            if i > 255 {
-                               
-                                return Err(Reject);
-                            }
-                            return Ok((input.advance(i + 1), &input.rest[..i]));
-                        }
-                        b'#' =>
-                    {}
-                        _ => break,
-                    }
-                }
-                Err(Reject)
-            }
-            fn raw_byte_string(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let (input, delimiter) = delimiter_of_raw_string(input)?;
-                let mut bytes = input.bytes().enumerate();
-                while let Some((i, byte)) = bytes.next( )
-                {
-                    match byte {
-                        b'"' if input.rest[i + 1..].starts_with(delimiter) =>
-                    {
-                            let rest = input.advance(i + 1 + delimiter.len());
-                            return Ok(literal_suffix(rest));
-                        }
-                        b'\r' => match bytes.next() {
-                            Some((_, b'\n')) =>
-                    {}
-                            _ => break,
-                        },
-                        other =>
-                    {
-                            if !other.is_ascii() {
-                                break;
-                            }
-                        }
-                    }
-                }
-                Err(Reject)
-            }
-            fn c_string(input: Cursor) -> Result<Cursor, Reject>
-            {
-                if let Ok(input) = input.parse("c\"") {
-                    cooked_c_string(input)
-                } else if let Ok(input) = input.parse("cr") {
-                    raw_c_string(input)
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn raw_c_string(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let (input, delimiter) = delimiter_of_raw_string(input)?;
-                let mut bytes = input.bytes().enumerate();
-                while let Some((i, byte)) = bytes.next( )
-                {
-                    match byte {
-                        b'"' if input.rest[i + 1..].starts_with(delimiter) =>
-                    {
-                            let rest = input.advance(i + 1 + delimiter.len());
-                            return Ok(literal_suffix(rest));
-                        }
-                        b'\r' => match bytes.next() {
-                            Some((_, b'\n')) =>
-                    {}
-                            _ => break,
-                        },
-                        b'\0' => break,
-                        _ =>
-                    {}
-                    }
-                }
-                Err(Reject)
-            }
-            fn cooked_c_string(mut input: Cursor) -> Result<Cursor, Reject>
-            {
-                let mut chars = input.char_indices();
-
-                while let Some((i, ch)) = chars.next( )
-                {
-                    match ch {
-                        '"' =>
-                    {
-                            let input = input.advance(i + 1);
-                            return Ok(literal_suffix(input));
-                        }
-                        '\r' => match chars.next() {
-                            Some((_, '\n')) =>
-                    {}
-                            _ => break,
-                        },
-                        '\\' => match chars.next() {
-                            Some((_, 'x')) =>
-                    {
-                                backslash_x_nonzero(&mut chars)?;
-                            }
-                            Some((_, 'n' | 'r' | 't' | '\\' | '\'' | '"')) =>
-                    {}
-                            Some((_, 'u')) =>
-                    {
-                                if backslash_u(&mut chars)? == '\0' {
-                                    break;
-                                }
-                            }
-                            Some((newline, ch @ ('\n' | '\r'))) =>
-                    {
-                                input = input.advance(newline + 1);
-                                trailing_backslash(&mut input, ch as u8)?;
-                                chars = input.char_indices();
-                            }
-                            _ => break,
-                        },
-                        '\0' => break,
-                        _ch =>
-                    {}
-                    }
-                }
-                Err(Reject)
-            }
-            fn byte(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let input = input.parse("b'")?;
-                let mut bytes = input.bytes().enumerate();
-                let ok = match bytes.next().map(|(_, b)| b) {
-                    Some(b'\\') => match bytes.next().map(|(_, b)| b) {
-                        Some(b'x') => backslash_x_byte(&mut bytes).is_ok(),
-                        Some(b'n' | b'r' | b't' | b'\\' | b'0' | b'\'' | b'"') => true,
-                        _ => false,
-                    },
-                    b => b.is_some(),
-                };
-                if !ok {
-                    return Err(Reject);
-                }
-                let (offset, _) = bytes.next().ok_or(Reject)?;
-                if !input.chars().as_str().is_char_boundary(offset) {
-                    return Err(Reject);
-                }
-                let input = input.advance(offset).parse("'")?;
-                Ok(literal_suffix(input))
-            }
-            fn character(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let input = input.parse("'")?;
-                let mut chars = input.char_indices();
-                let ok = match chars.next().map(|(_, ch)| ch) {
-                    Some('\\') => match chars.next().map(|(_, ch)| ch) {
-                        Some('x') => backslash_x_char(&mut chars).is_ok(),
-                        Some('u') => backslash_u(&mut chars).is_ok(),
-                        Some('n' | 'r' | 't' | '\\' | '0' | '\'' | '"') => true,
-                        _ => false,
-                    },
-                    ch => ch.is_some(),
-                };
-                if !ok {
-                    return Err(Reject);
-                }
-                let (idx, _) = chars.next().ok_or(Reject)?;
-                let input = input.advance(idx).parse("'")?;
-                Ok(literal_suffix(input))
-            }
-            
-            fn backslash_x_char<I>(chars: &mut I) -> Result<(), Reject> where
-            I: Iterator<Item = (usize, char)>,
-            {
-                let _ = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        '0'..='7' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => todo!(),
-                };
-
-                let _ = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        '0'..='9' | 'a'..='f' | 'A'..='F' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => todo!(),
-                };
-
-                Ok(())
-            } 
-
-            fn backslash_x_byte<I>(chars: &mut I) -> Result<(), Reject> where
-            I: Iterator<Item = (usize, u8)>,
-            {
-                /*
-                ($chars:ident @ $pat:pat) =>
-                {
-                    match $chars.next()
-                    {
-                        Some((_, ch)) => match ch
-                        {
-                            $pat => ch,
-                            _ => return Err(Reject),
-                        },
-                        None => return Err(Reject),
-                    }
-                };
-                */
-                let _ = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => return Err(Reject),
-                };
-
-                let _ = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        b'0'..=b'9' | b'a'..=b'f' | b'A'..=b'F' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => return Err(Reject),
-                };
-
-                Ok(())
-            }
-            fn backslash_x_nonzero<I>(chars: &mut I) -> Result<(), Reject> where
-            I: Iterator<Item = (usize, char)>,
-            {
-                let first = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        '0'..='9' | 'a'..='f' | 'A'..='F' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => return Err(Reject),
-                };
-                
-                let second = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        '0'..='9' | 'a'..='f' | 'A'..='F' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => return Err(Reject),
-                };
-                
-                if first == '0' && second == '0' {
-                    Err(Reject)
-                } else {
-                    Ok(())
-                }
-            }
-            fn backslash_u<I>(chars: &mut I) -> Result<char, Reject> where
-            I: Iterator<Item = (usize, char)>,
-            {
-                let _ = match chars.next()
-                {
-                    Some((_, ch)) => match ch
-                    {
-                        '{' => ch,
-                        _ => return Err(Reject),
-                    },
-                    None => todo!(),
-                };
-
-                let mut value = 0;
-                let mut len = 0;
-                for (_, ch) in chars
-                {
-                    let digit = match ch {
-                        '0'..='9' => ch as u8 - b'0',
-                        'a'..='f' => 10 + ch as u8 - b'a',
-                        'A'..='F' => 10 + ch as u8 - b'A',
-                        '_' if len > 0 => continue,
-                        '}' if len > 0 => return char::from_u32(value).ok_or(Reject),
-                        _ => break,
-                    };
-                    if len == 6 {
-                        break;
-                    }
-                    value *= 0x10;
-                    value += u32::from(digit);
-                    len += 1;
-                }
-                Err(Reject)
-            }
-            fn trailing_backslash(input: &mut Cursor, mut last: u8) -> Result<(), Reject>
-            {
-                let mut whitespace = input.bytes().enumerate();
-                loop {
-                    if last == b'\r' && whitespace.next().map_or(true, |(_, b)| b != b'\n') {
-                        return Err(Reject);
-                    }
-                    match whitespace.next() {
-                        Some((_, b @ (b' ' | b'\t' | b'\n' | b'\r'))) =>
-                    {
-                            last = b;
-                        }
-                        Some((offset, _)) =>
-                    {
-                            *input = input.advance(offset);
-                            return Ok(());
-                        }
-                        None => return Err(Reject),
-                    }
-                }
-            }
-            fn float(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let mut rest = float_digits(input)?;
-                if let Some(ch) = rest.chars().next() {
-                    if is::ident_start(ch) {
-                        rest = ident_not_raw(rest)?.0;
-                    }
-                }
-                word_break(rest)
-            }
-            fn float_digits(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let mut chars = input.chars().peekable();
-                match chars.next() {
-                    Some(ch) if '0' <= ch && ch <= '9' =>
-                    {}
-                    _ => return Err(Reject),
-                }
-                let mut len = 1;
-                let mut has_dot = false;
-                let mut has_exp = false;
-                while let Some(&ch) = chars.peek( )
-                {
-                    match ch {
-                        '0'..='9' | '_' =>
-                    {
-                            chars.next();
-                            len += 1;
-                        }
-                        '.' =>
-                    {
-                            if has_dot {
-                                break;
-                            }
-                            chars.next();
-                            if chars
-                                .peek()
-                                .map_or(false, |&ch| ch == '.' || is::ident_start(ch))
-                            {
-                                return Err(Reject);
-                            }
-                            len += 1;
-                            has_dot = true;
-                        }
-                        'e' | 'E' =>
-                    {
-                            chars.next();
-                            len += 1;
-                            has_exp = true;
-                            break;
-                        }
-                        _ => break,
-                    }
-                }
-                if !(has_dot || has_exp) {
-                    return Err(Reject);
-                }
-                if has_exp
-                {
-                    let token_before_exp = if has_dot {
-                        Ok(input.advance(len - 1))
-                    } else {
-                        Err(Reject)
-                    };
-                    let mut has_sign = false;
-                    let mut has_exp_value = false;
-                    while let Some(&ch) = chars.peek() {
-                        match ch {
-                            '+' | '-' =>
-                    {
-                                if has_exp_value {
-                                    break;
-                                }
-                                if has_sign {
-                                    return token_before_exp;
-                                }
-                                chars.next();
-                                len += 1;
-                                has_sign = true;
-                            }
-                            '0'..='9' =>
-                    {
-                                chars.next();
-                                len += 1;
-                                has_exp_value = true;
-                            }
-                            '_' =>
-                    {
-                                chars.next();
-                                len += 1;
-                            }
-                            _ => break,
-                        }
-                    }
-                    if !has_exp_value {
-                        return token_before_exp;
-                    }
-                }
-                Ok(input.advance(len))
-            }
-            fn int(input: Cursor) -> Result<Cursor, Reject>
-            {
-                let mut rest = digits(input)?;
-                if let Some(ch) = rest.chars().next() {
-                    if is::ident_start(ch) {
-                        rest = ident_not_raw(rest)?.0;
-                    }
-                }
-                word_break(rest)
-            }
-            fn digits(mut input: Cursor) -> Result<Cursor, Reject>
-            {
-                let base = if input.starts_with("0x") {
-                    input = input.advance(2);
-                    16
-                } else if input.starts_with("0o") {
-                    input = input.advance(2);
-                    8
-                } else if input.starts_with("0b") {
-                    input = input.advance(2);
-                    2
-                } else {
-                    10
-                };
-
-                let mut len = 0;
-                let mut empty = true;
-                for b in input.bytes( )
-                {
-                    match b {
-                        b'0'..=b'9' =>
-                    {
-                            let digit = (b - b'0') as u64;
-                            if digit >= base {
-                                return Err(Reject);
-                            }
-                        }
-                        b'a'..=b'f' =>
-                    {
-                            let digit = 10 + (b - b'a') as u64;
-                            if digit >= base {
-                                break;
-                            }
-                        }
-                        b'A'..=b'F' =>
-                    {
-                            let digit = 10 + (b - b'A') as u64;
-                            if digit >= base {
-                                break;
-                            }
-                        }
-                        b'_' =>
-                    {
-                            if empty && base == 10 {
-                                return Err(Reject);
-                            }
-                            len += 1;
-                            continue;
-                        }
-                        _ => break,
-                    }
-                    len += 1;
-                    empty = false;
-                }
-                if empty {
-                    Err(Reject)
-                } else {
-                    Ok(input.advance(len))
-                }
-            }
-            fn punct(input: Cursor) -> PResult<Punct>
-            {
-                let (rest, ch) = punct_char(input)?;
-                if ch == '\''
-                {
-                    let (after_lifetime, _ident) = ident_any(rest)?;
-                    if after_lifetime.starts_with_char('\'')
-                        || (after_lifetime.starts_with_char('#') && !rest.starts_with("r#"))
-                    {
-                        Err(Reject)
-                    } else {
-                        Ok((rest, Punct::new('\'', Spacing::Joint)))
-                    }
-                } else
-                {
-                    let kind = match punct_char(rest) {
-                        Ok(_) => Spacing::Joint,
-                        Err(Reject) => Spacing::Alone,
-                    };
-                    Ok((rest, Punct::new(ch, kind)))
-                }
-            }
-            fn punct_char(input: Cursor) -> PResult<char>
-            {
-                if input.starts_with("//") || input.starts_with("/*") {
-                   
-                    return Err(Reject);
-                }
-                let mut chars = input.chars();
-                let first = match chars.next() {
-                    Some(ch) => ch,
-                    None =>
-                    {
-                        return Err(Reject);
-                    }
-                };
-                let recognized = "~!@#$%^&*-=+|;:,<.>/?'";
-                if recognized.contains(first) {
-                    Ok((input.advance(first.len_utf8()), first))
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn doc_comment<'a>(input: Cursor<'a>, trees: &mut TokenStreamBuilder) -> PResult<'a, ()>
-            {
-                let lo = input.off;
-                let (rest, (comment, inner)) = doc_comment_contents(input)?;
-                let fallback_span = Span {
-                            lo,
-                            hi: rest.off,
-                };
-                let span = ::process::macros::Span::_new_fallback(fallback_span);
-
-                let mut scan_for_bare_cr = comment;
-                while let Some(cr) = scan_for_bare_cr.find('\r')
-                {
-                    let rest = &scan_for_bare_cr[cr + 1..];
-                    if !rest.starts_with('\n') {
-                        return Err(Reject);
-                    }
-                    scan_for_bare_cr = rest;
-                }
-                let mut pound = Punct::new('#', Spacing::Alone);
-                pound.set_span(span);
-                trees.push_token_from_parser(TokenTree::Punct(pound));
-
-                if inner
-                {
-                    let mut bang = Punct::new('!', Spacing::Alone);
-                    bang.set_span(span);
-                    trees.push_token_from_parser(TokenTree::Punct(bang));
-                }
-                let doc_ident = ::process::macros::Ident::_new_fallback(Ident::new_unchecked("doc", fallback_span));
-                let mut equal = Punct::new('=', Spacing::Alone);
-                equal.set_span(span);
-                let mut literal = ::process::macros::Literal::_new_fallback(Literal::string(comment));
-                literal.set_span(span);
-                let mut bracketed = TokenStreamBuilder::with_capacity(3);
-                bracketed.push_token_from_parser(TokenTree::Ident(doc_ident));
-                bracketed.push_token_from_parser(TokenTree::Punct(equal));
-                bracketed.push_token_from_parser(TokenTree::Literal(literal));
-                let group = Group::new(Delimiter::Bracket, bracketed.build());
-                let mut group = ::process::macros::Group::_new_fallback(group);
-                group.set_span(span);
-                trees.push_token_from_parser(TokenTree::Group(group));
-
-                Ok((rest, ()))
-            }
-            fn doc_comment_contents(input: Cursor<'_>) -> PResult<'_, (&str, bool)>
-            {
-                if input.starts_with("//!")
-                {
-                    let input = input.advance(3);
-                    let (input, s) = take_until_newline_or_eof(input);
-                    Ok((input, (s, true)))
-                } else if input.starts_with("/*!")
-                {
-                    let (input, s) = block_comment(input)?;
-                    Ok((input, (&s[3..s.len() - 2], true)))
-                } else if input.starts_with("///")
-                {
-                    let input = input.advance(3);
-                    if input.starts_with_char('/') {
-                        return Err(Reject);
-                    }
-                    let (input, s) = take_until_newline_or_eof(input);
-                    Ok((input, (s, false)))
-                } else if input.starts_with("/**") && !input.rest[3..].starts_with('*')
-                {
-                    let (input, s) = block_comment(input)?;
-                    Ok((input, (&s[3..s.len() - 2], false)))
-                } else {
-                    Err(Reject)
-                }
-            }
-            fn take_until_newline_or_eof(input: Cursor<'_>) -> (Cursor<'_>, &str) 
-            {
-                let chars = input.char_indices();
-
-                for (i, ch) in chars {
-                    if ch == '\n' {
-                        return (input.advance(i), &input.rest[..i]);
-                    } else if ch == '\r' && input.rest[i + 1..].starts_with('\n') {
-                        return (input.advance(i + 1), &input.rest[..i]);
-                    }
-                }
-                (input.advance(input.len()), input.rest)
-            }
-        }
-
-        pub mod probe
-        {
-            use ::
-            {
-                *,
-            };
-            /*
-            */
-            pub mod proc_macro_span
-            {
-                use ::
-                {
-                    ops::{ Range, RangeBounds },
-                    path::{ PathBuf },
-                    proc_macro::{ Literal, Span },
-                    *,
-                };
-                /*
-                */
-                pub fn byte_range(this: &Span) -> Range<usize>
-                {
-                    //this.byte_range()
-                    Range { start: 0, end: 0 }
-                }
-                pub fn start(this: &Span) -> Span { this.start() }
-                pub fn end(this: &Span) -> Span { this.end() }
-                pub fn line(this: &Span) -> usize { this.line() }
-                pub fn column(this: &Span) -> usize { this.column() }
-                pub fn file(this: &Span) -> String { this.file() }
-                pub fn local_file(this: &Span) -> Option<PathBuf>
-                    { this.local_file() }
-                pub fn join(this: &Span, other: Span) -> Option<Span> 
-                {
-                    //this.join(other)
-                    None
-                }
-                pub fn subspan<R:RangeBounds<usize>>( this:&Literal, range:R ) -> Option<Span>
-                {
-                    //this.subspan( range )
-                    None
-                }
-                /*
-               
-                #[cfg(procmacro2_build_probe)] */
-                const _: Option<&str> = option_env!("RUSTC_BOOTSTRAP");
-            }
-            
-            pub mod proc_macro_span_file
-            {
-                use ::
-                {
-                    path::PathBuf,
-                    proc_macro::Span,
-                    *,
-                };
-                /*
-                */
-                pub fn file(this: &Span) -> String {
-                    this.file()
-                }
-                pub fn local_file(this: &Span) -> Option<PathBuf>
-                    {
-                    this.local_file()
-                }
-            }
-            
-            pub mod proc_macro_span_location
-            {
-                use ::
-                {
-                    proc_macro::Span,
-                    *,
-                };
-                /*
-                */
-                pub fn start(this: &Span) -> Span { this.start() }
-                pub fn end(this: &Span) -> Span { this.end() }
-                pub fn line(this: &Span) -> usize { this.line() }
-                pub fn column(this: &Span) -> usize { this.column() }
-            }
-            
-        }
-
-        pub mod rcvec
-        {
-            use ::
-            {
-                rc::{ Rc },
-                panic::{ RefUnwindSafe },
-                *,
-            };
-            /*
-            use alloc::rc::Rc;
-            use alloc::vec;
-            use ::mem;
-            use ::panic::RefUnwindSafe;
-            use ::slice;
-            */
-            pub struct RcVec<T>
-            {
-                inner: rc::Rc<Vec<T>>,
-            }
-            pub struct RcVecBuilder<T>
-            {
-                inner: Vec<T>,
-            }
-            pub struct RcVecMut<'a, T>
-            {
-                inner: &'a mut Vec<T>,
-            }
-            #[derive(Clone)]
-            pub struct RcVecIntoIter<T>
-            {
-                inner: vec::IntoIter<T>,
-            }
-            
-            impl<T> RcVec<T>
-            {
-                pub fn is_empty( &self ) -> bool 
-                {
-                    self.inner.is_empty()
-                }
-                pub fn len( &self ) -> usize 
-                {
-                    self.inner.len()
-                }
-                pub fn iter( &self ) -> slice::Iter<'_, T>
-                {
-                    self.inner.iter()
-                }
-                pub fn make_mut( &mut self ) -> RcVecMut<'_, T> where
-                T: Clone,
-                {
-                    RcVecMut {
-                        inner: rc::Rc::make_mut(&mut self.inner),
-                    }
-                }
-                pub fn get_mut( &mut self ) -> Option<RcVecMut<'_, T>>
-               
-                {
-                    let inner = rc::Rc::get_mut(&mut self.inner)?;
-                    Some(RcVecMut { inner })
-                }
-                pub fn make_owned(mut self) -> RcVecBuilder<T> where
-                T: Clone,
-               
-                {
-                    let vec = if let Some(owned) = rc::Rc::get_mut(&mut self.inner) {
-                        mem::take(owned)
-                    } else {
-                        Vec::clone(&self.inner)
-                    };
-                    RcVecBuilder { inner: vec }
-                }
-            }
-            
-            impl<T> RcVecBuilder<T>
-            {
-                pub fn new() -> Self {
-                    RcVecBuilder { inner: Vec::new() }
-                }
-                pub fn with_capacity(cap: usize) -> Self {
-                    RcVecBuilder {
-                        inner: Vec::with_capacity(cap),
-                    }
-                }
-                pub fn push(&mut self, element: T) {
-                    self.inner.push(element);
-                }
-                pub fn extend(&mut self, iter: impl IntoIterator<Item = T>) {
-                    self.inner.extend(iter);
-                }
-                pub fn as_mut( &mut self ) -> RcVecMut<'_, T>
-                {
-                    RcVecMut {
-                        inner: &mut self.inner,
-                    }
-                }
-                pub fn build( self ) -> RcVec<T>
-                    {
-                    RcVec {
-                        inner: rc::Rc::new(self.inner),
-                    }
-                }
-            }
-            
-            impl<'a, T> RcVecMut<'a, T>
-            {
-                pub fn push(&mut self, element: T) {
-                    self.inner.push(element);
-                }
-                pub fn extend(&mut self, iter: impl IntoIterator<Item = T>) {
-                    self.inner.extend(iter);
-                }
-                pub fn as_mut( &mut self ) -> RcVecMut<'_, T> 
-                {
-                    RcVecMut { inner: self.inner }
-                }
-                pub fn take( self ) -> RcVecBuilder<T>
-                {
-                    let vec = mem::take(self.inner);
-                    RcVecBuilder { inner: vec }
-                }
-            }
-            
-            impl<T> Clone for RcVec<T>           
-            {
-                fn clone( &self ) -> Self
-                {
-                    RcVec {
-                        inner: rc::Rc::clone(&self.inner),
-                    }
-                }
-            }
-            
-            impl<T> IntoIterator for RcVecBuilder<T>
-            {
-                type Item = T;
-                type IntoIter = RcVecIntoIter<T>;
-                fn into_iter( self ) -> Self::IntoIter
-                {
-                    RcVecIntoIter
-                    {
-                        inner: self.inner.into_iter(),
-                    }
-                }
-            }
-            
-            impl<T> Iterator for RcVecIntoIter<T>
-            {
-                type Item = T;
-                fn next( &mut self ) -> Option<Self::Item>
-                    { self.inner.next() }
-                
-                fn size_hint( &self ) -> (usize, Option<usize>) { self.inner.size_hint() }
-            }
-            
-            impl<T> RefUnwindSafe for RcVec<T> where
-            T:RefUnwindSafe
-            {}
-        }
-        /// Public implementation details for the `TokenStream` type, such as iterators.
-        pub mod token_stream 
-        {
-            use ::
-            {
-                fmt::{ self, Debug },
-                marker::{ ProcMacroAutoTraits, MARKER },
-                process::macros::
-                {
-                    imp, TokenStream, TokenTree
-                },
-                *,
-            };
-            /// An iterator over `TokenStream`'s `TokenTree`s.
-            #[derive(Clone)]
-            pub struct IntoIter
-            {
-                inner: imp::TokenTreeIter,
-                _marker: ProcMacroAutoTraits,
-            }
-            impl Iterator for IntoIter
-            {
-                type Item = TokenTree;
-                fn next( &mut self ) -> Option<TokenTree>
-                {
-                    self.inner.next()
-                }
-                fn size_hint( &self ) -> (usize, Option<usize>)
-                {
-                    self.inner.size_hint()
-                }
-            }
-            impl Debug for IntoIter
-            {
-                fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    f.write_str("TokenStream ")?;
-                    f.debug_list().entries(self.clone()).finish()
-                }
-            }
-            impl IntoIterator for TokenStream
-            {
-                type Item = TokenTree;
-                type IntoIter = IntoIter;
-                fn into_iter( self ) -> IntoIter
-                {
-                    IntoIter {
-                        inner: self.inner.into_iter(),
-                        _marker: ::marker::MARKER,
-                    }
-                }
-            }
-        }
-        /// An abstract stream of tokens, or more concretely a sequence of token trees
-        #[derive(Clone)]
-        pub struct TokenStream
-        {
-            inner: imp::TokenStream,
-            _marker: ::marker::ProcMacroAutoTraits,
-        }
-        /// Error returned from `TokenStream::from_str`.
-        pub struct LexError
-        {
-            inner: imp::LexError,
-            _marker: ::marker::ProcMacroAutoTraits,
-        }
-
-        impl TokenStream       
-        {
-            fn _new(inner: imp::TokenStream) -> Self {
-                TokenStream {
-                    inner,
-                    _marker: marker::MARKER,
-                }
-            }
-            fn _new_fallback(inner: fallback::TokenStream) -> Self {
-                TokenStream {
-                    inner: imp::TokenStream::from(inner),
-                    _marker: marker::MARKER,
-                }
-            }
-            /// Returns an empty `TokenStream` containing no token trees.
-            pub fn new() -> Self {
-                TokenStream::_new(imp::TokenStream::new())
-            }
-            /// Checks if this `TokenStream` is empty.
-            pub fn is_empty( &self ) -> bool           
-            {
-                self.inner.is_empty()
-            }
-        }
-        /// `TokenStream::default()` returns an empty stream, equivalent with `TokenStream::new()`.
-        impl Default for TokenStream       
-        {
-            fn default() -> Self {
-                TokenStream::new()
-            }
-        }
-        /// Attempts to break the string into tokens and parse those tokens into a token stream.
-        impl str::FromStr for TokenStream
-        {
-            type Err = LexError;
-            fn from_str(src: &str) -> Result<TokenStream, LexError>
-            {
-                match imp::TokenStream::from_str_checked(src) {
-                    Ok(tokens) => Ok(TokenStream::_new(tokens)),
-                    Err(lex) => Err(LexError {
-                        inner: lex,
-                        _marker: marker::MARKER,
-                    }),
-                }
-            }
-        }
-        
-        impl From<proc_macro::TokenStream> for TokenStream       
-        {
-            fn from(inner: proc_macro::TokenStream) -> Self {
-                TokenStream::_new(imp::TokenStream::from(inner))
-            }
-        }
-        
-        impl From<TokenStream> for proc_macro::TokenStream       
-        {
-            fn from(inner: TokenStream) -> Self {
-                proc_macro::TokenStream::from(inner.inner)
-            }
-        }
-
-        impl From<TokenTree> for TokenStream       
-        {
-            fn from(token: TokenTree) -> Self {
-                TokenStream::_new(imp::TokenStream::from(token))
-            }
-        }
-
-        impl Extend<TokenTree> for TokenStream       
-        {
-            fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, streams: I)
-            {
-                self.inner.extend(streams);
-            }
-        }
-
-        impl Extend<TokenStream> for TokenStream       
-        {
-            fn extend<I: IntoIterator<Item = TokenStream>>(&mut self, streams: I)
-            {
-                self.inner
-                    .extend(streams.into_iter().map(|stream| stream.inner));
-            }
-        }
-        /// Collects a number of token trees into a single stream.
-        impl iter::FromIterator<TokenTree> for TokenStream       
-        {
-            fn from_iter<I: IntoIterator<Item = TokenTree>>(streams: I) -> Self {
-                TokenStream::_new(streams.into_iter().collect())
-            }
-        }
-        impl iter::FromIterator<TokenStream> for TokenStream       
-        {
-            fn from_iter<I: IntoIterator<Item = TokenStream>>(streams: I) -> Self {
-                TokenStream::_new(streams.into_iter().map(|i| i.inner).collect())
-            }
-        }
-        /*
-        Prints the token stream as a string that should be losslessly convertible back into the same token stream
-        (modulo spans), except for possibly `TokenTree::Group`s with `Delimiter::None` delimiters 
-        and negative numeric literals. */
-        /// 
-        /// 
-        /// 
-        /// 
-        impl Display for TokenStream       
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Display::fmt(&self.inner, f)
-            }
-        }
-        /// Prints token in a form convenient for debugging.
-        impl Debug for TokenStream       
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Debug::fmt(&self.inner, f)
-            }
-        }
-
-        impl LexError 
-        {
-            pub fn span( &self ) -> Span {
-                Span::_new(self.inner.span())
-            }
-        }
-
-        impl Debug for LexError
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Debug::fmt(&self.inner, f)
-            }
-        }
-
-        impl Display for LexError
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Display::fmt(&self.inner, f)
-            }
-        }
-
-        impl Error for LexError {}
-        /// A region of source code, along with macro expansion information.
-        #[derive(Copy, Clone)]
-        pub struct Span
-        {
-            inner: imp::Span,
-            _marker: marker::ProcMacroAutoTraits,
-        }
-
-        impl Span
-        {
-            fn _new(inner: imp::Span) -> Self {
-                Span {
-                    inner,
-                    _marker: marker::MARKER,
-                }
-            }
-            fn _new_fallback(inner: fallback::Span) -> Self 
-            {
-                Span {
-                    inner: imp::Span::from(inner),
-                    _marker: marker::MARKER,
-                }
-            }
-            /// The span of the invocation of the current procedural macro
-            pub fn call_site() -> Self 
-            {
-                Span::_new(imp::Span::call_site())
-            }
-            /// The span located at the invocation of the procedural macro,
-            /// but with local variables, labels, and `$crate` resolved at the definition site of the macro.
-            pub fn mixed_site() -> Self 
-            {
-                Span::_new(imp::Span::mixed_site())
-            }
-            /// A span that resolves at the macro definition site.
-            pub fn def_site() -> Self 
-            {
-                Span::_new(imp::Span::def_site())
-            }
-            /// Creates a new span with the same line/column information as `self` but
-            /// that resolves symbols as though it were at `other`.
-            pub fn resolved_at( &self, other: Span) -> Span 
-            {
-                Span::_new(self.inner.resolved_at(other.inner))
-            }
-            /// Creates a new span with the same name resolution behavior as `self` but
-            /// with the line/column information of `other`.
-            pub fn located_at( &self, other: Span) -> Span 
-            {
-                Span::_new(self.inner.located_at(other.inner))
-            }
-            /// Convert `process::macros::Span` to `proc_macro::Span`
-            pub fn unwrap( self ) -> proc_macro::Span 
-           
-            {
-                self.inner.unwrap()
-            }
-           
-            pub fn unstable( self ) -> proc_macro::Span
-           
-            {
-                self.unwrap()
-            }
-            /// Returns the span's byte position range in the source file
-            pub fn byte_range( &self ) -> Range<usize>
-           
-            {
-                self.inner.byte_range()
-            }
-            /// Get the starting line/column in the source file for this span
-            pub fn start( &self ) -> location::LineColumn
-           
-            {
-                self.inner.start()
-            }
-            /// Get the ending line/column in the source file for this span
-            pub fn end( &self ) -> location::LineColumn
-           
-            {
-                self.inner.end()
-            }
-            /// The path to the source file in which this span occurs, for display purposes
-            pub fn file( &self ) -> String
-           
-            {
-                self.inner.file()
-            }
-            /// The path to the source file in which this span occurs on disk.
-            pub fn local_file( &self ) -> Option<PathBuf>
-           
-            {
-                self.inner.local_file()
-            }
-            /// Create a new span encompassing `self` and `other`.
-            pub fn join( &self, other: Span) -> Option<Span>
-           
-            {
-                self.inner.join(other.inner).map(Span::_new)
-            }
-            /// Compares two spans to see if they're equal.
-            pub fn eq( &self, other: &Span) -> bool
-            {
-                self.inner.eq(&other.inner)
-            }
-            /// Returns the source text behind a span.
-            pub fn source_text( &self ) -> Option<String>
-           
-            {
-                self.inner.source_text()
-            }
-        }
-        /// Prints a span in a form convenient for debugging.
-        impl Debug for Span
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Debug::fmt(&self.inner, f)
-            }
-        }
-        /// A single token or a delimited sequence of token trees (e.g. `[1, (), ..]`).
-        #[derive(Clone)]
-        pub enum TokenTree 
-        {
-            /// A token stream surrounded by bracket delimiters.
-            Group(Group),
-            /// An identifier.
-            Ident(Ident),
-            /// A single punctuation character (`+`, `,`, `$`, etc.).
-            Punct(Punct),
-            /// A literal character (`'a'`), string (`"hello"`), number (`2.3`), etc.
-            Literal(Literal),
-        }
-
-        impl TokenTree 
-        {
-            /// Returns the span of this tree, 
-            /// delegating to the `span` method of the contained token or a delimited stream.
-            pub fn span( &self ) -> Span {
-                match self {
-                    TokenTree::Group(t) => t.span(),
-                    TokenTree::Ident(t) => t.span(),
-                    TokenTree::Punct(t) => t.span(),
-                    TokenTree::Literal(t) => t.span(),
-                }
-            }
-            /// Configures the span for *only this token*
-            pub fn set_span(&mut self, span: Span) {
-                match self {
-                    TokenTree::Group(t) => t.set_span(span),
-                    TokenTree::Ident(t) => t.set_span(span),
-                    TokenTree::Punct(t) => t.set_span(span),
-                    TokenTree::Literal(t) => t.set_span(span),
-                }
-            }
-        }
-
-        impl From<Group> for TokenTree
-        {
-            fn from(g: Group) -> Self {
-                TokenTree::Group(g)
-            }
-        }
-
-        impl From<Ident> for TokenTree
-        {
-            fn from(g: Ident) -> Self {
-                TokenTree::Ident(g)
-            }
-        }
-
-        impl From<Punct> for TokenTree
-        {
-            fn from(g: Punct) -> Self {
-                TokenTree::Punct(g)
-            }
-        }
-
-        impl From<Literal> for TokenTree
-        {
-            fn from(g: Literal) -> Self {
-                TokenTree::Literal(g)
-            }
-        }
-        /**
-            Prints the token tree as a string that is losslessly convertible back into the same tree (modulo spans),
-            except for `TokenTree::Group`s with `Delimiter::None` delimiters and negative numeric literals. */
-        impl Display for TokenTree       
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {match self {
-                    TokenTree::Group(t) => Display::fmt(t, f),
-                    TokenTree::Ident(t) => Display::fmt(t, f),
-                    TokenTree::Punct(t) => Display::fmt(t, f),
-                    TokenTree::Literal(t) => Display::fmt(t, f),
-                }
-            }
-        }
-        /// Prints token tree in a form convenient for debugging.
-        impl Debug for TokenTree
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result {
-               
-               
-                match self {
-                    TokenTree::Group(t) => Debug::fmt(t, f),
-                    TokenTree::Ident(t) =>
-                    {
-                        let mut debug = f.debug_struct("Ident");
-                        debug.field("sym", &format_args!("{}", t));
-                        imp::debug_span_field_if_nontrivial(&mut debug, t.span().inner);
-                        debug.finish()
-                    }
-                    TokenTree::Punct(t) => Debug::fmt(t, f),
-                    TokenTree::Literal(t) => Debug::fmt(t, f),
-                }
-            }
-        }
-        /// A delimited token stream.
-        #[derive(Clone)]
-        pub struct Group {
-            inner: imp::Group,
-        }
-        /// Describes how a sequence of token trees is delimited.
-        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum Delimiter 
-        {
-            /// `( ... )`
-            Parenthesis,
-            /// `{ ... }`
-            Brace,
-            /// `[ ... ]`
-            Bracket,
-            /// `∅ ... ∅
-            /// Invisible delimiters may not survive roundtrip of a token stream through a string instead in this context.
-            None,
-        }
-
-        impl Group
-        {
-            fn _new(inner: imp::Group) -> Self {
-                Group { inner }
-            }
-            fn _new_fallback(inner: fallback::Group) -> Self {
-                Group {
-                    inner: imp::Group::from(inner),
-                }
-            }
-            /// Creates a new `Group` with the given delimiter and token stream
-            pub fn new(delimiter: Delimiter, stream: TokenStream) -> Self {
-                Group {
-                    inner: imp::Group::new(delimiter, stream.inner),
-                }
-            }
-            /// Returns the punctuation used as the delimiter for this group: a set of
-            /// parentheses, square brackets, or curly braces.
-            pub fn delimiter( &self ) -> Delimiter
-            {
-                self.inner.delimiter()
-            }
-            /// Returns the `TokenStream` of tokens that are delimited in this `Group`
-            pub fn stream( &self ) -> TokenStream {
-                TokenStream::_new(self.inner.stream())
-            }
-            /// Returns the span for the delimiters of this token stream, spanning the entire `Group`
-            pub fn span( &self ) -> Span {
-                Span::_new(self.inner.span())
-            }
-            /// Returns the span pointing to the opening delimiter of this group
-            pub fn span_open( &self ) -> Span {
-                Span::_new(self.inner.span_open())
-            }
-            /// Returns the span pointing to the closing delimiter of this group
-            pub fn span_close( &self ) -> Span {
-                Span::_new(self.inner.span_close())
-            }
-            /// Returns an object that holds this group's `span_open()` and `span_close()` together.
-            pub fn delim_span( &self ) -> ::process::macros::extra::DelimSpan
-            {
-                ::process::macros::extra::DelimSpan::new(&self.inner)
-            }
-            /// Configures the span for this `Group`'s delimiters, but not its internal
-            /// tokens
-            pub fn set_span(&mut self, span: Span)
-            {
-                self.inner.set_span(span.inner);
-            }
-        }
-        /// Prints the group as a string that should be losslessly convertible back
-        /// into the same group (modulo spans), except for possibly `TokenTree::Group`s
-        /// with `Delimiter::None` delimiters.
-        impl Display for Group
-        {
-            fn fmt( &self, formatter: &mut fmt::Formatter) -> fmt::Result
-                {Display::fmt(&self.inner, formatter)
-            }
-        }
-
-        impl Debug for Group
-        {
-            fn fmt( &self, formatter: &mut fmt::Formatter) -> fmt::Result
-                {Debug::fmt(&self.inner, formatter)
-            }
-        }
-        /// A `Punct` is a single punctuation character like `+`, `-` or `#`.
-        #[derive(Clone)]
-        pub struct Punct 
-        {
-            ch: char,
-            spacing: Spacing,
-            span: Span,
-        }
-        /// Whether a `Punct` is followed immediately by another `Punct` or followed by another token or whitespace.
-        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum Spacing 
-        {
-            /// E.g. `+` is `Alone` in `+ =`, `+ident` or `+()`.
-            Alone,
-            /// E.g. `+` is `Joint` in `+=` or `'` is `Joint` in `'#`
-            Joint,
-        }
-
-        impl Punct
-        {
-            /// Creates a new `Punct` from the given character and spacing
-            /// which can be further configured with the `set_span` method below.
-            pub fn new(ch: char, spacing: Spacing) -> Self {
-                if let '!' | '#' | '$' | '%' | '&' | '\'' | '*' | '+' | ',' | '-' | '.' | '/' | ':' | ';'
-                | '<' | '=' | '>' | '?' | '@' | '^' | '|' | '~' = ch
-                {
-                    Punct {
-                        ch,
-                        spacing,
-                        span: Span::call_site(),
-                    }
-                } else {
-                    panic!("unsupported proc macro punctuation character {:?}", ch);
-                }
-            }
-            /// Returns the value of this punctuation character as `char`.
-            pub fn as_char( &self ) -> char
-            {
-                self.ch
-            }
-            /// Returns the spacing of this punctuation character, indicating whether
-            /// it's immediately followed by another `Punct` in the token stream, so
-            /// they can potentially be combined into a multicharacter operator
-            /// (`Joint`), or it's followed by some other token or whitespace (`Alone`)
-            /// so the operator has certainly ended.
-            pub fn spacing( &self ) -> Spacing
-            {
-                self.spacing
-            }
-            /// Returns the span for this punctuation character.
-            pub fn span( &self ) -> Span
-            {
-                self.span
-            }
-            /// Configure the span for this punctuation character.
-            pub fn set_span(&mut self, span: Span)
-            {
-                self.span = span;
-            }
-        }
-        /// Prints the punctuation character as a string that is losslessly convertible back into the same character.
-        impl Display for Punct
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Display::fmt(&self.ch, f)
-            }
-        }
-
-        impl Debug for Punct       
-        {
-            fn fmt( &self, fmt: &mut fmt::Formatter) -> fmt::Result
-            {
-                let mut debug = fmt.debug_struct("Punct");
-                debug.field("char", &self.ch);
-                debug.field("spacing", &self.spacing);
-                imp::debug_span_field_if_nontrivial(&mut debug, self.span.inner);
-                debug.finish()
-            }
-        }
-        /// A word of Rust code, which may be a keyword or legal variable name.
-        #[derive(Clone)]
-        pub struct Ident
-        {
-            inner: imp::Ident,
-            _marker: marker::ProcMacroAutoTraits,
-        }
-
-        impl Ident       
-        {
-            fn _new(inner: imp::Ident) -> Self {
-                Ident {
-                    inner,
-                    _marker: marker::MARKER,
-                }
-            }
-            fn _new_fallback(inner: fallback::Ident) -> Self {
-                Ident {
-                    inner: imp::Ident::from(inner),
-                    _marker: marker::MARKER,
-                }
-            }
-            /// Creates a new `Ident` with the given `string` as well as the specified `span`
-            #[track_caller] pub fn new(string: &str, span: Span) -> Self {
-                Ident::_new(imp::Ident::new_checked(string, span.inner))
-            }
-            /// Same as `Ident::new`, but creates a raw identifier (`r#ident`).
-            #[track_caller] pub fn new_raw(string: &str, span: Span) -> Self {
-                Ident::_new(imp::Ident::new_raw_checked(string, span.inner))
-            }
-            /// Returns the span of this `Ident`.
-            pub fn span( &self ) -> Span {
-                Span::_new(self.inner.span())
-            }
-            /// Configures the span of this `Ident`, possibly changing its hygiene context.
-            pub fn set_span(&mut self, span: Span)
-            {
-                self.inner.set_span(span.inner);
-            }
-        }
-
-        impl PartialEq for Ident       
-        {
-            fn eq( &self, other: &Ident) -> bool
-            {
-                self.inner == other.inner
-            }
-        }
-
-        impl<T> PartialEq<T> for Ident where
-        T: ?Sized + AsRef<str>       
-        {
-            fn eq( &self, other: &T) -> bool
-            {
-                self.inner == other
-            }
-        }
-
-        impl Eq for Ident {}
-
-        impl PartialOrd for Ident       
-        {
-            fn partial_cmp( &self, other: &Ident) -> Option<Ordering>
-                    {
-                Some(self.cmp(other))
-            }
-        }
-
-        impl Ord for Ident 
-       
-        {
-            fn cmp( &self, other: &Ident) -> Ordering
-            {
-                self.to_string().cmp(&other.to_string())
-            }
-        }
-
-        impl Hash for Ident       
-        {
-            fn hash<H: Hasher>( &self, hasher: &mut H)
-            {
-                self.to_string().hash(hasher);
-            }
-        }
-        /// Prints the identifier as a string that should be losslessly convertible back into the same identifier.
-        impl Display for Ident        
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Display::fmt(&self.inner, f)
-            }
-        }
-
-        impl Debug for Ident       
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Debug::fmt(&self.inner, f)
-            }
-        }
-        /// A literal string (`"hello"`), byte string (`b"hello"`), character (`'a'`),
-        /// byte character (`b'a'`), an integer or floating point number with or without
-        /// a suffix (`1`, `1u8`, `2.3`, `2.3f32`).
-        #[derive(Clone)]
-        pub struct Literal
-        {
-            inner: imp::Literal,
-            _marker: marker::ProcMacroAutoTraits,
-        }
-
-        macro_rules! suffixed_int_literals
-        {
-            ($($name:ident => $kind:ident,)*) => 
-            ($(
-                /// Creates a new suffixed integer literal with the specified value.
-                pub fn $name(n: $kind) -> Literal 
-                {
-                    Literal::_new(imp::Literal::$name(n))
-                }
-            )*);
-        }
-
-        macro_rules! unsuffixed_int_literals 
-        {
-            ($($name:ident => $kind:ident,)*) => ($(
-                /// Creates a new unsuffixed integer literal with the specified value.
-                pub fn $name(n: $kind) -> Literal {
-                    Literal::_new(imp::Literal::$name(n))
-                }
-            )*)
-        }
-
-        impl Literal        
-        {
-            fn _new(inner: imp::Literal) -> Self 
-            {
-                Literal {
-                    inner,
-                    _marker: ::marker::MARKER,
-                }
-            }
-            fn _new_fallback(inner: fallback::Literal) -> Self 
-            {
-                Literal {
-                    inner: imp::Literal::from(inner),
-                    _marker: ::marker::MARKER,
-                }
-            }
-            suffixed_int_literals! 
-            {
-                u8_suffixed => u8,
-                u16_suffixed => u16,
-                u32_suffixed => u32,
-                u64_suffixed => u64,
-                u128_suffixed => u128,
-                usize_suffixed => usize,
-                i8_suffixed => i8,
-                i16_suffixed => i16,
-                i32_suffixed => i32,
-                i64_suffixed => i64,
-                i128_suffixed => i128,
-                isize_suffixed => isize,
-            }
-            unsuffixed_int_literals! 
-            {
-                u8_unsuffixed => u8,
-                u16_unsuffixed => u16,
-                u32_unsuffixed => u32,
-                u64_unsuffixed => u64,
-                u128_unsuffixed => u128,
-                usize_unsuffixed => usize,
-                i8_unsuffixed => i8,
-                i16_unsuffixed => i16,
-                i32_unsuffixed => i32,
-                i64_unsuffixed => i64,
-                i128_unsuffixed => i128,
-                isize_unsuffixed => isize,
-            }
-            /// Creates a new unsuffixed floating-point literal
-            pub fn f64_unsuffixed(f: f64) -> Literal 
-            {
-                assert!(f.is_finite());
-                Literal::_new(imp::Literal::f64_unsuffixed(f))
-            }
-            /// Creates a new suffixed floating-point literal
-
-            pub fn f64_suffixed(f: f64) -> Literal 
-            {
-                assert!(f.is_finite());
-                Literal::_new(imp::Literal::f64_suffixed(f))
-            }
-            /// Creates a new unsuffixed floating-point literal
-            pub fn f32_unsuffixed(f: f32) -> Literal 
-            {
-                assert!(f.is_finite());
-                Literal::_new(imp::Literal::f32_unsuffixed(f))
-            }
-            /// Creates a new suffixed floating-point literal
-            pub fn f32_suffixed(f: f32) -> Literal 
-            {
-                assert!(f.is_finite());
-                Literal::_new(imp::Literal::f32_suffixed(f))
-            }
-            /// String literal.
-            pub fn string(string: &str) -> Literal 
-            {
-                Literal::_new(imp::Literal::string(string))
-            }
-            /// Character literal.
-            pub fn character(ch: char) -> Literal 
-            {
-                Literal::_new(imp::Literal::character(ch))
-            }
-            /// Byte character literal.
-            pub fn byte_character(byte: u8) -> Literal 
-            {
-                Literal::_new(imp::Literal::byte_character(byte))
-            }
-            /// Byte string literal.
-            pub fn byte_string(bytes: &[u8]) -> Literal 
-            {
-                Literal::_new(imp::Literal::byte_string(bytes))
-            }
-            /// C string literal.
-            pub fn c_string( string:&::ffi::CStr ) -> Literal 
-            {
-                Literal::_new(imp::Literal::c_string(string))
-            }
-            /// Returns the span encompassing this literal.
-            pub fn span( &self ) -> Span {
-                Span::_new(self.inner.span())
-            }
-            /// Configures the span associated for this literal.
-            pub fn set_span(&mut self, span: Span)
-            {
-                self.inner.set_span(span.inner);
-            }
-            /// Returns a `Span` that is a subset of `self.span()` containing only
-            /// the source bytes in range `range`.
-            pub fn subspan<R: RangeBounds<usize>>( &self, range: R) -> Option<Span> 
-           
-            {
-                self.inner.subspan(range).map(Span::_new)
-            }
-            pub unsafe fn from_str_unchecked(repr: &str) -> Self 
-            {
-                Literal::_new(unsafe { imp::Literal::from_str_unchecked(repr) })
-            }
-        }
-
-        impl ::str::FromStr for Literal 
-        {
-            type Err = LexError;
-            fn from_str(repr: &str) -> Result<Self, LexError>
-            {
-                match imp::Literal::from_str_checked(repr) {
-                    Ok(lit) => Ok(Literal::_new(lit)),
-                    Err(lex) => Err(LexError {
-                        inner: lex,
-                        _marker: ::marker::MARKER,
-                    }),
-                }
-            }
-        }
-
-        impl Debug for Literal       
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Debug::fmt(&self.inner, f)
-            }
-        }
-
-        impl Display for Literal       
-        {
-            fn fmt( &self, f: &mut fmt::Formatter) -> fmt::Result
-                {Display::fmt(&self.inner, f)
-            }
-        }
-    }
     /*
     use libc::c_int;
     use nix::Error;
@@ -34609,927 +31747,6 @@ pub mod prompts
 pub mod ptr
 {
     pub use std::ptr::{ * };
-}
-
-pub mod quote
-{
-    /*!
-    Provides the [`quote!`] macro for turning Rust syntax tree data structures into tokens of source code. */
-    use ::
-    {
-        *,
-    };
-    /*
-    */
-    pub mod ext
-    {
-        use ::
-        {
-            process::macros::{ TokenStream, TokenTree },
-            quote::{ ToTokens },
-            *,
-        };
-        /*
-        */
-        /// TokenStream extension trait with methods for appending tokens.
-        pub trait TokenStreamExt: private::Sealed
-        {
-            /// For use by `ToTokens` implementations.
-            fn append<U>(&mut self, token: U) where U: Into<TokenTree>;
-            /// For use by `ToTokens` implementations.
-            fn append_all<I>(&mut self, iter: I) where
-            I: IntoIterator,
-            I::Item: ToTokens;
-            /// For use by `ToTokens` implementations.
-            fn append_separated<I, U>(&mut self, iter: I, op: U) where
-            I: IntoIterator,
-            I::Item: ToTokens,
-            U: ToTokens;
-            /// For use by `ToTokens` implementations.
-            fn append_terminated<I, U>(&mut self, iter: I, term: U) where
-            I: IntoIterator,
-            I::Item: ToTokens,
-            U: ToTokens;
-        }
-
-        impl TokenStreamExt for TokenStream
-        {
-            fn append<U>(&mut self, token: U) where
-                U: Into<TokenTree>,
-           
-            {
-                self.extend(iter::once(token.into()));
-            }
-            fn append_all<I>(&mut self, iter: I) where
-                I: IntoIterator,
-                I::Item: ToTokens,
-            {
-                for token in iter {
-                    token.to_tokens(self);
-                }
-            }
-            fn append_separated<I, U>(&mut self, iter: I, op: U) where
-                I: IntoIterator,
-                I::Item: ToTokens,
-                U: ToTokens,
-            {
-                for (i, token) in iter.into_iter().enumerate() {
-                    if i > 0 {
-                        op.to_tokens(self);
-                    }
-                    token.to_tokens(self);
-                }
-            }
-            fn append_terminated<I, U>(&mut self, iter: I, term: U) where
-                I: IntoIterator,
-                I::Item: ToTokens,
-                U: ToTokens,
-            {
-                for token in iter {
-                    token.to_tokens(self);
-                    term.to_tokens(self);
-                }
-            }
-        }
-
-        mod private 
-        {
-            use ::process::macros::TokenStream;
-
-            pub trait Sealed {}
-            impl Sealed for TokenStream {}
-        }
-    } pub use self::ext::TokenStreamExt;
-    
-    pub mod ident_fragment
-    {
-        use ::
-        {
-            borrow::{ Cow },
-            process::macros::{ Ident, Span },
-            *,
-        };
-        /*
-        */
-        /// Specialized formatting trait used by `format_ident!`.
-        pub trait IdentFragment
-        {
-            /// Format this value as an identifier fragment.
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result;
-            /// Span associated with this `IdentFragment`.
-            fn span(&self) -> Option<Span> {
-                None
-            }
-        }
-
-        impl<T: IdentFragment + ?Sized> IdentFragment for &T 
-        {
-            fn span(&self) -> Option<Span> {
-                <T as IdentFragment>::span(*self)
-            }
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {IdentFragment::fmt(*self, f)
-            }
-        }
-
-        impl<T: IdentFragment + ?Sized> IdentFragment for &mut T 
-        {
-            fn span(&self) -> Option<Span> {
-                <T as IdentFragment>::span(*self)
-            }
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {IdentFragment::fmt(*self, f)
-            }
-        }
-
-        impl IdentFragment for Ident 
-        {
-            fn span(&self) -> Option<Span> {
-                Some(self.span())
-            }
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {let id = self.to_string();
-                if let Some(id) = id.strip_prefix("r#") {
-                    fmt::Display::fmt(id, f)
-                } else {
-                    fmt::Display::fmt(&id[..], f)
-                }
-            }
-        }
-
-        impl<T> IdentFragment for Cow<'_, T> where
-        T: IdentFragment + ToOwned + ?Sized,
-        {
-            fn span(&self) -> Option<Span> {
-                T::span(self)
-            }
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {T::fmt(self, f)
-            }
-        }
-        
-        macro_rules! ident_fragment_display
-        {
-            ($($T:ty),*) => {
-                $(
-                    impl IdentFragment for $T {
-                        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {            fmt::Display::fmt(self, f)
-                        }
-                    }
-                )*
-            };
-        }
-
-        ident_fragment_display!(bool, str, String, char);
-        ident_fragment_display!(u8, u16, u32, u64, u128, usize);
-    } pub use self::ident_fragment::IdentFragment;
-    
-    pub mod to_tokens
-    {
-        use ::
-        {
-            borrow::{ Cow },
-            process::macros::{ Group, Ident, Literal, Punct, Span, TokenStream, TokenTree },
-            quote::{ TokenStreamExt },
-            rc::{ Rc },
-            *,
-        };
-        /*
-        */
-        /// Types that can be interpolated inside a `quote!` invocation.
-        pub trait ToTokens {
-            /// Write `self` to the given `TokenStream`.
-            fn to_tokens(&self, tokens: &mut TokenStream);
-            /// Convert `self` directly into a `TokenStream` object.
-            fn to_token_stream(&self) -> TokenStream
-            {
-                let mut tokens = TokenStream::new();
-                self.to_tokens(&mut tokens);
-                tokens
-            }
-            /// Convert `self` directly into a `TokenStream` object.
-            fn into_token_stream(self) -> TokenStream where
-            Self: Sized,
-           
-            {
-                self.to_token_stream()
-            }
-        }
-
-        impl<'a, T: ?Sized + ToTokens> ToTokens for &'a T {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
-            }
-        }
-
-        impl<'a, T: ?Sized + ToTokens> ToTokens for &'a mut T {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
-            }
-        }
-
-        impl<'a, T: ?Sized + ToOwned + ToTokens> ToTokens for Cow<'a, T>
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
-            }
-        }
-
-        impl<T: ?Sized + ToTokens> ToTokens for Box<T>
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
-            }
-        }
-
-        impl<T: ?Sized + ToTokens> ToTokens for Rc<T>
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
-            }
-        }
-
-        impl<T: ToTokens> ToTokens for Option<T>
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                if let Some(ref t) = *self {
-                    t.to_tokens(tokens);
-                }
-            }
-        }
-
-        impl ToTokens for str 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(Literal::string(self));
-            }
-        }
-
-        impl ToTokens for String 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream)
-            {
-                self.as_str().to_tokens(tokens);
-            }
-        }
-
-        macro_rules! primitive 
-        {
-            ($($t:ident => $name:ident)*) => {
-                $(
-                    impl ToTokens for $t {
-                        fn to_tokens(&self, tokens: &mut TokenStream) {
-                            tokens.append(Literal::$name(*self));
-                        }
-                    }
-                )*
-            };
-        }
-
-        primitive! 
-        {
-            i8 => i8_suffixed
-            i16 => i16_suffixed
-            i32 => i32_suffixed
-            i64 => i64_suffixed
-            i128 => i128_suffixed
-            isize => isize_suffixed
-
-            u8 => u8_suffixed
-            u16 => u16_suffixed
-            u32 => u32_suffixed
-            u64 => u64_suffixed
-            u128 => u128_suffixed
-            usize => usize_suffixed
-
-            f32 => f32_suffixed
-            f64 => f64_suffixed
-        }
-
-        impl ToTokens for char 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(Literal::character(*self));
-            }
-        }
-
-        impl ToTokens for bool 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                let word = if *self { "true" } else { "false" };
-                tokens.append(Ident::new(word, Span::call_site()));
-            }
-        }
-
-        impl ToTokens for Group 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
-            }
-        }
-
-        impl ToTokens for Ident 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
-            }
-        }
-
-        impl ToTokens for Punct 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
-            }
-        }
-
-        impl ToTokens for Literal 
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
-            }
-        }
-
-        impl ToTokens for TokenTree 
-        {
-            fn to_tokens(&self, dst: &mut TokenStream) {
-                dst.append(self.clone());
-            }
-        }
-
-        impl ToTokens for TokenStream 
-        {
-            fn to_tokens(&self, dst: &mut TokenStream) {
-                dst.extend(iter::once(self.clone()));
-            }
-            fn into_token_stream(self) -> TokenStream { self }
-        }
-    } pub use self::to_tokens::ToTokens;
-    
-    pub mod __private
-    {
-        use ::
-        {
-            ops::{ BitOr },
-            process::macros::{ Group, Ident, Punct, Spacing, TokenTree },
-            quote::{ IdentFragment, ToTokens, TokenStreamExt },
-            *,
-        }; use self::get_span::{GetSpan, GetSpanBase, GetSpanInner};
-        /*
-        */
-        pub type Delimiter = process::macros::Delimiter;
-        pub type Span = process::macros::Span;
-        pub type TokenStream = process::macros::TokenStream;
-        
-        macro_rules! push_punct
-        {
-            ($name:ident $spanned:ident $char1:tt) => {
-                    pub fn $name(tokens: &mut TokenStream)
-                {
-                    tokens.append(Punct::new($char1, Spacing::Alone));
-                }
-                    pub fn $spanned(tokens: &mut TokenStream, span: Span) {
-                    let mut punct = Punct::new($char1, Spacing::Alone);
-                    punct.set_span(span);
-                    tokens.append(punct);
-                }
-            };
-            ($name:ident $spanned:ident $char1:tt $char2:tt) => {
-                    pub fn $name(tokens: &mut TokenStream)
-                {
-                    tokens.append(Punct::new($char1, Spacing::Joint));
-                    tokens.append(Punct::new($char2, Spacing::Alone));
-                }
-                    pub fn $spanned(tokens: &mut TokenStream, span: Span) {
-                    let mut punct = Punct::new($char1, Spacing::Joint);
-                    punct.set_span(span);
-                    tokens.append(punct);
-                    let mut punct = Punct::new($char2, Spacing::Alone);
-                    punct.set_span(span);
-                    tokens.append(punct);
-                }
-            };
-            ($name:ident $spanned:ident $char1:tt $char2:tt $char3:tt) => {
-                    pub fn $name(tokens: &mut TokenStream)
-                {
-                    tokens.append(Punct::new($char1, Spacing::Joint));
-                    tokens.append(Punct::new($char2, Spacing::Joint));
-                    tokens.append(Punct::new($char3, Spacing::Alone));
-                }
-                    pub fn $spanned(tokens: &mut TokenStream, span: Span) {
-                    let mut punct = Punct::new($char1, Spacing::Joint);
-                    punct.set_span(span);
-                    tokens.append(punct);
-                    let mut punct = Punct::new($char2, Spacing::Joint);
-                    punct.set_span(span);
-                    tokens.append(punct);
-                    let mut punct = Punct::new($char3, Spacing::Alone);
-                    punct.set_span(span);
-                    tokens.append(punct);
-                }
-            };
-        }
-
-        pub struct HasIterator;
-        pub struct ThereIsNoIteratorInRepetition;
-
-        impl BitOr<ThereIsNoIteratorInRepetition> for ThereIsNoIteratorInRepetition {
-            type Output = ThereIsNoIteratorInRepetition;
-            fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> ThereIsNoIteratorInRepetition {
-                ThereIsNoIteratorInRepetition
-            }
-        }
-
-        impl BitOr<ThereIsNoIteratorInRepetition> for HasIterator {
-            type Output = HasIterator;
-            fn bitor(self, _rhs: ThereIsNoIteratorInRepetition) -> HasIterator {
-                HasIterator
-            }
-        }
-
-        impl BitOr<HasIterator> for ThereIsNoIteratorInRepetition {
-            type Output = HasIterator;
-            fn bitor(self, _rhs: HasIterator) -> HasIterator {
-                HasIterator
-            }
-        }
-
-        impl BitOr<HasIterator> for HasIterator {
-            type Output = HasIterator;
-            fn bitor(self, _rhs: HasIterator) -> HasIterator {
-                HasIterator
-            }
-        }
-        /// Extension traits used by the implementation of `quote!`.
-        pub mod ext
-        {
-            use ::
-            {
-                collections::btree_set::{ self, BTreeSet },
-                quote::{ ToTokens },
-                *,
-            };
-            /**/
-            use super::RepInterp;
-            use super::{HasIterator as HasIter, ThereIsNoIteratorInRepetition as DoesNotHaveIter};
-            /// Extension trait providing the `quote_into_iter` method on iterators.
-            pub trait RepIteratorExt: Iterator + Sized {
-                fn quote_into_iter(self) -> (Self, HasIter) {
-                    (self, HasIter)
-                }
-            }
-            
-            impl<T: Iterator> RepIteratorExt for T {}
-            /// Extension trait providing the `quote_into_iter` method for non-iterable types.
-            pub trait RepToTokensExt {
-                /// Pretend to be an iterator for the purposes of `quote_into_iter`.
-                fn next(&self) -> Option<&Self> {
-                    Some(self)
-                }
-                fn quote_into_iter(&self) -> (&Self, DoesNotHaveIter) {
-                    (self, DoesNotHaveIter)
-                }
-            }
-            
-            impl<T: ToTokens + ?Sized> RepToTokensExt for T {}
-            /// Extension trait providing the `quote_into_iter` method for types that can be referenced as an iterator.
-            pub trait RepAsIteratorExt<'q>
-            {
-                type Iter: Iterator;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter);
-            }
-            
-            impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a T
-            {
-                type Iter = T::Iter;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                    <T as RepAsIteratorExt>::quote_into_iter(*self)
-                }
-            }
-            
-            impl<'q, 'a, T: RepAsIteratorExt<'q> + ?Sized> RepAsIteratorExt<'q> for &'a mut T {
-                type Iter = T::Iter;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                    <T as RepAsIteratorExt>::quote_into_iter(*self)
-                }
-            }
-            
-            impl<'q, T: 'q> RepAsIteratorExt<'q> for [T] {
-                type Iter = slice::Iter<'q, T>;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                    (self.iter(), HasIter)
-                }
-            }
-            
-            impl<'q, T: 'q> RepAsIteratorExt<'q> for Vec<T>
-            {
-                type Iter = slice::Iter<'q, T>;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                    (self.iter(), HasIter)
-                }
-            }
-            
-            impl<'q, T: 'q> RepAsIteratorExt<'q> for BTreeSet<T>
-            {
-                type Iter = btree_set::Iter<'q, T>;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                    (self.iter(), HasIter)
-                }
-            }
-            
-            impl<'q, T: RepAsIteratorExt<'q>> RepAsIteratorExt<'q> for RepInterp<T>
-            {
-                type Iter = T::Iter;
-                fn quote_into_iter(&'q self) -> (Self::Iter, HasIter) {
-                    self.0.quote_into_iter()
-                }
-            }
-        }
-
-        #[derive(Copy, Clone)]
-        pub struct RepInterp<T>(pub T);
-
-        impl<T> RepInterp<T>
-        {
-            pub fn next(self) -> Option<T>
-            {
-                Some(self.0)
-            }
-        }
-
-        impl<T: Iterator> Iterator for RepInterp<T>
-        {
-            type Item = T::Item;
-            fn next(&mut self) -> Option<Self::Item>
-            {
-                self.0.next()
-            }
-        }
-
-        impl<T: ToTokens> ToTokens for RepInterp<T>
-        {
-            fn to_tokens(&self, tokens: &mut TokenStream)
-            {
-                self.0.to_tokens(tokens);
-            }
-        }
-        
-        #[inline] pub fn get_span<T>(span: T) -> GetSpan<T> 
-        {
-            GetSpan(GetSpanInner(GetSpanBase(span)))
-        }
-
-        mod get_span
-        {
-            use ::
-            {
-                ops::{ Deref },
-                process::macros::
-                {
-                    extra::DelimSpan, Span
-                },
-                *,
-            };
-            /*
-            */
-            pub struct GetSpan<T>(pub GetSpanInner<T>);
-
-            pub struct GetSpanInner<T>(pub GetSpanBase<T>);
-
-            pub struct GetSpanBase<T>(pub T);
-
-            impl GetSpan<Span> {
-                #[inline] pub fn __into_span(self) -> Span {
-                    ((self.0).0).0
-                }
-            }
-            impl GetSpanInner<DelimSpan> {
-                #[inline] pub fn __into_span(&self) -> Span {
-                    (self.0).0.join()
-                }
-            }
-            
-            impl<T> GetSpanBase<T> {
-                #[allow(clippy::unused_self)]
-                pub fn __into_span(&self) -> T {
-                    unreachable!()
-                }
-            }
-            
-            impl<T> Deref for GetSpan<T>
-            {
-                type Target = GetSpanInner<T>;
-
-                #[inline] fn deref(&self) -> &Self::Target {
-                    &self.0
-                }
-            }
-            
-            impl<T> Deref for GetSpanInner<T>
-            {
-                type Target = GetSpanBase<T>;
-
-                #[inline] fn deref(&self) -> &Self::Target {
-                    &self.0
-                }
-            }
-        }
-
-        pub fn push_group(tokens: &mut TokenStream, delimiter: Delimiter, inner: TokenStream) 
-        {
-            tokens.append(Group::new(delimiter, inner));
-        }
-
-        pub fn push_group_spanned
-        (
-            tokens: &mut TokenStream,
-            span: Span,
-            delimiter: Delimiter,
-            inner: TokenStream,
-        ) 
-        {
-            let mut g = Group::new(delimiter, inner);
-            g.set_span(span);
-            tokens.append(g);
-        }
-
-        pub fn parse(tokens: &mut TokenStream, s: &str)
-        {
-            let s: TokenStream = s.parse().expect("invalid token stream");
-            tokens.extend(iter::once(s));
-        }
-
-        pub fn parse_spanned(tokens: &mut TokenStream, span: Span, s: &str)
-        {
-            let s: TokenStream = s.parse().expect("invalid token stream");
-            tokens.extend(s.into_iter().map(|t| respan_token_tree(t, span)));
-        }
-        
-        fn respan_token_tree(mut token: TokenTree, span: Span) -> TokenTree
-        {
-            match &mut token {
-                TokenTree::Group(g) => {
-                    let stream = g
-                        .stream()
-                        .into_iter()
-                        .map(|token| respan_token_tree(token, span))
-                        .collect();
-                    *g = Group::new(g.delimiter(), stream);
-                    g.set_span(span);
-                }
-                other => other.set_span(span),
-            }
-            token
-        }
-
-        pub fn push_ident(tokens: &mut TokenStream, s: &str)
-        {
-            let span = Span::call_site();
-            push_ident_spanned(tokens, span, s);
-        }
-
-        pub fn push_ident_spanned(tokens: &mut TokenStream, span: Span, s: &str)
-        {
-            tokens.append(ident_maybe_raw(s, span));
-        }
-
-        pub fn push_lifetime(tokens: &mut TokenStream, lifetime: &str)
-        {
-            struct Lifetime<'a> {
-                name: &'a str,
-                state: u8,
-            }
-            
-            impl<'a> Iterator for Lifetime<'a>
-            {
-                type Item = TokenTree;
-                fn next(&mut self) -> Option<Self::Item> {
-                    match self.state {
-                        0 => {
-                            self.state = 1;
-                            Some(TokenTree::Punct(Punct::new('\'', Spacing::Joint)))
-                        }
-                        1 => {
-                            self.state = 2;
-                            Some(TokenTree::Ident(Ident::new(self.name, Span::call_site())))
-                        }
-                        _ => None,
-                    }
-                }
-            }
-            tokens.extend(Lifetime {
-                name: &lifetime[1..],
-                state: 0,
-            });
-        }
-
-        pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &str)
-        {
-            struct Lifetime<'a> {
-                name: &'a str,
-                span: Span,
-                state: u8,
-            }
-            
-            impl<'a> Iterator for Lifetime<'a>
-            {
-                type Item = TokenTree;
-                fn next(&mut self) -> Option<Self::Item> {
-                    match self.state {
-                        0 => {
-                            self.state = 1;
-                            let mut apostrophe = Punct::new('\'', Spacing::Joint);
-                            apostrophe.set_span(self.span);
-                            Some(TokenTree::Punct(apostrophe))
-                        }
-                        1 => {
-                            self.state = 2;
-                            Some(TokenTree::Ident(Ident::new(self.name, self.span)))
-                        }
-                        _ => None,
-                    }
-                }
-            }
-            tokens.extend(Lifetime {
-                name: &lifetime[1..],
-                span,
-                state: 0,
-            });
-        }
-
-        push_punct!(push_add push_add_spanned '+');
-        push_punct!(push_add_eq push_add_eq_spanned '+' '=');
-        push_punct!(push_and push_and_spanned '&');
-        push_punct!(push_and_and push_and_and_spanned '&' '&');
-        push_punct!(push_and_eq push_and_eq_spanned '&' '=');
-        push_punct!(push_at push_at_spanned '@');
-        push_punct!(push_bang push_bang_spanned '!');
-        push_punct!(push_caret push_caret_spanned '^');
-        push_punct!(push_caret_eq push_caret_eq_spanned '^' '=');
-        push_punct!(push_colon push_colon_spanned ':');
-        push_punct!(push_colon2 push_colon2_spanned ':' ':');
-        push_punct!(push_comma push_comma_spanned ',');
-        push_punct!(push_div push_div_spanned '/');
-        push_punct!(push_div_eq push_div_eq_spanned '/' '=');
-        push_punct!(push_dot push_dot_spanned '.');
-        push_punct!(push_dot2 push_dot2_spanned '.' '.');
-        push_punct!(push_dot3 push_dot3_spanned '.' '.' '.');
-        push_punct!(push_dot_dot_eq push_dot_dot_eq_spanned '.' '.' '=');
-        push_punct!(push_eq push_eq_spanned '=');
-        push_punct!(push_eq_eq push_eq_eq_spanned '=' '=');
-        push_punct!(push_ge push_ge_spanned '>' '=');
-        push_punct!(push_gt push_gt_spanned '>');
-        push_punct!(push_le push_le_spanned '<' '=');
-        push_punct!(push_lt push_lt_spanned '<');
-        push_punct!(push_mul_eq push_mul_eq_spanned '*' '=');
-        push_punct!(push_ne push_ne_spanned '!' '=');
-        push_punct!(push_or push_or_spanned '|');
-        push_punct!(push_or_eq push_or_eq_spanned '|' '=');
-        push_punct!(push_or_or push_or_or_spanned '|' '|');
-        push_punct!(push_pound push_pound_spanned '#');
-        push_punct!(push_question push_question_spanned '?');
-        push_punct!(push_rarrow push_rarrow_spanned '-' '>');
-        push_punct!(push_larrow push_larrow_spanned '<' '-');
-        push_punct!(push_rem push_rem_spanned '%');
-        push_punct!(push_rem_eq push_rem_eq_spanned '%' '=');
-        push_punct!(push_fat_arrow push_fat_arrow_spanned '=' '>');
-        push_punct!(push_semi push_semi_spanned ';');
-        push_punct!(push_shl push_shl_spanned '<' '<');
-        push_punct!(push_shl_eq push_shl_eq_spanned '<' '<' '=');
-        push_punct!(push_shr push_shr_spanned '>' '>');
-        push_punct!(push_shr_eq push_shr_eq_spanned '>' '>' '=');
-        push_punct!(push_star push_star_spanned '*');
-        push_punct!(push_sub push_sub_spanned '-');
-        push_punct!(push_sub_eq push_sub_eq_spanned '-' '=');
-
-        pub fn push_underscore(tokens: &mut TokenStream)
-        {
-            push_underscore_spanned(tokens, Span::call_site());
-        }
-
-        pub fn push_underscore_spanned(tokens: &mut TokenStream, span: Span)
-        {
-            tokens.append(Ident::new("_", span));
-        }
-       
-        pub fn mk_ident(id: &str, span: Option<Span>) -> Ident
-        {
-            let span = span.unwrap_or_else(Span::call_site);
-            ident_maybe_raw(id, span)
-        }
-
-        fn ident_maybe_raw(id: &str, span: Span) -> Ident       
-        {
-            if let Some(id) = id.strip_prefix("r#") {
-                Ident::new_raw(id, span)
-            } else {
-                Ident::new(id, span)
-            }
-        }
-        
-        #[derive(Copy, Clone)]
-        pub struct IdentFragmentAdapter<T: IdentFragment>(pub T);
-
-        impl<T: IdentFragment> IdentFragmentAdapter<T>
-        {
-            pub fn span(&self) -> Option<Span> { self.0.span() }
-        }
-
-        impl<T: IdentFragment> fmt::Display for IdentFragmentAdapter<T>
-        {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { IdentFragment::fmt(&self.0, f) }
-        }
-
-        impl<T: IdentFragment + fmt::Octal> fmt::Octal for IdentFragmentAdapter<T>
-        {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Octal::fmt(&self.0, f) }
-        }
-
-        impl<T: IdentFragment + fmt::LowerHex> fmt::LowerHex for IdentFragmentAdapter<T>
-        {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::LowerHex::fmt(&self.0, f) }
-        }
-
-        impl<T: IdentFragment + fmt::UpperHex> fmt::UpperHex for IdentFragmentAdapter<T>
-        {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::UpperHex::fmt(&self.0, f) }
-        }
-
-        impl<T: IdentFragment + fmt::Binary> fmt::Binary for IdentFragmentAdapter<T>
-        {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Binary::fmt(&self.0, f) }
-        }
-    }
-    
-    pub mod spanned
-    {
-        use ::
-        {
-            process::macros::{ extra::DelimSpan, Span, TokenStream },
-            quote::ToTokens,
-            *,
-        };
-        /*
-        */
-       
-        pub trait Spanned: private::Sealed {
-            fn __span(&self) -> Span;
-        }
-
-        impl Spanned for Span {
-            fn __span(&self) -> Span {
-                *self
-            }
-        }
-
-        impl Spanned for DelimSpan {
-            fn __span(&self) -> Span
-            {
-                self.join()
-            }
-        }
-
-        impl<T: ?Sized + ToTokens> Spanned for T {
-            fn __span(&self) -> Span {
-                join_spans(self.into_token_stream())
-            }
-        }
-
-        fn join_spans(tokens: TokenStream) -> Span
-        {
-            let mut iter = tokens.into_iter().map(|tt| tt.span());
-
-            let first = match iter.next() {
-                Some(span) => span,
-                None => return Span::call_site(),
-            };
-
-            iter.fold(None, |_prev, next| Some(next))
-                .and_then(|last| first.join(last))
-                .unwrap_or(first)
-        }
-
-        mod private
-        {
-            use ::
-            {
-                process::macros::
-                {
-                    extra::DelimSpan, Span
-                },
-                quote::{ ToTokens },
-                *,
-            };
-            /*
-            */
-            pub trait Sealed {}
-            impl Sealed for Span {}
-            impl Sealed for DelimSpan {}
-            
-            impl<T: ?Sized + ToTokens> Sealed for T {}
-        }
-    }
-    
 }
 
 pub mod rc
@@ -36147,7 +32364,7 @@ pub mod shell
 
     fn need_expand_brace(line: &str) -> bool 
     {
-        libs::re::re_contains(line, r#"\{[^ "']*,[^ "']*,?[^ "']*\}"#)
+        ::regex::re_contains(line, r#"\{[^ "']*,[^ "']*,?[^ "']*\}"#)
     }
 
     fn brace_getitem(s: &str, depth: i32) -> (Vec<String>, String) 
@@ -36388,7 +32605,7 @@ pub mod shell
         }
 
         for (i, text) in buff.iter().rev() {
-            let linfo = parsers::parser_line::parse_line(text);
+            let linfo = parses::lines::parse_line(text);
             let tokens_ = linfo.tokens;
             tokens.remove(*i);
             for item in tokens_.iter().rev() {
@@ -36427,13 +32644,13 @@ pub mod shell
 
     fn env_in_token(token: &str) -> bool 
     {
-        if libs::re::re_contains(token, r"\$\{?[\$\?]\}?") {
+        if ::regex::re_contains(token, r"\$\{?[\$\?]\}?") {
             return true;
         }
 
         let ptn_env_name = r"[a-zA-Z_][a-zA-Z0-9_]*";
         let ptn_env = format!(r"\$\{{?{}\}}?", ptn_env_name);
-        if !libs::re::re_contains(token, &ptn_env) {
+        if !::regex::re_contains(token, &ptn_env) {
             return false;
         }
 
@@ -36442,16 +32659,16 @@ pub mod shell
         // - VERSION=$(foobar -h | grep 'version: v' | awk '{print $NF}')
         let ptn_cmd_sub1 = format!(r"^{}=`.*`$", ptn_env_name);
         let ptn_cmd_sub2 = format!(r"^{}=\$\(.*\)$", ptn_env_name);
-        if libs::re::re_contains(token, &ptn_cmd_sub1)
-            || libs::re::re_contains(token, &ptn_cmd_sub2)
-            || libs::re::re_contains(token, r"^\$\(.+\)$")
+        if ::regex::re_contains(token, &ptn_cmd_sub1)
+            || ::regex::re_contains(token, &ptn_cmd_sub2)
+            || ::regex::re_contains(token, r"^\$\(.+\)$")
         {
             return false;
         }
 
         // for cmd-line like `alias foo='echo $PWD'`
         let ptn_env = format!(r"='.*\$\{{?{}\}}?.*'$", ptn_env_name);
-        !libs::re::re_contains(token, &ptn_env)
+        !::regex::re_contains(token, &ptn_env)
     }
 
     pub fn expand_env(sh: &Shell, tokens: &mut types::Tokens) 
@@ -36485,8 +32702,8 @@ pub mod shell
 
     fn should_do_dollar_command_extension(line: &str) -> bool 
     {
-        libs::re::re_contains(line, r"\$\([^\)]+\)")
-            && !libs::re::re_contains(line, r"='.*\$\([^\)]+\).*'$")
+        ::regex::re_contains(line, r"\$\([^\)]+\)")
+            && !::regex::re_contains(line, r"='.*\$\([^\)]+\).*'$")
     }
 
     fn do_command_substitution_for_dollar(sh: &mut Shell, tokens: &mut types::Tokens) 
@@ -36507,7 +32724,7 @@ pub mod shell
                 }
 
                 let ptn_cmd = r"\$\((.+)\)";
-                let cmd = match libs::re::find_first_group(ptn_cmd, &line) {
+                let cmd = match ::regex::find_first_group(ptn_cmd, &line) {
                     Some(x) => x,
                     None => {
                         println_stderr!("cicada: calculator: no first group");
@@ -36659,7 +32876,7 @@ pub mod shell
 
     pub fn do_expansion(sh: &mut Shell, tokens: &mut types::Tokens) 
     {
-        let line = parsers::parser_line::tokens_to_line(tokens);
+        let line = parses::lines::tokens_to_line(tokens);
         if tools::is_arithmetic(&line) {
             return;
         }
@@ -36682,9 +32899,9 @@ pub mod shell
         // remove sub-prompts from multiple line mode
         // 1. assuming '\n' char cannot be typed manually?
         // 2. `>>` is defined as `src/prompt/multilines.rs`
-        let line_new = libs::re::replace_all(line, r"\\\n>> ", "");
-        let line_new = libs::re::replace_all(&line_new, r"\| *\n>> ", "| ");
-        libs::re::replace_all(&line_new, r"(?P<NEWLINE>\n)>> ", "$NEWLINE")
+        let line_new = ::regex::replace_all(line, r"\\\n>> ", "");
+        let line_new = ::regex::replace_all(&line_new, r"\| *\n>> ", "| ");
+        ::regex::replace_all(&line_new, r"(?P<NEWLINE>\n)>> ", "$NEWLINE")
     }
 
     fn proc_has_terminal() -> bool 
@@ -37024,6 +33241,370 @@ pub mod sync
 {
     pub use std::sync::{ * };
 }
+// mortal
+pub mod system
+{
+    /*!
+    */
+    use ::
+    {
+        *,
+    };
+    /*
+    */
+    pub mod common
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+    }
+    /*
+    */
+    pub mod sequence
+    {
+        /*!
+        */
+        use ::
+        {
+            iter::{ FromIterator },
+            mem::{ replace },
+            *,
+        };
+        /*
+        */
+        /// Contains a set of string sequences, mapped to a value.
+        #[derive(Clone, Debug, Default)]
+        pub struct SequenceMap<K, V> {
+            sequences: Vec<(K, V)>,
+        }
+
+        /// Represents the result of a `SequenceMap::find` operation.
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum FindResult<V> {
+            /// No contained sequences begin with the provided input sequence.
+            NotFound,
+            /// One or more sequences begin with the provided input sequence,
+            /// but the sequence does not represent a complete sequence.
+            Incomplete,
+            /// A sequence was found exactly matching the input sequence;
+            /// additionally, one or more sequences begin with the input sequence.
+            Undecided(V),
+            /// A sequence was found exactly matching the input sequence;
+            /// no additional partially-matching sequences exist.
+            Found(V),
+        }
+
+        impl<'a, V: Clone> FindResult<&'a V> {
+            /// Maps `FindResult<&V>` to `FindResult<V>` by cloning the contents
+            /// of the result value.
+            pub fn cloned(self) -> FindResult<V> {
+                match self {
+                    FindResult::NotFound => FindResult::NotFound,
+                    FindResult::Incomplete => FindResult::Incomplete,
+                    FindResult::Undecided(v) => FindResult::Undecided(v.clone()),
+                    FindResult::Found(v) => FindResult::Found(v.clone()),
+                }
+            }
+        }
+
+        impl<K: AsRef<str>, V> SequenceMap<K, V> {
+            /// Creates an empty `SequenceMap`.
+            pub fn new() -> SequenceMap<K, V> {
+                SequenceMap::with_capacity(0)
+            }
+
+            /// Creates an empty `SequenceMap` with allocated capacity for `n` elements.
+            pub fn with_capacity(n: usize) -> SequenceMap<K, V> {
+                SequenceMap{
+                    sequences: Vec::with_capacity(n),
+                }
+            }
+
+            /// Returns a slice of all contained sequences, sorted by key.
+            pub fn sequences(&self) -> &[(K, V)] {
+                &self.sequences
+            }
+
+            /// Returns a mutable slice of all contained sequences, sorted by key.
+            ///
+            /// # Note
+            ///
+            /// Elements must remain sorted by key for the proper functioning of
+            /// `SequenceMap` operations. If keys are modified, the caller must ensure
+            /// that the slice is sorted.
+            pub fn sequences_mut(&mut self) -> &mut [(K, V)] {
+                &mut self.sequences
+            }
+
+            /// Returns an `Entry` for the given key.
+            ///
+            /// This API matches the entry API for the standard `HashMap` collection.
+            pub fn entry(&mut self, key: K) -> Entry<K, V> {
+                match self.search(key.as_ref()) {
+                    Ok(n) => Entry::Occupied(OccupiedEntry{
+                        map: self,
+                        index: n,
+                    }),
+                    Err(n) => Entry::Vacant(VacantEntry{
+                        map: self,
+                        key,
+                        index: n,
+                    })
+                }
+            }
+
+            /// Performs a search for a partial or complete sequence match.
+            pub fn find(&self, key: &str) -> FindResult<&V> {
+                let (n, found) = match self.search(key) {
+                    Ok(n) => (n, true),
+                    Err(n) => (n, false)
+                };
+
+                let incomplete = self.sequences.get(n + (found as usize))
+                    .map_or(false, |&(ref next, _)| next.as_ref().starts_with(key));
+
+                match (found, incomplete) {
+                    (false, false) => FindResult::NotFound,
+                    (false, true) => FindResult::Incomplete,
+                    (true, false) => FindResult::Found(&self.sequences[n].1),
+                    (true, true) => FindResult::Undecided(&self.sequences[n].1),
+                }
+            }
+
+            /// Returns the corresponding value for the given sequence.
+            pub fn get(&self, key: &str) -> Option<&V> {
+                match self.search(key) {
+                    Ok(n) => Some(&self.sequences[n].1),
+                    Err(_) => None
+                }
+            }
+
+            /// Returns a mutable reference to the corresponding value for the given sequence.
+            pub fn get_mut(&mut self, key: &str) -> Option<&mut V> {
+                match self.search(key) {
+                    Ok(n) => Some(&mut self.sequences[n].1),
+                    Err(_) => None
+                }
+            }
+
+            /// Inserts a key-value pair into the map.
+            ///
+            /// If the key already exists in the map, the new value will replace the old
+            /// value and the old value will be returned.
+            pub fn insert(&mut self, key: K, value: V) -> Option<V> {
+                match self.search(key.as_ref()) {
+                    Ok(n) => Some(replace(&mut self.sequences[n], (key, value)).1),
+                    Err(n) => {
+                        self.sequences.insert(n, (key, value));
+                        None
+                    }
+                }
+            }
+
+            /// Removes a key-value pair from the map.
+            pub fn remove(&mut self, key: &str) -> Option<(K, V)> {
+                match self.search(key) {
+                    Ok(n) => Some(self.sequences.remove(n)),
+                    Err(_) => None
+                }
+            }
+
+            fn search(&self, key: &str) -> Result<usize, usize> {
+                self.sequences.binary_search_by_key(&key, |&(ref k, _)| &k.as_ref())
+            }
+        }
+
+        impl<K: AsRef<str>, V> From<Vec<(K, V)>> for SequenceMap<K, V> {
+            /// Creates a `SequenceMap` from a `Vec` of key-value pairs.
+            ///
+            /// The input `Vec` will be sorted and deduplicated.
+            ///
+            /// If two elements exist with the same key, the first element is used.
+            fn from(mut sequences: Vec<(K, V)>) -> SequenceMap<K, V> {
+                sequences.sort_by(|a, b| a.0.as_ref().cmp(b.0.as_ref()));
+                sequences.dedup_by(|a, b| a.0.as_ref() == b.0.as_ref());
+
+                SequenceMap{sequences}
+            }
+        }
+
+        impl<K: AsRef<str>, V> FromIterator<(K, V)> for SequenceMap<K, V> {
+            /// Creates a `SequenceMap` from an iterator of key-value pairs.
+            ///
+            /// If two elements exist with the same key, the last element is used.
+            fn from_iter<I: IntoIterator<Item=(K, V)>>(iter: I) -> Self {
+                let iter = iter.into_iter();
+                let mut map = SequenceMap::with_capacity(iter.size_hint().0);
+
+                for (k, v) in iter {
+                    map.insert(k, v);
+                }
+
+                map
+            }
+        }
+
+        /// A view into a single entry of a `SequenceMap`, which may be either occupied
+        /// or vacant.
+        ///
+        /// This value is returned from the [`SequenceMap::entry`] method.
+        ///
+        /// [`SequenceMap::entry`]: struct.SequenceMap.html#method.entry
+        pub enum Entry<'a, K: 'a, V: 'a> {
+            /// An occupied entry
+            Occupied(OccupiedEntry<'a, K, V>),
+            /// A vacant entry
+            Vacant(VacantEntry<'a, K, V>),
+        }
+
+        /// A view into an occupied entry in a `SequenceMap`.
+        pub struct OccupiedEntry<'a, K: 'a, V: 'a> {
+            map: &'a mut SequenceMap<K, V>,
+            index: usize,
+        }
+
+        /// A view into a vacant entry in a `SequenceMap`.
+        pub struct VacantEntry<'a, K: 'a, V: 'a> {
+            map: &'a mut SequenceMap<K, V>,
+            key: K,
+            index: usize,
+        }
+
+        impl<'a, K, V> Entry<'a, K, V> {
+            /// Provides in-place mutable access to an occupied entry before any
+            /// potential inserts into the map.
+            pub fn and_modify<F: FnOnce(&mut V)>(self, f: F) -> Self {
+                match self {
+                    Entry::Occupied(mut ent) => {
+                        f(ent.get_mut());
+                        Entry::Occupied(ent)
+                    }
+                    Entry::Vacant(ent) => Entry::Vacant(ent)
+                }
+            }
+
+            /// Returns a mutable reference to the entry value,
+            /// inserting the provided default if the entry is vacant.
+            pub fn or_insert(self, default: V) -> &'a mut V {
+                match self {
+                    Entry::Occupied(ent) => ent.into_mut(),
+                    Entry::Vacant(ent) => ent.insert(default)
+                }
+            }
+
+            /// Returns a mutable reference to the entry value,
+            /// inserting a value using the provided closure if the entry is vacant.
+            pub fn or_insert_with<F: FnOnce() -> V>(self, default: F) -> &'a mut V {
+                match self {
+                    Entry::Occupied(ent) => ent.into_mut(),
+                    Entry::Vacant(ent) => ent.insert(default())
+                }
+            }
+
+            /// Returns a borrowed reference to the entry key.
+            pub fn key(&self) -> &K {
+                match *self {
+                    Entry::Occupied(ref ent) => ent.key(),
+                    Entry::Vacant(ref ent) => ent.key(),
+                }
+            }
+        }
+
+        impl<'a, K, V> OccupiedEntry<'a, K, V> {
+            /// Returns a borrowed reference to the entry key.
+            pub fn key(&self) -> &K {
+                &self.map.sequences[self.index].0
+            }
+
+            /// Returns a borrowed reference to the entry value.
+            pub fn get(&self) -> &V {
+                &self.map.sequences[self.index].1
+            }
+
+            /// Returns a mutable reference to the entry value.
+            pub fn get_mut(&mut self) -> &mut V {
+                &mut self.map.sequences[self.index].1
+            }
+
+            /// Converts the `OccupiedEntry` into a mutable reference whose lifetime
+            /// is bound to the `SequenceMap`.
+            pub fn into_mut(self) -> &'a mut V {
+                &mut self.map.sequences[self.index].1
+            }
+
+            /// Replaces the entry value with the given value, returning the previous value.
+            pub fn insert(&mut self, value: V) -> V {
+                replace(self.get_mut(), value)
+            }
+
+            /// Removes the entry and returns the value.
+            pub fn remove(self) -> V {
+                self.map.sequences.remove(self.index).1
+            }
+
+            /// Removes the entry and returns the key-value pair.
+            pub fn remove_entry(self) -> (K, V) {
+                self.map.sequences.remove(self.index)
+            }
+        }
+
+        impl<'a, K, V> VacantEntry<'a, K, V> {
+            /// Returns a borrowed reference to the entry key.
+            pub fn key(&self) -> &K {
+                &self.key
+            }
+
+            /// Consumes the `VacantEntry` and returns ownership of the key.
+            pub fn into_key(self) -> K {
+                self.key
+            }
+
+            /// Consumes the `VacantEntry` and inserts a value, returning a mutable
+            /// reference to its place in the `SequenceMap`.
+            pub fn insert(self, value: V) -> &'a mut V {
+                self.map.sequences.insert(self.index, (self.key, value));
+                &mut self.map.sequences[self.index].1
+            }
+        }
+
+        impl<'a, K: fmt::Debug, V: fmt::Debug> fmt::Debug for Entry<'a, K, V> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                match *self {
+                    Entry::Occupied(ref ent) =>
+                        f.debug_tuple("Entry")
+                            .field(ent)
+                            .finish(),
+                    Entry::Vacant(ref ent) =>
+                        f.debug_tuple("Entry")
+                            .field(ent)
+                            .finish()
+                }
+            }
+        }
+
+        impl<'a, K: fmt::Debug, V: fmt::Debug> fmt::Debug for OccupiedEntry<'a, K, V> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.debug_struct("OccupiedEntry")
+                    .field("key", self.key())
+                    .field("value", self.get())
+                    .finish()
+            }
+        }
+
+        impl<'a, K: fmt::Debug, V> fmt::Debug for VacantEntry<'a, K, V> {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.debug_tuple("VacantEntry")
+                    .field(self.key())
+                    .finish()
+            }
+        }
+    }
+}
 
 pub mod thread
 {
@@ -37034,16 +33615,72 @@ pub mod time
 {
     /*!
     */
+    pub use temporal::{ * };
+    
     use ::
     {
         *,
     };
-
+    
     pub mod std
     {
         pub use std::thread::{ * };
     }
-    
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct DateTime
+    {
+        odt: OffsetDateTime,
+    }
+
+    impl DateTime
+    {
+        pub fn now() -> Self
+        {
+            let odt: OffsetDateTime = match OffsetDateTime::now_local() {
+                Ok(dt) => dt,
+                Err(_) => OffsetDateTime::now_utc(),
+            };
+            DateTime { odt }
+        }
+
+        pub fn from_timestamp(ts: f64) -> Self
+        {
+            let dummy_now = Self::now();
+            let offset_seconds = dummy_now.odt.offset().whole_minutes() * 60;
+            let ts_nano = (ts + offset_seconds as f64) * 1000000000.0;
+            let odt: OffsetDateTime = match OffsetDateTime::from_unix_timestamp_nanos(ts_nano as i128)
+            {
+                Ok(x) => x,
+                Err(_) => OffsetDateTime::now_utc(),
+            };
+            DateTime { odt }
+        }
+
+        pub fn unix_timestamp(&self) -> f64 
+        {
+            self.odt.unix_timestamp_nanos() as f64 / 1000000000.0
+        }
+    }
+
+    impl fmt::Display for DateTime 
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result 
+        {
+            write!
+            (
+                f,
+                "{:04}-{:02}-{:02} {:02}:{:02}:{:02}.{:03}",
+                self.odt.year(),
+                self.odt.month() as u8,
+                self.odt.day(),
+                self.odt.hour(),
+                self.odt.minute(),
+                self.odt.second(),
+                self.odt.millisecond(),
+            )
+        }
+    }
 }
 
 pub mod tuples
@@ -37179,7 +33816,7 @@ pub mod types
 
     use crate::libs;
     use crate::parsers;
-    use crate::parsers::parser_line::tokens_to_redirections;
+    use crate::parses::lines::tokens_to_redirections;
     use crate::shell;
     use crate::tools;
     */
@@ -37757,14 +34394,14 @@ pub mod types
 
         for (sep, text) in tokens.iter()
         {
-            if !sep.is_empty() || !libs::re::re_contains(text, r"^([a-zA-Z0-9_]+)=(.*)$") 
+            if !sep.is_empty() || !::regex::re_contains(text, r"^([a-zA-Z0-9_]+)=(.*)$") 
             {
                 break;
             }
 
             for cap in re.captures_iter(text) {
                 let name = cap[1].to_string();
-                let value = parsers::parser_line::unquote(&cap[2]);
+                let value = parses::lines::unquote(&cap[2]);
                 envs.insert(name, value);
             }
 
@@ -37782,7 +34419,7 @@ pub mod types
     {
         pub fn from_line(line: &str, sh: &mut shell::Shell) -> Result<CommandLine, String> 
         {
-            let linfo = parsers::parser_line::parse_line(line);
+            let linfo = parses::lines::parse_line(line);
             let mut tokens = linfo.tokens;
             shell::do_expansion(sh, &mut tokens);
             let envs = drain_env_tokens(&mut tokens);
@@ -38269,4 +34906,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 38272 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 34909 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
