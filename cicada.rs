@@ -5293,8 +5293,7 @@ pub mod error
                 pub fn with_description<F, T>(err: Errno, callback: F) -> T where
                 F: FnOnce(Result<&str, Errno>) -> T,
                 {
-                    // This value is calculated from the macro
-                    // MAKELANGID(LANG_SYSTEM_DEFAULT, SUBLANG_SYS_DEFAULT)
+                   
                     let lang_id = 0x0800_u32;
 
                     let mut buf = [0u16; 2048];
@@ -5832,13 +5831,11 @@ pub mod exec
                 argv: vec!(program.as_ref().to_owned()),
             }
         }
-
         /// Add an argument to the command builder.  This can be chained.
         pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Command {
             self.argv.push(arg.as_ref().to_owned());
             self
         }
-
         /// Add multiple arguments to the command builder.  This can be
         /// chained.
         ///
@@ -5854,7 +5851,6 @@ pub mod exec
             }
             self
         }
-
         /// Execute the command we built.  If this function succeeds, it will
         /// never return.
         pub fn exec(&mut self) -> Error {
@@ -6301,8 +6297,7 @@ pub mod fs
                     }
                 }
 
-                // for command like this: `alias > a.txt > b.txt > c.txt`,
-                // we need to return the last one, but close the previous two.
+               
                 if let Some(fd) = fd_out {
                     unsafe {
                         nix::libc::close(fd);
@@ -7296,8 +7291,7 @@ pub mod jobs
             }
             Ok(WS::StillAlive) => types::WaitStatus::empty(),
             Ok(_others) => {
-                // this is for PtraceEvent and PtraceSyscall on Linux,
-                // unreachable on other platforms.
+               
                 types::WaitStatus::from_others()
             }
             Err(e) => types::WaitStatus::from_error(e as i32),
@@ -7344,8 +7338,7 @@ pub mod jobs
                 }
             } else if ws.is_stopped() {
                 if is_a_fg_child {
-                    // for stop signal of fg job (current job)
-                    // i.e. Ctrl-Z is pressed on the fg job
+                   
                     mark_job_member_stopped(sh, pid, gid, true);
                 } else {
                     // for stop signal of bg jobs
@@ -11258,7 +11251,6 @@ pub mod num
         pub trait Num: PartialEq + Zero + One + NumOps
         {
             type FromStrRadixErr;
-
             /// Convert from a string and radix (typically `2..=36`).
             /// use ::num::traits::Num;
             ///
@@ -11949,7 +11941,6 @@ pub mod num
             /// assert!((-1).div_floor(&-2) ==  0);
             /// ~~~
             fn div_floor(&self, other: &Self) -> Self;
-
             /// Floored integer modulo, satisfying:
             ///
             /// ~~~
@@ -11973,7 +11964,6 @@ pub mod num
             /// assert!((-1).mod_floor(&-2) == -1);
             /// ~~~
             fn mod_floor(&self, other: &Self) -> Self;
-
             /// Ceiled integer division.
             /// assert_eq!((-8).div_ceil(&-3),  3);
             ///
@@ -11992,11 +11982,9 @@ pub mod num
             }
             /// Greatest Common Divisor (GCD).
             fn gcd(&self, other: &Self) -> Self;
-
             /// Lowest Common Multiple (LCM).
             /// ~~~
             fn lcm(&self, other: &Self) -> Self;
-
             /// Greatest Common Divisor (GCD) and
             /// Lowest Common Multiple (LCM) together.
             #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
@@ -12056,13 +12044,10 @@ pub mod num
             }
             /// Returns `true` if `self` is a multiple of `other`.
             fn is_multiple_of(&self, other: &Self) -> bool;
-
             /// Returns `true` if the number is even.
             fn is_even(&self) -> bool;
-
             /// Returns `true` if the number is odd.
             fn is_odd(&self) -> bool;
-
             /// Simultaneous truncated integer division and modulus.
             /// assert_eq!((-8).div_rem( &3), (-2, -2));
             /// assert_eq!((-8).div_rem(&-3), ( 2, -2));
@@ -19689,7 +19674,6 @@ pub mod num
                     }
                     let max_bits = bits / n64 + 1;
 
-                    #[cfg(feature = "std")]
                     let guess = match self.to_f64() {
                         Some(f) if f.is_finite() => {
                             use ::num::traits::FromPrimitive;
@@ -19734,7 +19718,6 @@ pub mod num
                     let bits = self.bits();
                     let max_bits = bits / 2 + 1;
 
-                    #[cfg(feature = "std")]
                     let guess = match self.to_f64() {
                         Some(f) if f.is_finite() => {
                             use ::num::traits::FromPrimitive;
@@ -19772,7 +19755,6 @@ pub mod num
                     let bits = self.bits();
                     let max_bits = bits / 3 + 1;
 
-                    #[cfg(feature = "std")]
                     let guess = match self.to_f64() {
                         Some(f) if f.is_finite() => {
                             use ::num::traits::FromPrimitive;
@@ -20638,7 +20620,6 @@ pub mod num
                 let one: T = One::one();
                 let two: T = one.clone() + one.clone();
 
-               
                 let mut fractional = self.fract();
                 if fractional < zero {
                     fractional = zero - fractional
@@ -21277,7 +21258,6 @@ pub mod num
         impl<T: Clone + Integer> Num for Ratio<T>
         {
             type FromStrRadixErr = ParseRatioError;
-
             /// Parses `numer/denom` where the numbers are in base `radix`.
             fn from_str_radix(s: &str, radix: u32) -> Result<Ratio<T>, ParseRatioError> {
                 if s.splitn(2, '/').count() == 2 {
@@ -21373,7 +21353,6 @@ pub mod num
         impl<T: FromStr + Clone + Integer> FromStr for Ratio<T>
         {
             type Err = ParseRatioError;
-
             /// Parses `numer/denom` or just `numer`.
             fn from_str(s: &str) -> Result<Ratio<T>, ParseRatioError> {
                 let mut split = s.splitn(2, '/');
@@ -21929,7 +21908,6 @@ pub mod objects
                 },
             }
         }
-
         /// Returns a new `Obj` created from the given `HashMap`.
         pub fn from_map(obj_map: HashMap<String, Value>) -> OverResult<Obj> 
         {
@@ -22140,7 +22118,6 @@ pub mod objects
             get_obj,
             Obj
         );
-
         /// Returns whether this `Obj` has a parent.
         pub fn has_parent(&self) -> bool 
         {
@@ -22352,28 +22329,21 @@ pub mod parses
             */
             /// Character value indicating end-of-file
             pub const EOF: char = '\x04';
-
             /// Character value generated by the Escape key
             pub const ESCAPE: char = '\x1b';
-
             /// Character value generated by the Backspace key
             ///
             /// On Unix systems, this is equivalent to `RUBOUT`
             #[cfg(unix)]
             pub const DELETE: char = RUBOUT;
-
             /// Character value generated by the Backspace key
             ///
             /// On Windows systems, this character is Ctrl-H
             #[cfg(windows)]
             pub const DELETE: char = '\x08';
-
             /// Character value generated by the Backspace key on some systems
             pub const RUBOUT: char = '\x7f';
-
             /// Returns a character name as a key sequence, e.g. `Control-x` or `Meta-x`.
-            ///
-            /// Returns `None` if the name is invalid.
             pub fn parse_char_name(name: &str) -> Option<String> {
                 let name_lc = name.to_lowercase();
 
@@ -22406,8 +22376,6 @@ pub mod parses
                 Some(ch)
             }
             /// Returns a character sequence escaped for user-facing display.
-            ///
-            /// Escape is formatted as `\e`.
             /// Control key combinations are prefixed with `\C-`.
             pub fn escape_sequence(s: &str) -> String {
                 let mut res = String::with_capacity(s.len());
@@ -22441,15 +22409,12 @@ pub mod parses
                 strs.iter().any(|a| s.contains(a))
             }
             /// Returns whether the character is printable.
-            ///
-            /// That is, not NUL or a control character (other than Tab or Newline).
             pub fn is_printable(c: char) -> bool {
                 c == '\t' || c == '\n' || !(c == '\0' || is_ctrl(c))
             }
 
             const CTRL_BIT: u8 = 0x40;
             const CTRL_MASK: u8 = 0x1f;
-
             /// Returns whether the given character is a control character.
             pub fn is_ctrl(c: char) -> bool {
                 const CTRL_MAX: u32 = 0x1f;
@@ -23139,8 +23104,6 @@ pub mod parses
                 SetVariable(String, String),
             }
             /// Parses the named file and returns contained directives.
-            ///
-            /// If the file cannot be opened, `None` is returned and an error is printed
             /// to `stderr`. If any errors are encountered during parsing, they are printed
             /// to `stderr`.
             pub fn parse_file<P: ?Sized>(filename: &P) -> Option<Vec<Directive>>
@@ -23165,8 +23128,6 @@ pub mod parses
                 Some(parse_text(filename, &buf))
             }
             /// Parses some text and returns contained directives.
-            ///
-            /// If any errors are encountered during parsing, they are printed to `stderr`.
             pub fn parse_text<P: ?Sized>(name: &P, line: &str) -> Vec<Directive>
                     where P: AsRef<Path> {
                 let mut p = Parser::new(name.as_ref(), line);
@@ -23724,7 +23685,7 @@ pub mod parses
                         self.read.lock().expect("Interface::lock_read"))
                 }
 
-                pub(crate) fn lock_write(&self) -> WriteLock<Term> {
+                pub fn lock_write(&self) -> WriteLock<Term> {
                     WriteLock::new(
                         self.term.lock_write(),
                         self.write.lock().expect("Interface::lock_write"),
@@ -23732,15 +23693,13 @@ pub mod parses
                     )
                 }
 
-                pub(crate) fn lock_write_data(&self) -> MutexGuard<Write> {
+                pub fn lock_write_data(&self) -> MutexGuard<Write> {
                     self.write.lock().expect("Interface::lock_write_data")
                 }
             }
             /// ## Locking
             ///
             /// The following methods internally acquire the read lock.
-            ///
-            /// The lock is released before the method returns.
             ///
             /// If the read lock is already held, e.g. because a `read_line` call is in
             /// progress, the method will block until the lock is released.
@@ -23905,8 +23864,6 @@ pub mod parses
             ///
             /// The following methods internally acquire the write lock.
             ///
-            /// The lock is released before the method returns.
-            ///
             /// If the write lock is already held, the method will block until it is released.
             impl<Term: Terminal> Interface<Term> {
                 /// Returns the current input buffer.
@@ -24059,8 +24016,6 @@ pub mod parses
             ///
             /// The following methods internally acquire both the read and write locks.
             ///
-            /// The locks are released before the method returns.
-            ///
             /// If either lock is already held, the method will block until it is released.
             impl<Term: Terminal> Interface<Term> {
                 /// Sets the prompt that will be displayed when `read_line` is called.
@@ -24093,10 +24048,8 @@ pub mod parses
                     self.lock_reader().set_cursor(pos)
                 }
 
-                // History methods don't appear to require a read lock, but do acquire
-                // it nonetheless because any operation that truncates history may interefere
-                // with an ongoing `read_line` call. Therefore, the read lock is acquired
-                // to check whether a `read_line` call is in progress.
+               
+               
 
                 /// Adds a line to history.
                 ///
@@ -24178,7 +24131,6 @@ pub mod parses
                 columns: 80,
                 lines: 24,
             };
-
             /// Implements an in-memory `Terminal` interface
             ///
             /// The contents of a `MemoryTerminal` are shared. That is, cloning
@@ -24205,7 +24157,6 @@ pub mod parses
             }
             /// Holds the lock on read operations of a `MemoryTerminal`.
             pub struct MemoryReadGuard<'a>(MutexGuard<'a, Reader>);
-
             /// Holds the lock on write operations of a `MemoryTerminal`.
             pub struct MemoryWriteGuard<'a>(MutexGuard<'a, Writer>);
 
@@ -24528,8 +24479,6 @@ pub mod parses
                 }
             }
             /// Iterator over lines in a `MemoryTerminal` buffer.
-            ///
-            /// Note that while this value behaves as an iterator, it cannot implement
             /// the `Iterator` trait because its yielded values borrow `self`.
             pub struct Lines<'a> {
                 writer: MutexGuard<'a, Writer>,
@@ -24706,12 +24655,12 @@ pub mod parses
             */
             /// Provides access to the current state of input while a `read_line` call is in progress.
             pub struct Prompter<'a, 'b: 'a, Term: 'b + Terminal> {
-                pub(crate) read: &'a mut ReadLock<'b, Term>,
+                pub read: &'a mut ReadLock<'b, Term>,
                 write: WriteLock<'b, Term>,
             }
 
             impl<'a, 'b: 'a, Term: 'b + Terminal> Prompter<'a, 'b, Term> {
-                pub(crate) fn new(read: &'a mut ReadLock<'b, Term>, write: WriteLock<'b, Term>)
+                pub fn new(read: &'a mut ReadLock<'b, Term>, write: WriteLock<'b, Term>)
                         -> Prompter<'a, 'b, Term> {
                     Prompter{read, write}
                 }
@@ -24740,14 +24689,14 @@ pub mod parses
                     self.write.reset_data();
                 }
 
-                pub(crate) fn start_read_line(&mut self) -> io::Result<()> {
+                pub fn start_read_line(&mut self) -> io::Result<()> {
                     self.read.state = InputState::NewSequence;
                     self.write.is_prompt_drawn = true;
                     self.write.update_size()?;
                     self.write.draw_prompt()
                 }
 
-                pub(crate) fn end_read_line(&mut self) -> io::Result<()> {
+                pub fn end_read_line(&mut self) -> io::Result<()> {
                     self.write.expire_blink()?;
 
                     if self.read.overwrite_mode {
@@ -24765,7 +24714,7 @@ pub mod parses
                     Ok(())
                 }
 
-                pub(crate) fn handle_input(&mut self, ch: char) -> io::Result<Option<ReadResult>> {
+                pub fn handle_input(&mut self, ch: char) -> io::Result<Option<ReadResult>> {
                     self.write.expire_blink()?;
 
                     match self.read.state {
@@ -25608,7 +25557,7 @@ pub mod parses
                     }
                 }
 
-                pub(crate) fn check_expire_timeout(&mut self) -> io::Result<()> {
+                pub fn check_expire_timeout(&mut self) -> io::Result<()> {
                     let now = Instant::now();
 
                     self.check_expire_blink(now)?;
@@ -25902,7 +25851,7 @@ pub mod parses
                     self.write.end_search_history()
                 }
 
-                pub(crate) fn handle_resize(&mut self, size: Size) -> io::Result<()> {
+                pub fn handle_resize(&mut self, size: Size) -> io::Result<()> {
                     self.expire_blink()?;
 
                     if self.is_paging_completions() {
@@ -25915,7 +25864,7 @@ pub mod parses
                     self.write.redraw_prompt(p)
                 }
 
-                pub(crate) fn handle_signal(&mut self, signal: Signal) -> io::Result<()> {
+                pub fn handle_signal(&mut self, signal: Signal) -> io::Result<()> {
                     self.expire_blink()?;
 
                     match signal {
@@ -26215,35 +26164,24 @@ pub mod parses
             */
             /// Default set of string characters
             pub const STRING_CHARS: &str = "\"'";
-
             /// Default set of word break characters
             pub const WORD_BREAK_CHARS: &str = " \t\n\"\\'`@$><=;|&{(";
-
             /// Indicates the start of a series of invisible characters in the prompt
             pub const START_INVISIBLE: char = '\x01';
-
             /// Indicates the end of a series of invisible characters in the prompt
             pub const END_INVISIBLE: char = '\x02';
-
             /// Maximum size of kill ring
             const MAX_KILLS: usize = 10;
-
             /// Provides access to data related to reading and processing user input.
-            ///
-            /// Holds a lock on terminal read operations.
             /// See [`Interface`] for more information about concurrent operations.
-            ///
-            /// An instance of this type can be constructed using the
             /// [`Interface::lock_reader`] method.
-            ///
-            /// [`Interface`]: ../interface/struct.Interface.html
             /// [`Interface::lock_reader`]: ../interface/struct.Interface.html#method.lock_reader
             pub struct Reader<'a, Term: 'a + Terminal> {
                 iface: &'a Interface<Term>,
                 lock: ReadLock<'a, Term>,
             }
 
-            pub(crate) struct Read<Term: Terminal> {
+            pub struct Read<Term: Terminal> {
                 /// Application name
                 pub application: Cow<'static, str>,
 
@@ -26299,7 +26237,7 @@ pub mod parses
                 pub max_wait_duration: Option<Duration>,
             }
 
-            pub(crate) struct ReadLock<'a, Term: 'a + Terminal> {
+            pub struct ReadLock<'a, Term: 'a + Terminal> {
                 term: Box<dyn TerminalReader<Term> + 'a>,
                 data: MutexGuard<'a, Read<Term>>,
             }
@@ -26317,7 +26255,7 @@ pub mod parses
             }
 
             #[derive(Copy, Clone, Debug)]
-            pub(crate) enum InputState {
+            pub enum InputState {
                 Inactive,
                 NewSequence,
                 ContinueSequence{
@@ -26335,7 +26273,7 @@ pub mod parses
             }
 
             impl<'a, Term: 'a + Terminal> Reader<'a, Term> {
-                pub(crate) fn new(iface: &'a Interface<Term>, lock: ReadLock<'a, Term>)
+                pub fn new(iface: &'a Interface<Term>, lock: ReadLock<'a, Term>)
                         -> Reader<'a, Term> {
                     Reader{iface, lock}
                 }
@@ -26896,11 +26834,11 @@ pub mod parses
                     self.lock.remove_function(name)
                 }
 
-                pub(crate) fn evaluate_directives(&mut self, term: &Term, dirs: Vec<Directive>) {
+                pub fn evaluate_directives(&mut self, term: &Term, dirs: Vec<Directive>) {
                     self.lock.data.evaluate_directives(term, dirs)
                 }
 
-                pub(crate) fn evaluate_directive(&mut self, term: &Term, dir: Directive) {
+                pub fn evaluate_directive(&mut self, term: &Term, dir: Directive) {
                     self.lock.data.evaluate_directive(term, dir)
                 }
 
@@ -27185,14 +27123,14 @@ pub mod parses
                 }
 
                 /// Evaluates a series of configuration directives.
-                pub(crate) fn evaluate_directives(&mut self, term: &Term, dirs: Vec<Directive>) {
+                pub fn evaluate_directives(&mut self, term: &Term, dirs: Vec<Directive>) {
                     for dir in dirs {
                         self.evaluate_directive(term, dir);
                     }
                 }
 
                 /// Evaluates a single configuration directive.
-                pub(crate) fn evaluate_directive(&mut self, term: &Term, dir: Directive) {
+                pub fn evaluate_directive(&mut self, term: &Term, dir: Directive) {
                     match dir {
                         Directive::Bind(seq, cmd) => {
                             self.bind_sequence(seq, cmd);
@@ -27483,8 +27421,6 @@ pub mod parses
             }
             /// Formats a series of strings into columns, fitting within a given screen width.
             /// Returns the size of each resulting column, including spacing.
-            ///
-            /// If the strings cannot be formatted into columns (e.g. one or more strings
             /// are longer than the screen width) or the result would be only one column,
             /// `None` is returned.
             pub fn format_columns<S: AsRef<str>>(strs: &[S], screen_width: usize,
@@ -27572,20 +27508,14 @@ pub mod parses
             Provides a low-level terminal interface. */
             use ::
             {
+                time::std::{ Duration },
                 *,
             };
+            use super::system::{ self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard, CursorMode, Signal, SignalSet, Size };
             /*
-            use std::io;
-            use std::time::Duration;
-
-            use ::system::{self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard};
-            use crate::sys;
-
-            pub use ::system::{CursorMode, Signal, SignalSet, Size};
             */
             /// Default `Terminal` interface
-            pub struct DefaultTerminal(::system::Terminal);
-
+            pub struct DefaultTerminal( ::system::Terminal );
             /// Represents the result of a `Terminal` read operation
             pub enum RawRead {
                 /// `n` bytes were read from the device
@@ -27597,8 +27527,7 @@ pub mod parses
             }
             /// Defines a low-level interface to the terminal
             pub trait Terminal: Sized + Send + Sync {
-                // TODO: When generic associated types are implemented (and stabilized),
-                // boxed trait objects may be replaced by `Reader` and `Writer`.
+               
                 /// Returned by `prepare`; passed to `restore` to restore state.
                 type PrepareState;
                 /*
@@ -27803,7 +27732,7 @@ pub mod parses
                 }
 
                 fn read(&mut self, buf: &mut Vec<u8>) -> io::Result<RawRead> {
-                    sys::terminal_read(self, buf)
+                    system::terminal_read(self, buf)
                 }
 
                 fn wait_for_input(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
@@ -27812,45 +27741,57 @@ pub mod parses
 
             }
 
-            impl<'a> TerminalWriter<DefaultTerminal> for TerminalWriteGuard<'a> {
-                fn size(&self) -> io::Result<Size> {
+            impl<'a> TerminalWriter<DefaultTerminal> for TerminalWriteGuard<'a>
+            {
+                fn size(&self) -> io::Result<Size> 
+                {
                     self.size()
                 }
 
-                fn clear_screen(&mut self) -> io::Result<()> {
+                fn clear_screen(&mut self) -> io::Result<()> 
+                {
                     self.clear_screen()
                 }
 
-                fn clear_to_screen_end(&mut self) -> io::Result<()> {
+                fn clear_to_screen_end(&mut self) -> io::Result<()> 
+                {
                     self.clear_to_screen_end()
                 }
 
-                fn move_up(&mut self, n: usize) -> io::Result<()> {
+                fn move_up(&mut self, n: usize) -> io::Result<()> 
+                {
                     self.move_up(n)
                 }
-                fn move_down(&mut self, n: usize) -> io::Result<()> {
+                fn move_down(&mut self, n: usize) -> io::Result<()> 
+                {
                     self.move_down(n)
                 }
-                fn move_left(&mut self, n: usize) -> io::Result<()> {
+                fn move_left(&mut self, n: usize) -> io::Result<()> 
+                {
                     self.move_left(n)
                 }
-                fn move_right(&mut self, n: usize) -> io::Result<()> {
+                fn move_right(&mut self, n: usize) -> io::Result<()> 
+                {
                     self.move_right(n)
                 }
 
-                fn move_to_first_column(&mut self) -> io::Result<()> {
+                fn move_to_first_column(&mut self) -> io::Result<()> 
+                {
                     self.move_to_first_column()
                 }
 
-                fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> 
+                {
                     self.set_cursor_mode(mode)
                 }
 
-                fn write(&mut self, s: &str) -> io::Result<()> {
+                fn write(&mut self, s: &str) -> io::Result<()> 
+                {
                     self.write_str(s)
                 }
 
-                fn flush(&mut self) -> io::Result<()> {
+                fn flush(&mut self) -> io::Result<()> 
+                {
                     self.flush()
                 }
             }
@@ -27894,8 +27835,6 @@ pub mod parses
                 Cow::Owned(virt)
             }
             /// Returns the longest common prefix of a set of strings.
-            ///
-            /// If no common prefix exists, `None` is returned.
             pub fn longest_common_prefix<'a, I, S>(iter: I) -> Option<&'a str> where
                     I: IntoIterator<Item=&'a S>,
                     S: 'a + ?Sized + AsRef<str>,
@@ -28226,7 +28165,6 @@ pub mod parses
             */
             /// Default `keyseq_timeout`, in milliseconds
             const KEYSEQ_TIMEOUT_MS: u64 = 500;
-
             /// Iterator over `Reader` variable values
             #[derive(Clone)]
             pub struct VariableIter<'a> {
@@ -28289,7 +28227,7 @@ pub mod parses
                         |$gr:ident| $getter:expr , |$sr:ident, $v:ident| $setter:expr ) , )+ ) => {
                     static VARIABLE_NAMES: &[&str] = &[ $( $name ),+ ];
 
-                    pub(crate) struct Variables {
+                    pub struct Variables {
                         $( pub $field : $ty ),*
                     }
 
@@ -28469,13 +28407,11 @@ pub mod parses
             };
             */
             /// Duration to wait for input when "blinking"
-            pub(crate) const BLINK_DURATION: Duration = Duration::from_millis(500);
+            pub const BLINK_DURATION: Duration = Duration::from_millis(500);
 
             const COMPLETE_MORE: &'static str = "--More--";
-
             /// Default maximum history size
             const MAX_HISTORY: usize = !0;
-
             /// Tab column interval
             const TAB_STOP: usize = 8;
 
@@ -28492,17 +28428,10 @@ pub mod parses
             const PROMPT_SEARCH_REVERSE_PREFIX: usize = 8;
             // Length of "': "
             const PROMPT_SEARCH_SUFFIX: usize = 3;
-
             /// Provides an interface to write line-by-line output to the terminal device.
-            ///
-            /// Holds a lock on terminal write operations.
             /// See [`Interface`] for more information about concurrent operations.
-            ///
-            /// An instance of this type can be constructed using either the
             /// [`Interface::lock_writer_append`] or the [`Interface::lock_writer_erase`]
             /// method.
-            ///
-            /// [`Interface`]: ../interface/struct.Interface.html
             /// [`Interface::lock_writer_append`]: ../interface/struct.Interface.html#method.lock_writer_append
             /// [`Interface::lock_writer_erase`]: ../interface/struct.Interface.html#method.lock_writer_erase
             pub struct Writer<'a, 'b: 'a, Term: 'b + Terminal> {
@@ -28515,7 +28444,7 @@ pub mod parses
             }
 
             #[derive(Debug)]
-            pub(crate) struct Write {
+            pub struct Write {
                 /// Input buffer
                 pub buffer: String,
                 /// Original buffer entered before searching through history
@@ -28570,7 +28499,7 @@ pub mod parses
                 pub screen_size: Size,
             }
 
-            pub(crate) struct WriteLock<'a, Term: 'a + Terminal> {
+            pub struct WriteLock<'a, Term: 'a + Terminal> {
                 term: Box<dyn TerminalWriter<Term> + 'a>,
                 data: MutexGuard<'a, Write>,
                 highlighter: Option<Arc<dyn Highlighter + Send + Sync>>,
@@ -29353,8 +29282,7 @@ pub mod parses
                     self.buffer.insert_str(original_cursor, s);
                     let new_cursor = original_cursor + s.len();
 
-                    // Move physical cursor to the beginning of the editable area (position 0 relative to prompt suffix)
-                    // Need to use move_rel carefully or move_to(0) which recalculates absolute position.
+                   
                     // Let's recalculate using move_to(0).
                     let current_internal_cursor = self.cursor; // Save internal cursor state before move_to potentially changes it
                     self.move_to(0)?; // Move physical cursor to the start of the input area
@@ -29364,15 +29292,13 @@ pub mod parses
                     self.draw_buffer(0)?; // This draws the text and leaves the physical cursor at the end
 
 
-                    // Clear any leftover characters from the previous render (if the line got shorter)
-                    // Although in insert_str it only gets longer or stays same. Still good practice.
+                   
                     self.term.clear_to_screen_end()?;
 
                     // Update the internal cursor state to the correct position after insertion
                     self.cursor = new_cursor;
 
-                    // Move the physical cursor from the end of the drawn buffer
-                    // back to the correct internal cursor position.
+                   
                     let len = self.buffer.len();
                     self.move_from(len)?;
 
@@ -29495,7 +29421,7 @@ pub mod parses
                     self.term.clear_to_screen_end()
                 }
 
-                pub(crate) fn clear_prompt(&mut self) -> io::Result<()> {
+                pub fn clear_prompt(&mut self) -> io::Result<()> {
                     let (line, _) = self.line_col(self.cursor);
 
                     self.term.move_up(line)?;
@@ -29593,11 +29519,11 @@ pub mod parses
                     Ok(Writer{write})
                 }
 
-                pub(crate) fn with_lock(write: WriteLock<'b, Term>, clear: bool) -> io::Result<Self> {
+                pub fn with_lock(write: WriteLock<'b, Term>, clear: bool) -> io::Result<Self> {
                     Writer::new(WriterImpl::Mutex(write), clear)
                 }
 
-                pub(crate) fn with_ref(write: &'a mut WriteLock<'b, Term>, clear: bool) -> io::Result<Self> {
+                pub fn with_ref(write: &'a mut WriteLock<'b, Term>, clear: bool) -> io::Result<Self> {
                     Writer::new(WriterImpl::MutRef(write), clear)
                 }
 
@@ -29786,7 +29712,7 @@ pub mod parses
             const NUMBER_MAX: i32 = 1_000_000;
 
             #[derive(Copy, Clone, Debug)]
-            pub(crate) enum Digit {
+            pub enum Digit {
                 None,
                 NegNone,
                 Num(i32),
@@ -29833,7 +29759,7 @@ pub mod parses
             }
 
             #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-            pub(crate) enum PromptType {
+            pub enum PromptType {
                 Normal,
                 Number,
                 Search,
@@ -29842,7 +29768,7 @@ pub mod parses
             }
 
             impl PromptType {
-                pub(crate) fn is_normal(&self) -> bool {
+                pub fn is_normal(&self) -> bool {
                     *self == PromptType::Normal
                 }
             }
@@ -29898,7 +29824,7 @@ pub mod parses
             }
 
             #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-            pub(crate) enum DisplaySequence {
+            pub enum DisplaySequence {
                 Char(char),
                 Escape(char),
                 End,
@@ -29934,13 +29860,13 @@ pub mod parses
             }
 
             #[derive(Copy, Clone, Debug, Default)]
-            pub(crate) struct Display {
+            pub struct Display {
                 allow_tab: bool,
                 allow_newline: bool,
                 allow_escape: bool,
             }
 
-            pub(crate) fn display(ch: char, style: Display) -> DisplaySequence {
+            pub fn display(ch: char, style: Display) -> DisplaySequence {
                 match ch {
                     '\t' if style.allow_tab => DisplaySequence::Char(ch),
                     '\n' if style.allow_newline => DisplaySequence::Char(ch),
@@ -29952,7 +29878,7 @@ pub mod parses
                 }
             }
 
-            pub(crate) fn display_str<'a>(s: &'a str, style: Display) -> Cow<'a, str> {
+            pub fn display_str<'a>(s: &'a str, style: Display) -> Cow<'a, str> {
                 if s.chars().all(|ch| display(ch, style) == DisplaySequence::Char(ch)) {
                     Borrowed(s)
                 } else {
@@ -30101,7 +30027,7 @@ pub mod parses
                 if t.0.is_empty() {
                     result.push_str(&t.1);
                 } else {
-                    let s = tools::wrap_sep_string(&t.0, &t.1);
+                    let s = str::wrap_separators(&t.0, &t.1);
                     result.push_str(&s);
                 }
                 result.push(' ');
@@ -30112,7 +30038,6 @@ pub mod parses
             }
             result
         }
-
         /// Parse command line for multiple commands.
         pub fn line_to_cmds(line: &str) -> Vec<String> 
         {
@@ -32061,7 +31986,6 @@ pub mod path
         error::{ Error },
         fs::{ self, DirEntry },
         ops::{ Deref },
-        path::{ self, Component, Path, PathBuf },
         str::{ FromStr },
         *,
     };
@@ -32310,12 +32234,10 @@ pub mod path
         pub fn path(&self) -> &Path {
             &self.path
         }
-
         /// The error in question.
         pub fn error(&self) -> &io::Error {
             &self.error
         }
-
         /// Consumes self, returning the _raw_ underlying `io::Error`
         #[deprecated(note = "use `.into` instead")]
         pub fn into_error(self) -> io::Error {
@@ -32433,8 +32355,7 @@ pub mod path
                     Err(e) => return Some(Err(e)),
                 };
 
-                // idx -1: was already checked by fill_todo, maybe path was '.' or
-                // '..' that we can't match here because of normalization.
+               
                 if idx == usize::MAX {
                     if self.require_dir && !path.is_directory {
                         continue;
@@ -32681,7 +32602,6 @@ pub mod path
                 has_metachars,
             })
         }
-
         /// Escape metacharacters within the given string by surrounding them in
         /// brackets. The resulting string will, when compiled into a `Pattern`,
         /// match the input string and nothing else.
@@ -32689,8 +32609,7 @@ pub mod path
             let mut escaped = String::new();
             for c in s.chars() {
                 match c {
-                    // note that ! does not need escaping because it is only special
-                    // inside brackets
+                   
                     '?' | '*' | '[' | ']' => {
                         escaped.push('[');
                         escaped.push(c);
@@ -32703,7 +32622,6 @@ pub mod path
             }
             escaped
         }
-
         /// Return if the given `str` matches this `Pattern` using the default
         /// match options (i.e. `MatchOptions::new()`).
         ///
@@ -32719,20 +32637,17 @@ pub mod path
         pub fn matches(&self, str: &str) -> bool {
             self.matches_with(str, MatchOptions::new())
         }
-
         /// Return if the given `Path`, when converted to a `str`, matches this
         /// `Pattern` using the default match options (i.e. `MatchOptions::new()`).
         pub fn matches_path(&self, path: &Path) -> bool {
             // FIXME (#9639): This needs to handle non-utf8 paths
             path.to_str().map_or(false, |s| self.matches(s))
         }
-
         /// Return if the given `str` matches this `Pattern` using the specified
         /// match options.
         pub fn matches_with(&self, str: &str, options: MatchOptions) -> bool {
             self.matches_from(true, str.chars(), 0, options) == Match
         }
-
         /// Return if the given `Path`, when converted to a `str`, matches this
         /// `Pattern` using the specified match options.
         pub fn matches_path_with(&self, path: &Path, options: MatchOptions) -> bool {
@@ -32740,7 +32655,6 @@ pub mod path
             path.to_str()
                 .map_or(false, |s| self.matches_with(s, options))
         }
-
         /// Access the original glob pattern.
         pub fn as_str(&self) -> &str {
             &self.original
@@ -33607,7 +33521,6 @@ pub mod shell
             }
             None
         }
-
         /// Update existing *ENV Variable* if such name exists in ENVs,
         /// otherwise, we define a local *Shell Variable*, which would not
         /// be exported into child processes.
@@ -33618,7 +33531,6 @@ pub mod shell
                 self.envs.insert(name.to_string(), value.to_string());
             }
         }
-
         /// get *Shell Variable*, or *ENV Variable*.
         pub fn get_env(&self, name: &str) -> Option<String> {
             match self.envs.get(name) {
@@ -33626,7 +33538,6 @@ pub mod shell
                 None => env::var(name).ok(),
             }
         }
-
         /// Remove environment variable, function from the environment of
         /// the currently running process
         pub fn remove_env(&mut self, name: &str) -> bool {
@@ -34602,8 +34513,7 @@ pub mod signals
                     insert_stopped_map(i32::from(pid));
                 }
                 Ok(WS::Continued(pid)) => {
-                    // NOTE: SIGCHLD generated by SIGCONT is not reliable
-                    // on Mac (both for signal handler or sync waitpid).
+                   
                     insert_cont_map(i32::from(pid));
                 }
                 Ok(WS::Signaled(pid, sig, _core_dumped)) => {
@@ -34777,7 +34687,6 @@ pub mod system
         pub struct SequenceMap<K, V> {
             sequences: Vec<(K, V)>,
         }
-
         /// Represents the result of a `SequenceMap::find` operation.
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
         pub enum FindResult<V> {
@@ -34824,8 +34733,6 @@ pub mod system
             }
             /// Returns a mutable slice of all contained sequences, sorted by key.
             ///
-            /// # Note
-            ///
             /// Elements must remain sorted by key for the proper functioning of
             /// `SequenceMap` operations. If keys are modified, the caller must ensure
             /// that the slice is sorted.
@@ -34833,8 +34740,6 @@ pub mod system
                 &mut self.sequences
             }
             /// Returns an `Entry` for the given key.
-            ///
-            /// This API matches the entry API for the standard `HashMap` collection.
             pub fn entry(&mut self, key: K) -> Entry<K, V> {
                 match self.search(key.as_ref()) {
                     Ok(n) => Entry::Occupied(OccupiedEntry{
@@ -34880,8 +34785,6 @@ pub mod system
                 }
             }
             /// Inserts a key-value pair into the map.
-            ///
-            /// If the key already exists in the map, the new value will replace the old
             /// value and the old value will be returned.
             pub fn insert(&mut self, key: K, value: V) -> Option<V> {
                 match self.search(key.as_ref()) {
@@ -34908,8 +34811,6 @@ pub mod system
         impl<K: AsRef<str>, V> From<Vec<(K, V)>> for SequenceMap<K, V> {
             /// Creates a `SequenceMap` from a `Vec` of key-value pairs.
             ///
-            /// The input `Vec` will be sorted and deduplicated.
-            ///
             /// If two elements exist with the same key, the first element is used.
             fn from(mut sequences: Vec<(K, V)>) -> SequenceMap<K, V> {
                 sequences.sort_by(|a, b| a.0.as_ref().cmp(b.0.as_ref()));
@@ -34921,8 +34822,6 @@ pub mod system
 
         impl<K: AsRef<str>, V> FromIterator<(K, V)> for SequenceMap<K, V> {
             /// Creates a `SequenceMap` from an iterator of key-value pairs.
-            ///
-            /// If two elements exist with the same key, the last element is used.
             fn from_iter<I: IntoIterator<Item=(K, V)>>(iter: I) -> Self {
                 let iter = iter.into_iter();
                 let mut map = SequenceMap::with_capacity(iter.size_hint().0);
@@ -34934,7 +34833,6 @@ pub mod system
                 map
             }
         }
-
         /// A view into a single entry of a `SequenceMap`, which may be either occupied
         /// or vacant.
         ///
@@ -34947,13 +34845,11 @@ pub mod system
             /// A vacant entry
             Vacant(VacantEntry<'a, K, V>),
         }
-
         /// A view into an occupied entry in a `SequenceMap`.
         pub struct OccupiedEntry<'a, K: 'a, V: 'a> {
             map: &'a mut SequenceMap<K, V>,
             index: usize,
         }
-
         /// A view into a vacant entry in a `SequenceMap`.
         pub struct VacantEntry<'a, K: 'a, V: 'a> {
             map: &'a mut SequenceMap<K, V>,
@@ -35094,7 +34990,7 @@ pub mod time
     
     use ::
     {
-        *,
+        
     };
     
     pub mod std
@@ -35973,7 +35869,6 @@ pub mod uuid
         *,
     };
     /*
-    pub use crate::{builder::Builder, error::Error, non_nil::NonNilUuid};
     */
     pub mod builder
     {
@@ -35990,19 +35885,155 @@ pub mod uuid
         #[derive(Debug)]
         pub struct Builder(Uuid);
 
+        impl Builder
+        {
+            /// Creates a `Builder` using the supplied bytes.
+            pub const fn from_bytes(b: Bytes) -> Self 
+            {
+                Builder(Uuid::from_bytes(b))
+            }
+            /// Creates a `Builder` using the supplied bytes in little endian order.
+            pub const fn from_bytes_le(b: Bytes) -> Self 
+            {
+                Builder(Uuid::from_bytes_le(b))
+            }
+            /// Creates a `Builder` for a version 1 UUID using the supplied timestamp, counter, and node ID.
+            pub const fn from_gregorian_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
+                Builder(timestamp::encode_gregorian_timestamp(
+                    ticks, counter, node_id,
+                ))
+            }
+            /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
+            pub const fn from_md5_bytes(md5_bytes: Bytes) -> Self 
+            {
+                Builder(Uuid::from_bytes(md5_bytes))
+                    .with_variant(Variant::RFC4122)
+                    .with_version(Version::Md5)
+            }
+            /// Creates a `Builder` for a version 4 UUID using the supplied random bytes.
+            pub const fn from_random_bytes(random_bytes: Bytes) -> Self 
+            {
+                Builder(Uuid::from_bytes(random_bytes))
+                    .with_variant(Variant::RFC4122)
+                    .with_version(Version::Random)
+            }
+            /// Creates a `Builder` for a version 5 UUID using the supplied SHA-1 hashed bytes.
+            pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self 
+            {
+                Builder(Uuid::from_bytes(sha1_bytes))
+                .with_variant(Variant::RFC4122)
+                .with_version(Version::Sha1)
+            }
+            /// Creates a `Builder` for a version 6 UUID using the supplied timestamp, counter, and node ID.
+            pub const fn from_sorted_gregorian_timestamp( ticks: u64, counter: u16, node_id: &[u8; 6] ) -> Self
+            {
+                Builder(timestamp::encode_sorted_gregorian_timestamp(
+                    ticks, counter, node_id,
+                ))
+            }
+            /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and counter bytes.
+            pub const fn from_unix_timestamp_millis(millis: u64, counter_random_bytes: &[u8; 10]) -> Self 
+            {
+                Builder(timestamp::encode_unix_timestamp_millis
+                (
+                    millis,
+                    counter_random_bytes,
+                ))
+            }
+            /// Creates a `Builder` for a version 8 UUID using the supplied user-defined bytes.
+            pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self 
+            {
+                Builder::from_bytes(custom_bytes)
+                .with_variant(Variant::RFC4122)
+                .with_version(Version::Custom)
+            }
+            /// Creates a `Builder` using the supplied bytes.
+            pub fn from_slice(b: &[u8]) -> Result<Self, Error> { Ok(Builder(Uuid::from_slice(b)?)) }
+            /// Creates a `Builder` using the supplied bytes in little endian order.
+            pub fn from_slice_le(b: &[u8]) -> Result<Self, Error>  { Ok(Builder(Uuid::from_slice_le(b)?)) }
+            /// Creates a `Builder` from four field values.
+            pub const fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Self { Builder(Uuid::from_fields(d1, d2, d3, d4)) }
+            /// Creates a `Builder` from four field values.
+            pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Self { Builder(Uuid::from_fields_le(d1, d2, d3, d4)) }
+            /// Creates a `Builder` from a 128bit value.
+            pub const fn from_u128(v: u128) -> Self { Builder(Uuid::from_u128(v)) }
+            /// Creates a UUID from a 128bit value in little-endian order.
+            pub const fn from_u128_le(v: u128) -> Self { Builder(Uuid::from_u128_le(v)) }
+            /// Creates a `Builder` with an initial [`Uuid::nil`].
+            pub const fn nil() -> Self { Builder(Uuid::nil()) }
+            /// Specifies the variant of the UUID.
+            pub fn set_variant(&mut self, v: Variant) -> &mut Self 
+            {
+                *self = Builder(self.0).with_variant(v);
+                self
+            }
+            /// Specifies the variant of the UUID.
+            pub const fn with_variant(mut self, v: Variant) -> Self 
+            {
+                let byte = (self.0).0[8];
+
+                (self.0).0[8] = match v 
+                {
+                    Variant::NCS => byte & 0x7f,
+                    Variant::RFC4122 => (byte & 0x3f) | 0x80,
+                    Variant::Microsoft => (byte & 0x1f) | 0xc0,
+                    Variant::Future => byte | 0xe0,
+                };
+
+                self
+            }
+            /// Specifies the version number of the UUID.
+            pub fn set_version(&mut self, v: Version) -> &mut Self 
+            {
+                *self = Builder(self.0).with_version(v);
+                self
+            }
+            /// Specifies the version number of the UUID.
+            pub const fn with_version(mut self, v: Version) -> Self 
+            {
+                (self.0).0[6] = ((self.0).0[6] & 0x0f) | ((v as u8) << 4);
+                self
+            }
+            /// Get a reference to the underlying [`Uuid`].
+            pub const fn as_uuid(&self) -> &Uuid { &self.0 }
+            /// Convert the builder into a [`Uuid`].
+            pub const fn into_uuid(self) -> Uuid { self.0 }
+        }
+        
+        impl Builder
+        {
+            #[deprecated
+            (
+                since = "1.10.0",
+                note = "use `Builder::from_gregorian_timestamp(ticks, counter, node_id)`"
+            )]
+            pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self 
+            {
+                Builder::from_gregorian_timestamp(ticks, counter, node_id)
+            }
+
+            #[deprecated
+            (
+                since = "1.10.0",
+                note = "use `Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)`"
+            )]
+            pub const fn from_sorted_rfc4122_timestamp( ticks: u64, counter: u16, node_id: &[u8; 6] ) -> Self
+            {
+                Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)
+            }
+        }
+
         impl Uuid 
         {
             /// The 'nil UUID' (all zeros).
-            pub const fn nil() -> Self {
-                Uuid::from_bytes([0; 16])
-            }
+            pub const fn nil() -> Self { Uuid::from_bytes([0; 16]) }
             /// The 'max UUID' (all ones).
-            pub const fn max() -> Self {
-                Uuid::from_bytes([0xFF; 16])
-            }
+            pub const fn max() -> Self { Uuid::from_bytes([0xFF; 16]) }
             /// Creates a UUID from four field values.
-            pub const fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Uuid {
-                Uuid::from_bytes([
+            pub const fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Uuid 
+            {
+                Uuid::from_bytes
+                ([
                     (d1 >> 24) as u8,
                     (d1 >> 16) as u8,
                     (d1 >> 8) as u8,
@@ -36022,8 +36053,10 @@ pub mod uuid
                 ])
             }
             /// Creates a UUID from four field values in little-endian order.
-            pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Uuid {
-                Uuid::from_bytes([
+            pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Uuid
+            {
+                Uuid::from_bytes
+                ([
                     d1 as u8,
                     (d1 >> 8) as u8,
                     (d1 >> 16) as u8,
@@ -36043,321 +36076,43 @@ pub mod uuid
                 ])
             }
             /// Creates a UUID from a 128bit value.
-            pub const fn from_u128(v: u128) -> Self {
-                Uuid::from_bytes(v.to_be_bytes())
-            }
+            pub const fn from_u128(v: u128) -> Self { Uuid::from_bytes(v.to_be_bytes()) }
             /// Creates a UUID from a 128bit value in little-endian order.
-            pub const fn from_u128_le(v: u128) -> Self {
-                Uuid::from_bytes(v.to_le_bytes())
-            }
+            pub const fn from_u128_le(v: u128) -> Self { Uuid::from_bytes(v.to_le_bytes()) }
             /// Creates a UUID from two 64bit values.
-            pub const fn from_u64_pair(high_bits: u64, low_bits: u64) -> Self {
-                Uuid::from_u128(((high_bits as u128) << 64) | low_bits as u128)
-            }
+            pub const fn from_u64_pair(high_bits: u64, low_bits: u64) -> Self
+            { Uuid::from_u128(((high_bits as u128) << 64) | low_bits as u128) }
             /// Creates a UUID using the supplied bytes.
-            pub fn from_slice(b: &[u8]) -> Result<Uuid, Error> {
-                if b.len() != 16 {
-                    return Err(Error(ErrorKind::ParseByteLength { len: b.len() }));
-                }
+            pub fn from_slice(b: &[u8]) -> Result<Uuid, Error>
+            {
+                if b.len() != 16 { return Err(Error(ErrorKind::ParseByteLength { len: b.len() })); }
 
                 let mut bytes: Bytes = [0; 16];
                 bytes.copy_from_slice(b);
                 Ok(Uuid::from_bytes(bytes))
             }
             /// Creates a UUID using the supplied bytes in little endian order.
-            pub fn from_slice_le(b: &[u8]) -> Result<Uuid, Error> {
-                if b.len() != 16 {
-                    return Err(Error(ErrorKind::ParseByteLength { len: b.len() }));
-                }
+            pub fn from_slice_le(b: &[u8]) -> Result<Uuid, Error>
+            {
+                if b.len() != 16 { return Err(Error(ErrorKind::ParseByteLength { len: b.len() })); }
 
                 let mut bytes: Bytes = [0; 16];
                 bytes.copy_from_slice(b);
                 Ok(Uuid::from_bytes_le(bytes))
             }
             /// Creates a UUID using the supplied bytes.
-            #[inline] pub const fn from_bytes(bytes: Bytes) -> Uuid {
-                Uuid(bytes)
-            }
+            #[inline] pub const fn from_bytes(bytes: Bytes) -> Uuid { Uuid(bytes) }
             /// Creates a UUID using the supplied bytes in little endian order.
-            pub const fn from_bytes_le(b: Bytes) -> Uuid {
-                Uuid([
+            pub const fn from_bytes_le(b: Bytes) -> Uuid 
+            {
+                Uuid
+                ([
                     b[3], b[2], b[1], b[0], b[5], b[4], b[7], b[6], b[8], b[9], b[10], b[11], b[12], b[13],
                     b[14], b[15],
                 ])
             }
             /// Creates a reference to a UUID from a reference to the supplied bytes.
-            #[inline] pub fn from_bytes_ref(bytes: &Bytes) -> &Uuid
-            {
-                unsafe_transmute_ref!(bytes)
-            }
-        }
-
-        impl Builder
-        {
-            /// Creates a `Builder` using the supplied bytes.
-            ///
-            /// # Examples
-            ///
-            /// Basic usage:
-            ///
-            /// ```
-            /// # use uuid::Builder;
-            /// let bytes = [
-            ///     0xa1, 0xa2, 0xa3, 0xa4,
-            ///     0xb1, 0xb2,
-            ///     0xc1, 0xc2,
-            ///     0xd1, 0xd2, 0xd3, 0xd4, 0xd5, 0xd6, 0xd7, 0xd8,
-            /// ];
-            ///
-            /// let uuid = Builder::from_bytes(bytes).into_uuid();
-            ///
-            /// assert_eq!(
-            ///     "a1a2a3a4-b1b2-c1c2-d1d2-d3d4d5d6d7d8",
-            ///     uuid.hyphenated().to_string(),
-            /// );
-            /// ```
-            pub const fn from_bytes(b: Bytes) -> Self {
-                Builder(Uuid::from_bytes(b))
-            }
-            /// Creates a `Builder` using the supplied bytes in little endian order.
-            ///
-            /// The individual fields encoded in the buffer will be flipped.
-            pub const fn from_bytes_le(b: Bytes) -> Self {
-                Builder(Uuid::from_bytes_le(b))
-            }
-            /// Creates a `Builder` for a version 1 UUID using the supplied timestamp, counter, and node ID.
-            pub const fn from_gregorian_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
-                Builder(timestamp::encode_gregorian_timestamp(
-                    ticks, counter, node_id,
-                ))
-            }
-            /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
-            pub const fn from_md5_bytes(md5_bytes: Bytes) -> Self {
-                Builder(Uuid::from_bytes(md5_bytes))
-                    .with_variant(Variant::RFC4122)
-                    .with_version(Version::Md5)
-            }
-            /// Creates a `Builder` for a version 4 UUID using the supplied random bytes.
-            ///
-            /// This method assumes the bytes are already sufficiently random, it will only
-            /// set the appropriate bits for the UUID version and variant.
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// # use uuid::{Builder, Variant, Version};
-            /// # let rng = || [
-            /// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13, 204, 195, 90,
-            /// # 145, 63, 62,
-            /// # ];
-            /// let random_bytes = rng();
-            /// let uuid = Builder::from_random_bytes(random_bytes).into_uuid();
-            ///
-            /// assert_eq!(Some(Version::Random), uuid.get_version());
-            /// assert_eq!(Variant::RFC4122, uuid.get_variant());
-            /// ```
-            pub const fn from_random_bytes(random_bytes: Bytes) -> Self {
-                Builder(Uuid::from_bytes(random_bytes))
-                    .with_variant(Variant::RFC4122)
-                    .with_version(Version::Random)
-            }
-            /// Creates a `Builder` for a version 5 UUID using the supplied SHA-1 hashed bytes.
-            ///
-            /// This method assumes the bytes are already a SHA-1 hash, it will only set the appropriate
-            /// bits for the UUID version and variant.
-            pub const fn from_sha1_bytes(sha1_bytes: Bytes) -> Self {
-                Builder(Uuid::from_bytes(sha1_bytes))
-                    .with_variant(Variant::RFC4122)
-                    .with_version(Version::Sha1)
-            }
-            /// Creates a `Builder` for a version 6 UUID using the supplied timestamp, counter, and node ID.
-            ///
-            /// This method will encode the ticks, counter, and node ID in a sortable UUID.
-            pub const fn from_sorted_gregorian_timestamp(
-                ticks: u64,
-                counter: u16,
-                node_id: &[u8; 6],
-            ) -> Self {
-                Builder(timestamp::encode_sorted_gregorian_timestamp(
-                    ticks, counter, node_id,
-                ))
-            }
-            /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and counter bytes.
-            ///
-            /// This method will set the variant field within the counter bytes without attempting to shift
-            /// the data around it. Callers using the counter as a monotonic value should be careful not to
-            /// store significant data in the 2 least significant bits of the 3rd byte.
-            ///
-            /// # Examples
-            ///
-            /// Creating a UUID using the current system timestamp:
-            ///
-            /// ```
-            /// # use std::convert::TryInto;
-            /// use std::time::{Duration, SystemTime};
-            /// # fn main() -> Result<(), Box<dyn std::error::Error>> {
-            /// # use uuid::{Builder, Uuid, Variant, Version, Timestamp, NoContext};
-            /// # let rng = || [
-            /// #     70, 235, 208, 238, 14, 109, 67, 201, 185, 13
-            /// # ];
-            /// let ts = SystemTime::now().duration_since(SystemTime::UNIX_EPOCH)?;
-            ///
-            /// let random_bytes = rng();
-            ///
-            /// let uuid = Builder::from_unix_timestamp_millis(ts.as_millis().try_into()?, &random_bytes).into_uuid();
-            ///
-            /// assert_eq!(Some(Version::SortRand), uuid.get_version());
-            /// assert_eq!(Variant::RFC4122, uuid.get_variant());
-            /// # Ok(())
-            /// # }
-            /// ```
-            pub const fn from_unix_timestamp_millis(millis: u64, counter_random_bytes: &[u8; 10]) -> Self {
-                Builder(timestamp::encode_unix_timestamp_millis(
-                    millis,
-                    counter_random_bytes,
-                ))
-            }
-            /// Creates a `Builder` for a version 8 UUID using the supplied user-defined bytes.
-            ///
-            /// This method won't interpret the given bytes in any way, except to set the appropriate
-            /// bits for the UUID version and variant.
-            pub const fn from_custom_bytes(custom_bytes: Bytes) -> Self {
-                Builder::from_bytes(custom_bytes)
-                    .with_variant(Variant::RFC4122)
-                    .with_version(Version::Custom)
-            }
-            /// Creates a `Builder` using the supplied bytes.
-            pub fn from_slice(b: &[u8]) -> Result<Self, Error> {
-                Ok(Builder(Uuid::from_slice(b)?))
-            }
-            /// Creates a `Builder` using the supplied bytes in little endian order.
-            ///
-            /// The individual fields encoded in the buffer will be flipped.
-            pub fn from_slice_le(b: &[u8]) -> Result<Self, Error> {
-                Ok(Builder(Uuid::from_slice_le(b)?))
-            }
-            /// Creates a `Builder` from four field values.
-            pub const fn from_fields(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Self {
-                Builder(Uuid::from_fields(d1, d2, d3, d4))
-            }
-            /// Creates a `Builder` from four field values.
-            pub const fn from_fields_le(d1: u32, d2: u16, d3: u16, d4: &[u8; 8]) -> Self {
-                Builder(Uuid::from_fields_le(d1, d2, d3, d4))
-            }
-            /// Creates a `Builder` from a 128bit value.
-            pub const fn from_u128(v: u128) -> Self {
-                Builder(Uuid::from_u128(v))
-            }
-            /// Creates a UUID from a 128bit value in little-endian order.
-            pub const fn from_u128_le(v: u128) -> Self {
-                Builder(Uuid::from_u128_le(v))
-            }
-            /// Creates a `Builder` with an initial [`Uuid::nil`].
-            ///
-            /// # Examples
-            ///
-            /// Basic usage:
-            ///
-            /// ```
-            /// # use uuid::Builder;
-            /// let uuid = Builder::nil().into_uuid();
-            ///
-            /// assert_eq!(
-            ///     "00000000-0000-0000-0000-000000000000",
-            ///     uuid.hyphenated().to_string(),
-            /// );
-            /// ```
-            pub const fn nil() -> Self {
-                Builder(Uuid::nil())
-            }
-            /// Specifies the variant of the UUID.
-            pub fn set_variant(&mut self, v: Variant) -> &mut Self {
-                *self = Builder(self.0).with_variant(v);
-                self
-            }
-            /// Specifies the variant of the UUID.
-            pub const fn with_variant(mut self, v: Variant) -> Self {
-                let byte = (self.0).0[8];
-
-                (self.0).0[8] = match v {
-                    Variant::NCS => byte & 0x7f,
-                    Variant::RFC4122 => (byte & 0x3f) | 0x80,
-                    Variant::Microsoft => (byte & 0x1f) | 0xc0,
-                    Variant::Future => byte | 0xe0,
-                };
-
-                self
-            }
-            /// Specifies the version number of the UUID.
-            pub fn set_version(&mut self, v: Version) -> &mut Self {
-                *self = Builder(self.0).with_version(v);
-                self
-            }
-            /// Specifies the version number of the UUID.
-            pub const fn with_version(mut self, v: Version) -> Self {
-                (self.0).0[6] = ((self.0).0[6] & 0x0f) | ((v as u8) << 4);
-
-                self
-            }
-            /// Get a reference to the underlying [`Uuid`].
-            ///
-            /// # Examples
-            ///
-            /// Basic usage:
-            ///
-            /// ```
-            /// # use uuid::Builder;
-            /// let builder = Builder::nil();
-            ///
-            /// let uuid1 = builder.as_uuid();
-            /// let uuid2 = builder.as_uuid();
-            ///
-            /// assert_eq!(uuid1, uuid2);
-            /// ```
-            pub const fn as_uuid(&self) -> &Uuid {
-                &self.0
-            }
-            /// Convert the builder into a [`Uuid`].
-            ///
-            /// # Examples
-            ///
-            /// Basic usage:
-            ///
-            /// ```
-            /// # use uuid::Builder;
-            /// let uuid = Builder::nil().into_uuid();
-            ///
-            /// assert_eq!(
-            ///     uuid.hyphenated().to_string(),
-            ///     "00000000-0000-0000-0000-000000000000"
-            /// );
-            /// ```
-            pub const fn into_uuid(self) -> Uuid {
-                self.0
-            }
-        }
-        
-        impl Builder
-        {
-            #[deprecated(
-                since = "1.10.0",
-                note = "use `Builder::from_gregorian_timestamp(ticks, counter, node_id)`"
-            )]
-            pub const fn from_rfc4122_timestamp(ticks: u64, counter: u16, node_id: &[u8; 6]) -> Self {
-                Builder::from_gregorian_timestamp(ticks, counter, node_id)
-            }
-
-            #[deprecated(
-                since = "1.10.0",
-                note = "use `Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)`"
-            )]
-            pub const fn from_sorted_rfc4122_timestamp(
-                ticks: u64,
-                counter: u16,
-                node_id: &[u8; 6],
-            ) -> Self {
-                Builder::from_sorted_gregorian_timestamp(ticks, counter, node_id)
-            }
+            #[inline] pub fn from_bytes_ref(bytes: &Bytes) -> &Uuid { unsafe_transmute_ref!(bytes) }
         }
     }
 
@@ -36373,123 +36128,130 @@ pub mod uuid
         */
         /// A general error that can occur when working with UUIDs.
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-        pub struct Error(pub(crate) ErrorKind);
+        pub struct Error(pub ErrorKind);
 
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-        pub(crate) enum ErrorKind
+        pub enum ErrorKind
         {
             /// Invalid character in the [`Uuid`] string.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ParseChar { character: char, index: usize },
             /// A simple [`Uuid`] didn't contain 32 characters.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ParseSimpleLength { len: usize },
-            /// A byte array didn't contain 16 bytes
+            /// A byte array didn't contain 16 bytes.
             ParseByteLength { len: usize },
-            /// A hyphenated [`Uuid`] didn't contain 5 groups
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
+            /// A hyphenated [`Uuid`] didn't contain 5 groups.
             ParseGroupCount { count: usize },
-            /// A hyphenated [`Uuid`] had a group that wasn't the right length
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
-            ParseGroupLength {
+            /// A hyphenated [`Uuid`] had a group that wasn't the right length.
+            ParseGroupLength
+            {
                 group: usize,
                 len: usize,
                 index: usize,
             },
-            /// The input was not a valid UTF8 string
+            /// The input was not a valid UTF8 string.
             ParseInvalidUTF8,
             /// Some other parsing error occurred.
             ParseOther,
             /// The UUID is nil.
             Nil,
             /// A system time was invalid.
-            #[cfg(feature = "std")]
             InvalidSystemTime(&'static str),
         }
         /// A string that is guaranteed to fail to parse to a [`Uuid`].
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-        pub struct InvalidUuid<'a>(pub(crate) &'a [u8]);
+        pub struct InvalidUuid<'a>(pub &'a [u8]);
 
         impl<'a> InvalidUuid<'a>
         {
             /// Converts the lightweight error type into detailed diagnostics.
-            pub fn into_err(self) -> Error {
-                // Check whether or not the input was ever actually a valid UTF8 string
-                let input_str = match std::str::from_utf8(self.0) {
+            pub fn into_err(self) -> Error 
+            {
+                let input_str = match ::str::from_utf8(self.0)
+                {
                     Ok(s) => s,
                     Err(_) => return Error(ErrorKind::ParseInvalidUTF8),
                 };
 
-                let (uuid_str, offset, simple) = match input_str.as_bytes() {
+                let (uuid_str, offset, simple) = match input_str.as_bytes()
+                {
                     [b'{', s @ .., b'}'] => (s, 1, false),
-                    [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..] => {
-                        (s, "urn:uuid:".len(), false)
-                    }
+                    
+                    [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..] =>
+                    { (s, "urn:uuid:".len(), false) }
+
                     s => (s, 0, true),
                 };
 
                 let mut hyphen_count = 0;
                 let mut group_bounds = [0; 4];
 
-                // SAFETY: the byte array came from a valid utf8 string,
-                // and is aligned along char boundaries.
-                let uuid_str = unsafe { std::str::from_utf8_unchecked(uuid_str) };
+                let uuid_str = unsafe { ::str::from_utf8_unchecked(uuid_str) };
 
-                for (index, character) in uuid_str.char_indices() {
+                for (index, character) in uuid_str.char_indices()
+                {
                     let byte = character as u8;
-                    if character as u32 - byte as u32 > 0 {
-                        // Multibyte char
-                        return Error(ErrorKind::ParseChar {
+                    
+                    if character as u32 - byte as u32 > 0
+                    {
+                        return Error(ErrorKind::ParseChar
+                        {
                             character,
                             index: index + offset + 1,
                         });
-                    } else if byte == b'-' {
-                        // While we search, also count group breaks
-                        if hyphen_count < 4 {
-                            group_bounds[hyphen_count] = index;
-                        }
+                    }
+                    
+                    else if byte == b'-'
+                    {
+                        if hyphen_count < 4 { group_bounds[hyphen_count] = index; }
+
                         hyphen_count += 1;
-                    } else if !byte.is_ascii_hexdigit() {
-                        // Non-hex char
-                        return Error(ErrorKind::ParseChar {
+                    }
+                    
+                    else if !byte.is_ascii_hexdigit()
+                    {
+                        return Error(ErrorKind::ParseChar
+                        {
                             character: byte as char,
                             index: index + offset + 1,
                         });
                     }
                 }
 
-                if hyphen_count == 0 && simple {
-                    // This means that we tried and failed to parse a simple uuid.
-                    // Since we verified that all the characters are valid, this means
-                    // that it MUST have an invalid length.
-                    Error(ErrorKind::ParseSimpleLength {
+                if hyphen_count == 0 && simple
+                {
+                    Error(ErrorKind::ParseSimpleLength
+                    {
                         len: input_str.len(),
                     })
-                } else if hyphen_count != 4 {
-                    // We tried to parse a hyphenated variant, but there weren't
-                    // 5 groups (4 hyphen splits).
-                    Error(ErrorKind::ParseGroupCount {
+                }
+                
+                else if hyphen_count != 4
+                {
+                    Error(ErrorKind::ParseGroupCount 
+                    {
                         count: hyphen_count + 1,
                     })
-                } else {
-                    // There are 5 groups, one of them has an incorrect length
+                }
+                
+                else
+                {
                     const BLOCK_STARTS: [usize; 5] = [0, 9, 14, 19, 24];
-                    for i in 0..4 {
-                        if group_bounds[i] != BLOCK_STARTS[i + 1] - 1 {
-                            return Error(ErrorKind::ParseGroupLength {
+
+                    for i in 0..4
+                    {
+                        if group_bounds[i] != BLOCK_STARTS[i + 1] - 1
+                        {
+                            return Error(ErrorKind::ParseGroupLength
+                            {
                                 group: i,
                                 len: group_bounds[i] - BLOCK_STARTS[i],
                                 index: offset + BLOCK_STARTS[i] + 1,
                             });
                         }
                     }
-
-                    // The last group must be too long
-                    Error(ErrorKind::ParseGroupLength {
+                    
+                    Error(ErrorKind::ParseGroupLength 
+                    {
                         group: 4,
                         len: input_str.len() - BLOCK_STARTS[4],
                         index: offset + BLOCK_STARTS[4] + 1,
@@ -36500,38 +36262,42 @@ pub mod uuid
         
         impl fmt::Display for Error
         {
-            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-                match self.0 {
-                    ErrorKind::ParseChar {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+            {
+                match self.0 
+                {
+                    ErrorKind::ParseChar
+                    {
                         character, index, ..
-                    } => {
-                        write!(f, "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `{}` at {}", character, index)
-                    }
-                    ErrorKind::ParseSimpleLength { len } => {
-                        write!(
+                    } =>
+                    {
+                        write!
+                        (
                             f,
-                            "invalid length: expected length 32 for simple format, found {}",
-                            len
+                            "invalid character: expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `{}` at {}", 
+                            character, 
+                            index
                         )
                     }
-                    ErrorKind::ParseByteLength { len } => {
-                        write!(f, "invalid length: expected 16 bytes, found {}", len)
-                    }
-                    ErrorKind::ParseGroupCount { count } => {
-                        write!(f, "invalid group count: expected 5, found {}", count)
-                    }
-                    ErrorKind::ParseGroupLength { group, len, .. } => {
+                    
+                    ErrorKind::ParseSimpleLength { len } => 
+                    { write!( f, "invalid length: expected length 32 for simple format, found {}", len ) }
+
+                    ErrorKind::ParseByteLength { len } =>
+                    { write!(f, "invalid length: expected 16 bytes, found {}", len) }
+
+                    ErrorKind::ParseGroupCount { count } => 
+                    { write!(f, "invalid group count: expected 5, found {}", count) }
+
+                    ErrorKind::ParseGroupLength { group, len, .. } =>
+                    {
                         let expected = [8, 4, 4, 4, 12][group];
-                        write!(
-                            f,
-                            "invalid group length in group {}: expected {}, found {}",
-                            group, expected, len
-                        )
+                        write!( f, "invalid group length in group {}: expected {}, found {}", group, expected, len )
                     }
+
                     ErrorKind::ParseInvalidUTF8 => write!(f, "non-UTF8 input"),
                     ErrorKind::Nil => write!(f, "the UUID is nil"),
                     ErrorKind::ParseOther => write!(f, "failed to parse a UUID"),
-                    #[cfg(feature = "std")]
                     ErrorKind::InvalidSystemTime(ref e) => write!(f, "the system timestamp is invalid: {e}"),
                 }
             }
@@ -36544,71 +36310,53 @@ pub mod uuid
         A wrapper type for nil UUIDs that provides a more memory-efficient `Option<NonNilUuid>` representation.*/
         use ::
         {
+            convert::{ TryFrom },
+            num::{ NonZeroU128 },
+            uuid::{ error::{ Error, ErrorKind }, Uuid },
             *,
         };
         /*
-        use core::convert::TryFrom;
-        use std::{fmt, num::NonZeroU128};
-
-        use crate::{
-            error::{Error, ErrorKind},
-            Uuid,
-        };
         */
         /// A UUID that is guaranteed not to be the [nil UUID](https://www.ietf.org/rfc/rfc9562.html#name-nil-uuid).
-        #[repr(transparent)]
-        #[derive(Copy, Clone, PartialEq, Eq, Hash)]
+        #[repr( transparent )] #[derive( Copy, Clone, PartialEq, Eq, Hash )]
         pub struct NonNilUuid(NonZeroU128);
 
         impl fmt::Debug for NonNilUuid 
         {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt::Debug::fmt(&Uuid::from(*self), f)
-            }
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { fmt::Debug::fmt(&Uuid::from(*self), f) }
         }
 
         impl fmt::Display for NonNilUuid 
         {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                fmt::Display::fmt(&Uuid::from(*self), f)
-            }
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { fmt::Display::fmt(&Uuid::from(*self), f) }
         }
 
         impl PartialEq<Uuid> for NonNilUuid 
         {
-            fn eq(&self, other: &Uuid) -> bool {
-                self.get() == *other
-            }
+            fn eq(&self, other: &Uuid) -> bool { self.get() == *other }
         }
 
         impl PartialEq<NonNilUuid> for Uuid 
         {
-            fn eq(&self, other: &NonNilUuid) -> bool {
-                *self == other.get()
-            }
+            fn eq(&self, other: &NonNilUuid) -> bool { *self == other.get() }
         }
 
         impl NonNilUuid 
         {
             /// Creates a non-nil UUID if the value is non-nil.
-            pub const fn new(uuid: Uuid) -> Option<Self> {
-                match NonZeroU128::new(uuid.as_u128()) {
+            pub const fn new(uuid: Uuid) -> Option<Self>
+            {
+                match NonZeroU128::new(uuid.as_u128())
+                {
                     Some(non_nil) => Some(NonNilUuid(non_nil)),
                     None => None,
                 }
             }
-            /// Creates a non-nil without checking whether the value is non-nil. This results in undefined behavior if the value is nil.
-            ///
-            /// # Safety
-            ///
-            /// The value must not be nil.
-            pub const unsafe fn new_unchecked(uuid: Uuid) -> Self {
-                NonNilUuid(unsafe { NonZeroU128::new_unchecked(uuid.as_u128()) })
-            }
+            /// Creates a non-nil without checking whether the value is non-nil.
+            pub const unsafe fn new_unchecked(uuid: Uuid) -> Self
+            { NonNilUuid(unsafe { NonZeroU128::new_unchecked(uuid.as_u128()) }) }
             /// Get the underlying [`Uuid`] value.
-            #[inline] pub const fn get(self) -> Uuid {
-                Uuid::from_u128(self.0.get())
-            }
+            #[inline] pub const fn get(self) -> Uuid { Uuid::from_u128(self.0.get()) }
         }
 
         impl From<NonNilUuid> for Uuid 
@@ -36628,7 +36376,6 @@ pub mod uuid
         impl TryFrom<Uuid> for NonNilUuid 
         {
             type Error = Error;
-
             /// Attempts to convert a [`Uuid`] into a [`NonNilUuid`].
             /// let uuid = Uuid::from_u128(0x0123456789abcdef0123456789abcdef);
             /// let non_nil = NonNilUuid::try_from(uuid).unwrap();
@@ -36648,201 +36395,98 @@ pub mod uuid
         use ::
         {
             convert::{ TryFrom },
+            string::{ String },
+            uuid::{ error::{ * }, Uuid },
             *,
         };
         /*
-        use crate::{
-            error::*,
-            std::{convert::TryFrom, str},
-            Uuid,
-        };
-        use crate::std::string::String;
         */
         impl str::FromStr for Uuid 
         {
             type Err = Error;
-
-            fn from_str(uuid_str: &str) -> Result<Self, Self::Err> {
-                Uuid::parse_str(uuid_str)
-            }
+            fn from_str(uuid_str: &str) -> Result<Self, Self::Err> { Uuid::parse_str(uuid_str) }
         }
 
         impl TryFrom<&'_ str> for Uuid 
         {
             type Error = Error;
-
-            fn try_from(uuid_str: &'_ str) -> Result<Self, Self::Error> {
-                Uuid::parse_str(uuid_str)
-            }
+            fn try_from(uuid_str: &'_ str) -> Result<Self, Self::Error> { Uuid::parse_str(uuid_str) }
         }
         
         impl TryFrom<String> for Uuid 
         {
             type Error = Error;
 
-            fn try_from(uuid_str: String) -> Result<Self, Self::Error> {
-                Uuid::try_from(uuid_str.as_ref())
-            }
+            fn try_from(uuid_str: String) -> Result<Self, Self::Error> { Uuid::try_from(uuid_str.as_ref()) }
         }
 
         impl Uuid 
         {
-            /// Parses a `Uuid` from a string of hexadecimal digits with optional
-            /// hyphens.
-            ///
-            /// Any of the formats generated by this module (simple, hyphenated, urn,
-            /// Microsoft GUID) are supported by this parsing function.
-            ///
-            /// Prefer [`try_parse`] unless you need detailed user-facing diagnostics.
-            /// This method will be eventually deprecated in favor of `try_parse`.
-            ///
-            /// # Examples
-            ///
-            /// Parse a hyphenated UUID:
-            ///
-            /// ```
-            /// # use uuid::{Uuid, Version, Variant};
-            /// # fn main() -> Result<(), uuid::Error> {
-            /// let uuid = Uuid::parse_str("550e8400-e29b-41d4-a716-446655440000")?;
-            ///
-            /// assert_eq!(Some(Version::Random), uuid.get_version());
-            /// assert_eq!(Variant::RFC4122, uuid.get_variant());
-            /// # Ok(())
-            /// # }
-            /// ```
-            ///
-            /// [`try_parse`]: #method.try_parse
-            pub fn parse_str(input: &str) -> Result<Uuid, Error> {
+            /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
+            pub fn parse_str(input: &str) -> Result<Uuid, Error>
+            {
                 try_parse(input.as_bytes())
-                    .map(Uuid::from_bytes)
-                    .map_err(InvalidUuid::into_err)
+                .map(Uuid::from_bytes)
+                .map_err(InvalidUuid::into_err)
             }
-            /// Parses a `Uuid` from a string of hexadecimal digits with optional
-            /// hyphens.
-            ///
-            /// To parse a UUID from a byte stream instead of a UTF8 string, see
-            /// [`try_parse_ascii`].
-            ///
-            /// # Examples
-            ///
-            /// Parse a hyphenated UUID:
-            ///
-            /// ```
-            /// # use uuid::{Uuid, Version, Variant};
-            /// # fn main() -> Result<(), uuid::Error> {
-            /// let uuid = Uuid::try_parse("550e8400-e29b-41d4-a716-446655440000")?;
-            ///
-            /// assert_eq!(Some(Version::Random), uuid.get_version());
-            /// assert_eq!(Variant::RFC4122, uuid.get_variant());
-            /// # Ok(())
-            /// # }
-            /// ```
-            ///
-            /// [`parse_str`]: #method.parse_str
-            /// [`try_parse_ascii`]: #method.try_parse_ascii
-            pub const fn try_parse(input: &str) -> Result<Uuid, Error> {
-                Self::try_parse_ascii(input.as_bytes())
-            }
-            /// Parses a `Uuid` from a string of hexadecimal digits with optional
-            /// hyphens.
-            ///
-            /// The input is expected to be a string of ASCII characters. This method
-            /// can be more convenient than [`try_parse`] if the UUID is being
-            /// parsed from a byte stream instead of from a UTF8 string.
-            ///
-            /// # Examples
-            ///
-            /// Parse a hyphenated UUID:
-            ///
-            /// ```
-            /// # use uuid::{Uuid, Version, Variant};
-            /// # fn main() -> Result<(), uuid::Error> {
-            /// let uuid = Uuid::try_parse_ascii(b"550e8400-e29b-41d4-a716-446655440000")?;
-            ///
-            /// assert_eq!(Some(Version::Random), uuid.get_version());
-            /// assert_eq!(Variant::RFC4122, uuid.get_variant());
-            /// # Ok(())
-            /// # }
-            /// ```
-            ///
-            /// [`try_parse`]: #method.try_parse
-            pub const fn try_parse_ascii(input: &[u8]) -> Result<Uuid, Error> {
-                match try_parse(input) {
-                    Ok(bytes) => Ok(Uuid::from_bytes(bytes)),
-                    // If parsing fails then we don't know exactly what went wrong
-                    // In this case, we just return a generic error
+            /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
+            pub const fn try_parse(input: &str) -> Result<Uuid, Error> { Self::try_parse_ascii(input.as_bytes()) }
+            /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
+            pub const fn try_parse_ascii(input: &[u8]) -> Result<Uuid, Error>
+            {
+                match try_parse(input)
+                {
+                    Ok(bytes) => Ok(Uuid::from_bytes(bytes)),                   
                     Err(_) => Err(Error(ErrorKind::ParseOther)),
                 }
             }
         }
 
-        const fn try_parse(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
+        pub const fn try_parse(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
         {
-            match (input.len(), input) {
-                // Inputs of 32 bytes must be a non-hyphenated UUID
+            match (input.len(), input)
+            {
                 (32, s) => parse_simple(s),
-                // Hyphenated UUIDs may be wrapped in various ways:
-                // - `{UUID}` for braced UUIDs
-                // - `urn:uuid:UUID` for URNs
-                // - `UUID` for a regular hyphenated UUID
+                
                 (36, s)
                 | (38, [b'{', s @ .., b'}'])
-                | (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) => {
-                    parse_hyphenated(s)
-                }
-                // Any other shaped input is immediately invalid
+                | (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) =>
+                { parse_hyphenated(s) }
+
                 _ => Err(InvalidUuid(input)),
             }
         }
 
-        #[inline]
-        pub(crate) const fn parse_braced(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
+        #[inline] pub const fn parse_braced(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
         {
-            if let (38, [b'{', s @ .., b'}']) = (input.len(), input) {
-                parse_hyphenated(s)
-            } else {
-                Err(InvalidUuid(input))
-            }
+            if let (38, [b'{', s @ .., b'}']) = (input.len(), input) { parse_hyphenated(s) }
+            
+            else { Err(InvalidUuid(input)) }
         }
 
-        #[inline]
-        pub(crate) const fn parse_urn(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
+        #[inline] pub const fn parse_urn(input: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
         {
-            if let (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) =
-                (input.len(), input)
-            {
-                parse_hyphenated(s)
-            } else {
-                Err(InvalidUuid(input))
-            }
+            if let (45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..]) = (input.len(), input)
+            { parse_hyphenated(s) }
+            
+            else { Err(InvalidUuid(input)) }
         }
 
-        #[inline]
-        pub(crate) const fn parse_simple(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
+        #[inline] pub const fn parse_simple(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
         {
-            // This length check here removes all other bounds
-            // checks in this function
-            if s.len() != 32 {
-                return Err(InvalidUuid(s));
-            }
+            if s.len() != 32 { return Err(InvalidUuid(s)); }
 
             let mut buf: [u8; 16] = [0; 16];
             let mut i = 0;
 
-            while i < 16 {
-                // Convert a two-char hex value (like `A8`)
-                // into a byte (like `10101000`)
+            while i < 16
+            {
+               
                 let h1 = HEX_TABLE[s[i * 2] as usize];
                 let h2 = HEX_TABLE[s[i * 2 + 1] as usize];
-
-                // We use `0xff` as a sentinel value to indicate
-                // an invalid hex character sequence (like the letter `G`)
-                if h1 | h2 == 0xff {
-                    return Err(InvalidUuid(s));
-                }
-
-                // The upper nibble needs to be shifted into position
-                // to produce the final byte value
+               
+                if h1 | h2 == 0xff { return Err(InvalidUuid(s)); }
+               
                 buf[i] = SHL4_TABLE[h1 as usize] | h2;
                 i += 1;
             }
@@ -36850,26 +36494,12 @@ pub mod uuid
             Ok(buf)
         }
 
-        #[inline]
-        pub(crate) const fn parse_hyphenated(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
+        #[inline] pub const fn parse_hyphenated(s: &'_ [u8]) -> Result<[u8; 16], InvalidUuid<'_>> 
         {
-            // This length check here removes all other bounds
-            // checks in this function
-            if s.len() != 36 {
-                return Err(InvalidUuid(s));
-            }
+            if s.len() != 36 { return Err(InvalidUuid(s)); }
 
-            // We look at two hex-encoded values (4 chars) at a time because
-            // that's the size of the smallest group in a hyphenated UUID.
-            // The indexes we're interested in are:
-            //
-            // uuid     : 936da01f-9abd-4d9d-80c7-02af85c822a8
-            //            |   |   ||   ||   ||   ||   |   |
-            // hyphens  : |   |   8|  13|  18|  23|   |   |
-            // positions: 0   4    9   14   19   24  28  32
-
-            // First, ensure the hyphens appear in the right places
-            match [s[8], s[13], s[18], s[23]] {
+            match [s[8], s[13], s[18], s[23]]
+            {
                 [b'-', b'-', b'-', b'-'] => {}
                 _ => return Err(InvalidUuid(s)),
             }
@@ -36878,19 +36508,15 @@ pub mod uuid
             let mut buf: [u8; 16] = [0; 16];
             let mut j = 0;
 
-            while j < 8 {
+            while j < 8
+            {
                 let i = positions[j];
-
-                // The decoding here is the same as the simple case
-                // We're just dealing with two values instead of one
                 let h1 = HEX_TABLE[s[i as usize] as usize];
                 let h2 = HEX_TABLE[s[(i + 1) as usize] as usize];
                 let h3 = HEX_TABLE[s[(i + 2) as usize] as usize];
                 let h4 = HEX_TABLE[s[(i + 3) as usize] as usize];
 
-                if h1 | h2 | h3 | h4 == 0xff {
-                    return Err(InvalidUuid(s));
-                }
+                if h1 | h2 | h3 | h4 == 0xff { return Err(InvalidUuid(s)); }
 
                 buf[j * 2] = SHL4_TABLE[h1 as usize] | h2;
                 buf[j * 2 + 1] = SHL4_TABLE[h3 as usize] | h4;
@@ -36905,17 +36531,17 @@ pub mod uuid
             let mut buf = [0; 256];
             let mut i: u8 = 0;
 
-            loop {
-                buf[i as usize] = match i {
+            loop
+            {
+                buf[i as usize] = match i 
+                {
                     b'0'..=b'9' => i - b'0',
                     b'a'..=b'f' => i - b'a' + 10,
                     b'A'..=b'F' => i - b'A' + 10,
                     _ => 0xff,
                 };
 
-                if i == 255 {
-                    break buf;
-                }
+                if i == 255 { break buf; }
 
                 i += 1
             }
@@ -36926,12 +36552,11 @@ pub mod uuid
             let mut buf = [0; 256];
             let mut i: u8 = 0;
 
-            loop {
+            loop
+            {
                 buf[i as usize] = i.wrapping_shl(4);
 
-                if i == 255 {
-                    break buf;
-                }
+                if i == 255 { break buf; }
 
                 i += 1;
             }
@@ -36944,17 +36569,19 @@ pub mod uuid
         */
         use ::
         {
+            uuid::{ Uuid },
             *,
         };
         /*
-        use crate::Uuid;
         */
         impl Uuid 
         {
             /// Creates a random UUID.
-            pub fn new_v4() -> Uuid {
-                Uuid::from_u128(
-                    crate::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000,
+            pub fn new_v4() -> Uuid
+            {
+                Uuid::from_u128
+                (
+                    ::uuid::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000,
                 )
             }
         }
@@ -36966,20 +36593,16 @@ pub mod uuid
         Adapters for alternative string formats. */
         use ::
         {
+            borrow::{ Borrow },
+            convert::{ TryInto as _ },
+            str::{ self, FromStr },
+            string::{ String, ToString },
+            uuid::{ Error, Uuid, Variant },
             *,
         };
         /*
-        use core::{convert::TryInto as _, str::FromStr};
-
-        use crate::{
-            std::{borrow::Borrow, fmt, str},
-            Error, Uuid, Variant,
-        };
-
-        #[cfg(feature = "std")]
-        use crate::std::string::{String, ToString};
         */
-        impl std::fmt::Debug for Uuid {
+        impl ::fmt::Debug for Uuid {
             #[inline]
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                 fmt::LowerHex::fmt(self, f)
@@ -37021,32 +36644,9 @@ pub mod uuid
                 fmt::UpperHex::fmt(self.as_hyphenated(), f)
             }
         }
-
         /// Format a [`Uuid`] as a hyphenated string, like `67e55044-10b1-426f-9247-bb680e5fe0c8`.
-        #[derive(
-            Clone,
-            Copy,
-            Debug,
-            Default,
-            Eq,
-            Hash,
-            Ord,
-            PartialEq,
-            PartialOrd,
-        )]
-        #[cfg_attr(
-            all(uuid_unstable, feature = "zerocopy"),
-            derive(
-                zerocopy::IntoBytes,
-                zerocopy::FromBytes,
-                zerocopy::KnownLayout,
-                zerocopy::Immutable,
-                zerocopy::Unaligned
-            )
-        )]
-        #[repr(transparent)]
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
         pub struct Hyphenated(Uuid);
-
         /// Format a [`Uuid`] as a simple string, like `67e5504410b1426f9247bb680e5fe0c8`.
         #[derive(
             Clone,
@@ -37071,7 +36671,6 @@ pub mod uuid
         )]
         #[repr(transparent)]
         pub struct Simple(Uuid);
-
         /// Format a [`Uuid`] as a URN string, like
         /// `urn:uuid:67e55044-10b1-426f-9247-bb680e5fe0c8`.
         #[derive(
@@ -37097,7 +36696,6 @@ pub mod uuid
         )]
         #[repr(transparent)]
         pub struct Urn(Uuid);
-
         /// Format a [`Uuid`] as a braced hyphenated string, like
         /// `{67e55044-10b1-426f-9247-bb680e5fe0c8}`.
         #[derive(
@@ -37207,8 +36805,7 @@ pub mod uuid
             dst
         }
 
-        #[inline]
-        fn encode_simple<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
+        #[inline] fn encode_simple<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
             let buf = &mut buffer[..Simple::LENGTH];
             let buf: &mut [u8; Simple::LENGTH] = buf.try_into().unwrap();
             *buf = format_simple(src, upper);
@@ -37217,8 +36814,7 @@ pub mod uuid
             unsafe { str::from_utf8_unchecked_mut(buf) }
         }
 
-        #[inline]
-        fn encode_hyphenated<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
+        #[inline] fn encode_hyphenated<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
             let buf = &mut buffer[..Hyphenated::LENGTH];
             let buf: &mut [u8; Hyphenated::LENGTH] = buf.try_into().unwrap();
             *buf = format_hyphenated(src, upper);
@@ -37227,8 +36823,7 @@ pub mod uuid
             unsafe { str::from_utf8_unchecked_mut(buf) }
         }
 
-        #[inline]
-        fn encode_braced<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
+        #[inline] fn encode_braced<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
             let buf = &mut buffer[..Hyphenated::LENGTH + 2];
             let buf: &mut [u8; Hyphenated::LENGTH + 2] = buf.try_into().unwrap();
 
@@ -37255,8 +36850,7 @@ pub mod uuid
             unsafe { str::from_utf8_unchecked_mut(buf) }
         }
 
-        #[inline]
-        fn encode_urn<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
+        #[inline] fn encode_urn<'b>(src: &[u8; 16], buffer: &'b mut [u8], upper: bool) -> &'b mut str {
             let buf = &mut buffer[..Urn::LENGTH];
             buf[..9].copy_from_slice(b"urn:uuid:");
 
@@ -37270,13 +36864,8 @@ pub mod uuid
 
         impl Hyphenated {
             /// The length of a hyphenated [`Uuid`] string.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             pub const LENGTH: usize = 36;
-
             /// Creates a [`Hyphenated`] from a [`Uuid`].
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             /// [`Hyphenated`]: struct.Hyphenated.html
             pub const fn from_uuid(uuid: Uuid) -> Self {
                 Hyphenated(uuid)
@@ -37284,20 +36873,14 @@ pub mod uuid
             /// Writes the [`Uuid`] as a lower-case hyphenated string to
             /// `buffer`, and returns the subslice of the buffer that contains the
             /// encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37333,20 +36916,14 @@ pub mod uuid
             /// Writes the [`Uuid`] as an upper-case hyphenated string to
             /// `buffer`, and returns the subslice of the buffer that contains the
             /// encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37381,8 +36958,6 @@ pub mod uuid
             }
             /// Get a reference to the underlying [`Uuid`].
             ///
-            /// # Examples
-            ///
             /// ```rust
             /// use uuid::Uuid;
             ///
@@ -37393,8 +36968,6 @@ pub mod uuid
                 &self.0
             }
             /// Consumes the [`Hyphenated`], returning the underlying [`Uuid`].
-            ///
-            /// # Examples
             ///
             /// ```rust
             /// use uuid::Uuid;
@@ -37409,13 +36982,8 @@ pub mod uuid
 
         impl Braced {
             /// The length of a braced [`Uuid`] string.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             pub const LENGTH: usize = 38;
-
             /// Creates a [`Braced`] from a [`Uuid`].
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             /// [`Braced`]: struct.Braced.html
             pub const fn from_uuid(uuid: Uuid) -> Self {
                 Braced(uuid)
@@ -37423,20 +36991,14 @@ pub mod uuid
             /// Writes the [`Uuid`] as a lower-case hyphenated string surrounded by
             /// braces to `buffer`, and returns the subslice of the buffer that contains
             /// the encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37472,20 +37034,14 @@ pub mod uuid
             /// Writes the [`Uuid`] as an upper-case hyphenated string surrounded by
             /// braces to `buffer`, and returns the subslice of the buffer that contains
             /// the encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37520,8 +37076,6 @@ pub mod uuid
             }
             /// Get a reference to the underlying [`Uuid`].
             ///
-            /// # Examples
-            ///
             /// ```rust
             /// use uuid::Uuid;
             ///
@@ -37532,8 +37086,6 @@ pub mod uuid
                 &self.0
             }
             /// Consumes the [`Braced`], returning the underlying [`Uuid`].
-            ///
-            /// # Examples
             ///
             /// ```rust
             /// use uuid::Uuid;
@@ -37548,33 +37100,22 @@ pub mod uuid
 
         impl Simple {
             /// The length of a simple [`Uuid`] string.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             pub const LENGTH: usize = 32;
-
             /// Creates a [`Simple`] from a [`Uuid`].
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             /// [`Simple`]: struct.Simple.html
             pub const fn from_uuid(uuid: Uuid) -> Self {
                 Simple(uuid)
             }
             /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
             /// and returns the subslice of the buffer that contains the encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37612,15 +37153,11 @@ pub mod uuid
             /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
             /// and returns the subslice of the buffer that contains the encoded UUID.
             ///
-            /// [`Uuid`]: ../struct.Uuid.html
-            ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37657,8 +37194,6 @@ pub mod uuid
             }
             /// Get a reference to the underlying [`Uuid`].
             ///
-            /// # Examples
-            ///
             /// ```rust
             /// use uuid::Uuid;
             ///
@@ -37669,8 +37204,6 @@ pub mod uuid
                 &self.0
             }
             /// Consumes the [`Simple`], returning the underlying [`Uuid`].
-            ///
-            /// # Examples
             ///
             /// ```rust
             /// use uuid::Uuid;
@@ -37685,13 +37218,8 @@ pub mod uuid
 
         impl Urn {
             /// The length of a URN [`Uuid`] string.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             pub const LENGTH: usize = 45;
-
             /// Creates a [`Urn`] from a [`Uuid`].
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             /// [`Urn`]: struct.Urn.html
             pub const fn from_uuid(uuid: Uuid) -> Self {
                 Urn(uuid)
@@ -37699,20 +37227,14 @@ pub mod uuid
             /// Writes the [`Uuid`] as a lower-case URN string to
             /// `buffer`, and returns the subslice of the buffer that contains the
             /// encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37751,20 +37273,14 @@ pub mod uuid
             /// Writes the [`Uuid`] as an upper-case URN string to
             /// `buffer`, and returns the subslice of the buffer that contains the
             /// encoded UUID.
-            ///
-            /// This is slightly more efficient than using the formatting
             /// infrastructure as it avoids virtual calls, and may avoid
             /// double buffering.
-            ///
-            /// [`Uuid`]: ../struct.Uuid.html
             ///
             /// # Panics
             ///
             /// Panics if the buffer is not large enough: it must have length at least
             /// [`LENGTH`]. [`Uuid::encode_buffer`] can be used to get a
             /// sufficiently-large temporary buffer.
-            ///
-            /// [`LENGTH`]: #associatedconstant.LENGTH
             /// [`Uuid::encode_buffer`]: ../struct.Uuid.html#method.encode_buffer
             ///
             /// # Examples
@@ -37801,8 +37317,6 @@ pub mod uuid
             }
             /// Get a reference to the underlying [`Uuid`].
             ///
-            /// # Examples
-            ///
             /// ```rust
             /// use uuid::Uuid;
             ///
@@ -37813,8 +37327,6 @@ pub mod uuid
                 &self.0
             }
             /// Consumes the [`Urn`], returning the underlying [`Uuid`].
-            ///
-            /// # Examples
             ///
             /// ```rust
             /// use uuid::Uuid;
@@ -37962,54 +37474,89 @@ pub mod uuid
 
     }
 
+    pub mod rng
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+        trait Rng
+        {
+            fn u128() -> u128;
+            fn u64() -> u64;
+            fn u16() -> u16;
+        }
+
+        pub(crate) fn u128() -> u128 { imp::RngImp::u128() }
+
+        pub(crate) fn u64() -> u64 { imp::RngImp::u64() }
+
+        pub(crate) fn u16() -> u16 { imp::RngImp::u16() }
+
+        #[cfg(not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))))]
+        mod imp
+        {
+            /*
+            Random support for non `wasm32-unknown-unknown` platforms. */
+            use super::*;
+
+            // Using `rand`
+            pub struct RngImp;
+
+            impl Rng for RngImp {
+                fn u128() -> u128 {
+                    rand::random()
+                }
+
+                fn u64() -> u64 {
+                    rand::random()
+                }
+
+                fn u16() -> u16 {
+                    rand::random()
+                }
+            }
+        }
+    }
+
     pub mod timestamp
     {
         /*!
         Generating UUIDs from timestamps. */
         use ::
         {
+            uuid::{ Uuid },
             *,
         };
         /*
-        use core::cmp;
-        use crate::Uuid;
         */
-        /// The number of 100 nanosecond ticks between the RFC 9562 epoch
-        /// (`1582-10-15 00:00:00`) and the Unix epoch (`1970-01-01 00:00:00`).
+        /// The number of 100 nanosecond ticks between the RFC 9562 epoch.
         pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-
         /// A timestamp that can be encoded into a UUID.
-        ///
-        /// This type abstracts the specific encoding, so versions 1, 6, and 7
-        /// UUIDs can both be supported through the same type, even
-        /// though they have a different representation of a timestamp.
-        ///
-        /// # References
-        ///
-        /// * [Timestamp Considerations in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.1)
-        /// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
         #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-        pub struct Timestamp {
+        pub struct Timestamp
+        {
             seconds: u64,
             subsec_nanos: u32,
             counter: u128,
             usable_counter_bits: u8,
         }
 
-        impl Timestamp {
+        impl Timestamp 
+        {
             /// Get a timestamp representing the current system time and up to a 128-bit counter.
-            ///
-            /// This method defers to the standard library's `SystemTime` type.
-            #[cfg(feature = "std")]
-            pub fn now(context: impl ClockSequence<Output = impl Into<u128>>) -> Self {
+            pub fn now(context: impl ClockSequence<Output = impl Into<u128>>) -> Self 
+            {
                 let (seconds, subsec_nanos) = now();
-
-                let (counter, seconds, subsec_nanos) =
-                    context.generate_timestamp_sequence(seconds, subsec_nanos);
+                let (counter, seconds, subsec_nanos) = context.generate_timestamp_sequence(seconds, subsec_nanos);
                 let counter = counter.into();
                 let usable_counter_bits = context.usable_bits() as u8;
-
-                Timestamp {
+                Timestamp
+                {
                     seconds,
                     subsec_nanos,
                     counter,
@@ -38019,15 +37566,11 @@ pub mod uuid
             /// Construct a `Timestamp` from the number of 100 nanosecond ticks since 00:00:00.00,
             /// 15 October 1582 (the date of Gregorian reform to the Christian calendar) and a 14-bit
             /// counter, as used in versions 1 and 6 UUIDs.
-            ///
-            /// # Overflow
-            ///
-            /// If conversion from RFC 9562 ticks to the internal timestamp format would overflow
-            /// it will wrap.
-            pub const fn from_gregorian(ticks: u64, counter: u16) -> Self {
+            pub const fn from_gregorian(ticks: u64, counter: u16) -> Self 
+            {
                 let (seconds, subsec_nanos) = Self::gregorian_to_unix(ticks);
-
-                Timestamp {
+                Timestamp
+                {
                     seconds,
                     subsec_nanos,
                     counter: counter as u128,
@@ -38035,13 +37578,16 @@ pub mod uuid
                 }
             }
             /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
-            pub const fn from_unix_time(
+            pub const fn from_unix_time
+            (
                 seconds: u64,
                 subsec_nanos: u32,
                 counter: u128,
                 usable_counter_bits: u8,
-            ) -> Self {
-                Timestamp {
+            ) -> Self 
+            {
+                Timestamp
+                {
                     seconds,
                     subsec_nanos,
                     counter,
@@ -38049,17 +37595,19 @@ pub mod uuid
                 }
             }
             /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
-            pub fn from_unix(
+            pub fn from_unix
+            (
                 context: impl ClockSequence<Output = impl Into<u128>>,
                 seconds: u64,
                 subsec_nanos: u32,
-            ) -> Self {
-                let (counter, seconds, subsec_nanos) =
-                    context.generate_timestamp_sequence(seconds, subsec_nanos);
+            ) -> Self 
+            {
+                let (counter, seconds, subsec_nanos) = context.generate_timestamp_sequence(seconds, subsec_nanos);
                 let counter = counter.into();
                 let usable_counter_bits = context.usable_bits() as u8;
 
-                Timestamp {
+                Timestamp
+                {
                     seconds,
                     subsec_nanos,
                     counter,
@@ -38068,47 +37616,37 @@ pub mod uuid
             }
             /// Get the value of the timestamp as the number of 100 nanosecond ticks since 00:00:00.00,
             /// 15 October 1582 and a 14-bit counter, as used in versions 1 and 6 UUIDs.
-            ///
-            /// # Overflow
-            ///
-            /// If conversion from the internal timestamp format to ticks would overflow
-            /// then it will wrap.
-            ///
-            /// If the internal counter is wider than 14 bits then it will be truncated to 14 bits.
-            pub const fn to_gregorian(&self) -> (u64, u16) {
+            pub const fn to_gregorian(&self) -> (u64, u16) 
+            {
                 (
                     Self::unix_to_gregorian_ticks(self.seconds, self.subsec_nanos),
                     (self.counter as u16) & 0x3FFF,
                 )
             }
-
-            // NOTE: This method is not public; the usable counter bits are lost in a version 7 UUID
-            // so can't be reliably recovered.
-            #[cfg(feature = "v7")]
-            pub(crate) const fn counter(&self) -> (u128, u8) {
-                (self.counter, self.usable_counter_bits)
-            }
             /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
-            pub const fn to_unix(&self) -> (u64, u32) {
+            pub const fn to_unix(&self) -> (u64, u32) 
+            {
                 (self.seconds, self.subsec_nanos)
             }
 
-            const fn unix_to_gregorian_ticks(seconds: u64, nanos: u32) -> u64 {
+            const fn unix_to_gregorian_ticks(seconds: u64, nanos: u32) -> u64 
+            {
                 UUID_TICKS_BETWEEN_EPOCHS
-                    .wrapping_add(seconds.wrapping_mul(10_000_000))
-                    .wrapping_add(nanos as u64 / 100)
+                .wrapping_add(seconds.wrapping_mul(10_000_000))
+                .wrapping_add(nanos as u64 / 100)
             }
 
-            const fn gregorian_to_unix(ticks: u64) -> (u64, u32) {
+            const fn gregorian_to_unix(ticks: u64) -> (u64, u32) 
+            {
                 (
                     ticks.wrapping_sub(UUID_TICKS_BETWEEN_EPOCHS) / 10_000_000,
                     (ticks.wrapping_sub(UUID_TICKS_BETWEEN_EPOCHS) % 10_000_000) as u32 * 100,
                 )
             }
         }
-
-        #[doc(hidden)]
-        impl Timestamp {
+        
+        impl Timestamp 
+        {
             #[deprecated(
                 since = "1.10.0",
                 note = "use `Timestamp::from_gregorian(ticks, counter)`"
@@ -38130,41 +37668,50 @@ pub mod uuid
                 panic!("`Timestamp::to_unix_nanos()` is deprecated and will be removed: use `Timestamp::to_unix()`")
             }
         }
-
-        #[cfg(feature = "std")]
-        impl std::convert::TryFrom<std::time::SystemTime> for Timestamp {
-            type Error = crate::Error;
-
+        
+        impl ::convert::TryFrom<::time::std::SystemTime> for Timestamp 
+        {
+            type Error = ::uuid::Error;
             /// Perform the conversion.
-            /// 
-            /// This method will fail if the system time is earlier than the Unix Epoch.
-            /// On some platforms it may panic instead.
-            fn try_from(st: std::time::SystemTime) -> Result<Self, Self::Error> {
-                let dur = st.duration_since(std::time::UNIX_EPOCH).map_err(|_| crate::Error(crate::error::ErrorKind::InvalidSystemTime("unable to convert the system tie into a Unix timestamp")))?;
+            fn try_from(st: std::time::SystemTime) -> Result<Self, Self::Error> 
+            {
+                let dur = st.duration_since(::time::std::UNIX_EPOCH)
+                .map_err
+                (|_|
+                    ::uuid::Error
+                    (
+                        ::uuid::error::ErrorKind::InvalidSystemTime("unable to convert the system tie into a Unix timestamp"))
+                )?;
 
-                Ok(Self::from_unix_time(
-                    dur.as_secs(),
-                    dur.subsec_nanos(),
-                    0,
-                    0,
-                ))
+                Ok
+                (
+                    Self::from_unix_time
+                    (
+                        dur.as_secs(),
+                        dur.subsec_nanos(),
+                        0,
+                        0,
+                    )
+                )
             }
         }
-
-        #[cfg(feature = "std")]
-        impl From<Timestamp> for std::time::SystemTime {
-            fn from(ts: Timestamp) -> Self {
+        
+        impl From<Timestamp> for ::time::std::SystemTime
+        {
+            fn from(ts: Timestamp) -> Self
+            {
                 let (seconds, subsec_nanos) = ts.to_unix();
-
-                Self::UNIX_EPOCH + std::time::Duration::new(seconds, subsec_nanos)
+                Self::UNIX_EPOCH + ::time::std::Duration::new(seconds, subsec_nanos)
             }
         }
 
-        pub(crate) const fn encode_gregorian_timestamp(
+        pub const fn encode_gregorian_timestamp
+        (
             ticks: u64,
             counter: u16,
             node_id: &[u8; 6],
-        ) -> Uuid {
+        ) -> Uuid
+        {
             let time_low = (ticks & 0xFFFF_FFFF) as u32;
             let time_mid = ((ticks >> 32) & 0xFFFF) as u16;
             let time_high_and_version = (((ticks >> 48) & 0x0FFF) as u16) | (1 << 12);
@@ -38183,28 +37730,29 @@ pub mod uuid
             Uuid::from_fields(time_low, time_mid, time_high_and_version, &d4)
         }
 
-        pub(crate) const fn decode_gregorian_timestamp(uuid: &Uuid) -> (u64, u16) {
+        pub const fn decode_gregorian_timestamp(uuid: &Uuid) -> (u64, u16)
+        {
             let bytes = uuid.as_bytes();
-
             let ticks: u64 = ((bytes[6] & 0x0F) as u64) << 56
-                | (bytes[7] as u64) << 48
-                | (bytes[4] as u64) << 40
-                | (bytes[5] as u64) << 32
-                | (bytes[0] as u64) << 24
-                | (bytes[1] as u64) << 16
-                | (bytes[2] as u64) << 8
-                | (bytes[3] as u64);
+            | (bytes[7] as u64) << 48
+            | (bytes[4] as u64) << 40
+            | (bytes[5] as u64) << 32
+            | (bytes[0] as u64) << 24
+            | (bytes[1] as u64) << 16
+            | (bytes[2] as u64) << 8
+            | (bytes[3] as u64);
 
             let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
-
             (ticks, counter)
         }
 
-        pub(crate) const fn encode_sorted_gregorian_timestamp(
+        pub const fn encode_sorted_gregorian_timestamp
+        (
             ticks: u64,
             counter: u16,
             node_id: &[u8; 6],
-        ) -> Uuid {
+        ) -> Uuid 
+        {
             let time_high = ((ticks >> 28) & 0xFFFF_FFFF) as u32;
             let time_mid = ((ticks >> 12) & 0xFFFF) as u16;
             let time_low_and_version = ((ticks & 0x0FFF) as u16) | (0x6 << 12);
@@ -38223,33 +37771,35 @@ pub mod uuid
             Uuid::from_fields(time_high, time_mid, time_low_and_version, &d4)
         }
 
-        pub(crate) const fn decode_sorted_gregorian_timestamp(uuid: &Uuid) -> (u64, u16) {
+        pub const fn decode_sorted_gregorian_timestamp(uuid: &Uuid) -> (u64, u16)
+        {
             let bytes = uuid.as_bytes();
-
             let ticks: u64 = ((bytes[0]) as u64) << 52
-                | (bytes[1] as u64) << 44
-                | (bytes[2] as u64) << 36
-                | (bytes[3] as u64) << 28
-                | (bytes[4] as u64) << 20
-                | (bytes[5] as u64) << 12
-                | ((bytes[6] & 0xF) as u64) << 8
-                | (bytes[7] as u64);
+            | (bytes[1] as u64) << 44
+            | (bytes[2] as u64) << 36
+            | (bytes[3] as u64) << 28
+            | (bytes[4] as u64) << 20
+            | (bytes[5] as u64) << 12
+            | ((bytes[6] & 0xF) as u64) << 8
+            | (bytes[7] as u64);
 
             let counter: u16 = ((bytes[8] & 0x3F) as u16) << 8 | (bytes[9] as u16);
 
             (ticks, counter)
         }
 
-        pub(crate) const fn encode_unix_timestamp_millis(
+        pub const fn encode_unix_timestamp_millis
+        (
             millis: u64,
             counter_random_bytes: &[u8; 10],
-        ) -> Uuid {
+        ) -> Uuid
+        {
             let millis_high = ((millis >> 16) & 0xFFFF_FFFF) as u32;
             let millis_low = (millis & 0xFFFF) as u16;
 
             let counter_random_version = (counter_random_bytes[1] as u16
-                | ((counter_random_bytes[0] as u16) << 8) & 0x0FFF)
-                | (0x7 << 12);
+            | ((counter_random_bytes[0] as u16) << 8) & 0x0FFF)
+            | (0x7 << 12);
 
             let mut d4 = [0; 8];
 
@@ -38265,862 +37815,425 @@ pub mod uuid
             Uuid::from_fields(millis_high, millis_low, counter_random_version, &d4)
         }
 
-        pub(crate) const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64 {
+        pub const fn decode_unix_timestamp_millis(uuid: &Uuid) -> u64
+        {
             let bytes = uuid.as_bytes();
 
             let millis: u64 = (bytes[0] as u64) << 40
-                | (bytes[1] as u64) << 32
-                | (bytes[2] as u64) << 24
-                | (bytes[3] as u64) << 16
-                | (bytes[4] as u64) << 8
-                | (bytes[5] as u64);
+            | (bytes[1] as u64) << 32
+            | (bytes[2] as u64) << 24
+            | (bytes[3] as u64) << 16
+            | (bytes[4] as u64) << 8
+            | (bytes[5] as u64);
 
             millis
-        }
-
-        #[cfg(all(
-            feature = "std",
-            feature = "js",
-            all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none"))
-        ))]
-        fn now() -> (u64, u32) {
-            use wasm_bindgen::prelude::*;
-
-            #[wasm_bindgen]
-            extern "C" {
-                // NOTE: This signature works around https://bugzilla.mozilla.org/show_bug.cgi?id=1787770
-                #[wasm_bindgen(js_namespace = Date, catch)]
-                fn now() -> Result<f64, JsValue>;
-            }
-
-            let now = now().unwrap_throw();
-
-            let secs = (now / 1_000.0) as u64;
-            let nanos = ((now % 1_000.0) * 1_000_000.0) as u32;
-
-            (secs, nanos)
-        }
-
-        #[cfg(all(
-            feature = "std",
-            not(miri),
-            any(
-                not(feature = "js"),
-                not(all(target_arch = "wasm32", any(target_os = "unknown", target_os = "none")))
-            )
-        ))]
-        fn now() -> (u64, u32) {
-            let dur = std::time::SystemTime::UNIX_EPOCH.elapsed().expect(
-                "Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality",
-            );
+        } 
+        
+        fn now() -> (u64, u32)
+        {
+            let dur = ::time::std::SystemTime::UNIX_EPOCH
+            .elapsed()
+            .expect( "Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality" );
 
             (dur.as_secs(), dur.subsec_nanos())
         }
-
-        #[cfg(all(feature = "std", miri))]
-        fn now() -> (u64, u32) {
-            use std::{sync::Mutex, time::Duration};
-
-            static TS: Mutex<u64> = Mutex::new(0);
-
-            let ts = Duration::from_nanos({
-                let mut ts = TS.lock().unwrap();
-                *ts += 1;
-                *ts
-            });
-
-            (ts.as_secs(), ts.subsec_nanos())
-        }
-
-        /// A counter that can be used by versions 1 and 6 UUIDs to support
-        /// the uniqueness of timestamps.
-        ///
-        /// # References
-        ///
-        /// * [UUID Version 1 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.1)
-        /// * [UUID Version 6 in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-5.6)
-        /// * [UUID Generator States in RFC 9562](https://www.ietf.org/rfc/rfc9562.html#section-6.3)
-        pub trait ClockSequence {
+        /// A counter that can be used by versions 1 and 6 UUIDs to support the uniqueness of timestamps.
+        pub trait ClockSequence
+        {
             /// The type of sequence returned by this counter.
             type Output;
-
             /// Get the next value in the sequence to feed into a timestamp.
-            ///
-            /// This method will be called each time a [`Timestamp`] is constructed.
-            ///
-            /// Any bits beyond [`ClockSequence::usable_bits`] in the output must be unset.
             fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output;
-
             /// Get the next value in the sequence, potentially also adjusting the timestamp.
-            ///
-            /// This method should be preferred over `generate_sequence`.
-            ///
-            /// Any bits beyond [`ClockSequence::usable_bits`] in the output must be unset.
-            fn generate_timestamp_sequence(
+            fn generate_timestamp_sequence
+            (
                 &self,
                 seconds: u64,
                 subsec_nanos: u32,
-            ) -> (Self::Output, u64, u32) {
+            ) -> (Self::Output, u64, u32)
+            {
                 (
                     self.generate_sequence(seconds, subsec_nanos),
                     seconds,
                     subsec_nanos,
                 )
             }
-            /// The number of usable bits from the least significant bit in the result of [`ClockSequence::generate_sequence`]
-            /// or [`ClockSequence::generate_timestamp_sequence`].
-            ///
-            /// The number of usable bits must not exceed 128.
-            ///
-            /// The number of usable bits is not expected to change between calls. An implementation of `ClockSequence` should
-            /// always return the same value from this method.
-            fn usable_bits(&self) -> usize
-            where
-                Self::Output: Sized,
-            {
-                cmp::min(128, core::mem::size_of::<Self::Output>())
-            }
+            /// The number of usable bits from the least significant bit in the result of 
+            /// [`ClockSequence::generate_sequence`] or [`ClockSequence::generate_timestamp_sequence`].
+            fn usable_bits(&self) -> usize where
+            Self::Output: Sized
+            { cmp::min(128, ::mem::size_of::<Self::Output>()) }
         }
 
-        impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T {
+        impl<'a, T: ClockSequence + ?Sized> ClockSequence for &'a T
+        {
             type Output = T::Output;
 
-            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
+            fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output
+            {
                 (**self).generate_sequence(seconds, subsec_nanos)
             }
 
-            fn generate_timestamp_sequence(
+            fn generate_timestamp_sequence
+            (
                 &self,
                 seconds: u64,
-                subsec_nanos: u32,
-            ) -> (Self::Output, u64, u32) {
+                subsec_nanos: u32
+            ) -> (Self::Output, u64, u32)
+            {
                 (**self).generate_timestamp_sequence(seconds, subsec_nanos)
             }
 
-            fn usable_bits(&self) -> usize
-            where
-                Self::Output: Sized,
+            fn usable_bits(&self) -> usize where
+            Self::Output: Sized
             {
                 (**self).usable_bits()
             }
         }
-
         /// Default implementations for the [`ClockSequence`] trait.
-        pub mod context {
+        pub mod context
+        {
             use super::ClockSequence;
-
-            #[cfg(any(feature = "v1", feature = "v6"))]
-            mod v1_support {
-                use super::*;
-
-                use atomic::{Atomic, Ordering};
-
-                #[cfg(all(feature = "std", feature = "rng"))]
-                static CONTEXT: Context = Context {
-                    count: Atomic::new(0),
-                };
-
-                #[cfg(all(feature = "std", feature = "rng"))]
-                static CONTEXT_INITIALIZED: Atomic<bool> = Atomic::new(false);
-
-                #[cfg(all(feature = "std", feature = "rng"))]
-                pub(crate) fn shared_context() -> &'static Context {
-                    // If the context is in its initial state then assign it to a random value
-                    // It doesn't matter if multiple threads observe `false` here and initialize the context
-                    if CONTEXT_INITIALIZED
-                        .compare_exchange(false, true, Ordering::Relaxed, Ordering::Relaxed)
-                        .is_ok()
-                    {
-                        CONTEXT.count.store(crate::rng::u16(), Ordering::Release);
-                    }
-
-                    &CONTEXT
-                }
-
-                /// A thread-safe, wrapping counter that produces 14-bit values.
-                ///
-                /// This type works by:
-                ///
-                /// 1. Atomically incrementing the counter value for each timestamp.
-                /// 2. Wrapping the counter back to zero if it overflows its 14-bit storage.
-                ///
-                /// This type should be used when constructing versions 1 and 6 UUIDs.
-                ///
-                /// This type should not be used when constructing version 7 UUIDs. When used to
-                /// construct a version 7 UUID, the 14-bit counter will be padded with random data.
-                /// Counter overflows are more likely with a 14-bit counter than they are with a
-                /// 42-bit counter when working at millisecond precision. This type doesn't attempt
-                /// to adjust the timestamp on overflow.
-                #[derive(Debug)]
-                pub struct Context {
-                    count: Atomic<u16>,
-                }
-
-                impl Context {
-                    /// Construct a new context that's initialized with the given value.
-                    ///
-                    /// The starting value should be a random number, so that UUIDs from
-                    /// different systems with the same timestamps are less likely to collide.
-                    /// When the `rng` feature is enabled, prefer the [`Context::new_random`] method.
-                    pub const fn new(count: u16) -> Self {
-                        Self {
-                            count: Atomic::<u16>::new(count),
-                        }
-                    }
-
-                    /// Construct a new context that's initialized with a random value.
-                    #[cfg(feature = "rng")]
-                    pub fn new_random() -> Self {
-                        Self {
-                            count: Atomic::<u16>::new(crate::rng::u16()),
-                        }
-                    }
-                }
-
-                impl ClockSequence for Context {
-                    type Output = u16;
-
-                    fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-                        // RFC 9562 reserves 2 bits of the clock sequence so the actual
-                        // maximum value is smaller than `u16::MAX`. Since we unconditionally
-                        // increment the clock sequence we want to wrap once it becomes larger
-                        // than what we can represent in a "u14". Otherwise there'd be patches
-                        // where the clock sequence doesn't change regardless of the timestamp
-                        self.count.fetch_add(1, Ordering::AcqRel) & (u16::MAX >> 2)
-                    }
-
-                    fn usable_bits(&self) -> usize {
-                        14
-                    }
-                }
-
-                #[cfg(test)]
-                mod tests {
-                    use crate::Timestamp;
-
-                    use super::*;
-
-                    #[test]
-                    fn context() {
-                        let seconds = 1_496_854_535;
-                        let subsec_nanos = 812_946_000;
-
-                        let context = Context::new(u16::MAX >> 2);
-
-                        let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
-                        assert_eq!(16383, ts.counter);
-                        assert_eq!(14, ts.usable_counter_bits);
-
-                        let seconds = 1_496_854_536;
-
-                        let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
-                        assert_eq!(0, ts.counter);
-
-                        let seconds = 1_496_854_535;
-
-                        let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
-                        assert_eq!(1, ts.counter);
-                    }
-
-                    #[test]
-                    fn context_overflow() {
-                        let seconds = u64::MAX;
-                        let subsec_nanos = u32::MAX;
-
-                        let context = Context::new(u16::MAX);
-
-                        // Ensure we don't panic
-                        Timestamp::from_unix(&context, seconds, subsec_nanos);
-                    }
-                }
-            }
-
-            #[cfg(any(feature = "v1", feature = "v6"))]
-            pub use v1_support::*;
-
-            #[cfg(feature = "std")]
-            mod std_support {
-                use super::*;
-
-                use core::panic::{AssertUnwindSafe, RefUnwindSafe};
-                use std::{sync::Mutex, thread::LocalKey};
-
+            
+            mod std_support
+            {
+                use ::
+                {
+                    panic::{ AssertUnwindSafe, RefUnwindSafe },
+                    sync::{ Mutex },
+                    thread::{ LocalKey },
+                    *,
+                }; use super::*;
                 /// A wrapper for a context that uses thread-local storage.
                 pub struct ThreadLocalContext<C: 'static>(&'static LocalKey<C>);
 
-                impl<C> std::fmt::Debug for ThreadLocalContext<C> {
-                    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+                impl<C> ::fmt::Debug for ThreadLocalContext<C> 
+                {
+                    fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
+                    {
                         f.debug_struct("ThreadLocalContext").finish_non_exhaustive()
                     }
                 }
 
-                impl<C: 'static> ThreadLocalContext<C> {
+                impl<C: 'static> ThreadLocalContext<C> 
+                {
                     /// Wrap a thread-local container with a context.
-                    pub const fn new(local_key: &'static LocalKey<C>) -> Self {
-                        ThreadLocalContext(local_key)
-                    }
+                    pub const fn new(local_key: &'static LocalKey<C>) -> Self { ThreadLocalContext(local_key) }
                 }
 
-                impl<C: ClockSequence + 'static> ClockSequence for ThreadLocalContext<C> {
+                impl<C: ClockSequence + 'static> ClockSequence for ThreadLocalContext<C> 
+                {
                     type Output = C::Output;
 
-                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                        self.0
-                            .with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
+                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output
+                    {
+                        self.0.with(|ctxt| ctxt.generate_sequence(seconds, subsec_nanos))
                     }
 
-                    fn generate_timestamp_sequence(
+                    fn generate_timestamp_sequence
+                    (
                         &self,
                         seconds: u64,
                         subsec_nanos: u32,
-                    ) -> (Self::Output, u64, u32) {
-                        self.0
-                            .with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
+                    ) -> (Self::Output, u64, u32)
+                    {
+                        self.0.with(|ctxt| ctxt.generate_timestamp_sequence(seconds, subsec_nanos))
                     }
 
-                    fn usable_bits(&self) -> usize {
-                        self.0.with(|ctxt| ctxt.usable_bits())
-                    }
+                    fn usable_bits(&self) -> usize { self.0.with(|ctxt| ctxt.usable_bits()) }
                 }
 
-                impl<C: ClockSequence> ClockSequence for AssertUnwindSafe<C> {
+                impl<C: ClockSequence> ClockSequence for AssertUnwindSafe<C> 
+                {
                     type Output = C::Output;
 
-                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                        self.0.generate_sequence(seconds, subsec_nanos)
-                    }
+                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output
+                    { self.0.generate_sequence(seconds, subsec_nanos) }
 
-                    fn generate_timestamp_sequence(
+                    fn generate_timestamp_sequence
+                    (
                         &self,
                         seconds: u64,
                         subsec_nanos: u32,
-                    ) -> (Self::Output, u64, u32) {
-                        self.0.generate_timestamp_sequence(seconds, subsec_nanos)
-                    }
+                    ) -> (Self::Output, u64, u32)
+                    { self.0.generate_timestamp_sequence(seconds, subsec_nanos) }
 
-                    fn usable_bits(&self) -> usize
-                    where
-                        Self::Output: Sized,
+                    fn usable_bits(&self) -> usize where
+                    Self::Output: Sized,
                     {
                         self.0.usable_bits()
                     }
                 }
 
-                impl<C: ClockSequence + RefUnwindSafe> ClockSequence for Mutex<C> {
+                impl<C: ClockSequence + RefUnwindSafe> ClockSequence for Mutex<C> 
+                {
                     type Output = C::Output;
 
-                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                        self.lock()
-                            .unwrap_or_else(|err| err.into_inner())
-                            .generate_sequence(seconds, subsec_nanos)
-                    }
-
-                    fn generate_timestamp_sequence(
-                        &self,
-                        seconds: u64,
-                        subsec_nanos: u32,
-                    ) -> (Self::Output, u64, u32) {
-                        self.lock()
-                            .unwrap_or_else(|err| err.into_inner())
-                            .generate_timestamp_sequence(seconds, subsec_nanos)
-                    }
-
-                    fn usable_bits(&self) -> usize
-                    where
-                        Self::Output: Sized,
+                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output
                     {
                         self.lock()
-                            .unwrap_or_else(|err| err.into_inner())
-                            .usable_bits()
-                    }
-                }
-            }
-
-            #[cfg(feature = "std")]
-            pub use std_support::*;
-
-            #[cfg(feature = "v7")]
-            mod v7_support {
-                use super::*;
-
-                use core::{cell::Cell, cmp, panic::RefUnwindSafe};
-
-                #[cfg(feature = "std")]
-                static CONTEXT_V7: SharedContextV7 =
-                    SharedContextV7(std::sync::Mutex::new(ContextV7::new()));
-
-                #[cfg(feature = "std")]
-                pub(crate) fn shared_context_v7() -> &'static SharedContextV7 {
-                    &CONTEXT_V7
-                }
-
-                const USABLE_BITS: usize = 42;
-
-                // Leave the most significant bit unset
-                // This guarantees the counter has at least 2,199,023,255,552
-                // values before it will overflow, which is exceptionally unlikely
-                // even in the worst case
-                const RESEED_MASK: u64 = u64::MAX >> 23;
-                const MAX_COUNTER: u64 = u64::MAX >> 22;
-
-                /// An unsynchronized, reseeding counter that produces 42-bit values.
-                ///
-                /// This type works by:
-                ///
-                /// 1. Reseeding the counter each millisecond with a random 41-bit value. The 42nd bit
-                ///    is left unset so the counter can safely increment over the millisecond.
-                /// 2. Wrapping the counter back to zero if it overflows its 42-bit storage and adding a
-                ///    millisecond to the timestamp.
-                ///
-                /// The counter can use additional sub-millisecond precision from the timestamp to better
-                /// synchronize UUID sorting in distributed systems. In these cases, the additional precision
-                /// is masked into the left-most 12 bits of the counter. The counter is still reseeded on
-                /// each new millisecond, and incremented within the millisecond. This behavior may change
-                /// in the future. The only guarantee is monotonicity.
-                ///
-                /// This type can be used when constructing version 7 UUIDs. When used to construct a
-                /// version 7 UUID, the 42-bit counter will be padded with random data. This type can
-                /// be used to maintain ordering of UUIDs within the same millisecond.
-                ///
-                /// This type should not be used when constructing version 1 or version 6 UUIDs.
-                /// When used to construct a version 1 or version 6 UUID, only the 14 least significant
-                /// bits of the counter will be used.
-                #[derive(Debug)]
-                pub struct ContextV7 {
-                    timestamp: Cell<ReseedingTimestamp>,
-                    counter: Cell<Counter>,
-                    adjust: Adjust,
-                    precision: Precision,
-                }
-
-                impl RefUnwindSafe for ContextV7 {}
-
-                impl ContextV7 {
-                    /// Construct a new context that will reseed its counter on the first
-                    /// non-zero timestamp it receives.
-                    pub const fn new() -> Self {
-                        ContextV7 {
-                            timestamp: Cell::new(ReseedingTimestamp {
-                                last_seed: 0,
-                                seconds: 0,
-                                subsec_nanos: 0,
-                            }),
-                            counter: Cell::new(Counter { value: 0 }),
-                            adjust: Adjust { by_ns: 0 },
-                            precision: Precision {
-                                bits: 0,
-                                mask: 0,
-                                factor: 0,
-                                shift: 0,
-                            },
-                        }
+                        .unwrap_or_else(|err| err.into_inner())
+                        .generate_sequence(seconds, subsec_nanos)
                     }
 
-                    /// Specify an amount to shift timestamps by to obfuscate their actual generation time.
-                    pub fn with_adjust_by_millis(mut self, millis: u32) -> Self {
-                        self.adjust = Adjust::by_millis(millis);
-                        self
-                    }
-
-                    /// Use the leftmost 12 bits of the counter for additional timestamp precision.
-                    ///
-                    /// This method can provide better sorting for distributed applications that generate frequent UUIDs
-                    /// by trading a small amount of entropy for better counter synchronization. Note that the counter
-                    /// will still be reseeded on millisecond boundaries, even though some of its storage will be
-                    /// dedicated to the timestamp.
-                    pub fn with_additional_precision(mut self) -> Self {
-                        self.precision = Precision::new(12);
-                        self
-                    }
-                }
-
-                impl ClockSequence for ContextV7 {
-                    type Output = u64;
-
-                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                        self.generate_timestamp_sequence(seconds, subsec_nanos).0
-                    }
-
-                    fn generate_timestamp_sequence(
+                    fn generate_timestamp_sequence
+                    (
                         &self,
                         seconds: u64,
                         subsec_nanos: u32,
-                    ) -> (Self::Output, u64, u32) {
-                        let (seconds, subsec_nanos) = self.adjust.apply(seconds, subsec_nanos);
-
-                        let mut counter;
-                        let (mut timestamp, should_reseed) =
-                            self.timestamp.get().advance(seconds, subsec_nanos);
-
-                        if should_reseed {
-                            // If the observed system time has shifted forwards then regenerate the counter
-                            counter = Counter::reseed(&self.precision, &timestamp);
-                        } else {
-                            // If the observed system time has not shifted forwards then increment the counter
-
-                            // If the incoming timestamp is earlier than the last observed one then
-                            // use it instead. This may happen if the system clock jitters, or if the counter
-                            // has wrapped and the timestamp is artificially incremented
-
-                            counter = self.counter.get().increment(&self.precision, &timestamp);
-
-                            // Unlikely: If the counter has overflowed its 42-bit storage then wrap it
-                            // and increment the timestamp. Until the observed system time shifts past
-                            // this incremented value, all timestamps will use it to maintain monotonicity
-                            if counter.has_overflowed() {
-                                // Increment the timestamp by 1 milli and reseed the counter
-                                timestamp = timestamp.increment();
-                                counter = Counter::reseed(&self.precision, &timestamp);
-                            }
-                        };
-
-                        self.timestamp.set(timestamp);
-                        self.counter.set(counter);
-
-                        (counter.value, timestamp.seconds, timestamp.subsec_nanos)
-                    }
-
-                    fn usable_bits(&self) -> usize {
-                        USABLE_BITS
-                    }
-                }
-
-                #[derive(Debug)]
-                struct Adjust {
-                    by_ns: u128,
-                }
-
-                impl Adjust {
-                    #[inline]
-                    fn by_millis(millis: u32) -> Self {
-                        Adjust {
-                            by_ns: (millis as u128).saturating_mul(1_000_000),
-                        }
-                    }
-
-                    #[inline]
-                    fn apply(&self, seconds: u64, subsec_nanos: u32) -> (u64, u32) {
-                        if self.by_ns == 0 {
-                            // No shift applied
-                            return (seconds, subsec_nanos);
-                        }
-
-                        let ts = (seconds as u128)
-                            .saturating_mul(1_000_000_000)
-                            .saturating_add(subsec_nanos as u128)
-                            .saturating_add(self.by_ns as u128);
-
-                        ((ts / 1_000_000_000) as u64, (ts % 1_000_000_000) as u32)
-                    }
-                }
-
-                #[derive(Debug, Default, Clone, Copy)]
-                struct ReseedingTimestamp {
-                    last_seed: u64,
-                    seconds: u64,
-                    subsec_nanos: u32,
-                }
-
-                impl ReseedingTimestamp {
-                    #[inline]
-                    fn advance(&self, seconds: u64, subsec_nanos: u32) -> (Self, bool) {
-                        let incoming = ReseedingTimestamp::from_ts(seconds, subsec_nanos);
-
-                        if incoming.last_seed > self.last_seed {
-                            // The incoming value is part of a new millisecond
-                            (incoming, true)
-                        } else {
-                            // The incoming value is part of the same or an earlier millisecond
-                            // We may still have advanced the subsecond portion, so use the larger value
-                            let mut value = *self;
-                            value.subsec_nanos = cmp::max(self.subsec_nanos, subsec_nanos);
-
-                            (value, false)
-                        }
-                    }
-
-                    #[inline]
-                    fn from_ts(seconds: u64, subsec_nanos: u32) -> Self {
-                        // Reseed when the millisecond advances
-                        let last_seed = seconds
-                            .saturating_mul(1_000)
-                            .saturating_add((subsec_nanos / 1_000_000) as u64);
-
-                        ReseedingTimestamp {
-                            last_seed,
-                            seconds,
-                            subsec_nanos,
-                        }
-                    }
-
-                    #[inline]
-                    fn increment(&self) -> Self {
-                        let (seconds, subsec_nanos) =
-                            Adjust::by_millis(1).apply(self.seconds, self.subsec_nanos);
-
-                        ReseedingTimestamp::from_ts(seconds, subsec_nanos)
-                    }
-
-                    #[inline]
-                    fn submilli_nanos(&self) -> u32 {
-                        self.subsec_nanos % 1_000_000
-                    }
-                }
-
-                #[derive(Debug)]
-                struct Precision {
-                    bits: usize,
-                    factor: u64,
-                    mask: u64,
-                    shift: u64,
-                }
-
-                impl Precision {
-                    fn new(bits: usize) -> Self {
-                        // The mask and shift are used to paste the sub-millisecond precision
-                        // into the most significant bits of the counter
-                        let mask = u64::MAX >> (64 - USABLE_BITS + bits);
-                        let shift = (USABLE_BITS - bits) as u64;
-
-                        // The factor reduces the size of the sub-millisecond precision to
-                        // fit into the specified number of bits
-                        let factor = (999_999 / u64::pow(2, bits as u32)) + 1;
-
-                        Precision {
-                            bits,
-                            factor,
-                            mask,
-                            shift,
-                        }
-                    }
-
-                    #[inline]
-                    fn apply(&self, value: u64, timestamp: &ReseedingTimestamp) -> u64 {
-                        if self.bits == 0 {
-                            // No additional precision is being used
-                            return value;
-                        }
-
-                        let additional = timestamp.submilli_nanos() as u64 / self.factor;
-
-                        (value & self.mask) | (additional << self.shift)
-                    }
-                }
-
-                #[derive(Debug, Clone, Copy)]
-                struct Counter {
-                    value: u64,
-                }
-
-                impl Counter {
-                    #[inline]
-                    fn reseed(precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
-                        Counter {
-                            value: precision.apply(crate::rng::u64() & RESEED_MASK, timestamp),
-                        }
-                    }
-
-                    #[inline]
-                    fn increment(&self, precision: &Precision, timestamp: &ReseedingTimestamp) -> Self {
-                        let mut counter = Counter {
-                            value: precision.apply(self.value, timestamp),
-                        };
-
-                        // We unconditionally increment the counter even though the precision
-                        // may have set higher bits already. This could technically be avoided,
-                        // but the higher bits are a coarse approximation so we just avoid the
-                        // `if` branch and increment it either way
-
-                        // Guaranteed to never overflow u64
-                        counter.value += 1;
-
-                        counter
-                    }
-
-                    #[inline]
-                    fn has_overflowed(&self) -> bool {
-                        self.value > MAX_COUNTER
-                    }
-                }
-
-                #[cfg(feature = "std")]
-                pub(crate) struct SharedContextV7(std::sync::Mutex<ContextV7>);
-
-                #[cfg(feature = "std")]
-                impl ClockSequence for SharedContextV7 {
-                    type Output = u64;
-
-                    fn generate_sequence(&self, seconds: u64, subsec_nanos: u32) -> Self::Output {
-                        self.0.generate_sequence(seconds, subsec_nanos)
-                    }
-
-                    fn generate_timestamp_sequence(
-                        &self,
-                        seconds: u64,
-                        subsec_nanos: u32,
-                    ) -> (Self::Output, u64, u32) {
-                        self.0.generate_timestamp_sequence(seconds, subsec_nanos)
-                    }
-
-                    fn usable_bits(&self) -> usize
-                    where
-                        Self::Output: Sized,
+                    ) -> (Self::Output, u64, u32)
                     {
-                        USABLE_BITS
+                        self.lock()
+                        .unwrap_or_else(|err| err.into_inner())
+                        .generate_timestamp_sequence(seconds, subsec_nanos)
+                    }
+
+                    fn usable_bits(&self) -> usize where
+                    Self::Output: Sized
+                    {
+                        self.lock()
+                        .unwrap_or_else(|err| err.into_inner())
+                        .usable_bits()
                     }
                 }
-
-                #[cfg(test)]
-                mod tests {
-                    use core::time::Duration;
-
-                    use super::*;
-
-                    use crate::{Timestamp, Uuid};
-
-                    #[test]
-                    fn context() {
-                        let seconds = 1_496_854_535;
-                        let subsec_nanos = 812_946_000;
-
-                        let context = ContextV7::new();
-
-                        let ts1 = Timestamp::from_unix(&context, seconds, subsec_nanos);
-                        assert_eq!(42, ts1.usable_counter_bits);
-
-                        // Backwards second
-                        let seconds = 1_496_854_534;
-
-                        let ts2 = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        // The backwards time should be ignored
-                        // The counter should still increment
-                        assert_eq!(ts1.seconds, ts2.seconds);
-                        assert_eq!(ts1.subsec_nanos, ts2.subsec_nanos);
-                        assert_eq!(ts1.counter + 1, ts2.counter);
-
-                        // Forwards second
-                        let seconds = 1_496_854_536;
-
-                        let ts3 = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        // The counter should have reseeded
-                        assert_ne!(ts2.counter + 1, ts3.counter);
-                        assert_ne!(0, ts3.counter);
-                    }
-
-                    #[test]
-                    fn context_wrap() {
-                        let seconds = 1_496_854_535u64;
-                        let subsec_nanos = 812_946_000u32;
-
-                        // This context will wrap
-                        let context = ContextV7 {
-                            timestamp: Cell::new(ReseedingTimestamp::from_ts(seconds, subsec_nanos)),
-                            adjust: Adjust::by_millis(0),
-                            precision: Precision {
-                                bits: 0,
-                                mask: 0,
-                                factor: 0,
-                                shift: 0,
-                            },
-                            counter: Cell::new(Counter {
-                                value: u64::MAX >> 22,
-                            }),
-                        };
-
-                        let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        // The timestamp should be incremented by 1ms
-                        let expected_ts = Duration::new(seconds, subsec_nanos) + Duration::from_millis(1);
-                        assert_eq!(expected_ts.as_secs(), ts.seconds);
-                        assert_eq!(expected_ts.subsec_nanos(), ts.subsec_nanos);
-
-                        // The counter should have reseeded
-                        assert!(ts.counter < (u64::MAX >> 22) as u128);
-                        assert_ne!(0, ts.counter);
-                    }
-
-                    #[test]
-                    fn context_shift() {
-                        let seconds = 1_496_854_535;
-                        let subsec_nanos = 812_946_000;
-
-                        let context = ContextV7::new().with_adjust_by_millis(1);
-
-                        let ts = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        assert_eq!((1_496_854_535, 813_946_000), ts.to_unix());
-                    }
-
-                    #[test]
-                    fn context_additional_precision() {
-                        let seconds = 1_496_854_535;
-                        let subsec_nanos = 812_946_000;
-
-                        let context = ContextV7::new().with_additional_precision();
-
-                        let ts1 = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        // NOTE: Future changes in rounding may change this value slightly
-                        assert_eq!(3861, ts1.counter >> 30);
-
-                        assert!(ts1.counter < (u64::MAX >> 22) as u128);
-
-                        // Generate another timestamp; it should continue to sort
-                        let ts2 = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        assert!(Uuid::new_v7(ts2) > Uuid::new_v7(ts1));
-
-                        // Generate another timestamp with an extra nanosecond
-                        let subsec_nanos = subsec_nanos + 1;
-
-                        let ts3 = Timestamp::from_unix(&context, seconds, subsec_nanos);
-
-                        assert!(Uuid::new_v7(ts3) > Uuid::new_v7(ts2));
-                    }
-
-                    #[test]
-                    fn context_overflow() {
-                        let seconds = u64::MAX;
-                        let subsec_nanos = u32::MAX;
-
-                        // Ensure we don't panic
-                        for context in [
-                            ContextV7::new(),
-                            ContextV7::new().with_additional_precision(),
-                            ContextV7::new().with_adjust_by_millis(u32::MAX),
-                        ] {
-                            Timestamp::from_unix(&context, seconds, subsec_nanos);
-                        }
-                    }
-                }
-            }
-
-            #[cfg(feature = "v7")]
-            pub use v7_support::*;
-
-            /// An empty counter that will always return the value `0`.
-            ///
-            /// This type should not be used when constructing version 1 or version 6 UUIDs.
-            /// When used to construct a version 1 or version 6 UUID, the counter
-            /// segment will remain zero.
+            } pub use self::std_support::*;
+            
             #[derive(Debug, Clone, Copy, Default)]
             pub struct NoContext;
 
-            impl ClockSequence for NoContext {
+            impl ClockSequence for NoContext
+            {
                 type Output = u16;
 
-                fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output {
-                    0
-                }
+                fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output { 0 }
 
-                fn usable_bits(&self) -> usize {
-                    0
-                }
+                fn usable_bits(&self) -> usize { 0 }
             }
         }
     } pub use self::timestamp::{ context::NoContext, ClockSequence, Timestamp };
+    /// A 128-bit (16 byte) buffer containing the UUID.
+    pub type Bytes = [u8; 16];
+    /// The version of the UUID, denoting the generating algorithm.
+    #[repr( u8 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, PartialEq )]
+    pub enum Version
+    {
+        /// The "nil" (all zeros) UUID.
+        Nil = 0u8,
+        /// Version 1: Timestamp and node ID.
+        Mac = 1,
+        /// Version 2: DCE Security.
+        Dce = 2,
+        /// Version 3: MD5 hash.
+        Md5 = 3,
+        /// Version 4: Random.
+        Random = 4,
+        /// Version 5: SHA-1 hash.
+        Sha1 = 5,
+        /// Version 6: Sortable Timestamp and node ID.
+        SortMac = 6,
+        /// Version 7: Timestamp and random.
+        SortRand = 7,
+        /// Version 8: Custom.
+        Custom = 8,
+        /// The "max" (all ones) UUID.
+        Max = 0xff,
+    }
+    /// The reserved variants of UUIDs.
+    #[repr( u8 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, PartialEq )]
+    pub enum Variant
+    {
+        /// Reserved by the NCS for backward compatibility.
+        NCS = 0u8,
+        /// As described in the RFC 9562 Specification (default).
+        RFC4122,
+        /// Reserved by Microsoft for backward compatibility.
+        Microsoft,
+        /// Reserved for future expansion.
+        Future,
+    }
+    /// A Universally Unique Identifier (UUID).
+    #[repr( transparent )] #[derive( Clone, Copy, Eq, Ord, PartialEq, PartialOrd )]
+    pub struct Uuid(Bytes);
+
+    impl Uuid 
+    {
+        /// UUID namespace for Domain Name System (DNS).
+        pub const NAMESPACE_DNS: Self = Uuid
+        ([ 0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8 ]);
+        /// UUID namespace for ISO Object Identifiers (OIDs).
+        pub const NAMESPACE_OID: Self = Uuid
+        ([ 0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8 ]);
+        /// UUID namespace for Uniform Resource Locators (URLs).
+        pub const NAMESPACE_URL: Self = Uuid
+        ([ 0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8 ]);
+        /// UUID namespace for X.500 Distinguished Names (DNs).
+        pub const NAMESPACE_X500: Self = Uuid
+        ([ 0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8 ]);
+        /// Returns the variant of the UUID structure.
+        pub const fn get_variant(&self) -> Variant
+        {
+            match self.as_bytes()[8]
+            {
+                x if x & 0x80 == 0x00 => Variant::NCS,
+                x if x & 0xc0 == 0x80 => Variant::RFC4122,
+                x if x & 0xe0 == 0xc0 => Variant::Microsoft,
+                x if x & 0xe0 == 0xe0 => Variant::Future,
+                _ => Variant::Future,
+            }
+        }
+        /// Returns the version number of the UUID.
+        pub const fn get_version_num(&self) -> usize { (self.as_bytes()[6] >> 4) as usize }
+        /// Returns the version of the UUID.
+        pub const fn get_version(&self) -> Option<Version>
+        {
+            match self.get_version_num()
+            {
+                0 if self.is_nil() => Some(Version::Nil),
+                1 => Some(Version::Mac),
+                2 => Some(Version::Dce),
+                3 => Some(Version::Md5),
+                4 => Some(Version::Random),
+                5 => Some(Version::Sha1),
+                6 => Some(Version::SortMac),
+                7 => Some(Version::SortRand),
+                8 => Some(Version::Custom),
+                0xf => Some(Version::Max),
+                _ => None,
+            }
+        }
+        /// Returns the four field values of the UUID.
+        pub fn as_fields(&self) -> (u32, u16, u16, &[u8; 8])
+        {
+            let bytes = self.as_bytes();
+            let d1 = (bytes[0] as u32) << 24
+            | (bytes[1] as u32) << 16
+            | (bytes[2] as u32) << 8
+            | (bytes[3] as u32);
+            let d2 = (bytes[4] as u16) << 8 | (bytes[5] as u16);
+            let d3 = (bytes[6] as u16) << 8 | (bytes[7] as u16);
+            let d4: &[u8; 8] = convert::TryInto::try_into(&bytes[8..16]).unwrap();
+            
+            (d1, d2, d3, d4)
+        }
+        /// Returns the four field values of the UUID in little-endian order.
+        pub fn to_fields_le(&self) -> (u32, u16, u16, &[u8; 8])
+        {
+            let d1 = (self.as_bytes()[0] as u32)
+            | (self.as_bytes()[1] as u32) << 8
+            | (self.as_bytes()[2] as u32) << 16
+            | (self.as_bytes()[3] as u32) << 24;
+            let d2 = (self.as_bytes()[4] as u16) | (self.as_bytes()[5] as u16) << 8;
+            let d3 = (self.as_bytes()[6] as u16) | (self.as_bytes()[7] as u16) << 8;
+            let d4: &[u8; 8] = convert::TryInto::try_into(&self.as_bytes()[8..16]).unwrap();
+
+            (d1, d2, d3, d4)
+        }
+        /// Returns a 128bit value containing the value.
+        pub const fn as_u128(&self) -> u128 { u128::from_be_bytes(*self.as_bytes()) }
+        /// Returns a 128bit little-endian value containing the value.
+        pub const fn to_u128_le(&self) -> u128 { u128::from_le_bytes(*self.as_bytes()) }
+        /// Returns two 64bit values containing the value.
+        pub const fn as_u64_pair(&self) -> (u64, u64)
+        {
+            let value = self.as_u128();
+            ((value >> 64) as u64, value as u64)
+        }
+        /// Returns a slice of 16 octets containing the value.
+        #[inline] pub const fn as_bytes(&self) -> &Bytes { &self.0 }
+        /// Consumes self and returns the underlying byte value of the UUID.
+        #[inline] pub const fn into_bytes(self) -> Bytes { self.0 }
+        /// Returns the bytes of the UUID in little-endian order.
+        pub const fn to_bytes_le(&self) -> Bytes
+        {
+            [
+                self.0[3], self.0[2], self.0[1], self.0[0], self.0[5], self.0[4], self.0[7], self.0[6],
+                self.0[8], self.0[9], self.0[10], self.0[11], self.0[12], self.0[13], self.0[14],
+                self.0[15],
+            ]
+        }
+        /// Tests if the UUID is nil (all zeros).
+        pub const fn is_nil(&self) -> bool { self.as_u128() == u128::MIN }
+        /// Tests if the UUID is max (all ones).
+        pub const fn is_max(&self) -> bool { self.as_u128() == u128::MAX }
+        /// A buffer that can be used for `encode_...` calls, that is
+        /// guaranteed to be long enough for any of the format adapters.
+        pub const fn encode_buffer() -> [u8; fmt::Urn::LENGTH] { [0; fmt::Urn::LENGTH] }
+        /// If the UUID is the correct version (v1, v6, or v7) this will return the timestamp in a version-agnostic [`Timestamp`].
+        pub const fn get_timestamp(&self) -> Option<Timestamp>
+        {
+            match self.get_version() {
+                Some(Version::Mac) => {
+                    let (ticks, counter) = timestamp::decode_gregorian_timestamp(self);
+
+                    Some(Timestamp::from_gregorian(ticks, counter))
+                }
+                Some(Version::SortMac) => {
+                    let (ticks, counter) = timestamp::decode_sorted_gregorian_timestamp(self);
+
+                    Some(Timestamp::from_gregorian(ticks, counter))
+                }
+                Some(Version::SortRand) => {
+                    let millis = timestamp::decode_unix_timestamp_millis(self);
+
+                    let seconds = millis / 1000;
+                    let nanos = ((millis % 1000) * 1_000_000) as u32;
+
+                    Some(Timestamp::from_unix_time(seconds, nanos, 0, 0))
+                }
+                _ => None,
+            }
+        }
+        /// If the UUID is the correct version (v1, or v6) this will return the node value as a 6-byte array.
+        pub const fn get_node_id(&self) -> Option<[u8; 6]>
+        {
+            match self.get_version() {
+                Some(Version::Mac) | Some(Version::SortMac) => {
+                    let mut node_id = [0; 6];
+
+                    node_id[0] = self.0[10];
+                    node_id[1] = self.0[11];
+                    node_id[2] = self.0[12];
+                    node_id[3] = self.0[13];
+                    node_id[4] = self.0[14];
+                    node_id[5] = self.0[15];
+
+                    Some(node_id)
+                }
+                _ => None,
+            }
+        }
+    }
+
+    impl Hash for Uuid
+    {
+        fn hash<H: Hasher>(&self, state: &mut H) { state.write(&self.0); }
+    }
+
+    impl Default for Uuid
+    {
+        #[inline] fn default() -> Self { Uuid::nil() }
+    }
+
+    impl AsRef<Uuid> for Uuid
+    {
+        #[inline] fn as_ref(&self) -> &Uuid { self }
+    }
+
+    impl AsRef<[u8]> for Uuid
+    {
+        #[inline] fn as_ref(&self) -> &[u8] { &self.0 }
+    }
+    
+    impl From<Uuid> for ::vec::Vec<u8> 
+    {
+        fn from(value: Uuid) -> Self { value.0.to_vec() }
+    }
+    
+    impl ::convert::TryFrom<std::vec::Vec<u8>> for Uuid 
+    {
+        type Error = Error;
+        fn try_from(value: ::vec::Vec<u8>) -> Result<Self, Self::Error> { Uuid::from_slice(&value) }
+    }
 }
 
 pub mod values
@@ -39310,7 +38423,6 @@ pub mod values
         get_fn!( "Returns the `char` contained in this `Value`.", get_char, char, Char );        
         get_fn!( r#"Returns the `String` contained in this `Value`."#, get_str, String, Str );        
         get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj );
-
         /// Returns the `Arr` contained in this `Value`.
         pub fn get_arr(&self) -> OverResult<arrays::Arr>
         {
@@ -39540,4 +38652,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 39543 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 38655 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
