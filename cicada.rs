@@ -2517,7 +2517,7 @@ pub mod api
             match result {
                 Some(job) => {
                     unsafe {
-                        nix::libc::killpg(job.gid, libc::SIGCONT);
+                        nix::libc::killpg(job.gid, nix::libc::SIGCONT);
                         gid = job.gid;
                         if job.status == "Running" {
                             let info = format!("cicada: bg: job {} already in background", job.id);
@@ -2563,7 +2563,7 @@ pub mod api
         let str_current_dir = tools::get_current_dir();
 
         let mut dir_to = if args.len() == 1 {
-            let home = tools::get_user_home();
+            let home = tools::get::user_home();
             home.to_string()
         } else {
             args[1..].join("")
@@ -2813,7 +2813,7 @@ pub mod api
                             return CommandResult::error();
                         }
 
-                        libc::killpg(job.gid, libc::SIGCONT);
+                        nix::libc::killpg(job.gid, nix::libc::SIGCONT);
                         pid_list = job.pids.clone();
                         gid = job.gid;
                     }
@@ -2826,12 +2826,13 @@ pub mod api
             }
         }
 
-        unsafe {
-            jobc::mark_job_as_running(sh, gid, false);
+        unsafe 
+        {
+            ::jobs::mark_job_as_running(sh, gid, false);
 
             let cr = jobc::wait_fg_job(sh, gid, &pid_list);
 
-            let gid_shell = libc::getpgid(0);
+            let gid_shell = nix::libc::getpgid(0);
             if !shell::give_terminal_to(gid_shell) {
                 log!("failed to give term to back to shell : {}", gid_shell);
             }
@@ -2843,7 +2844,7 @@ pub mod api
     pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
-        let hfile = history::get_history_file();
+        let hfile = history::read_file();
         let path = Path::new(hfile.as_str());
         if !path.exists() {
             let info = "no history file";
@@ -3201,7 +3202,7 @@ pub mod api
                 Ok(x) => x,
                 Err(_) => "python3".to_string(),
             };
-            let dir_venv = get_envs_home();
+            let dir_venv = get::envs_home();
             let venv_name = args[2].to_string();
             let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
             print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
@@ -3231,7 +3232,7 @@ pub mod api
     fn add_history(sh: &Shell, ts: f64, input: &str) 
     {
         let (tsb, tse) = (ts, ts + 1.0);
-        history::add_raw(sh, input, 0, tsb, tse);
+        history::create_raw(sh, input, 0, tsb, tse);
     }
 
     fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
@@ -3405,18 +3406,18 @@ pub mod api
     fn set_limit(limit_name: &str, value: u64, for_hard: bool) -> String
     {
         let limit_id = match limit_name {
-            "open_files" => libc::RLIMIT_NOFILE,
-            "core_file_size" => libc::RLIMIT_CORE,
+            "open_files" => nix::libc::RLIMIT_NOFILE,
+            "core_file_size" => nix::libc::RLIMIT_CORE,
             _ => return String::from("invalid limit name"),
         };
 
-        let mut rlp = libc::rlimit {
+        let mut rlp = nix::libc::rlimit {
             rlim_cur: 0,
             rlim_max: 0,
         };
 
         unsafe {
-            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+            if nix::libc::getrlimit(limit_id, &mut rlp) != 0 {
                 return format!(
                     "cicada: ulimit: error getting limit: {}",
                     Error::last_os_error()
@@ -3446,7 +3447,7 @@ pub mod api
         }
 
         unsafe {
-            if libc::setrlimit(limit_id, &rlp) != 0 {
+            if nix::libc::setrlimit(limit_id, &rlp) != 0 {
                 return format!(
                     "cicada: ulimit: error setting limit: {}",
                     Error::last_os_error()
@@ -3460,8 +3461,8 @@ pub mod api
     fn get_limit(limit_name: &str, single_print: bool, for_hard: bool) -> (String, String)
     {
         let (desc, limit_id) = match limit_name {
-            "open_files" => ("open files", libc::RLIMIT_NOFILE),
-            "core_file_size" => ("core file size", libc::RLIMIT_CORE),
+            "open_files" => ("open files", nix::libc::RLIMIT_NOFILE),
+            "core_file_size" => ("core file size", nix::libc::RLIMIT_CORE),
             _ => {
                 return (
                     String::new(),
@@ -3470,7 +3471,7 @@ pub mod api
             }
         };
 
-        let mut rlp = libc::rlimit {
+        let mut rlp = nix::libc::rlimit {
             rlim_cur: 0,
             rlim_max: 0,
         };
@@ -3479,14 +3480,14 @@ pub mod api
         let mut result_stderr = String::new();
 
         unsafe {
-            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+            if nix::libc::getrlimit(limit_id, &mut rlp) != 0 {
                 result_stderr.push_str(&format!("error getting limit: {}", Error::last_os_error()));
                 return (result_stdout, result_stderr);
             }
 
             let to_print = if for_hard { rlp.rlim_max } else { rlp.rlim_cur };
 
-            let info = if to_print == libc::RLIM_INFINITY {
+            let info = if to_print == nix::libc::RLIM_INFINITY {
                 if single_print {
                     "unlimited\n".to_string()
                 } else {
@@ -4885,7 +4886,7 @@ pub mod env
             return "vox: already in env".to_string();
         }
 
-        let home_envs = get_envs_home();
+        let home_envs = get::envs_home();
         let full_path = format!("{}/{}/bin/activate", home_envs, path);
         if !Path::new(full_path.as_str()).exists() {
             return format!("no such env: {}", full_path);
@@ -5431,7 +5432,7 @@ pub mod exec
 
         // Use an `unsafe` block so that we can call directly into C.
         let res = unsafe {
-            libc::execvp(program_cstring.as_bytes_with_nul().as_ptr() as *const i8,
+            nix::libc::execvp(program_cstring.as_bytes_with_nul().as_ptr() as *const i8,
                         arg_charptrs.as_ptr())
         };
 
@@ -5526,7 +5527,7 @@ pub mod expand
             } else {
                 return;
             }
-            let home = tools::get_user_home();
+            let home = tools::get::user_home();
             let ss = text.clone();
             let to = format!("$head{}$tail", home);
             let result = re.replace_all(ss.as_str(), to.as_str());
@@ -5942,7 +5943,7 @@ pub mod fs
                 // we need to return the last one, but close the previous two.
                 if let Some(fd) = fd_out {
                     unsafe {
-                        libc::close(fd);
+                        nix::libc::close(fd);
                     }
                 }
 
@@ -5967,7 +5968,7 @@ pub mod fs
 
                 if let Some(fd) = fd_err {
                     unsafe {
-                        libc::close(fd);
+                        nix::libc::close(fd);
                     }
                 }
 
@@ -5987,13 +5988,13 @@ pub mod fs
         let (_fd_out, _fd_err) = _get_std_fds(&cmd.redirects_to);
         if let Some(fd) = _fd_err {
             unsafe {
-                libc::close(fd);
+                nix::libc::close(fd);
             }
         }
         if let Some(fd) = _fd_out {
             fd
         } else {
-            let fd = unsafe { libc::dup(1) };
+            let fd = unsafe { nix::libc::dup(1) };
             if fd == -1 {
                 let eno = errno();
                 println_stderr!("cicada: dup: {}", eno);
@@ -6011,14 +6012,14 @@ pub mod fs
         let (_fd_out, _fd_err) = _get_std_fds(&cmd.redirects_to);
         if let Some(fd) = _fd_out {
             unsafe {
-                libc::close(fd);
+                nix::libc::close(fd);
             }
         }
 
         if let Some(fd) = _fd_err {
             fd
         } else {
-            let fd = unsafe { libc::dup(2) };
+            let fd = unsafe { nix::libc::dup(2) };
             if fd == -1 {
                 let eno = errno();
                 println_stderr!("cicada: dup: {}", eno);
@@ -6041,7 +6042,7 @@ pub mod get
     */
     extern "C" 
     {
-        fn gethostname(name: *mut libc::c_char, size: libc::size_t) -> libc::c_int;
+        fn gethostname(name: *mut nix::libc::c_char, size: nix::libc::size_t) -> nix::libc::c_int;
     }
     /// If `ch` preceded by a backslash together form an escape character, then return this char. Otherwise, return None.
     pub fn escaped_character(ch: char) -> Option<char>
@@ -6122,7 +6123,7 @@ pub mod get
 
         let ptr = buf.as_mut_slice().as_mut_ptr();
 
-        let err = unsafe { gethostname(ptr as *mut libc::c_char, len as libc::size_t) } as i32;
+        let err = unsafe { gethostname(ptr as *mut nix::libc::c_char, len as nix::libc::size_t) } as i32;
 
         match err {
             0 => {
@@ -6158,7 +6159,7 @@ pub mod get
         let cmd_result = execute::run("whoami");
         cmd_result.stdout.trim().to_string()
     }
-    // pub fn get_user_home() -> String 
+    // pub fn get::user_home() -> String 
     pub fn user_home() -> String 
     {
         match env::var("HOME") {
@@ -6175,7 +6176,7 @@ pub mod get
         if let Ok(x) = env::var("XDG_CONFIG_HOME") {
             format!("{}/cicada", x)
         } else {
-            let home = get_user_home();
+            let home = get::user_home();
             format!("{}/.config/cicada", home)
         }
     }
@@ -6188,14 +6189,14 @@ pub mod get
     // pub fn get_os_name() -> String
     pub fn os_name() -> String
     {
-        let uname = get_uname();
+        let uname = get::uname();
         if uname.to_lowercase() == "darwin" {
-            get_macos_name()
+            get::macos_name()
         } else {
-            get_other_os_name()
+            get::other_os_name()
         }
     }
-    // pub fn get_envs_home() -> String
+    // pub fn get::envs_home() -> String
     pub fn virtual_home() -> String
     {
         env::var("VIRTUALENV_HOME").unwrap_or_default()
@@ -6203,7 +6204,7 @@ pub mod get
     // pub fn get_all_venvs() -> Result<Vec<String>, String>
     pub fn all_virtual_environments() -> Result<Vec<String>, String>
     {
-        let home_envs = get_envs_home();
+        let home_envs = get::envs_home();
         if home_envs.is_empty() {
             let info = String::from("you need to set VIRTUALENV_HOME to use vox");
             return Err(info);
@@ -6235,24 +6236,24 @@ pub mod get
 
         Ok(venvs)
     }
-    // fn get_other_os_name() -> String
+    // fn get::other_os_name() -> String
     fn other_os_name() -> String
     {
-        let mut name = get_release_value("PRETTY_NAME");
+        let mut name = get::release_value("PRETTY_NAME");
         if !name.is_empty() {
             return name;
         }
-        name = get_release_value("DISTRIB_DESCRIPTION");
+        name = get::release_value("DISTRIB_DESCRIPTION");
         if !name.is_empty() {
             return name;
         }
-        name = get_release_value("IMAGE_DESCRIPTION");
+        name = get::release_value("IMAGE_DESCRIPTION");
         if !name.is_empty() {
             return name;
         }
-        get_uname_mo()
+        get::uname_mo()
     }
-    // fn get_release_value(ptn: &str) -> String
+    // fn get::release_value(ptn: &str) -> String
     fn release_value(ptn: &str) -> String
     {
         let line = format!(
@@ -6262,36 +6263,36 @@ pub mod get
         let cr = execute::run(&line);
         cr.stdout.trim().to_string()
     }
-    // fn get_uname() -> String
+    // fn get::uname() -> String
     fn uname() -> String
     {
         let cr = execute::run("uname");
         cr.stdout.trim().to_string()
     }
-    // fn get_uname_mo() -> String
+    // fn get::uname_mo() -> String
     fn uname_mo() -> String
     {
         let cr = execute::run("uname -m -o");
         cr.stdout.trim().to_string()
     }
-    // fn get_macos_name() -> String
+    // fn get::macos_name() -> String
     fn macos_name() -> String
     {
-        let mut os_name = get_osx_codename();
-        let ver = get_osx_version();
+        let mut os_name = get::osx_codename();
+        let ver = get::osx_version();
         if !ver.is_empty() {
             os_name.push(' ');
             os_name.push_str(&ver);
         }
         os_name
     }
-    // fn get_osx_codename() -> String
+    // fn get::osx_codename() -> String
     fn osx_codename() -> String
     {
         let cr = execute::run("grep -o 'SOFTWARE LICENSE AGREEMENT FOR .*[a-zA-Z]' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | sed 's/SOFTWARE LICENSE AGREEMENT FOR *//'");
         cr.stdout.trim().to_string()
     }
-    // fn get_osx_version() -> String
+    // fn get::osx_version() -> String
     fn osx_version() -> String
     {
         let cr = execute::run("sw_vers -productVersion");
@@ -6470,7 +6471,7 @@ pub mod history
         } else if let Ok(d) = env::var("XDG_DATA_HOME") {
             format!("{}/{}", d, "cicada/history.sqlite")
         } else {
-            let home = tools::get_user_home();
+            let home = tools::get::user_home();
             format!("{}/{}", home, ".local/share/cicada/history.sqlite")
         } */
         String::new()
@@ -6779,7 +6780,7 @@ pub mod is
     // pub fn is_non_tty() -> bool 
     pub fn non_tty() -> bool 
     {
-        unsafe { libc::isatty(0) == 0 }
+        unsafe { nix::libc::isatty(0) == 0 }
     }
     /// Returns whether the given character is a combining mark.
     //pub fn is_combining_mark(ch: char) -> bool
@@ -6815,7 +6816,248 @@ pub mod jobs
         *,
     };
     /*
+    use std::io::Write;
+    use nix::sys::signal::Signal;
+    use nix::sys::wait::waitpid;
+    use nix::sys::wait::WaitPidFlag as WF;
+    use nix::sys::wait::WaitStatus as WS;
+    use nix::unistd::Pid;
+
+    use crate::shell;
+    use crate::signals;
+    use crate::types::{self, CommandResult};
     */
+    pub fn get_job_line(job: &types::Job, trim: bool) -> String
+    {
+        let mut cmd = job.cmd.clone();
+        if trim && cmd.len() > 50 {
+            cmd.truncate(50);
+            cmd.push_str(" ...");
+        }
+        let _cmd = if job.is_bg && job.status == "Running" {
+            format!("{} &", cmd)
+        } else {
+            cmd
+        };
+        format!("[{}] {}  {}   {}", job.id, job.gid, job.status, _cmd)
+    }
+
+    pub fn print_job(job: &types::Job) 
+    {
+        let line = get_job_line(job, true);
+        println_stderr!("{}", line);
+    }
+
+    pub fn mark_job_as_done(sh: &mut shell::Shell, gid: i32, pid: i32, reason: &str)
+    {
+        if let Some(mut job) = sh.remove_pid_from_job(gid, pid) {
+            job.status = reason.to_string();
+            if job.is_bg {
+                println_stderr!("");
+                print_job(&job);
+            }
+        }
+    }
+
+    pub fn mark_job_as_stopped(sh: &mut shell::Shell, gid: i32, report: bool)
+    {
+        sh.mark_job_as_stopped(gid);
+        if !report {
+            return;
+        }
+
+        // add an extra line to separate output of fg commands if any.
+        if let Some(job) = sh.get_job_by_gid(gid) {
+            println_stderr!("");
+            print_job(job);
+        }
+    }
+
+    pub fn mark_job_member_stopped(sh: &mut shell::Shell, pid: i32, gid: i32, report: bool) 
+    {
+        let _gid = if gid == 0 {
+            unsafe { nix::libc::getpgid(pid) }
+        } else {
+            gid
+        };
+
+        if let Some(job) = sh.mark_job_member_stopped(pid, gid) {
+            if job.all_members_stopped() {
+                mark_job_as_stopped(sh, gid, report);
+            }
+        }
+    }
+
+    pub fn mark_job_member_continued(sh: &mut shell::Shell, pid: i32, gid: i32)
+    {
+        let _gid = if gid == 0 {
+            unsafe { nix::libc::getpgid(pid) }
+        } else {
+            gid
+        };
+
+        if let Some(job) = sh.mark_job_member_continued(pid, gid) {
+            if job.all_members_running() {
+                mark_job_as_running(sh, gid, true);
+            }
+        }
+    }
+
+    pub fn mark_job_as_running(sh: &mut shell::Shell, gid: i32, bg: bool) 
+    {
+        sh.mark_job_as_running(gid, bg);
+    }
+    
+    pub fn waitpidx(wpid: i32, block: bool) -> types::WaitStatus
+    {
+        let options = if block {
+            Some(WF::WUNTRACED | WF::WCONTINUED)
+        } else {
+            Some(WF::WUNTRACED | WF::WCONTINUED | WF::WNOHANG)
+        };
+        match waitpid(Pid::from_raw(wpid), options) {
+            Ok(WS::Exited(pid, status)) => {
+                let pid = i32::from(pid);
+                types::WaitStatus::from_exited(pid, status)
+            }
+            Ok(WS::Stopped(pid, sig)) => {
+                let pid = i32::from(pid);
+                types::WaitStatus::from_stopped(pid, sig as i32)
+            }
+            Ok(WS::Continued(pid)) => {
+                let pid = i32::from(pid);
+                types::WaitStatus::from_continuted(pid)
+            }
+            Ok(WS::Signaled(pid, sig, _core_dumped)) => {
+                let pid = i32::from(pid);
+                types::WaitStatus::from_signaled(pid, sig as i32)
+            }
+            Ok(WS::StillAlive) => types::WaitStatus::empty(),
+            Ok(_others) => {
+                // this is for PtraceEvent and PtraceSyscall on Linux,
+                // unreachable on other platforms.
+                types::WaitStatus::from_others()
+            }
+            Err(e) => types::WaitStatus::from_error(e as i32),
+        }
+    }
+
+    pub fn wait_fg_job(sh: &mut shell::Shell, gid: i32, pids: &[i32]) -> CommandResult
+    {
+        let mut cmd_result = CommandResult::new();
+        let mut count_waited = 0;
+        let count_child = pids.len();
+        if count_child == 0 {
+            return cmd_result;
+        }
+        let pid_last = pids.last().unwrap();
+
+        loop {
+            let ws = waitpidx(-1, true);
+            // here when we calling waitpidx(), all signals should have
+            // been masked. There should no errors (ECHILD/EINTR etc) happen.
+            if ws.is_error() {
+                let err = ws.get_errno();
+                if err == nix::Error::ECHILD {
+                    break;
+                }
+
+                log!("jobc unexpected waitpid error: {}", err);
+                cmd_result = CommandResult::from_status(gid, err as i32);
+                break;
+            }
+
+            let pid = ws.get_pid();
+            let is_a_fg_child = pids.contains(&pid);
+            if is_a_fg_child && !ws.is_continued() {
+                count_waited += 1;
+            }
+
+            if ws.is_exited() {
+                if is_a_fg_child {
+                    mark_job_as_done(sh, gid, pid, "Done");
+                } else {
+                    let status = ws.get_status();
+                    signals::insert_reap_map(pid, status);
+                }
+            } else if ws.is_stopped() {
+                if is_a_fg_child {
+                    // for stop signal of fg job (current job)
+                    // i.e. Ctrl-Z is pressed on the fg job
+                    mark_job_member_stopped(sh, pid, gid, true);
+                } else {
+                    // for stop signal of bg jobs
+                    signals::insert_stopped_map(pid);
+                    mark_job_member_stopped(sh, pid, 0, false);
+                }
+            } else if ws.is_continued() {
+                if !is_a_fg_child {
+                    signals::insert_cont_map(pid);
+                }
+                continue;
+            } else if ws.is_signaled() {
+                if is_a_fg_child {
+                    mark_job_as_done(sh, gid, pid, "Killed");
+                } else {
+                    signals::killed_map_insert(pid, ws.get_signal());
+                }
+            }
+
+            if is_a_fg_child && pid == *pid_last {
+                let status = ws.get_status();
+                cmd_result.status = status;
+            }
+
+            if count_waited >= count_child {
+                break;
+            }
+        }
+        cmd_result
+    }
+
+    pub fn try_wait_bg_jobs(sh: &mut shell::Shell, report: bool, sig_handler_enabled: bool)
+    {
+        if sh.jobs.is_empty() {
+            return;
+        }
+
+        if !sig_handler_enabled {
+            // we need to wait pids in case CICADA_ENABLE_SIG_HANDLER=0
+            signals::handle_sigchld(Signal::SIGCHLD as i32);
+        }
+
+        let jobs = sh.jobs.clone();
+        for (_i, job) in jobs.iter() {
+            for pid in job.pids.iter() {
+                if let Some(_status) = signals::pop_reap_map(*pid) {
+                    mark_job_as_done(sh, job.gid, *pid, "Done");
+                    continue;
+                }
+
+                if let Some(sig) = signals::killed_map_pop(*pid) {
+                    let reason = if sig == Signal::SIGQUIT as i32 {
+                        format!("Quit: {}", sig)
+                    } else if sig == Signal::SIGINT as i32 {
+                        format!("Interrupt: {}", sig)
+                    } else if sig == Signal::SIGKILL as i32 {
+                        format!("Killed: {}", sig)
+                    } else if sig == Signal::SIGTERM as i32 {
+                        format!("Terminated: {}", sig)
+                    } else {
+                        format!("Killed: {}", sig)
+                    };
+                    mark_job_as_done(sh, job.gid, *pid, &reason);
+                    continue;
+                }
+
+                if signals::pop_stopped_map(*pid) {
+                    mark_job_member_stopped(sh, *pid, job.gid, report);
+                } else if signals::pop_cont_map(*pid) {
+                    mark_job_member_continued(sh, *pid, job.gid);
+                }
+            }
+        }
+    }
 }
 
 pub mod marker
@@ -31513,7 +31755,7 @@ pub mod path
             } else {
                 return String::new();
             }
-            let home = tools::get_user_home();
+            let home = tools::get::user_home();
             let ss = s.clone();
             let to = format!("$head{}$tail", home);
             let result = re.replace_all(ss.as_str(), to.as_str());
@@ -31599,7 +31841,7 @@ pub mod process
 {
     pub use std::process::{ * };
     /*
-    use libc::c_int;
+    use nix::libc::c_int;
     use nix::Error;
     use std::mem;
     use std::os::fd::RawFd;
@@ -31609,13 +31851,13 @@ pub mod process
     // pub fn getpid() -> i32
     pub fn read_id() -> i32
     {
-        unsafe { libc::getpid() }
+        unsafe { nix::libc::getpid() }
     }
     
     pub fn pipe() -> std::result::Result<(RawFd, RawFd), Error> 
     {
         let mut fds = mem::MaybeUninit::<[c_int; 2]>::uninit();
-        let res = unsafe { libc::pipe(fds.as_mut_ptr() as *mut c_int) };
+        let res = unsafe { nix::libc::pipe(fds.as_mut_ptr() as *mut c_int) };
         Error::result(res)?;
         unsafe { Ok((fds.assume_init()[0], fds.assume_init()[1])) }
     }
@@ -31865,7 +32107,7 @@ pub mod shell
     use crate::types::{self, CommandLine};
 
     // via: https://github.com/clap-rs/term_size-rs/blob/644f28c3a8811e56edcf42036b5e754dbb24a0d7/src/platform/unix.rs
-    use libc::{c_int, c_ulong, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
+    use nix::libc::{c_int, c_ulong, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
     use std::mem::zeroed;
     */
     pub fn split_into_fields
@@ -32211,20 +32453,20 @@ pub mod shell
 
     pub unsafe fn give_terminal_to(gid: i32) -> bool 
     {
-        let mut mask: libc::sigset_t = mem::zeroed();
-        let mut old_mask: libc::sigset_t = mem::zeroed();
+        let mut mask: nix::libc::sigset_t = mem::zeroed();
+        let mut old_mask: nix::libc::sigset_t = mem::zeroed();
 
-        libc::sigemptyset(&mut mask);
-        libc::sigaddset(&mut mask, libc::SIGTSTP);
-        libc::sigaddset(&mut mask, libc::SIGTTIN);
-        libc::sigaddset(&mut mask, libc::SIGTTOU);
-        libc::sigaddset(&mut mask, libc::SIGCHLD);
+        nix::libc::sigemptyset(&mut mask);
+        nix::libc::sigaddset(&mut mask, nix::libc::SIGTSTP);
+        nix::libc::sigaddset(&mut mask, nix::libc::SIGTTIN);
+        nix::libc::sigaddset(&mut mask, nix::libc::SIGTTOU);
+        nix::libc::sigaddset(&mut mask, nix::libc::SIGCHLD);
 
-        let rcode = libc::pthread_sigmask(libc::SIG_BLOCK, &mask, &mut old_mask);
+        let rcode = nix::libc::pthread_sigmask(libc::SIG_BLOCK, &mask, &mut old_mask);
         if rcode != 0 {
             log!("failed to call pthread_sigmask");
         }
-        let rcode = libc::tcsetpgrp(1, gid);
+        let rcode = nix::libc::tcsetpgrp(1, gid);
         let given;
         if rcode == -1 {
             given = false;
@@ -32234,7 +32476,7 @@ pub mod shell
         } else {
             given = true;
         }
-        let rcode = libc::pthread_sigmask(libc::SIG_SETMASK, &old_mask, &mut mask);
+        let rcode = nix::libc::pthread_sigmask(libc::SIG_SETMASK, &old_mask, &mut mask);
         if rcode != 0 {
             log!("failed to call pthread_sigmask");
         }
@@ -32346,7 +32588,7 @@ pub mod shell
                 result.push_str(format!("{}{}", head, sh.previous_status).as_str());
             } else if key == "$" {
                 unsafe {
-                    let val = libc::getpid();
+                    let val = nix::libc::getpid();
                     result.push_str(format!("{}{}", head, val).as_str());
                 }
             } else if let Ok(val) = env::var(&key) {
@@ -32627,7 +32869,7 @@ pub mod shell
             let mut s: String = text.clone();
             let ptn = r"^~(?P<tail>.*)";
             let re = Regex::new(ptn).expect("invalid re ptn");
-            let home = tools::get_user_home();
+            let home = tools::get::user_home();
             let ss = s.clone();
             let to = format!("{}$tail", home);
             let result = re.replace_all(ss.as_str(), to.as_str());
@@ -32738,7 +32980,7 @@ pub mod shell
                         let (term_given, cr) = core::run_pipeline(sh, &c, true, true, false);
                         if term_given {
                             unsafe {
-                                let gid = libc::getpgid(0);
+                                let gid = nix::libc::getpgid(0);
                                 give_terminal_to(gid);
                             }
                         }
@@ -32791,7 +33033,7 @@ pub mod shell
                         let (term_given, _cr) = core::run_pipeline(sh, &c, true, true, false);
                         if term_given {
                             unsafe {
-                                let gid = libc::getpgid(0);
+                                let gid = nix::libc::getpgid(0);
                                 give_terminal_to(gid);
                             }
                         }
@@ -32832,7 +33074,7 @@ pub mod shell
                                 let (term_given, _cr) = core::run_pipeline(sh, &c, true, true, false);
                                 if term_given {
                                     unsafe {
-                                        let gid = libc::getpgid(0);
+                                        let gid = nix::libc::getpgid(0);
                                         give_terminal_to(gid);
                                     }
                                 }
@@ -32907,8 +33149,8 @@ pub mod shell
     fn proc_has_terminal() -> bool 
     {
         unsafe {
-            let tgid = libc::tcgetpgrp(0);
-            let pgid = libc::getpgid(0);
+            let tgid = nix::libc::tcgetpgrp(0);
+            let pgid = nix::libc::getpgid(0);
             tgid == pgid
         }
     }
@@ -34906,4 +35148,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 34909 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 35151 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
