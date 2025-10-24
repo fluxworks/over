@@ -68,6 +68,7 @@ features = ["bundled"]
 version = "0.3"
 features = ["local-offset"]
 */
+#[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate nix;
 #[macro_use] extern crate rand;
@@ -2392,6 +2393,303 @@ features = ["local-offset"]
     (
         ($e:expr) => { unsafe { ::mem::transmute::<_, _>($e) } }
     );
+    /// Writes attributes and formatted text to a `Terminal` or `Screen`.
+    ///
+    /// # Usage
+    ///
+    /// `term_write!` accepts a series of attribute elements and formatted text elements.
+    ///
+    /// [`term_writeln!`] is equivalent, but writes a newline character
+    /// to the end of the formatted text.
+    ///
+    /// Attribute elements are enclosed in square brackets
+    /// and take one of the following forms:
+    ///
+    /// | Element           | Equivalent                        |
+    /// | ----------------- | --------------------------------- |
+    /// | `[red]`           | `term.set_fg(Color::Red)`         |
+    /// | `[#blue]`         | `term.set_bg(Color::Blue)`        |
+    /// | `[bold]`          | `term.add_style(Style::BOLD)`     |
+    /// | `[!bold]`         | `term.remove_style(Style::BOLD)`  |
+    /// | `[reset]`         | `term.clear_attributes()`         |
+    /// | `[!fg]`           | `term.set_fg(None)`               |
+    /// | `[!bg]`           | `term.set_bg(None)`               |
+    /// | `[!style]`        | `term.set_style(None)`            |
+    /// | `[fg=expr]`       | `term.set_fg(expr)`               |
+    /// | `[bg=expr]`       | `term.set_bg(expr)`               |
+    /// | `[style=expr]`    | `term.set_style(expr)`            |
+    /// | `[style+=expr]`   | `term.add_style(expr)`            |
+    /// | `[style-=expr]`   | `term.remove_style(expr)`         |
+    /// | `[theme=expr]`    | `term.set_theme(expr)`            |
+    ///
+    /// Formatted text elements are enclosed in parentheses
+    /// and use Rust [`std::fmt`] functions to write formatted text to the terminal.
+    /// Additionally, a bare string literal may be given and will be written
+    /// directly to the terminal.
+    ///
+    /// | Element           | Equivalent                        |
+    /// | ----------------- | --------------------------------- |
+    /// | `(: expr)`        | `write!(term, "{}", expr)`        |
+    /// | `(? expr)`        | `write!(term, "{:?}", expr)`      |
+    /// | `("format", ...)` | `write!(term, "format", ...)`     |
+    /// | `"literal str"`   | `term.write_str("literal str")`   |
+    ///
+    /// # Examples
+    ///
+    /// ```no_run
+    /// #[macro_use] extern crate mortal;
+    /// # use std::io;
+    /// use mortal::{Color, Style, Theme, Terminal};
+    ///
+    /// # fn main() -> io::Result<()> {
+    /// let term = Terminal::new()?;
+    ///
+    /// term_writeln!(term, [red] "red text" [reset])?;
+    ///
+    /// let color = Color::Green;
+    /// term_writeln!(term, [fg=color] "green text" [reset])?;
+    ///
+    /// let style = Style::BOLD;
+    /// term_writeln!(term, [style=style] "bold text" [reset])?;
+    ///
+    /// let value = 42;
+    /// term_writeln!(term, "The answer is: " [bold] (: value) [reset])?;
+    ///
+    /// let theme = Theme::new(color, None, style);
+    /// term_writeln!(term, [theme=theme] "Green, bold text" [reset])?;
+    /// # Ok(())
+    /// # }
+    /// ```
+    ///
+    /// [`std::fmt`]: https://doc.rust-lang.org/std/fmt/
+    /// [`term_writeln!`]: macro.term_writeln.html
+    #[macro_export]
+    macro_rules! term_write {
+        // Entry rule
+        ( $term:expr , $first:tt $($rest:tt)* ) => {
+            match $term.borrow_term_write_guard() {
+                mut term => {
+                    let init = $crate::macros::Chain::init();
+                    term_write!(@_INTERNAL main: term ; init ; $first $($rest)*)
+                }
+            }
+        };
+
+        // Final rule
+        ( @_INTERNAL main: $term:expr ; $result:expr ; ) => {
+            $result
+        };
+
+        // Color/style rules
+        ( @_INTERNAL main: $term:expr ; $result:expr ; [ $($tt:tt)* ] $($rest:tt)* ) => {
+            term_write!(
+                @_INTERNAL main: $term;
+                term_write!(@_INTERNAL style: $term; $result; $($tt)*);
+                $($rest)*
+            )
+        };
+
+        // Formatting rules
+        ( @_INTERNAL main: $term:expr ; $result:expr ; ( $($tt:tt)* ) $($rest:tt)* ) => {
+            term_write!(
+                @_INTERNAL main: $term;
+                term_write!(@_INTERNAL format: $term; $result; $($tt)*);
+                $($rest)*
+            )
+        };
+        ( @_INTERNAL main: $term:expr ; $result:expr ; $tt:tt $($rest:tt)* ) => {
+            term_write!(
+                @_INTERNAL main: $term;
+                term_write!(@_INTERNAL literal: $term; $result; $tt);
+                $($rest)*
+            )
+        };
+
+        // Set foreground color
+        ( @_INTERNAL style: $term:expr ; $result:expr ; black ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Black))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; blue ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Blue))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; cyan ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Cyan))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; green ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Green))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; magenta ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Magenta))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; red ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Red))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; white ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::White))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; yellow ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($crate::Color::Yellow))
+        };
+
+        // Set background color
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # black ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Black))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # blue ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Blue))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # cyan ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Cyan))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # green ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Green))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # magenta ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Magenta))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # red ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Red))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # white ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::White))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; # yellow ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($crate::Color::Yellow))
+        };
+
+        // Add style
+        ( @_INTERNAL style: $term:expr ; $result:expr ; bold ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.add_style($crate::Style::BOLD))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; italic ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.add_style($crate::Style::ITALIC))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; reverse ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.add_style($crate::Style::REVERSE))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; underline ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.add_style($crate::Style::UNDERLINE))
+        };
+
+        // Remove style
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! bold ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.remove_style($crate::Style::BOLD))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! italic ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.remove_style($crate::Style::ITALIC))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! reverse ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.remove_style($crate::Style::REVERSE))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! underline ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.remove_style($crate::Style::UNDERLINE))
+        };
+
+        // Clear attributes
+        ( @_INTERNAL style: $term:expr ; $result:expr ; reset ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.clear_attributes())
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! fg ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg(None))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! bg ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg(None))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; ! style ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_style(None))
+        };
+
+        // Color/style expressions
+        ( @_INTERNAL style: $term:expr ; $result:expr ; fg = $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_fg($e))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; bg = $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_bg($e))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; style = $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_style($e))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; style += $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.add_style($e))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; style -= $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.remove_style($e))
+        };
+        ( @_INTERNAL style: $term:expr ; $result:expr ; theme = $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.set_theme($e))
+        };
+
+        // std::fmt formatting
+        ( @_INTERNAL format: $term:expr ; $result:expr ; : $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || write!($term, "{}", $e))
+        };
+        ( @_INTERNAL format: $term:expr ; $result:expr ; ? $e:expr ) => {
+            $crate::macros::Chain::chain(
+                $result, || write!($term, "{:?}", $e))
+        };
+        ( @_INTERNAL format: $term:expr ; $result:expr ; $($tt:tt)* ) => {
+            $crate::macros::Chain::chain(
+                $result, || write!($term, $($tt)*))
+        };
+
+        // Literal formatting
+        ( @_INTERNAL literal: $term:expr ; $result:expr ; $lit:tt ) => {
+            $crate::macros::Chain::chain(
+                $result, || $term.write_str(concat!($lit)))
+        };
+    }
+
+    /// Writes attributes and formatted text to a `Terminal` or `Screen`.
+    ///
+    /// Formatted output is followed by a newline.
+    ///
+    /// See [`term_write`] for a description of macro syntax and example usage.
+    ///
+    /// [`term_write`]: macro.term_write.html
+    #[macro_export]
+    macro_rules! term_writeln {
+        ( $term:expr ) => {
+            term_write!($term, "\n")
+        };
+        ( $term:expr , $($tt:tt)* ) => {
+            term_write!($term, $($tt)* "\n")
+        };
+    }
 }
 
 pub mod api
@@ -2402,10 +2700,11 @@ pub mod api
     {
         io::{ self, Error, Write },
         os::fd::{ AsRawFd },
+        os::unix::prelude::RawFd,
         path::{ Path },
         regex::{ Regex },
         shell::{ Shell },
-        types::{ Command, CommandLine, CommandResult },
+        types::{ * },
         *,
     };
     /*
@@ -3307,6 +3606,629 @@ pub mod api
             let info = ":: vox: invalid option";
             ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
             cr
+        }
+    }
+
+    fn try_run_builtin_in_subprocess(
+        sh: &mut Shell,
+        cl: &CommandLine,
+        idx_cmd: usize,
+        capture: bool,
+    ) -> Option<i32> {
+        if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture) {
+            return Some(cr.status);
+        }
+        None
+    }
+
+    pub fn try_run_builtin
+    (
+        sh: &mut Shell,
+        cl: &CommandLine,
+        idx_cmd: usize,
+        capture: bool,
+    ) -> Option<CommandResult>
+    {
+        let capture = capture && idx_cmd + 1 == cl.commands.len();
+
+        if idx_cmd >= cl.commands.len() {
+            println_stderr!("unexpected error in try_run_builtin");
+            return None;
+        }
+
+        let cmd = &cl.commands[idx_cmd];
+        let tokens = cmd.tokens.clone();
+        let cname = tokens[0].1.clone();
+        if cname == "alias" {
+            let cr  = ::api::run_alias(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "bg" {
+            let cr  = ::api::run_bg(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "cd" {
+            let cr  = ::api::run_cd(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "info" {
+            let cr  = ::api::run_info(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "exec" {
+            let cr  = ::api::run_exec(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "exit" {
+            let cr  = ::api::run_exit(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "export" {
+            let cr  = ::api::run_export(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "fg" {
+            let cr  = ::api::run_fg(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "history" {
+            let cr  = ::api::run_history(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "jobs" {
+            let cr  = ::api::run_jobs(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "minfd" {
+            let cr  = ::api::run_minfd(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "read" {
+            let cr  = ::api::run_read(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "set" {
+            let cr  = ::api::run_set(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "source" {
+            let cr  = ::api::run_source(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "ulimit" {
+            let cr  = ::api::run_ulimit(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "unalias" {
+            let cr  = ::api::run_unalias(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "unset" {
+            let cr  = ::api::run_unset(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "unpath" {
+            let cr  = ::api::run_unpath(sh, cl, cmd, capture);
+            return Some(cr);
+        } else if cname == "vox" {
+            let cr  = ::api::run_vox(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        None
+    }
+    /// Run a pipeline (e.g. `echo hi | wc -l`)
+    pub fn run_pipeline( sh:&mut shell::Shell, cl: &CommandLine, tty: bool, capture: bool, log_cmd: bool ) -> 
+    (bool, CommandResult)
+    {
+        let mut term_given = false;
+        if cl.background && capture {
+            println_stderr!("cicada: cannot capture output of background cmd");
+            return (term_given, CommandResult::error());
+        }
+        /*
+        if let Some(cr) = try_run_calculator(&cl.line, capture) {
+            return (term_given, cr);
+        } */
+
+        // FIXME: move func-run into run single command
+        if let Some(cr) = try_run_func(sh, cl, capture, log_cmd) {
+            return (term_given, cr);
+        }
+
+        if log_cmd {
+            log!("run: {}", cl.line);
+        }
+
+        let length = cl.commands.len();
+        if length == 0 {
+            println!("cicada: invalid command: cmds with empty length");
+            return (false, CommandResult::error());
+        }
+
+        let mut pipes = Vec::new();
+        let mut errored_pipes = false;
+        for _ in 0..length - 1 {
+            match ::process::pipe() {
+                Ok(fds) => pipes.push(fds),
+                Err(e) => {
+                    errored_pipes = true;
+                    println_stderr!("cicada: pipeline1: {}", e);
+                    break;
+                }
+            }
+        }
+
+        if errored_pipes {
+            // release fds that already created when errors occurred
+            for fds in pipes {
+                process::close(fds.0);
+                process::close(fds.1);
+            }
+            return (false, CommandResult::error());
+        }
+
+        if pipes.len() + 1 != length {
+            println!("cicada: invalid command: unmatched pipes count");
+            return (false, CommandResult::error());
+        }
+
+        let mut pgid: i32 = 0;
+        let mut fg_pids: Vec<i32> = Vec::new();
+
+        let isatty = if tty {
+            unsafe { nix::libc::isatty(1) == 1 }
+        } else {
+            false
+        };
+        let options = CommandOptions {
+            isatty,
+            capture_output: capture,
+            background: cl.background,
+            envs: cl.envs.clone(),
+        };
+
+        let mut fds_capture_stdout = None;
+        let mut fds_capture_stderr = None;
+        if capture {
+            match pipe() {
+                Ok(fds) => fds_capture_stdout = Some(fds),
+                Err(e) => {
+                    println_stderr!("cicada: pipeline2: {}", e);
+                    return (false, CommandResult::error());
+                }
+            }
+            match pipe() {
+                Ok(fds) => fds_capture_stderr = Some(fds),
+                Err(e) => {
+                    if let Some(fds) = fds_capture_stdout {
+                        libs::close(fds.0);
+                        libs::close(fds.1);
+                    }
+                    println_stderr!("cicada: pipeline3: {}", e);
+                    return (false, CommandResult::error());
+                }
+            }
+        }
+
+        let mut cmd_result = CommandResult::new();
+        for i in 0..length {
+            let child_id: i32 = run_single_program(
+                sh,
+                cl,
+                i,
+                &options,
+                &mut pgid,
+                &mut term_given,
+                &mut cmd_result,
+                &pipes,
+                &fds_capture_stdout,
+                &fds_capture_stderr,
+            );
+
+            if child_id > 0 && !cl.background {
+                fg_pids.push(child_id);
+            }
+        }
+
+        if cl.is_single_and_builtin() {
+            return (false, cmd_result);
+        }
+
+        if cl.background {
+            if let Some(job) = sh.get_job_by_gid(pgid) {
+                println_stderr!("[{}] {}", job.id, job.gid);
+            }
+        }
+
+        if !fg_pids.is_empty() {
+            let _cr = jobc::wait_fg_job(sh, pgid, &fg_pids);
+            // for capture commands, e.g. `echo foo` in `echo "hello $(echo foo)"
+            // the cmd_result is already built in loop calling run_single_program()
+            // above.
+            if !capture {
+                cmd_result = _cr;
+            }
+        }
+        (term_given, cmd_result)
+    }
+
+    pub fn try_run_func
+    (
+        sh: &mut Shell,
+        cl: &CommandLine,
+        capture: bool,
+        log_cmd: bool,
+    ) -> Option<CommandResult> 
+    {
+        if cl.is_empty() {
+            return None;
+        }
+
+        let command = &cl.commands[0];
+        if let Some(func_body) = sh.get_func(&command.tokens[0].1) {
+            let mut args = vec!["cicada".to_string()];
+            for token in &command.tokens {
+                args.push(token.1.to_string());
+            }
+            if log_cmd {
+                log!("run func: {:?}", &args);
+            }
+            let cr_list = scripts::run_lines(sh, &func_body, &args, capture);
+            let mut stdout = String::new();
+            let mut stderr = String::new();
+            for cr in cr_list {
+                stdout.push_str(cr.stdout.trim());
+                stdout.push(' ');
+                stderr.push_str(cr.stderr.trim());
+                stderr.push(' ');
+            }
+            let mut cr = CommandResult::new();
+            cr.stdout = stdout;
+            cr.stderr = stderr;
+            return Some(cr);
+        }
+        None
+    }
+    /// Run a single command.
+    fn run_single_program
+    (
+        sh: &mut shell::Shell,
+        cl: &CommandLine,
+        idx_cmd: usize,
+        options: &CommandOptions,
+        pgid: &mut i32,
+        term_given: &mut bool,
+        cmd_result: &mut CommandResult,
+        pipes: &[(RawFd, RawFd)],
+        fds_capture_stdout: &Option<(RawFd, RawFd)>,
+        fds_capture_stderr: &Option<(RawFd, RawFd)>,
+    ) -> i32 
+    {
+        let capture = options.capture_output;
+        if cl.is_single_and_builtin() {
+            if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture) {
+                *cmd_result = cr;
+                return unsafe { libc::getpid() };
+            }
+
+            println_stderr!("cicada: error when run singler builtin");
+            log!("error when run singler builtin: {:?}", cl);
+            return 1;
+        }
+
+        let pipes_count = pipes.len();
+        let mut fds_stdin = None;
+        let cmd = cl.commands.get(idx_cmd).unwrap();
+
+        if cmd.has_here_string() {
+            match pipe() {
+                Ok(fds) => fds_stdin = Some(fds),
+                Err(e) => {
+                    println_stderr!("cicada: pipeline4: {}", e);
+                    return 1;
+                }
+            }
+        }
+
+        match libs::fork::fork() {
+            Ok(ForkResult::Child) => {
+                unsafe {
+                    // child processes need to handle ctrl-Z
+                    libc::signal(libc::SIGTSTP, libc::SIG_DFL);
+                    libc::signal(libc::SIGQUIT, libc::SIG_DFL);
+                }
+
+                // close pipes unrelated to current child (left side)
+                if idx_cmd > 0 {
+                    for i in 0..idx_cmd - 1 {
+                        let fds = pipes[i];
+                        libs::close(fds.0);
+                        libs::close(fds.1);
+                    }
+                }
+                // close pipes unrelated to current child (right side)
+                for i in idx_cmd + 1..pipes_count {
+                    let fds = pipes[i];
+                    libs::close(fds.0);
+                    libs::close(fds.1);
+                }
+                // close pipe fds for capturing stdout/stderr
+                // (they're only used in last child)
+                if idx_cmd < pipes_count {
+                    if let Some(fds) = fds_capture_stdout {
+                        libs::close(fds.0);
+                        libs::close(fds.1);
+                    }
+                    if let Some(fds) = fds_capture_stderr {
+                        libs::close(fds.0);
+                        libs::close(fds.1);
+                    }
+                }
+
+                if idx_cmd == 0 {
+                    unsafe {
+                        let pid = libc::getpid();
+                        libc::setpgid(0, pid);
+                    }
+                } else {
+                    unsafe {
+                        libc::setpgid(0, *pgid);
+                    }
+                }
+
+                // (in child) replace stdin/stdout with read/write ends of pipe
+                if idx_cmd > 0 {
+                    let fds_prev = pipes[idx_cmd - 1];
+                    libs::dup2(fds_prev.0, 0);
+                    libs::close(fds_prev.0);
+                    libs::close(fds_prev.1);
+                }
+                if idx_cmd < pipes_count {
+                    let fds = pipes[idx_cmd];
+                    libs::dup2(fds.1, 1);
+                    libs::close(fds.1);
+                    libs::close(fds.0);
+                }
+
+                if cmd.has_redirect_from() {
+                    if let Some(redirect_from) = &cmd.redirect_from {
+                        let fd = tools::get_fd_from_file(&redirect_from.clone().1);
+                        if fd == -1 {
+                            process::exit(1);
+                        }
+
+                        libs::dup2(fd, 0);
+                        libs::close(fd);
+                    }
+                }
+
+                if cmd.has_here_string() {
+                    if let Some(fds) = fds_stdin {
+                        libs::close(fds.1);
+                        libs::dup2(fds.0, 0);
+                        libs::close(fds.0);
+                    }
+                }
+
+                let mut stdout_redirected = false;
+                let mut stderr_redirected = false;
+                for item in &cmd.redirects_to {
+                    let from_ = &item.0;
+                    let op_ = &item.1;
+                    let to_ = &item.2;
+                    if to_ == "&1" && from_ == "2" {
+                        if idx_cmd < pipes_count {
+                            libs::dup2(1, 2);
+                        } else if !options.capture_output {
+                            let fd = libs::dup(1);
+                            if fd == -1 {
+                                println_stderr!("cicada: dup error");
+                                process::exit(1);
+                            }
+                            libs::dup2(fd, 2);
+                        } else {
+                            // note: capture output with redirections does not
+                            // make much sense
+                        }
+                    } else if to_ == "&2" && from_ == "1" {
+                        if idx_cmd < pipes_count || !options.capture_output {
+                            let fd = libs::dup(2);
+                            if fd == -1 {
+                                println_stderr!("cicada: dup error");
+                                process::exit(1);
+                            }
+                            libs::dup2(fd, 1);
+                        } else {
+                            // note: capture output with redirections does not
+                            // make much sense
+                        }
+                    } else {
+                        let append = op_ == ">>";
+                        match tools::create_raw_fd_from_file(to_, append) {
+                            Ok(fd) => {
+                                if fd == -1 {
+                                    println_stderr!("cicada: fork: fd error");
+                                    process::exit(1);
+                                }
+
+                                if from_ == "1" {
+                                    libs::dup2(fd, 1);
+                                    stdout_redirected = true;
+                                } else {
+                                    libs::dup2(fd, 2);
+                                    stderr_redirected = true;
+                                }
+                            }
+                            Err(e) => {
+                                println_stderr!("cicada: fork: {}", e);
+                                process::exit(1);
+                            }
+                        }
+                    }
+                }
+
+                // capture output of last process if needed.
+                if idx_cmd == pipes_count && options.capture_output {
+                    if !stdout_redirected {
+                        if let Some(fds) = fds_capture_stdout {
+                            libs::close(fds.0);
+                            libs::dup2(fds.1, 1);
+                            libs::close(fds.1);
+                        }
+                    }
+                    if !stderr_redirected {
+                        if let Some(fds) = fds_capture_stderr {
+                            libs::close(fds.0);
+                            libs::dup2(fds.1, 2);
+                            libs::close(fds.1);
+                        }
+                    }
+                }
+
+                if cmd.is_builtin() {
+                    if let Some(status) = try_run_builtin_in_subprocess(sh, cl, idx_cmd, capture) {
+                        process::exit(status);
+                    }
+                }
+
+                // our strings do not have '\x00' bytes in them,
+                // we can use CString::new().expect() safely.
+                let mut c_envs: Vec<_> = env::vars()
+                    .map(|(k, v)| {
+                        CString::new(format!("{}={}", k, v).as_str()).expect("CString error")
+                    })
+                    .collect();
+                for (key, value) in cl.envs.iter() {
+                    c_envs.push(
+                        CString::new(format!("{}={}", key, value).as_str()).expect("CString error"),
+                    );
+                }
+
+                let program = &cmd.tokens[0].1;
+                let path = if program.contains('/') {
+                    program.clone()
+                } else {
+                    libs::path::find_file_in_path(program, true)
+                };
+                if path.is_empty() {
+                    println_stderr!("cicada: {}: command not found", program);
+                    process::exit(127);
+                }
+
+                let c_program = CString::new(path.as_str()).expect("CString::new failed");
+                let c_args: Vec<_> = cmd
+                    .tokens
+                    .iter()
+                    .map(|x| CString::new(x.1.as_str()).expect("CString error"))
+                    .collect();
+
+                let c_args: Vec<&CStr> = c_args.iter().map(|x| x.as_c_str()).collect();
+                let c_envs: Vec<&CStr> = c_envs.iter().map(|x| x.as_c_str()).collect();
+                match execve(&c_program, &c_args, &c_envs) {
+                    Ok(_) => {}
+                    Err(e) => match e {
+                        nix::Error::ENOEXEC => {
+                            println_stderr!("cicada: {}: exec format error (ENOEXEC)", program);
+                        }
+                        nix::Error::ENOENT => {
+                            println_stderr!("cicada: {}: file does not exist", program);
+                        }
+                        nix::Error::EACCES => {
+                            println_stderr!("cicada: {}: Permission denied", program);
+                        }
+                        _ => {
+                            println_stderr!("cicada: {}: {:?}", program, e);
+                        }
+                    },
+                }
+
+                process::exit(1);
+            }
+            Ok(ForkResult::Parent { child, .. }) => {
+                let pid: i32 = child.into();
+                if idx_cmd == 0 {
+                    *pgid = pid;
+                    unsafe {
+                        // we need to wait pgid of child set to itself,
+                        // before give terminal to it (for macos).
+                        // 1. this loop causes `bash`, `htop` etc to go `T` status
+                        //    immediate after start on linux (ubuntu).
+                        // 2. but on mac, we need this loop, otherwise commands
+                        //    like `vim` will go to `T` status after start.
+                        if cfg!(target_os = "macos") {
+                            loop {
+                                let _pgid = libc::getpgid(pid);
+                                if _pgid == pid {
+                                    break;
+                                }
+                            }
+                        }
+
+                        if sh.has_terminal && options.isatty && !cl.background {
+                            *term_given = shell::give_terminal_to(pid);
+                        }
+                    }
+                }
+
+                if options.isatty && !options.capture_output {
+                    let _cmd = parsers::parser_line::tokens_to_line(&cmd.tokens);
+                    sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background);
+                }
+
+                if let Some(redirect_from) = &cmd.redirect_from {
+                    if redirect_from.0 == "<<<" {
+                        if let Some(fds) = fds_stdin {
+                            unsafe {
+                                libs::close(fds.0);
+
+                                let mut f = File::from_raw_fd(fds.1);
+                                match f.write_all(redirect_from.1.clone().as_bytes()) {
+                                    Ok(_) => {}
+                                    Err(e) => println_stderr!("cicada: write_all: {}", e),
+                                }
+                                match f.write_all(b"\n") {
+                                    Ok(_) => {}
+                                    Err(e) => println_stderr!("cicada: write_all: {}", e),
+                                }
+                            }
+                        }
+                    }
+                }
+
+                // (in parent) close unused pipe ends
+                if idx_cmd < pipes_count {
+                    let fds = pipes[idx_cmd];
+                    libs::close(fds.1);
+                }
+                if idx_cmd > 0 {
+                    // close pipe end only after dupped in the child
+                    let fds = pipes[idx_cmd - 1];
+                    libs::close(fds.0);
+                }
+
+                if idx_cmd == pipes_count && options.capture_output {
+                    let mut s_out = String::new();
+                    let mut s_err = String::new();
+
+                    unsafe {
+                        if let Some(fds) = fds_capture_stdout {
+                            libs::close(fds.1);
+
+                            let mut f = File::from_raw_fd(fds.0);
+                            match f.read_to_string(&mut s_out) {
+                                Ok(_) => {}
+                                Err(e) => println_stderr!("cicada: readstr: {}", e),
+                            }
+                        }
+                        if let Some(fds) = fds_capture_stderr {
+                            libs::close(fds.1);
+                            let mut f_err = File::from_raw_fd(fds.0);
+                            match f_err.read_to_string(&mut s_err) {
+                                Ok(_) => {}
+                                Err(e) => println_stderr!("cicada: readstr: {}", e),
+                            }
+                        }
+                    }
+
+                    *cmd_result = CommandResult {
+                        gid: *pgid,
+                        status: 0,
+                        stdout: s_out.clone(),
+                        stderr: s_err.clone(),
+                    };
+                }
+
+                pid
+            }
+
+            Err(_) => {
+                println_stderr!("Fork failed");
+                *cmd_result = CommandResult::error();
+                0
+            }
         }
     }
 
@@ -7151,10 +8073,19 @@ pub mod is
         is_combining_mark(ch)
     }
     //pub fn is_wide(ch: char) -> bool
-    pub fn is_wide(ch: char) -> bool
+    pub fn wide(ch: char) -> bool
     {
         //use ::system::util::char_width;
         char::width(ch) == Some(2)
+    }
+    // pub fn is_visible(ch: char) -> bool
+    pub fn visible(ch: char) -> bool
+    {
+        match ch
+        {
+            '\t' | '\r' | '\n' => true,
+            _ => char::width(ch).unwrap_or(0) != 0
+        }
     }
 }
 
@@ -21774,6 +22705,99 @@ pub mod ops
 pub mod option
 {
     pub use std::option::{ * };
+
+    use ::
+    {
+        *
+    };
+
+    /// Extension trait providing additional methods for `Option`.
+    pub trait OptionExt<T>
+    {
+        /// Returns `true` if the option is a [`Some`] value containing the given value.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use option_ext::OptionExt;
+        ///
+        /// let x: Option<u32> = Some(2);
+        /// assert_eq!(x.contains(&2), true);
+        ///
+        /// let x: Option<u32> = Some(3);
+        /// assert_eq!(x.contains(&2), false);
+        ///
+        /// let x: Option<u32> = None;
+        /// assert_eq!(x.contains(&2), false);
+        /// ```
+        #[must_use]
+        fn contains<U>(&self, x: &U) -> bool where U: PartialEq<T>;
+
+        /// Returns the result from applying the function `f` to the contained value if the option is [`Some`],
+        /// or returns provided `default` value if the option is [`None`].
+        ///
+        /// The `f` argument of `map_or2` is only evaluated if the option is [`Some`].
+        /// The `default` argument of `map_or2` is always evaluated – even if the option is [`Some`].
+        /// Use [`map_or_else2`] to avoid evaluating the `default` argument.
+        ///
+        /// [`map_or_else2`]: OptionExt::map_or_else2
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use option_ext::OptionExt;
+        ///
+        /// let x = Some("bar");
+        /// assert_eq!(x.map_or2(|v| v.len(), 42), 3);
+        ///
+        /// let x: Option<&str> = None;
+        /// assert_eq!(x.map_or2(|v| v.len(), 42), 42);
+        /// ```
+        #[must_use]
+        fn map_or2<U, F: FnOnce(T) -> U>(self, f: F, default: U) -> U;
+
+        /// Returns the result from applying the function `f` to the contained value if the option is [`Some`],
+        /// or returns the result from evaluating the provided function `default` if the option is [`None`].
+        ///
+        /// The `f` argument of `map_or_else2` is only evaluated if the option is [`Some`].
+        /// The `default` argument of `map_or_else2` is only evaluated if the option is [`None`].
+        /// Use [`map_or2`] to always evaluate the `default` argument.
+        ///
+        /// [`map_or2`]: OptionExt::map_or2
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use option_ext::OptionExt;
+        ///
+        /// let k = 23;
+        ///
+        /// let x = Some("bar");
+        /// assert_eq!(x.map_or_else2(|v| v.len(), || 2 * k), 3);
+        ///
+        /// let x: Option<&str> = None;
+        /// assert_eq!(x.map_or_else2(|v| v.len(), || 2 * k), 46);
+        /// ```
+        #[must_use]
+        fn map_or_else2<U, F: FnOnce(T) -> U, D: FnOnce() -> U>(self, f: F, default: D) -> U;
+    }
+
+    impl<T> OptionExt<T> for Option<T>
+    {
+        fn contains<U>(&self, x: &U) -> bool where 
+        U:PartialEq<T>
+        {
+            match *self
+            {
+                Some(ref y) => x == y,
+                None => false,
+            }
+        }
+
+        #[inline] fn map_or2<U, F: FnOnce(T) -> U>(self, f: F, default: U) -> U { self.map_or(default, f) }
+
+        #[inline] fn map_or_else2<U, F: FnOnce(T) -> U, D: FnOnce() -> U>(self, f: F, default: D) -> U { self.map_or_else(default, f) }
+    }
 }
 
 pub mod os
@@ -21833,6 +22857,8 @@ pub mod parses
         Provides a configurable, concurrent, extensible, interactive input reader for Unix terminals and Windows console.*/
         use ::
         {
+            regex::{ Regex },
+            types::{ * },
             *,
         };
         /*    
@@ -21843,21 +22869,25 @@ pub mod parses
         winapi = { version = "0.3", features = 
         [ "combaseapi", "minwindef", "ntdef", "shlobj", "winbase", "wincon", "winerror", "winuser" ] }
 
-        pub use crate::command::Command;
-        pub use crate::complete::{Completer, Completion, Suffix};
-        pub use crate::function::Function;
-        pub use crate::interface::Interface;
-        pub use crate::prompter::Prompter;
-        pub use crate::reader::{Reader, ReadResult};
-        pub use crate::terminal::{DefaultTerminal, Signal, Terminal};
-        pub use crate::writer::Writer;
+        
 
         use regex::Regex;
 
         use crate::libs;
         use crate::tools;
-        use crate::types::{LineInfo, Redirection, Tokens};
         */
+        pub use self::
+        {
+            command::Command,
+            complete::{Completer, Completion, Suffix},
+            function::Function,
+            interface::Interface,
+            prompter::Prompter,
+            reader::{Reader, ReadResult},
+            terminal::{DefaultTerminal, Signal, Terminal},
+            writer::Writer,
+        };
+
         pub mod chars
         {
             /*!
@@ -23085,7 +24115,8 @@ pub mod parses
             {
                 let mut chars = s.char_indices();
 
-                loop {
+                loop 
+                {
                     let mut clone = chars.clone();
 
                     match clone.next() {
@@ -23200,9 +24231,10 @@ pub mod parses
                     self.lock_reader().read_line()
                 }
                 /// Performs one step of the interactive `read_line` loop.
-                pub fn read_line_step(&self, timeout: Option<Duration>)
-                        -> io::Result<Option<ReadResult>> {
-                    self.lock_reader().read_line_step(timeout)
+                pub fn read_line_step(&self, timeout: Option<Duration>) -> io::Result<Option<ReadResult>>
+                {
+                    /*self.lock_reader().read_line_step(timeout)*/
+                    Ok( None )
                 }
                 /// Cancels an in-progress `read_line` operation.
                 pub fn cancel_read_line(&self) -> io::Result<()> {
@@ -26464,6 +27496,7 @@ pub mod parses
                 *,
             };
             use super::system::{ self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard, CursorMode, Signal, SignalSet, Size };
+            pub use ::system::{CursorMode, Signal, SignalSet, Size};
             /*
             */
             /// Default `Terminal` interface
@@ -30820,14 +31853,16 @@ pub mod parses
 
 pub mod path
 {
+    use io::ErrorKind;
     pub use std::path::{ * };
     use ::
     {
         borrow::{ Cow },
         cmp::{ self, Ordering },
         error::{ Error },
-        fs::{ self, DirEntry },
+        fs::{ self, read_dir, DirEntry },
         ops::{ Deref },
+        os::unix::fs::PermissionsExt,
         regex::{ Regex },
         str::{ FromStr },
         *,
@@ -30877,18 +31912,26 @@ pub mod path
 
     pub fn find_file_in_path(filename: &str, exec: bool) -> String 
     {
-        let env_path = match env::var("PATH") {
+        let env_path = match env::var("PATH")
+        {
             Ok(x) => x,
-            Err(e) => {
+            Err(e) =>
+            {
                 println_stderr!(":: error with env PATH: {:?}", e);
                 return String::new();
             }
         };
+
         let vec_path = env::split_paths(&env_path);
-        for p in vec_path {
-            match read_dir(&p) {
-                Ok(list) => {
-                    for entry in list.flatten() {
+        
+        for p in vec_path 
+        {
+            match read_dir(&p)
+            {
+                Ok(list) =>
+                {
+                    for entry in list.flatten() 
+                    {
                         if let Ok(name) = entry.file_name().into_string() {
                             if name != filename {
                                 continue;
@@ -30913,7 +31956,9 @@ pub mod path
                         }
                     }
                 }
-                Err(e) => {
+
+                Err(e) =>
+                {
                     if e.kind() == ErrorKind::NotFound {
                         continue;
                     }
@@ -30921,6 +31966,7 @@ pub mod path
                 }
             }
         }
+
         String::new()
     }
 
@@ -31839,63 +32885,52 @@ pub mod path
             */
             use ::
             {
+                collections::HashMap,
+                ffi::OsString,
+                io::{self, Read},
+                os::unix::ffi::OsStringExt,
+                option::{ OptionExt },
+                path::{ is_absolute_path, Path, PathBuf },
                 *,
             };
             /*
-            use std::collections::HashMap;
-            use std::env;
-            use std::path::{Path, PathBuf};
-
-            use super::{home_dir, is_absolute_path};
-            use super::xdg_user_dirs;
-            use std::collections::HashMap;
-            use std::ffi::OsString;
-            use std::fs;
-            use std::io::{self, Read};
-            use std::os::unix::ffi::OsStringExt;
-            use std::path::{Path, PathBuf};
-            use std::str;
-
-            use option_ext::OptionExt;
-
-            use std::env;
-            use std::path::PathBuf;
             */
-            pub fn home_dir()         -> Option<PathBuf> { dirs_sys::home_dir() }
-            pub fn cache_dir()        -> Option<PathBuf> { env::var_os("XDG_CACHE_HOME") .and_then(dirs_sys::is_absolute_path).or_else(|| home_dir().map(|h| h.join(".cache"))) }
-            pub fn config_dir()       -> Option<PathBuf> { env::var_os("XDG_CONFIG_HOME").and_then(dirs_sys::is_absolute_path).or_else(|| home_dir().map(|h| h.join(".config"))) }
-            pub fn config_local_dir() -> Option<PathBuf> { config_dir() }
-            pub fn data_dir()         -> Option<PathBuf> { env::var_os("XDG_DATA_HOME")  .and_then(dirs_sys::is_absolute_path).or_else(|| home_dir().map(|h| h.join(".local/share"))) }
-            pub fn data_local_dir()   -> Option<PathBuf> { data_dir() }
-            pub fn preference_dir()   -> Option<PathBuf> { config_dir() }
-            pub fn runtime_dir()      -> Option<PathBuf> { env::var_os("XDG_RUNTIME_DIR").and_then(dirs_sys::is_absolute_path) }
-            pub fn state_dir()        -> Option<PathBuf> { env::var_os("XDG_STATE_HOME") .and_then(dirs_sys::is_absolute_path).or_else(|| home_dir().map(|h| h.join(".local/state"))) }
-            pub fn executable_dir()   -> Option<PathBuf> { env::var_os("XDG_BIN_HOME")   .and_then(dirs_sys::is_absolute_path).or_else(|| home_dir().map(|h| h.join(".local/bin"))) }
-
-            pub fn audio_dir()        -> Option<PathBuf> { dirs_sys::user_dir("MUSIC") }
-            pub fn desktop_dir()      -> Option<PathBuf> { dirs_sys::user_dir("DESKTOP") }
-            pub fn document_dir()     -> Option<PathBuf> { dirs_sys::user_dir("DOCUMENTS") }
-            pub fn download_dir()     -> Option<PathBuf> { dirs_sys::user_dir("DOWNLOAD") }
-            pub fn font_dir()         -> Option<PathBuf> { data_dir().map(|d| d.join("fonts")) }
-            pub fn picture_dir()      -> Option<PathBuf> { dirs_sys::user_dir("PICTURES") }
-            pub fn public_dir()       -> Option<PathBuf> { dirs_sys::user_dir("PUBLICSHARE") }
-            pub fn template_dir()     -> Option<PathBuf> { dirs_sys::user_dir("TEMPLATES") }
-            pub fn video_dir()        -> Option<PathBuf> { dirs_sys::user_dir("VIDEOS") }
+            pub fn home_dir()         -> Option<PathBuf> { None }
+            pub fn cache_dir()        -> Option<PathBuf> { None }
+            pub fn config_dir()       -> Option<PathBuf> { None }
+            pub fn config_local_dir() -> Option<PathBuf> { None }
+            pub fn data_dir()         -> Option<PathBuf> { None }
+            pub fn data_local_dir()   -> Option<PathBuf> { None }
+            pub fn preference_dir()   -> Option<PathBuf> { None }
+            pub fn runtime_dir()      -> Option<PathBuf> { None }
+            pub fn state_dir()        -> Option<PathBuf> { None }
+            pub fn executable_dir()   -> Option<PathBuf> { None }
+            pub fn audio_dir()        -> Option<PathBuf> { None }
+            pub fn desktop_dir()      -> Option<PathBuf> { None }
+            pub fn document_dir()     -> Option<PathBuf> { None }
+            pub fn download_dir()     -> Option<PathBuf> { None }
+            pub fn font_dir()         -> Option<PathBuf> { None }
+            pub fn picture_dir()      -> Option<PathBuf> { None }
+            pub fn public_dir()       -> Option<PathBuf> { None }
+            pub fn template_dir()     -> Option<PathBuf> { None }
+            pub fn video_dir()        -> Option<PathBuf> { None }
 
 
             /// Returns all XDG user directories obtained from $(XDG_CONFIG_HOME)/user-dirs.dirs.
-            pub fn all(home_dir_path: &Path, user_dir_file_path: &Path) -> HashMap<String, PathBuf> {
+            pub fn all(home_dir_path: &Path, user_dir_file_path: &Path) -> HashMap<String, PathBuf>
+            {
                 let bytes = read_all(user_dir_file_path).unwrap_or(Vec::new());
                 parse_user_dirs(home_dir_path, None, &bytes)
             }
-
             /// Returns a single XDG user directory obtained from $(XDG_CONFIG_HOME)/user-dirs.dirs.
-            pub fn single(home_dir_path: &Path, user_dir_file_path: &Path, user_dir_name: &str) -> HashMap<String, PathBuf> {
+            pub fn single(home_dir_path: &Path, user_dir_file_path: &Path, user_dir_name: &str) -> HashMap<String, PathBuf>
+            {
                 let bytes = read_all(user_dir_file_path).unwrap_or(Vec::new());
                 parse_user_dirs(home_dir_path, Some(user_dir_name), &bytes)
             }
 
-            fn parse_user_dirs(home_dir: &Path, user_dir: Option<&str>, bytes: &[u8]) -> HashMap<String, PathBuf> {
+            fn parse_user_dirs(home_dir: &Path, user_dir: Option<&str>, bytes: &[u8]) -> HashMap<String, PathBuf>
+            {
                 let mut user_dirs = HashMap::new();
 
                 for line in bytes.split(|b| *b == b'\n') {
@@ -31964,24 +32999,24 @@ pub mod path
 
                 user_dirs
             }
-
             /// Reads the entire contents of a file into a byte vector.
-            fn read_all(path: &Path) -> io::Result<Vec<u8>> {
+            fn read_all(path: &Path) -> io::Result<Vec<u8>>
+            {
                 let mut file = fs::File::open(path)?;
                 let mut bytes = Vec::with_capacity(1024);
                 file.read_to_end(&mut bytes)?;
                 Ok(bytes)
             }
-
             /// Returns bytes before and after first occurrence of separator.
-            fn split_once(bytes: &[u8], separator: u8) -> Option<(&[u8], &[u8])> {
+            fn split_once(bytes: &[u8], separator: u8) -> Option<(&[u8], &[u8])>
+            {
                 bytes.iter().position(|b| *b == separator).map(|i| {
                     (&bytes[..i], &bytes[i+1..])
                 })
             }
-
             /// Returns a slice with leading and trailing <blank> characters removed.
-            fn trim_blank(bytes: &[u8]) -> &[u8] {
+            fn trim_blank(bytes: &[u8]) -> &[u8]
+            {
                 // Trim leading <blank> characters.
                 let i = bytes.iter().cloned().take_while(|b| *b == b' ' || *b == b'\t').count();
                 let bytes = &bytes[i..];
@@ -31990,9 +33025,9 @@ pub mod path
                 let i = bytes.iter().cloned().rev().take_while(|b| *b == b' ' || *b == b'\t').count();
                 &bytes[..bytes.len()-i]
             }
-
             /// Unescape bytes escaped with POSIX shell double-quotes rules (as used by xdg-user-dirs-update).
-            fn shell_unescape(escaped: &[u8]) -> Vec<u8> {
+            fn shell_unescape(escaped: &[u8]) -> Vec<u8>
+            {
                 // We assume that byte string was created by xdg-user-dirs-update which
                 // escapes all characters that might potentially have special meaning,
                 // so there is no need to check if backslash is actually followed by
@@ -32014,21 +33049,16 @@ pub mod path
                 unescaped
             }
 
-            fn user_dir_file(home_dir: &Path) -> PathBuf {
+            fn user_dir_file(home_dir: &Path) -> PathBuf
+            {
                 env::var_os("XDG_CONFIG_HOME").and_then(is_absolute_path).unwrap_or_else(|| home_dir.join(".config")).join("user-dirs.dirs")
             }
+            
+            pub fn user_dir(user_dir_name: &str) -> Option<PathBuf> { None }
 
-            // this could be optimized further to not create a map and instead retrieve the requested path only
-            pub fn user_dir(user_dir_name: &str) -> Option<PathBuf> {
-                if let Some(home_dir) = home_dir() {
-                    xdg_user_dirs::single(&home_dir, &user_dir_file(&home_dir), user_dir_name).remove(user_dir_name)
-                } else {
-                    None
-                }
-            }
-
-            pub fn user_dirs(home_dir_path: &Path) -> HashMap<String, PathBuf> {
-                xdg_user_dirs::all(home_dir_path, &user_dir_file(home_dir_path))
+            pub fn user_dirs(home_dir_path: &Path) -> HashMap<String, PathBuf>
+            {
+                HashMap::new()
             }
         }
 
@@ -32312,6 +33342,22 @@ pub mod process
     pub fn fork() -> Result<ForkResult> 
     {
         unsafe { nix_fork() }
+    }
+
+    pub fn close(fd: i32) {
+        unsafe {
+            nix::libc::close(fd);
+        }
+    }
+
+    pub fn dup(fd: i32) -> i32 {
+        unsafe { nix::libc::dup(fd) }
+    }
+
+    pub fn dup2(src: i32, dst: i32) {
+        unsafe {
+            nix::libc::dup2(src, dst);
+        }
     }
 }
 
@@ -33412,9 +34458,10 @@ pub mod shell
 
                 let cmd_result = match CommandLine::from_line(&cmd, sh) 
                 {
-                    Ok(c) => {
+                    Ok(c) => 
+                    {
                         log!("run subcmd dollar: {:?}", &cmd);
-                        let (term_given, cr) = core::run_pipeline(sh, &c, true, true, false);
+                        let (term_given, cr) = api::run_pipeline(sh, &c, true, true, false);
                         if term_given {
                             unsafe {
                                 let gid = nix::libc::getpgid(0);
@@ -33424,6 +34471,7 @@ pub mod shell
 
                         cr
                     }
+
                     Err(e) => {
                         println_stderr!(":: {}", e);
                         continue;
@@ -33434,11 +34482,9 @@ pub mod shell
 
                 let ptn = r"(?P<head>[^\$]*)\$\(.+\)(?P<tail>.*)";
                 let re;
-                if let Ok(x) = Regex::new(ptn) {
-                    re = x;
-                } else {
-                    return;
-                }
+
+                if let Ok(x) = Regex::new(ptn) { re = x; }                
+                else { return; }
 
                 let to = format!("${{head}}{}${{tail}}", output_txt);
                 let line_ = line.clone();
@@ -33450,7 +34496,8 @@ pub mod shell
             idx += 1;
         }
 
-        for (i, text) in buff.iter() {
+        for (i, text) in buff.iter()
+        {
             tokens[*i].1 = text.to_string();
         }
     }
@@ -33467,7 +34514,7 @@ pub mod shell
                 log!("run subcmd dot1: {:?}", token);
                 let cr = match CommandLine::from_line(token, sh) {
                     Ok(c) => {
-                        let (term_given, _cr) = core::run_pipeline(sh, &c, true, true, false);
+                        let (term_given, _cr) = api::run_pipeline(sh, &c, true, true, false);
                         if term_given {
                             unsafe {
                                 let gid = nix::libc::getpgid(0);
@@ -33508,7 +34555,7 @@ pub mod shell
 
                         let cr = match CommandLine::from_line(&cap[2], sh) {
                             Ok(c) => {
-                                let (term_given, _cr) = core::run_pipeline(sh, &c, true, true, false);
+                                let (term_given, _cr) = api::run_pipeline(sh, &c, true, true, false);
                                 if term_given {
                                     unsafe {
                                         let gid = nix::libc::getpgid(0);
@@ -33911,6 +34958,562 @@ pub mod system
     };
     /*
     */
+    pub mod buffer
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        use std::mem::swap;
+        use std::ops::Range;
+
+        use smallstr::SmallString;
+
+        use crate::priv_util::is_visible;
+        use crate::terminal::{Color, Cursor, Size, Style, Theme};
+        use crate::util::{char_width, is_combining_mark};
+        */
+        const TAB_STOP: usize = 8;
+
+        pub struct ScreenBuffer {
+            buffer: Vec<Cell>,
+            back_buffer: Vec<Cell>,
+            size: Size,
+            cursor: Cursor,
+
+            fg: Option<Color>,
+            bg: Option<Color>,
+            style: Style,
+        }
+
+        impl ScreenBuffer {
+            pub fn new(size: Size) -> ScreenBuffer {
+                let area = size.area();
+
+                ScreenBuffer{
+                    buffer: vec![Cell::default(); area],
+                    back_buffer: vec![Cell::default(); area],
+                    size: size,
+                    cursor: Cursor::default(),
+
+                    fg: None,
+                    bg: None,
+                    style: Style::empty(),
+                }
+            }
+
+            pub fn cursor(&self) -> Cursor {
+                self.cursor
+            }
+
+            pub fn size(&self) -> Size {
+                self.size
+            }
+
+            pub fn resize(&mut self, new_size: Size) {
+                // Try our best to maintain the contents of the buffer;
+                // though it's really best if users redraw when Resize event is read.
+                resize_buffer(&mut self.buffer, self.size, new_size);
+                // Totally invalidate the back buffer.
+                // Screen implementations will clear the screen and redraw.
+                new_buffer(&mut self.back_buffer, new_size);
+                self.size = new_size;
+            }
+
+            pub fn set_cursor(&mut self, pos: Cursor) {
+                self.cursor = pos;
+            }
+
+            pub fn next_line(&mut self, column: usize) {
+                self.cursor.line += 1;
+                self.cursor.column = column;
+            }
+
+            pub fn clear_attributes(&mut self) {
+                self.fg = None;
+                self.bg = None;
+                self.style = Style::empty();
+            }
+
+            pub fn add_style(&mut self, style: Style) {
+                self.style |= style;
+            }
+
+            pub fn remove_style(&mut self, style: Style) {
+                self.style -= style;
+            }
+
+            pub fn set_style(&mut self, style: Style) {
+                self.style = style;
+            }
+
+            pub fn set_fg(&mut self, fg: Option<Color>) {
+                self.fg = fg;
+            }
+
+            pub fn set_bg(&mut self, bg: Option<Color>) {
+                self.bg = bg;
+            }
+
+            pub fn set_theme(&mut self, theme: Theme) {
+                self.set_fg(theme.fg);
+                self.set_bg(theme.bg);
+                self.set_style(theme.style);
+            }
+
+            pub fn clear_screen(&mut self) {
+                for cell in &mut self.buffer {
+                    *cell = Cell::default();
+                }
+            }
+
+            pub fn indices(&self) -> Range<usize> {
+                0..self.size.area()
+            }
+
+            // A wrapper type implementing Iterator would be ideal, but that would
+            // interefere with Screen implementations calling `&mut self` methods.
+            pub fn next_cell(&mut self, indices: &mut Range<usize>) -> Option<(Cursor, Cell)> {
+                while let Some(idx) = indices.next() {
+                    let first = self.buffer[idx].first_char();
+                    let width = char_width(first).unwrap_or(0);
+
+                    // Skip cells overlapped by wide characters
+                    if width == 2 {
+                        let _ = indices.next();
+                    }
+
+                    if self.buffer[idx] != self.back_buffer[idx] {
+                        let cell = self.buffer[idx].clone();
+
+                        let line = idx / self.size.columns;
+                        let column = idx % self.size.columns;
+
+                        self.back_buffer[idx] = cell.clone();
+
+                        return Some((Cursor{line, column}, cell));
+                    }
+                }
+
+                None
+            }
+
+            #[cfg(test)]
+            fn cell(&self, pos: Cursor) -> &Cell {
+                &self.buffer[pos.as_index(self.size)]
+            }
+
+            fn cell_mut(&mut self, pos: Cursor) -> &mut Cell {
+                let size = self.size;
+                &mut self.buffer[pos.as_index(size)]
+            }
+
+            fn set_cell(&mut self, pos: Cursor, ch: char) {
+                let fg = self.fg;
+                let bg = self.bg;
+                let style = self.style;
+
+                let cell = self.cell_mut(pos);
+
+                cell.fg = fg;
+                cell.bg = bg;
+                cell.style = style;
+                cell.text = ch.into();
+            }
+
+            pub fn write_char(&mut self, ch: char) -> Result<(), OutOfBounds> {
+                if ch == '\t' {
+                    self.try_cursor()?;
+                    let rem = self.size.columns - self.cursor.column;
+                    let n = rem.min(TAB_STOP - (self.cursor.column % TAB_STOP));
+
+                    for _ in 0..n {
+                        self.write_char(' ')?;
+                    }
+                } else if ch == '\r' {
+                    self.cursor.column = 0;
+                } else if ch == '\n' {
+                    self.cursor.line += 1;
+                    self.cursor.column = 0;
+                } else if is_combining_mark(ch) {
+                    if let Some(prev) = self.cursor.previous(self.size) {
+                        self.try_cursor_at(prev)?;
+                        self.cell_mut(prev).text.push(ch);
+                    }
+                } else if is_visible(ch) {
+                    self.try_cursor()?;
+
+                    if let Some(prev) = self.cursor.previous(self.size) {
+                        let cell = self.cell_mut(prev);
+
+                        if cell.is_wide() {
+                            *cell = Cell::default();
+                        }
+                    }
+
+                    let rem = self.size.columns - self.cursor.column;
+                    let width = char_width(ch).unwrap_or(0);
+
+                    // If insufficient space exists on the current line,
+                    // fill it with spaces and write the char on the next line.
+                    if rem < width {
+                        self.try_cursor()?;
+                        let mut pos = self.cursor;
+
+                        for _ in 0..rem {
+                            self.set_cell(pos, ch);
+                            pos.column += 1;
+                        }
+
+                        self.cursor.column = 0;
+                        self.cursor.line += 1;
+                    }
+
+                    self.try_cursor()?;
+
+                    let mut pos = self.cursor;
+                    self.set_cell(pos, ch);
+
+                    for _ in 1..width {
+                        pos.column += 1;
+                        self.set_cell(pos, ' ');
+                    }
+
+                    self.cursor.column += width;
+
+                    if self.cursor.column >= self.size.columns {
+                        self.cursor.line += 1;
+                        self.cursor.column = 0;
+                    }
+                }
+
+                Ok(())
+            }
+
+            pub fn write_str(&mut self, s: &str) -> Result<(), OutOfBounds> {
+                for ch in s.chars() {
+                    self.write_char(ch)?;
+                }
+
+                Ok(())
+            }
+
+            pub fn write_at(&mut self, pos: Cursor, text: &str) -> Result<(), OutOfBounds> {
+                self.try_cursor_at(pos)?;
+                self.cursor = pos;
+
+                self.write_str(text)
+            }
+
+            pub fn write_styled(&mut self,
+                    fg: Option<Color>, bg: Option<Color>, style: Style, text: &str)
+                    -> Result<(), OutOfBounds> {
+                self.fg = fg;
+                self.bg = bg;
+                self.style = style;
+
+                self.write_str(text)?;
+                self.clear_attributes();
+
+                Ok(())
+            }
+
+            pub fn write_styled_at(&mut self, pos: Cursor,
+                    fg: Option<Color>, bg: Option<Color>, style: Style, text: &str)
+                    -> Result<(), OutOfBounds> {
+                self.try_cursor_at(pos)?;
+                self.cursor = pos;
+
+                self.write_styled(fg, bg, style, text)
+            }
+
+            fn try_cursor(&self) -> Result<(), OutOfBounds> {
+                self.try_cursor_at(self.cursor)
+            }
+
+            fn try_cursor_at(&self, pos: Cursor) -> Result<(), OutOfBounds> {
+                if pos.line >= self.size.lines || pos.column >= self.size.columns {
+                    Err(OutOfBounds(()))
+                } else {
+                    Ok(())
+                }
+            }
+        }
+
+        // Generates buffer methods (to be invoked from within an impl block)
+        // forwarded to a buffer contained in self.
+        //
+        // All methods accept `&self`. Interior mutability is required.
+        macro_rules! forward_screen_buffer_methods {
+            ( |$slf:ident| $field:expr ) => {
+                pub fn size(&self) -> crate::terminal::Size {
+                    let $slf = self;
+                    $field.size()
+                }
+
+                pub fn cursor(&self) -> crate::terminal::Cursor {
+                    let $slf = self;
+                    $field.cursor()
+                }
+
+                pub fn set_cursor(&self, pos: crate::terminal::Cursor) {
+                    let $slf = self;
+                    $field.set_cursor(pos);
+                }
+
+                pub fn next_line(&self, column: usize) {
+                    let $slf = self;
+                    $field.next_line(column);
+                }
+
+                pub fn clear_screen(&self) {
+                    let $slf = self;
+                    $field.clear_screen();
+                }
+
+                pub fn clear_attributes(&self) {
+                    let $slf = self;
+                    $field.clear_attributes();
+                }
+
+                pub fn add_style(&self, style: crate::terminal::Style) {
+                    let $slf = self;
+                    $field.add_style(style);
+                }
+
+                pub fn remove_style(&self, style: crate::terminal::Style) {
+                    let $slf = self;
+                    $field.remove_style(style);
+                }
+
+                pub fn set_style(&self, style: crate::terminal::Style) {
+                    let $slf = self;
+                    $field.set_style(style);
+                }
+
+                pub fn set_fg(&self, fg: Option<crate::terminal::Color>) {
+                    let $slf = self;
+                    $field.set_fg(fg);
+                }
+
+                pub fn set_bg(&self, bg: Option<crate::terminal::Color>) {
+                    let $slf = self;
+                    $field.set_bg(bg);
+                }
+
+                pub fn set_theme(&self, theme: crate::terminal::Theme) {
+                    let $slf = self;
+                    $field.set_theme(theme)
+                }
+
+                pub fn write_char(&self, ch: char) {
+                    let $slf = self;
+                    let _ = $field.write_char(ch);
+                }
+
+                pub fn write_str(&self, s: &str) {
+                    let $slf = self;
+                    let _ = $field.write_str(s);
+                }
+
+                pub fn write_at(&self, pos: crate::terminal::Cursor, text: &str) {
+                    let $slf = self;
+                    let _ = $field.write_at(pos, text);
+                }
+
+                pub fn write_styled(&self,
+                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                        style: crate::terminal::Style, text: &str) {
+                    let $slf = self;
+                    let _ = $field.write_styled(fg, bg, style, text);
+                }
+
+                pub fn write_styled_at(&self, pos: crate::terminal::Cursor,
+                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                        style: crate::terminal::Style, text: &str) {
+                    let $slf = self;
+                    let _ = $field.write_styled_at(pos, fg, bg, style, text);
+                }
+            }
+        }
+
+        // Same as above, but methods take `&mut self` where appropriate.
+        macro_rules! forward_screen_buffer_mut_methods {
+            ( |$slf:ident| $field:expr ) => {
+                pub fn size(&self) -> crate::terminal::Size {
+                    let $slf = self;
+                    $field.size()
+                }
+
+                pub fn cursor(&self) -> crate::terminal::Cursor {
+                    let $slf = self;
+                    $field.cursor()
+                }
+
+                pub fn set_cursor(&mut self, pos: crate::terminal::Cursor) {
+                    let $slf = self;
+                    $field.set_cursor(pos);
+                }
+
+                pub fn next_line(&mut self, column: usize) {
+                    let $slf = self;
+                    $field.next_line(column);
+                }
+
+                pub fn clear_screen(&mut self) {
+                    let $slf = self;
+                    $field.clear_screen();
+                }
+
+                pub fn clear_attributes(&mut self) {
+                    let $slf = self;
+                    $field.clear_attributes();
+                }
+
+                pub fn add_style(&mut self, style: crate::terminal::Style) {
+                    let $slf = self;
+                    $field.add_style(style);
+                }
+
+                pub fn remove_style(&mut self, style: crate::terminal::Style) {
+                    let $slf = self;
+                    $field.remove_style(style);
+                }
+
+                pub fn set_style(&mut self, style: crate::terminal::Style) {
+                    let $slf = self;
+                    $field.set_style(style);
+                }
+
+                pub fn set_fg(&mut self, fg: Option<crate::terminal::Color>) {
+                    let $slf = self;
+                    $field.set_fg(fg);
+                }
+
+                pub fn set_bg(&mut self, bg: Option<crate::terminal::Color>) {
+                    let $slf = self;
+                    $field.set_bg(bg);
+                }
+
+                pub fn set_theme(&mut self, theme: crate::terminal::Theme) {
+                    let $slf = self;
+                    $field.set_theme(theme);
+                }
+
+                pub fn write_char(&mut self, ch: char) {
+                    let $slf = self;
+                    let _ = $field.write_char(ch);
+                }
+
+                pub fn write_str(&mut self, s: &str) {
+                    let $slf = self;
+                    let _ = $field.write_str(s);
+                }
+
+                pub fn write_at(&mut self, pos: crate::terminal::Cursor, text: &str) {
+                    let $slf = self;
+                    let _ = $field.write_at(pos, text);
+                }
+
+                pub fn write_styled(&mut self,
+                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                        style: crate::terminal::Style, text: &str) {
+                    let $slf = self;
+                    let _ = $field.write_styled(fg, bg, style, text);
+                }
+
+                pub fn write_styled_at(&mut self, pos: crate::terminal::Cursor,
+                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                        style: crate::terminal::Style, text: &str) {
+                    let $slf = self;
+                    let _ = $field.write_styled_at(pos, fg, bg, style, text);
+                }
+            }
+        }
+
+        #[derive(Debug)]
+        pub struct OutOfBounds(());
+
+        #[derive(Clone, Debug, Eq, PartialEq)]
+        pub struct Cell {
+            fg: Option<Color>,
+            bg: Option<Color>,
+            style: Style,
+            text: SmallString<[u8; 8]>,
+        }
+
+        impl Cell {
+            fn new(fg: Option<Color>, bg: Option<Color>, style: Style, chr: char) -> Cell {
+                Cell{
+                    fg,
+                    bg,
+                    style,
+                    text: chr.into(),
+                }
+            }
+
+            fn invalid() -> Cell {
+                Cell{
+                    fg: None,
+                    bg: None,
+                    style: Style::empty(),
+                    text: SmallString::new(),
+                }
+            }
+
+            pub fn attrs(&self) -> (Option<Color>, Option<Color>, Style) {
+                (self.fg, self.bg, self.style)
+            }
+
+            pub fn text(&self) -> &str {
+                &self.text
+            }
+
+            fn first_char(&self) -> char {
+                self.text.chars().next().expect("empty cell text")
+            }
+
+            fn is_wide(&self) -> bool {
+                self.text.chars().next()
+                    .and_then(char_width).unwrap_or(0) == 2
+            }
+        }
+
+        impl Default for Cell {
+            fn default() -> Cell {
+                Cell::new(None, None, Style::empty(), ' ')
+            }
+        }
+
+        fn resize_buffer(buf: &mut Vec<Cell>, old: Size, new: Size) {
+            if old != new {
+                let mut new_buf = vec![Cell::default(); new.area()];
+
+                if !buf.is_empty() {
+                    let n_cols = old.columns.min(new.columns);
+
+                    for (old, new) in buf.chunks_mut(old.columns)
+                            .zip(new_buf.chunks_mut(new.columns)) {
+                        for i in 0..n_cols {
+                            swap(&mut new[i], &mut old[i]);
+                        }
+                    }
+                }
+
+                *buf = new_buf;
+            }
+        }
+
+        fn new_buffer(buf: &mut Vec<Cell>, new_size: Size) {
+            // Invalidate the buffer; all cells will be redrawn
+            *buf = vec![Cell::invalid(); new_size.area()];
+        }
+
+    }
+    /**/
     pub mod common
     {
         /*!
@@ -33921,6 +35524,2370 @@ pub mod system
         };
         /*
         */
+        pub mod unix
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            pub use self::screen::{
+                Screen, ScreenReadGuard, ScreenWriteGuard,
+            };
+            pub use self::terminal::{
+                PrepareState,
+                Terminal, TerminalReadGuard, TerminalWriteGuard,
+            };
+            */
+            pub mod ext
+            {
+                /*!
+                Unix extension trait */
+                use ::
+                {
+                    path::{ Path },
+                    time::std::{ Duration },
+                    *,
+                };
+                use system::common::private::Private;
+                use system::common::terminal::Event;
+                /*
+                */
+                /// Implements Unix-only extensions for terminal interfaces.
+                pub trait OpenTerminalExt: Sized + Private
+                {
+                    /// Opens a terminal interface on the device at the given path.
+                    fn from_path<P: AsRef<Path>>(path: P) -> io::Result<Self>;
+                }
+                /// Implements Unix-only extensions for terminal interfaces.
+                pub trait TerminalExt: Private
+                {
+                    /// Reads raw data from the terminal.
+                    fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>)
+                            -> io::Result<Option<Event>>;
+                }
+                
+            }
+
+            pub mod screen
+            {
+                /*!
+                */
+                use ::
+                {
+                    sync::{LockResult, Mutex, MutexGuard, TryLockResult},
+                    time::std::{ Duration },
+                    *,
+                };
+                /*
+
+                use crate::buffer::ScreenBuffer;
+                use crate::priv_util::{
+                    map_lock_result, map_try_lock_result,
+                    map2_lock_result, map2_try_lock_result,
+                };
+                use crate::sys::{Terminal, TerminalReadGuard, TerminalWriteGuard, PrepareState};
+                use crate::terminal::{Color, Cursor, CursorMode, Event, Size, Style, PrepareConfig};
+
+                */
+                pub struct Screen 
+                {
+                    term: Terminal,
+
+                    state: Option<PrepareState>,
+                    writer: Mutex<Writer>,
+                }
+
+                pub struct ScreenReadGuard<'a> {
+                    screen: &'a Screen,
+                    reader: TerminalReadGuard<'a>,
+                }
+
+                pub struct ScreenWriteGuard<'a> {
+                    writer: TerminalWriteGuard<'a>,
+                    data: MutexGuard<'a, Writer>,
+                }
+
+                struct Writer {
+                    buffer: ScreenBuffer,
+                    clear_screen: bool,
+                    real_cursor: Cursor,
+                }
+
+                impl Screen {
+                    pub fn new(term: Terminal, config: PrepareConfig) -> io::Result<Screen> {
+                        let size = term.size()?;
+                        let state = term.prepare(config)?;
+
+                        let screen = Screen{
+                            term: term,
+                            state: Some(state),
+
+                            writer: Mutex::new(Writer{
+                                buffer: ScreenBuffer::new(size),
+                                clear_screen: false,
+                                real_cursor: Cursor::default(),
+                            }),
+                        };
+
+                        screen.term.enter_screen()?;
+
+                        Ok(screen)
+                    }
+
+                    pub fn stdout(config: PrepareConfig) -> io::Result<Screen> {
+                        Screen::new(Terminal::stdout()?, config)
+                    }
+
+                    pub fn stderr(config: PrepareConfig) -> io::Result<Screen> {
+                        Screen::new(Terminal::stderr()?, config)
+                    }
+
+                    forward_screen_buffer_methods!{ |slf| slf.lock_write_data().buffer }
+
+                    pub fn lock_read(&self) -> LockResult<ScreenReadGuard> {
+                        map_lock_result(self.term.lock_read(),
+                            |r| ScreenReadGuard::new(self, r))
+                    }
+
+                    pub fn try_lock_read(&self) -> TryLockResult<ScreenReadGuard> {
+                        map_try_lock_result(self.term.try_lock_read(),
+                            |r| ScreenReadGuard::new(self, r))
+                    }
+
+                    pub fn lock_write(&self) -> LockResult<ScreenWriteGuard> {
+                        map2_lock_result(self.term.lock_write(), self.writer.lock(),
+                            |a, b| ScreenWriteGuard::new(a, b))
+                    }
+
+                    pub fn try_lock_write(&self) -> TryLockResult<ScreenWriteGuard> {
+                        map2_try_lock_result(self.term.try_lock_write(), self.writer.try_lock(),
+                            |a, b| ScreenWriteGuard::new(a, b))
+                    }
+
+                    fn lock_reader(&self) -> ScreenReadGuard {
+                        self.lock_read().expect("Screen::lock_reader")
+                    }
+
+                    fn lock_writer(&self) -> ScreenWriteGuard {
+                        self.lock_write().expect("Screen::lock_writer")
+                    }
+
+                    fn lock_write_data(&self) -> MutexGuard<Writer> {
+                        self.writer.lock().expect("Screen::lock_write_data")
+                    }
+
+                    pub fn name(&self) -> &str {
+                        self.term.name()
+                    }
+
+                    pub fn set_cursor_mode(&self, mode: CursorMode) -> io::Result<()> {
+                        self.term.set_cursor_mode(mode)
+                    }
+
+                    pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> {
+                        self.lock_reader().wait_event(timeout)
+                    }
+
+                    pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        self.lock_reader().read_event(timeout)
+                    }
+
+                    pub fn read_raw(&self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        self.lock_reader().read_raw(buf, timeout)
+                    }
+
+                    pub fn refresh(&self) -> io::Result<()> {
+                        self.lock_writer().refresh()
+                    }
+                }
+
+                impl Drop for Screen {
+                    fn drop(&mut self) {
+                        let res = if let Some(state) = self.state.take() {
+                            self.term.restore(state)
+                        } else {
+                            Ok(())
+                        };
+
+                        if let Err(e) = res.and_then(|_| self.term.exit_screen()) {
+                            eprintln!("failed to restore terminal: {}", e);
+                        }
+                    }
+                }
+
+                impl<'a> ScreenReadGuard<'a> {
+                    fn new(screen: &'a Screen, reader: TerminalReadGuard<'a>) -> ScreenReadGuard<'a> {
+                        ScreenReadGuard{screen, reader}
+                    }
+
+                    pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
+                        self.reader.wait_event(timeout)
+                    }
+
+                    pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        let r = self.reader.read_event(timeout)?;
+
+                        if let Some(Event::Resize(size)) = r {
+                            self.screen.lock_write_data().update_size(size);
+                        }
+
+                        Ok(r)
+                    }
+
+                    pub fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        let r = self.reader.read_raw(buf, timeout)?;
+
+                        if let Some(Event::Resize(size)) = r {
+                            self.screen.lock_write_data().update_size(size);
+                        }
+
+                        Ok(r)
+                    }
+                }
+
+                impl<'a> ScreenWriteGuard<'a> {
+                    fn new(writer: TerminalWriteGuard<'a>, data: MutexGuard<'a, Writer>)
+                            -> ScreenWriteGuard<'a> {
+                        ScreenWriteGuard{writer, data}
+                    }
+
+                    forward_screen_buffer_mut_methods!{ |slf| slf.data.buffer }
+
+                    pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                        self.writer.set_cursor_mode(mode)
+                    }
+
+                    pub fn refresh(&mut self) -> io::Result<()> {
+                        if self.data.clear_screen {
+                            self.writer.clear_screen()?;
+                            self.data.clear_screen = false;
+                        }
+
+                        self.writer.clear_attributes()?;
+
+                        let mut indices = self.data.buffer.indices();
+
+                        while let Some((pos, cell)) = self.data.buffer.next_cell(&mut indices) {
+                            self.move_cursor(pos)?;
+
+                            self.apply_attrs(cell.attrs())?;
+                            self.writer.write_str(cell.text())?;
+                            self.data.real_cursor.column += 1;
+                        }
+
+                        self.writer.clear_attributes()?;
+
+                        let size = self.data.buffer.size();
+                        let pos = self.data.buffer.cursor();
+
+                        if pos.is_out_of_bounds(size) {
+                            self.move_cursor(Cursor::last(size))?;
+                        } else {
+                            self.move_cursor(pos)?;
+                        }
+
+                        self.writer.flush()
+                    }
+
+                    fn move_cursor(&mut self, pos: Cursor) -> io::Result<()> {
+                        if self.data.real_cursor != pos {
+                            self.writer.move_cursor(pos)?;
+                            self.data.real_cursor = pos;
+                        }
+
+                        Ok(())
+                    }
+
+                    fn apply_attrs(&mut self,
+                            (fg, bg, style): (Option<Color>, Option<Color>, Style))
+                            -> io::Result<()> {
+                        self.writer.set_attrs(fg, bg, style)
+                    }
+                }
+
+                impl<'a> Drop for ScreenWriteGuard<'a> {
+                    fn drop(&mut self) {
+                        if let Err(e) = self.refresh() {
+                            eprintln!("failed to refresh screen: {}", e);
+                        }
+                    }
+                }
+
+                impl Writer {
+                    fn update_size(&mut self, new_size: Size) {
+                        if self.real_cursor.is_out_of_bounds(new_size) {
+                            // Force cursor move on next refresh
+                            self.real_cursor = (!0, !0).into();
+                        }
+                        self.buffer.resize(new_size);
+                        self.clear_screen = true;
+                    }
+                }
+                
+            }
+
+            pub mod terminal
+            {
+                /*!
+                */
+                use ::
+                {
+                    *,
+                };
+                /*
+                use std::convert::TryFrom;
+                use std::fs::File;
+                use std::io;
+                use std::mem::{replace, zeroed};
+                use std::os::unix::io::{FromRawFd, IntoRawFd, RawFd};
+                use std::path::Path;
+                use std::str::from_utf8;
+                use std::sync::atomic::{AtomicUsize, Ordering};
+                use std::sync::{LockResult, Mutex, MutexGuard, TryLockResult};
+                use std::time::Duration;
+
+                use libc::{
+                    ioctl,
+                    c_int, c_ushort, termios,
+                    STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, TIOCGWINSZ,
+                };
+
+                use nix::errno::Errno;
+                use nix::sys::select::{select, FdSet};
+                use nix::sys::signal::{
+                    sigaction,
+                    SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
+                };
+                use nix::sys::termios::{
+                    tcgetattr, tcsetattr,
+                    SetArg, InputFlags, LocalFlags,
+                };
+                use nix::sys::time::{TimeVal, TimeValLike};
+                use nix::unistd::{read, write};
+
+                use smallstr::SmallString;
+
+                use terminfo::{self, capability as cap, Database};
+                use terminfo::capability::Expansion;
+                use terminfo::expand::Context;
+
+                use crate::priv_util::{map_lock_result, map_try_lock_result};
+                use crate::sequence::{FindResult, SequenceMap};
+                use crate::signal::{Signal, SignalSet};
+                use crate::terminal::{
+                    Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme,
+                    MouseButton, MouseEvent, MouseInput, ModifierState,
+                };
+                use crate::util::prefixes;
+                */
+                const OUT_BUFFER_SIZE: usize = 8192;
+
+                const XTERM_ENABLE_MOUSE: &str = "\x1b[?1006h\x1b[?1002h";
+                const XTERM_DISABLE_MOUSE: &str = "\x1b[?1006l\x1b[?1002l";
+                const XTERM_ENABLE_MOUSE_MOTION: &str = "\x1b[?1003h";
+                const XTERM_DISABLE_MOUSE_MOTION: &str = "\x1b[?1003l";
+                const XTERM_MOUSE_INTRO: &str = "\x1b[<";
+
+                const XTERM_SHIFT_MASK: u32 = 0x04;
+                const XTERM_META_MASK: u32  = 0x08;
+                const XTERM_CTRL_MASK: u32  = 0x10;
+                const XTERM_MODIFIER_MASK: u32 = XTERM_SHIFT_MASK | XTERM_META_MASK | XTERM_CTRL_MASK;
+
+                type SeqMap = SequenceMap<SmallString<[u8; 8]>, SeqData>;
+
+                #[derive(Copy, Clone)]
+                enum SeqData {
+                    XTermMouse,
+                    Key(Key),
+                }
+
+                pub struct Terminal {
+                    info: Database,
+                    out_fd: RawFd,
+                    in_fd: RawFd,
+                    owned_fd: bool,
+                    sequences: SeqMap,
+                    reader: Mutex<Reader>,
+                    writer: Mutex<Writer>,
+                }
+
+                pub struct TerminalReadGuard<'a> {
+                    term: &'a Terminal,
+                    reader: MutexGuard<'a, Reader>,
+                }
+
+                pub struct TerminalWriteGuard<'a> {
+                    term: &'a Terminal,
+                    writer: MutexGuard<'a, Writer>,
+                }
+
+                struct Reader {
+                    in_buffer: Vec<u8>,
+                    resume: Option<Resume>,
+                    report_signals: SignalSet,
+                }
+
+                struct Writer {
+                    context: Context,
+                    out_buffer: Vec<u8>,
+                    fg: Option<Color>,
+                    bg: Option<Color>,
+                    cur_style: Style,
+                }
+
+                impl Terminal {
+                    fn new(in_fd: RawFd, out_fd: RawFd, owned_fd: bool) -> io::Result<Terminal> {
+                        let info = Database::from_env().map_err(ti_to_io)?;
+                        let sequences = sequences(&info);
+
+                        Ok(Terminal{
+                            info,
+                            in_fd,
+                            out_fd,
+                            owned_fd,
+                            sequences,
+                            reader: Mutex::new(Reader{
+                                in_buffer: Vec::new(),
+                                resume: None,
+                                report_signals: SignalSet::new(),
+                            }),
+                            writer: Mutex::new(Writer::new()),
+                        })
+                    }
+
+                    pub fn open<P: AsRef<Path>>(path: P) -> io::Result<Terminal> {
+                        let fd = open_rw(path)?;
+
+                        let r = Terminal::new(fd, fd, true);
+
+                        if r.is_err() {
+                            unsafe { close_fd(fd); }
+                        }
+
+                        r
+                    }
+
+                    pub fn stdout() -> io::Result<Terminal> {
+                        Terminal::new(STDIN_FILENO, STDOUT_FILENO, false)
+                    }
+
+                    pub fn stderr() -> io::Result<Terminal> {
+                        Terminal::new(STDIN_FILENO, STDERR_FILENO, false)
+                    }
+
+                    pub fn name(&self) -> &str {
+                        self.info.name()
+                    }
+
+                    fn is_xterm(&self) -> bool {
+                        is_xterm(self.name())
+                    }
+
+                    pub fn size(&self) -> io::Result<Size> {
+                        self.lock_writer().size()
+                    }
+
+                    pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> {
+                        self.lock_reader().wait_event(timeout)
+                    }
+
+                    pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        self.lock_reader().read_event(timeout)
+                    }
+
+                    pub fn read_raw(&self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        self.lock_reader().read_raw(buf, timeout)
+                    }
+
+                    pub fn enter_screen(&self) -> io::Result<()> {
+                        self.lock_writer().enter_screen()
+                    }
+
+                    pub fn exit_screen(&self) -> io::Result<()> {
+                        self.lock_writer().exit_screen()
+                    }
+
+                    pub fn prepare(&self, config: PrepareConfig) -> io::Result<PrepareState> {
+                        self.lock_reader().prepare(config)
+                    }
+
+                    pub fn restore(&self, state: PrepareState) -> io::Result<()> {
+                        self.lock_reader().restore(state)
+                    }
+
+                    pub fn clear_screen(&self) -> io::Result<()> {
+                        self.lock_writer().clear_screen()
+                    }
+
+                    pub fn clear_to_line_end(&self) -> io::Result<()> {
+                        self.lock_writer().clear_to_line_end()
+                    }
+
+                    pub fn clear_to_screen_end(&self) -> io::Result<()> {
+                        self.lock_writer().clear_to_screen_end()
+                    }
+
+                    pub fn move_up(&self, n: usize) -> io::Result<()> {
+                        if n != 0 {
+                            self.lock_writer().move_up(n)?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_down(&self, n: usize) -> io::Result<()> {
+                        if n != 0 {
+                            self.lock_writer().move_down(n)?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_left(&self, n: usize) -> io::Result<()> {
+                        if n != 0 {
+                            self.lock_writer().move_left(n)?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_right(&self, n: usize) -> io::Result<()> {
+                        if n != 0 {
+                            self.lock_writer().move_right(n)?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_to_first_column(&self) -> io::Result<()> {
+                        self.lock_writer().move_to_first_column()
+                    }
+
+                    pub fn set_cursor_mode(&self, mode: CursorMode) -> io::Result<()> {
+                        self.lock_writer().set_cursor_mode(mode)
+                    }
+
+                    pub fn write_char(&self, ch: char) -> io::Result<()> {
+                        self.write_str(ch.encode_utf8(&mut [0; 4]))
+                    }
+
+                    pub fn write_str(&self, s: &str) -> io::Result<()> {
+                        self.lock_writer().write_str(s)
+                    }
+
+                    pub fn write_styled(&self,
+                            fg: Option<Color>, bg: Option<Color>, style: Style, text: &str)
+                            -> io::Result<()> {
+                        self.lock_writer().write_styled(fg, bg, style, text)
+                    }
+
+                    pub fn clear_attributes(&self) -> io::Result<()> {
+                        self.lock_writer().clear_attributes()
+                    }
+
+                    pub fn set_fg(&self, fg: Option<Color>) -> io::Result<()> {
+                        self.lock_writer().set_fg(fg)
+                    }
+
+                    pub fn set_bg(&self, bg: Option<Color>) -> io::Result<()> {
+                        self.lock_writer().set_bg(bg)
+                    }
+
+                    pub fn add_style(&self, style: Style) -> io::Result<()> {
+                        self.lock_writer().add_style(style)
+                    }
+
+                    pub fn remove_style(&self, style: Style) -> io::Result<()> {
+                        self.lock_writer().remove_style(style)
+                    }
+
+                    pub fn set_style(&self, style: Style) -> io::Result<()> {
+                        self.lock_writer().set_style(style)
+                    }
+
+                    pub fn set_theme(&self, theme: Theme) -> io::Result<()> {
+                        self.lock_writer().set_theme(theme)
+                    }
+
+                    pub fn lock_read(&self) -> LockResult<TerminalReadGuard> {
+                        map_lock_result(self.reader.lock(),
+                            |r| TerminalReadGuard::new(self, r))
+                    }
+
+                    pub fn lock_write(&self) -> LockResult<TerminalWriteGuard> {
+                        map_lock_result(self.writer.lock(),
+                            |w| TerminalWriteGuard::new(self, w))
+                    }
+
+                    pub fn try_lock_read(&self) -> TryLockResult<TerminalReadGuard> {
+                        map_try_lock_result(self.reader.try_lock(),
+                            |r| TerminalReadGuard::new(self, r))
+                    }
+
+                    pub fn try_lock_write(&self) -> TryLockResult<TerminalWriteGuard> {
+                        map_try_lock_result(self.writer.try_lock(),
+                            |w| TerminalWriteGuard::new(self, w))
+                    }
+
+                    fn lock_reader(&self) -> TerminalReadGuard {
+                        self.lock_read().expect("Terminal::lock_reader")
+                    }
+
+                    fn lock_writer(&self) -> TerminalWriteGuard {
+                        self.lock_write().expect("Terminal::lock_writer")
+                    }
+                }
+
+                impl Drop for Terminal {
+                    fn drop(&mut self) {
+                        if let Err(e) = self.set_cursor_mode(CursorMode::Normal) {
+                            eprintln!("failed to restore terminal: {}", e);
+                        }
+
+                        if self.owned_fd {
+                            unsafe { close_fd(self.out_fd); }
+                        }
+                    }
+                }
+
+                impl<'a> TerminalReadGuard<'a> {
+                    fn new(term: &'a Terminal, reader: MutexGuard<'a, Reader>) -> TerminalReadGuard<'a> {
+                        TerminalReadGuard{term, reader}
+                    }
+
+                    pub fn prepare(&mut self, config: PrepareConfig) -> io::Result<PrepareState> {
+                        let mut writer = self.term.lock_writer();
+                        self.prepare_with_lock(&mut writer, config)
+                    }
+
+                    pub fn prepare_with_lock(&mut self, writer: &mut TerminalWriteGuard,
+                            config: PrepareConfig) -> io::Result<PrepareState> {
+                        use nix::sys::termios::SpecialCharacterIndices::*;
+
+                        let old_tio = tcgetattr(self.term.in_fd).map_err(nix_to_io)?;
+                        let mut tio = old_tio.clone();
+
+                        let mut state = PrepareState{
+                            old_tio: old_tio.into(),
+                            old_sigcont: None,
+                            old_sigint: None,
+                            old_sigtstp: None,
+                            old_sigquit: None,
+                            old_sigwinch: None,
+                            restore_keypad: false,
+                            restore_mouse: false,
+                            prev_resume: self.reader.resume,
+                        };
+
+                        tio.input_flags.remove(
+                            // Disable carriage return/line feed conversion
+                            InputFlags::INLCR | InputFlags::ICRNL
+                        );
+
+                        tio.local_flags.remove(
+                            // Disable canonical mode;
+                            // this gives us input without waiting for newline or EOF
+                            // and disables line-editing, treating such inputs as characters.
+                            // Disable ECHO, preventing input from being written to output.
+                            LocalFlags::ICANON | LocalFlags::ECHO
+                        );
+
+                        // ISIG, when enabled, causes the process to receive signals when
+                        // Ctrl-C, Ctrl-\, etc. are input
+                        if config.block_signals {
+                            tio.local_flags.remove(LocalFlags::ISIG);
+                        } else {
+                            tio.local_flags.insert(LocalFlags::ISIG);
+                        }
+
+                        // IXON, when enabled, allows Ctrl-S/Ctrl-Q to suspend and restart inputs
+                        if config.enable_control_flow {
+                            tio.input_flags.insert(InputFlags::IXON);
+                        } else {
+                            tio.input_flags.remove(InputFlags::IXON);
+                        }
+
+                        // Allow a read to return with 0 characters ready
+                        tio.control_chars[VMIN as usize] = 0;
+                        // Allow a read to return after 0 deciseconds
+                        tio.control_chars[VTIME as usize] = 0;
+
+                        tcsetattr(self.term.in_fd, SetArg::TCSANOW, &tio).map_err(nix_to_io)?;
+
+                        if config.enable_mouse {
+                            if writer.enable_mouse(config.always_track_motion)? {
+                                state.restore_mouse = true;
+                            }
+                        }
+
+                        if config.enable_keypad {
+                            if writer.enable_keypad()? {
+                                state.restore_keypad = true;
+                            }
+                        }
+
+                        writer.flush()?;
+
+                        let action = SigAction::new(SigHandler::Handler(handle_signal),
+                            SaFlags::empty(), SigSet::all());
+
+                        // Continue and Resize are always handled by the internals,
+                        // but only reported if requested.
+                        state.old_sigcont = Some(unsafe { sigaction(NixSignal::SIGCONT, &action).map_err(nix_to_io)? });
+                        state.old_sigwinch = Some(unsafe { sigaction(NixSignal::SIGWINCH, &action).map_err(nix_to_io)? });
+
+                        if config.report_signals.contains(Signal::Interrupt) {
+                            state.old_sigint = Some(unsafe { sigaction(NixSignal::SIGINT, &action).map_err(nix_to_io)? });
+                        }
+                        if config.report_signals.contains(Signal::Suspend) {
+                            state.old_sigtstp = Some(unsafe { sigaction(NixSignal::SIGTSTP, &action).map_err(nix_to_io)? });
+                        }
+                        if config.report_signals.contains(Signal::Quit) {
+                            state.old_sigquit = Some(unsafe { sigaction(NixSignal::SIGQUIT, &action).map_err(nix_to_io)? });
+                        }
+
+                        self.reader.report_signals = config.report_signals;
+                        self.reader.resume = Some(Resume{config});
+
+                        Ok(state)
+                    }
+
+                    pub fn restore(&mut self, state: PrepareState) -> io::Result<()> {
+                        let mut writer = self.term.lock_writer();
+                        self.restore_with_lock(&mut writer, state)
+                    }
+
+                    pub fn restore_with_lock(&mut self, writer: &mut TerminalWriteGuard,
+                            state: PrepareState) -> io::Result<()> {
+                        self.reader.resume = state.prev_resume;
+
+                        if state.restore_mouse {
+                            writer.disable_mouse()?;
+                        }
+
+                        if state.restore_keypad {
+                            writer.disable_keypad()?;
+                        }
+
+                        writer.flush()?;
+
+                        tcsetattr(self.term.in_fd, SetArg::TCSANOW, &state.old_tio.into()).map_err(nix_to_io)?;
+
+                        unsafe {
+                            if let Some(ref old) = state.old_sigcont {
+                                sigaction(NixSignal::SIGCONT, old).map_err(nix_to_io)?;
+                            }
+                            if let Some(ref old) = state.old_sigint {
+                                sigaction(NixSignal::SIGINT, old).map_err(nix_to_io)?;
+                            }
+                            if let Some(ref old) = state.old_sigtstp {
+                                sigaction(NixSignal::SIGTSTP, old).map_err(nix_to_io)?;
+                            }
+                            if let Some(ref old) = state.old_sigquit {
+                                sigaction(NixSignal::SIGQUIT, old).map_err(nix_to_io)?;
+                            }
+                            if let Some(ref old) = state.old_sigwinch {
+                                sigaction(NixSignal::SIGWINCH, old).map_err(nix_to_io)?;
+                            }
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
+                        if get_signal().is_some() {
+                            return Ok(true);
+                        }
+
+                        if peek_event(&self.reader.in_buffer, &self.term.sequences)?.is_some() {
+                            return Ok(true);
+                        }
+
+                        let mut timeout = timeout.map(to_timeval);
+
+                        let n = loop {
+                            let in_fd = self.term.in_fd;
+
+                            let mut r_fds = FdSet::new();
+                            r_fds.insert(in_fd);
+
+                            // FIXME: FdSet does not implement Copy or Clone
+                            let mut e_fds = FdSet::new();
+                            e_fds.insert(in_fd);
+
+                            match select(in_fd + 1,
+                                    Some(&mut r_fds), None, Some(&mut e_fds), timeout.as_mut()) {
+                                Ok(n) => break n,
+                                Err(Errno::EINTR) =>
+                                    if get_signal().is_some() {
+                                        return Ok(true);
+                                    }
+                                
+                                Err(e) => return Err(nix_to_io(e))
+                            }
+                        };
+
+                        Ok(n != 0)
+                    }
+
+                    pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        if let Some(ev) = self.try_read()? {
+                            return Ok(Some(ev));
+                        }
+
+                        match self.read_into_buffer(timeout)? {
+                            Some(Event::Raw(_)) => self.try_read(),
+                            Some(Event::Signal(sig)) => {
+                                if let Some(ev) = self.handle_signal(sig)? {
+                                    Ok(Some(ev))
+                                } else {
+                                    Ok(None)
+                                }
+                            }
+                            r => Ok(r)
+                        }
+                    }
+
+                    pub fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        if !self.reader.in_buffer.is_empty() {
+                            let n = buf.len().min(self.reader.in_buffer.len());
+                            buf[..n].copy_from_slice(&self.reader.in_buffer[..n]);
+
+                            let _ = self.reader.in_buffer.drain(..n);
+
+                            return Ok(Some(Event::Raw(n)));
+                        }
+
+                        match self.read_input(buf, timeout)? {
+                            Some(Event::Signal(sig)) => {
+                                if let Some(event) = self.handle_signal(sig)? {
+                                    Ok(Some(event))
+                                } else {
+                                    Ok(None)
+                                }
+                            }
+                            r => Ok(r)
+                        }
+                    }
+
+                    fn read_into_buffer(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        // Temporarily replace the buffer to prevent borrow errors
+                        let mut buf = replace(&mut self.reader.in_buffer, Vec::new());
+
+                        buf.reserve(128);
+
+                        let len = buf.len();
+                        let cap = buf.capacity();
+                        let r;
+
+                        unsafe {
+                            buf.set_len(cap);
+
+                            r = self.read_input(&mut buf[len..], timeout);
+
+                            match r {
+                                Ok(Some(Event::Raw(n))) => buf.set_len(len + n),
+                                _ => buf.set_len(len)
+                            }
+                        }
+
+                        // Restore the buffer before returning
+                        self.reader.in_buffer = buf;
+
+                        r
+                    }
+
+                    fn read_input(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                        // Check for a signal that may have already arrived.
+                        if let Some(sig) = take_signal() {
+                            return Ok(Some(Event::Signal(sig)));
+                        }
+
+                        if !self.wait_event(timeout)? {
+                            return Ok(None);
+                        }
+
+                        // Check for a signal again after waiting
+                        if let Some(sig) = take_signal() {
+                            return Ok(Some(Event::Signal(sig)));
+                        }
+
+                        loop {
+                            match read(self.term.in_fd, buf) {
+                                Ok(n) => break Ok(Some(Event::Raw(n))),
+                                Err(Errno::EINTR) => {
+                                    if let Some(sig) = take_signal() {
+                                        return Ok(Some(Event::Signal(sig)));
+                                    }
+                                }
+                                Err(e) => return Err(nix_to_io(e))
+                            }
+                        }
+                    }
+
+                    fn try_read(&mut self) -> io::Result<Option<Event>> {
+                        let in_buffer = &mut self.reader.in_buffer;
+
+                        if in_buffer.is_empty() {
+                            Ok(None)
+                        } else {
+                            match peek_event(&in_buffer, &self.term.sequences) {
+                                Ok(Some((ev, n))) => {
+                                    let _ = in_buffer.drain(..n);
+                                    Ok(Some(ev))
+                                }
+                                Ok(None) => Ok(None),
+                                Err(e) => Err(e)
+                            }
+                        }
+                    }
+
+                    fn handle_signal(&mut self, sig: Signal) -> io::Result<Option<Event>> {
+                        match sig {
+                            Signal::Continue => {
+                                self.resume()?;
+                            }
+                            Signal::Resize => {
+                                let size = self.term.size()?;
+                                return Ok(Some(Event::Resize(size)));
+                            }
+                            _ => ()
+                        }
+
+                        if self.reader.report_signals.contains(sig) {
+                            Ok(Some(Event::Signal(sig)))
+                        } else {
+                            Ok(None)
+                        }
+                    }
+
+                    fn resume(&mut self) -> io::Result<()> {
+                        if let Some(resume) = self.reader.resume {
+                            let _ = self.prepare(resume.config)?;
+                        }
+                        Ok(())
+                    }
+                }
+
+                macro_rules! expand_opt {
+                    ( $slf:expr , $cap:path ) => { {
+                        if let Some(cap) = $slf.term.info.get::<$cap>() {
+                            $slf.expand(cap.expand())
+                        } else {
+                            Ok(())
+                        }
+                    } };
+                    ( $slf:expr , $cap:path , |$ex:ident| $expansion:expr ) => { {
+                        if let Some(cap) = $slf.term.info.get::<$cap>() {
+                            let $ex = cap.expand();
+                            $slf.expand($expansion)
+                        } else {
+                            Ok(())
+                        }
+                    } }
+                }
+
+                macro_rules! expand_req {
+                    ( $slf:expr , $cap:path , $name:expr ) => { {
+                        $slf.term.info.get::<$cap>()
+                            .ok_or_else(|| not_supported($name))
+                            .and_then(|cap| $slf.expand(cap.expand()))
+                    } };
+                    ( $slf:expr , $cap:path , $name:expr , |$ex:ident| $expansion:expr ) => { {
+                        $slf.term.info.get::<$cap>()
+                            .ok_or_else(|| not_supported($name))
+                            .and_then(|cap| {
+                                let $ex = cap.expand();
+                                $slf.expand($expansion)
+                            })
+                    } }
+                }
+
+                impl<'a> TerminalWriteGuard<'a> {
+                    fn new(term: &'a Terminal, writer: MutexGuard<'a, Writer>) -> TerminalWriteGuard<'a> {
+                        TerminalWriteGuard{term, writer}
+                    }
+
+                    pub fn size(&self) -> io::Result<Size> {
+                        get_winsize(self.term.out_fd)
+                    }
+
+                    fn disable_keypad(&mut self) -> io::Result<()> {
+                        if let Some(local) = self.term.info.get::<cap::KeypadLocal>() {
+                            self.expand(local.expand())?;
+                        }
+                        Ok(())
+                    }
+
+                    fn enable_keypad(&mut self) -> io::Result<bool> {
+                        if let Some(xmit) = self.term.info.get::<cap::KeypadXmit>() {
+                            self.expand(xmit.expand())?;
+                            Ok(true)
+                        } else {
+                            Ok(false)
+                        }
+                    }
+
+                    fn disable_mouse(&mut self) -> io::Result<()> {
+                        self.write_bytes(XTERM_DISABLE_MOUSE.as_bytes())?;
+                        self.write_bytes(XTERM_DISABLE_MOUSE_MOTION.as_bytes())
+                    }
+
+                    fn enable_mouse(&mut self, track_motion: bool) -> io::Result<bool> {
+                        if self.term.is_xterm() {
+                            self.write_bytes(XTERM_ENABLE_MOUSE.as_bytes())?;
+                            if track_motion {
+                                self.write_bytes(XTERM_ENABLE_MOUSE_MOTION.as_bytes())?;
+                            }
+                            Ok(true)
+                        } else {
+                            Ok(false)
+                        }
+                    }
+
+                    fn enter_screen(&mut self) -> io::Result<()> {
+                        match (self.term.info.get::<cap::EnterCaMode>(),
+                                self.term.info.get::<cap::ChangeScrollRegion>(),
+                                self.term.info.get::<cap::CursorHome>()) {
+                            (enter, Some(scroll), Some(home)) => {
+                                let size = self.size()?;
+
+                                if let Some(enter) = enter {
+                                    self.expand(enter.expand())?;
+                                }
+
+                                self.expand(scroll.expand()
+                                    .parameters(0, to_u32(size.lines - 1)))?;
+                                self.expand(home.expand())?;
+                            }
+                            (_, None, _) => return Err(not_supported("change_scroll_region")),
+                            (_, _, None) => return Err(not_supported("cursor_home")),
+                        }
+
+                        self.clear_attributes()?;
+                        self.clear_screen()?;
+
+                        Ok(())
+                    }
+
+                    fn exit_screen(&mut self) -> io::Result<()> {
+                        if let Some(exit) = self.term.info.get::<cap::ExitCaMode>() {
+                            self.expand(exit.expand())?;
+                            self.flush()?;
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn clear_attributes(&mut self) -> io::Result<()> {
+                        if self.writer.fg.is_some() || self.writer.bg.is_some() ||
+                                !self.writer.cur_style.is_empty() {
+                            self.writer.fg = None;
+                            self.writer.bg = None;
+                            self.writer.cur_style = Style::empty();
+                            expand_opt!(self, cap::ExitAttributeMode)?;
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn set_fg(&mut self, fg: Option<Color>) -> io::Result<()> {
+                        if self.writer.fg == fg {
+                            Ok(())
+                        } else {
+                            if let Some(fg) = fg {
+                                self.set_fg_color(fg)?;
+                            } else {
+                                self.clear_fg()?;
+                            }
+
+                            self.writer.fg = fg;
+                            Ok(())
+                        }
+                    }
+
+                    pub fn set_bg(&mut self, bg: Option<Color>) -> io::Result<()> {
+                        if self.writer.bg == bg {
+                            Ok(())
+                        } else {
+                            if let Some(bg) = bg {
+                                self.set_bg_color(bg)?;
+                            } else {
+                                self.clear_bg()?;
+                            }
+
+                            self.writer.bg = bg;
+                            Ok(())
+                        }
+                    }
+
+                    pub fn add_style(&mut self, style: Style) -> io::Result<()> {
+                        let add = style - self.writer.cur_style;
+
+                        if add.contains(Style::BOLD) {
+                            expand_opt!(self, cap::EnterBoldMode)?;
+                        }
+                        if add.contains(Style::ITALIC) {
+                            expand_opt!(self, cap::EnterItalicsMode)?;
+                        }
+                        if add.contains(Style::REVERSE) {
+                            expand_opt!(self, cap::EnterReverseMode)?;
+                        }
+                        if add.contains(Style::UNDERLINE) {
+                            expand_opt!(self, cap::EnterUnderlineMode)?;
+                        }
+
+                        self.writer.cur_style |= add;
+
+                        Ok(())
+                    }
+
+                    pub fn remove_style(&mut self, style: Style) -> io::Result<()> {
+                        let remove = style & self.writer.cur_style;
+
+                        if remove.intersects(Style::BOLD | Style::REVERSE) {
+                            // terminfo does not contain entries to remove bold or reverse.
+                            // Instead, we must reset all attributes.
+                            let new_style = self.writer.cur_style - remove;
+                            let fg = self.writer.fg;
+                            let bg = self.writer.bg;
+                            self.clear_attributes()?;
+                            self.add_style(new_style)?;
+                            self.set_fg(fg)?;
+                            self.set_bg(bg)?;
+                        } else {
+                            if remove.contains(Style::ITALIC) {
+                                expand_opt!(self, cap::ExitItalicsMode)?;
+                            }
+                            if remove.contains(Style::UNDERLINE) {
+                                expand_opt!(self, cap::ExitUnderlineMode)?;
+                            }
+
+                            self.writer.cur_style -= remove;
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn set_style(&mut self, style: Style) -> io::Result<()> {
+                        let add = style - self.writer.cur_style;
+                        let remove = self.writer.cur_style - style;
+
+                        if remove.intersects(Style::BOLD | Style::REVERSE) {
+                            // terminfo does not contain entries to remove bold or reverse.
+                            // Instead, we must reset all attributes.
+                            let fg = self.writer.fg;
+                            let bg = self.writer.bg;
+                            self.clear_attributes()?;
+                            self.set_fg(fg)?;
+                            self.set_bg(bg)?;
+                            self.add_style(style)?;
+                        } else {
+                            self.add_style(add)?;
+                            self.remove_style(remove)?;
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn set_theme(&mut self, theme: Theme) -> io::Result<()> {
+                        self.set_attrs(theme.fg, theme.bg, theme.style)
+                    }
+
+                    pub fn set_attrs(&mut self, fg: Option<Color>, bg: Option<Color>, style: Style) -> io::Result<()> {
+                        if (self.writer.fg.is_some() && fg.is_none()) ||
+                                (self.writer.bg.is_some() && bg.is_none()) {
+                            self.clear_attributes()?;
+                        }
+
+                        self.set_style(style)?;
+                        self.set_fg(fg)?;
+                        self.set_bg(bg)?;
+
+                        Ok(())
+                    }
+
+                    fn clear_fg(&mut self) -> io::Result<()> {
+                        let bg = self.writer.bg;
+                        let style = self.writer.cur_style;
+
+                        self.clear_attributes()?;
+                        self.set_bg(bg)?;
+                        self.set_style(style)
+                    }
+
+                    fn clear_bg(&mut self) -> io::Result<()> {
+                        let fg = self.writer.fg;
+                        let style = self.writer.cur_style;
+
+                        self.clear_attributes()?;
+                        self.set_fg(fg)?;
+                        self.set_style(style)
+                    }
+
+                    fn set_fg_color(&mut self, fg: Color) -> io::Result<()> {
+                        expand_opt!(self, cap::SetAForeground,
+                            |ex| ex.parameters(color_code(fg)))
+                    }
+
+                    fn set_bg_color(&mut self, bg: Color) -> io::Result<()> {
+                        expand_opt!(self, cap::SetABackground,
+                            |ex| ex.parameters(color_code(bg)))
+                    }
+
+                    pub fn clear_screen(&mut self) -> io::Result<()> {
+                        expand_req!(self, cap::ClearScreen, "clear_screen")
+                    }
+
+                    pub fn clear_to_line_end(&mut self) -> io::Result<()> {
+                        expand_req!(self, cap::ClrEol, "clr_eol")
+                    }
+
+                    pub fn clear_to_screen_end(&mut self) -> io::Result<()> {
+                        expand_req!(self, cap::ClrEos, "clr_eos")
+                    }
+
+                    pub fn move_up(&mut self, n: usize) -> io::Result<()> {
+                        if n == 1 {
+                            expand_req!(self, cap::CursorUp, "cursor_up")?;
+                        } else if n != 0 {
+                            expand_req!(self, cap::ParmUpCursor, "parm_cursor_up",
+                                |ex| ex.parameters(to_u32(n)))?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_down(&mut self, n: usize) -> io::Result<()> {
+                        // Always use ParmDownCursor because CursorDown does not behave
+                        // as expected outside EnterCaMode state.
+                        if n != 0 {
+                            expand_req!(self, cap::ParmDownCursor, "parm_cursor_down",
+                                |ex| ex.parameters(to_u32(n)))?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_left(&mut self, n: usize) -> io::Result<()> {
+                        if n == 1 {
+                            expand_req!(self, cap::CursorLeft, "cursor_left")?;
+                        } else if n != 0 {
+                            expand_req!(self, cap::ParmLeftCursor, "parm_cursor_left",
+                                |ex| ex.parameters(to_u32(n)))?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_right(&mut self, n: usize) -> io::Result<()> {
+                        if n == 1 {
+                            expand_req!(self, cap::CursorRight, "cursor_right")?;
+                        } else if n != 0 {
+                            expand_req!(self, cap::ParmRightCursor, "parm_cursor_right",
+                                |ex| ex.parameters(to_u32(n)))?;
+                        }
+                        Ok(())
+                    }
+
+                    pub fn move_to_first_column(&mut self) -> io::Result<()> {
+                        self.write_bytes(b"\r")
+                    }
+
+                    pub fn move_cursor(&mut self, pos: Cursor) -> io::Result<()> {
+                        match (self.term.info.get::<cap::CursorAddress>(),
+                                self.term.info.get::<cap::CursorHome>()) {
+                            (_, Some(ref home)) if pos == Cursor::default() => {
+                                self.expand(home.expand())?;
+                            }
+                            (Some(addr), _) => {
+                                self.expand(addr.expand()
+                                    .parameters(to_u32(pos.line), to_u32(pos.column)))?;
+                            }
+                            (None, _) => return Err(not_supported("cursor_address"))
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                        match mode {
+                            CursorMode::Normal | CursorMode::Overwrite => {
+                                // Overwrite is not supported by Unix terminals.
+                                // We set to normal in this case as it will reverse
+                                // a setting of Invisible
+                                expand_opt!(self, cap::CursorNormal)?;
+                            }
+                            CursorMode::Invisible => {
+                                expand_opt!(self, cap::CursorInvisible)?;
+                            }
+                        }
+
+                        Ok(())
+                    }
+
+                    pub fn write_char(&mut self, ch: char) -> io::Result<()> {
+                        self.write_str(ch.encode_utf8(&mut [0; 4]))
+                    }
+
+                    pub fn write_str(&mut self, s: &str) -> io::Result<()> {
+                        self.write_bytes(s.as_bytes())
+                    }
+
+                    pub fn write_styled(&mut self,
+                            fg: Option<Color>, bg: Option<Color>, style: Style, text: &str)
+                            -> io::Result<()> {
+                        self.set_attrs(fg, bg, style)?;
+
+                        self.write_str(text)?;
+                        self.clear_attributes()
+                    }
+
+                    fn write_bytes(&mut self, buf: &[u8]) -> io::Result<()> {
+                        if buf.len() + self.writer.out_buffer.len() > self.writer.out_buffer.capacity() {
+                            self.flush()?;
+                        }
+
+                        if buf.len() > self.writer.out_buffer.capacity() {
+                            self.write_data(buf).1
+                        } else {
+                            self.writer.out_buffer.extend(buf);
+                            Ok(())
+                        }
+                    }
+
+                    pub fn flush(&mut self) -> io::Result<()> {
+                        let (n, res) = self.write_data(&self.writer.out_buffer);
+                        self.writer.out_buffer.drain(..n);
+                        res
+                    }
+
+                    fn write_data(&self, buf: &[u8]) -> (usize, io::Result<()>) {
+                        let mut offset = 0;
+
+                        let r = loop {
+                            if offset == buf.len() {
+                                break Ok(());
+                            }
+
+                            match write(self.term.out_fd, buf) {
+                                Ok(0) => break Err(io::Error::from(io::ErrorKind::WriteZero)),
+                                Ok(n) => offset += n,
+                                Err(Errno::EINTR) => continue,
+                                Err(e) => break Err(nix_to_io(e))
+                            }
+                        };
+
+                        (offset, r)
+                    }
+
+                    fn expand<T: AsRef<[u8]>>(&mut self, exp: Expansion<T>) -> io::Result<()> {
+                        let writer = &mut *self.writer;
+                        exp
+                            .with(&mut writer.context)
+                            .to(&mut writer.out_buffer)
+                            .map_err(ti_to_io)
+                    }
+                }
+
+                impl<'a> Drop for TerminalWriteGuard<'a> {
+                    fn drop(&mut self) {
+                        if let Err(e) = self.flush() {
+                            eprintln!("failed to flush terminal: {}", e);
+                        }
+                    }
+                }
+
+                impl Writer {
+                    fn new() -> Writer {
+                        Writer{
+                            context: Context::default(),
+                            out_buffer: Vec::with_capacity(OUT_BUFFER_SIZE),
+                            fg: None,
+                            bg: None,
+                            cur_style: Style::empty(),
+                        }
+                    }
+                }
+
+                fn is_xterm(name: &str) -> bool {
+                    // Includes such terminal names as "xterm-256color"
+                    name == "xterm" || name.starts_with("xterm-")
+                }
+
+                fn sequences(info: &Database) -> SeqMap {
+                    let mut sequences = SequenceMap::new();
+
+                    macro_rules! add {
+                        ( $seq:ty , $key:expr ) => { {
+                            if let Some(seq) = info.get::<$seq>() {
+                                if let Some(s) = ascii_str(seq.as_ref()) {
+                                    sequences.insert(s.into(), SeqData::Key($key));
+                                }
+                            }
+                        } }
+                    }
+
+                    add!(cap::KeyUp,        Key::Up);
+                    add!(cap::KeyDown,      Key::Down);
+                    add!(cap::KeyLeft,      Key::Left);
+                    add!(cap::KeyRight,     Key::Right);
+                    add!(cap::KeyHome,      Key::Home);
+                    add!(cap::KeyEnd,       Key::End);
+                    add!(cap::KeyNPage,     Key::PageDown);
+                    add!(cap::KeyPPage,     Key::PageUp);
+                    add!(cap::KeyDc,        Key::Delete);
+                    add!(cap::KeyIc,        Key::Insert);
+                    add!(cap::KeyF1,        Key::F(1));
+                    add!(cap::KeyF2,        Key::F(2));
+                    add!(cap::KeyF3,        Key::F(3));
+                    add!(cap::KeyF4,        Key::F(4));
+                    add!(cap::KeyF5,        Key::F(5));
+                    add!(cap::KeyF6,        Key::F(6));
+                    add!(cap::KeyF7,        Key::F(7));
+                    add!(cap::KeyF8,        Key::F(8));
+                    add!(cap::KeyF9,        Key::F(9));
+                    add!(cap::KeyF10,       Key::F(10));
+                    add!(cap::KeyF11,       Key::F(11));
+                    add!(cap::KeyF12,       Key::F(12));
+
+                    if is_xterm(info.name()) {
+                        sequences.insert(XTERM_MOUSE_INTRO.into(), SeqData::XTermMouse);
+                    }
+
+                    sequences
+                }
+
+                pub struct PrepareState {
+                    old_tio: termios,
+                    old_sigcont: Option<SigAction>,
+                    old_sigint: Option<SigAction>,
+                    old_sigtstp: Option<SigAction>,
+                    old_sigquit: Option<SigAction>,
+                    old_sigwinch: Option<SigAction>,
+                    restore_keypad: bool,
+                    restore_mouse: bool,
+                    prev_resume: Option<Resume>,
+                }
+
+                #[derive(Copy, Clone, Debug)]
+                struct Resume {
+                    config: PrepareConfig,
+                }
+
+                unsafe fn close_fd(fd: RawFd) {
+                    drop(File::from_raw_fd(fd));
+                }
+
+                fn open_rw<P: AsRef<Path>>(path: P) -> io::Result<RawFd> {
+                    use std::fs::OpenOptions;
+
+                    let file = OpenOptions::new()
+                        .read(true)
+                        .write(true)
+                        .open(path)?;
+
+                    Ok(file.into_raw_fd())
+                }
+
+                #[repr(C)]
+                struct Winsize {
+                    ws_row: c_ushort,
+                    ws_col: c_ushort,
+                    ws_xpixel: c_ushort,
+                    ws_ypixel: c_ushort,
+                }
+
+                fn get_winsize(fd: c_int) -> io::Result<Size> {
+                    let mut winsz: Winsize = unsafe { zeroed() };
+
+                    // `TIOCGWINSZ.into()` is a workaround to a bug in the libc crate:
+                    //  https://github.com/rust-lang/libc/pull/704
+                    let res = unsafe { ioctl(fd, TIOCGWINSZ.into(), &mut winsz) };
+
+                    if res == -1 {
+                        Err(io::Error::last_os_error())
+                    } else {
+                        let size = Size{
+                            lines: winsz.ws_row as usize,
+                            columns: winsz.ws_col as usize,
+                        };
+
+                        Ok(size)
+                    }
+                }
+
+                fn nix_to_io(e: nix::Error) -> io::Error {
+                    io::Error::from_raw_os_error(e as i32)
+                }
+
+                fn ti_to_io(e: terminfo::Error) -> io::Error {
+                    match e {
+                        terminfo::Error::Io(e) => e,
+                        terminfo::Error::NotFound => io::Error::new(
+                            io::ErrorKind::NotFound, "terminfo entry not found"),
+                        terminfo::Error::Parse => io::Error::new(
+                            io::ErrorKind::Other, "failed to parse terminfo entry"),
+                        terminfo::Error::Expand(_) => io::Error::new(
+                            io::ErrorKind::Other, "failed to expand terminfo entry"),
+                    }
+                }
+
+                fn to_timeval(d: Duration) -> TimeVal {
+                    const MAX_SECS: i64 = i64::max_value() / 1_000;
+
+                    let secs = match d.as_secs() {
+                        n if n > MAX_SECS as u64 => MAX_SECS,
+                        n => n as i64,
+                    };
+
+                    let millis = d.subsec_millis() as i64;
+
+                    TimeVal::milliseconds(secs * 1_000 + millis)
+                }
+
+                fn peek_event(buf: &[u8], sequences: &SeqMap)
+                        -> io::Result<Option<(Event, usize)>> {
+                    let (res, n) = {
+                        let s = utf8_prefix(buf)?;
+
+                        if s.is_empty() {
+                            return Ok(None);
+                        }
+
+                        let mut last_match = None;
+
+                        for pfx in prefixes(s) {
+                            match sequences.find(pfx) {
+                                FindResult::NotFound => break,
+                                FindResult::Found(value) => {
+                                    last_match = Some((pfx, *value));
+                                    break;
+                                }
+                                FindResult::Incomplete => (),
+                                FindResult::Undecided(value) => {
+                                    last_match = Some((pfx, *value));
+                                }
+                            }
+                        }
+
+                        let res = last_match.and_then(|(seq, value)| {
+                            match value {
+                                SeqData::Key(key) => Some((Event::Key(key), seq.len())),
+                                SeqData::XTermMouse => {
+                                    if let Some((data, len)) = parse_mouse_data(&buf[seq.len()..]) {
+                                        Some((Event::Mouse(data), seq.len() + len))
+                                    } else {
+                                        // Input sequence was incomplete
+                                        None
+                                    }
+                                }
+                            }
+                        });
+
+                        if let Some(res) = res {
+                            res
+                        } else {
+                            let ch = s.chars().next().unwrap();
+                            (Event::Key(ch.into()), ch.len_utf8())
+                        }
+                    };
+
+                    Ok(Some((res, n)))
+                }
+
+                fn parse_mouse_data(mut buf: &[u8]) -> Option<(MouseEvent, usize)> {
+                    let orig_len = buf.len();
+
+                    let (mut input, end) = parse_integer(&mut buf)?;
+
+                    if end != b';' {
+                        return None;
+                    }
+
+                    let (column, end) = parse_integer(&mut buf)?;
+
+                    if end != b';' {
+                        return None;
+                    }
+
+                    let (line, end) = parse_integer(&mut buf)?;
+
+                    let is_pressed = match end {
+                        b'M' => true,
+                        b'm' => false,
+                        _ => return None
+                    };
+
+                    let mut mods = ModifierState::empty();
+
+                    if (input & XTERM_SHIFT_MASK) != 0 {
+                        mods |= ModifierState::SHIFT;
+                    }
+                    if (input & XTERM_META_MASK) != 0 {
+                        mods |= ModifierState::ALT;
+                    }
+                    if (input & XTERM_CTRL_MASK) != 0 {
+                        mods |= ModifierState::CTRL;
+                    }
+
+                    input &= !XTERM_MODIFIER_MASK;
+
+                    let input = match input {
+                        0 ..= 3 => mouse_button_event(input, is_pressed),
+                        64 => MouseInput::WheelUp,
+                        65 => MouseInput::WheelDown,
+                        _ => MouseInput::Motion,
+                    };
+
+                    let position = Cursor{
+                        // Parsed line and column begin at 1; we begin at 0
+                        line: (line - 1) as usize,
+                        column: (column - 1) as usize,
+                    };
+
+                    Some((MouseEvent{
+                        position,
+                        input,
+                        modifiers: mods,
+                    }, orig_len - buf.len()))
+                }
+
+                fn parse_integer(buf: &mut &[u8]) -> Option<(u32, u8)> {
+                    let mut n = 0u32;
+                    let mut iter = buf.iter();
+
+                    while let Some(&b) = iter.next() {
+                        match b {
+                            b'0' ..= b'9' => {
+                                n = n.checked_mul(10)?
+                                    .checked_add((b - b'0') as u32)?;
+                            }
+                            _ => {
+                                *buf = iter.as_slice();
+                                return Some((n, b));
+                            }
+                        }
+                    }
+
+                    None
+                }
+
+                fn mouse_button_event(input: u32, is_pressed: bool) -> MouseInput {
+                    let button = match input {
+                        0 => MouseButton::Left,
+                        1 => MouseButton::Middle,
+                        2 => MouseButton::Right,
+                        _ => MouseButton::Other(input)
+                    };
+
+                    if is_pressed {
+                        MouseInput::ButtonPressed(button)
+                    } else {
+                        MouseInput::ButtonReleased(button)
+                    }
+                }
+
+                fn utf8_prefix(buf: &[u8]) -> io::Result<&str> {
+                    match from_utf8(buf) {
+                        Ok(s) => Ok(s),
+                        Err(e) => {
+                            if e.valid_up_to() != 0 {
+                                from_utf8(&buf[..e.valid_up_to()])
+                                    .map_err(|_| unreachable!())
+                            } else if e.error_len().is_some() {
+                                Err(io::Error::new(io::ErrorKind::Other,
+                                    "read invalid utf-8 data from terminal"))
+                            } else {
+                                Ok("")
+                            }
+                        }
+                    }
+                }
+
+                static LAST_SIGNAL: AtomicUsize = AtomicUsize::new(0);
+
+                extern "C" fn handle_signal(signum: c_int) {
+                    LAST_SIGNAL.store(signum as usize, Ordering::Relaxed);
+                }
+
+                fn conv_signal(sig: c_int) -> Option<Signal> {
+                    match NixSignal::try_from(sig).ok() {
+                        Some(NixSignal::SIGCONT)  => Some(Signal::Continue),
+                        Some(NixSignal::SIGINT)   => Some(Signal::Interrupt),
+                        Some(NixSignal::SIGQUIT)  => Some(Signal::Quit),
+                        Some(NixSignal::SIGTSTP)  => Some(Signal::Suspend),
+                        Some(NixSignal::SIGWINCH) => Some(Signal::Resize),
+                        _ => None
+                    }
+                }
+
+                fn get_signal() -> Option<Signal> {
+                    conv_signal(LAST_SIGNAL.load(Ordering::Relaxed) as c_int)
+                }
+
+                fn take_signal() -> Option<Signal> {
+                    conv_signal(LAST_SIGNAL.swap(0, Ordering::Relaxed) as c_int)
+                }
+
+                fn ascii_str(s: &[u8]) -> Option<&str> {
+                    use std::str::from_utf8_unchecked;
+
+                    if s.is_ascii() {
+                        Some(unsafe { from_utf8_unchecked(s) })
+                    } else {
+                        None
+                    }
+                }
+
+                fn color_code(color: Color) -> u8 {
+                    match color {
+                        Color::Black =>     0,
+                        Color::Red =>       1,
+                        Color::Green =>     2,
+                        Color::Yellow =>    3,
+                        Color::Blue =>      4,
+                        Color::Magenta =>   5,
+                        Color::Cyan =>      6,
+                        Color::White =>     7,
+                    }
+                }
+
+                fn not_supported(op: &str) -> io::Error {
+                    io::Error::new(io::ErrorKind::Other,
+                        format!("operation not supported: {}", op))
+                }
+
+                #[cfg(target_pointer_width = "64")]
+                fn to_u32(u: usize) -> u32 {
+                    if u > u32::max_value() as usize {
+                        u32::max_value()
+                    } else {
+                        u as u32
+                    }
+                }
+
+                #[cfg(any(target_pointer_width = "16", target_pointer_width = "32"))]
+                fn to_u32(u: usize) -> u32 {
+                    u as u32
+                }
+
+            }
+        }        
+
+        pub mod windows
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */
+        }
+
+        #[cfg(unix)] pub use self::unix::{ * };
+        #[cfg(windows)] pub use self::windows::{ * };
+    }
+    /**/
+    pub mod private
+    {
+        /*!
+        */
+        use ::
+        {
+            sync::{LockResult, PoisonError, TryLockError, TryLockResult},
+            *,
+        };
+        use super::screen::{Screen, ScreenReadGuard};
+        use super::{Terminal, TerminalReadGuard};
+        use super::util::char_width;
+        /*
+        */
+        // Private trait used to prevent external crates from implementing extension traits
+        pub trait Private {}
+
+        impl Private for Screen {}
+        impl<'a> Private for ScreenReadGuard<'a> {}
+        impl Private for Terminal {}
+        impl<'a> Private for TerminalReadGuard<'a> {}
+
+        pub fn map_lock_result<F, T, U>(res: LockResult<T>, f: F) -> LockResult<U>
+                where F: FnOnce(T) -> U {
+            match res {
+                Ok(t) => Ok(f(t)),
+                Err(e) => Err(PoisonError::new(f(e.into_inner()))),
+            }
+        }
+
+        pub fn map_try_lock_result<F, T, U>(res: TryLockResult<T>, f: F) -> TryLockResult<U>
+                where F: FnOnce(T) -> U {
+            match res {
+                Ok(t) => Ok(f(t)),
+                Err(TryLockError::Poisoned(p)) => Err(TryLockError::Poisoned(
+                    PoisonError::new(f(p.into_inner())))),
+                Err(TryLockError::WouldBlock) => Err(TryLockError::WouldBlock),
+            }
+        }
+
+        pub fn map2_lock_result<F, T, U, R>(res: LockResult<T>, res2: LockResult<U>, f: F)
+                -> LockResult<R> where F: FnOnce(T, U) -> R {
+            match (res, res2) {
+                (Ok(a), Ok(b)) => Ok(f(a, b)),
+                (Ok(a), Err(b)) => Err(PoisonError::new(f(a, b.into_inner()))),
+                (Err(a), Ok(b)) => Err(PoisonError::new(f(a.into_inner(), b))),
+                (Err(a), Err(b)) => Err(PoisonError::new(f(a.into_inner(), b.into_inner()))),
+            }
+        }
+
+        pub fn map2_try_lock_result<F, T, U, R>(
+                res: TryLockResult<T>, res2: TryLockResult<U>, f: F)
+                -> TryLockResult<R> where F: FnOnce(T, U) -> R {
+            match (res, res2) {
+                (Ok(a), Ok(b)) => Ok(f(a, b)),
+                (Err(TryLockError::WouldBlock), _) => Err(TryLockError::WouldBlock),
+                (_, Err(TryLockError::WouldBlock)) => Err(TryLockError::WouldBlock),
+                (Ok(a), Err(TryLockError::Poisoned(b))) =>
+                    Err(TryLockError::Poisoned(PoisonError::new(f(a, b.into_inner())))),
+                (Err(TryLockError::Poisoned(a)), Ok(b)) =>
+                    Err(TryLockError::Poisoned(PoisonError::new(f(a.into_inner(), b)))),
+                (Err(TryLockError::Poisoned(a)), Err(TryLockError::Poisoned(b))) =>
+                    Err(TryLockError::Poisoned(PoisonError::new(
+                        f(a.into_inner(), b.into_inner())))),
+            }
+        }
+    }
+    /**/
+    pub mod screen
+    {
+        /*!
+        Provides a drawable buffer on terminal devices */
+        use ::
+        {
+            sync::{LockResult, TryLockResult},
+            time::std::{ Duration },
+            *,
+        };
+        /*
+        */
+        use super::private::{map_lock_result, map_try_lock_result};
+        //use super::sys;
+        use super::terminal::{
+            Color, Cursor, CursorMode, Event, PrepareConfig, Size, Style, Theme,
+            Terminal,
+        };
+        /// Provides operations on an underlying terminal device in screen mode.
+        ///
+        /// `Screen` uses an internal buffer to store rendered text, colors, and style.
+        ///
+        /// Each set of changes must be followed by a call to [`refresh`] to flush these
+        /// changes to the terminal device.
+        ///
+        /// # Concurrency
+        ///
+        /// Access to read and write operations is controlled by two internal locks:
+        /// One for [reading] and one for [writing]. Each lock may be held independently
+        /// of the other.
+        ///
+        /// If any one thread wishes to hold both locks, the read lock
+        /// must be acquired first, in order to prevent deadlocks.
+        ///
+        /// [`refresh`]: #method.refresh
+        /// [reading]: struct.ScreenReadGuard.html
+        /// [writing]: struct.ScreenWriteGuard.html
+        pub struct Screen(sys::Screen);
+
+        /// Holds an exclusive lock for read operations on a `Screen`
+        ///
+        /// See [`Screen`] documentation for details on locking.
+        ///
+        /// [`Screen`]: struct.Screen.html
+        pub struct ScreenReadGuard<'a>(sys::ScreenReadGuard<'a>);
+
+        /// Holds an exclusive lock for write operations on a `Screen`
+        ///
+        /// See [`Screen`] documentation for details on locking.
+        ///
+        /// [`Screen`]: struct.Screen.html
+        pub struct ScreenWriteGuard<'a>(sys::ScreenWriteGuard<'a>);
+
+        impl Screen {
+            /// Opens a new screen interface on `stdout`.
+            pub fn new(config: PrepareConfig) -> io::Result<Screen> {
+                sys::Screen::stdout(config).map(Screen)
+            }
+            /// Opens a new screen interface on `stderr`.
+            pub fn stderr(config: PrepareConfig) -> io::Result<Screen> {
+                sys::Screen::stderr(config).map(Screen)
+            }
+            /// Begins a new screen session using the given `Terminal` instance.
+            pub fn with_terminal(term: Terminal, config: PrepareConfig) -> io::Result<Screen> {
+                sys::Screen::new(term.0, config).map(Screen)
+            }
+            /// Returns the name of the terminal.
+            ///
+            /// # Notes
+            ///
+            /// On Unix, this method returns the contents of the `TERM` environment variable.
+            ///
+            /// On Windows, this method always returns the string `"windows-console"`.
+            #[inline] pub fn name(&self) -> &str {
+                self.0.name()
+            }
+            /// Attempts to acquire an exclusive lock on terminal read operations.
+            ///
+            /// The current thread will block until the lock can be acquired.
+            #[inline] pub fn lock_read(&self) -> LockResult<ScreenReadGuard> {
+                map_lock_result(self.0.lock_read(), ScreenReadGuard)
+            }
+            /// Attempts to acquire an exclusive lock on terminal write operations.
+            ///
+            /// The current thread will block until the lock can be acquired.
+            #[inline] pub fn lock_write(&self) -> LockResult<ScreenWriteGuard> {
+                map_lock_result(self.0.lock_write(), ScreenWriteGuard)
+            }
+            /// Attempts to acquire an exclusive lock on terminal read operations.
+            ///
+            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
+            #[inline] pub fn try_lock_read(&self) -> TryLockResult<ScreenReadGuard> {
+                map_try_lock_result(self.0.try_lock_read(), ScreenReadGuard)
+            }
+            /// Attempts to acquire an exclusive lock on terminal write operations.
+            ///
+            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
+            #[inline] pub fn try_lock_write(&self) -> TryLockResult<ScreenWriteGuard> {
+                map_try_lock_result(self.0.try_lock_write(), ScreenWriteGuard)
+            }
+        }
+        /// # Locking
+        ///
+        /// The following methods internally acquire the read lock.
+        ///
+        /// The lock is released before the method returns.
+        ///
+        /// These methods are also implemented on [`ScreenReadGuard`],
+        /// which holds the `Screen` read lock until the value is dropped.
+        ///
+        /// [`ScreenReadGuard`]: struct.ScreenReadGuard.html
+        impl Screen {
+            /// Waits for an event from the terminal.
+            ///
+            /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            ///
+            /// # Notes
+            ///
+            /// Some low-level terminal events may not generate an `Event` value.
+            /// Therefore, this method may return `Ok(true)`, while a follow-up call
+            /// to `read_event` may not immediately return an event.
+            pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> {
+                self.0.wait_event(timeout)
+            }
+            /// Reads an event from the terminal.
+            ///
+            /// If `timeout` elapses without an event occurring, this method will return
+            /// `Ok(None)`.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>>  {
+                self.0.read_event(timeout)
+            }
+        }
+        /// # Locking
+        ///
+        /// The following methods internally acquire the write lock.
+        ///
+        /// The lock is released before the method returns.
+        ///
+        /// These methods are also implemented on [`ScreenWriteGuard`],
+        /// which holds the `Screen` write lock until the value is dropped.
+        ///
+        /// [`ScreenWriteGuard`]: struct.ScreenWriteGuard.html
+        impl Screen {
+            /// Returns the current size of the terminal screen.
+            #[inline] pub fn size(&self) -> Size {
+                self.0.size()
+            }
+            /// Returns the current cursor position.
+            #[inline] pub fn cursor(&self) -> Cursor {
+                self.0.cursor()
+            }
+            /// Sets the cursor position.
+            #[inline] pub fn set_cursor<C: Into<Cursor>>(&self, pos: C) {
+                self.0.set_cursor(pos.into());
+            }
+            /// Moves the cursor to the given column on the next line.
+            #[inline] pub fn next_line(&self, column: usize) {
+                self.0.next_line(column);
+            }
+            /// Set the current cursor mode.
+            ///
+            /// This setting is a visible hint to the user.
+            /// It produces no change in behavior.
+            ///
+            /// # Notes
+            ///
+            /// On Unix systems, this setting may have no effect.
+            pub fn set_cursor_mode(&self, mode: CursorMode) -> io::Result<()> {
+                self.0.set_cursor_mode(mode)
+            }
+            /// Clears the internal screen buffer.
+            pub fn clear_screen(&self) {
+                self.0.clear_screen();
+            }
+            /// Adds a set of `Style` flags to the current style setting.
+            #[inline] pub fn add_style(&self, style: Style) {
+                self.0.add_style(style);
+            }
+            /// Removes a set of `Style` flags to the current style setting.
+            #[inline] pub fn remove_style(&self, style: Style) {
+                self.0.remove_style(style);
+            }
+            /// Sets the current style setting to the given set of flags.
+            #[inline] pub fn set_style<S: Into<Option<Style>>>(&self, style: S) {
+                self.0.set_style(style.into().unwrap_or_default());
+            }
+            /// Sets or removes foreground text color.
+            #[inline] pub fn set_fg<C: Into<Option<Color>>>(&self, fg: C) {
+                self.0.set_fg(fg.into());
+            }
+            /// Sets or removes background text color.
+            #[inline] pub fn set_bg<C: Into<Option<Color>>>(&self, bg: C) {
+                self.0.set_bg(bg.into());
+            }
+            /// Sets all attributes for the screen.
+            #[inline] pub fn set_theme(&self, theme: Theme) {
+                self.0.set_theme(theme)
+            }
+            /// Removes color and style attributes.
+            #[inline] pub fn clear_attributes(&self) {
+                self.0.clear_attributes();
+            }
+            /// Adds bold to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::BOLD)`.
+            #[inline] pub fn bold(&self) {
+                self.add_style(Style::BOLD);
+            }
+            /// Adds italic to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::ITALIC)`.
+            #[inline] pub fn italic(&self) {
+                self.add_style(Style::ITALIC);
+            }
+            /// Adds underline to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::UNDERLINE)`.
+            #[inline] pub fn underline(&self) {
+                self.add_style(Style::UNDERLINE);
+            }
+            /// Adds reverse to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::REVERSE)`.
+            #[inline] pub fn reverse(&self) {
+                self.add_style(Style::REVERSE);
+            }
+            /// Renders the internal buffer to the terminal screen.
+            pub fn refresh(&self) -> io::Result<()> {
+                self.0.refresh()
+            }
+            /// Writes text at the given position within the screen buffer.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_at<C>(&self, position: C, text: &str)
+                    where C: Into<Cursor> {
+                self.0.write_at(position.into(), text);
+            }
+            /// Writes text with the given attributes at the current cursor position.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_styled<F, B, S>(&self, fg: F, bg: B, style: S, text: &str) where
+                    F: Into<Option<Color>>,
+                    B: Into<Option<Color>>,
+                    S: Into<Option<Style>>,
+                    {
+                self.0.write_styled(fg.into(), bg.into(), style.into().unwrap_or_default(), text);
+            }
+            /// Writes text with the given attributes at the given position within
+            /// the screen buffer.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_styled_at<C, F, B, S>(&self, position: C,
+                    fg: F, bg: B, style: S, text: &str) where
+                    C: Into<Cursor>,
+                    F: Into<Option<Color>>,
+                    B: Into<Option<Color>>,
+                    S: Into<Option<Style>>,
+                    {
+                self.0.write_styled_at(position.into(),
+                    fg.into(), bg.into(), style.into().unwrap_or_default(), text);
+            }
+            /// Writes a single character at the cursor position
+            /// using the current style and color settings.
+            ///
+            /// If the character is a non-printable character, it will be ignored.
+            pub fn write_char(&self, ch: char) {
+                self.0.write_char(ch);
+            }
+            /// Writes a string at the cursor position
+            /// using the current style and color settings.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_str(&self, s: &str) {
+                self.0.write_str(s);
+            }
+            /// Writes formatted text at the cursor position
+            /// using the current style and color settings.
+            ///
+            /// This method enables `Screen` to be used as the receiver to
+            /// the [`write!`] and [`writeln!`] macros.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            ///
+            /// # Examples
+            ///
+            /// ```no_run
+            /// # use std::io;
+            /// # use mortal::Screen;
+            /// # fn example() -> io::Result<()> {
+            /// let screen = Screen::new(Default::default())?;
+            ///
+            /// writeln!(screen, "Hello, world!");
+            /// # Ok(())
+            /// # }
+            /// ```
+            ///
+            /// [`write!`]: https://doc.rust-lang.org/std/macro.write.html
+            /// [`writeln!`]: https://doc.rust-lang.org/std/macro.writeln.html
+            pub fn write_fmt(&self, args: fmt::Arguments) {
+                let s = args.to_string();
+                self.write_str(&s)
+            }
+
+            #[doc(hidden)]
+            pub fn borrow_term_write_guard(&self) -> ScreenWriteGuard {
+                self.lock_write().unwrap()
+            }
+        }
+
+        impl<'a> ScreenReadGuard<'a> {
+            /// Waits for an event from the terminal.
+            ///
+            /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            ///
+            /// # Notes
+            ///
+            /// Some low-level terminal events may not generate an `Event` value.
+            /// Therefore, this method may return `Ok(true)`, while a follow-up call
+            /// to `read_event` may not immediately return an event.
+            pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
+                self.0.wait_event(timeout)
+            }
+            /// Reads an event from the terminal.
+            ///
+            /// If `timeout` elapses without an event occurring, this method will return
+            /// `Ok(None)`.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_event(timeout)
+            }
+        }
+
+        impl<'a> ScreenWriteGuard<'a> {
+            /// Returns the current size of the terminal screen.
+            #[inline] pub fn size(&self) -> Size {
+                self.0.size()
+            }
+            /// Sets the cursor position.
+            #[inline] pub fn cursor(&self) -> Cursor {
+                self.0.cursor()
+            }
+            /// Moves the cursor to the given column on the next line.
+            #[inline] pub fn set_cursor<C: Into<Cursor>>(&mut self, pos: C) {
+                self.0.set_cursor(pos.into());
+            }
+            /// Set the current cursor mode.
+            #[inline] pub fn next_line(&mut self, column: usize) {
+                self.0.next_line(column);
+            }
+            /// Set the current cursor mode.
+            ///
+            /// This setting is a visible hint to the user.
+            /// It produces no change in behavior.
+            ///
+            /// # Notes
+            ///
+            /// On Unix systems, this setting may have no effect.
+            pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                self.0.set_cursor_mode(mode)
+            }
+            /// Adds a set of `Style` flags to the current style setting.
+            pub fn clear_screen(&mut self) {
+                self.0.clear_screen();
+            }
+            /// Removes a set of `Style` flags to the current style setting.
+            /// Adds a set of `Style` flags to the current style setting.
+            #[inline] pub fn add_style(&mut self, style: Style) {
+                self.0.add_style(style)
+            }
+            /// Sets the current style setting to the given set of flags.
+            #[inline] pub fn remove_style(&mut self, style: Style) {
+                self.0.remove_style(style)
+            }
+            /// Sets or removes foreground text color.
+            #[inline] pub fn set_style<S: Into<Option<Style>>>(&mut self, style: S) {
+                self.0.set_style(style.into().unwrap_or_default())
+            }
+            /// Sets or removes background text color.
+            #[inline] pub fn set_fg<C: Into<Option<Color>>>(&mut self, fg: C) {
+                self.0.set_fg(fg.into())
+            }
+            /// Removes color and style attributes.
+            #[inline] pub fn set_bg<C: Into<Option<Color>>>(&mut self, bg: C) {
+                self.0.set_bg(bg.into())
+            }
+            /// Sets all attributes for the screen.
+            #[inline] pub fn set_theme(&mut self, theme: Theme) {
+                self.0.set_theme(theme)
+            }
+            /// Adds bold to the current style setting.
+            #[inline] pub fn clear_attributes(&mut self) {
+                self.0.clear_attributes()
+            }
+            /// Adds bold to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::BOLD)`.
+            #[inline] pub fn bold(&mut self) {
+                self.add_style(Style::BOLD)
+            }
+            /// Adds italic to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::ITALIC)`.
+            #[inline] pub fn italic(&mut self) {
+                self.add_style(Style::ITALIC);
+            }
+            /// Adds underline to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::UNDERLINE)`.
+            #[inline] pub fn underline(&mut self) {
+                self.add_style(Style::UNDERLINE)
+            }
+            /// Adds reverse to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::REVERSE)`.
+            #[inline] pub fn reverse(&mut self) {
+                self.add_style(Style::REVERSE)
+            }
+            /// Renders the internal buffer to the terminal screen.
+            ///
+            /// This is called automatically when the `ScreenWriteGuard` is dropped.
+            pub fn refresh(&mut self) -> io::Result<()> {
+                self.0.refresh()
+            }
+            /// Writes text at the given position within the screen buffer.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_at<C>(&mut self, position: C, text: &str)
+                    where C: Into<Cursor> {
+                self.0.write_at(position.into(), text)
+            }
+            /// Writes text with the given attributes at the current cursor position.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_styled<F, B, S>(&mut self, fg: F, bg: B, style: S, text: &str) where
+                    F: Into<Option<Color>>,
+                    B: Into<Option<Color>>,
+                    S: Into<Option<Style>>,
+                    {
+                self.0.write_styled(fg.into(), bg.into(), style.into().unwrap_or_default(), text)
+            }
+            /// Writes text with the given attributes at the given position within
+            /// the screen buffer.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_styled_at<C, F, B, S>(&mut self, position: C,
+                    fg: F, bg: B, style: S, text: &str) where
+                    C: Into<Cursor>,
+                    F: Into<Option<Color>>,
+                    B: Into<Option<Color>>,
+                    S: Into<Option<Style>>,
+                    {
+                self.0.write_styled_at(position.into(),
+                    fg.into(), bg.into(), style.into().unwrap_or_default(), text)
+            }
+            /// Writes a single character at the cursor position
+            /// using the current style and color settings.
+            ///
+            /// If the character is a non-printable character, it will be ignored.
+            pub fn write_char(&mut self, ch: char) {
+                self.0.write_char(ch)
+            }
+            /// Writes a string at the cursor position
+            /// using the current style and color settings.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            pub fn write_str(&mut self, s: &str) {
+                self.0.write_str(s)
+            }
+            /// Writes formatted text at the cursor position
+            /// using the current style and color settings.
+            ///
+            /// This method enables `ScreenWriteGuard` to be used as the receiver to
+            /// the [`write!`] and [`writeln!`] macros.
+            ///
+            /// Any non-printable characters, such as escape sequences, will be ignored.
+            ///
+            /// [`write!`]: https://doc.rust-lang.org/std/macro.write.html
+            /// [`writeln!`]: https://doc.rust-lang.org/std/macro.writeln.html
+            pub fn write_fmt(&mut self, args: fmt::Arguments) {
+                let s = args.to_string();
+                self.write_str(&s)
+            }
+
+            #[doc(hidden)]
+            pub fn borrow_term_write_guard(&mut self) -> &mut Self {
+                self
+            }
+        }
+
+        #[cfg(unix)]
+        impl crate::unix::TerminalExt for Screen {
+            fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+        }
+
+        #[cfg(unix)]
+        impl<'a> crate::unix::TerminalExt for ScreenReadGuard<'a> {
+            fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+        }
+
+        #[cfg(windows)]
+        impl crate::windows::TerminalExt for Screen {
+            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+
+            fn read_raw_event(&mut self, events: &mut [::winapi::um::wincon::INPUT_RECORD],
+                    timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw_event(events, timeout)
+            }
+        }
+
+        #[cfg(windows)]
+        impl<'a> crate::windows::TerminalExt for ScreenReadGuard<'a> {
+            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+
+            fn read_raw_event(&mut self, events: &mut [::winapi::um::wincon::INPUT_RECORD],
+                    timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw_event(events, timeout)
+            }
+        }
     }
     /*
     */
@@ -34225,6 +38192,1345 @@ pub mod system
                     .field(self.key())
                     .finish()
             }
+        }
+    }
+    /*
+    */
+    pub mod signal
+    {
+        /*!
+        */
+        use ::
+        {
+            iter::{ FromIterator },
+            *,
+        };
+        /*
+        */
+        macro_rules! impl_op 
+        {
+            ( $tr:ident , $tr_meth:ident , $method:ident ) =>
+            {
+                impl ops::$tr for SignalSet
+                {
+                    type Output = SignalSet;
+                    fn $tr_meth(self, rhs: SignalSet) -> SignalSet { self.$method(rhs) }
+                }
+            }
+        }
+
+        macro_rules! impl_mut_op 
+        {
+            ( $tr:ident , $tr_meth:ident , $method:ident ) =>
+            {
+                impl ops::$tr for SignalSet
+                {
+                    fn $tr_meth(&mut self, rhs: SignalSet) { *self = self.$method(rhs); }
+                }
+            }
+        }
+
+        macro_rules! impl_unary_op 
+        {
+            ( $tr:ident , $tr_meth:ident , $method:ident ) => 
+            {
+                impl ops::$tr for SignalSet 
+                {
+                    type Output = SignalSet;
+                    fn $tr_meth(self) -> SignalSet { self.$method() }
+                }
+            }
+        }
+        const NUM_SIGNALS: u8 = 6;
+        /// Signal received through a terminal device
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum Signal
+        {
+            /// Break signal (`CTRL_BREAK_EVENT`); Windows only
+            Break,
+            /// Continue signal (`SIGCONT`); Unix only
+            Continue,
+            /// Interrupt signal (`SIGINT` on Unix, `CTRL_C_EVENT` on Windows)
+            Interrupt,
+            /// Terminal window resize (`SIGWINCH` on Unix,
+            /// `WINDOW_BUFFER_SIZE_EVENT` on Windows)
+            ///
+            /// When this signal is received, it will be translated into an
+            /// `Event::Resize(_)` value containing the new size of the terminal.
+            Resize,
+            /// Suspend signal (`SIGTSTP`); Unix only
+            Suspend,
+            /// Quit signal (`SIGQUIT`); Unix only
+            Quit,
+        }
+
+        impl Signal {
+            fn as_bit(&self) -> u8 {
+                1 << (*self as u8)
+            }
+
+            fn all_bits() -> u8 {
+                (1 << NUM_SIGNALS) - 1
+            }
+        }
+
+        impl ops::BitOr for Signal {
+            type Output = SignalSet;
+
+            fn bitor(self, rhs: Signal) -> SignalSet {
+                let mut set = SignalSet::new();
+
+                set.insert(self);
+                set.insert(rhs);
+                set
+            }
+        }
+
+        impl ops::Not for Signal {
+            type Output = SignalSet;
+
+            fn not(self) -> SignalSet {
+                !SignalSet::from(self)
+            }
+        }
+        /// Represents a set of `Signal` values
+        #[derive(Copy, Clone, Default, Eq, PartialEq)]
+        pub struct SignalSet(u8);
+
+        impl SignalSet 
+        {
+            /// Returns an empty `SignalSet`.
+            pub fn new() -> SignalSet {
+                SignalSet(0)
+            }
+            /// Returns a `SignalSet` containing all available signals.
+            pub fn all() -> SignalSet {
+                SignalSet(Signal::all_bits())
+            }
+            /// Returns whether this set contains the given `Signal`.
+            pub fn contains(&self, sig: Signal) -> bool {
+                self.0 & sig.as_bit() != 0
+            }
+            /// Returns whether this set contains all signals present in another set.
+            pub fn contains_all(&self, other: SignalSet) -> bool {
+                self.0 & other.0 == other.0
+            }
+            /// Returns whether this set contains any signals present in another set.
+            pub fn intersects(&self, other: SignalSet) -> bool {
+                self.0 & other.0 != 0
+            }
+            /// Returns whether this set contains any signals.
+            pub fn is_empty(&self) -> bool {
+                self.0 == 0
+            }
+            /// Inserts a `Signal` into this set.
+            pub fn insert(&mut self, sig: Signal) {
+                self.0 |= sig.as_bit();
+            }
+            /// Removes a `Signal` from this set.
+            pub fn remove(&mut self, sig: Signal) {
+                self.0 &= !sig.as_bit();
+            }
+            /// Sets whether this set contains the given `Signal`.
+            pub fn set(&mut self, sig: Signal, set: bool) {
+                if set {
+                    self.insert(sig);
+                } else {
+                    self.remove(sig);
+                }
+            }
+            /// Returns the difference of two sets.
+            ///
+            /// The result is all signals contained in `self`, except for those
+            /// also contained in `other`.
+            ///
+            /// This is equivalent to `self - other` or `self & !other`.
+            pub fn difference(&self, other: SignalSet) -> SignalSet {
+                SignalSet(self.0 & !other.0)
+            }
+            /// Returns the symmetric difference of two sets.
+            ///
+            /// The result is all signals contained in either set, but not those contained
+            /// in both.
+            ///
+            /// This is equivalent to `self ^ other`.
+            pub fn symmetric_difference(&self, other: SignalSet) -> SignalSet {
+                SignalSet(self.0 ^ other.0)
+            }
+            /// Returns the intersection of two sets.
+            ///
+            /// The result is all signals contained in both sets, but not those contained
+            /// in either one or the other.
+            ///
+            /// This is equivalent to `self & other`.
+            pub fn intersection(&self, other: SignalSet) -> SignalSet {
+                SignalSet(self.0 & other.0)
+            }
+            /// Returns the union of two sets.
+            ///
+            /// The result is all signals contained in either or both sets.
+            ///
+            /// This is equivalent to `self | other`.
+            pub fn union(&self, other: SignalSet) -> SignalSet {
+                SignalSet(self.0 | other.0)
+            }
+            /// Returns the inverse of the set.
+            ///
+            /// The result is all valid signals not contained in this set.
+            ///
+            /// This is equivalent to `!self`.
+            pub fn inverse(&self) -> SignalSet {
+                SignalSet(!self.0 & Signal::all_bits())
+            }
+        }
+
+        impl fmt::Debug for SignalSet 
+        {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                const SIGNALS: &[Signal] = &[
+                    Signal::Break,
+                    Signal::Continue,
+                    Signal::Interrupt,
+                    Signal::Resize,
+                    Signal::Suspend,
+                    Signal::Quit,
+                ];
+
+                let mut first = true;
+
+                f.write_str("SignalSet(")?;
+
+                for &sig in SIGNALS {
+                    if self.contains(sig) {
+                        if !first {
+                            f.write_str(" | ")?;
+                        }
+
+                        write!(f, "{:?}", sig)?;
+                        first = false;
+                    }
+                }
+
+                f.write_str(")")
+            }
+        }
+
+        impl From<Signal> for SignalSet 
+        {
+            fn from(sig: Signal) -> SignalSet {
+                let mut set = SignalSet::new();
+                set.insert(sig);
+                set
+            }
+        }
+
+        impl Extend<Signal> for SignalSet 
+        {
+            fn extend<I: IntoIterator<Item=Signal>>(&mut self, iter: I) {
+                for sig in iter {
+                    self.insert(sig);
+                }
+            }
+        }
+
+        impl FromIterator<Signal> for SignalSet 
+        {
+            fn from_iter<I: IntoIterator<Item=Signal>>(iter: I) -> SignalSet {
+                let mut set = SignalSet::new();
+
+                set.extend(iter);
+                set
+            }
+        }
+
+        impl_op!{ BitAnd, bitand, intersection }
+        impl_op!{ BitOr, bitor, union }
+        impl_op!{ BitXor, bitxor, symmetric_difference }
+        impl_op!{ Sub, sub, difference }
+
+        impl_unary_op!{ Not, not, inverse }
+
+        impl_mut_op!{ BitAndAssign, bitand_assign, intersection }
+        impl_mut_op!{ BitOrAssign, bitor_assign, union }
+        impl_mut_op!{ BitXorAssign, bitxor_assign, symmetric_difference }
+        impl_mut_op!{ SubAssign, sub_assign, difference }
+    }
+    /*
+    */
+    pub mod terminal
+    {
+        /*!
+        Provides an interface to terminal devices */
+        use ::
+        {
+            sync::{ LockResult, TryLockResult },
+            time::std::{ Duration },
+            *,
+        };
+        use super::private::{map_lock_result, map_try_lock_result};
+        use super::signal::{Signal, SignalSet};
+        /*
+        */
+        /// Represents a color attribute applied to text foreground or background.
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum Color
+        {
+            /// Black
+            Black,
+            /// Blue
+            Blue,
+            /// Cyan
+            Cyan,
+            /// Green
+            Green,
+            /// Magenta
+            Magenta,
+            /// Red
+            Red,
+            /// White
+            White,
+            /// Yellow
+            Yellow,
+        }
+
+        bitflags!
+        {
+            /// Represents a set of style attributes applied to text.
+            #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
+            pub struct Style: u8 {
+                /// Bold
+                const BOLD      = 1 << 0;
+                /// Italic
+                const ITALIC    = 1 << 1;
+                /// Reverse; foreground and background color swapped
+                const REVERSE   = 1 << 2;
+                /// Underline
+                const UNDERLINE = 1 << 3;
+            }
+        }
+        /// Represents a terminal output theme.
+        #[derive(Copy, Clone, Debug, Default)]
+        pub struct Theme 
+        {
+            /// Foreground color
+            pub fg: Option<Color>,
+            /// Background color
+            pub bg: Option<Color>,
+            /// Style
+            pub style: Style,
+        }
+
+        impl Theme 
+        {
+            /// Creates a new theme with given values.
+            pub fn new<F,B,S>(fg: F, bg: B, style: S) -> Theme
+                    where
+                        F: Into<Option<Color>>,
+                        B: Into<Option<Color>>,
+                        S: Into<Option<Style>> {
+                Theme {
+                    fg: fg.into(),
+                    bg: bg.into(),
+                    style: style.into().unwrap_or_default(),
+                }
+            }
+            /// Sets the foreground color on the given Theme and returns the new.
+            pub fn fg<F>(mut self, fg: F) -> Theme
+                    where F: Into<Option<Color>> {
+                self.fg = fg.into();
+                self
+            }
+            /// Sets the background color on the given Theme and returns the new.
+            pub fn bg<B>(mut self, bg: B) -> Theme
+                    where B: Into<Option<Color>> {
+                self.bg = bg.into();
+                self
+            }
+            /// Sets the style on the given Theme and returns the new.
+            pub fn style<S>(mut self, style: S) -> Theme
+                    where S: Into<Option<Style>> {
+                self.style = style.into().unwrap_or_default();
+                self
+            }
+        }
+        /// Represents the cursor position in a terminal device
+        #[derive(Copy, Clone, Debug, Default, Eq, PartialEq)]
+        pub struct Cursor 
+        {
+            /// Index of line in terminal, beginning at `0`.
+            pub line: usize,
+            /// Index of column in terminal, beginning at `0`.
+            pub column: usize,
+        }
+
+        impl Cursor 
+        {
+            /// Returns the position of the next cell within a terminal of the given size.
+            #[inline] pub fn next(&self, size: Size) -> Option<Cursor> 
+            {
+                let mut line = self.line;
+                let mut column = self.column + 1;
+
+                if column >= size.columns {
+                    column = 0;
+                    line += 1;
+                }
+
+                if line >= size.lines {
+                    None
+                } else {
+                    Some(Cursor{line, column})
+                }
+            }
+            /// Returns the position of the previous cell within a terminal of the given size.
+            #[inline] pub fn previous(&self, size: Size) -> Option<Cursor> {
+                if self.column == 0 {
+                    if self.line == 0 {
+                        None
+                    } else {
+                        Some(Cursor{line: self.line - 1, column: size.columns - 1})
+                    }
+                } else {
+                    Some(Cursor{line: self.line, column: self.column - 1})
+                }
+            }
+            /// Returns a `Cursor` pointing to the first cell, i.e. `(0, 0)`.
+            #[inline] pub fn first() -> Cursor {
+                Cursor{
+                    line: 0,
+                    column: 0,
+                }
+            }
+            /// Returns a `Cursor` pointing to the last cell of a screen of the given size.
+            #[inline] pub fn last(size: Size) -> Cursor {
+                Cursor{
+                    line: size.lines - 1,
+                    column: size.columns - 1,
+                }
+            }
+            /// Returns whether the cursor is out of bounds of the given size.
+            #[inline] pub fn is_out_of_bounds(&self, size: Size) -> bool {
+                self.line >= size.lines || self.column >= size.columns
+            }
+            /// Returns the index of the cursor position within a one-dimensional array
+            /// of the given size.
+            pub(crate) fn as_index(&self, size: Size) -> usize {
+                self.line * size.columns + self.column
+            }
+        }
+
+        impl From<(usize, usize)> for Cursor {
+            /// Returns a `Cursor` value from a `(line, column)` or `(y, x)` tuple.
+            fn from((line, column): (usize, usize)) -> Cursor {
+                Cursor{line, column}
+            }
+        }
+        /// Represents the visual appearance of the cursor in the terminal
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum CursorMode {
+            /// Normal mode
+            Normal,
+            /// Invisible mode
+            Invisible,
+            /// Overwrite mode
+            Overwrite,
+        }
+        /// Represents an event generated from a terminal interface
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum Event {
+            /// Keyboard event
+            Key(Key),
+            /// Mouse event
+            Mouse(MouseEvent),
+            /// Raw data read
+            Raw(usize),
+            /// Terminal window size changed; contained value is the new size.
+            Resize(Size),
+            /// Terminal signal received
+            Signal(Signal),
+            /// No event
+            NoEvent,
+        }
+        /// Represents a keyboard key press event
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum Key {
+            /// Backspace
+            Backspace,
+            /// Enter
+            Enter,
+            /// Escape
+            Escape,
+            /// Tab
+            Tab,
+            /// Up arrow
+            Up,
+            /// Down arrow
+            Down,
+            /// Left arrow
+            Left,
+            /// Right arrow
+            Right,
+            /// Delete
+            Delete,
+            /// Insert
+            Insert,
+            /// Home
+            Home,
+            /// End
+            End,
+            /// PageUp
+            PageUp,
+            /// PageDown
+            PageDown,
+            /// Character key
+            Char(char),
+            /// Control character
+            Ctrl(char),
+            /// Function `n` key; e.g. F1, F2, ...
+            F(u32),
+        }
+
+        impl From<char> for Key {
+            fn from(ch: char) -> Key {
+                use crate::util::{is_ctrl, unctrl_lower};
+
+                match ch {
+                    '\x1b' => Key::Escape,
+                    '\x7f' => Key::Backspace,
+                    '\r' | '\n' => Key::Enter,
+                    '\t' => Key::Tab,
+                    _ if is_ctrl(ch) => Key::Ctrl(unctrl_lower(ch)),
+                    _ => Key::Char(ch),
+                }
+            }
+        }
+        /// Represents a mouse event
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub struct MouseEvent 
+        {
+            /// The position of the mouse within the terminal when the event occurred
+            pub position: Cursor,
+            /// The input event that occurred
+            pub input: MouseInput,
+            /// Modifier keys held when the input event occurred
+            pub modifiers: ModifierState,
+        }
+        /// Represents the type of mouse input event
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum MouseInput {
+            /// The mouse cursor was moved
+            Motion,
+            /// A mouse button was pressed
+            ButtonPressed(MouseButton),
+            /// A mouse button was released
+            ButtonReleased(MouseButton),
+            /// The mouse wheel was scrolled up
+            WheelUp,
+            /// The mouse wheel was scrolled down
+            WheelDown,
+        }
+        /// Represents a button on a mouse device
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum MouseButton {
+            /// Left mouse button
+            Left,
+            /// Right mouse button
+            Right,
+            /// Middle mouse button
+            Middle,
+            /// Other mouse button
+            Other(u32),
+        }
+
+        bitflags!{
+            /// Represents a set of modifier keys
+            #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
+            pub struct ModifierState: u8 {
+                /// Alt key
+                const ALT   = 1 << 0;
+                /// Ctrl key
+                const CTRL  = 1 << 1;
+                /// Shift key
+                const SHIFT = 1 << 2;
+            }
+        }
+        /// Configures a [`Terminal`] or [`Screen`] instance to read special input.
+        #[derive(Copy, Clone, Debug)]
+        pub struct PrepareConfig {
+            /// Whether to block signals that result from user input.
+            ///
+            /// If `true`, e.g. when the user presses Ctrl-C,
+            /// `Key(Ctrl('c'))` will be read instead of `Signal(Interrupt)`.
+            ///
+            /// The default is `true`.
+            pub block_signals: bool,
+            /// Whether to enable control flow characters.
+            ///
+            /// The default is `false`.
+            ///
+            /// # Notes
+            ///
+            /// On Unix, when this setting is enabled, Ctrl-S and Ctrl-Q
+            /// will stop and start, respectively, terminal input from being processed.
+            ///
+            /// On Windows, this setting has no effect.
+            pub enable_control_flow: bool,
+            /// If `true`, the terminal will be configured to generate events from
+            /// function keys.
+            ///
+            /// The default is `true`.
+            ///
+            /// # Notes
+            ///
+            /// On Unix, this may be required to receive events for arrow keys.
+            ///
+            /// On Windows, this setting has no effect.
+            pub enable_keypad: bool,
+            /// If `true`, the terminal will be configured to generate events for
+            /// mouse input, if supported, and `read_event` may return `Event::Mouse(_)`.
+            ///
+            /// The default is `false`.
+            ///
+            /// # Notes
+            ///
+            /// This setting may not be supported on all systems.
+            pub enable_mouse: bool,
+            /// If `true`, mouse motion events will always be reported.
+            /// If `false`, such events will only be reported while at least one mouse
+            /// button is pressed.
+            ///
+            /// Mouse events are only reported if `enable_mouse` is `true`.
+            ///
+            /// The default is `false`.
+            pub always_track_motion: bool,
+            /// For each signal in the set, a signal handler will intercept the signal
+            /// and report it by returning an `Event::Signal(_)` value.
+            ///
+            /// `block_signals` must be `false` for any of these signals to be received.
+            ///
+            /// By default, no signals are reported.
+            pub report_signals: SignalSet,
+        }
+
+        impl Default for PrepareConfig {
+            fn default() -> PrepareConfig {
+                PrepareConfig{
+                    block_signals: true,
+                    enable_control_flow: false,
+                    enable_keypad: true,
+                    enable_mouse: false,
+                    always_track_motion: false,
+                    report_signals: SignalSet::new(),
+                }
+            }
+        }
+        /// Represents a previous device state of a [`Terminal`].
+        ///
+        /// A value of this type is returned by [`Terminal::prepare`].
+        ///
+        /// Required to revert terminal state using [`Terminal::restore`].
+        ///
+        /// [`Terminal`]: struct.Terminal.html
+        /// [`Terminal::prepare`]: struct.Terminal.html#method.prepare
+        /// [`Terminal::restore`]: struct.Terminal.html#method.restore
+        #[must_use = "the result of `terminal.prepare()` should be passed to \
+            `terminal.restore()` to restore terminal to its original state"]
+        pub struct PrepareState(sys::PrepareState);
+
+        /// Represents the size of a terminal window
+        ///
+        /// A valid size must not have zero lines or zero columns.
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub struct Size {
+            /// Number of lines in the terminal
+            pub lines: usize,
+            /// Number of columns in the terminal
+            pub columns: usize,
+        }
+
+        impl Size {
+            /// Returns the total number of cells in a terminal of the given size.
+            ///
+            /// # Panics
+            ///
+            /// If `lines * columns` would overflow.
+            #[inline] pub fn area(&self) -> usize {
+                self.checked_area().unwrap_or_else(
+                    || panic!("overflow in Size::area {:?}", self))
+            }
+            /// Returns the total number of cells in a terminal of the given size.
+            ///
+            /// Returns `None` in case of overflow.
+            #[inline] pub fn checked_area(&self) -> Option<usize> {
+                self.lines.checked_mul(self.columns)
+            }
+        }
+        /// Provides concurrent read and write access to a terminal device
+        ///
+        /// # Concurrency
+        ///
+        /// Access to read and write operations is controlled by two internal locks:
+        /// One for [reading] and one for [writing]. Each lock may be held independently
+        /// of the other.
+        ///
+        /// If any one thread wishes to hold both locks, the read lock
+        /// must be acquired first, in order to prevent deadlocks.
+        ///
+        /// [reading]: struct.TerminalReadGuard.html
+        /// [writing]: struct.TerminalWriteGuard.html
+        pub struct Terminal(pub(crate) sys::Terminal);
+
+        /// Holds an exclusive lock for read operations on a `Terminal`
+        ///
+        /// See [`Terminal`] documentation for details on locking.
+        ///
+        /// [`Terminal`]: struct.Terminal.html
+        pub struct TerminalReadGuard<'a>(sys::TerminalReadGuard<'a>);
+
+        /// Holds an exclusive lock for write operations on a `Terminal`
+        ///
+        /// See [`Terminal`] documentation for details on locking.
+        ///
+        /// [`Terminal`]: struct.Terminal.html
+        pub struct TerminalWriteGuard<'a>(sys::TerminalWriteGuard<'a>);
+
+        impl Terminal {
+            /// Opens a new interface to the terminal on `stdout`.
+            pub fn new() -> io::Result<Terminal> {
+                Ok(Terminal(sys::Terminal::stdout()?))
+            }
+            /// Opens a new interface to the terminal on `stderr`.
+            pub fn stderr() -> io::Result<Terminal> {
+                Ok(Terminal(sys::Terminal::stderr()?))
+            }
+            /// Returns the name of the terminal.
+            ///
+            /// # Notes
+            ///
+            /// On Unix, this method returns the contents of the `TERM` environment variable.
+            ///
+            /// On Windows, this method always returns the string `"windows-console"`.
+            #[inline] pub fn name(&self) -> &str {
+                self.0.name()
+            }
+            /// Attempts to acquire an exclusive lock on terminal read operations.
+            ///
+            /// The current thread will block until the lock can be acquired.
+            #[inline] pub fn lock_read(&self) -> LockResult<TerminalReadGuard> {
+                map_lock_result(self.0.lock_read(), TerminalReadGuard)
+            }
+            /// Attempts to acquire an exclusive lock on terminal write operations.
+            ///
+            /// The current thread will block until the lock can be acquired.
+            #[inline] pub fn lock_write(&self) -> LockResult<TerminalWriteGuard> {
+                map_lock_result(self.0.lock_write(), TerminalWriteGuard)
+            }
+            /// Attempts to acquire an exclusive lock on terminal read operations.
+            ///
+            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
+            #[inline] pub fn try_lock_read(&self) -> TryLockResult<TerminalReadGuard> {
+                map_try_lock_result(self.0.try_lock_read(), TerminalReadGuard)
+            }
+            /// Attempts to acquire an exclusive lock on terminal write operations.
+            ///
+            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
+            #[inline] pub fn try_lock_write(&self) -> TryLockResult<TerminalWriteGuard> {
+                map_try_lock_result(self.0.try_lock_write(), TerminalWriteGuard)
+            }
+        }
+        /// # Locking
+        ///
+        /// The following methods internally acquire both the read and write locks.
+        ///
+        /// The locks are released before the method returns.
+        ///
+        /// These methods are also implemented on [`TerminalReadGuard`],
+        /// which holds the `Terminal` read lock until the value is dropped.
+        ///
+        /// [`TerminalReadGuard`]: struct.TerminalReadGuard.html
+        impl Terminal {
+            /// Prepares the terminal to read input.
+            ///
+            /// When reading operations have concluded, [`restore`] should be called
+            /// with the resulting `PrepareState` value to restore the terminal to
+            /// its previous state.
+            ///
+            /// This method may be called more than once before a corresponding
+            /// `restore` call. However, each `restore` call must receive the most
+            /// recently created `PrepareState` value.
+            ///
+            /// See [`PrepareConfig`] for details.
+            ///
+            /// [`PrepareConfig`]: struct.PrepareConfig.html
+            /// [`restore`]: #method.restore
+            pub fn prepare(&self, config: PrepareConfig) -> io::Result<PrepareState> {
+                self.0.prepare(config).map(PrepareState)
+            }
+            /// Restores the terminal to its previous state.
+            pub fn restore(&self, state: PrepareState) -> io::Result<()> {
+                self.0.restore(state.0)
+            }
+        }
+        /// # Locking
+        ///
+        /// The following methods internally acquire the read lock.
+        ///
+        /// The lock is released before the method returns.
+        ///
+        /// These methods are also implemented on [`TerminalReadGuard`],
+        /// which holds the `Terminal` read lock until the value is dropped.
+        ///
+        /// [`TerminalReadGuard`]: struct.TerminalReadGuard.html
+        impl Terminal {
+            /// Waits for an event from the terminal.
+            ///
+            /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> {
+                self.0.wait_event(timeout)
+            }
+            /// Waits for input and reads an event from the terminal.
+            ///
+            /// Returns `Ok(None)` if `timeout` elapses without an event occurring.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>>  {
+                self.0.read_event(timeout)
+            }
+        }
+        /// # Locking
+        ///
+        /// The following methods internally acquire the write lock.
+        ///
+        /// The lock is released before the method returns.
+        ///
+        /// These methods are also implemented on [`TerminalWriteGuard`],
+        /// which holds the `Terminal` write lock until the value is dropped.
+        ///
+        /// [`TerminalWriteGuard`]: struct.TerminalWriteGuard.html
+        impl Terminal {
+            /// Returns the size of the terminal.
+            #[inline] pub fn size(&self) -> io::Result<Size> {
+                self.0.size()
+            }
+            /// Clears the terminal screen, placing the cursor at the first line and column.
+            ///
+            /// If the terminal contains a scrolling window over a buffer, the window
+            /// will be scrolled downward, preserving as much of the existing buffer
+            /// as possible.
+            pub fn clear_screen(&self) -> io::Result<()> {
+                self.0.clear_screen()
+            }
+            /// Clears the current line, starting at cursor position.
+            pub fn clear_to_line_end(&self) -> io::Result<()> {
+                self.0.clear_to_line_end()
+            }
+            /// Clears the screen, starting at cursor position.
+            pub fn clear_to_screen_end(&self) -> io::Result<()> {
+                self.0.clear_to_screen_end()
+            }
+            /// Moves the cursor up `n` lines.
+            pub fn move_up(&self, n: usize) -> io::Result<()> {
+                self.0.move_up(n)
+            }
+            /// Moves the cursor down `n` lines.
+            pub fn move_down(&self, n: usize) -> io::Result<()> {
+                self.0.move_down(n)
+            }
+            /// Moves the cursor left `n` columns.
+            pub fn move_left(&self, n: usize) -> io::Result<()> {
+                self.0.move_left(n)
+            }
+            /// Moves the cursor right `n` columns.
+            pub fn move_right(&self, n: usize) -> io::Result<()> {
+                self.0.move_right(n)
+            }
+            /// Moves the cursor to the first column of the current line
+            pub fn move_to_first_column(&self) -> io::Result<()> {
+                self.0.move_to_first_column()
+            }
+            /// Set the current cursor mode.
+            ///
+            /// This setting is a visible hint to the user.
+            /// It produces no change in behavior.
+            ///
+            /// # Notes
+            ///
+            /// On some systems, this setting may have no effect.
+            pub fn set_cursor_mode(&self, mode: CursorMode) -> io::Result<()> {
+                self.0.set_cursor_mode(mode)
+            }
+            /// Adds a set of `Style` flags to the current style setting.
+            pub fn add_style(&self, style: Style) -> io::Result<()> {
+                self.0.add_style(style)
+            }
+            /// Removes a set of `Style` flags from the current style setting.
+            pub fn remove_style(&self, style: Style) -> io::Result<()> {
+                self.0.remove_style(style)
+            }
+            /// Sets the current style to the given set of flags.
+            pub fn set_style<S>(&self, style: S) -> io::Result<()>
+                    where S: Into<Option<Style>> {
+                self.0.set_style(style.into().unwrap_or_default())
+            }
+            /// Sets all attributes for the terminal.
+            pub fn set_theme(&self, theme: Theme) -> io::Result<()> {
+                self.0.set_theme(theme)
+            }
+            /// Sets the foreground text color.
+            pub fn set_fg<C: Into<Option<Color>>>(&self, fg: C) -> io::Result<()> {
+                self.0.set_fg(fg.into())
+            }
+            /// Sets the background text color.
+            pub fn set_bg<C: Into<Option<Color>>>(&self, bg: C) -> io::Result<()> {
+                self.0.set_bg(bg.into())
+            }
+            /// Removes color and style attributes.
+            pub fn clear_attributes(&self) -> io::Result<()> {
+                self.0.clear_attributes()
+            }
+            /// Adds bold to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::BOLD)`.
+            pub fn bold(&self) -> io::Result<()> {
+                self.add_style(Style::BOLD)
+            }
+            /// Adds italic to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::ITALIC)`.
+            pub fn italic(&self) -> io::Result<()> {
+                self.add_style(Style::ITALIC)
+            }
+            /// Adds underline to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::UNDERLINE)`.
+            pub fn underline(&self) -> io::Result<()> {
+                self.add_style(Style::UNDERLINE)
+            }
+            /// Adds reverse to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::REVERSE)`.
+            pub fn reverse(&self) -> io::Result<()> {
+                self.add_style(Style::REVERSE)
+            }
+            /// Writes output to the terminal with the given color and style.
+            ///
+            /// All attributes are removed after the given text is written.
+            pub fn write_styled<F, B, S>(&self, fg: F, bg: B, style: S, s: &str)
+                    -> io::Result<()> where
+                    F: Into<Option<Color>>,
+                    B: Into<Option<Color>>,
+                    S: Into<Option<Style>>,
+                    {
+                self.0.write_styled(fg.into(), bg.into(), style.into().unwrap_or_default(), s)
+            }
+            /// Writes a single character to the terminal
+            /// using the current style and color settings.
+            pub fn write_char(&self, ch: char) -> io::Result<()> {
+                self.0.write_char(ch)
+            }
+            /// Writes a string to the terminal
+            /// using the current style and color settings.
+            pub fn write_str(&self, s: &str) -> io::Result<()> {
+                self.0.write_str(s)
+            }
+            /// Writes formatted text to the terminal
+            /// using the current style and color settings.
+            ///
+            /// This method enables `Terminal` to be used as the receiver to
+            /// the [`write!`] and [`writeln!`] macros.
+            ///
+            /// # Examples
+            ///
+            /// ```no_run
+            /// # use std::io;
+            /// # use mortal::Terminal;
+            /// # fn example() -> io::Result<()> {
+            /// let term = Terminal::new()?;
+            ///
+            /// writeln!(term, "Hello, world!")?;
+            /// # Ok(())
+            /// # }
+            /// ```
+            ///
+            /// [`write!`]: https://doc.rust-lang.org/std/macro.write.html
+            /// [`writeln!`]: https://doc.rust-lang.org/std/macro.writeln.html
+            pub fn write_fmt(&self, args: fmt::Arguments) -> io::Result<()> {
+                let s = args.to_string();
+                self.write_str(&s)
+            }
+
+            #[doc(hidden)]
+            pub fn borrow_term_write_guard(&self) -> TerminalWriteGuard {
+                self.lock_write().unwrap()
+            }
+        }
+
+        impl<'a> TerminalReadGuard<'a> {
+            /// Prepares the terminal to read input.
+            ///
+            /// When reading operations have concluded, [`restore`]
+            /// should be called with the resulting `PrepareState` value to restore
+            /// the terminal to its previous state.
+            ///
+            /// This method may be called more than once before a corresponding
+            /// `restore` call. However, each `restore` call must receive the most recently
+            /// created `PrepareState` value.
+            ///
+            /// See [`PrepareConfig`] for details.
+            ///
+            /// [`PrepareConfig`]: struct.PrepareConfig.html
+            /// [`restore`]: #method.restore
+            ///
+            /// ## Locking
+            ///
+            /// This method internally acquires the [`Terminal`] write lock.
+            ///
+            /// If the write lock is already held by the current thread,
+            /// call [`prepare_with_lock`], in order to prevent deadlocks.
+            ///
+            /// [`Terminal`]: struct.Terminal.html
+            /// [`prepare_with_lock`]: #method.prepare_with_lock
+            pub fn prepare(&mut self, config: PrepareConfig) -> io::Result<PrepareState> {
+                self.0.prepare(config).map(PrepareState)
+            }
+            /// Performs terminal preparation using both [`Terminal`] locks.
+            ///
+            /// [`Terminal`]: struct.Terminal.html
+            pub fn prepare_with_lock(&mut self, writer: &mut TerminalWriteGuard,
+                    config: PrepareConfig) -> io::Result<PrepareState> {
+                self.0.prepare_with_lock(&mut writer.0, config).map(PrepareState)
+            }
+            /// Restores the terminal to its previous state.
+            ///
+            /// ## Locking
+            ///
+            /// This method internally acquires the [`Terminal`] write lock.
+            ///
+            /// If the write lock is already held by the current thread,
+            /// call [`restore_with_lock`], in order to prevent deadlocks.
+            ///
+            /// [`Terminal`]: struct.Terminal.html
+            /// [`restore_with_lock`]: #method.restore_with_lock
+            pub fn restore(&mut self, state: PrepareState) -> io::Result<()> {
+                self.0.restore(state.0)
+            }
+            /// Performs terminal state restoration using both [`Terminal`] locks.
+            ///
+            /// [`Terminal`]: struct.Terminal.html
+            pub fn restore_with_lock(&mut self, writer: &mut TerminalWriteGuard,
+                    state: PrepareState) -> io::Result<()> {
+                self.0.restore_with_lock(&mut writer.0, state.0)
+            }
+            /// Waits for an event from the terminal.
+            ///
+            /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
+                self.0.wait_event(timeout)
+            }
+            /// Waits for input and reads an event from the terminal.
+            ///
+            /// Returns `Ok(None)` if `timeout` elapses without an event occurring.
+            ///
+            /// If `timeout` is `None`, this method will wait indefinitely.
+            pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>>  {
+                self.0.read_event(timeout)
+            }
+        }
+
+        impl<'a> TerminalWriteGuard<'a> {
+            /// Flush all output to the terminal device.
+            ///
+            /// This is called automatically when the `TerminalWriteGuard` is dropped.
+            pub fn flush(&mut self) -> io::Result<()> {
+                self.0.flush()
+            }
+            /// Returns the size of the terminal.
+            #[inline] pub fn size(&self) -> io::Result<Size> {
+                self.0.size()
+            }
+            /// Clears the terminal screen, placing the cursor at the first line and column.
+            ///
+            /// If the terminal contains a scrolling window over a buffer, the window
+            /// will be scrolled downward, preserving as much of the existing buffer
+            /// as possible.
+            pub fn clear_screen(&mut self) -> io::Result<()> {
+                self.0.clear_screen()
+            }
+            /// Clears the current line, starting at cursor position.
+            pub fn clear_to_line_end(&mut self) -> io::Result<()> {
+                self.0.clear_to_line_end()
+            }
+            /// Clears the screen, starting at cursor position.
+            pub fn clear_to_screen_end(&mut self) -> io::Result<()> {
+                self.0.clear_to_screen_end()
+            }
+            /// Moves the cursor up `n` lines.
+            pub fn move_up(&mut self, n: usize) -> io::Result<()> {
+                self.0.move_up(n)
+            }
+            /// Moves the cursor down `n` lines.
+            pub fn move_down(&mut self, n: usize) -> io::Result<()> {
+                self.0.move_down(n)
+            }
+            /// Moves the cursor left `n` columns.
+            pub fn move_left(&mut self, n: usize) -> io::Result<()> {
+                self.0.move_left(n)
+            }
+            /// Moves the cursor right `n` columns.
+            pub fn move_right(&mut self, n: usize) -> io::Result<()> {
+                self.0.move_right(n)
+            }
+            /// Moves the cursor to the first column of the current line
+            pub fn move_to_first_column(&mut self) -> io::Result<()> {
+                self.0.move_to_first_column()
+            }
+            /// Set the current cursor mode.
+            ///
+            /// This setting is a visible hint to the user.
+            /// It produces no change in behavior.
+            ///
+            /// # Notes
+            ///
+            /// On some systems, this setting may have no effect.
+            pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                self.0.set_cursor_mode(mode)
+            }
+            /// Adds a set of `Style` flags to the current style setting.
+            pub fn add_style(&mut self, style: Style) -> io::Result<()> {
+                self.0.add_style(style)
+            }
+            /// Removes a set of `Style` flags from the current style setting.
+            pub fn remove_style(&mut self, style: Style) -> io::Result<()> {
+                self.0.remove_style(style)
+            }
+            /// Sets the current style to the given set of flags.
+            pub fn set_style<S>(&mut self, style: S) -> io::Result<()>
+                    where S: Into<Option<Style>> {
+                self.0.set_style(style.into().unwrap_or_default())
+            }
+            /// Sets all attributes for the terminal.
+            pub fn set_theme(&mut self, theme: Theme) -> io::Result<()> {
+                self.0.set_theme(theme)
+            }
+            /// Sets the background text color.
+            pub fn set_fg<C: Into<Option<Color>>>(&mut self, fg: C) -> io::Result<()> {
+                self.0.set_fg(fg.into())
+            }
+            /// Removes color and style attributes.
+            pub fn set_bg<C: Into<Option<Color>>>(&mut self, bg: C) -> io::Result<()> {
+                self.0.set_bg(bg.into())
+            }
+            /// Adds bold to the current style setting.
+            pub fn clear_attributes(&mut self) -> io::Result<()> {
+                self.0.clear_attributes()
+            }
+            /// Adds bold to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::BOLD)`.
+            pub fn bold(&mut self) -> io::Result<()> {
+                self.add_style(Style::BOLD)
+            }
+            /// Adds italic to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::ITALIC)`.
+            pub fn italic(&mut self) -> io::Result<()> {
+                self.add_style(Style::ITALIC)
+            }
+            /// Adds underline to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::UNDERLINE)`.
+            pub fn underline(&mut self) -> io::Result<()> {
+                self.add_style(Style::UNDERLINE)
+            }
+            /// Adds reverse to the current style setting.
+            ///
+            /// This is equivalent to `self.add_style(Style::REVERSE)`.
+            pub fn reverse(&mut self) -> io::Result<()> {
+                self.add_style(Style::REVERSE)
+            }
+            /// Writes output to the terminal with the given color and style added.
+            ///
+            /// All attributes are removed after the given text is written.
+            pub fn write_styled<F, B, S>(&mut self, fg: F, bg: B, style: S, s: &str)
+                    -> io::Result<()> where
+                    F: Into<Option<Color>>,
+                    B: Into<Option<Color>>,
+                    S: Into<Option<Style>>,
+                    {
+                self.0.write_styled(fg.into(), bg.into(), style.into().unwrap_or_default(), s)
+            }
+            /// Writes a single character to the terminal
+            /// using the current style and color settings.
+            pub fn write_char(&mut self, ch: char) -> io::Result<()> {
+                self.0.write_char(ch)
+            }
+            /// Writes a string to the terminal
+            /// using the current style and color settings.
+            pub fn write_str(&mut self, s: &str) -> io::Result<()> {
+                self.0.write_str(s)
+            }
+            /// Writes formatted text to the terminal
+            /// using the current style and color settings.
+            ///
+            /// This method enables `TerminalWriteGuard` to be used as the receiver to
+            /// the [`write!`] and [`writeln!`] macros.
+            ///
+            /// [`write!`]: https://doc.rust-lang.org/std/macro.write.html
+            /// [`writeln!`]: https://doc.rust-lang.org/std/macro.writeln.html
+            pub fn write_fmt(&mut self, args: fmt::Arguments) -> io::Result<()> {
+                let s = args.to_string();
+                self.write_str(&s)
+            }
+
+            #[doc(hidden)]
+            pub fn borrow_term_write_guard(&mut self) -> &mut Self {
+                self
+            }
+        }
+
+        #[cfg(unix)]
+        use std::path::Path;
+
+        #[cfg(unix)]
+        impl crate::unix::OpenTerminalExt for Terminal {
+            fn from_path<P: AsRef<Path>>(path: P) -> io::Result<Self> {
+                sys::Terminal::open(path).map(Terminal)
+            }
+        }
+
+        #[cfg(unix)]
+        impl crate::unix::TerminalExt for Terminal {
+            fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+        }
+
+        #[cfg(unix)]
+        impl<'a> crate::unix::TerminalExt for TerminalReadGuard<'a> {
+            fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+        }
+
+        #[cfg(windows)]
+        impl crate::windows::TerminalExt for Terminal {
+            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+
+            fn read_raw_event(&mut self, events: &mut [::winapi::um::wincon::INPUT_RECORD],
+                    timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw_event(events, timeout)
+            }
+        }
+
+        #[cfg(windows)]
+        impl<'a> crate::windows::TerminalExt for TerminalReadGuard<'a> {
+            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw(buf, timeout)
+            }
+
+            fn read_raw_event(&mut self, events: &mut [::winapi::um::wincon::INPUT_RECORD],
+                    timeout: Option<Duration>) -> io::Result<Option<Event>> {
+                self.0.read_raw_event(events, timeout)
+            }
+        }
+        
+    } pub use self::terminal::{ * };
+    /**/
+    pub mod traits
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+        /// Facilitates chaining calls from either a `Terminal` or `Screen` lock.
+        pub trait Chain: Sized
+        {
+            fn chain<F: FnOnce() -> Self>(self, f: F) -> Self;
+            fn init() -> Self;
+        }
+
+        impl Chain for ()
+        {
+            fn chain<F: FnOnce() -> Self>(self, f: F) -> Self { f() }
+            fn init() -> Self {}
+        }
+
+        impl Chain for ::io::Result<()>
+        {
+            fn chain<F: FnOnce() -> Self>(self, f: F) -> Self { self.and_then(|_| f()) }
+
+            fn init() -> Self { Ok(()) }
+        }
+    }  pub use self::traits::{ * };
+    /// Returns the width of a character in the terminal.
+    #[inline] pub fn char_width(ch: char) -> Option<usize> 
+    {
+        use unicode_width::UnicodeWidthChar;
+
+        ch.width()
+    }
+    /// Returns whether the given character is a combining mark.
+    #[inline] pub fn is_combining_mark(ch: char) -> bool 
+    {
+        use unicode_normalization::char::is_combining_mark;
+
+        is_combining_mark(ch)
+    }
+
+    const CTRL_MASK: u8 = 0x1f;
+    const UNCTRL_BIT: u8 = 0x40;
+    /// Returns the control character corresponding to the given character.
+    #[inline] pub fn ctrl(ch: char) -> char 
+    {
+        ((ch as u8) & CTRL_MASK) as char
+    }
+    /// Returns whether the given character is a control character.
+    #[inline] pub fn is_ctrl(ch: char) -> bool 
+    {
+        let ch = ch as u32;
+        ch & (CTRL_MASK as u32) == ch
+    }
+    /// Returns the ASCII character corresponding to the given control character.
+    #[inline] pub fn unctrl_upper(ch: char) -> char 
+    {
+        ((ch as u8) | UNCTRL_BIT) as char
+    }
+    /// Returns the lowercase ASCII character corresponding to the given control character.
+    #[inline] pub fn unctrl_lower(ch: char) -> char 
+    {
+        unctrl_upper(ch).to_ascii_lowercase()
+    }
+    /// Iterator over string prefixes.
+    pub struct Prefixes<'a> 
+    {
+        s: &'a str,
+        iter: CharIndices<'a>,
+    }
+    /// Returns an iterator over all non-empty prefixes of `s`, beginning with the shortest.
+    #[inline] pub fn prefixes(s: &str) -> Prefixes 
+    {
+        Prefixes{
+            s,
+            iter: s.char_indices(),
+        }
+    }
+
+    impl<'a> Iterator for Prefixes<'a> 
+    {
+        type Item = &'a str;
+
+        fn next(&mut self) -> Option<&'a str> {
+            self.iter.next().map(|(idx, ch)| &self.s[..idx + ch.len_utf8()])
         }
     }
 }
@@ -37514,4 +42820,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 37517 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 42823 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
