@@ -72,6 +72,7 @@ features = ["local-offset"]
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate nix;
 #[macro_use] extern crate rand;
+#[macro_use] extern crate smallvec;
 #[macro_use] extern crate regex as re;
 #[macro_use] extern crate time as temporal;
 #[macro_use] extern crate unicode_normalization;
@@ -1274,6 +1275,7 @@ features = ["local-offset"]
                 fn peek(cursor: ::syntax::buffer::Cursor) -> ::syntax::__private::bool {
                     ::syntax::__private::peek_punct(cursor, ::syntax::stringify_punct!($($tt)+))
                 }
+                
                 fn display() -> &'static ::syntax::__private::str {
                     ::syntax::__private::concat!("`", ::syntax::stringify_punct!($($tt)+), "`")
                 }
@@ -1454,6 +1456,7 @@ features = ["local-offset"]
                         false
                     }
                 }
+                
                 fn display() -> &'static ::syntax::__private::str {
                     ::syntax::__private::concat!("`", ::syntax::__private::stringify!($ident), "`")
                 }
@@ -2394,77 +2397,9 @@ features = ["local-offset"]
         ($e:expr) => { unsafe { ::mem::transmute::<_, _>($e) } }
     );
     /// Writes attributes and formatted text to a `Terminal` or `Screen`.
-    ///
-    /// # Usage
-    ///
-    /// `term_write!` accepts a series of attribute elements and formatted text elements.
-    ///
-    /// [`term_writeln!`] is equivalent, but writes a newline character
-    /// to the end of the formatted text.
-    ///
-    /// Attribute elements are enclosed in square brackets
-    /// and take one of the following forms:
-    ///
-    /// | Element           | Equivalent                        |
-    /// | ----------------- | --------------------------------- |
-    /// | `[red]`           | `term.set_fg(Color::Red)`         |
-    /// | `[#blue]`         | `term.set_bg(Color::Blue)`        |
-    /// | `[bold]`          | `term.add_style(Style::BOLD)`     |
-    /// | `[!bold]`         | `term.remove_style(Style::BOLD)`  |
-    /// | `[reset]`         | `term.clear_attributes()`         |
-    /// | `[!fg]`           | `term.set_fg(None)`               |
-    /// | `[!bg]`           | `term.set_bg(None)`               |
-    /// | `[!style]`        | `term.set_style(None)`            |
-    /// | `[fg=expr]`       | `term.set_fg(expr)`               |
-    /// | `[bg=expr]`       | `term.set_bg(expr)`               |
-    /// | `[style=expr]`    | `term.set_style(expr)`            |
-    /// | `[style+=expr]`   | `term.add_style(expr)`            |
-    /// | `[style-=expr]`   | `term.remove_style(expr)`         |
-    /// | `[theme=expr]`    | `term.set_theme(expr)`            |
-    ///
-    /// Formatted text elements are enclosed in parentheses
-    /// and use Rust [`std::fmt`] functions to write formatted text to the terminal.
-    /// Additionally, a bare string literal may be given and will be written
-    /// directly to the terminal.
-    ///
-    /// | Element           | Equivalent                        |
-    /// | ----------------- | --------------------------------- |
-    /// | `(: expr)`        | `write!(term, "{}", expr)`        |
-    /// | `(? expr)`        | `write!(term, "{:?}", expr)`      |
-    /// | `("format", ...)` | `write!(term, "format", ...)`     |
-    /// | `"literal str"`   | `term.write_str("literal str")`   |
-    ///
-    /// # Examples
-    ///
-    /// ```no_run
-    /// #[macro_use] extern crate mortal;
-    /// # use std::io;
-    /// use mortal::{Color, Style, Theme, Terminal};
-    ///
-    /// # fn main() -> io::Result<()> {
-    /// let term = Terminal::new()?;
-    ///
-    /// term_writeln!(term, [red] "red text" [reset])?;
-    ///
-    /// let color = Color::Green;
-    /// term_writeln!(term, [fg=color] "green text" [reset])?;
-    ///
-    /// let style = Style::BOLD;
-    /// term_writeln!(term, [style=style] "bold text" [reset])?;
-    ///
-    /// let value = 42;
-    /// term_writeln!(term, "The answer is: " [bold] (: value) [reset])?;
-    ///
-    /// let theme = Theme::new(color, None, style);
-    /// term_writeln!(term, [theme=theme] "Green, bold text" [reset])?;
-    /// # Ok(())
-    /// # }
-    /// ```
-    ///
-    /// [`std::fmt`]: https://doc.rust-lang.org/std/fmt/
-    /// [`term_writeln!`]: macro.term_writeln.html
     #[macro_export]
-    macro_rules! term_write {
+    macro_rules! term_write 
+    {
         // Entry rule
         ( $term:expr , $first:tt $($rest:tt)* ) => {
             match $term.borrow_term_write_guard() {
@@ -2673,22 +2608,205 @@ features = ["local-offset"]
                 $result, || $term.write_str(concat!($lit)))
         };
     }
-
     /// Writes attributes and formatted text to a `Terminal` or `Screen`.
-    ///
-    /// Formatted output is followed by a newline.
-    ///
-    /// See [`term_write`] for a description of macro syntax and example usage.
-    ///
-    /// [`term_write`]: macro.term_write.html
-    #[macro_export]
-    macro_rules! term_writeln {
+    #[macro_export] macro_rules! term_writeln 
+    {
         ( $term:expr ) => {
             term_write!($term, "\n")
         };
         ( $term:expr , $($tt:tt)* ) => {
             term_write!($term, $($tt)* "\n")
         };
+    }
+    
+    #[macro_export] macro_rules! forward_screen_buffer_methods
+    {
+        ( |$slf:ident| $field:expr ) => 
+        {
+            pub fn size(&self) -> crate::terminal::Size {
+                let $slf = self;
+                $field.size()
+            }
+
+            pub fn cursor(&self) -> crate::terminal::Cursor {
+                let $slf = self;
+                $field.cursor()
+            }
+
+            pub fn set_cursor(&self, pos: crate::terminal::Cursor) {
+                let $slf = self;
+                $field.set_cursor(pos);
+            }
+
+            pub fn next_line(&self, column: usize) {
+                let $slf = self;
+                $field.next_line(column);
+            }
+
+            pub fn clear_screen(&self) {
+                let $slf = self;
+                $field.clear_screen();
+            }
+
+            pub fn clear_attributes(&self) {
+                let $slf = self;
+                $field.clear_attributes();
+            }
+
+            pub fn add_style(&self, style: crate::terminal::Style) {
+                let $slf = self;
+                $field.add_style(style);
+            }
+
+            pub fn remove_style(&self, style: crate::terminal::Style) {
+                let $slf = self;
+                $field.remove_style(style);
+            }
+
+            pub fn set_style(&self, style: crate::terminal::Style) {
+                let $slf = self;
+                $field.set_style(style);
+            }
+
+            pub fn set_fg(&self, fg: Option<crate::terminal::Color>) {
+                let $slf = self;
+                $field.set_fg(fg);
+            }
+
+            pub fn set_bg(&self, bg: Option<crate::terminal::Color>) {
+                let $slf = self;
+                $field.set_bg(bg);
+            }
+
+            pub fn set_theme(&self, theme: crate::terminal::Theme) {
+                let $slf = self;
+                $field.set_theme(theme)
+            }
+
+            pub fn write_char(&self, ch: char) {
+                let $slf = self;
+                let _ = $field.write_char(ch);
+            }
+
+            pub fn write_str(&self, s: &str) {
+                let $slf = self;
+                let _ = $field.write_str(s);
+            }
+
+            pub fn write_at(&self, pos: crate::terminal::Cursor, text: &str) {
+                let $slf = self;
+                let _ = $field.write_at(pos, text);
+            }
+
+            pub fn write_styled(&self,
+                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                    style: crate::terminal::Style, text: &str) {
+                let $slf = self;
+                let _ = $field.write_styled(fg, bg, style, text);
+            }
+
+            pub fn write_styled_at(&self, pos: crate::terminal::Cursor,
+                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                    style: crate::terminal::Style, text: &str) {
+                let $slf = self;
+                let _ = $field.write_styled_at(pos, fg, bg, style, text);
+            }
+        }
+    }
+    
+    #[macro_export] macro_rules! forward_screen_buffer_mut_methods
+    {
+        ( |$slf:ident| $field:expr ) => 
+        {
+            pub fn size(&self) -> crate::terminal::Size {
+                let $slf = self;
+                $field.size()
+            }
+
+            pub fn cursor(&self) -> crate::terminal::Cursor {
+                let $slf = self;
+                $field.cursor()
+            }
+
+            pub fn set_cursor(&mut self, pos: crate::terminal::Cursor) {
+                let $slf = self;
+                $field.set_cursor(pos);
+            }
+
+            pub fn next_line(&mut self, column: usize) {
+                let $slf = self;
+                $field.next_line(column);
+            }
+
+            pub fn clear_screen(&mut self) {
+                let $slf = self;
+                $field.clear_screen();
+            }
+
+            pub fn clear_attributes(&mut self) {
+                let $slf = self;
+                $field.clear_attributes();
+            }
+
+            pub fn add_style(&mut self, style: crate::terminal::Style) {
+                let $slf = self;
+                $field.add_style(style);
+            }
+
+            pub fn remove_style(&mut self, style: crate::terminal::Style) {
+                let $slf = self;
+                $field.remove_style(style);
+            }
+
+            pub fn set_style(&mut self, style: crate::terminal::Style) {
+                let $slf = self;
+                $field.set_style(style);
+            }
+
+            pub fn set_fg(&mut self, fg: Option<crate::terminal::Color>) {
+                let $slf = self;
+                $field.set_fg(fg);
+            }
+
+            pub fn set_bg(&mut self, bg: Option<crate::terminal::Color>) {
+                let $slf = self;
+                $field.set_bg(bg);
+            }
+
+            pub fn set_theme(&mut self, theme: crate::terminal::Theme) {
+                let $slf = self;
+                $field.set_theme(theme);
+            }
+
+            pub fn write_char(&mut self, ch: char) {
+                let $slf = self;
+                let _ = $field.write_char(ch);
+            }
+
+            pub fn write_str(&mut self, s: &str) {
+                let $slf = self;
+                let _ = $field.write_str(s);
+            }
+
+            pub fn write_at(&mut self, pos: crate::terminal::Cursor, text: &str) {
+                let $slf = self;
+                let _ = $field.write_at(pos, text);
+            }
+
+            pub fn write_styled(&mut self,
+                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                    style: crate::terminal::Style, text: &str) {
+                let $slf = self;
+                let _ = $field.write_styled(fg, bg, style, text);
+            }
+
+            pub fn write_styled_at(&mut self, pos: crate::terminal::Cursor,
+                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
+                    style: crate::terminal::Style, text: &str) {
+                let $slf = self;
+                let _ = $field.write_styled_at(pos, fg, bg, style, text);
+            }
+        }
     }
 }
 
@@ -5732,6 +5850,47 @@ pub mod convert
     pub use std::convert::{ * };
 }
 
+pub mod database
+{
+    /*!
+    */
+    use ::
+    {
+        *,
+    };
+    /*
+    */
+    pub struct Expansion<Type>( pub Option<Type> );
+
+    impl <Type:Sized> Expansion<Type>
+    {
+        pub const fn new() -> Self
+        {
+            Expansion( None )
+        }
+    }
+
+    pub struct Context( pub () );
+
+    impl Context
+    {
+        pub const fn new() -> Self
+        {
+            Context( () )
+        }
+    }
+    
+    pub struct Database( pub () );
+
+    impl Database
+    {
+        pub const fn new() -> Self
+        {
+            Database( () )
+        }
+    }
+}
+
 pub mod default
 {
     pub use std::default::{ * };
@@ -8087,6 +8246,13 @@ pub mod is
             _ => char::width(ch).unwrap_or(0) != 0
         }
     }
+    /// Returns whether the given character is a control character.
+    // #[inline] pub fn is_ctrl(ch: char) -> bool 
+    #[inline] pub fn ctrl(ch: char) -> bool 
+    {
+        let ch = ch as u32;
+        ch & (0x40 as u32) == ch
+    }
 }
 
 pub mod isize
@@ -8527,6 +8693,7 @@ pub mod num
             {
                     Wrapping(T::min_value())
                 }
+                
                 fn max_value( ) -> Self
             {
                     Wrapping(T::max_value())
@@ -9849,6 +10016,7 @@ pub mod num
                 exponent -= 127 + 23;
                 (mantissa as u64, exponent, sign)
             }
+            
             fn integer_decode_f64(f: f64) -> (u64, i16, i8)
             {
                 let bits: u64 = f.to_bits();
@@ -10037,9 +10205,11 @@ pub mod num
                 fn is_zero(&self) -> bool {
                     self.0.is_zero()
                 }
+                
                 fn set_zero(&mut self) {
                     self.0.set_zero();
                 }
+                
                 fn zero( ) -> Self
             {
                     Wrapping(T::zero())
@@ -10058,9 +10228,11 @@ pub mod num
                 fn is_zero(&self) -> bool {
                     self.0.is_zero()
                 }
+                
                 fn set_zero(&mut self) {
                     self.0.set_zero();
                 }
+                
                 fn zero( ) -> Self
             {
                     Saturating(T::zero())
@@ -10133,6 +10305,7 @@ pub mod num
                 fn set_one(&mut self) {
                     self.0.set_one();
                 }
+                
                 fn one( ) -> Self
             {
                     Wrapping(T::one())
@@ -10151,6 +10324,7 @@ pub mod num
                 fn set_one(&mut self) {
                     self.0.set_one();
                 }
+                
                 fn one( ) -> Self
             {
                     Saturating(T::one())
@@ -10274,6 +10448,7 @@ pub mod num
                 /// Raises self to the power of `exp`, using exponentiation by squaring.
                 fn pow(self, exp: u32) -> Self;
             }
+            
             fn one_per_byte<P: PrimInt>() -> P {
                
                
@@ -10289,6 +10464,7 @@ pub mod num
                 }
                 ret
             }
+            
             fn reverse_bits_fallback<P: PrimInt>(i: P) -> P {
                 let rep_01: P = one_per_byte();
                 let rep_03 = (rep_01 << 1) | rep_01;
@@ -14266,6 +14442,7 @@ pub mod num
                     }
                     debug_assert!(b.len() > a.len() || carry_b == 0);
                 }
+                
                 fn bitand_neg_pos(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -14283,6 +14460,7 @@ pub mod num
                         }
                     }
                 }
+                
                 fn bitand_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -14379,6 +14557,7 @@ pub mod num
                         }
                     }
                 }
+                
                 fn bitor_pos_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_b = 1;
@@ -14405,6 +14584,7 @@ pub mod num
                    
                     debug_assert!(carry_or == 0);
                 }
+                
                 fn bitor_neg_pos(a: &mut [BigDigit], b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -14424,6 +14604,7 @@ pub mod num
                    
                     debug_assert!(carry_or == 0);
                 }
+                
                 fn bitor_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -14500,6 +14681,7 @@ pub mod num
                         }
                     }
                 }
+                
                 fn bitxor_pos_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_b = 1;
@@ -14530,6 +14712,7 @@ pub mod num
                         a.push(1);
                     }
                 }
+                
                 fn bitxor_neg_pos(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -14560,6 +14743,7 @@ pub mod num
                         a.push(1);
                     }
                 }
+                
                 fn bitxor_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) 
                 {
                     let mut carry_a = 1;
@@ -15691,6 +15875,7 @@ pub mod num
                         (_, NoSign) => unreachable!(),
                     }
                 }
+                
                 fn div_mod_floor(&self, other: &BigInt) -> (BigInt, BigInt) {
                    
                     let (d_ui, m_ui) = self.data.div_mod_floor(&other.data);
@@ -15766,7 +15951,7 @@ pub mod num
                 }
                 /// Rounds up to nearest multiple of argument.
                 #[inline] fn next_multiple_of(&self, other: &Self ) -> Self
-            {
+                {
                     let m = self.mod_floor(other);
                     if m.is_zero() {
                         self.clone()
@@ -15776,12 +15961,14 @@ pub mod num
                 }
                 /// Rounds down to nearest multiple of argument.
                 #[inline] fn prev_multiple_of(&self, other: &Self ) -> Self
-            {
+                {
                     self - self.mod_floor(other)
                 }
+                
                 fn dec(&mut self) {
                     *self -= 1u32;
                 }
+                
                 fn inc(&mut self) {
                     *self += 1u32;
                 }
@@ -15799,12 +15986,14 @@ pub mod num
 
                     BigInt::from_biguint(self.sign, self.data.nth_root(n))
                 }
+                
                 fn sqrt(&self) -> Self
                 {
                     assert!(!self.is_negative(), "square root is imaginary");
 
                     BigInt::from_biguint(self.sign, self.data.sqrt())
                 }
+                
                 fn cbrt(&self) -> Self
                 {
                     BigInt::from_biguint(self.sign, self.data.cbrt())
@@ -16106,6 +16295,7 @@ pub mod num
                 fn to_be_bytes(&self) -> Self::Bytes {
                     self.to_signed_bytes_be()
                 }
+                
                 fn to_le_bytes(&self) -> Self::Bytes {
                     self.to_signed_bytes_le()
                 }
@@ -16126,7 +16316,7 @@ pub mod num
                 rand::
                 {
                     Rng,
-                    distributions::uniform::{SampleBorrow, SampleUniform, UniformSampler},
+                    distr::uniform::{SampleBorrow, SampleUniform, UniformSampler},
                     prelude::Distribution,
                 },
                 *,
@@ -16152,6 +16342,7 @@ pub mod num
                 /// the upper bound is not greater than the lower bound.
                 fn gen_bigint_range(&mut self, lbound: &BigInt, ubound: &BigInt) -> BigInt;
             }
+            
             fn gen_bits<R: Rng + ?Sized>( rng: &mut R, data: &mut [u32], rem: u64 ) 
             {
                
@@ -16223,6 +16414,7 @@ pub mod num
                         return BigInt::from_biguint(sign, biguint);
                     }
                 }
+                
                 fn gen_biguint_below(&mut self, bound: &BigUint) -> BigUint {
                     assert!(!bound.is_zero());
                     let bits = bound.bits();
@@ -16233,6 +16425,7 @@ pub mod num
                         }
                     }
                 }
+                
                 fn gen_biguint_range(&mut self, lbound: &BigUint, ubound: &BigUint) -> BigUint {
                     assert!(*lbound < *ubound);
                     if lbound.is_zero() {
@@ -16241,6 +16434,7 @@ pub mod num
                         lbound + self.gen_biguint_below(&(ubound - lbound))
                     }
                 }
+                
                 fn gen_bigint_range(&mut self, lbound: &BigInt, ubound: &BigInt) -> BigInt {
                     assert!(*lbound < *ubound);
                     if lbound.is_zero() {
@@ -16617,6 +16811,7 @@ pub mod num
                 impl_sum_iter_type!(BigUint);
 
             }
+            
             pub mod division
             {
                 /*!
@@ -16759,6 +16954,7 @@ pub mod num
                    
                     ::num::big::digit::MAX - offset_carry
                 }
+                
                 fn div_rem(mut u: BigUint, mut d: BigUint) -> (BigUint, BigUint)
                 {
                     if d.is_zero() {
@@ -17256,6 +17452,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod multiplication
             {
                 /*!
@@ -17321,6 +17518,7 @@ pub mod num
                     };
                     assert_eq!(final_carry, 0, "carry overflow during multiplication!");
                 }
+                
                 fn bigint_from_slice(slice: &[BigDigit]) -> BigInt {
                     BigInt::from(biguint_from_vec(slice.to_vec()))
                 }
@@ -17668,6 +17866,7 @@ pub mod num
                         }
                     }
                 }
+                
                 fn mul3(x: &[BigDigit], y: &[BigDigit]) -> BigUint {
                     let len = x.len() + y.len() + 1;
                     let mut prod = BigUint { data: vec![0; len] };
@@ -17675,6 +17874,7 @@ pub mod num
                     mac3(&mut prod.data, x, y);
                     prod.normalized()
                 }
+                
                 fn scalar_mul(a: &mut BigUint, b: BigDigit) {
                     match b {
                         0 => a.set_zero(),
@@ -17694,6 +17894,7 @@ pub mod num
                         }
                     }
                 }
+                
                 fn sub_sign(mut a: &[BigDigit], mut b: &[BigDigit]) -> (Sign, BigUint) {
                    
                     if let Some(&0) = a.last() {
@@ -17848,6 +18049,7 @@ pub mod num
                 }
                 impl_product_iter_type!(BigUint);
             }
+            
             pub mod subtraction
             {
                 /*!
@@ -17923,6 +18125,7 @@ pub mod num
                     }
                     borrow
                 }
+                
                 fn sub2rev(a: &[BigDigit], b: &mut [BigDigit]) {
                     debug_assert!(b.len() >= a.len());
 
@@ -18127,6 +18330,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod bits
             {
                 /*!
@@ -18226,6 +18430,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod convert
             {
                 /*!
@@ -18262,6 +18467,7 @@ pub mod num
                 fn fls<T: PrimInt>(v: T) -> u8 {
                     mem::size_of::<T>() as u8 * 8 - v.leading_zeros() as u8
                 }
+                
                 fn ilog2<T: PrimInt>(v: T) -> u8 {
                     fls(v) - 1
                 }
@@ -18477,6 +18683,7 @@ pub mod num
                         Ok(res)
                     }
                 }
+                
                 fn high_bits_to_u64(v: &BigUint) -> u64 {
                     match v.data.len() {
                         0 => 0,
@@ -19220,6 +19427,7 @@ pub mod num
                 }
                 impl FusedIterator for U64Digits<'_> {}
             }
+            
             pub mod monty
             {
                 /*!
@@ -19652,6 +19860,7 @@ pub mod num
                     acc
                 }
             }
+            
             pub mod shift
             {
                 /*!
@@ -19684,6 +19893,7 @@ pub mod num
                     let shift = (shift % bits).to_u8().unwrap();
                     biguint_shl2(n, digits, shift)
                 }
+                
                 fn biguint_shl2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint {
                     let mut data = match digits {
                         0 => n.into_owned().data,
@@ -19722,6 +19932,7 @@ pub mod num
                     let shift = (shift % bits).to_u8().unwrap();
                     biguint_shr2(n, digits, shift)
                 }
+                
                 fn biguint_shr2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint {
                     if digits >= n.data.len() {
                         let mut n = n.into_owned();
@@ -20072,9 +20283,11 @@ pub mod num
             {
                     self - self.mod_floor(other)
                 }
+                
                 fn dec(&mut self) {
                     *self -= 1u32;
                 }
+                
                 fn inc(&mut self) {
                     *self += 1u32;
                 }
@@ -20204,6 +20417,7 @@ pub mod num
                         t >> 1
                     })
                 }
+                
                 fn cbrt(&self ) -> Self
             {
                     if self.is_zero() || self.is_one() {
@@ -20538,6 +20752,7 @@ pub mod num
             {
                     Self::from_bytes_be(bytes)
                 }
+                
                 fn from_le_bytes(bytes: &Self::Bytes ) -> Self
             {
                     Self::from_bytes_le(bytes)
@@ -20550,6 +20765,7 @@ pub mod num
                 fn to_be_bytes(&self) -> Self::Bytes {
                     self.to_bytes_be()
                 }
+                
                 fn to_le_bytes(&self) -> Self::Bytes {
                     self.to_bytes_le()
                 }
@@ -20641,12 +20857,14 @@ pub mod num
                     InvalidDigit => "invalid digit found in string",
                 }
             }
+            
             fn empty( ) -> Self
             {
                 ParseBigIntError {
                     kind: BigIntErrorKind::Empty,
                 }
             }
+            
             fn invalid( ) -> Self
             {
                 ParseBigIntError {
@@ -20681,6 +20899,7 @@ pub mod num
             {
                 TryFromBigIntError { original }
             }
+            
             fn __description(&self) -> &str {
                 "out of range conversion regarding big integer attempted"
             }
@@ -21900,18 +22119,23 @@ pub mod num
             fn from_i64(n: i64) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
+            
             fn from_i128(n: i128) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
+            
             fn from_u64(n: u64) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
+            
             fn from_u128(n: u128) -> Option<Self> {
                 Some(Ratio::from_integer(n.into()))
             }
+            
             fn from_f32(n: f32) -> Option<Self> {
                 Ratio::from_float(n)
             }
+            
             fn from_f64(n: f64) -> Option<Self> {
                 Ratio::from_float(n)
             }
@@ -22080,15 +22304,19 @@ pub mod num
             fn to_i64(&self) -> Option<i64> {
                 self.to_integer().to_i64()
             }
+            
             fn to_i128(&self) -> Option<i128> {
                 self.to_integer().to_i128()
             }
+            
             fn to_u64(&self) -> Option<u64> {
                 self.to_integer().to_u64()
             }
+            
             fn to_u128(&self) -> Option<u128> {
                 self.to_integer().to_u128()
             }
+            
             fn to_f64(&self) -> Option<f64> {
                 let float = match (self.numer.to_i64(), self.denom.to_i64()) {
                     (Some(numer), Some(denom)) => ratio_to_f64(
@@ -22861,20 +23089,7 @@ pub mod parses
             types::{ * },
             *,
         };
-        /*    
-        [dependencies]
-        dirs = "1.0"
-        mortal = "0.2"
-        [target.'cfg(windows)'.dependencies]
-        winapi = { version = "0.3", features = 
-        [ "combaseapi", "minwindef", "ntdef", "shlobj", "winbase", "wincon", "winerror", "winuser" ] }
-
-        
-
-        use regex::Regex;
-
-        use crate::libs;
-        use crate::tools;
+        /*
         */
         pub use self::
         {
@@ -22884,7 +23099,7 @@ pub mod parses
             interface::Interface,
             prompter::Prompter,
             reader::{Reader, ReadResult},
-            terminal::{DefaultTerminal, Signal, Terminal},
+            terminal::{ DefaultTerminal, Terminal },
             writer::Writer,
         };
 
@@ -24139,6 +24354,7 @@ pub mod parses
         {
             /*!
             Provides the main interface to interactive input reader. */
+            use system::signal::Signal;
             use ::
             {
                 borrow::{ Cow },
@@ -24155,29 +24371,33 @@ pub mod parses
             use super::highlighting::Highlighter;
             use super::inputrc::Directive;
             use super::reader::{Read, Reader, ReadLock, ReadResult};
-            use super::terminal::{DefaultTerminal, Signal, Terminal};
+            use super::terminal::{DefaultTerminal, Terminal};
             use super::variables::Variable;
             use super::writer::{Write, Writer, WriteLock};
             /*            
             */
             /// The main interface to input reading and other terminal operations.
-            pub struct Interface<Term: Terminal> {
+            pub struct Interface<Term: Terminal> 
+            {
                 term: Term,
                 write: Mutex<Write>,
                 read: Mutex<Read<Term>>,
                 highlighter: Option<Arc<dyn Highlighter + Send + Sync>>,
             }
 
-            impl Interface<DefaultTerminal> {
+            impl Interface<DefaultTerminal> 
+            {
                 /// Creates a new `Interface` with the given application name.
-                pub fn new<T>(application: T) -> io::Result<Interface<DefaultTerminal>>
-                        where T: Into<Cow<'static, str>> {
+                pub fn new<T>(application: T) -> io::Result<Interface<DefaultTerminal>> where
+                T: Into<Cow<'static, str>>
+                {
                     let term = DefaultTerminal::new()?;
                     Interface::with_term(application, term)
                 }
             }
 
-            impl <Term: Terminal> Interface<Term> {
+            impl <Term: Terminal> Interface<Term> 
+            {
                 /// Creates a new `Interface` instance with a particular terminal impl ementation.
                 pub fn with_term<T>(application: T, term: Term) -> io::Result<Interface<Term>>
                         where T: Into<Cow<'static, str>> {
@@ -24288,31 +24508,35 @@ pub mod parses
                     self.lock_reader().bind_sequence_if_unbound(seq, cmd)
                 }
                 /// Removes a binding for the given sequence.
-                pub fn unbind_sequence(&self, seq: &str) -> Option<Command> {
+                pub fn unbind_sequence(&self, seq: &str) -> Option<Command> 
+                {
                     self.lock_reader().unbind_sequence(seq)
                 }
                 /// Defines a named function to which sequences may be bound.
-                pub fn define_function<T>(&self, name: T, cmd: Arc<dyn Function<Term>>)
+                pub fn define_function<T>(&self, name: T, cmd: Arc<dyn Function<Term>>
+                )
                         -> Option<Arc<dyn Function<Term>>> where T: Into<Cow<'static, str>> {
                     self.lock_reader().define_function(name, cmd)
                 }
                 /// Removes a function defined with the given name.
-                pub fn remove_function(&self, name: &str) -> Option<Arc<dyn Function<Term>>> {
+                pub fn remove_function(&self, name: &str) -> Option<Arc<dyn Function<Term>>> 
+                {
                     self.lock_reader().remove_function(name)
                 }
                 /// Evaluates a series of configuration directives.
-                pub fn evaluate_directives(&self, dirs: Vec<Directive>) {
+                pub fn evaluate_directives(&self, dirs: Vec<Directive>) 
+                {
                     self.lock_reader().evaluate_directives(&self.term, dirs)
                 }
                 /// Evaluates a single configuration directive.
-                pub fn evaluate_directive(&self, dir: Directive) {
+                pub fn evaluate_directive(&self, dir: Directive) 
+                {
                     self.lock_reader().evaluate_directive(&self.term, dir)
                 }
             }
-            /// ## Locking
-            ///
-            /// The following methods internally acquire the write lock.
-            impl <Term: Terminal> Interface<Term> {
+            
+            impl <Term: Terminal> Interface<Term> 
+            {
                 /// Returns the current input buffer.
                 pub fn buffer(&self) -> String {
                     self.lock_write().buffer.to_owned()
@@ -24484,11 +24708,11 @@ pub mod parses
                 time::std::{ Duration },
                 *,
             };
-            use super::terminal::{ CursorMode, RawRead, SignalSet, Size, Terminal, TerminalReader, TerminalWriter };
+            use super::terminal::{ RawRead, Terminal, TerminalReader, TerminalWriter };
             /*
             */
             /// Default size of a `MemoryTerminal` buffer
-            pub const DEFAULT_SIZE: Size = Size
+            pub const DEFAULT_SIZE: ::system::Size = ::system::Size
             {
                 columns: 80,
                 lines: 24,
@@ -24508,14 +24732,14 @@ pub mod parses
                 memory: Vec<char>,
                 col: usize,
                 line: usize,
-                cursor_mode: CursorMode,
-                size: Size,
+                cursor_mode: ::system::CursorMode,
+                size: ::system::Size,
             }
 
             #[derive(Debug)]
             struct Reader {
                 input: Vec<u8>,
-                resize: Option<Size>,
+                resize: Option<::system::Size>,
             }
             /// Holds the lock on read operations of a `MemoryTerminal`.
             pub struct MemoryReadGuard<'a>(MutexGuard<'a, Reader>);
@@ -24528,7 +24752,7 @@ pub mod parses
                     MemoryTerminal::default()
                 }
                 /// Returns a new `MemoryTerminal` with the given buffer size.
-                pub fn with_size(size: Size) -> MemoryTerminal {
+                pub fn with_size(size: ::system::Size) -> MemoryTerminal {
                     MemoryTerminal{
                         read: Arc::new(Mutex::new(Reader::new())),
                         write: Arc::new(Mutex::new(Writer::new(size))),
@@ -24587,7 +24811,7 @@ pub mod parses
                     self.lock_reader().read_input(buf)
                 }
                 /// Changes the size of the terminal buffer.
-                pub fn resize(&self, new_size: Size) {
+                pub fn resize(&self, new_size: ::system::Size) {
                     self.lock_writer().resize(new_size);
                     self.lock_reader().resize(new_size);
                 }
@@ -24602,15 +24826,15 @@ pub mod parses
                     (r.line, r.col)
                 }
                 /// Sets the cursor mode.
-                pub fn set_cursor_mode(&self, mode: CursorMode) {
+                pub fn set_cursor_mode(&self, mode: ::system::CursorMode) {
                     self.lock_writer().set_cursor_mode(mode);
                 }
                 /// Returns the cursor mode.
-                pub fn cursor_mode(&self) -> CursorMode {
+                pub fn cursor_mode(&self) -> ::system::CursorMode {
                     self.lock_writer().cursor_mode()
                 }
                 /// Returns the size of the terminal buffer.
-                pub fn size(&self) -> Size {
+                pub fn size(&self) -> ::system::Size {
                     self.lock_writer().size
                 }
                 /// Writes some text into the buffer.
@@ -24662,13 +24886,13 @@ pub mod parses
                     n
                 }
 
-                fn resize(&mut self, size: Size) {
+                fn resize(&mut self, size: ::system::Size) {
                     self.resize = Some(size);
                 }
             }
 
             impl Writer {
-                fn new(size: Size) -> Writer {
+                fn new(size: ::system::Size) -> Writer {
                     assert!(size.lines != 0 && size.columns != 0,
                         "zero-area terminal buffer: {:?}", size);
 
@@ -24678,7 +24902,7 @@ pub mod parses
                         memory: vec![' '; n_chars],
                         col: 0,
                         line: 0,
-                        cursor_mode: CursorMode::Normal,
+                        cursor_mode: ::system::CursorMode::Normal,
                         size: size,
                     }
                 }
@@ -24719,7 +24943,7 @@ pub mod parses
                     self.col = 0;
                 }
 
-                fn resize(&mut self, new_size: Size) {
+                fn resize(&mut self, new_size: ::system::Size) {
                     if self.size != new_size {
                         let n_chars = new_size.lines.checked_mul(new_size.columns)
                             .unwrap_or_else(|| panic!("terminal size too large: {:?}", new_size));
@@ -24760,11 +24984,11 @@ pub mod parses
                     self.line = self.line.saturating_sub(n);
                 }
 
-                fn set_cursor_mode(&mut self, mode: CursorMode) {
+                fn set_cursor_mode(&mut self, mode: ::system::CursorMode) {
                     self.cursor_mode = mode;
                 }
 
-                fn cursor_mode(&self) -> CursorMode {
+                fn cursor_mode(&self) -> ::system::CursorMode {
                     self.cursor_mode
                 }
 
@@ -24850,12 +25074,12 @@ pub mod parses
                     Ok(!self.0.input.is_empty())
                 }
 
-                fn prepare(&mut self, _block_signals: bool, _report_signals: SignalSet)
+                fn prepare(&mut self, _block_signals: bool, _report_signals: ::system::signal::SignalSet)
                         -> io::Result<()> { Ok(()) }
 
                 unsafe fn prepare_with_lock(&mut self,
                         _lock: &mut dyn TerminalWriter<MemoryTerminal>,
-                        _block_signals: bool, _report_signals: SignalSet)
+                        _block_signals: bool, _report_signals: ::system::signal::SignalSet)
                         -> io::Result<()> { Ok(()) }
 
                 fn restore(&mut self, _state: ()) -> io::Result<()> { Ok(()) }
@@ -24886,7 +25110,7 @@ pub mod parses
             }
 
             impl <'a> TerminalWriter<MemoryTerminal> for MemoryWriteGuard<'a> {
-                fn size(&self) -> io::Result<Size> {
+                fn size(&self) -> io::Result<::system::Size> {
                     Ok(self.0.size)
                 }
 
@@ -24925,7 +25149,7 @@ pub mod parses
                     Ok(())
                 }
 
-                fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                fn set_cursor_mode(&mut self, mode: ::system::CursorMode) -> io::Result<()> {
                     self.0.set_cursor_mode(mode);
                     Ok(())
                 }
@@ -24959,7 +25183,7 @@ pub mod parses
             use super::function::Function;
             use super::reader::{BindingIter, InputState, ReadLock, ReadResult};
             use super::table::{format_columns, Line, Table};
-            use super::terminal::{CursorMode, Signal, Size, Terminal};
+            use super::terminal::{ Terminal };
             use super::util::{
                 get_open_paren, find_matching_paren, first_word,
                 longest_common_prefix, repeat_char,
@@ -25012,7 +25236,7 @@ pub mod parses
                     self.write.expire_blink()?;
 
                     if self.read.overwrite_mode {
-                        self.write.set_cursor_mode(CursorMode::Normal)?;
+                        self.write.set_cursor_mode( ::system::CursorMode::Normal)?;
                     }
                     if self.write.is_prompt_drawn {
                         self.write.move_to_end()?;
@@ -25187,7 +25411,7 @@ pub mod parses
                     self.write.set_prompt(prompt)
                 }
                 /// Returns the size of the terminal at the last draw operation.
-                pub fn screen_size(&self) -> Size {
+                pub fn screen_size(&self) -> ::system::Size {
                     self.write.screen_size
                 }
                 /// Returns whether a numerical argument was explicitly supplied by the user.
@@ -25706,9 +25930,9 @@ pub mod parses
                             }
 
                             let mode = if self.read.overwrite_mode {
-                                CursorMode::Overwrite
+                                ::system::CursorMode::Overwrite
                             } else {
-                                CursorMode::Normal
+                                ::system::CursorMode::Normal
                             };
 
                             self.write.set_cursor_mode(mode)?;
@@ -26088,7 +26312,7 @@ pub mod parses
                     self.write.end_search_history()
                 }
 
-                pub fn handle_resize(&mut self, size: Size) -> io::Result<()> {
+                pub fn handle_resize(&mut self, size: ::system::Size) -> io::Result<()> {
                     self.expire_blink()?;
 
                     if self.is_paging_completions() {
@@ -26101,14 +26325,16 @@ pub mod parses
                     self.write.redraw_prompt(p)
                 }
 
-                pub fn handle_signal(&mut self, signal: Signal) -> io::Result<()> {
+                pub fn handle_signal(&mut self, signal: ::system::signal::Signal) -> io::Result<()> {
                     self.expire_blink()?;
 
                     match signal {
-                        Signal::Continue => {
+                        ::system::signal::Signal::Continue => {
                             self.write.draw_prompt()?;
                         }
-                        Signal::Interrupt => {
+
+                        ::system::signal::Signal::Interrupt => 
+                        {
                             self.read.macro_buffer.clear();
                             self.write.move_to_end()?;
 
@@ -26352,10 +26578,7 @@ pub mod parses
             use super::interface::Interface;
             use super::prompter::Prompter;
             use super::sys::path::{env_init_file, system_init_file, user_init_file};
-            use super::terminal::{
-                RawRead, Signal, SignalSet, Size,
-                Terminal, TerminalReader,
-            };
+            use super::terminal::{*};
             use super::util::{first_char, match_name};
             use super::variables::{Variable, Variables, VariableIter};
             /*
@@ -26418,10 +26641,10 @@ pub mod parses
                 pub kill_ring: VecDeque<String>,
 
                 pub catch_signals: bool,
-                pub ignore_signals: SignalSet,
-                pub report_signals: SignalSet,
-                pub last_resize: Option<Size>,
-                pub last_signal: Option<Signal>,
+                pub ignore_signals: ::system::signal::SignalSet,
+                pub report_signals: ::system::signal::SignalSet,
+                pub last_resize: Option<::system::Size>,
+                pub last_signal: Option<::system::signal::Signal>,
 
                 variables: Variables,
 
@@ -26443,7 +26666,7 @@ pub mod parses
                 /// User input received
                 Input(String),
                 /// Reported signal was received
-                Signal(Signal),
+                Signal( ::system::signal::Signal),
             }
 
             #[derive(Copy, Clone, Debug)]
@@ -26464,7 +26687,8 @@ pub mod parses
                 QuotedInsert(usize),
             }
 
-            impl <'a, Term: 'a + Terminal> Reader<'a, Term> {
+            impl <'a, Term: 'a + Terminal> Reader<'a, Term> 
+            {
                 pub fn new(iface: &'a Interface<Term>, lock: ReadLock<'a, Term>)
                         -> Reader<'a, Term> {
                     Reader{iface, lock}
@@ -26503,9 +26727,6 @@ pub mod parses
                 fn read_line_step_impl (&mut self, timeout: Option<Duration>)
                         -> io::Result<Option<ReadResult>> {
                     let do_read = if self.lock.is_input_available() {
-                        // This branch will be taken only if a macro has buffered some input.
-                        // We check for input with a zero duration to see if the user has
-                        // entered Ctrl-C, e.g. to interrupt an infinitely recursive macro.
                         self.lock.term.wait_for_input(Some(Duration::from_secs(0)))?
                     } else {
                         let timeout = limit_duration(timeout, self.lock.max_wait_duration);
@@ -26534,10 +26755,7 @@ pub mod parses
                         let mut prompter = self.prompter();
 
                         prompter.check_expire_timeout()?;
-
-                        // If the macro buffer grows in size while input is being processed,
-                        // we end this step and let the caller try again. This is to allow
-                        // reading Ctrl-C to interrupt (perhaps infinite) macro execution.
+                        
                         let mut macro_len = prompter.read.data.macro_buffer.len();
 
                         while prompter.read.is_input_available() {
@@ -26570,14 +26788,12 @@ pub mod parses
 
                 fn prepare_term(&mut self) -> io::Result<Term::PrepareState> {
                     if self.read_next_raw() {
-                        self.lock.term.prepare(true, SignalSet::new())
+                        self.lock.term.prepare(true, ::system::signal::SignalSet::new())
                     } else {
                         let mut signals = self.lock.report_signals.union(self.lock.ignore_signals);
 
                         if self.lock.catch_signals {
-                            // Ctrl-C is always intercepted (unless we're catching no signals).
-                            // By default, lineread handles it by clearing the current input state.
-                            signals.insert(Signal::Interrupt);
+                            signals.insert( ::system::signal::Signal::Interrupt);
                         }
 
                         let block_signals = !self.lock.catch_signals;
@@ -26704,11 +26920,11 @@ pub mod parses
                     self.lock.catch_signals = enabled;
                 }
                 /// Returns whether the given `Signal` is ignored.
-                pub fn ignore_signal(&self, signal: Signal) -> bool {
+                pub fn ignore_signal(&self, signal: ::system::signal::Signal) -> bool {
                     self.lock.ignore_signals.contains(signal)
                 }
                 /// Sets whether the given `Signal` will be ignored.
-                pub fn set_ignore_signal(&mut self, signal: Signal, set: bool) {
+                pub fn set_ignore_signal(&mut self, signal: ::system::signal::Signal, set: bool) {
                     if set {
                         self.lock.ignore_signals.insert(signal);
                         self.lock.report_signals.remove(signal);
@@ -26717,12 +26933,12 @@ pub mod parses
                     }
                 }
                 /// Returns whether the given `Signal` is to be reported.
-                pub fn report_signal(&self, signal: Signal) -> bool {
+                pub fn report_signal(&self, signal: ::system::signal::Signal) -> bool {
                     self.lock.report_signals.contains(signal)
                 }
                 /// Sets whether to report the given `Signal`.
                 /// from `Interface::read_line` as `Ok(Signal(signal))`.
-                pub fn set_report_signal(&mut self, signal: Signal, set: bool) {
+                pub fn set_report_signal(&mut self, signal: ::system::signal::Signal, set: bool) {
                     if set {
                         self.lock.report_signals.insert(signal);
                         self.lock.ignore_signals.remove(signal);
@@ -26859,16 +27075,17 @@ pub mod parses
                         self.iface.lock_write())
                 }
 
-                fn handle_resize(&mut self, size: Size) -> io::Result<()> {
+                fn handle_resize(&mut self, size: ::system::Size) -> io::Result<()> {
                     self.prompter().handle_resize(size)
                 }
 
-                fn handle_signal(&mut self, sig: Signal) -> io::Result<()> {
+                fn handle_signal(&mut self, sig: ::system::signal::Signal) -> io::Result<()> {
                     self.prompter().handle_signal(sig)
                 }
             }
 
-            impl <'a, Term: 'a + Terminal> ReadLock<'a, Term> {
+            impl <'a, Term: 'a + Terminal> ReadLock<'a, Term> 
+            {
                 pub fn new(term: Box<dyn TerminalReader<Term> + 'a>, data: MutexGuard<'a, Read<Term>>)
                         -> ReadLock<'a, Term> {
                     ReadLock{term, data}
@@ -26937,7 +27154,8 @@ pub mod parses
                 }
             }
 
-            impl <'a, Term: 'a + Terminal> Deref for ReadLock<'a, Term> {
+            impl <'a, Term: 'a + Terminal> Deref for ReadLock<'a, Term> 
+            {
                 type Target = Read<Term>;
 
                 fn deref(&self) -> &Read<Term> {
@@ -26945,13 +27163,15 @@ pub mod parses
                 }
             }
 
-            impl <'a, Term: 'a + Terminal> DerefMut for ReadLock<'a, Term> {
+            impl <'a, Term: 'a + Terminal> DerefMut for ReadLock<'a, Term> 
+            {
                 fn deref_mut(&mut self) -> &mut Read<Term> {
                     &mut self.data
                 }
             }
 
-            impl <Term: Terminal> Deref for Read<Term> {
+            impl <Term: Terminal> Deref for Read<Term> 
+            {
                 type Target = Variables;
 
                 fn deref(&self) -> &Variables {
@@ -26959,13 +27179,15 @@ pub mod parses
                 }
             }
 
-            impl <Term: Terminal> DerefMut for Read<Term> {
+            impl <Term: Terminal> DerefMut for Read<Term> 
+            {
                 fn deref_mut(&mut self) -> &mut Variables {
                     &mut self.variables
                 }
             }
 
-            impl <Term: Terminal> Read<Term> {
+            impl <Term: Terminal> Read<Term> 
+            {
                 pub fn new(term: &Term, application: Cow<'static, str>) -> Read<Term> {
                     let mut r = Read{
                         application,
@@ -26998,8 +27220,8 @@ pub mod parses
                         kill_ring: VecDeque::with_capacity(MAX_KILLS),
 
                         catch_signals: true,
-                        ignore_signals: SignalSet::new(),
-                        report_signals: SignalSet::new(),
+                        ignore_signals: ::system::signal::SignalSet::new(),
+                        report_signals: ::system::signal::SignalSet::new(),
                         last_resize: None,
                         last_signal: None,
 
@@ -27023,12 +27245,12 @@ pub mod parses
                     self.variables.iter()
                 }
 
-                fn take_resize(&mut self) -> Option<Size> 
+                fn take_resize(&mut self) -> Option<::system::Size> 
                 {
                     self.last_resize.take()
                 }
 
-                fn take_signal(&mut self) -> Option<Signal> 
+                fn take_signal(&mut self) -> Option<::system::signal::Signal> 
                 {
                     self.last_signal.take()
                 }
@@ -27489,29 +27711,45 @@ pub mod parses
         {
             /*!
             Provides a low-level terminal interface. */
+            use parses::lines::sys::terminal::terminal_read;
             use ::
             {
                 time::std::{ Duration },
-                system as sys,
+                system::
+                {
+                    self as sys,
+                    common::
+                    {
+                        TerminalReadGuard, TerminalWriteGuard,
+                    },
+                    CursorMode, Size,
+                },                
                 *,
             };
-            use super::system::{ self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard, CursorMode, Signal, SignalSet, Size };
-            pub use ::system::{CursorMode, Signal, SignalSet, Size};
+            /*
+            use super::system::
+            { 
+                self, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard, CursorMode, Signal, 
+                SignalSet, Size 
+            };
+            pub use ::system::{CursorMode, Size}; */
             /*
             */
             /// Default `Terminal` interface
             pub struct DefaultTerminal( ::system::Terminal );
             /// Represents the result of a `Terminal` read operation
-            pub enum RawRead {
+            pub enum RawRead 
+            {
                 /// `n` bytes were read from the device
                 Bytes(usize),
                 /// The terminal window was resized
                 Resize(Size),
                 /// A signal was received while waiting for input
-                Signal(Signal),
+                Signal(::system::signal::Signal),
             }
             /// Defines a low-level interface to the terminal
-            pub trait Terminal: Sized + Send + Sync {
+            pub trait Terminal: Sized + Send + Sync 
+            {
                
                 /// Returned by `prepare`; passed to `restore` to restore state.
                 type PrepareState;
@@ -27532,13 +27770,14 @@ pub mod parses
                 fn lock_write<'a>(&'a self) -> Box<dyn TerminalWriter<Self> + 'a>;
             }
             /// Holds a lock on `Terminal` read operations
-            pub trait TerminalReader<Term: Terminal> {
+            pub trait TerminalReader<Term: Terminal> 
+            {
                 /// Prepares the terminal for line reading and editing operations.
-                fn prepare(&mut self, block_signals: bool, report_signals: SignalSet)
+                fn prepare(&mut self, block_signals: bool, report_signals: ::system::signal::SignalSet)
                     -> io::Result<Term::PrepareState>;
                 /// Like `prepare`, but called when the write lock is already held.
                 unsafe fn prepare_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>,
-                        block_signals: bool, report_signals: SignalSet)
+                        block_signals: bool, report_signals: ::system::signal::SignalSet)
                         -> io::Result<Term::PrepareState>;
                 /// Restores the terminal state using the given state data.
                 fn restore(&mut self, state: Term::PrepareState) -> io::Result<()>;
@@ -27551,7 +27790,8 @@ pub mod parses
                 fn wait_for_input(&mut self, timeout: Option<Duration>) -> io::Result<bool>;
             }
             /// Holds a lock on `Terminal` write operations
-            pub trait TerminalWriter<Term: Terminal> {
+            pub trait TerminalWriter<Term: Terminal> 
+            {
                 /// Returns the size of the terminal window
                 fn size(&self) -> io::Result<Size>;
                 /// Presents a clear terminal screen, with cursor at first row, first column.
@@ -27577,7 +27817,8 @@ pub mod parses
                 fn flush(&mut self) -> io::Result<()>;
             }
 
-            impl DefaultTerminal {
+            impl DefaultTerminal 
+            {
                 /// Opens access to the terminal device associated with standard output.
                 pub fn new() -> io::Result<DefaultTerminal> {
                     ::system::Terminal::new().map(DefaultTerminal)
@@ -27593,8 +27834,9 @@ pub mod parses
                 }
             }
 
-            impl Terminal for DefaultTerminal {
-                type PrepareState = PrepareState;
+            impl Terminal for DefaultTerminal 
+            {
+                type PrepareState = ::system::PrepareState;
 
                 fn name(&self) -> &str {
                     self.0.name()
@@ -27609,46 +27851,47 @@ pub mod parses
                 }
             }
 
-            impl <'a> TerminalReader<DefaultTerminal> for TerminalReadGuard<'a> {
-                fn prepare(&mut self, block_signals: bool, report_signals: SignalSet)
-                        -> io::Result<PrepareState> {
-                    self.prepare(PrepareConfig{
+            impl <'a> TerminalReader<DefaultTerminal> for TerminalReadGuard<'a> 
+            {
+                fn prepare(&mut self, block_signals: bool, report_signals: ::system::signal::SignalSet)
+                        -> io::Result<::system::PrepareState> {
+                    self.prepare(::system::PrepareConfig{
                         block_signals,
                         enable_control_flow: !block_signals,
                         enable_keypad: false,
                         report_signals,
-                        .. PrepareConfig::default()
+                        .. ::system::PrepareConfig::default()
                     })
                 }
 
                 unsafe fn prepare_with_lock(&mut self,
                         lock: &mut dyn TerminalWriter<DefaultTerminal>,
-                        block_signals: bool, report_signals: SignalSet)
-                        -> io::Result<PrepareState> {
+                        block_signals: bool, report_signals: ::system::signal::SignalSet)
+                        -> io::Result<::system::PrepareState> {
                     let lock = DefaultTerminal::cast_writer(lock);
 
-                    self.prepare_with_lock(lock, PrepareConfig{
+                    self.prepare_with_lock(lock, ::system::PrepareConfig{
                         block_signals,
                         enable_control_flow: !block_signals,
                         enable_keypad: false,
                         report_signals,
-                        .. PrepareConfig::default()
+                        .. ::system::PrepareConfig::default()
                     })
                 }
 
-                fn restore(&mut self, state: PrepareState) -> io::Result<()> {
+                fn restore(&mut self, state: ::system::PrepareState) -> io::Result<()> {
                     self.restore(state)
                 }
 
                 unsafe fn restore_with_lock(&mut self,
-                        lock: &mut dyn TerminalWriter<DefaultTerminal>, state: PrepareState)
+                        lock: &mut dyn TerminalWriter<DefaultTerminal>, state: ::system::PrepareState)
                         -> io::Result<()> {
                     let lock = DefaultTerminal::cast_writer(lock);
                     self.restore_with_lock(lock, state)
                 }
 
                 fn read(&mut self, buf: &mut Vec<u8>) -> io::Result<RawRead> {
-                    system::terminal_read(self, buf)
+                    terminal_read(self, buf)
                 }
 
                 fn wait_for_input(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
@@ -27678,14 +27921,17 @@ pub mod parses
                 {
                     self.move_up(n)
                 }
+                
                 fn move_down(&mut self, n: usize) -> io::Result<()> 
                 {
                     self.move_down(n)
                 }
+                
                 fn move_left(&mut self, n: usize) -> io::Result<()> 
                 {
                     self.move_left(n)
                 }
+                
                 fn move_right(&mut self, n: usize) -> io::Result<()> 
                 {
                     self.move_right(n)
@@ -27783,32 +28029,37 @@ pub mod parses
             }
             /// impl emented for built-in range types
             // Waiting for stabilization of `std` trait of the same name
-            pub trait RangeArgument<T> {
+            pub trait RangeArgument<T> 
+            {
                 /// Returns the start of range, if present.
                 fn start(&self) -> Option<&T> { None }
                 /// Returns the end of range, if present.
                 fn end(&self) -> Option<&T> { None }
             }
 
-            impl <T> RangeArgument<T> for Range<T> {
+            impl <T> RangeArgument<T> for Range<T> 
+            {
                 fn start(&self) -> Option<&T> { Some(&self.start) }
 
                 fn end(&self) -> Option<&T> { Some(&self.end) }
             }
 
-            impl <T> RangeArgument<T> for RangeFrom<T> {
+            impl <T> RangeArgument<T> for RangeFrom<T> 
+            {
                 fn start(&self) -> Option<&T> { Some(&self.start) }
             }
 
-            impl <T> RangeArgument<T> for RangeTo<T> {
+            impl <T> RangeArgument<T> for RangeTo<T> 
+            {
                 fn end(&self) -> Option<&T> { Some(&self.end) }
             }
 
             impl <T> RangeArgument<T> for RangeFull {}
 
-            pub fn backward_char(n: usize, s: &str, cur: usize) -> usize {
+            pub fn backward_char(n: usize, s: &str, cur: usize) -> usize 
+            {
                 let mut chars = s[..cur].char_indices()
-                    .filter(|&(_, ch)| !is_combining_mark(ch));
+                    .filter(|&(_, ch)| !is::combining_mark(ch));
                 let mut res = cur;
 
                 for _ in 0..n {
@@ -27821,9 +28072,10 @@ pub mod parses
                 res
             }
 
-            pub fn forward_char(n: usize, s: &str, cur: usize) -> usize {
+            pub fn forward_char(n: usize, s: &str, cur: usize) -> usize 
+            {
                 let mut chars = s[cur..].char_indices()
-                    .filter(|&(_, ch)| !is_combining_mark(ch));
+                    .filter(|&(_, ch)| !is::combining_mark(ch));
 
                 for _ in 0..n {
                     match chars.next() {
@@ -27838,7 +28090,8 @@ pub mod parses
                 }
             }
 
-            pub fn backward_search_char(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize> {
+            pub fn backward_search_char(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize> 
+            {
                 let mut pos = None;
 
                 for _ in 0..n {
@@ -27854,7 +28107,8 @@ pub mod parses
                 pos
             }
 
-            pub fn forward_search_char(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize> {
+            pub fn forward_search_char(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize> 
+            {
                 let mut pos = None;
 
                 for _ in 0..n {
@@ -27876,7 +28130,8 @@ pub mod parses
                 pos
             }
 
-            pub fn backward_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize {
+            pub fn backward_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize 
+            {
                 let mut chars = buf[..cur].char_indices().rev();
 
                 for _ in 0..n {
@@ -27892,7 +28147,8 @@ pub mod parses
                 }
             }
 
-            pub fn forward_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize {
+            pub fn forward_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize 
+            {
                 let mut chars = buf[cur..].char_indices();
 
                 for _ in 0..n {
@@ -27908,7 +28164,8 @@ pub mod parses
                 }
             }
 
-            pub fn back_n_words(n: usize, buf: &str, cur: usize, word_break: &str) -> Range<usize> {
+            pub fn back_n_words(n: usize, buf: &str, cur: usize, word_break: &str) -> Range<usize> 
+            {
                 let prev = backward_word(1, buf, cur, word_break);
                 let end = word_end(&buf, prev, word_break);
 
@@ -27920,7 +28177,8 @@ pub mod parses
                 }
             }
 
-            pub fn forward_n_words(n: usize, buf: &str, cur: usize, word_break: &str) -> Range<usize> {
+            pub fn forward_n_words(n: usize, buf: &str, cur: usize, word_break: &str) -> Range<usize> 
+            {
                 let start = next_word(1, buf, cur, word_break);
 
                 if n > 1 {
@@ -27933,7 +28191,8 @@ pub mod parses
                 }
             }
             /// Returns the first character in the buffer, if it contains any valid characters.
-            pub fn first_char(buf: &[u8]) -> io::Result<Option<char>> {
+            pub fn first_char(buf: &[u8]) -> io::Result<Option<char>> 
+            {
                 match from_utf8(buf) {
                     Ok(s) => Ok(s.chars().next()),
                     Err(e) => {
@@ -27950,7 +28209,8 @@ pub mod parses
                 }
             }
 
-            pub fn first_word(buf: &str, word_break: &str) -> Option<usize> {
+            pub fn first_word(buf: &str, word_break: &str) -> Option<usize> 
+            {
                 let mut chars = buf.char_indices();
 
                 drop_while(&mut chars, |(_, ch)| word_break.contains(ch));
@@ -27958,7 +28218,8 @@ pub mod parses
                 chars.next().map(|(idx, _)| idx)
             }
 
-            pub fn word_start(buf: &str, cur: usize, word_break: &str) -> usize {
+            pub fn word_start(buf: &str, cur: usize, word_break: &str) -> usize 
+            {
                 let fwd = match buf[cur..].chars().next() {
                     Some(ch) => word_break.contains(ch),
                     None => return buf.len()
@@ -27978,7 +28239,8 @@ pub mod parses
                 }
             }
 
-            pub fn next_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize {
+            pub fn next_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize 
+            {
                 let mut chars = buf[cur..].char_indices();
 
                 for _ in 0..n {
@@ -27994,7 +28256,8 @@ pub mod parses
                 }
             }
 
-            pub fn word_end(buf: &str, cur: usize, word_break: &str) -> usize {
+            pub fn word_end(buf: &str, cur: usize, word_break: &str) -> usize 
+            {
                 let mut chars = buf[cur..].char_indices();
 
                 drop_while(&mut chars, |(_, ch)| !word_break.contains(ch));
@@ -28023,7 +28286,8 @@ pub mod parses
                 }
             }
 
-            pub fn get_open_paren(ch: char) -> Option<char> {
+            pub fn get_open_paren(ch: char) -> Option<char> 
+            {
                 match ch {
                     ')' => Some('('),
                     ']' => Some('['),
@@ -28032,7 +28296,8 @@ pub mod parses
                 }
             }
 
-            pub fn find_matching_paren(s: &str, quotes: &str, open: char, close: char) -> Option<usize> {
+            pub fn find_matching_paren(s: &str, quotes: &str, open: char, close: char) -> Option<usize> 
+            {
                 let mut chars = s.char_indices().rev();
                 let mut level = 0;
                 let mut string_delim = None;
@@ -28056,10 +28321,10 @@ pub mod parses
                 None
             }
 
-            pub fn match_name(name: &str, value: &str) -> bool {
+            pub fn match_name(name: &str, value: &str) -> bool 
+            {
                 // A value of "foo" matches both "foo" and "foo-bar"
-                name == value ||
-                    (name.starts_with(value) && name.as_bytes()[value.len()] == b'-')
+                name == value || (name.starts_with(value) && name.as_bytes()[value.len()] == b'-')
             }
         }
 
@@ -28309,7 +28574,7 @@ pub mod parses
             use super::chars::{is_ctrl, unctrl, ESCAPE, RUBOUT};
             use super::highlighting::{Highlighter, Style, RESET_STYLE};
             use super::reader::{START_INVISIBLE, END_INVISIBLE};
-            use super::terminal::{CursorMode, Size, Terminal, TerminalWriter};
+            use super::terminal::{ self, Terminal, TerminalWriter};
             use super::util::{
                 backward_char, forward_char, backward_search_char, forward_search_char,
                 filter_visible, RangeArgument,
@@ -28318,18 +28583,15 @@ pub mod parses
             */
             /// Duration to wait for input when "blinking"
             pub const BLINK_DURATION: Duration = Duration::from_millis(500);
-
             const COMPLETE_MORE: &'static str = "--More--";
             /// Default maximum history size
             const MAX_HISTORY: usize = !0;
             /// Tab column interval
             const TAB_STOP: usize = 8;
-
             // Length of "(arg: "
             const PROMPT_NUM_PREFIX: usize = 6;
             // Length of ") "
             const PROMPT_NUM_SUFFIX: usize = 2;
-
             // Length of "(i-search)`"
             const PROMPT_SEARCH_PREFIX: usize = 11;
             // Length of "failed "
@@ -28339,17 +28601,20 @@ pub mod parses
             // Length of "': "
             const PROMPT_SEARCH_SUFFIX: usize = 3;
             /// Provides an interface to write line-by-line output to the terminal device.
-            pub struct Writer<'a, 'b: 'a, Term: 'b + Terminal> {
+            pub struct Writer<'a, 'b: 'a, Term: 'b + Terminal> 
+            {
                 write: Writerimpl <'a, 'b, Term>,
             }
 
-            enum Writerimpl <'a, 'b: 'a, Term: 'b + Terminal> {
+            enum Writerimpl <'a, 'b: 'a, Term: 'b + Terminal> 
+            {
                 Mutex(WriteLock<'b, Term>),
                 MutRef(&'a mut WriteLock<'b, Term>),
             }
 
             #[derive(Debug)]
-            pub struct Write {
+            pub struct Write 
+            {
                 /// Input buffer
                 pub buffer: String,
                 /// Original buffer entered before searching through history
@@ -28394,50 +28659,60 @@ pub mod parses
                 /// Whether a numerical argument was supplied
                 pub explicit_arg: bool,
                 /// Terminal size as of last draw operation
-                pub screen_size: Size,
+                pub screen_size: ::system::Size,
             }
 
-            pub struct WriteLock<'a, Term: 'a + Terminal> {
+            pub struct WriteLock<'a, Term: 'a + Terminal> 
+            {
                 term: Box<dyn TerminalWriter<Term> + 'a>,
                 data: MutexGuard<'a, Write>,
                 highlighter: Option<Arc<dyn Highlighter + Send + Sync>>,
             }
 
-            impl <'a, Term: Terminal> WriteLock<'a, Term> {
-                pub fn new(term: Box<dyn TerminalWriter<Term> + 'a>, data: MutexGuard<'a, Write>,
-                        highlighter: Option<Arc<dyn Highlighter + Send + Sync>>
-                        ) -> WriteLock<'a, Term> {
-                    WriteLock{
+            impl <'a, Term: Terminal> WriteLock<'a, Term> 
+            {
+                pub fn new
+                (
+                    term:Box<dyn TerminalWriter<Term> + 'a>,
+                    data:MutexGuard<'a, Write>,
+                    highlighter: Option<Arc<dyn Highlighter + Send + Sync>>
+                ) -> WriteLock<'a, Term>
+                {
+                    WriteLock
+                    {
                         term,
                         data,
                         highlighter,
                     }
                 }
 
-                pub fn size(&self) -> io::Result<Size> {
+                pub fn size(&self) -> io::Result<::system::Size> 
+                {
                     self.term.size()
                 }
 
-                pub fn flush(&mut self) -> io::Result<()> {
+                pub fn flush(&mut self) -> io::Result<()> 
+                {
                     self.term.flush()
                 }
 
-                pub fn update_size(&mut self) -> io::Result<()> {
+                pub fn update_size(&mut self) -> io::Result<()> 
+                {
                     let size = self.size()?;
                     self.screen_size = size;
                     Ok(())
                 }
 
-                pub fn blink(&mut self, pos: usize) -> io::Result<()> {
+                pub fn blink(&mut self, pos: usize) -> io::Result<()>
+                {
                     self.expire_blink()?;
-
                     let orig = self.cursor;
                     self.move_to(pos)?;
                     self.cursor = orig;
-
                     let expiry = Instant::now() + BLINK_DURATION;
 
-                    self.blink = Some(Blink{
+                    self.blink = Some(Blink
+                    {
                         pos,
                         expiry,
                     });
@@ -28445,61 +28720,63 @@ pub mod parses
                     Ok(())
                 }
 
-                pub fn check_expire_blink(&mut self, now: Instant) -> io::Result<bool> {
-                    if let Some(blink) = self.data.blink {
-                        if now >= blink.expiry {
-                            self.expire_blink()?;
-                        }
+                pub fn check_expire_blink(&mut self, now: Instant) -> io::Result<bool>
+                {
+                    if let Some(blink) = self.data.blink
+                    {
+                        if now >= blink.expiry { self.expire_blink()?; }
                     }
 
                     Ok(self.blink.is_none())
                 }
 
-                pub fn expire_blink(&mut self) -> io::Result<()> {
-                    if let Some(blink) = self.data.blink.take() {
-                        self.move_from(blink.pos)?;
-                    }
+                pub fn expire_blink(&mut self) -> io::Result<()>
+                {
+                    if let Some(blink) = self.data.blink.take() { self.move_from(blink.pos)?; }
 
                     Ok(())
                 }
 
-                pub fn set_prompt(&mut self, prompt: &str) -> io::Result<()> {
+                pub fn set_prompt(&mut self, prompt: &str) -> io::Result<()>
+                {
                     self.expire_blink()?;
 
                     let redraw = self.is_prompt_drawn && self.prompt_type.is_normal();
 
-                    if redraw {
-                        self.clear_full_prompt()?;
-                    }
+                    if redraw { self.clear_full_prompt()?; }
 
                     self.data.set_prompt(prompt);
 
-                    if redraw {
-                        self.draw_prompt()?;
-                    }
+                    if redraw { self.draw_prompt()?; }
 
                     Ok(())
                 }
                 /// Draws the prompt and current input, assuming the cursor is at column 0
-                pub fn draw_prompt(&mut self) -> io::Result<()> {
+                pub fn draw_prompt(&mut self) -> io::Result<()>
+                {
                     self.draw_prompt_prefix()?;
                     self.draw_prompt_suffix()
                 }
 
-                pub fn draw_prompt_prefix(&mut self) -> io::Result<()> {
-                    match self.prompt_type {
-                        // Prefix is not drawn when completions are shown
+                pub fn draw_prompt_prefix(&mut self) -> io::Result<()>
+                {
+                    match self.prompt_type
+                    {
                         PromptType::CompleteMore => Ok(()),
-                        _ => {
+                        _ =>
+                        {
                             let pfx = self.prompt_prefix.clone();
                             self.draw_raw_prompt(&pfx, Vec::new())
                         }
                     }
                 }
 
-                pub fn draw_prompt_suffix(&mut self) -> io::Result<()> {
-                    match self.prompt_type {
-                        PromptType::Normal => {
+                pub fn draw_prompt_suffix(&mut self) -> io::Result<()>
+                {
+                    match self.prompt_type
+                    {
+                        PromptType::Normal =>
+                        {
                             let sfx = self.prompt_suffix.clone();
 
                             let styles = self.highlighter.as_ref().map(|h|
@@ -28508,13 +28785,18 @@ pub mod parses
 
                             self.draw_raw_prompt(&sfx, styles)?;
                         }
-                        PromptType::Number => {
+                        
+                        PromptType::Number =>
+                        {
                             let n = self.input_arg.to_i32();
                             let s = format!("(arg: {}) ", n);
                             self.draw_text(0, &s)?;
                         }
-                        PromptType::Search => {
-                            let pre = match (self.reverse_search, self.search_failed) {
+
+                        PromptType::Search =>
+                        {
+                            let pre = match (self.reverse_search, self.search_failed)
+                            {
                                 (false, false) => "(i-search)",
                                 (false, true)  => "(failed i-search)",
                                 (true,  false) => "(reverse-i-search)",
@@ -28524,60 +28806,44 @@ pub mod parses
                             let entry_str = self.get_history(self.history_index).to_owned();
                             let prefix_str = format!("{}`{}': ", pre, self.search_buffer);
                             let prefix_len = prefix_str.len();
-
-                            // Calculate styles for the history entry part
+                            
                             let entry_styles = self.highlighter.as_ref()
-                                .map(|h| h.highlight(&entry_str))
-                                .unwrap_or_default();
-
-                            // Adjust style ranges to account for the prefix string
+                            .map(|h| h.highlight(&entry_str))
+                            .unwrap_or_default();
+                                
                             let adjusted_styles: Vec<(Range<usize>, Style)> = entry_styles.into_iter()
-                                .map(|(range, style)| (range.start + prefix_len .. range.end + prefix_len, style))
-                                .collect();
+                            .map(|(range, style)| (range.start + prefix_len .. range.end + prefix_len, style))
+                            .collect();
 
                             let full_str = format!("{}{}", prefix_str, entry_str);
-
-                            // Draw the full string with adjusted styles using draw_text_impl 
-                            // Use Display options similar to draw_raw_prompt for consistency
-                            self.draw_text_impl (0, &full_str, Display {
+                            
+                            self.draw_text_impl (0, &full_str, Display
+                            {
                                 allow_tab: true,
                                 allow_newline: true,
                                 allow_escape: true,
                             }, false, &adjusted_styles, 0)?;
-
-                            // Calculate screen coordinates using start_col = 0 because full_str includes the prefix.
+                            
                             let (end_line, _end_col) = self.line_col_with(full_str.len(), &full_str, 0);
                             let target_cursor_pos_in_full_str = prefix_len + self.cursor;
                             let (target_line, target_col) = self.line_col_with(target_cursor_pos_in_full_str, &full_str, 0);
-
-                            // Calculate relative movement directly
+                            
                             let lines = target_line as isize - end_line as isize;
-                            // Calculate the column move: move to beginning of target line, then right by target_col.
-                            // We know we ended at the beginning of the line *after* end_line (due to wrap or newline logic in draw_text_impl )
-                            // or at _end_col if end_line == target_line and no wrap occurred.
-                            // It's simpler to move to the beginning of the target line and then right.
-                            let cols = target_col as isize; // We will move_up/down first, then move_to_first_column, then move_right.
+                            let cols = target_col as isize;
 
-                            // Apply movement
-                            if lines > 0 {
-                                self.term.move_down(lines as usize)?;
-                            } else if lines < 0 {
-                                self.term.move_up((-lines) as usize)?;
-                            }
+                            if lines > 0 { self.term.move_down(lines as usize)?; }                            
+                            else if lines < 0 { self.term.move_up((-lines) as usize)?; }
+                            
                             self.term.move_to_first_column()?;
-                            if cols > 0 {
-                                self.term.move_right(cols as usize)?;
-                            }
-                            // We don't need to call self.move_rel as we performed the terminal moves directly.
-                            // Also, don't update self.cursor here, it's already correct (index within history entry).
+
+                            if cols > 0 { self.term.move_right(cols as usize)?; }
+                            
                             return Ok(())
                         }
-                        PromptType::CompleteIntro(n) => {
-                            return self.term.write(&complete_intro(n));
-                        }
-                        PromptType::CompleteMore => {
-                            return self.term.write(COMPLETE_MORE);
-                        }
+
+                        PromptType::CompleteIntro(n) => { return self.term.write(&complete_intro(n)); }
+
+                        PromptType::CompleteMore => { return self.term.write(COMPLETE_MORE); }
                     }
 
                     self.draw_buffer(0)?;
@@ -28585,22 +28851,28 @@ pub mod parses
                     self.move_from(len)
                 }
 
-                pub fn redraw_prompt(&mut self, new_prompt: PromptType) -> io::Result<()> {
+                pub fn redraw_prompt(&mut self, new_prompt: PromptType) -> io::Result<()>
+                {
                     self.clear_prompt()?;
                     self.prompt_type = new_prompt;
                     self.draw_prompt_suffix()
                 }
                 /// Draws a portion of the buffer, starting from the given cursor position
-                pub fn draw_buffer(&mut self, pos: usize) -> io::Result<()> {
+                pub fn draw_buffer(&mut self, pos: usize) -> io::Result<()>
+                {
                     let (_, col) = self.line_col(pos);
-
-                    let styles = self.highlighter.as_ref().map(|h|
+                    let styles = self.highlighter
+                    .as_ref()
+                    .map
+                    (
+                        |h|
                         h.highlight(&self.buffer)
                     ).unwrap_or_default();
 
                     let buf_slice = self.buffer[pos..].to_owned();
 
-                    self.draw_text_impl (col, &buf_slice, Display{
+                    self.draw_text_impl (col, &buf_slice, Display
+                    {
                         allow_tab: true,
                         allow_newline: true,
                         .. Display::default()
@@ -28609,23 +28881,43 @@ pub mod parses
                     Ok(())
                 }
                 /// Draw some text with the cursor beginning at the given column.
-                fn draw_text(&mut self, start_col: usize, text: &str) -> io::Result<()> {
-                    self.draw_text_impl (start_col, text, Display{
-                        allow_newline: true,
-                        .. Display::default()
-                    }, false, &[], 0)
+                fn draw_text(&mut self, start_col: usize, text: &str) -> io::Result<()>
+                {
+                    self.draw_text_impl
+                    (
+                        start_col,
+                        text,
+                        Display
+                        {
+                            allow_newline: true,
+                            .. Display::default()
+                        }, false, &[], 0
+                    )
                 }
 
-                fn draw_raw_prompt(&mut self, text: &str, styles: Vec<(Range<usize>, Style)>) -> io::Result<()> {
-                    self.draw_text_impl (0, text, Display{
+                fn draw_raw_prompt(&mut self, text: &str, styles: Vec<(Range<usize>, Style)>) -> io::Result<()>
+                {
+                    self.draw_text_impl
+                    (
+                        0, text, Display
+                    {
                         allow_tab: true,
                         allow_newline: true,
                         allow_escape: true,
                     }, true, &styles, 0)
                 }
 
-                fn draw_text_impl (&mut self, start_col: usize, text: &str, disp: Display,
-                        handle_invisible: bool, styles: &[(Range<usize>, Style)], text_offset: usize) -> io::Result<()> {
+                fn draw_text_impl
+                (
+                    &mut self,
+                    start_col:usize,
+                    text:&str,
+                    disp:Display,
+                    handle_invisible: bool,
+                    styles:&[(Range<usize>, Style)],
+                    text_offset: usize
+                ) -> io::Result<()>
+                {
                     let width = self.screen_size.columns;
                     let mut col = start_col;
                     let mut out = String::with_capacity(text.len());
@@ -28637,66 +28929,75 @@ pub mod parses
                     let mut clear = false;
                     let mut hidden = false;
 
-                    for ch in text.chars() {
-                        if handle_invisible && ch == START_INVISIBLE {
-                            hidden = true;
-                        } else if handle_invisible && ch == END_INVISIBLE {
-                            hidden = false;
-                        } else if hidden {
-                            // Render the character, but assume it has 0 width.
+                    for ch in text.chars()
+                    {
+                        if handle_invisible && ch == START_INVISIBLE { hidden = true; }
+                        
+                        else if handle_invisible && ch == END_INVISIBLE { hidden = false; }
+                        
+                        else if hidden
+                        {
                             out.push(ch);
                             current_text_byte += ch.len_utf8();
-                        } else {
-                            // Determine style for the current character
+                        }
+                        
+                        else
+                        {
                             let absolute_byte_pos = text_offset + current_text_byte;
-                            // Advance style iterator past ranges that end before the current position
-                            while let Some((range, _)) = style_iter.peek() {
-                                if range.end <= absolute_byte_pos {
-                                    style_iter.next();
-                                } else {
-                                    break;
-                                }
+                            
+                            while let Some((range, _)) = style_iter.peek()
+                            {
+                                if range.end <= absolute_byte_pos { style_iter.next(); }
+
+                                else { break; }
                             }
-
-                            // Find the style that applies to the current position
+                            
                             let new_style = style_iter.peek()
-                                .filter(|(range, _)| range.start <= absolute_byte_pos)
-                                .map(|(_, style)| style)
-                                .unwrap_or(&Style::Default);
+                            .filter(|(range, _)| range.start <= absolute_byte_pos)
+                            .map(|(_, style)| style)
+                            .unwrap_or(&Style::Default);
+                                
+                            if new_style != current_style
+                            {
+                                if current_style != &Style::Default { out.push_str(RESET_STYLE); }
 
-                            // Apply style change if needed
-                            if new_style != current_style {
-                                if current_style != &Style::Default {
-                                    out.push_str(RESET_STYLE); // Reset previous style
-                                }
-                                if let Style::AnsiColor(ansi_code) = new_style {
-                                    out.push_str(ansi_code); // Apply new style
-                                }
+                                if let Style::AnsiColor(ansi_code) = new_style { out.push_str(ansi_code); }
+
                                 current_style = new_style;
                             }
-
-                            // Apply style if changed
-                            for ch in display(ch, disp) {
-                                if ch == '\t' {
+                            
+                            for ch in display(ch, disp)
+                            {
+                                if ch == '\t'
+                                {
                                     let n = TAB_STOP - (col % TAB_STOP);
 
-                                    if col + n > width {
+                                    if col + n > width
+                                    {
                                         let pre = width - col;
                                         out.extend(repeat(' ').take(pre));
                                         out.push_str(" \r");
                                         out.extend(repeat(' ').take(n - pre));
                                         col = n - pre;
-                                    } else {
+                                    }
+                                    
+                                    else
+                                    {
                                         out.extend(repeat(' ').take(n));
                                         col += n;
 
-                                        if col == width {
+                                        if col == width
+                                        {
                                             out.push_str(" \r");
                                             col = 0;
                                         }
                                     }
-                                } else if ch == '\n' {
-                                    if !clear {
+                                }
+                                
+                                else if ch == '\n'
+                                {
+                                    if !clear
+                                    {
                                         self.term.write(&out)?;
                                         out.clear();
                                         self.term.clear_to_screen_end()?;
@@ -28705,24 +29006,33 @@ pub mod parses
 
                                     out.push('\n');
                                     col = 0;
-                                } else if is_combining_mark(ch) {
-                                    out.push(ch);
-                                } else if is_wide(ch) {
-                                    if col == width - 1 {
+                                }
+                                
+                                else if is::combining_mark(ch) { out.push(ch); }
+                                
+                                else if is::wide(ch)
+                                {
+                                    if col == width - 1
+                                    {
                                         out.push_str("  \r");
                                         out.push(ch);
                                         col = 2;
-                                    } else {
+                                    }
+                                    
+                                    else
+                                    {
                                         out.push(ch);
                                         col += 2;
                                     }
-                                } else {
+                                }
+                                
+                                else
+                                {
                                     out.push(ch);
                                     col += 1;
 
-                                    if col == width {
-                                        // Space pushes the cursor to the next line,
-                                        // CR brings back to the start of the line.
+                                    if col == width
+                                    {
                                         out.push_str(" \r");
                                         col = 0;
                                     }
@@ -28771,7 +29081,7 @@ pub mod parses
                     self.move_to(pos)
                 }
 
-                pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                pub fn set_cursor_mode(&mut self, mode: ::system::CursorMode ) -> io::Result<()> {
                     self.term.set_cursor_mode(mode)
                 }
 
@@ -29389,12 +29699,14 @@ pub mod parses
             }
 
             #[derive(Copy, Clone, Debug)]
-            struct Blink {
+            struct Blink 
+            {
                 pos: usize,
                 expiry: Instant,
             }
 
-            impl <'a, 'b: 'a, Term: 'b + Terminal> Writer<'a, 'b, Term> {
+            impl <'a, 'b: 'a, Term: 'b + Terminal> Writer<'a, 'b, Term> 
+            {
                 fn new(mut write: Writerimpl <'a, 'b, Term>, clear: bool) -> io::Result<Self> {
                     write.expire_blink()?;
 
@@ -29432,7 +29744,8 @@ pub mod parses
                 }
             }
 
-            impl <'a, 'b: 'a, Term: 'b + Terminal> Drop for Writer<'a, 'b, Term> {
+            impl <'a, 'b: 'a, Term: 'b + Terminal> Drop for Writer<'a, 'b, Term> 
+            {
                 fn drop(&mut self) {
                     if self.write.is_prompt_drawn {
                         // There's not really anything useful to be done with this error.
@@ -29441,7 +29754,8 @@ pub mod parses
                 }
             }
 
-            impl <'a, Term: 'a + Terminal> Deref for WriteLock<'a, Term> {
+            impl <'a, Term: 'a + Terminal> Deref for WriteLock<'a, Term> 
+            {
                 type Target = Write;
 
                 fn deref(&self) -> &Write {
@@ -29449,15 +29763,19 @@ pub mod parses
                 }
             }
 
-            impl <'a, Term: 'a + Terminal> DerefMut for WriteLock<'a, Term> {
+            impl <'a, Term: 'a + Terminal> DerefMut for WriteLock<'a, Term> 
+            {
                 fn deref_mut(&mut self) -> &mut Write {
                     &mut self.data
                 }
             }
 
-            impl Write {
-                pub fn new(screen_size: Size) -> Write {
-                    Write{
+            impl Write
+            {
+                pub fn new( screen_size: ::system::Size ) -> Write
+                {
+                    Write
+                    {
                         buffer: String::new(),
                         backup_buffer: String::new(),
                         cursor: 0,
@@ -29535,8 +29853,10 @@ pub mod parses
                     self.cursor = pos;
                 }
 
-                pub fn set_prompt(&mut self, prompt: &str) {
-                    let (pre, suf) = match prompt.rfind('\n') {
+                pub fn set_prompt(&mut self, prompt: &str)
+                {
+                    let (pre, suf) = match prompt.rfind('\n')
+                    {
                         Some(pos) => (&prompt[..pos + 1], &prompt[pos + 1..]),
                         None => (&prompt[..0], prompt)
                     };
@@ -29551,28 +29871,28 @@ pub mod parses
                     self.prompt_suffix_len = self.display_size(&suf_virt, 0);
                 }
 
-                pub fn display_size(&self, s: &str, start_col: usize) -> usize {
+                pub fn display_size(&self, s: &str, start_col: usize) -> usize
+                {
                     let width = self.screen_size.columns;
                     let mut col = start_col;
-
-                    let disp = Display{
+                    let disp = Display
+                    {
                         allow_tab: true,
                         allow_newline: true,
                         .. Display::default()
                     };
 
-                    for ch in filter_visible(s).chars().flat_map(|ch| display(ch, disp)) {
-                        let n = match ch {
+                    for ch in filter_visible(s).chars().flat_map(|ch| display(ch, disp))
+                    {
+                        let n = match ch
+                        {
                             '\n' => width - (col % width),
                             '\t' => TAB_STOP - (col % TAB_STOP),
-                            ch if is_combining_mark(ch) => 0,
-                            ch if is_wide(ch) => {
-                                if col % width == width - 1 {
-                                    // Can't render a fullwidth character into last column
-                                    3
-                                } else {
-                                    2
-                                }
+                            ch if is::combining_mark(ch) => 0,
+                            ch if is::wide(ch) =>
+                            {
+                                if col % width == width - 1 { 3 }
+                                else { 2 }
                             }
                             _ => 1
                         };
@@ -29587,14 +29907,16 @@ pub mod parses
             const NUMBER_MAX: i32 = 1_000_000;
 
             #[derive(Copy, Clone, Debug)]
-            pub enum Digit {
+            pub enum Digit 
+            {
                 None,
                 NegNone,
                 Num(i32),
                 NegNum(i32),
             }
 
-            impl Digit {
+            impl Digit 
+            {
                 pub fn input(&mut self, n: i32) {
                     match *self {
                         Digit::None => *self = Digit::Num(n),
@@ -29623,7 +29945,8 @@ pub mod parses
                 }
             }
 
-            impl From<char> for Digit {
+            impl From<char> for Digit 
+            {
                 /// Convert a decimal digit character to a `Digit` value.
                 fn from(ch: char) -> Digit {
                     let n = (ch as u8) - b'0';
@@ -29632,7 +29955,8 @@ pub mod parses
             }
 
             #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-            pub enum PromptType {
+            pub enum PromptType 
+            {
                 Normal,
                 Number,
                 Search,
@@ -29640,13 +29964,15 @@ pub mod parses
                 CompleteMore,
             }
 
-            impl PromptType {
+            impl PromptType 
+            {
                 pub fn is_normal(&self) -> bool {
                     *self == PromptType::Normal
                 }
             }
 
-            impl <'a, 'b, Term: 'b + Terminal> Deref for Writerimpl <'a, 'b, Term> {
+            impl <'a, 'b, Term: 'b + Terminal> Deref for Writerimpl <'a, 'b, Term> 
+            {
                 type Target = WriteLock<'b, Term>;
 
                 fn deref(&self) -> &WriteLock<'b, Term> {
@@ -29657,7 +29983,8 @@ pub mod parses
                 }
             }
 
-            impl <'a, 'b: 'a, Term: 'b + Terminal> DerefMut for Writerimpl <'a, 'b, Term> {
+            impl <'a, 'b: 'a, Term: 'b + Terminal> DerefMut for Writerimpl <'a, 'b, Term> 
+            {
                 fn deref_mut(&mut self) -> &mut WriteLock<'b, Term> {
                     match *self {
                         Writerimpl ::Mutex(ref mut m) => m,
@@ -29821,7 +30148,7 @@ pub mod parses
                     }
 
                     pub fn user_init_file() -> Option<PathBuf> {
-                        home_dir().map(|p| p.join(".inputrc"))
+                        path::home_dir().map(|p| p.join(".inputrc"))
                     }
                 }
 
@@ -29829,13 +30156,18 @@ pub mod parses
                 {
                     /*!
                     */
+                    use parses::lines::terminal::RawRead;
                     use ::
                     {
+                        system::
+                        {
+                            common::{ TerminalReadGuard },
+                            Event,
+                        },
+                        time::std::{ Duration },
                         *,
                     };
                     /*
-                    use std::io;
-                    use std::time::Duration;
 
                     use ::system::{Event, TerminalReadGuard};
                     use ::system::unix::TerminalExt;
@@ -34867,13 +35199,22 @@ pub mod str
 {
     pub use std::str::{ * };
     use ::
-    {
+    {    
+        borrow::{ Borrow, BorrowMut, Cow },
+        boxed::{ Box },
+        cmp::{ Ordering },
+        convert::{ Infallible },
+        ffi::{ OsStr, OsString },
         fs::{ File },
+        hash::{ Hash, Hasher },
         io::{ Read, Write },
+        iter::{ FromIterator, FusedIterator },
+        marker::{ PhantomData },
+        smallvec::{ Array, SmallVec },
+        string::{ String },
         *,
     };
     /// Reads a file and returns its contents in a string.
-   
     pub fn read_from_file(fname: &str) -> io::Result<String>
     {
         let mut file = File::open(fname)?;
@@ -34923,6 +35264,718 @@ pub mod str
         }
         format!("{}{}{}", sep, _token, sep)
     }
+    /*
+    smallstr 0.3.1
+    Implements `SmallString`, a `String`-like container for small strings */
+    /// A `String`-like container that can store a small number of bytes inline.
+    #[derive(Clone, Default)]
+    pub struct SmallString<A: Array<Item = u8>>
+    {
+        data: SmallVec<A>,
+    }
+
+    impl<A: Array<Item = u8>> SmallString<A>
+    {
+        /// Construct an empty string.
+        #[inline] pub fn new() -> SmallString<A>
+        {
+            SmallString
+            {
+                data: SmallVec::new(),
+            }
+        }
+        /// Construct an empty string with enough capacity pre-allocated to store at least `n` bytes.
+        #[inline] pub fn with_capacity(n: usize) -> SmallString<A>
+        {
+            SmallString
+            {
+                data: SmallVec::with_capacity(n),
+            }
+        }
+        /// Construct a `SmallString` by copying data from a `&str`.
+        #[inline] pub fn from_str(s: &str) -> SmallString<A>
+        {
+            SmallString
+            {
+                data: SmallVec::from_slice(s.as_bytes()),
+            }
+        }
+        /// Construct a `SmallString` by using an existing allocation.
+        #[inline] pub fn from_string(s: String) -> SmallString<A>
+        {
+            SmallString
+            {
+                data: SmallVec::from_vec(s.into_bytes()),
+            }
+        }
+        /// Constructs a new `SmallString` on the stack using UTF-8 bytes.
+        #[inline] pub fn from_buf(buf: A) -> Result<SmallString<A>, FromUtf8Error<A>>
+        {
+            let data = SmallVec::from_buf(buf);
+
+            match str::from_utf8(&data)
+            {
+                Ok(_) => Ok(SmallString { data }),
+                Err(error) =>
+                {
+                    let buf = data.into_inner().ok().unwrap();
+                    Err(FromUtf8Error { buf, error })
+                }
+            }
+        }
+        /// Constructs a new `SmallString` on the stack using the provided byte array
+        /// without checking that the array contains valid UTF-8.
+        #[inline] pub unsafe fn from_buf_unchecked(buf: A) -> SmallString<A>
+        {
+            SmallString
+            {
+                data: SmallVec::from_buf(buf),
+            }
+        }
+        /// The maximum number of bytes this string can hold inline.
+        #[inline] pub fn inline_size(&self) -> usize {
+            A::size()
+        }
+        /// Returns the length of this string, in bytes.
+        #[inline] pub fn len(&self) -> usize 
+        {
+            self.data.len()
+        }
+        /// Returns `true` if this string is empty.
+        #[inline] pub fn is_empty(&self) -> bool 
+        {
+            self.data.is_empty()
+        }
+        /// Returns the number of bytes this string can hold without reallocating.
+        #[inline] pub fn capacity(&self) -> usize 
+        {
+            self.data.capacity()
+        }
+        /// Returns `true` if the data has spilled into a separate heap-allocated buffer.
+        #[inline] pub fn spilled(&self) -> bool 
+        {
+            self.data.spilled()
+        }
+        /// Empties the string and returns an iterator over its former contents.
+        pub fn drain(&mut self) -> Drain<'_> 
+        {
+            unsafe
+            {
+                let len = self.len();
+                self.data.set_len(0);
+                let ptr = self.as_ptr();
+                let slice = slice::from_raw_parts(ptr, len);
+                let s = str::from_utf8_unchecked(slice);
+                Drain { iter: s.chars() }
+            }
+        }
+        /// Empties the sub string and returns an iterator over its former contents.
+        pub fn drain_range<R>(&mut self, range: R) -> DrainRange<'_, A> where
+        R: ops::RangeBounds<usize>
+        {
+            DrainRange
+            {
+                drain: self.data.drain(range),
+            }
+        }
+        /// Appends the given `char` to the end of this string.
+        #[inline] pub fn push(&mut self, ch: char)
+        {
+            match ch.len_utf8() 
+            {
+                1 => self.data.push(ch as u8),
+                _ => self.push_str(ch.encode_utf8(&mut [0; 4])),
+            }
+        }
+        /// Appends the given string slice to the end of this string.
+        #[inline] pub fn push_str(&mut self, s: &str)
+        {
+            self.data.extend_from_slice(s.as_bytes());
+        }
+        /// Removes the last character from this string and returns it.
+        #[inline] pub fn pop(&mut self) -> Option<char>
+        {
+            match self.chars().next_back()
+            {
+                Some(ch) => unsafe
+                {
+                    let new_len = self.len() - ch.len_utf8();
+                    self.data.set_len(new_len);
+                    Some(ch)
+                },
+                None => None,
+            }
+        }
+        /// Reallocates to set the new capacity to `new_cap`.
+        #[inline] pub fn grow(&mut self, new_cap: usize) { self.data.grow( new_cap ); }
+        /// Ensures that this string's capacity is at least `additional` bytes larger than its length.
+        #[inline] pub fn reserve(&mut self, additional: usize) { self.data.reserve(additional); }
+        /// Ensures that this string's capacity is `additional` bytes larger than its length.
+        #[inline] pub fn reserve_exact(&mut self, additional: usize) { self.data.reserve(additional); }
+        /// Shrink the capacity of the string as much as possible.
+        #[inline] pub fn shrink_to_fit(&mut self) { self.data.shrink_to_fit(); }
+        /// Shorten the string, keeping the first `len` bytes.
+        #[inline] pub fn truncate(&mut self, len: usize)
+        {
+            assert!(self.is_char_boundary(len));
+            self.data.truncate(len);
+        }
+        /// Extracts a string slice containing the entire string.
+        #[inline] pub fn as_str(&self) -> &str { self }
+        /// Extracts a string slice containing the entire string.
+        #[inline] pub fn as_mut_str(&mut self) -> &mut str { self }
+        /// Removes all contents of the string.
+        #[inline] pub fn clear(&mut self) { self.data.clear(); }
+        /// Removes a `char` from this string at a byte position and returns it.
+        #[inline] pub fn remove(&mut self, idx: usize) -> char
+        {
+            let ch = match self[idx..].chars().next()
+            {
+                Some(ch) => ch,
+                None => panic!("cannot remove a char from the end of a string"),
+            };
+
+            let ch_len = ch.len_utf8();
+            let next = idx + ch_len;
+            let len = self.len();
+
+            unsafe
+            {
+                let ptr = self.as_mut_ptr();
+                ptr::copy(ptr.add(next), ptr.add(idx), len - next);
+                self.data.set_len(len - ch_len);
+            }
+
+            ch
+        }
+        /// Inserts a `char` into this string at the given byte position.
+        #[inline] pub fn insert(&mut self, idx: usize, ch: char)
+        {
+            assert!(self.is_char_boundary(idx));
+
+            match ch.len_utf8() {
+                1 => self.data.insert(idx, ch as u8),
+                _ => self.insert_str(idx, ch.encode_utf8(&mut [0; 4])),
+            }
+        }
+        /// Inserts a `&str` into this string at the given byte position.
+        #[inline] pub fn insert_str(&mut self, idx: usize, s: &str)
+        {
+            assert!(self.is_char_boundary(idx));
+
+            let len = self.len();
+            let amt = s.len();
+
+            self.data.reserve(amt);
+
+            let ptr = self.as_mut_ptr();
+
+            unsafe {
+                ptr::copy(ptr.add(idx), ptr.add(idx + amt), len - idx);
+                ptr::copy_nonoverlapping(s.as_ptr(), ptr.add(idx), amt);
+                self.data.set_len(len + amt);
+            }
+        }
+        /// Returns a mutable reference to the contents of the `SmallString`.
+        #[inline] pub unsafe fn as_mut_vec(&mut self) -> &mut SmallVec<A> { &mut self.data }
+        /// Converts the `SmallString` into a `String`, without reallocating if the
+        /// `SmallString` has already spilled onto the heap.
+        #[inline] pub fn into_string(self) -> String { unsafe { String::from_utf8_unchecked(self.data.into_vec()) } }
+        /// Converts the `SmallString` into a `Box<str>`, without reallocating if the
+        /// `SmallString` has already spilled onto the heap.
+        #[inline] pub fn into_boxed_str(self) -> Box<str> { self.into_string().into_boxed_str() }
+        /// Convert the `SmallString` into `A`, if possible.
+        #[inline] pub fn into_inner(self) -> Result<A, Self>
+        { self.data.into_inner().map_err(|data| SmallString { data }) }
+        /// Retains only the characters specified by the predicate.
+        #[inline] pub fn retain<F: FnMut(char) -> bool>(&mut self, mut f: F)
+        {
+            struct SetLenOnDrop<'a, A: Array<Item = u8>>
+            {
+                s: &'a mut SmallString<A>,
+                idx: usize,
+                del_bytes: usize,
+            }
+
+            impl<'a, A: Array<Item = u8>> Drop for SetLenOnDrop<'a, A>
+            {
+                fn drop(&mut self)
+                {
+                    let new_len = self.idx - self.del_bytes;
+                    debug_assert!(new_len <= self.s.len());
+                    unsafe { self.s.data.set_len(new_len) };
+                }
+            }
+
+            let len = self.len();
+            let mut guard = SetLenOnDrop
+            {
+                s: self,
+                idx: 0,
+                del_bytes: 0,
+            };
+
+            while guard.idx < len
+            {
+                let ch = unsafe
+                {
+                    guard
+                    .s
+                    .get_unchecked(guard.idx..len)
+                    .chars()
+                    .next()
+                    .unwrap()
+                };
+
+                let ch_len = ch.len_utf8();
+
+                if !f(ch) { guard.del_bytes += ch_len; }
+                
+                else if guard.del_bytes > 0
+                {
+                    let ptr = guard.s.as_mut_ptr();
+                    unsafe
+                    {
+                        ptr::copy
+                        (
+                            ptr.add(guard.idx),
+                            ptr.add(guard.idx - guard.del_bytes),
+                            ch_len,
+                        );
+                    }
+                }
+                
+                guard.idx += ch_len;
+            }
+
+            drop(guard);
+        }
+
+        fn as_ptr(&mut self) -> *const u8 { self.data.as_ptr() }
+
+        fn as_mut_ptr(&mut self) -> *mut u8 { self.data.as_mut_ptr() }
+    }
+
+    impl<A: Array<Item = u8>> ops::Deref for SmallString<A>
+    {
+        type Target = str;
+
+        #[inline] fn deref(&self) -> &str
+        {
+            let bytes: &[u8] = &self.data;
+            unsafe { str::from_utf8_unchecked(bytes) }
+        }
+    }
+
+    impl<A: Array<Item = u8>> ops::DerefMut for SmallString<A>
+    {
+        #[inline] fn deref_mut(&mut self) -> &mut str
+        {
+            let bytes: &mut [u8] = &mut self.data;
+            unsafe { str::from_utf8_unchecked_mut(bytes) }
+        }
+    }
+
+    impl<A: Array<Item = u8>> AsRef<str> for SmallString<A>
+    {
+        #[inline] fn as_ref(&self) -> &str { self }
+    }
+
+    impl<A: Array<Item = u8>> AsMut<str> for SmallString<A>
+    {
+        #[inline] fn as_mut(&mut self) -> &mut str { self }
+    }
+
+    impl<A: Array<Item = u8>> Borrow<str> for SmallString<A>
+    {
+        #[inline] fn borrow(&self) -> &str { self }
+    }
+
+    impl<A: Array<Item = u8>> BorrowMut<str> for SmallString<A>
+    {
+        #[inline] fn borrow_mut(&mut self) -> &mut str { self }
+    }
+
+    impl<A: Array<Item = u8>> AsRef<[u8]> for SmallString<A>
+    {
+        #[inline] fn as_ref(&self) -> &[u8] { self.data.as_ref() }
+    }
+
+    impl<A: Array<Item = u8>> fmt::Write for SmallString<A>
+    {
+        #[inline] fn write_str(&mut self, s: &str) -> fmt::Result
+        {
+            self.push_str(s);
+            Ok(())
+        }
+
+        #[inline] fn write_char(&mut self, ch: char) -> fmt::Result
+        {
+            self.push(ch);
+            Ok(())
+        }
+    }
+
+    impl<A: Array<Item = u8>> FromStr for SmallString<A>
+    {
+        type Err = Infallible;
+
+        fn from_str(s: &str) -> Result<Self, Self::Err> {
+            Ok(SmallString::from(s))
+        }
+    }
+
+    impl<A: Array<Item = u8>> From<char> for SmallString<A> 
+    {
+        #[inline] fn from(ch: char) -> SmallString<A> {
+            SmallString::from_str(ch.encode_utf8(&mut [0; 4]))
+        }
+    }
+
+    impl<A: Array<Item = u8>> From<&'_ str> for SmallString<A> 
+    {
+        #[inline] fn from(s: &str) -> SmallString<A> {
+            SmallString::from_str(s)
+        }
+    }
+
+    impl<A: Array<Item = u8>> From<Box<str>> for SmallString<A> 
+    {
+        #[inline] fn from(s: Box<str>) -> SmallString<A> {
+            SmallString::from_string(s.into())
+        }
+    }
+
+    impl<A: Array<Item = u8>> From<String> for SmallString<A> 
+    {
+        #[inline] fn from(s: String) -> SmallString<A> {
+            SmallString::from_string(s)
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> From<Cow<'a, str>> for SmallString<A> 
+    {
+        fn from(value: Cow<'a, str>) -> Self 
+        {
+            match value {
+                Cow::Borrowed(s) => Self::from_str(s),
+                Cow::Owned(s) => Self::from_string(s),
+            }
+        }
+    }
+
+    macro_rules! impl_index_str
+    {
+        ($index_type: ty) => {
+            impl<A: Array<Item = u8>> ops::Index<$index_type> for SmallString<A> {
+                type Output = str;
+
+                #[inline]
+                fn index(&self, index: $index_type) -> &str {
+                    &self.as_str()[index]
+                }
+            }
+
+            impl<A: Array<Item = u8>> ops::IndexMut<$index_type> for SmallString<A> {
+                #[inline]
+                fn index_mut(&mut self, index: $index_type) -> &mut str {
+                    &mut self.as_mut_str()[index]
+                }
+            }
+        };
+    }
+
+    impl_index_str!(ops::Range<usize>);
+    impl_index_str!(ops::RangeFrom<usize>);
+    impl_index_str!(ops::RangeTo<usize>);
+    impl_index_str!(ops::RangeFull);
+
+    impl<A: Array<Item = u8>> FromIterator<char> for SmallString<A>
+    {
+        fn from_iter<I: IntoIterator<Item = char>>(iter: I) -> SmallString<A>
+        {
+            let mut s = SmallString::new();
+            s.extend(iter);
+            s
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> FromIterator<&'a char> for SmallString<A> 
+    {
+        fn from_iter<I: IntoIterator<Item = &'a char>>(iter: I) -> SmallString<A> 
+        {
+            let mut s = SmallString::new();
+            s.extend(iter.into_iter().cloned());
+            s
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> FromIterator<Cow<'a, str>> for SmallString<A> 
+    {
+        fn from_iter<I: IntoIterator<Item = Cow<'a, str>>>(iter: I) -> SmallString<A> 
+        {
+            let mut s = SmallString::new();
+            s.extend(iter);
+            s
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> FromIterator<&'a str> for SmallString<A> 
+    {
+        fn from_iter<I: IntoIterator<Item = &'a str>>(iter: I) -> SmallString<A> 
+        {
+            let mut s = SmallString::new();
+            s.extend(iter);
+            s
+        }
+    }
+
+    impl<A: Array<Item = u8>> FromIterator<String> for SmallString<A> 
+    {
+        fn from_iter<I: IntoIterator<Item = String>>(iter: I) -> SmallString<A> 
+        {
+            let mut s = SmallString::new();
+            s.extend(iter);
+            s
+        }
+    }
+
+    impl<A: Array<Item = u8>> Extend<char> for SmallString<A> 
+    {
+        fn extend<I: IntoIterator<Item = char>>(&mut self, iter: I) 
+        {
+            let iter = iter.into_iter();
+            let (lo, _) = iter.size_hint();
+
+            self.reserve(lo);
+
+            for ch in iter {
+                self.push(ch);
+            }
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> Extend<&'a char> for SmallString<A> 
+    {
+        fn extend<I: IntoIterator<Item = &'a char>>(&mut self, iter: I) 
+        {
+            self.extend(iter.into_iter().cloned());
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> Extend<Cow<'a, str>> for SmallString<A> 
+    {
+        fn extend<I: IntoIterator<Item = Cow<'a, str>>>(&mut self, iter: I) 
+        {
+            for s in iter {
+                self.push_str(&s);
+            }
+        }
+    }
+
+    impl<'a, A: Array<Item = u8>> Extend<&'a str> for SmallString<A> 
+    {
+        fn extend<I: IntoIterator<Item = &'a str>>(&mut self, iter: I) 
+        {
+            for s in iter {
+                self.push_str(s);
+            }
+        }
+    }
+
+    impl<A: Array<Item = u8>> Extend<String> for SmallString<A> 
+    {
+        fn extend<I: IntoIterator<Item = String>>(&mut self, iter: I) 
+        {
+            for s in iter {
+                self.push_str(&s);
+            }
+        }
+    }
+
+    impl<A: Array<Item = u8>> fmt::Debug for SmallString<A> 
+    {
+        #[inline] fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result 
+        {
+            fmt::Debug::fmt(&**self, f)
+        }
+    }
+
+    impl<A: Array<Item = u8>> fmt::Display for SmallString<A> 
+    {
+        #[inline] fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result 
+        {
+            fmt::Display::fmt(&**self, f)
+        }
+    }
+
+    macro_rules! eq_str 
+    {
+        ( $rhs:ty ) => {
+            impl<'a, A: Array<Item = u8>> PartialEq<$rhs> for SmallString<A> 
+            {
+                #[inline]
+                fn eq(&self, rhs: &$rhs) -> bool {
+                    self[..] == rhs[..]
+                }
+            }
+        };
+    }
+
+    eq_str!(str);
+    eq_str!(&'a str);
+    eq_str!(String);
+    eq_str!(Cow<'a, str>);
+    
+    impl<A: Array<Item = u8>> PartialEq<OsStr> for SmallString<A>
+    {
+        #[inline] fn eq(&self, rhs: &OsStr) -> bool { &self[..] == rhs }
+    }
+    
+    impl<'a, A: Array<Item = u8>> PartialEq<&'a OsStr> for SmallString<A>
+    {
+        #[inline] fn eq(&self, rhs: &&OsStr) -> bool { &self[..] == *rhs }
+    }
+    
+    impl<A: Array<Item = u8>> PartialEq<OsString> for SmallString<A>
+    {
+        #[inline] fn eq(&self, rhs: &OsString) -> bool { &self[..] == rhs }
+    }
+    
+    impl<'a, A: Array<Item = u8>> PartialEq<Cow<'a, OsStr>> for SmallString<A>
+    {
+        #[inline] fn eq(&self, rhs: &Cow<OsStr>) -> bool { self[..] == **rhs }
+    }
+
+    impl<A, B> PartialEq<SmallString<B>> for SmallString<A> where
+    A: Array<Item = u8>,
+    B: Array<Item = u8>
+    {
+        #[inline] fn eq(&self, rhs: &SmallString<B>) -> bool { self[..] == rhs[..] }
+    }
+
+    impl<A: Array<Item = u8>> Eq for SmallString<A> {}
+
+    impl<A: Array<Item = u8>> PartialOrd for SmallString<A>
+    {
+        #[inline] fn partial_cmp(&self, rhs: &SmallString<A>) -> Option<Ordering> { Some(self.cmp(rhs)) }
+    }
+
+    impl<A: Array<Item = u8>> Ord for SmallString<A>
+    {
+        #[inline] fn cmp(&self, rhs: &SmallString<A>) -> Ordering { self[..].cmp(&rhs[..]) }
+    }
+
+    impl<A: Array<Item = u8>> Hash for SmallString<A>
+    {
+        #[inline] fn hash<H: Hasher>(&self, state: &mut H) { self[..].hash(state) }
+    }
+    /// A draining iterator for `SmallString`.
+    pub struct Drain<'a>
+    {
+        iter: Chars<'a>,
+    }
+
+    impl<'a> Iterator for Drain<'a> 
+    {
+        type Item = char;
+
+        #[inline] fn next(&mut self) -> Option<char> { self.iter.next() }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    }
+
+    impl<'a> DoubleEndedIterator for Drain<'a>
+    {
+        #[inline] fn next_back(&mut self) -> Option<char> { self.iter.next_back() }
+    }
+    /// A range draining iterator for `SmallString`.
+    pub struct DrainRange<'a, A: Array<Item = u8>>
+    {
+        drain: smallvec::Drain<'a, A>,
+    }
+
+    impl<A: Array<Item = u8>> fmt::Debug for DrainRange<'_, A>
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { self.drain.fmt(f) }
+    }
+
+    impl<A: Array<Item = u8>> Iterator for DrainRange<'_, A>
+    {
+        type Item = char;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            let mut buf = [0; 4];
+
+            buf[0] = self.drain.next()?;
+            let utf8_len = 1.max(buf[0].leading_ones() as usize);
+
+            for b in &mut buf[1..utf8_len] {
+                *b = self.drain.next().unwrap();
+            }
+
+            unsafe { str::from_utf8_unchecked(&buf[..utf8_len]) }
+                .chars()
+                .next()
+        }
+
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            let len = self.drain.len();
+            (len.div_ceil(4), Some(len))
+        }
+    }
+
+    impl<A: Array<Item = u8>> DoubleEndedIterator for DrainRange<'_, A> {
+        fn next_back(&mut self) -> Option<Self::Item> {
+            let mut buf = [0; 4];
+            let mut i = 3;
+
+            buf[i] = self.drain.next_back()?;
+
+            while buf[i].leading_ones() == 1 {
+                i -= 1;
+                buf[i] = self.drain.next_back().unwrap();
+            }
+
+            unsafe { str::from_utf8_unchecked(&buf[i..]) }
+                .chars()
+                .next()
+        }
+    }
+    impl<A: Array<Item = u8>> FusedIterator for DrainRange<'_, A> {}
+    /// A possible error value when creating a `SmallString` from a byte array.
+    ///
+    /// This type is the error type for the [`from_buf`] method on [`SmallString`].
+    ///
+    /// [`from_buf`]: struct.SmallString.html#method.from_buf
+    /// [`SmallString`]: struct.SmallString.html
+    #[derive(Debug)]
+    pub struct FromUtf8Error<A: Array<Item = u8>> {
+        buf: A,
+        error: Utf8Error,
+    }
+
+    impl<A: Array<Item = u8>> FromUtf8Error<A> {
+        /// Returns the slice of `[u8]` bytes that were attempted to convert to a `SmallString`.
+        #[inline] pub fn as_bytes(&self) -> &[u8] {
+            let ptr = &self.buf as *const _ as *const u8;
+            unsafe { slice::from_raw_parts(ptr, A::size()) }
+        }
+        /// Returns the byte array that was attempted to convert into a `SmallString`.
+        #[inline] pub fn into_buf(self) -> A {
+            self.buf
+        }
+        /// Returns the `Utf8Error` to get more details about the conversion failure.
+        #[inline] pub fn utf8_error(&self) -> Utf8Error {
+            self.error
+        }
+    }
+
+    impl<A: Array<Item = u8>> fmt::Display for FromUtf8Error<A> {
+        #[inline] fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            fmt::Display::fmt(&self.error, f)
+        }
+    }
 }
 
 pub mod string
@@ -34954,6 +36007,7 @@ pub mod system
     */
     use ::
     {
+        str::{ CharIndices },
         *,
     };
     /*
@@ -34964,21 +36018,18 @@ pub mod system
         */
         use ::
         {
+            mem::{ swap },
+            ops::{ Range },
+            str::{ SmallString },
             *,
         };
+        use super::terminal::{Color, Cursor, Size, Style, Theme};
         /*
-        use std::mem::swap;
-        use std::ops::Range;
-
-        use smallstr::SmallString;
-
-        use crate::priv_util::is_visible;
-        use crate::terminal::{Color, Cursor, Size, Style, Theme};
-        use crate::util::{char_width, is_combining_mark};
         */
         const TAB_STOP: usize = 8;
 
-        pub struct ScreenBuffer {
+        pub struct ScreenBuffer
+        {
             buffer: Vec<Cell>,
             back_buffer: Vec<Cell>,
             size: Size,
@@ -34989,7 +36040,8 @@ pub mod system
             style: Style,
         }
 
-        impl ScreenBuffer {
+        impl ScreenBuffer
+        {
             pub fn new(size: Size) -> ScreenBuffer {
                 let area = size.area();
 
@@ -35054,39 +36106,41 @@ pub mod system
                 self.fg = fg;
             }
 
-            pub fn set_bg(&mut self, bg: Option<Color>) {
+            pub fn set_bg(&mut self, bg: Option<Color>)
+            {
                 self.bg = bg;
             }
 
-            pub fn set_theme(&mut self, theme: Theme) {
+            pub fn set_theme(&mut self, theme: Theme)
+            {
                 self.set_fg(theme.fg);
                 self.set_bg(theme.bg);
                 self.set_style(theme.style);
             }
 
-            pub fn clear_screen(&mut self) {
+            pub fn clear_screen(&mut self)
+            {
                 for cell in &mut self.buffer {
                     *cell = Cell::default();
                 }
             }
 
-            pub fn indices(&self) -> Range<usize> {
+            pub fn indices(&self) -> Range<usize>
+            {
                 0..self.size.area()
             }
-
-            // A wrapper type implementing Iterator would be ideal, but that would
-            // interefere with Screen implementations calling `&mut self` methods.
-            pub fn next_cell(&mut self, indices: &mut Range<usize>) -> Option<(Cursor, Cell)> {
-                while let Some(idx) = indices.next() {
+            
+            pub fn next_cell(&mut self, indices: &mut Range<usize>) -> Option<(Cursor, Cell)> 
+            {
+                while let Some(idx) = indices.next() 
+                {
                     let first = self.buffer[idx].first_char();
-                    let width = char_width(first).unwrap_or(0);
+                    let width = char::width(first).unwrap_or(0);
+                    
+                    if width == 2 { let _ = indices.next(); }
 
-                    // Skip cells overlapped by wide characters
-                    if width == 2 {
-                        let _ = indices.next();
-                    }
-
-                    if self.buffer[idx] != self.back_buffer[idx] {
+                    if self.buffer[idx] != self.back_buffer[idx] 
+                    {
                         let cell = self.buffer[idx].clone();
 
                         let line = idx / self.size.columns;
@@ -35100,12 +36154,7 @@ pub mod system
 
                 None
             }
-
-            #[cfg(test)]
-            fn cell(&self, pos: Cursor) -> &Cell {
-                &self.buffer[pos.as_index(self.size)]
-            }
-
+            
             fn cell_mut(&mut self, pos: Cursor) -> &mut Cell {
                 let size = self.size;
                 &mut self.buffer[pos.as_index(size)]
@@ -35124,46 +36173,58 @@ pub mod system
                 cell.text = ch.into();
             }
 
-            pub fn write_char(&mut self, ch: char) -> Result<(), OutOfBounds> {
-                if ch == '\t' {
+            pub fn write_char(&mut self, ch: char) -> Result<(), OutOfBounds>
+            {
+                if ch == '\t'
+                {
                     self.try_cursor()?;
                     let rem = self.size.columns - self.cursor.column;
                     let n = rem.min(TAB_STOP - (self.cursor.column % TAB_STOP));
 
-                    for _ in 0..n {
+                    for _ in 0..n
+                    {
                         self.write_char(' ')?;
                     }
-                } else if ch == '\r' {
-                    self.cursor.column = 0;
-                } else if ch == '\n' {
+                }
+                
+                else if ch == '\r' { self.cursor.column = 0; }
+                
+                else if ch == '\n'
+                {
                     self.cursor.line += 1;
                     self.cursor.column = 0;
-                } else if is_combining_mark(ch) {
-                    if let Some(prev) = self.cursor.previous(self.size) {
+                }
+                
+                else if is::combining_mark(ch)
+                {
+                    if let Some(prev) = self.cursor.previous(self.size)
+                    {
                         self.try_cursor_at(prev)?;
                         self.cell_mut(prev).text.push(ch);
                     }
-                } else if is_visible(ch) {
+                }
+
+                else if is::visible(ch)
+                {
                     self.try_cursor()?;
 
-                    if let Some(prev) = self.cursor.previous(self.size) {
+                    if let Some(prev) = self.cursor.previous(self.size)
+                    {
                         let cell = self.cell_mut(prev);
 
-                        if cell.is_wide() {
-                            *cell = Cell::default();
-                        }
+                        if cell.is_wide() { *cell = Cell::default(); }
                     }
 
                     let rem = self.size.columns - self.cursor.column;
-                    let width = char_width(ch).unwrap_or(0);
-
-                    // If insufficient space exists on the current line,
-                    // fill it with spaces and write the char on the next line.
-                    if rem < width {
+                    let width = char::width(ch).unwrap_or(0);
+                    
+                    if rem < width
+                    {
                         self.try_cursor()?;
                         let mut pos = self.cursor;
 
-                        for _ in 0..rem {
+                        for _ in 0..rem
+                        {
                             self.set_cell(pos, ch);
                             pos.column += 1;
                         }
@@ -35243,211 +36304,24 @@ pub mod system
             }
         }
 
-        // Generates buffer methods (to be invoked from within an impl block)
-        // forwarded to a buffer contained in self.
-        //
-        // All methods accept `&self`. Interior mutability is required.
-        macro_rules! forward_screen_buffer_methods {
-            ( |$slf:ident| $field:expr ) => {
-                pub fn size(&self) -> crate::terminal::Size {
-                    let $slf = self;
-                    $field.size()
-                }
-
-                pub fn cursor(&self) -> crate::terminal::Cursor {
-                    let $slf = self;
-                    $field.cursor()
-                }
-
-                pub fn set_cursor(&self, pos: crate::terminal::Cursor) {
-                    let $slf = self;
-                    $field.set_cursor(pos);
-                }
-
-                pub fn next_line(&self, column: usize) {
-                    let $slf = self;
-                    $field.next_line(column);
-                }
-
-                pub fn clear_screen(&self) {
-                    let $slf = self;
-                    $field.clear_screen();
-                }
-
-                pub fn clear_attributes(&self) {
-                    let $slf = self;
-                    $field.clear_attributes();
-                }
-
-                pub fn add_style(&self, style: crate::terminal::Style) {
-                    let $slf = self;
-                    $field.add_style(style);
-                }
-
-                pub fn remove_style(&self, style: crate::terminal::Style) {
-                    let $slf = self;
-                    $field.remove_style(style);
-                }
-
-                pub fn set_style(&self, style: crate::terminal::Style) {
-                    let $slf = self;
-                    $field.set_style(style);
-                }
-
-                pub fn set_fg(&self, fg: Option<crate::terminal::Color>) {
-                    let $slf = self;
-                    $field.set_fg(fg);
-                }
-
-                pub fn set_bg(&self, bg: Option<crate::terminal::Color>) {
-                    let $slf = self;
-                    $field.set_bg(bg);
-                }
-
-                pub fn set_theme(&self, theme: crate::terminal::Theme) {
-                    let $slf = self;
-                    $field.set_theme(theme)
-                }
-
-                pub fn write_char(&self, ch: char) {
-                    let $slf = self;
-                    let _ = $field.write_char(ch);
-                }
-
-                pub fn write_str(&self, s: &str) {
-                    let $slf = self;
-                    let _ = $field.write_str(s);
-                }
-
-                pub fn write_at(&self, pos: crate::terminal::Cursor, text: &str) {
-                    let $slf = self;
-                    let _ = $field.write_at(pos, text);
-                }
-
-                pub fn write_styled(&self,
-                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                        style: crate::terminal::Style, text: &str) {
-                    let $slf = self;
-                    let _ = $field.write_styled(fg, bg, style, text);
-                }
-
-                pub fn write_styled_at(&self, pos: crate::terminal::Cursor,
-                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                        style: crate::terminal::Style, text: &str) {
-                    let $slf = self;
-                    let _ = $field.write_styled_at(pos, fg, bg, style, text);
-                }
-            }
-        }
-
-        // Same as above, but methods take `&mut self` where appropriate.
-        macro_rules! forward_screen_buffer_mut_methods {
-            ( |$slf:ident| $field:expr ) => {
-                pub fn size(&self) -> crate::terminal::Size {
-                    let $slf = self;
-                    $field.size()
-                }
-
-                pub fn cursor(&self) -> crate::terminal::Cursor {
-                    let $slf = self;
-                    $field.cursor()
-                }
-
-                pub fn set_cursor(&mut self, pos: crate::terminal::Cursor) {
-                    let $slf = self;
-                    $field.set_cursor(pos);
-                }
-
-                pub fn next_line(&mut self, column: usize) {
-                    let $slf = self;
-                    $field.next_line(column);
-                }
-
-                pub fn clear_screen(&mut self) {
-                    let $slf = self;
-                    $field.clear_screen();
-                }
-
-                pub fn clear_attributes(&mut self) {
-                    let $slf = self;
-                    $field.clear_attributes();
-                }
-
-                pub fn add_style(&mut self, style: crate::terminal::Style) {
-                    let $slf = self;
-                    $field.add_style(style);
-                }
-
-                pub fn remove_style(&mut self, style: crate::terminal::Style) {
-                    let $slf = self;
-                    $field.remove_style(style);
-                }
-
-                pub fn set_style(&mut self, style: crate::terminal::Style) {
-                    let $slf = self;
-                    $field.set_style(style);
-                }
-
-                pub fn set_fg(&mut self, fg: Option<crate::terminal::Color>) {
-                    let $slf = self;
-                    $field.set_fg(fg);
-                }
-
-                pub fn set_bg(&mut self, bg: Option<crate::terminal::Color>) {
-                    let $slf = self;
-                    $field.set_bg(bg);
-                }
-
-                pub fn set_theme(&mut self, theme: crate::terminal::Theme) {
-                    let $slf = self;
-                    $field.set_theme(theme);
-                }
-
-                pub fn write_char(&mut self, ch: char) {
-                    let $slf = self;
-                    let _ = $field.write_char(ch);
-                }
-
-                pub fn write_str(&mut self, s: &str) {
-                    let $slf = self;
-                    let _ = $field.write_str(s);
-                }
-
-                pub fn write_at(&mut self, pos: crate::terminal::Cursor, text: &str) {
-                    let $slf = self;
-                    let _ = $field.write_at(pos, text);
-                }
-
-                pub fn write_styled(&mut self,
-                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                        style: crate::terminal::Style, text: &str) {
-                    let $slf = self;
-                    let _ = $field.write_styled(fg, bg, style, text);
-                }
-
-                pub fn write_styled_at(&mut self, pos: crate::terminal::Cursor,
-                        fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                        style: crate::terminal::Style, text: &str) {
-                    let $slf = self;
-                    let _ = $field.write_styled_at(pos, fg, bg, style, text);
-                }
-            }
-        }
-
         #[derive(Debug)]
         pub struct OutOfBounds(());
 
         #[derive(Clone, Debug, Eq, PartialEq)]
-        pub struct Cell {
+        pub struct Cell 
+        {
             fg: Option<Color>,
             bg: Option<Color>,
             style: Style,
             text: SmallString<[u8; 8]>,
         }
 
-        impl Cell {
-            fn new(fg: Option<Color>, bg: Option<Color>, style: Style, chr: char) -> Cell {
-                Cell{
+        impl Cell 
+        {
+            fn new(fg: Option<Color>, bg: Option<Color>, style: Style, chr: char) -> Cell 
+            {
+                Cell
+                {
                     fg,
                     bg,
                     style,
@@ -35455,8 +36329,10 @@ pub mod system
                 }
             }
 
-            fn invalid() -> Cell {
-                Cell{
+            fn invalid() -> Cell 
+            {
+                Cell
+                {
                     fg: None,
                     bg: None,
                     style: Style::empty(),
@@ -35464,31 +36340,25 @@ pub mod system
                 }
             }
 
-            pub fn attrs(&self) -> (Option<Color>, Option<Color>, Style) {
-                (self.fg, self.bg, self.style)
-            }
+            pub fn attrs(&self) -> ( Option<Color>, Option<Color>, Style ) { (self.fg, self.bg, self.style) }
 
-            pub fn text(&self) -> &str {
-                &self.text
-            }
+            pub fn text(&self) -> &str { &self.text }
 
-            fn first_char(&self) -> char {
-                self.text.chars().next().expect("empty cell text")
-            }
+            fn first_char(&self) -> char { self.text.chars().next().expect("empty cell text") }
 
-            fn is_wide(&self) -> bool {
-                self.text.chars().next()
-                    .and_then(char_width).unwrap_or(0) == 2
-            }
+            fn is_wide(&self) -> bool { self.text.chars().next().and_then( char::width ).unwrap_or( 0 ) == 2 }
         }
 
-        impl Default for Cell {
-            fn default() -> Cell {
+        impl Default for Cell 
+        {
+            fn default() -> Cell 
+            {
                 Cell::new(None, None, Style::empty(), ' ')
             }
         }
 
-        fn resize_buffer(buf: &mut Vec<Cell>, old: Size, new: Size) {
+        fn resize_buffer(buf: &mut Vec<Cell>, old: Size, new: Size)
+        {
             if old != new {
                 let mut new_buf = vec![Cell::default(); new.area()];
 
@@ -35507,11 +36377,7 @@ pub mod system
             }
         }
 
-        fn new_buffer(buf: &mut Vec<Cell>, new_size: Size) {
-            // Invalidate the buffer; all cells will be redrawn
-            *buf = vec![Cell::invalid(); new_size.area()];
-        }
-
+        fn new_buffer(buf: &mut Vec<Cell>, new_size: Size) { *buf = vec![Cell::invalid(); new_size.area()]; }
     }
     /**/
     pub mod common
@@ -35533,13 +36399,7 @@ pub mod system
                 *,
             };
             /*
-            pub use self::screen::{
-                Screen, ScreenReadGuard, ScreenWriteGuard,
-            };
-            pub use self::terminal::{
-                PrepareState,
-                Terminal, TerminalReadGuard, TerminalWriteGuard,
-            };
+            
             */
             pub mod ext
             {
@@ -35551,8 +36411,8 @@ pub mod system
                     time::std::{ Duration },
                     *,
                 };
-                use system::common::private::Private;
-                use system::common::terminal::Event;
+                use system::private::Private;
+                use system::terminal::Event;
                 /*
                 */
                 /// Implements Unix-only extensions for terminal interfaces.
@@ -35569,7 +36429,7 @@ pub mod system
                             -> io::Result<Option<Event>>;
                 }
                 
-            }
+            } pub use self::ext::{ * };
 
             pub mod screen
             {
@@ -35578,6 +36438,13 @@ pub mod system
                 use ::
                 {
                     sync::{LockResult, Mutex, MutexGuard, TryLockResult},
+                    system::
+                    {
+                        buffer::{ ScreenBuffer },
+                        common::{ Terminal, TerminalReadGuard, TerminalWriteGuard, PrepareState },
+                        private::{ map_lock_result, map_try_lock_result, map2_lock_result, map2_try_lock_result },
+                        terminal::{ Color, Cursor, CursorMode, Event, Size, Style, PrepareConfig },
+                    },
                     time::std::{ Duration },
                     *,
                 };
@@ -35827,7 +36694,7 @@ pub mod system
                     }
                 }
                 
-            }
+            } pub use self::screen::{ Screen, ScreenReadGuard, ScreenWriteGuard };
 
             pub mod terminal
             {
@@ -35835,52 +36702,47 @@ pub mod system
                 */
                 use ::
                 {
+                    convert::{ TryFrom },
+                    database::{ * },
+                    fs::{ File },
+                    mem::{ replace, zeroed },
+                    nix::
+                    {
+                        errno::{ Errno },
+                        libc::
+                        {
+                            ioctl, c_int, c_ushort, termios, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, TIOCGWINSZ
+                        },
+                        sys::
+                        {
+                            select::{ select, FdSet },
+                            signal::{ sigaction, SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet },
+                            termios::{ tcgetattr, tcsetattr, SetArg, InputFlags, LocalFlags },
+                            time::{ TimeVal, TimeValLike },
+                        },
+                        unistd::{ read, write },
+                    },
+                    os::unix::io::{FromRawFd, IntoRawFd, RawFd},
+                    path::Path,
+                    str::{ from_utf8, SmallString },
+                    sync::{ atomic::{AtomicUsize, Ordering}, LockResult, Mutex, MutexGuard, TryLockResult },
+                    system::
+                    {
+                        private::{map_lock_result, map_try_lock_result},
+                        sequence::{FindResult, SequenceMap},
+                        signal::{Signal, SignalSet},
+                        terminal::
+                        {
+                            Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme, MouseButton, MouseEvent, MouseInput, ModifierState,
+                        },
+                    },
+                    time::std::{ Duration },
                     *,
                 };
                 /*
-                use std::convert::TryFrom;
-                use std::fs::File;
-                use std::io;
-                use std::mem::{replace, zeroed};
-                use std::os::unix::io::{FromRawFd, IntoRawFd, RawFd};
-                use std::path::Path;
-                use std::str::from_utf8;
-                use std::sync::atomic::{AtomicUsize, Ordering};
-                use std::sync::{LockResult, Mutex, MutexGuard, TryLockResult};
-                use std::time::Duration;
-
-                use libc::{
-                    ioctl,
-                    c_int, c_ushort, termios,
-                    STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, TIOCGWINSZ,
-                };
-
-                use nix::errno::Errno;
-                use nix::sys::select::{select, FdSet};
-                use nix::sys::signal::{
-                    sigaction,
-                    SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
-                };
-                use nix::sys::termios::{
-                    tcgetattr, tcsetattr,
-                    SetArg, InputFlags, LocalFlags,
-                };
-                use nix::sys::time::{TimeVal, TimeValLike};
-                use nix::unistd::{read, write};
-
-                use smallstr::SmallString;
-
                 use terminfo::{self, capability as cap, Database};
                 use terminfo::capability::Expansion;
-                use terminfo::expand::Context;
-
-                use crate::priv_util::{map_lock_result, map_try_lock_result};
-                use crate::sequence::{FindResult, SequenceMap};
-                use crate::signal::{Signal, SignalSet};
-                use crate::terminal::{
-                    Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme,
-                    MouseButton, MouseEvent, MouseInput, ModifierState,
-                };
+                use terminfo::expand::Context;                
                 use crate::util::prefixes;
                 */
                 const OUT_BUFFER_SIZE: usize = 8192;
@@ -35904,7 +36766,8 @@ pub mod system
                     Key(Key),
                 }
 
-                pub struct Terminal {
+                pub struct Terminal 
+                {
                     info: Database,
                     out_fd: RawFd,
                     in_fd: RawFd,
@@ -35914,17 +36777,20 @@ pub mod system
                     writer: Mutex<Writer>,
                 }
 
-                pub struct TerminalReadGuard<'a> {
+                pub struct TerminalReadGuard<'a> 
+                {
                     term: &'a Terminal,
                     reader: MutexGuard<'a, Reader>,
                 }
 
-                pub struct TerminalWriteGuard<'a> {
+                pub struct TerminalWriteGuard<'a> 
+                {
                     term: &'a Terminal,
                     writer: MutexGuard<'a, Writer>,
                 }
 
-                struct Reader {
+                struct Reader 
+                {
                     in_buffer: Vec<u8>,
                     resume: Option<Resume>,
                     report_signals: SignalSet,
@@ -35938,9 +36804,12 @@ pub mod system
                     cur_style: Style,
                 }
 
-                impl Terminal {
-                    fn new(in_fd: RawFd, out_fd: RawFd, owned_fd: bool) -> io::Result<Terminal> {
-                        let info = Database::from_env().map_err(ti_to_io)?;
+                impl Terminal 
+                {
+                    fn new(in_fd: RawFd, out_fd: RawFd, owned_fd: bool) -> io::Result<Terminal> 
+                    {                        
+                        //let info = Database::from_env().map_err(ti_to_io)?;
+                        let info = Database::new();
                         let sequences = sequences(&info);
 
                         Ok(Terminal{
@@ -36502,37 +37371,47 @@ pub mod system
                     } }
                 }
 
-                impl<'a> TerminalWriteGuard<'a> {
-                    fn new(term: &'a Terminal, writer: MutexGuard<'a, Writer>) -> TerminalWriteGuard<'a> {
+                impl<'a> TerminalWriteGuard<'a> 
+                {
+                    fn new(term: &'a Terminal, writer: MutexGuard<'a, Writer>) -> TerminalWriteGuard<'a> 
+                    {
                         TerminalWriteGuard{term, writer}
                     }
 
-                    pub fn size(&self) -> io::Result<Size> {
+                    pub fn size(&self) -> io::Result<Size> 
+                    {
                         get_winsize(self.term.out_fd)
                     }
 
-                    fn disable_keypad(&mut self) -> io::Result<()> {
-                        if let Some(local) = self.term.info.get::<cap::KeypadLocal>() {
+                    fn disable_keypad(&mut self) -> io::Result<()>
+                    {
+                        /* if let Some(local) = self.term.info.get::<cap::KeypadLocal>() {
                             self.expand(local.expand())?;
-                        }
+                        } */
                         Ok(())
                     }
 
-                    fn enable_keypad(&mut self) -> io::Result<bool> {
+                    fn enable_keypad(&mut self) -> io::Result<bool>
+                    {
+                        /*
                         if let Some(xmit) = self.term.info.get::<cap::KeypadXmit>() {
                             self.expand(xmit.expand())?;
                             Ok(true)
                         } else {
                             Ok(false)
-                        }
+                        } */
+                        Ok(true)
                     }
 
-                    fn disable_mouse(&mut self) -> io::Result<()> {
+                    fn disable_mouse(&mut self) -> io::Result<()> 
+                    {
                         self.write_bytes(XTERM_DISABLE_MOUSE.as_bytes())?;
                         self.write_bytes(XTERM_DISABLE_MOUSE_MOTION.as_bytes())
                     }
 
-                    fn enable_mouse(&mut self, track_motion: bool) -> io::Result<bool> {
+                    fn enable_mouse(&mut self, track_motion: bool) -> io::Result<bool> 
+                    {
+                        /*
                         if self.term.is_xterm() {
                             self.write_bytes(XTERM_ENABLE_MOUSE.as_bytes())?;
                             if track_motion {
@@ -36541,10 +37420,13 @@ pub mod system
                             Ok(true)
                         } else {
                             Ok(false)
-                        }
+                        } */
+                        Ok(())
                     }
 
-                    fn enter_screen(&mut self) -> io::Result<()> {
+                    fn enter_screen(&mut self) -> io::Result<()> 
+                    {
+                        /*
                         match (self.term.info.get::<cap::EnterCaMode>(),
                                 self.term.info.get::<cap::ChangeScrollRegion>(),
                                 self.term.info.get::<cap::CursorHome>()) {
@@ -36564,28 +37446,31 @@ pub mod system
                         }
 
                         self.clear_attributes()?;
-                        self.clear_screen()?;
-
+                        self.clear_screen()?; */
                         Ok(())
                     }
 
-                    fn exit_screen(&mut self) -> io::Result<()> {
+                    fn exit_screen(&mut self) -> io::Result<()>
+                    {
+                        /*
                         if let Some(exit) = self.term.info.get::<cap::ExitCaMode>() {
                             self.expand(exit.expand())?;
                             self.flush()?;
-                        }
+                        } */
 
                         Ok(())
                     }
 
-                    pub fn clear_attributes(&mut self) -> io::Result<()> {
+                    pub fn clear_attributes(&mut self) -> io::Result<()> 
+                    {
+                        /*
                         if self.writer.fg.is_some() || self.writer.bg.is_some() ||
                                 !self.writer.cur_style.is_empty() {
                             self.writer.fg = None;
                             self.writer.bg = None;
                             self.writer.cur_style = Style::empty();
                             expand_opt!(self, cap::ExitAttributeMode)?;
-                        }
+                        } */
 
                         Ok(())
                     }
@@ -36620,7 +37505,9 @@ pub mod system
                         }
                     }
 
-                    pub fn add_style(&mut self, style: Style) -> io::Result<()> {
+                    pub fn add_style(&mut self, style: Style) -> io::Result<()> 
+                    {
+                        /*
                         let add = style - self.writer.cur_style;
 
                         if add.contains(Style::BOLD) {
@@ -36636,12 +37523,14 @@ pub mod system
                             expand_opt!(self, cap::EnterUnderlineMode)?;
                         }
 
-                        self.writer.cur_style |= add;
+                        self.writer.cur_style |= add; */
 
                         Ok(())
                     }
 
-                    pub fn remove_style(&mut self, style: Style) -> io::Result<()> {
+                    pub fn remove_style(&mut self, style: Style) -> io::Result<()>
+                    {
+                        /*
                         let remove = style & self.writer.cur_style;
 
                         if remove.intersects(Style::BOLD | Style::REVERSE) {
@@ -36663,18 +37552,18 @@ pub mod system
                             }
 
                             self.writer.cur_style -= remove;
-                        }
+                        } */
 
                         Ok(())
                     }
 
-                    pub fn set_style(&mut self, style: Style) -> io::Result<()> {
+                    pub fn set_style(&mut self, style: Style) -> io::Result<()>
+                    {
+                        /*
                         let add = style - self.writer.cur_style;
                         let remove = self.writer.cur_style - style;
 
                         if remove.intersects(Style::BOLD | Style::REVERSE) {
-                            // terminfo does not contain entries to remove bold or reverse.
-                            // Instead, we must reset all attributes.
                             let fg = self.writer.fg;
                             let bg = self.writer.bg;
                             self.clear_attributes()?;
@@ -36684,7 +37573,7 @@ pub mod system
                         } else {
                             self.add_style(add)?;
                             self.remove_style(remove)?;
-                        }
+                        } */
 
                         Ok(())
                     }
@@ -36724,65 +37613,82 @@ pub mod system
                         self.set_style(style)
                     }
 
-                    fn set_fg_color(&mut self, fg: Color) -> io::Result<()> {
+                    fn set_fg_color(&mut self, fg: Color) -> io::Result<()> 
+                    {
+                        /*
                         expand_opt!(self, cap::SetAForeground,
-                            |ex| ex.parameters(color_code(fg)))
+                            |ex| ex.parameters(color_code(fg))) */
+                        Ok( () )
                     }
 
-                    fn set_bg_color(&mut self, bg: Color) -> io::Result<()> {
-                        expand_opt!(self, cap::SetABackground,
-                            |ex| ex.parameters(color_code(bg)))
+                    fn set_bg_color(&mut self, bg: Color) -> io::Result<()>
+                    {
+                        /*expand_opt!(self, cap::SetABackground,
+                            |ex| ex.parameters(color_code(bg))) */
+                        Ok( () )
                     }
 
-                    pub fn clear_screen(&mut self) -> io::Result<()> {
-                        expand_req!(self, cap::ClearScreen, "clear_screen")
+                    pub fn clear_screen(&mut self) -> io::Result<()>
+                    {
+                        // expand_req!(self, cap::ClearScreen, "clear_screen")
+                        Ok( () )
                     }
 
-                    pub fn clear_to_line_end(&mut self) -> io::Result<()> {
-                        expand_req!(self, cap::ClrEol, "clr_eol")
+                    pub fn clear_to_line_end(&mut self) -> io::Result<()>
+                    {
+                        // expand_req!(self, cap::ClrEol, "clr_eol")
+                        Ok( () )
                     }
 
-                    pub fn clear_to_screen_end(&mut self) -> io::Result<()> {
-                        expand_req!(self, cap::ClrEos, "clr_eos")
+                    pub fn clear_to_screen_end(&mut self) -> io::Result<()>
+                    {
+                        // expand_req!(self, cap::ClrEos, "clr_eos")
+                        Ok( () )
                     }
 
-                    pub fn move_up(&mut self, n: usize) -> io::Result<()> {
+                    pub fn move_up(&mut self, n: usize) -> io::Result<()>
+                    {
+                        /*
                         if n == 1 {
                             expand_req!(self, cap::CursorUp, "cursor_up")?;
                         } else if n != 0 {
                             expand_req!(self, cap::ParmUpCursor, "parm_cursor_up",
                                 |ex| ex.parameters(to_u32(n)))?;
-                        }
+                        } */
                         Ok(())
                     }
 
-                    pub fn move_down(&mut self, n: usize) -> io::Result<()> {
-                        // Always use ParmDownCursor because CursorDown does not behave
-                        // as expected outside EnterCaMode state.
+                    pub fn move_down(&mut self, n: usize) -> io::Result<()>
+                    {
+                        /*
                         if n != 0 {
                             expand_req!(self, cap::ParmDownCursor, "parm_cursor_down",
                                 |ex| ex.parameters(to_u32(n)))?;
-                        }
+                        } */
                         Ok(())
                     }
 
-                    pub fn move_left(&mut self, n: usize) -> io::Result<()> {
+                    pub fn move_left(&mut self, n: usize) -> io::Result<()>
+                    {
+                        /*
                         if n == 1 {
                             expand_req!(self, cap::CursorLeft, "cursor_left")?;
                         } else if n != 0 {
                             expand_req!(self, cap::ParmLeftCursor, "parm_cursor_left",
                                 |ex| ex.parameters(to_u32(n)))?;
-                        }
+                        } */
                         Ok(())
                     }
 
-                    pub fn move_right(&mut self, n: usize) -> io::Result<()> {
+                    pub fn move_right(&mut self, n: usize) -> io::Result<()>
+                    {
+                        /*
                         if n == 1 {
                             expand_req!(self, cap::CursorRight, "cursor_right")?;
                         } else if n != 0 {
                             expand_req!(self, cap::ParmRightCursor, "parm_cursor_right",
                                 |ex| ex.parameters(to_u32(n)))?;
-                        }
+                        } */
                         Ok(())
                     }
 
@@ -36790,7 +37696,9 @@ pub mod system
                         self.write_bytes(b"\r")
                     }
 
-                    pub fn move_cursor(&mut self, pos: Cursor) -> io::Result<()> {
+                    pub fn move_cursor(&mut self, pos: Cursor) -> io::Result<()>
+                    {
+                        /*
                         match (self.term.info.get::<cap::CursorAddress>(),
                                 self.term.info.get::<cap::CursorHome>()) {
                             (_, Some(ref home)) if pos == Cursor::default() => {
@@ -36801,12 +37709,13 @@ pub mod system
                                     .parameters(to_u32(pos.line), to_u32(pos.column)))?;
                             }
                             (None, _) => return Err(not_supported("cursor_address"))
-                        }
-
+                        }*/
                         Ok(())
                     }
 
-                    pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                    pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()>
+                    {
+                        /*
                         match mode {
                             CursorMode::Normal | CursorMode::Overwrite => {
                                 // Overwrite is not supported by Unix terminals.
@@ -36817,8 +37726,7 @@ pub mod system
                             CursorMode::Invisible => {
                                 expand_opt!(self, cap::CursorInvisible)?;
                             }
-                        }
-
+                        }*/
                         Ok(())
                     }
 
@@ -36911,9 +37819,10 @@ pub mod system
                     name == "xterm" || name.starts_with("xterm-")
                 }
 
-                fn sequences(info: &Database) -> SeqMap {
+                fn sequences(info: &Database) -> SeqMap
+                {
                     let mut sequences = SequenceMap::new();
-
+                    /*
                     macro_rules! add {
                         ( $seq:ty , $key:expr ) => { {
                             if let Some(seq) = info.get::<$seq>() {
@@ -36949,7 +37858,7 @@ pub mod system
 
                     if is_xterm(info.name()) {
                         sequences.insert(XTERM_MOUSE_INTRO.into(), SeqData::XTermMouse);
-                    }
+                    } */
 
                     sequences
                 }
@@ -37016,9 +37925,12 @@ pub mod system
                 fn nix_to_io(e: nix::Error) -> io::Error {
                     io::Error::from_raw_os_error(e as i32)
                 }
-
-                fn ti_to_io(e: terminfo::Error) -> io::Error {
-                    match e {
+                // fn ti_to_io(e: terminfo::Error) -> io::Error
+                fn ti_to_io( e:Option<()> ) -> io::Error
+                {
+                    /*
+                    match e 
+                    {
                         terminfo::Error::Io(e) => e,
                         terminfo::Error::NotFound => io::Error::new(
                             io::ErrorKind::NotFound, "terminfo entry not found"),
@@ -37026,7 +37938,8 @@ pub mod system
                             io::ErrorKind::Other, "failed to parse terminfo entry"),
                         terminfo::Error::Expand(_) => io::Error::new(
                             io::ErrorKind::Other, "failed to expand terminfo entry"),
-                    }
+                    } */
+                    Ok(())
                 }
 
                 fn to_timeval(d: Duration) -> TimeVal {
@@ -37042,8 +37955,9 @@ pub mod system
                     TimeVal::milliseconds(secs * 1_000 + millis)
                 }
 
-                fn peek_event(buf: &[u8], sequences: &SeqMap)
-                        -> io::Result<Option<(Event, usize)>> {
+                fn peek_event(buf: &[u8], sequences: &SeqMap) -> io::Result<Option<(Event, usize)>>
+                {
+                    /*
                     let (res, n) = {
                         let s = utf8_prefix(buf)?;
 
@@ -37089,10 +38003,12 @@ pub mod system
                         }
                     };
 
-                    Ok(Some((res, n)))
+                    Ok(Some((res, n))) */
+                    Ok( None )
                 }
 
-                fn parse_mouse_data(mut buf: &[u8]) -> Option<(MouseEvent, usize)> {
+                fn parse_mouse_data(mut buf: &[u8]) -> Option<(MouseEvent, usize)> 
+                {
                     let orig_len = buf.len();
 
                     let (mut input, end) = parse_integer(&mut buf)?;
@@ -37268,7 +38184,7 @@ pub mod system
                     u as u32
                 }
 
-            }
+            } pub use self::terminal::{ PrepareState, Terminal, TerminalReadGuard, TerminalWriteGuard };
         }        
 
         pub mod windows
@@ -37298,7 +38214,6 @@ pub mod system
         };
         use super::screen::{Screen, ScreenReadGuard};
         use super::{Terminal, TerminalReadGuard};
-        use super::util::char_width;
         /*
         */
         // Private trait used to prevent external crates from implementing extension traits
@@ -37337,10 +38252,12 @@ pub mod system
             }
         }
 
-        pub fn map2_try_lock_result<F, T, U, R>(
-                res: TryLockResult<T>, res2: TryLockResult<U>, f: F)
-                -> TryLockResult<R> where F: FnOnce(T, U) -> R {
-            match (res, res2) {
+        pub fn map2_try_lock_result<F, T, U, R>( res: TryLockResult<T>, res2:TryLockResult<U>, f:F ) 
+        -> TryLockResult<R> where 
+        F:FnOnce(T, U) -> R
+        {
+            match (res, res2)
+            {
                 (Ok(a), Ok(b)) => Ok(f(a, b)),
                 (Err(TryLockError::WouldBlock), _) => Err(TryLockError::WouldBlock),
                 (_, Err(TryLockError::WouldBlock)) => Err(TryLockError::WouldBlock),
@@ -37368,105 +38285,64 @@ pub mod system
         /*
         */
         use super::private::{map_lock_result, map_try_lock_result};
-        //use super::sys;
-        use super::terminal::{
+        use super::terminal::
+        {
             Color, Cursor, CursorMode, Event, PrepareConfig, Size, Style, Theme,
             Terminal,
         };
         /// Provides operations on an underlying terminal device in screen mode.
-        ///
-        /// `Screen` uses an internal buffer to store rendered text, colors, and style.
-        ///
-        /// Each set of changes must be followed by a call to [`refresh`] to flush these
-        /// changes to the terminal device.
-        ///
-        /// # Concurrency
-        ///
-        /// Access to read and write operations is controlled by two internal locks:
-        /// One for [reading] and one for [writing]. Each lock may be held independently
-        /// of the other.
-        ///
-        /// If any one thread wishes to hold both locks, the read lock
-        /// must be acquired first, in order to prevent deadlocks.
-        ///
-        /// [`refresh`]: #method.refresh
-        /// [reading]: struct.ScreenReadGuard.html
-        /// [writing]: struct.ScreenWriteGuard.html
-        pub struct Screen(sys::Screen);
-
+        pub struct Screen( super::common::Screen );
         /// Holds an exclusive lock for read operations on a `Screen`
-        ///
-        /// See [`Screen`] documentation for details on locking.
-        ///
-        /// [`Screen`]: struct.Screen.html
-        pub struct ScreenReadGuard<'a>(sys::ScreenReadGuard<'a>);
-
+        pub struct ScreenReadGuard<'a>( super::common::ScreenReadGuard<'a> );
         /// Holds an exclusive lock for write operations on a `Screen`
-        ///
-        /// See [`Screen`] documentation for details on locking.
-        ///
-        /// [`Screen`]: struct.Screen.html
-        pub struct ScreenWriteGuard<'a>(sys::ScreenWriteGuard<'a>);
+        pub struct ScreenWriteGuard<'a>( super::common::ScreenWriteGuard<'a> );
 
-        impl Screen {
+        impl Screen 
+        {
             /// Opens a new screen interface on `stdout`.
-            pub fn new(config: PrepareConfig) -> io::Result<Screen> {
-                sys::Screen::stdout(config).map(Screen)
+            pub fn new(config: PrepareConfig) -> io::Result<Screen> 
+            {
+                super::common::Screen::stdout(config).map(Screen)
             }
             /// Opens a new screen interface on `stderr`.
-            pub fn stderr(config: PrepareConfig) -> io::Result<Screen> {
-                sys::Screen::stderr(config).map(Screen)
+            pub fn stderr(config: PrepareConfig) -> io::Result<Screen> 
+            {
+                super::common::Screen::stderr(config).map(Screen)
             }
             /// Begins a new screen session using the given `Terminal` instance.
-            pub fn with_terminal(term: Terminal, config: PrepareConfig) -> io::Result<Screen> {
-                sys::Screen::new(term.0, config).map(Screen)
+            pub fn with_terminal(term: Terminal, config: PrepareConfig) -> io::Result<Screen> 
+            {
+                super::common::Screen::new(term.0, config).map(Screen)
             }
             /// Returns the name of the terminal.
-            ///
-            /// # Notes
-            ///
-            /// On Unix, this method returns the contents of the `TERM` environment variable.
-            ///
-            /// On Windows, this method always returns the string `"windows-console"`.
-            #[inline] pub fn name(&self) -> &str {
+            #[inline] pub fn name(&self) -> &str 
+            {
                 self.0.name()
             }
             /// Attempts to acquire an exclusive lock on terminal read operations.
-            ///
-            /// The current thread will block until the lock can be acquired.
-            #[inline] pub fn lock_read(&self) -> LockResult<ScreenReadGuard> {
+            #[inline] pub fn lock_read(&self) -> LockResult<ScreenReadGuard> 
+            {
                 map_lock_result(self.0.lock_read(), ScreenReadGuard)
             }
             /// Attempts to acquire an exclusive lock on terminal write operations.
-            ///
-            /// The current thread will block until the lock can be acquired.
-            #[inline] pub fn lock_write(&self) -> LockResult<ScreenWriteGuard> {
+            #[inline] pub fn lock_write(&self) -> LockResult<ScreenWriteGuard> 
+            {
                 map_lock_result(self.0.lock_write(), ScreenWriteGuard)
             }
             /// Attempts to acquire an exclusive lock on terminal read operations.
-            ///
-            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
-            #[inline] pub fn try_lock_read(&self) -> TryLockResult<ScreenReadGuard> {
+            #[inline] pub fn try_lock_read(&self) -> TryLockResult<ScreenReadGuard> 
+            {
                 map_try_lock_result(self.0.try_lock_read(), ScreenReadGuard)
             }
             /// Attempts to acquire an exclusive lock on terminal write operations.
-            ///
-            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
-            #[inline] pub fn try_lock_write(&self) -> TryLockResult<ScreenWriteGuard> {
+            #[inline] pub fn try_lock_write(&self) -> TryLockResult<ScreenWriteGuard> 
+            {
                 map_try_lock_result(self.0.try_lock_write(), ScreenWriteGuard)
             }
         }
-        /// # Locking
-        ///
-        /// The following methods internally acquire the read lock.
-        ///
-        /// The lock is released before the method returns.
-        ///
-        /// These methods are also implemented on [`ScreenReadGuard`],
-        /// which holds the `Screen` read lock until the value is dropped.
-        ///
-        /// [`ScreenReadGuard`]: struct.ScreenReadGuard.html
-        impl Screen {
+        
+        impl Screen 
+        {
             /// Waits for an event from the terminal.
             ///
             /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
@@ -37491,17 +38367,9 @@ pub mod system
                 self.0.read_event(timeout)
             }
         }
-        /// # Locking
-        ///
-        /// The following methods internally acquire the write lock.
-        ///
-        /// The lock is released before the method returns.
-        ///
-        /// These methods are also implemented on [`ScreenWriteGuard`],
-        /// which holds the `Screen` write lock until the value is dropped.
-        ///
-        /// [`ScreenWriteGuard`]: struct.ScreenWriteGuard.html
-        impl Screen {
+        
+        impl Screen 
+        {
             /// Returns the current size of the terminal screen.
             #[inline] pub fn size(&self) -> Size {
                 self.0.size()
@@ -37668,7 +38536,8 @@ pub mod system
             }
         }
 
-        impl<'a> ScreenReadGuard<'a> {
+        impl<'a> ScreenReadGuard<'a> 
+        {
             /// Waits for an event from the terminal.
             ///
             /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
@@ -37694,7 +38563,8 @@ pub mod system
             }
         }
 
-        impl<'a> ScreenWriteGuard<'a> {
+        impl<'a> ScreenWriteGuard<'a> 
+        {
             /// Returns the current size of the terminal screen.
             #[inline] pub fn size(&self) -> Size {
                 self.0.size()
@@ -37851,22 +38721,22 @@ pub mod system
             }
         }
 
-        #[cfg(unix)]
-        impl crate::unix::TerminalExt for Screen {
+        #[cfg( unix )] impl super::common::unix::TerminalExt for Screen
+        {
             fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
                 self.0.read_raw(buf, timeout)
             }
         }
 
-        #[cfg(unix)]
-        impl<'a> crate::unix::TerminalExt for ScreenReadGuard<'a> {
+        #[cfg( unix )] impl<'a> super::common::unix::TerminalExt for ScreenReadGuard<'a>
+        {
             fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
                 self.0.read_raw(buf, timeout)
             }
         }
 
-        #[cfg(windows)]
-        impl crate::windows::TerminalExt for Screen {
+        #[cfg( windows )] impl super::common::windows::TerminalExt for Screen
+        {
             fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
                 self.0.read_raw(buf, timeout)
             }
@@ -37877,8 +38747,8 @@ pub mod system
             }
         }
 
-        #[cfg(windows)]
-        impl<'a> crate::windows::TerminalExt for ScreenReadGuard<'a> {
+        #[cfg( windows )] impl<'a> super::common::windows::TerminalExt for ScreenReadGuard<'a>
+        {
             fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
                 self.0.read_raw(buf, timeout)
             }
@@ -38463,6 +39333,7 @@ pub mod system
         Provides an interface to terminal devices */
         use ::
         {
+            path::{ Path },
             sync::{ LockResult, TryLockResult },
             time::std::{ Duration },
             *,
@@ -38619,7 +39490,8 @@ pub mod system
             }
         }
 
-        impl From<(usize, usize)> for Cursor {
+        impl From<(usize, usize)> for Cursor
+        {
             /// Returns a `Cursor` value from a `(line, column)` or `(y, x)` tuple.
             fn from((line, column): (usize, usize)) -> Cursor {
                 Cursor{line, column}
@@ -38627,7 +39499,8 @@ pub mod system
         }
         /// Represents the visual appearance of the cursor in the terminal
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum CursorMode {
+        pub enum CursorMode
+        {
             /// Normal mode
             Normal,
             /// Invisible mode
@@ -38637,7 +39510,8 @@ pub mod system
         }
         /// Represents an event generated from a terminal interface
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum Event {
+        pub enum Event
+        {
             /// Keyboard event
             Key(Key),
             /// Mouse event
@@ -38653,7 +39527,8 @@ pub mod system
         }
         /// Represents a keyboard key press event
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum Key {
+        pub enum Key
+        {
             /// Backspace
             Backspace,
             /// Enter
@@ -38690,17 +39565,19 @@ pub mod system
             F(u32),
         }
 
-        impl From<char> for Key {
-            fn from(ch: char) -> Key {
-                use crate::util::{is_ctrl, unctrl_lower};
-
-                match ch {
+        impl From<char> for Key 
+        {
+            fn from(ch: char) -> Key 
+            {
+                //use crate::util::{is_ctrl, unctrl_lower};
+                match ch 
+                {
                     '\x1b' => Key::Escape,
                     '\x7f' => Key::Backspace,
                     '\r' | '\n' => Key::Enter,
                     '\t' => Key::Tab,
-                    _ if is_ctrl(ch) => Key::Ctrl(unctrl_lower(ch)),
-                    _ => Key::Char(ch),
+                    _ if is::ctrl( ch ) => Key::Ctrl( super::unctrl_lower( ch ) ),
+                    _ => Key::Char( ch ),
                 }
             }
         }
@@ -38717,7 +39594,8 @@ pub mod system
         }
         /// Represents the type of mouse input event
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum MouseInput {
+        pub enum MouseInput
+        {
             /// The mouse cursor was moved
             Motion,
             /// A mouse button was pressed
@@ -38731,7 +39609,8 @@ pub mod system
         }
         /// Represents a button on a mouse device
         #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum MouseButton {
+        pub enum MouseButton
+        {
             /// Left mouse button
             Left,
             /// Right mouse button
@@ -38742,7 +39621,8 @@ pub mod system
             Other(u32),
         }
 
-        bitflags!{
+        bitflags!
+        {
             /// Represents a set of modifier keys
             #[derive(Copy, Clone, Debug, Eq, PartialEq, Hash)]
             pub struct ModifierState: u8 {
@@ -38756,7 +39636,8 @@ pub mod system
         }
         /// Configures a [`Terminal`] or [`Screen`] instance to read special input.
         #[derive(Copy, Clone, Debug)]
-        pub struct PrepareConfig {
+        pub struct PrepareConfig 
+        {
             /// Whether to block signals that result from user input.
             ///
             /// If `true`, e.g. when the user presses Ctrl-C,
@@ -38812,7 +39693,8 @@ pub mod system
             pub report_signals: SignalSet,
         }
 
-        impl Default for PrepareConfig {
+        impl Default for PrepareConfig 
+        {
             fn default() -> PrepareConfig {
                 PrepareConfig{
                     block_signals: true,
@@ -38825,30 +39707,21 @@ pub mod system
             }
         }
         /// Represents a previous device state of a [`Terminal`].
-        ///
-        /// A value of this type is returned by [`Terminal::prepare`].
-        ///
-        /// Required to revert terminal state using [`Terminal::restore`].
-        ///
-        /// [`Terminal`]: struct.Terminal.html
-        /// [`Terminal::prepare`]: struct.Terminal.html#method.prepare
-        /// [`Terminal::restore`]: struct.Terminal.html#method.restore
         #[must_use = "the result of `terminal.prepare()` should be passed to \
             `terminal.restore()` to restore terminal to its original state"]
-        pub struct PrepareState(sys::PrepareState);
-
-        /// Represents the size of a terminal window
-        ///
-        /// A valid size must not have zero lines or zero columns.
-        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub struct Size {
+        pub struct PrepareState( super::common::PrepareState );
+        /// Represents the size of a terminal window.
+        #[derive( Copy, Clone, Debug, Eq, PartialEq )]
+        pub struct Size 
+        {
             /// Number of lines in the terminal
             pub lines: usize,
             /// Number of columns in the terminal
             pub columns: usize,
         }
 
-        impl Size {
+        impl Size 
+        {
             /// Returns the total number of cells in a terminal of the given size.
             ///
             /// # Panics
@@ -38865,90 +39738,39 @@ pub mod system
                 self.lines.checked_mul(self.columns)
             }
         }
-        /// Provides concurrent read and write access to a terminal device
-        ///
-        /// # Concurrency
-        ///
-        /// Access to read and write operations is controlled by two internal locks:
-        /// One for [reading] and one for [writing]. Each lock may be held independently
-        /// of the other.
-        ///
-        /// If any one thread wishes to hold both locks, the read lock
-        /// must be acquired first, in order to prevent deadlocks.
-        ///
-        /// [reading]: struct.TerminalReadGuard.html
-        /// [writing]: struct.TerminalWriteGuard.html
-        pub struct Terminal(pub(crate) sys::Terminal);
+        /// Provides concurrent read and write access to a terminal device.
+        pub struct Terminal( pub super::common::terminal::Terminal );
+        /// Holds an exclusive lock for read operations on a `Terminal`.
+        pub struct TerminalReadGuard<'a>( super::common::terminal::TerminalReadGuard<'a> );
+        /// Holds an exclusive lock for write operations on a `Terminal`.
+        pub struct TerminalWriteGuard<'a>( super::common::terminal::TerminalWriteGuard<'a> );
 
-        /// Holds an exclusive lock for read operations on a `Terminal`
-        ///
-        /// See [`Terminal`] documentation for details on locking.
-        ///
-        /// [`Terminal`]: struct.Terminal.html
-        pub struct TerminalReadGuard<'a>(sys::TerminalReadGuard<'a>);
-
-        /// Holds an exclusive lock for write operations on a `Terminal`
-        ///
-        /// See [`Terminal`] documentation for details on locking.
-        ///
-        /// [`Terminal`]: struct.Terminal.html
-        pub struct TerminalWriteGuard<'a>(sys::TerminalWriteGuard<'a>);
-
-        impl Terminal {
+        impl Terminal 
+        {
             /// Opens a new interface to the terminal on `stdout`.
-            pub fn new() -> io::Result<Terminal> {
-                Ok(Terminal(sys::Terminal::stdout()?))
-            }
+            pub fn new() -> io::Result<Terminal> 
+            { Ok( Terminal( super::common::Terminal::stdout()? ) ) }
             /// Opens a new interface to the terminal on `stderr`.
-            pub fn stderr() -> io::Result<Terminal> {
-                Ok(Terminal(sys::Terminal::stderr()?))
-            }
+            pub fn stderr() -> io::Result<Terminal> 
+            { Ok(Terminal( super::common::Terminal::stderr()?)) }
             /// Returns the name of the terminal.
-            ///
-            /// # Notes
-            ///
-            /// On Unix, this method returns the contents of the `TERM` environment variable.
-            ///
-            /// On Windows, this method always returns the string `"windows-console"`.
-            #[inline] pub fn name(&self) -> &str {
-                self.0.name()
-            }
+            #[inline] pub fn name(&self) -> &str { self.0.name() }
             /// Attempts to acquire an exclusive lock on terminal read operations.
-            ///
-            /// The current thread will block until the lock can be acquired.
-            #[inline] pub fn lock_read(&self) -> LockResult<TerminalReadGuard> {
-                map_lock_result(self.0.lock_read(), TerminalReadGuard)
-            }
+            #[inline] pub fn lock_read(&self) -> LockResult<TerminalReadGuard> 
+            { map_lock_result(self.0.lock_read(), TerminalReadGuard) }
             /// Attempts to acquire an exclusive lock on terminal write operations.
-            ///
-            /// The current thread will block until the lock can be acquired.
-            #[inline] pub fn lock_write(&self) -> LockResult<TerminalWriteGuard> {
-                map_lock_result(self.0.lock_write(), TerminalWriteGuard)
-            }
+            #[inline] pub fn lock_write(&self) -> LockResult<TerminalWriteGuard> 
+            { map_lock_result(self.0.lock_write(), TerminalWriteGuard) }
             /// Attempts to acquire an exclusive lock on terminal read operations.
-            ///
-            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
-            #[inline] pub fn try_lock_read(&self) -> TryLockResult<TerminalReadGuard> {
-                map_try_lock_result(self.0.try_lock_read(), TerminalReadGuard)
-            }
+            #[inline] pub fn try_lock_read(&self) -> TryLockResult<TerminalReadGuard> 
+            { map_try_lock_result(self.0.try_lock_read(), TerminalReadGuard) }
             /// Attempts to acquire an exclusive lock on terminal write operations.
-            ///
-            /// If the lock cannot be acquired immediately, `Err(_)` is returned.
-            #[inline] pub fn try_lock_write(&self) -> TryLockResult<TerminalWriteGuard> {
-                map_try_lock_result(self.0.try_lock_write(), TerminalWriteGuard)
-            }
+            #[inline] pub fn try_lock_write(&self) -> TryLockResult<TerminalWriteGuard> 
+            { map_try_lock_result(self.0.try_lock_write(), TerminalWriteGuard) }
         }
-        /// # Locking
-        ///
-        /// The following methods internally acquire both the read and write locks.
-        ///
-        /// The locks are released before the method returns.
-        ///
-        /// These methods are also implemented on [`TerminalReadGuard`],
-        /// which holds the `Terminal` read lock until the value is dropped.
-        ///
-        /// [`TerminalReadGuard`]: struct.TerminalReadGuard.html
-        impl Terminal {
+        
+        impl Terminal 
+        {
             /// Prepares the terminal to read input.
             ///
             /// When reading operations have concluded, [`restore`] should be called
@@ -38971,17 +39793,9 @@ pub mod system
                 self.0.restore(state.0)
             }
         }
-        /// # Locking
-        ///
-        /// The following methods internally acquire the read lock.
-        ///
-        /// The lock is released before the method returns.
-        ///
-        /// These methods are also implemented on [`TerminalReadGuard`],
-        /// which holds the `Terminal` read lock until the value is dropped.
-        ///
-        /// [`TerminalReadGuard`]: struct.TerminalReadGuard.html
-        impl Terminal {
+        
+        impl Terminal 
+        {
             /// Waits for an event from the terminal.
             ///
             /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
@@ -38999,17 +39813,9 @@ pub mod system
                 self.0.read_event(timeout)
             }
         }
-        /// # Locking
-        ///
-        /// The following methods internally acquire the write lock.
-        ///
-        /// The lock is released before the method returns.
-        ///
-        /// These methods are also implemented on [`TerminalWriteGuard`],
-        /// which holds the `Terminal` write lock until the value is dropped.
-        ///
-        /// [`TerminalWriteGuard`]: struct.TerminalWriteGuard.html
-        impl Terminal {
+        
+        impl Terminal 
+        {
             /// Returns the size of the terminal.
             #[inline] pub fn size(&self) -> io::Result<Size> {
                 self.0.size()
@@ -39167,7 +39973,8 @@ pub mod system
             }
         }
 
-        impl<'a> TerminalReadGuard<'a> {
+        impl<'a> TerminalReadGuard<'a> 
+        {
             /// Prepares the terminal to read input.
             ///
             /// When reading operations have concluded, [`restore`]
@@ -39241,7 +40048,8 @@ pub mod system
             }
         }
 
-        impl<'a> TerminalWriteGuard<'a> {
+        impl<'a> TerminalWriteGuard<'a> 
+        {
             /// Flush all output to the terminal device.
             ///
             /// This is called automatically when the `TerminalWriteGuard` is dropped.
@@ -39391,55 +40199,66 @@ pub mod system
                 self
             }
         }
-
-        #[cfg(unix)]
-        use std::path::Path;
-
-        #[cfg(unix)]
-        impl crate::unix::OpenTerminalExt for Terminal {
-            fn from_path<P: AsRef<Path>>(path: P) -> io::Result<Self> {
-                sys::Terminal::open(path).map(Terminal)
-            }
-        }
-
-        #[cfg(unix)]
-        impl crate::unix::TerminalExt for Terminal {
-            fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                self.0.read_raw(buf, timeout)
-            }
-        }
-
-        #[cfg(unix)]
-        impl<'a> crate::unix::TerminalExt for TerminalReadGuard<'a> {
-            fn read_raw(&mut self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                self.0.read_raw(buf, timeout)
-            }
-        }
-
-        #[cfg(windows)]
-        impl crate::windows::TerminalExt for Terminal {
-            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                self.0.read_raw(buf, timeout)
-            }
-
-            fn read_raw_event(&mut self, events: &mut [::winapi::um::wincon::INPUT_RECORD],
-                    timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                self.0.read_raw_event(events, timeout)
-            }
-        }
-
-        #[cfg(windows)]
-        impl<'a> crate::windows::TerminalExt for TerminalReadGuard<'a> {
-            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                self.0.read_raw(buf, timeout)
-            }
-
-            fn read_raw_event(&mut self, events: &mut [::winapi::um::wincon::INPUT_RECORD],
-                    timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                self.0.read_raw_event(events, timeout)
-            }
-        }
         
+        #[cfg( unix )] impl super::common::unix::ext::OpenTerminalExt for Terminal
+        {
+            fn from_path<P: AsRef<Path>>(path: P) -> io::Result<Self>
+            { super::common::Terminal::open(path).map(Terminal) }
+        }
+
+        #[cfg( unix )] impl super::common::unix::ext::TerminalExt for Terminal
+        {
+            fn read_raw
+            (
+                &mut self,
+                buf: &mut [u8],
+                timeout: Option<Duration>
+            ) -> io::Result<Option<Event>>
+            {
+                self.0.read_raw(buf, timeout)
+            }
+        }
+
+        #[cfg( unix )] impl<'a> super::common::unix::ext::TerminalExt for TerminalReadGuard<'a>
+        {
+            fn read_raw
+            (
+                &mut self,
+                buf:&mut [u8],
+                timeout:Option<Duration>
+            ) -> io::Result<Option<Event>>
+            {
+                self.0.read_raw(buf, timeout)
+            }
+        }
+
+        #[cfg( windows )] impl super::windows::TerminalExt for Terminal
+        {
+            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>>
+            { self.0.read_raw(buf, timeout) }
+
+            fn read_raw_event
+            (
+                &mut self,
+                events:&mut [::winapi::um::wincon::INPUT_RECORD],
+                timeout: Option<Duration>
+            ) -> io::Result<Option<Event>>
+            { self.0.read_raw_event(events, timeout) }
+        }
+
+        #[cfg( windows )] impl<'a> super::windows::TerminalExt for TerminalReadGuard<'a>
+        {
+            fn read_raw(&mut self, buf: &mut [u16], timeout: Option<Duration>) -> io::Result<Option<Event>>
+            { self.0.read_raw(buf, timeout) }
+
+            fn read_raw_event
+            (
+                &mut self,
+                events:&mut [::winapi::um::wincon::INPUT_RECORD],
+                timeout: Option<Duration>
+            ) -> io::Result<Option<Event>> 
+            { self.0.read_raw_event(events, timeout) }
+        }        
     } pub use self::terminal::{ * };
     /**/
     pub mod traits
@@ -39462,30 +40281,17 @@ pub mod system
         impl Chain for ()
         {
             fn chain<F: FnOnce() -> Self>(self, f: F) -> Self { f() }
+            
             fn init() -> Self {}
         }
 
         impl Chain for ::io::Result<()>
         {
             fn chain<F: FnOnce() -> Self>(self, f: F) -> Self { self.and_then(|_| f()) }
-
+            
             fn init() -> Self { Ok(()) }
         }
     }  pub use self::traits::{ * };
-    /// Returns the width of a character in the terminal.
-    #[inline] pub fn char_width(ch: char) -> Option<usize> 
-    {
-        use unicode_width::UnicodeWidthChar;
-
-        ch.width()
-    }
-    /// Returns whether the given character is a combining mark.
-    #[inline] pub fn is_combining_mark(ch: char) -> bool 
-    {
-        use unicode_normalization::char::is_combining_mark;
-
-        is_combining_mark(ch)
-    }
 
     const CTRL_MASK: u8 = 0x1f;
     const UNCTRL_BIT: u8 = 0x40;
@@ -39493,12 +40299,6 @@ pub mod system
     #[inline] pub fn ctrl(ch: char) -> char 
     {
         ((ch as u8) & CTRL_MASK) as char
-    }
-    /// Returns whether the given character is a control character.
-    #[inline] pub fn is_ctrl(ch: char) -> bool 
-    {
-        let ch = ch as u32;
-        ch & (CTRL_MASK as u32) == ch
     }
     /// Returns the ASCII character corresponding to the given control character.
     #[inline] pub fn unctrl_upper(ch: char) -> char 
@@ -39519,7 +40319,8 @@ pub mod system
     /// Returns an iterator over all non-empty prefixes of `s`, beginning with the shortest.
     #[inline] pub fn prefixes(s: &str) -> Prefixes 
     {
-        Prefixes{
+        Prefixes
+        {
             s,
             iter: s.char_indices(),
         }
@@ -39528,10 +40329,7 @@ pub mod system
     impl<'a> Iterator for Prefixes<'a> 
     {
         type Item = &'a str;
-
-        fn next(&mut self) -> Option<&'a str> {
-            self.iter.next().map(|(idx, ch)| &self.s[..idx + ch.len_utf8()])
-        }
+        fn next(&mut self) -> Option<&'a str> { self.iter.next().map(|(idx, ch)| &self.s[..idx + ch.len_utf8()]) }
     }
 }
 
@@ -42179,6 +42977,7 @@ pub mod uuid
             {
                 type Output = u16;
                 fn generate_sequence(&self, _seconds: u64, _nanos: u32) -> Self::Output { 0 }
+                
                 fn usable_bits(&self) -> usize { 0 }
             }
         }
@@ -42820,4 +43619,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 42823 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 43622 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
