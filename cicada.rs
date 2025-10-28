@@ -16,6 +16,8 @@
     non_upper_case_globals,
     unused_attributes,
     unused_imports,
+    unused_macros,
+    unused_mut,
     unused_variables,
 )]
 /*
@@ -2282,6 +2284,7 @@ features = ["local-offset"]
     {
         ($fmt:expr) => 
         (
+            use ::io::Write;
             match writeln!(&mut ::io::stderr(), $fmt) 
             {
                 Ok(_) => {}
@@ -2291,6 +2294,7 @@ features = ["local-offset"]
 
         ($fmt:expr, $($arg:tt)*) => 
         (
+            use ::io::Write;
             match writeln!(&mut ::io::stderr(), $fmt, $($arg)*) 
             {
                 Ok(_) => {}
@@ -2623,17 +2627,17 @@ features = ["local-offset"]
     {
         ( |$slf:ident| $field:expr ) => 
         {
-            pub fn size(&self) -> crate::terminal::Size {
+            pub fn size(&self) -> system::terminal::Size {
                 let $slf = self;
                 $field.size()
             }
 
-            pub fn cursor(&self) -> crate::terminal::Cursor {
+            pub fn cursor(&self) -> system::terminal::Cursor {
                 let $slf = self;
                 $field.cursor()
             }
 
-            pub fn set_cursor(&self, pos: crate::terminal::Cursor) {
+            pub fn set_cursor(&self, pos: system::terminal::Cursor) {
                 let $slf = self;
                 $field.set_cursor(pos);
             }
@@ -2653,32 +2657,32 @@ features = ["local-offset"]
                 $field.clear_attributes();
             }
 
-            pub fn add_style(&self, style: crate::terminal::Style) {
+            pub fn add_style(&self, style: system::terminal::Style) {
                 let $slf = self;
                 $field.add_style(style);
             }
 
-            pub fn remove_style(&self, style: crate::terminal::Style) {
+            pub fn remove_style(&self, style: system::terminal::Style) {
                 let $slf = self;
                 $field.remove_style(style);
             }
 
-            pub fn set_style(&self, style: crate::terminal::Style) {
+            pub fn set_style(&self, style: system::terminal::Style) {
                 let $slf = self;
                 $field.set_style(style);
             }
 
-            pub fn set_fg(&self, fg: Option<crate::terminal::Color>) {
+            pub fn set_fg(&self, fg: Option<system::terminal::Color>) {
                 let $slf = self;
                 $field.set_fg(fg);
             }
 
-            pub fn set_bg(&self, bg: Option<crate::terminal::Color>) {
+            pub fn set_bg(&self, bg: Option<system::terminal::Color>) {
                 let $slf = self;
                 $field.set_bg(bg);
             }
 
-            pub fn set_theme(&self, theme: crate::terminal::Theme) {
+            pub fn set_theme(&self, theme: system::terminal::Theme) {
                 let $slf = self;
                 $field.set_theme(theme)
             }
@@ -2693,21 +2697,32 @@ features = ["local-offset"]
                 let _ = $field.write_str(s);
             }
 
-            pub fn write_at(&self, pos: crate::terminal::Cursor, text: &str) {
+            pub fn write_at(&self, pos: system::terminal::Cursor, text: &str) {
                 let $slf = self;
                 let _ = $field.write_at(pos, text);
             }
 
-            pub fn write_styled(&self,
-                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                    style: crate::terminal::Style, text: &str) {
+            pub fn write_styled
+            (
+                &self,
+                fg: Option<system::terminal::Color>, 
+                bg: Option<system::terminal::Color>,
+                style: system::terminal::Style,
+                text: &str
+            )
+            {
                 let $slf = self;
                 let _ = $field.write_styled(fg, bg, style, text);
             }
 
-            pub fn write_styled_at(&self, pos: crate::terminal::Cursor,
-                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                    style: crate::terminal::Style, text: &str) {
+            pub fn write_styled_at
+            (
+                &self, pos: system::terminal::Cursor,
+                fg: Option<system::terminal::Color>, 
+                bg: Option<system::terminal::Color>,
+                style: system::terminal::Style, text: &str
+            )
+            {
                 let $slf = self;
                 let _ = $field.write_styled_at(pos, fg, bg, style, text);
             }
@@ -2718,17 +2733,17 @@ features = ["local-offset"]
     {
         ( |$slf:ident| $field:expr ) => 
         {
-            pub fn size(&self) -> crate::terminal::Size {
+            pub fn size(&self) -> ::system::terminal::Size {
                 let $slf = self;
                 $field.size()
             }
 
-            pub fn cursor(&self) -> crate::terminal::Cursor {
+            pub fn cursor(&self) -> ::system::terminal::Cursor {
                 let $slf = self;
                 $field.cursor()
             }
 
-            pub fn set_cursor(&mut self, pos: crate::terminal::Cursor) {
+            pub fn set_cursor(&mut self, pos: system::terminal::Cursor) {
                 let $slf = self;
                 $field.set_cursor(pos);
             }
@@ -2748,32 +2763,32 @@ features = ["local-offset"]
                 $field.clear_attributes();
             }
 
-            pub fn add_style(&mut self, style: crate::terminal::Style) {
+            pub fn add_style(&mut self, style: system::terminal::Style) {
                 let $slf = self;
                 $field.add_style(style);
             }
 
-            pub fn remove_style(&mut self, style: crate::terminal::Style) {
+            pub fn remove_style(&mut self, style: system::terminal::Style) {
                 let $slf = self;
                 $field.remove_style(style);
             }
 
-            pub fn set_style(&mut self, style: crate::terminal::Style) {
+            pub fn set_style(&mut self, style: system::terminal::Style) {
                 let $slf = self;
                 $field.set_style(style);
             }
 
-            pub fn set_fg(&mut self, fg: Option<crate::terminal::Color>) {
+            pub fn set_fg(&mut self, fg: Option<system::terminal::Color>) {
                 let $slf = self;
                 $field.set_fg(fg);
             }
 
-            pub fn set_bg(&mut self, bg: Option<crate::terminal::Color>) {
+            pub fn set_bg(&mut self, bg: Option<system::terminal::Color>) {
                 let $slf = self;
                 $field.set_bg(bg);
             }
 
-            pub fn set_theme(&mut self, theme: crate::terminal::Theme) {
+            pub fn set_theme(&mut self, theme: system::terminal::Theme) {
                 let $slf = self;
                 $field.set_theme(theme);
             }
@@ -2788,24 +2803,563 @@ features = ["local-offset"]
                 let _ = $field.write_str(s);
             }
 
-            pub fn write_at(&mut self, pos: crate::terminal::Cursor, text: &str) {
+            pub fn write_at(&mut self, pos: system::terminal::Cursor, text: &str) {
                 let $slf = self;
                 let _ = $field.write_at(pos, text);
             }
 
             pub fn write_styled(&mut self,
-                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                    style: crate::terminal::Style, text: &str) {
+                    fg: Option<system::terminal::Color>, bg: Option<system::terminal::Color>,
+                    style: system::terminal::Style, text: &str) {
                 let $slf = self;
                 let _ = $field.write_styled(fg, bg, style, text);
             }
 
-            pub fn write_styled_at(&mut self, pos: crate::terminal::Cursor,
-                    fg: Option<crate::terminal::Color>, bg: Option<crate::terminal::Color>,
-                    style: crate::terminal::Style, text: &str) {
+            pub fn write_styled_at(&mut self, pos: system::terminal::Cursor,
+                    fg: Option<system::terminal::Color>, bg: Option<system::terminal::Color>,
+                    style: system::terminal::Style, text: &str) {
                 let $slf = self;
                 let _ = $field.write_styled_at(pos, fg, bg, style, text);
             }
+        }
+    }
+
+    #[macro_export] macro_rules! malloc_size_of_is_0
+    (
+        ($($ty:ty),+) => 
+        (
+            $(
+                impl ::alloc::MallocSizeOf for $ty
+                {
+                    #[inline(always)] fn size_of(&self, _: &mut ::alloc::MallocSizeOfOps) -> usize
+                    {
+                        0
+                    }
+                }
+            )+
+        );
+
+        ($($ty:ident<$($gen:ident),+>),+) => 
+        (
+            $(
+                impl<$($gen: ::alloc::MallocSizeOf),+> ::alloc::MallocSizeOf for $ty<$($gen),+>
+                {
+                    #[inline( always )] fn size_of(&self, _: &mut ::alloc::MallocSizeOfOps) -> usize { 0 }
+                }
+            )+
+        );
+    );
+}
+
+pub mod alloc
+{
+    pub use std::alloc::{ * };
+
+    use ::
+    {
+        boxed::{ Box },
+        ffi::{ c_void },
+        *,
+    };
+
+    pub mod impls
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        Copyright 2016-2017 The Servo Project Developers. 
+        See the COPYRIGHT file at the top-level directory of this distribution and at
+        http://rust-lang.org/COPYRIGHT.
+
+        Licensed under the Apache License, Version 2.0 
+        <LICENSE-APACHE or http://www.apache.org/licenses/LICENSE-2.0>
+        or the MIT license <LICENSE-MIT or http://opensource.org/licenses/MIT>, 
+        at your option. 
+        
+        This file may not be copied, modified, or distributed except according to those terms. */
+        use ::
+        {
+            alloc::{ MallocShallowSizeOf, MallocSizeOf, MallocSizeOfOps },
+            borrow::{ Cow, ToOwned },
+            boxed::{ Box },
+            cell::{ Cell, RefCell },
+            collections::{ HashMap, HashSet, BTreeMap, BTreeSet, VecDeque },
+            hash::{ Hash, BuildHasher },
+            marker::{ PhantomData },
+            mem::{ size_of },
+            num::
+            {
+                NonZeroI128, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroI8, NonZeroIsize,
+                NonZeroU128, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroU8, NonZeroUsize,
+            },
+            ops::{ Range, RangeFrom, RangeInclusive, RangeTo },
+            string::{ String },
+            sync::{ atomic:: { * }, Mutex },
+            vec::{ Vec },
+            *,
+        };
+
+        malloc_size_of_is_0!((), bool, char, str);
+        malloc_size_of_is_0!(u8, u16, u32, u64, u128, usize);
+        malloc_size_of_is_0!(i8, i16, i32, i64, i128, isize);
+        malloc_size_of_is_0!(f32, f64);
+
+        malloc_size_of_is_0!(AtomicBool);
+        malloc_size_of_is_0!(AtomicU8, AtomicU16, AtomicU32, AtomicUsize);
+        malloc_size_of_is_0!(AtomicI8, AtomicI16, AtomicI32, AtomicIsize);
+
+        #[cfg(target_has_atomic = "64")]
+        malloc_size_of_is_0!(AtomicU64, AtomicI64);
+
+        malloc_size_of_is_0!( NonZeroU8, NonZeroU16, NonZeroU32, NonZeroU64, NonZeroUsize, NonZeroU128 );
+
+        malloc_size_of_is_0!( NonZeroI8, NonZeroI16, NonZeroI32, NonZeroI64, NonZeroIsize, NonZeroI128 );
+
+        impl<T: ?Sized> MallocSizeOf for &'_ T
+        {
+            fn size_of(&self, _ops: &mut MallocSizeOfOps) -> usize { 0 }
+        }
+
+        impl<T: ?Sized> MallocSizeOf for &'_ mut T
+        {
+            fn size_of(&self, _ops: &mut MallocSizeOfOps) -> usize { 0 }
+        }
+        
+        impl<T> MallocSizeOf for PhantomData<T>
+        {
+            fn size_of(&self, _ops: &mut MallocSizeOfOps) -> usize { 0 }
+        }
+
+        impl<T: MallocSizeOf, const N: usize> MallocSizeOf for [T; N] {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.iter().fold(0, |acc, item| acc + item.size_of(ops))
+            }
+        }
+
+        impl<T1, T2> MallocSizeOf for (T1, T2)
+        where
+            T1: MallocSizeOf,
+            T2: MallocSizeOf,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.0.size_of(ops) + self.1.size_of(ops)
+            }
+        }
+
+        impl<T1, T2, T3> MallocSizeOf for (T1, T2, T3)
+        where
+            T1: MallocSizeOf,
+            T2: MallocSizeOf,
+            T3: MallocSizeOf,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.0.size_of(ops) + self.1.size_of(ops) + self.2.size_of(ops)
+            }
+        }
+
+        impl<T1, T2, T3, T4> MallocSizeOf for (T1, T2, T3, T4)
+        where
+            T1: MallocSizeOf,
+            T2: MallocSizeOf,
+            T3: MallocSizeOf,
+            T4: MallocSizeOf,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.0.size_of(ops) + self.1.size_of(ops) + self.2.size_of(ops) + self.3.size_of(ops)
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for [T] {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = 0;
+                for elem in self.iter() {
+                    n += elem.size_of(ops);
+                }
+                n
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for Range<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.start.size_of(ops) + self.end.size_of(ops)
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for RangeInclusive<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.start().size_of(ops) + self.end().size_of(ops)
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for RangeTo<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.end.size_of(ops)
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for RangeFrom<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.start.size_of(ops)
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for Option<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                match self {
+                    Some(val) => val.size_of(ops),
+                    None => 0,
+                }
+            }
+        }
+
+        impl<T: MallocSizeOf, E: MallocSizeOf> MallocSizeOf for Result<T, E> {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                match *self {
+                    Ok(ref x) => x.size_of(ops),
+                    Err(ref e) => e.size_of(ops),
+                }
+            }
+        }
+
+        impl<T: MallocSizeOf + Copy> MallocSizeOf for Cell<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.get().size_of(ops)
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for RefCell<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.borrow().size_of(ops)
+            }
+        }
+
+        impl<B: ?Sized + ToOwned> MallocSizeOf for Cow<'_, B> where
+            B::Owned: MallocSizeOf,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                match *self {
+                    Cow::Borrowed(_) => 0,
+                    Cow::Owned(ref b) => b.size_of(ops),
+                }
+            }
+        }
+
+        impl MallocSizeOf for String {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                unsafe { ops.malloc_size_of(self.as_ptr()) }
+            }
+        }
+
+        impl<T: ?Sized> MallocShallowSizeOf for Box<T>
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                unsafe { ops.malloc_size_of(&**self) }
+            }
+        }
+
+        impl<T: MallocSizeOf + ?Sized> MallocSizeOf for Box<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                self.shallow_size_of(ops) + (**self).size_of(ops)
+            }
+        }
+
+        impl<T> MallocShallowSizeOf for Vec<T>
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                unsafe { ops.malloc_size_of(self.as_ptr()) }
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for Vec<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = self.shallow_size_of(ops);
+                for elem in self.iter() {
+                    n += elem.size_of(ops);
+                }
+                n
+            }
+        }
+
+        impl<T> MallocShallowSizeOf for VecDeque<T>
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                if ops.has_malloc_enclosing_size_of() {
+                    if let Some(front) = self.front() {
+                        // The front element is an interior pointer.
+                        unsafe { ops.malloc_enclosing_size_of(front) }
+                    } else {
+                        // This assumes that no memory is allocated when the VecDeque is empty.
+                        0
+                    }
+                } else {
+                    // An estimate.
+                    self.capacity() * size_of::<T>()
+                }
+            }
+        }
+
+        impl<T: MallocSizeOf> MallocSizeOf for VecDeque<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = self.shallow_size_of(ops);
+                for elem in self.iter() {
+                    n += elem.size_of(ops);
+                }
+                n
+            }
+        }
+
+        impl<K, V> MallocShallowSizeOf for BTreeMap<K, V> where
+            K: Eq + Hash,
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                if ops.has_malloc_enclosing_size_of() {
+                    self.values()
+                        .next()
+                        .map_or(0, |v| unsafe { ops.malloc_enclosing_size_of(v) })
+                } else {
+                    self.len() * (size_of::<V>() + size_of::<K>() + size_of::<usize>())
+                }
+            }
+        }
+
+        impl<K, V> MallocSizeOf for BTreeMap<K, V> where
+            K: Eq + Hash + MallocSizeOf,
+            V: MallocSizeOf,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = self.shallow_size_of(ops);
+                for (k, v) in self.iter() {
+                    n += k.size_of(ops);
+                    n += v.size_of(ops);
+                }
+                n
+            }
+        }
+
+        impl<T> MallocShallowSizeOf for BTreeSet<T> where
+            T: Ord,
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                if ops.has_malloc_enclosing_size_of() {
+                    self.iter()
+                        .next()
+                        .map_or(0, |v| unsafe { ops.malloc_enclosing_size_of(v) })
+                } else {
+                    self.len() * (size_of::<T>() + size_of::<usize>())
+                }
+            }
+        }
+
+        impl<T> MallocSizeOf for BTreeSet<T> where
+            T: Ord + MallocSizeOf,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = self.shallow_size_of(ops);
+                for v in self.iter() {
+                    n += v.size_of(ops);
+                }
+                n
+            }
+        }
+        
+        impl<T, S> MallocShallowSizeOf for HashSet<T, S> where
+            T: Eq + Hash,
+            S: BuildHasher,
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                if ops.has_malloc_enclosing_size_of() {
+                    self.iter()
+                        .next()
+                        .map_or(0, |t| unsafe { ops.malloc_enclosing_size_of(t) })
+                } else {
+                    self.capacity() * (size_of::<T>() + size_of::<usize>())
+                }
+            }
+        }
+        
+        impl<T, S> MallocSizeOf for HashSet<T, S> where
+        T: Eq + Hash + MallocSizeOf,
+        S: BuildHasher,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = self.shallow_size_of(ops);
+                for t in self.iter() {
+                    n += t.size_of(ops);
+                }
+                n
+            }
+        }
+        
+        impl<K, V, S> MallocShallowSizeOf for HashMap<K, V, S> where
+            K: Eq + Hash,
+            S: BuildHasher,
+        {
+            fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                // See the implementation for HashSet for details.
+                if ops.has_malloc_enclosing_size_of() {
+                    self.values()
+                        .next()
+                        .map_or(0, |v| unsafe { ops.malloc_enclosing_size_of(v) })
+                } else {
+                    self.capacity() * (size_of::<V>() + size_of::<K>() + size_of::<usize>())
+                }
+            }
+        }
+        
+        impl<K, V, S> MallocSizeOf for HashMap<K, V, S> where
+            K: Eq + Hash + MallocSizeOf,
+            V: MallocSizeOf,
+            S: BuildHasher,
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                let mut n = self.shallow_size_of(ops);
+                for (k, v) in self.iter() {
+                    n += k.size_of(ops);
+                    n += v.size_of(ops);
+                }
+                n
+            }
+        }
+
+        /// If a mutex is stored directly as a member of a data type that is being measured,
+        /// it is the unique owner of its contents and deserves to be measured.
+        impl<T: MallocSizeOf> MallocSizeOf for Mutex<T>
+        {
+            fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize {
+                (*self.lock().unwrap()).size_of(ops)
+            }
+        }
+
+        // XXX: we don't want MallocSizeOf to be defined for Rc and Arc. If negative
+        // trait bounds are ever allowed, this code should be uncommented.
+        // (We do have a compile-fail test for this: rc_arc_must_not_derive_malloc_size_of.rs)
+        //impl<T> !MallocSizeOf for Arc<T> { }
+        //impl<T> !MallocShallowSizeOf for Arc<T> { }
+    }
+    /// Trait for measuring the "deep" heap usage of a data structure.
+    pub trait MallocSizeOf
+    {
+        /* Measure the heap usage of all descendant heap-allocated structures, but not the space taken up by the 
+        value itself. */ fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize;
+    }
+    /// Trait for measuring the "shallow" heap usage of a container.
+    pub trait MallocShallowSizeOf {
+        /// Measure the heap usage of immediate heap-allocated descendant structures, 
+        ///but not the space taken up by the value itself.
+        fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize;
+    }
+    /// Like `MallocSizeOf`, but with a different name so it cannot be used
+    /// accidentally with derive(MallocSizeOf).
+    pub trait MallocUnconditionalSizeOf
+    {
+        /// Measure the heap usage of all heap-allocated descendant structures, but
+        /// not the space taken up by the value itself.
+        fn unconditional_size_of(&self, ops: &mut MallocSizeOfOps) -> usize;
+    }
+    /// `MallocUnconditionalSizeOf` combined with `MallocShallowSizeOf`.
+    pub trait MallocUnconditionalShallowSizeOf {
+        /// `unconditional_size_of` combined with `shallow_size_of`.
+        fn unconditional_shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize;
+    }
+    /// Like `MallocSizeOf`, but only measures if the value hasn't already been
+    /// measured.
+    pub trait MallocConditionalSizeOf {
+        /// Measure the heap usage of all heap-allocated descendant structures, but
+        /// not the space taken up by the value itself, and only if that heap usage
+        /// hasn't already been measured.
+        fn conditional_size_of(&self, ops: &mut MallocSizeOfOps) -> usize;
+    }
+    /// `MallocConditionalSizeOf` combined with `MallocShallowSizeOf`.
+    pub trait MallocConditionalShallowSizeOf
+    {
+        /// `conditional_size_of` combined with `shallow_size_of`.
+        fn conditional_shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize;
+    }
+    /// A C function that takes a pointer to a heap allocation and returns its size.
+    type VoidPtrToSizeFn = unsafe extern "C" fn(ptr: *const c_void) -> usize;
+
+    /// A closure implementing a stateful predicate on pointers.
+    type VoidPtrToBoolFnMut = dyn FnMut(*const c_void) -> bool;
+
+    /// Operations used when measuring heap usage of data structures.
+    pub struct MallocSizeOfOps {
+        /// A function that returns the size of a heap allocation.
+        size_of_op: VoidPtrToSizeFn,
+
+        /// Like `size_of_op`, but can take an interior pointer. Optional because
+        /// not all allocators support this operation. If it's not provided, some
+        /// memory measurements will actually be computed estimates rather than
+        /// real and accurate measurements.
+        enclosing_size_of_op: Option<VoidPtrToSizeFn>,
+
+        /// Check if a pointer has been seen before, and remember it for next time.
+        /// Useful when measuring `Rc`s and `Arc`s. Optional, because many places
+        /// don't need it.
+        have_seen_ptr_op: Option<Box<VoidPtrToBoolFnMut>>,
+    }
+
+    impl MallocSizeOfOps {
+        pub fn new(
+            size_of: VoidPtrToSizeFn,
+            malloc_enclosing_size_of: Option<VoidPtrToSizeFn>,
+            have_seen_ptr: Option<Box<VoidPtrToBoolFnMut>>,
+        ) -> Self {
+            MallocSizeOfOps {
+                size_of_op: size_of,
+                enclosing_size_of_op: malloc_enclosing_size_of,
+                have_seen_ptr_op: have_seen_ptr,
+            }
+        }
+
+        /// Check if an allocation is empty. This relies on knowledge of how Rust
+        /// handles empty allocations, which may change in the future.
+        fn is_empty<T: ?Sized>(ptr: *const T) -> bool {
+            ptr as *const usize as usize <= 256
+        }
+
+        /// Call `size_of_op` on `ptr`, first checking that the allocation isn't
+        /// empty, because some types (such as `Vec`) utilize empty allocations.
+        pub unsafe fn malloc_size_of<T: ?Sized>(&self, ptr: *const T) -> usize {
+            if MallocSizeOfOps::is_empty(ptr) {
+                0
+            } else {
+                (self.size_of_op)(ptr as *const c_void)
+            }
+        }
+
+        /// Is an `enclosing_size_of_op` available?
+        pub fn has_malloc_enclosing_size_of(&self) -> bool {
+            self.enclosing_size_of_op.is_some()
+        }
+
+        /// Call `enclosing_size_of_op`, which must be available, on `ptr`, which
+        /// must not be empty.
+        pub unsafe fn malloc_enclosing_size_of<T>(&self, ptr: *const T) -> usize {
+            assert!(!MallocSizeOfOps::is_empty(ptr));
+            (self.enclosing_size_of_op.unwrap())(ptr as *const c_void)
+        }
+
+        /// Call `have_seen_ptr_op` on `ptr`.
+        pub fn have_seen_ptr<T>(&mut self, ptr: *const T) -> bool {
+            let have_seen_ptr_op = self
+                .have_seen_ptr_op
+                .as_mut()
+                .expect("missing have_seen_ptr_op");
+            have_seen_ptr_op(ptr as *const c_void)
         }
     }
 }
@@ -2814,6 +3368,10 @@ pub mod api
 {
     /*!
     */
+    use nix::libc::execve;
+    use ffi::CStr;
+    use ffi::CString;
+    use nix::unistd::ForkResult;
     use ::
     {
         io::{ self, Error, Write },
@@ -2938,9 +3496,9 @@ pub mod api
         let re_to_add = Regex::new(r"^([a-zA-Z0-9_\.-]+)=(.*)$").unwrap();
         for cap in re_to_add.captures_iter(input)
         {
-            let name = tools::unquote(&cap[1]);
+            let name = parses::lines::unquote(&cap[1]);
             
-            let value = if cap[2].starts_with('"') || cap[2].starts_with('\'') { tools::unquote(&cap[2]) }
+            let value = if cap[2].starts_with('"') || cap[2].starts_with('\'') { parses::lines::unquote(&cap[2]) }
             else { cap[2].to_string() };
 
             sh.add_alias(name.as_str(), value.as_str());
@@ -3021,7 +3579,7 @@ pub mod api
             }
         }
 
-        jobc::mark_job_as_running(sh, gid, true);
+        jobs::mark_job_as_running(sh, gid, true);
         cr
     }
 
@@ -3111,7 +3669,7 @@ pub mod api
         let hfile = history::read_file();
         info.push(("history-file", &hfile));
 
-        let rcf = rcfile::get_rc_file();
+        let rcf = rc::file::get_rc_file();
         info.push(("rc-file", &rcf));
 
         let git_hash = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; //env!("GIT_HASH");
@@ -3165,6 +3723,7 @@ pub mod api
     pub fn run_exit(sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
+        /*
         let tokens = cmd.tokens.clone();
         if tokens.len() > 2 {
             let info = ":: exit: too many arguments";
@@ -3197,6 +3756,7 @@ pub mod api
         }
 
         process::exit(0);
+        */
         cr
     }
 
@@ -3244,87 +3804,79 @@ pub mod api
 
     pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
-        let tokens = cmd.tokens.clone();
-        let mut cr = CommandResult::new();
+        unsafe 
+        {
+            let tokens = cmd.tokens.clone();
+            let mut cr = CommandResult::new();
 
-        if sh.jobs.is_empty() {
-            let info = ":: fg: no job found";
-            ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
-            return cr;
-        }
-
-        let mut job_id = -1;
-        if tokens.len() == 1 {
-            if let Some((gid, _)) = sh.jobs.iter().next() {
-                job_id = *gid;
-            }
-        }
-
-        if tokens.len() >= 2 {
-            let mut job_str = tokens[1].1.clone();
-            if job_str.starts_with("%") {
-                job_str = job_str.trim_start_matches('%').to_string();
+            if sh.jobs.is_empty()
+            {
+                let info = ":: fg: no job found";
+                ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
             }
 
-            match job_str.parse::<i32>() {
-                Ok(n) => job_id = n,
-                Err(_) => {
-                    let info = ":: fg: invalid job id";
-                    ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
-                    return cr;
+            let mut job_id = -1;
+            if tokens.len() == 1 { if let Some((gid, _)) = sh.jobs.iter().next(){ job_id = *gid; } }
+
+            if tokens.len() >= 2
+            {
+                let mut job_str = tokens[1].1.clone();
+                if job_str.starts_with("%") { job_str = job_str.trim_start_matches('%').to_string(); }
+
+                match job_str.parse::<i32>()
+                {
+                    Ok(n) => job_id = n,
+                    Err(_) =>
+                    {
+                        let info = ":: fg: invalid job id";
+                        ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                        return cr;
+                    }
                 }
             }
-        }
 
-        if job_id == -1 {
-            let info = ":: not job id found";
-            ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
-            return cr;
-        }
-
-        let gid: i32;
-        let pid_list: Vec<i32>;
-
-        {
-            let mut result = sh.get_job_by_id(job_id);
-            // fall back to find job by using prcess group id
-            if result.is_none() {
-                result = sh.get_job_by_gid(job_id);
+            if job_id == -1
+            {
+                let info = ":: not job id found";
+                ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
             }
 
-            match result {
-                Some(job) => {
-                    ::emit::stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
-                    cr.status = 0;
+            let gid: i32;
+            let pid_list: Vec<i32>;
+            {
+                let mut result = sh.get_job_by_id(job_id);
+                if result.is_none() { result = sh.get_job_by_gid(job_id); }
 
-                    unsafe {
-                        if !shell::give_terminal_to(job.gid) {
-                            return CommandResult::error();
-                        }
-
+                match result
+                {
+                    Some(job) =>
+                    {
+                        ::emit::stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
+                        cr.status = 0;                        
+                        if !shell::give_terminal_to(job.gid) { return CommandResult::error(); }
                         nix::libc::killpg(job.gid, nix::libc::SIGCONT);
                         pid_list = job.pids.clone();
                         gid = job.gid;
                     }
-                }
-                None => {
-                    let info = ":: fg: no such job";
-                    ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
-                    return cr;
+
+                    None =>
+                    {
+                        let info = ":: fg: no such job";
+                        ::emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                        return cr;
+                    }
                 }
             }
-        }
-
-        unsafe 
-        {
+            
             ::jobs::mark_job_as_running(sh, gid, false);
 
-            let cr = jobc::wait_fg_job(sh, gid, &pid_list);
+            let cr = jobs::wait_fg_job(sh, gid, &pid_list);
 
             let gid_shell = nix::libc::getpgid(0);
-            if !shell::give_terminal_to(gid_shell) {
-                log!("failed to give term to back to shell : {}", gid_shell);
-            }
+
+            if !shell::give_terminal_to(gid_shell){ log!("failed to give term to back to shell : {}", gid_shell); }
 
             cr
         }
@@ -3333,6 +3885,7 @@ pub mod api
     pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
+        /*
         let hfile = history::read_file();
         let path = Path::new(hfile.as_str());
         if !path.exists() {
@@ -3400,7 +3953,8 @@ pub mod api
                 }
                 cr
             }
-        }
+        }*/
+        cr
     }
 
     pub fn run_jobs(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
@@ -3409,15 +3963,14 @@ pub mod api
         if sh.jobs.is_empty() {
             return cr;
         }
-
-        // update status of jobs if any
-        jobc::try_wait_bg_jobs(sh, false, false);
+        
+        jobs::try_wait_bg_jobs(sh, false, false);
 
         let mut lines = Vec::new();
         let jobs = sh.jobs.clone();
         let no_trim = cmd.tokens.len() >= 2 && cmd.tokens[1].1 == "-f";
         for (_i, job) in jobs.iter() {
-            let line = jobc::get_job_line(job, !no_trim);
+            let line = jobs::get_job_line(job, !no_trim);
             lines.push(line);
         }
 
@@ -3455,6 +4008,7 @@ pub mod api
         let tokens = cmd.tokens.clone();
 
         let name_list: Vec<String>;
+
         if tokens.len() <= 1 {
             name_list = vec!["REPLY".to_string()];
         } else {
@@ -3485,7 +4039,7 @@ pub mod api
         }
 
         let envs = cl.envs.clone();
-        let value_list = tools::split_into_fields(sh, buffer.trim(), &envs);
+        let value_list = shell::split_into_fields(sh, buffer.trim(), &envs);
 
         let idx_2rd_last = name_list.len() - 1;
         for i in 0..idx_2rd_last {
@@ -3513,7 +4067,7 @@ pub mod api
 
     pub fn run_set(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
-        let mut cr = CommandResult::new();
+        let mut cr = CommandResult::new();/*
         let tokens = &cmd.tokens;
         let args = parses::lines::tokens_to_args(tokens);
         let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
@@ -3541,7 +4095,8 @@ pub mod api
                 }
                 cr
             }
-        }
+        } */
+        cr
     }
 
     pub fn run_source(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
@@ -3556,7 +4111,7 @@ pub mod api
             return cr;
         }
 
-        let status = scripting::run_script(sh, &args);
+        let status = scripts::run_script(sh, &args);
         cr.status = status;
         cr
     }
@@ -3564,6 +4119,7 @@ pub mod api
     pub fn run_ulimit(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
+        /*
         let tokens = &cmd.tokens;
         let args = parses::lines::tokens_to_args(tokens);
 
@@ -3604,7 +4160,7 @@ pub mod api
         }
         if !all_stderr.is_empty() {
             ::emit::stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
-        }
+        }*/
 
         cr
     }
@@ -3697,7 +4253,7 @@ pub mod api
             let venv_name = args[2].to_string();
             let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
             ::emit::stderr_with_capture(&line, &mut cr, cl, cmd, capture);
-            let cr_list = execute::run_command_line(sh, &line, false, false);
+            let cr_list = now::run_command_line(sh, &line, false, false);
             return cr_list[0].clone();
         }
 
@@ -3890,20 +4446,22 @@ pub mod api
 
         let mut fds_capture_stdout = None;
         let mut fds_capture_stderr = None;
-        if capture {
-            match pipe() {
+        if capture 
+        {
+            match process::pipe() {
                 Ok(fds) => fds_capture_stdout = Some(fds),
                 Err(e) => {
                     println_stderr!("cicada: pipeline2: {}", e);
                     return (false, CommandResult::error());
                 }
             }
-            match pipe() {
+
+            match process::pipe() {
                 Ok(fds) => fds_capture_stderr = Some(fds),
                 Err(e) => {
                     if let Some(fds) = fds_capture_stdout {
-                        libs::close(fds.0);
-                        libs::close(fds.1);
+                        process::close(fds.0);
+                        process::close(fds.1);
                     }
                     println_stderr!("cicada: pipeline3: {}", e);
                     return (false, CommandResult::error());
@@ -3942,7 +4500,7 @@ pub mod api
         }
 
         if !fg_pids.is_empty() {
-            let _cr = jobc::wait_fg_job(sh, pgid, &fg_pids);
+            let _cr = jobs::wait_fg_job(sh, pgid, &fg_pids);
             // for capture commands, e.g. `echo foo` in `echo "hello $(echo foo)"
             // the cmd_result is already built in loop calling run_single_program()
             // above.
@@ -4005,11 +4563,15 @@ pub mod api
         fds_capture_stderr: &Option<(RawFd, RawFd)>,
     ) -> i32 
     {
+        0
+        /*
         let capture = options.capture_output;
-        if cl.is_single_and_builtin() {
-            if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture) {
+        if cl.is_single_and_builtin()
+        {
+            if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture) 
+            {
                 *cmd_result = cr;
-                return unsafe { libc::getpid() };
+                return unsafe { nix::libc::getpid() };
             }
 
             println_stderr!("cicada: error when run singler builtin");
@@ -4022,7 +4584,7 @@ pub mod api
         let cmd = cl.commands.get(idx_cmd).unwrap();
 
         if cmd.has_here_string() {
-            match pipe() {
+            match ::process::pipe() {
                 Ok(fds) => fds_stdin = Some(fds),
                 Err(e) => {
                     println_stderr!("cicada: pipeline4: {}", e);
@@ -4031,83 +4593,83 @@ pub mod api
             }
         }
 
-        match libs::fork::fork() {
+        match ::process::fork()
+        {
             Ok(ForkResult::Child) => {
-                unsafe {
+                unsafe 
+                {
                     // child processes need to handle ctrl-Z
-                    libc::signal(libc::SIGTSTP, libc::SIG_DFL);
-                    libc::signal(libc::SIGQUIT, libc::SIG_DFL);
+                    nix::libc::signal(nix::libc::SIGTSTP, nix::libc::SIG_DFL);
+                    nix::libc::signal(nix::libc::SIGQUIT, nix::libc::SIG_DFL);
                 }
-
-                // close pipes unrelated to current child (left side)
+                
                 if idx_cmd > 0 {
                     for i in 0..idx_cmd - 1 {
                         let fds = pipes[i];
-                        libs::close(fds.0);
-                        libs::close(fds.1);
+                        process::close(fds.0);
+                        process::close(fds.1);
                     }
                 }
-                // close pipes unrelated to current child (right side)
+                
                 for i in idx_cmd + 1..pipes_count {
                     let fds = pipes[i];
-                    libs::close(fds.0);
-                    libs::close(fds.1);
+                    process::close(fds.0);
+                    process::close(fds.1);
                 }
-                // close pipe fds for capturing stdout/stderr
-                // (they're only used in last child)
+                
                 if idx_cmd < pipes_count {
                     if let Some(fds) = fds_capture_stdout {
-                        libs::close(fds.0);
-                        libs::close(fds.1);
+                        process::close(fds.0);
+                        process::close(fds.1);
                     }
                     if let Some(fds) = fds_capture_stderr {
-                        libs::close(fds.0);
-                        libs::close(fds.1);
+                        process::close(fds.0);
+                        process::close(fds.1);
                     }
                 }
 
                 if idx_cmd == 0 {
                     unsafe {
-                        let pid = libc::getpid();
-                        libc::setpgid(0, pid);
+                        let pid = nix::libc::getpid();
+                        nix::libc::setpgid(0, pid);
                     }
                 } else {
                     unsafe {
-                        libc::setpgid(0, *pgid);
+                        nix::libc::setpgid(0, *pgid);
                     }
                 }
 
                 // (in child) replace stdin/stdout with read/write ends of pipe
                 if idx_cmd > 0 {
                     let fds_prev = pipes[idx_cmd - 1];
-                    libs::dup2(fds_prev.0, 0);
-                    libs::close(fds_prev.0);
-                    libs::close(fds_prev.1);
+                    process::dup2(fds_prev.0, 0);
+                    process::close(fds_prev.0);
+                    process::close(fds_prev.1);
                 }
                 if idx_cmd < pipes_count {
                     let fds = pipes[idx_cmd];
-                    libs::dup2(fds.1, 1);
-                    libs::close(fds.1);
-                    libs::close(fds.0);
+                    process::dup2(fds.1, 1);
+                    process::close(fds.1);
+                    process::close(fds.0);
                 }
 
                 if cmd.has_redirect_from() {
                     if let Some(redirect_from) = &cmd.redirect_from {
-                        let fd = tools::get_fd_from_file(&redirect_from.clone().1);
+                        let fd = get::fd_from_file(&redirect_from.clone().1);
                         if fd == -1 {
                             process::exit(1);
                         }
 
-                        libs::dup2(fd, 0);
-                        libs::close(fd);
+                        process::dup2(fd, 0);
+                        process::close(fd);
                     }
                 }
 
                 if cmd.has_here_string() {
                     if let Some(fds) = fds_stdin {
-                        libs::close(fds.1);
-                        libs::dup2(fds.0, 0);
-                        libs::close(fds.0);
+                        process::close(fds.1);
+                        process::dup2(fds.0, 0);
+                        process::close(fds.0);
                     }
                 }
 
@@ -4119,33 +4681,38 @@ pub mod api
                     let to_ = &item.2;
                     if to_ == "&1" && from_ == "2" {
                         if idx_cmd < pipes_count {
-                            libs::dup2(1, 2);
+                            process::dup2(1, 2);
                         } else if !options.capture_output {
-                            let fd = libs::dup(1);
+                            let fd = process::dup(1);
                             if fd == -1 {
                                 println_stderr!("cicada: dup error");
                                 process::exit(1);
                             }
-                            libs::dup2(fd, 2);
-                        } else {
-                            // note: capture output with redirections does not
-                            // make much sense
+                            process::dup2(fd, 2);
                         }
-                    } else if to_ == "&2" && from_ == "1" {
-                        if idx_cmd < pipes_count || !options.capture_output {
-                            let fd = libs::dup(2);
+
+                        else {}
+                    }
+                    
+                    else if to_ == "&2" && from_ == "1"
+                    {
+                        if idx_cmd < pipes_count || !options.capture_output
+                        {
+                            let fd = process::dup(2);
                             if fd == -1 {
                                 println_stderr!("cicada: dup error");
                                 process::exit(1);
                             }
-                            libs::dup2(fd, 1);
-                        } else {
-                            // note: capture output with redirections does not
-                            // make much sense
+                            process::dup2(fd, 1);
                         }
-                    } else {
+                        else {}
+                    }
+                    
+                    else
+                    {
                         let append = op_ == ">>";
-                        match tools::create_raw_fd_from_file(to_, append) {
+                        match fs::create_raw_fd_from_file(to_, append)
+                        {
                             Ok(fd) => {
                                 if fd == -1 {
                                     println_stderr!("cicada: fork: fd error");
@@ -4153,10 +4720,10 @@ pub mod api
                                 }
 
                                 if from_ == "1" {
-                                    libs::dup2(fd, 1);
+                                    process::dup2(fd, 1);
                                     stdout_redirected = true;
                                 } else {
-                                    libs::dup2(fd, 2);
+                                    process::dup2(fd, 2);
                                     stderr_redirected = true;
                                 }
                             }
@@ -4167,33 +4734,31 @@ pub mod api
                         }
                     }
                 }
-
-                // capture output of last process if needed.
+                
                 if idx_cmd == pipes_count && options.capture_output {
                     if !stdout_redirected {
                         if let Some(fds) = fds_capture_stdout {
-                            libs::close(fds.0);
-                            libs::dup2(fds.1, 1);
-                            libs::close(fds.1);
+                            process::close(fds.0);
+                            process::dup2(fds.1, 1);
+                            process::close(fds.1);
                         }
                     }
                     if !stderr_redirected {
                         if let Some(fds) = fds_capture_stderr {
-                            libs::close(fds.0);
-                            libs::dup2(fds.1, 2);
-                            libs::close(fds.1);
+                            process::close(fds.0);
+                            process::dup2(fds.1, 2);
+                            process::close(fds.1);
                         }
                     }
                 }
 
-                if cmd.is_builtin() {
+                if cmd.is_builtin() 
+                {
                     if let Some(status) = try_run_builtin_in_subprocess(sh, cl, idx_cmd, capture) {
                         process::exit(status);
                     }
                 }
-
-                // our strings do not have '\x00' bytes in them,
-                // we can use CString::new().expect() safely.
+                
                 let mut c_envs: Vec<_> = env::vars()
                     .map(|(k, v)| {
                         CString::new(format!("{}={}", k, v).as_str()).expect("CString error")
@@ -4209,7 +4774,7 @@ pub mod api
                 let path = if program.contains('/') {
                     program.clone()
                 } else {
-                    libs::path::find_file_in_path(program, true)
+                    ::path::find_file_in_path(program, true)
                 };
                 if path.is_empty() {
                     println_stderr!("cicada: {}: command not found", program);
@@ -4218,28 +4783,22 @@ pub mod api
 
                 let c_program = CString::new(path.as_str()).expect("CString::new failed");
                 let c_args: Vec<_> = cmd
-                    .tokens
-                    .iter()
-                    .map(|x| CString::new(x.1.as_str()).expect("CString error"))
-                    .collect();
-
+                .tokens
+                .iter()
+                .map(|x| CString::new(x.1.as_str()).expect("CString error"))
+                .collect();
                 let c_args: Vec<&CStr> = c_args.iter().map(|x| x.as_c_str()).collect();
                 let c_envs: Vec<&CStr> = c_envs.iter().map(|x| x.as_c_str()).collect();
-                match execve(&c_program, &c_args, &c_envs) {
+
+                match execve( &c_program, &c_args, &c_envs )
+                {
                     Ok(_) => {}
-                    Err(e) => match e {
-                        nix::Error::ENOEXEC => {
-                            println_stderr!("cicada: {}: exec format error (ENOEXEC)", program);
-                        }
-                        nix::Error::ENOENT => {
-                            println_stderr!("cicada: {}: file does not exist", program);
-                        }
-                        nix::Error::EACCES => {
-                            println_stderr!("cicada: {}: Permission denied", program);
-                        }
-                        _ => {
-                            println_stderr!("cicada: {}: {:?}", program, e);
-                        }
+                    Err(e) => match e
+                    {                        
+                        nix::Error::ENOEXEC => { println_stderr!("cicada: {}: exec format error (ENOEXEC)", program); }                        
+                        nix::Error::ENOENT => { println_stderr!("cicada: {}: file does not exist", program); }                        
+                        nix::Error::EACCES => { println_stderr!("cicada: {}: Permission denied", program); }                        
+                        _ => { println_stderr!("cicada: {}: {:?}", program, e); }
                     },
                 }
 
@@ -4250,15 +4809,9 @@ pub mod api
                 if idx_cmd == 0 {
                     *pgid = pid;
                     unsafe {
-                        // we need to wait pgid of child set to itself,
-                        // before give terminal to it (for macos).
-                        // 1. this loop causes `bash`, `htop` etc to go `T` status
-                        //    immediate after start on linux (ubuntu).
-                        // 2. but on mac, we need this loop, otherwise commands
-                        //    like `vim` will go to `T` status after start.
                         if cfg!(target_os = "macos") {
                             loop {
-                                let _pgid = libc::getpgid(pid);
+                                let _pgid = nix::libc::getpgid(pid);
                                 if _pgid == pid {
                                     break;
                                 }
@@ -4272,17 +4825,21 @@ pub mod api
                 }
 
                 if options.isatty && !options.capture_output {
-                    let _cmd = parsers::parser_line::tokens_to_line(&cmd.tokens);
+                    let _cmd = parses::lines::tokens_to_line(&cmd.tokens);
                     sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background);
                 }
 
-                if let Some(redirect_from) = &cmd.redirect_from {
-                    if redirect_from.0 == "<<<" {
-                        if let Some(fds) = fds_stdin {
-                            unsafe {
-                                libs::close(fds.0);
+                if let Some(redirect_from) = &cmd.redirect_from
+                {
+                    if redirect_from.0 == "<<<"
+                    {
+                        if let Some(fds) = fds_stdin
+                        {
+                            unsafe
+                            {
+                                process::close(fds.0);
 
-                                let mut f = File::from_raw_fd(fds.1);
+                                let mut f = fs::File::from_raw_fd(fds.1);
                                 match f.write_all(redirect_from.1.clone().as_bytes()) {
                                     Ok(_) => {}
                                     Err(e) => println_stderr!("cicada: write_all: {}", e),
@@ -4299,12 +4856,12 @@ pub mod api
                 // (in parent) close unused pipe ends
                 if idx_cmd < pipes_count {
                     let fds = pipes[idx_cmd];
-                    libs::close(fds.1);
+                    process::close(fds.1);
                 }
                 if idx_cmd > 0 {
                     // close pipe end only after dupped in the child
                     let fds = pipes[idx_cmd - 1];
-                    libs::close(fds.0);
+                    process::close(fds.0);
                 }
 
                 if idx_cmd == pipes_count && options.capture_output {
@@ -4313,17 +4870,17 @@ pub mod api
 
                     unsafe {
                         if let Some(fds) = fds_capture_stdout {
-                            libs::close(fds.1);
+                            process::close(fds.1);
 
-                            let mut f = File::from_raw_fd(fds.0);
+                            let mut f = fs::File::from_raw_fd(fds.0);
                             match f.read_to_string(&mut s_out) {
                                 Ok(_) => {}
                                 Err(e) => println_stderr!("cicada: readstr: {}", e),
                             }
                         }
                         if let Some(fds) = fds_capture_stderr {
-                            libs::close(fds.1);
-                            let mut f_err = File::from_raw_fd(fds.0);
+                            process::close(fds.1);
+                            let mut f_err = fs::File::from_raw_fd(fds.0);
                             match f_err.read_to_string(&mut s_err) {
                                 Ok(_) => {}
                                 Err(e) => println_stderr!("cicada: readstr: {}", e),
@@ -4347,7 +4904,7 @@ pub mod api
                 *cmd_result = CommandResult::error();
                 0
             }
-        }
+        } */
     }
 
     fn add_history(sh: &Shell, ts: f64, input: &str) 
@@ -5684,9 +6241,8 @@ pub mod completions
             *,
         };
         /*
-        */
         // fn handle_lv1_hash(res: &mut Vec<Completion>, h: &Hash, word: &str)
-        fn handle_lv1_hash(res: &mut Vec<Completion>, h: &Hash, word: &str)
+        fn handle_lv1_hash(res: &mut Vec<Completion>, h: &dynHash, word: &str)
         {
             /*
             for v in h.values()
@@ -5703,11 +6259,13 @@ pub mod completions
                     }
                 }
             } */
-        }
+        } */
         //fn complete_dots(line: &str, word: &str) -> Vec<Completion>
         pub fn complete( line:&str, word:&str ) -> Vec<Completion>
         {
             let mut res = Vec::new();
+            /*
+            use std::io::Read;
             
             if line.trim().is_empty() { return res; }
                     
@@ -5736,9 +6294,7 @@ pub mod completions
                     return res;
                 }
             }
-
-            let document = ::parses::load_from_str( s )?;
-            /*
+            let document = ::parses::load_from_str( &s )?;
             for doc in docs.iter()
             {
                 match *doc {
@@ -5862,6 +6418,10 @@ pub mod database
     */
     pub struct Expansion<Type>( pub Option<Type> );
 
+    impl <T> Default for Expansion<T> {
+        fn default() -> Self { Expansion( None ) }
+    }
+
     impl <Type:Sized> Expansion<Type>
     {
         pub const fn new() -> Self
@@ -5872,6 +6432,11 @@ pub mod database
 
     pub struct Context( pub () );
 
+    impl Default for Context 
+    {
+        fn default() -> Self { Context( () ) }
+    }
+
     impl Context
     {
         pub const fn new() -> Self
@@ -5880,13 +6445,24 @@ pub mod database
         }
     }
     
-    pub struct Database( pub () );
+    pub struct Database
+    {
+        name:Option<String>,
+    }
 
     impl Database
     {
         pub const fn new() -> Self
         {
-            Database( () )
+            Database
+            {
+                name:None
+            }
+        }
+
+        pub fn name( &self ) -> String
+        {
+            self.name.clone().unwrap_or( String::new() )
         }
     }
 }
@@ -5911,10 +6487,14 @@ pub mod emit
     //pub fn ::emit::stdout(info: &str, cmd: &Command, cl: &CommandLine)
     pub fn stdout(info: &str, cmd: &Command, cl: &CommandLine)
     {
+        use std::os::fd::FromRawFd;
+        use std::io::Write;
+
         let fd = ::fs::_get_dupped_stdout_fd(cmd, cl);
         if fd == -1 { return; }
 
-        unsafe {
+        unsafe
+        {
             let mut f = File::from_raw_fd(fd);
             let info = info.trim_end_matches('\n');
             match f.write_all(info.as_bytes()) {
@@ -5936,10 +6516,14 @@ pub mod emit
     // pub fn print_stderr(info: &str, cmd: &Command, cl: &CommandLine)
     pub fn stderr(info: &str, cmd: &Command, cl: &CommandLine)
     {
+        use std::io::Write;
+        use std::os::fd::FromRawFd;        
+
         let fd = ::fs::_get_dupped_stderr_fd(cmd, cl);
         if fd == -1 { return; }
 
-        unsafe {
+        unsafe
+        {
             let mut f = File::from_raw_fd(fd);
             let info = info.trim_end_matches('\n');
             match f.write_all(info.as_bytes()) {
@@ -6216,6 +6800,7 @@ pub mod error
         use ::
         {
             error::{ Error },
+            system as _,
             *,
         };
         /*
@@ -6259,26 +6844,31 @@ pub mod error
                     }
                 }
 
-                pub fn with_description<F, T>(err: Errno, callback: F) -> T where
+                pub fn with_description<F, T>( err:Errno, callback:F ) -> T where
                 F: FnOnce(Result<&str, Errno>) -> T,
                 {
-                    let mut buf = [0u8; 1024];
-                    let c_str = unsafe {
-                        let rc = strerror_r(err.0, buf.as_mut_ptr() as *mut _, buf.len() as size_t);
-                        if rc != 0 {
-                            // Handle negative return codes for compatibility with glibc < 2.13
-                            let fm_err = match rc < 0 {
-                                true => errno(),
-                                false => Errno(rc),
-                            };
-                            if fm_err != Errno(nix::libc::ERANGE) {
-                                return callback(Err(fm_err));
+                    unsafe
+                    {
+                        let mut buf = [0u8; 1024];
+                        let c_str = 
+                        {
+                            let rc = strerror_r(err.0, buf.as_mut_ptr() as *mut _, buf.len() as size_t);
+                            if rc != 0
+                            {
+                                let fm_err = match rc < 0 {
+                                    true => errno(),
+                                    false => Errno(rc),
+                                };
+                                if fm_err != Errno(nix::libc::ERANGE) {
+                                    return callback(Err(fm_err));
+                                }
                             }
-                        }
-                        let c_str_len = strlen(buf.as_ptr() as *const _);
-                        &buf[..c_str_len]
-                    };
-                    callback(Ok(from_utf8_lossy(c_str)))
+                            let c_str_len = strlen(buf.as_ptr() as *const _);
+                            &buf[..c_str_len]
+                        };
+
+                        callback(Ok(from_utf8_lossy(c_str)))
+                    }
                 }
 
                 pub const STRERROR_NAME: &str = "strerror_r";
@@ -6370,11 +6960,14 @@ pub mod error
                 pub const FORMAT_MESSAGE_FROM_SYSTEM: FORMAT_MESSAGE_OPTIONS = FORMAT_MESSAGE_OPTIONS(4096u32);
                 pub const FORMAT_MESSAGE_IGNORE_INSERTS: FORMAT_MESSAGE_OPTIONS = FORMAT_MESSAGE_OPTIONS(512u32);
 
+                #[repr( transparent )]
+                pub struct PWSTR(pub *mut u16);
+
                 unsafe extern "system"
                 {
                     pub fn GetLastError() -> DWORD;
                     pub fn SetLastError( dwErrCode: DWORD );
-                    pub fn FormatMessageW(dwflags: FORMAT_MESSAGE_OPTIONS, lpsource: Option<*const core::ffi::c_void>, dwmessageid: u32, dwlanguageid: u32, lpbuffer: windows_core::PWSTR, nsize: u32, arguments: Option<*const *const i8>) -> u32;
+                    pub fn FormatMessageW(dwflags: FORMAT_MESSAGE_OPTIONS, lpsource: Option<*const core::ffi::c_void>, dwmessageid: u32, dwlanguageid: u32, lpbuffer: PWSTR, nsize: u32, arguments: Option<*const *const i8>) -> u32;
                 }
 
                 #[repr( transparent )] #[derive( Clone, Copy, Debug, Default, Eq, PartialEq )]
@@ -6396,16 +6989,17 @@ pub mod error
                     unsafe { str::from_utf8_unchecked(&output[..output_len]) }
                 }
 
-                pub fn with_description<F, T>(err: Errno, callback: F) -> T where
+                pub fn with_description<F, T>(err:Errno, callback: F) -> Option<T> where
                 F: FnOnce(Result<&str, Errno>) -> T,
                 {
-                   
-                    let lang_id = 0x0800_u32;
-
-                    let mut buf = [0u16; 2048];
-
-                    unsafe {
-                        let res = FormatMessageW(
+                    None
+                    /*
+                    unsafe
+                    {
+                        let lang_id = 0x0800_u32;
+                        let mut buf = [0u16; 2048];
+                        let res = FormatMessageW
+                        (
                             FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
                             ptr::null_mut(),
                             err.0 as u32,
@@ -6414,17 +7008,18 @@ pub mod error
                             buf.len() as u32,
                             ptr::null_mut(),
                         );
-                        if res == 0 {
-                            // Sometimes FormatMessageW can fail e.g. system doesn't like lang_id
+                            
+                        if res == 0
+                        {
                             let fm_err = errno();
                             return callback(Err(fm_err));
                         }
 
                         let mut msg = [0u8; 2048];
                         let msg = from_utf16_lossy(&buf[..res as usize], &mut msg[..]);
-                        // Trim trailing CRLF inserted by FormatMessageW
+
                         callback(Ok(msg.trim_end()))
-                    }
+                    } */
                 }
 
                 pub const STRERROR_NAME: &str = "FormatMessageW";
@@ -6448,9 +7043,9 @@ pub mod error
                 system::with_description(*self, |desc|
                 {
                     fmt.debug_struct("Errno")
-                        .field("code", &self.0)
-                        .field("description", &desc.ok())
-                        .finish()
+                    .field("code", &self.0)
+                    .field("description", &desc.ok())
+                    .finish()
                 })
             }
         }
@@ -6459,7 +7054,7 @@ pub mod error
         {
             fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result
             {
-                sys::with_description(*self, |desc| match desc
+                system::with_description(*self, |desc| match desc
                 {
                     Ok(desc) => fmt.write_str(desc),
                     Err(fm_err) => write!
@@ -6467,7 +7062,7 @@ pub mod error
                         fmt,
                         "OS error {} ({} returned error {})",
                         self.0,
-                        sys::STRERROR_NAME,
+                        system::STRERROR_NAME,
                         fm_err.0
                     ),
                 })
@@ -6476,8 +7071,7 @@ pub mod error
 
         impl From<Errno> for i32
         {
-            fn from(e: Errno ) -> Self
-            { e.0 }
+            fn from(e: Errno ) -> Self { e.0 }
         }
         
         impl Error for Errno
@@ -6488,13 +7082,12 @@ pub mod error
         
         impl From<Errno> for io::Error
         {
-            fn from(errno: Errno ) -> Self
-            { io::Error::from_raw_os_error(errno.0) }
+            fn from(errno: Errno ) -> Self { io::Error::from_raw_os_error(errno.0) }
         }
         /// Returns the platform-specific value of `errno`.
-        pub fn errno() -> Errno { sys::errno() }
+        pub fn errno() -> Errno { system::errno() }
         /// Sets the platform-specific value of `errno`.
-        pub fn set_errno(err: Errno) { sys::set_errno(err) }
+        pub fn set_errno( err:Errno ) { system::set_errno( err ) }
     }
 
     pub mod parse
@@ -7330,6 +7923,8 @@ pub mod fs
     */
     pub fn create_raw_fd_from_file(file_name: &str, append: bool) -> Result<i32, String> 
     {
+        use std::os::fd::IntoRawFd;
+
         let mut oos = OpenOptions::new();
         if append {
             oos.append(true);
@@ -7541,6 +8136,7 @@ pub mod get
     // pub fn get_fd_from_file(file_name: &str) -> i32
     pub fn fd_from_file(file_name: &str) -> i32
     {
+        use std::os::fd::IntoRawFd;
         let path = Path::new(file_name);
         let display = path.display();
         let file = match File::open(path) {
@@ -7593,7 +8189,7 @@ pub mod get
                 log!(":: env USER error: {}", e);
             }
         }
-        let cmd_result = execute::run("whoami");
+        let cmd_result = now::run("whoami");
         cmd_result.stdout.trim().to_string()
     }
     // pub fn get::user_home() -> String 
@@ -7608,7 +8204,7 @@ pub mod get
         }
     }
     // pub fn get::config_dir() -> String
-    pub fn config_dir() -> String
+    pub fn config_directory() -> String
     {
         if let Ok(x) = env::var("XDG_CONFIG_HOME") {
             format!("{}/cicada", x)
@@ -7620,7 +8216,7 @@ pub mod get
     // pub fn get_user_completer_dir() -> String
     pub fn user_completer_dir() -> String
     {
-        let dir_config = get::config_dir();
+        let dir_config = get::config_directory();
         format!("{}/completers", dir_config)
     }
     // pub fn get_os_name() -> String
@@ -7697,19 +8293,19 @@ pub mod get
             "grep -i '{}' /etc/*release* 2>&1 | grep -o '=.*' | tr '\"=' ' '",
             ptn
         );
-        let cr = execute::run(&line);
+        let cr = now::run(&line);
         cr.stdout.trim().to_string()
     }
     // fn get::uname() -> String
     fn uname() -> String
     {
-        let cr = execute::run("uname");
+        let cr = now::run("uname");
         cr.stdout.trim().to_string()
     }
     // fn get::uname_mo() -> String
     fn uname_mo() -> String
     {
-        let cr = execute::run("uname -m -o");
+        let cr = now::run("uname -m -o");
         cr.stdout.trim().to_string()
     }
     // fn get::macos_name() -> String
@@ -7726,13 +8322,13 @@ pub mod get
     // fn get::osx_codename() -> String
     fn osx_codename() -> String
     {
-        let cr = execute::run("grep -o 'SOFTWARE LICENSE AGREEMENT FOR .*[a-zA-Z]' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | sed 's/SOFTWARE LICENSE AGREEMENT FOR *//'");
+        let cr = now::run("grep -o 'SOFTWARE LICENSE AGREEMENT FOR .*[a-zA-Z]' '/System/Library/CoreServices/Setup Assistant.app/Contents/Resources/en.lproj/OSXSoftwareLicense.rtf' | sed 's/SOFTWARE LICENSE AGREEMENT FOR *//'");
         cr.stdout.trim().to_string()
     }
     // fn get::osx_version() -> String
     fn osx_version() -> String
     {
-        let cr = execute::run("sw_vers -productVersion");
+        let cr = now::run("sw_vers -productVersion");
         cr.stdout.trim().to_string()
     }
 }
@@ -8545,10 +9141,143 @@ pub mod now
     */
     use ::
     {
+        collections::{ HashMap },
+        io::{ self, Read, Write },
+        shell::{self, Shell},
+        types::{ * },
         *,
     };
     /*
+    use std::collections::HashMap;
+    use std::io::{self, Read, Write};
+
+    use crate::core;
+    use crate::parsers;
+    use crate::shell::{self, Shell};
+    use crate::types::{drain_env_tokens, CommandLine, CommandResult, Tokens};
     */
+    /// Entry point for non-ttys (e.g. Cmd-N on MacVim)
+    pub fn run_procs_for_non_tty(sh: &mut Shell) {
+        let mut buffer = String::new();
+        let stdin = io::stdin();
+        let mut handle = stdin.lock();
+        match handle.read_to_string(&mut buffer) {
+            Ok(_) => {
+                log!("run non tty command: {}", &buffer);
+                run_command_line(sh, &buffer, false, false);
+            }
+            Err(e) => {
+                println!("cicada: stdin.read_to_string() failed: {:?}", e);
+            }
+        }
+    }
+
+    pub fn run_command_line(
+        sh: &mut Shell,
+        line: &str,
+        tty: bool,
+        capture: bool,
+    ) -> Vec<CommandResult> {
+        let mut cr_list = Vec::new();
+        let mut status = 0;
+        let mut sep = String::new();
+        for token in parses::lines::line_to_cmds(line) {
+            if token == ";" || token == "&&" || token == "||" {
+                sep = token.clone();
+                continue;
+            }
+            if sep == "&&" && status != 0 {
+                break;
+            }
+            if sep == "||" && status == 0 {
+                break;
+            }
+            let cmd = token.clone();
+            let cr = run_proc(sh, &cmd, tty, capture);
+            status = cr.status;
+            sh.previous_status = status;
+            cr_list.push(cr);
+        }
+        cr_list
+    }
+
+    fn line_to_tokens(sh: &mut Shell, line: &str) -> (Tokens, HashMap<String, String>) {
+        let linfo = parses::lines::parse_line(line);
+        let mut tokens = linfo.tokens;
+        shell::do_expansion(sh, &mut tokens);
+        let envs = drain_env_tokens(&mut tokens);
+        (tokens, envs)
+    }
+
+    fn set_shell_vars(sh: &mut Shell, envs: &HashMap<String, String>) {
+        for (name, value) in envs.iter() {
+            sh.set_env(name, value);
+        }
+    }
+    /// Run simple command or pipeline without using `&&`, `||`, `;`.
+    /// example 1: `ls`
+    /// example 2: `ls | wc`
+    fn run_proc(sh: &mut Shell, line: &str, tty: bool, capture: bool) -> CommandResult {
+        let log_cmd = !sh.cmd.starts_with(' ');
+        match CommandLine::from_line(line, sh) {
+            Ok(cl) => {
+                if cl.is_empty() {
+                    // for commands with only envs, e.g.
+                    // $ FOO=1 BAR=2
+                    // we need to define these **Shell Variables**.
+                    if !cl.envs.is_empty() {
+                        set_shell_vars(sh, &cl.envs);
+                    }
+                    return CommandResult::new();
+                }
+
+                let (term_given, cr) = api::run_pipeline(sh, &cl, tty, capture, log_cmd);
+                if term_given {
+                    unsafe {
+                        let gid = nix::libc::getpgid(0);
+                        shell::give_terminal_to(gid);
+                    }
+                }
+
+                cr
+            }
+            Err(e) => {
+                println_stderr!("cicada: {}", e);
+                CommandResult::from_status(0, 1)
+            }
+        }
+    }
+
+    fn run_with_shell(sh: &mut Shell, line: &str) -> CommandResult {
+        let (tokens, envs) = line_to_tokens(sh, line);
+        if tokens.is_empty() {
+            set_shell_vars(sh, &envs);
+            return CommandResult::new();
+        }
+
+        match CommandLine::from_line(line, sh) {
+            Ok(c) => {
+                let (term_given, cr) = api::run_pipeline(sh, &c, false, true, false);
+                if term_given {
+                    unsafe {
+                        let gid = nix::libc::getpgid(0);
+                        shell::give_terminal_to(gid);
+                    }
+                }
+
+                cr
+            }
+            Err(e) => {
+                println_stderr!("cicada: {}", e);
+                CommandResult::from_status(0, 1)
+            }
+        }
+    }
+
+    pub fn run(line: &str) -> CommandResult {
+        let mut sh = Shell::new();
+        run_with_shell(&mut sh, line)
+    }
 }
 
 pub mod num
@@ -16459,7 +17188,7 @@ pub mod num
             {
                 type X = BigUint;
 
-                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<UniformBigUint, rand::distr::uniform::Error>
                 where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
@@ -16467,12 +17196,14 @@ pub mod num
                     let low = low_b.borrow();
                     let high = high_b.borrow();
                     assert!(low < high);
-                    UniformBigUint {
-                        len: high - low,
+                    
+                    Ok( UniformBigUint
+                    {
+                        len: high - low, 
                         base: low.clone(),
-                    }
+                    } )
                 }
-                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<UniformBigUint, rand::distr::uniform::Error>
                 where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
@@ -16482,15 +17213,16 @@ pub mod num
                     assert!(low <= high);
                     Self::new(low, high + 1u32)
                 }
-                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
-                    &self.base + rng.gen_biguint_below(&self.len)
-                }
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
+                
+                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X
+                { &self.base + rng.gen_biguint_below(&self.len) }
+
+                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> std::result::Result<BigUint, rand::distr::uniform::Error>
                 where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
-                    rng.gen_biguint_range(low.borrow(), high.borrow())
+                    Ok( rng.gen_biguint_range(low.borrow(), high.borrow()) )
                 }
             }
             
@@ -16510,20 +17242,21 @@ pub mod num
             {
                 type X = BigInt;
 
-                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self
-                where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> std::result::Result<UniformBigInt, rand::distr::uniform::Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
                 {
                     let low = low_b.borrow();
                     let high = high_b.borrow();
                     assert!(low < high);
-                    UniformBigInt {
+                    
+                    Ok( UniformBigInt
+                    {
                         len: (high - low).into_parts().1,
                         base: low.clone(),
-                    }
+                    })
                 }
-                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> std::result::Result<UniformBigInt, rand::distr::uniform::Error>
                 where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
@@ -16536,12 +17269,12 @@ pub mod num
                 #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
                     &self.base + BigInt::from(rng.gen_biguint_below(&self.len))
                 }
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
+                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> std::result::Result<BigInt, rand::distr::uniform::Error>
                 where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
-                    rng.gen_bigint_range(low.borrow(), high.borrow())
+                    Ok( rng.gen_bigint_range(low.borrow(), high.borrow()) )
                 }
             }
             
@@ -25074,8 +25807,10 @@ pub mod parses
                     Ok(!self.0.input.is_empty())
                 }
 
-                fn prepare(&mut self, _block_signals: bool, _report_signals: ::system::signal::SignalSet)
-                        -> io::Result<()> { Ok(()) }
+                fn prepare(&mut self, _block_signals: bool, _report_signals: ::system::signal::SignalSet) -> Result<std::option::Option<()>, std::io::Error>
+                {
+                    Ok(None) 
+                }
 
                 unsafe fn prepare_with_lock(&mut self,
                         _lock: &mut dyn TerminalWriter<MemoryTerminal>,
@@ -25192,10 +25927,7 @@ pub mod parses
                 word_start, word_end, RangeArgument,
             };
             use super::variables::VariableIter;
-            use super::writer::{
-                BLINK_DURATION, display_str,
-                Digit, Display, HistoryIter, PromptType, Writer, WriteLock,
-            };
+            use super::writer::{ display_str, Digit, Display, HistoryIter, PromptType, Writer, WriteLock };
             /*
             */
             /// Provides access to the current state of input while a `read_line` call is in progress.
@@ -25464,7 +26196,9 @@ pub mod parses
                     self.read.completions = completions;
                 }
                 /// Attempts to execute the current sequence.
-                fn execute_sequence(&mut self) -> io::Result<()> {
+                fn execute_sequence(&mut self) -> io::Result<()>
+                {
+                    /*
                     match self.find_binding(&self.read.sequence) {
                         FindResult::Found(cmd) => {
                             let ch = self.read.sequence.chars().last().unwrap();
@@ -25486,7 +26220,7 @@ pub mod parses
                             let expiry = self.keyseq_expiry();
                             self.read.state = InputState::ContinueSequence{expiry};
                         }
-                    }
+                    } */
 
                     Ok(())
                 }
@@ -25983,18 +26717,15 @@ pub mod parses
                 /// Moves the cursor to the given position, waits for 500 milliseconds
                 /// (or until next user input), then restores the original cursor position.
                 pub fn blink(&mut self, pos: usize) -> io::Result<()> {
+                    /*
                     self.write.blink(pos)?;
-
-                    self.read.max_wait_duration = Some(BLINK_DURATION);
-
+                    self.read.max_wait_duration = Some(BLINK_DURATION);*/
                     Ok(())
                 }
 
-                fn check_expire_blink(&mut self, now: Instant) -> io::Result<()> {
-                    if self.write.check_expire_blink(now)? {
-                        self.read.max_wait_duration = None;
-                    }
-
+                fn check_expire_blink(&mut self, now: Instant) -> io::Result<()>
+                {
+                    /*if self.write.check_expire_blink(now)? { self.read.max_wait_duration = None; }*/
                     Ok(())
                 }
 
@@ -26009,13 +26740,16 @@ pub mod parses
                     Ok(())
                 }
 
-                fn keyseq_expiry(&mut self) -> Option<Instant> {
+                fn keyseq_expiry(&mut self) -> Option<Instant>
+                {
+                    None
+                    /*
                     if let Some(t) = self.read.keyseq_timeout {
                         self.read.max_wait_duration = Some(t);
                         Some(Instant::now() + t)
                     } else {
                         None
-                    }
+                    } */
                 }
 
                 pub fn check_expire_timeout(&mut self) -> io::Result<()> {
@@ -26702,15 +27436,16 @@ pub mod parses
                     }
                 }
                 /// Performs one step of the interactive `read_line` loop.
-                pub fn read_line_step(&mut self, timeout: Option<Duration>)
-                        -> io::Result<Option<ReadResult>> {
+                pub fn read_line_step(&mut self, timeout: Option<Duration>) -> io::Result<Option<ReadResult>>
+                {
+                    Ok( None )
+                    /*
                     self.initialize_read_line()?;
-
                     let state = self.prepare_term()?;
                     let res = self.read_line_step_impl (timeout);
                     self.lock.term.restore(state)?;
 
-                    res
+                    res */
                 }
                 /// Cancels an in-progress `read_line` operation.
                 pub fn cancel_read_line(&mut self) -> io::Result<()> {
@@ -26724,8 +27459,9 @@ pub mod parses
                     Ok(())
                 }
 
-                fn read_line_step_impl (&mut self, timeout: Option<Duration>)
-                        -> io::Result<Option<ReadResult>> {
+                fn read_line_step_impl (&mut self, timeout: Option<Duration>) -> io::Result<Option<ReadResult>>
+                {
+                    /*
                     let do_read = if self.lock.is_input_available() {
                         self.lock.term.wait_for_input(Some(Duration::from_secs(0)))?
                     } else {
@@ -26774,7 +27510,7 @@ pub mod parses
 
                             macro_len = new_macro_len;
                         }
-                    }
+                    } */
 
                     Ok(None)
                 }
@@ -26785,7 +27521,7 @@ pub mod parses
                     }
                     Ok(())
                 }
-
+                /*
                 fn prepare_term(&mut self) -> io::Result<Term::PrepareState> {
                     if self.read_next_raw() {
                         self.lock.term.prepare(true, ::system::signal::SignalSet::new())
@@ -26800,7 +27536,7 @@ pub mod parses
 
                         self.lock.term.prepare(block_signals, signals)
                     }
-                }
+                } */
 
                 fn read_next_raw(&self) -> bool {
                     match self.lock.state {
@@ -26809,7 +27545,6 @@ pub mod parses
                     }
                 }
                 /// Sets the input buffer to the given string.
-                /// position to the end of the new buffer.
                 pub fn set_buffer(&mut self, buf: &str) -> io::Result<()> {
                     if self.lock.is_active() {
                         self.prompter().set_buffer(buf)
@@ -26987,7 +27722,7 @@ pub mod parses
                 /// Sets the `completion-query-items` variable.
                 pub fn set_completion_query_items(&mut self, n: usize) {
                     self.lock.completion_query_items = n;
-                }
+                }/*
                 /// Returns the timeout to wait for further user input when an ambiguous
                 /// sequence has been entered.
                 pub fn keyseq_timeout(&self) -> Option<Duration> {
@@ -26996,7 +27731,7 @@ pub mod parses
                 /// Sets the `keyseq-timeout` variable.
                 pub fn set_keyseq_timeout(&mut self, timeout: Option<Duration>) {
                     self.lock.keyseq_timeout = timeout;
-                }
+                }*/
                 /// Returns whether to list possible completions one page at a time.
                 pub fn page_completions(&self) -> bool {
                     self.lock.page_completions
@@ -27773,8 +28508,7 @@ pub mod parses
             pub trait TerminalReader<Term: Terminal> 
             {
                 /// Prepares the terminal for line reading and editing operations.
-                fn prepare(&mut self, block_signals: bool, report_signals: ::system::signal::SignalSet)
-                    -> io::Result<Term::PrepareState>;
+                fn prepare(&mut self, block_signals: bool, report_signals: ::system::signal::SignalSet) -> io::Result<Option<Term::PrepareState>>;
                 /// Like `prepare`, but called when the write lock is already held.
                 unsafe fn prepare_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>,
                         block_signals: bool, report_signals: ::system::signal::SignalSet)
@@ -27853,15 +28587,18 @@ pub mod parses
 
             impl <'a> TerminalReader<DefaultTerminal> for TerminalReadGuard<'a> 
             {
-                fn prepare(&mut self, block_signals: bool, report_signals: ::system::signal::SignalSet)
-                        -> io::Result<::system::PrepareState> {
-                    self.prepare(::system::PrepareConfig{
+                fn prepare(&mut self, block_signals: bool, report_signals: ::system::signal::SignalSet) -> io::Result<Option<::system::PrepareState>>
+                {
+                    Ok( None )
+                    /*
+                    self.prepare(::system::PrepareConfig
+                    {
                         block_signals,
                         enable_control_flow: !block_signals,
                         enable_keypad: false,
                         report_signals,
                         .. ::system::PrepareConfig::default()
-                    })
+                    }) */
                 }
 
                 unsafe fn prepare_with_lock(&mut self,
@@ -27880,7 +28617,8 @@ pub mod parses
                 }
 
                 fn restore(&mut self, state: ::system::PrepareState) -> io::Result<()> {
-                    self.restore(state)
+                    /*self.restore(state) */
+                    Ok( () )
                 }
 
                 unsafe fn restore_with_lock(&mut self,
@@ -28582,7 +29320,8 @@ pub mod parses
             /*
             */
             /// Duration to wait for input when "blinking"
-            pub const BLINK_DURATION: Duration = Duration::from_millis(500);
+            //pub const BLINK_DURATION: Duration = Duration::from_millis(500);
+
             const COMPLETE_MORE: &'static str = "--More--";
             /// Default maximum history size
             const MAX_HISTORY: usize = !0;
@@ -28705,6 +29444,7 @@ pub mod parses
 
                 pub fn blink(&mut self, pos: usize) -> io::Result<()>
                 {
+                    /*
                     self.expire_blink()?;
                     let orig = self.cursor;
                     self.move_to(pos)?;
@@ -28715,7 +29455,7 @@ pub mod parses
                     {
                         pos,
                         expiry,
-                    });
+                    }); */
 
                     Ok(())
                 }
@@ -32193,6 +32933,7 @@ pub mod path
         cmp::{ self, Ordering },
         error::{ Error },
         fs::{ self, read_dir, DirEntry },
+        io::{ Write },
         ops::{ Deref },
         os::unix::fs::PermissionsExt,
         regex::{ Regex },
@@ -33826,10 +34567,35 @@ pub mod rc
         */
         use ::
         {
+            path::{ Path },
             *,
         };
         /*
         */
+        pub fn get_rc_file() -> String
+        {
+            let dir_config = get::config_directory();
+            let rc_file = format!("{}/cicadarc", dir_config);
+            
+            if Path::new(&rc_file).exists() { return rc_file; }
+            
+            let home = get::user_home();
+            let rc_file_home = format!("{}/{}", home, ".cicadarc");
+
+            if Path::new(&rc_file_home).exists() { return rc_file_home; }
+            
+            rc_file
+        }
+
+        pub fn load_rc_files(sh: &mut shell::Shell)
+        {
+            let rc_file = get_rc_file();
+
+            if !Path::new( &rc_file ).exists() { return; }
+
+            let args = vec!["source".to_string(), rc_file];
+            scripts::run_script(sh, &args);
+        }
     }
 }
 
@@ -33901,10 +34667,502 @@ pub mod scripts
     */
     use ::
     {
+        fs::{ File },
+        io::{ ErrorKind, Read, Write },
+        path::{ Path },
+        regex::{ Regex, RegexBuilder },
+        types::{ self, * },
         *,
     };
     /*
+    use pest::iterators::Pair;
+    use regex::{Regex, RegexBuilder};
     */
+
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    pub struct Rule<Type>( pub Option<Type> );
+
+    #[derive(Debug, Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Default)]
+    pub struct Pair<Type,Kind>( pub Type, pub Kind );
+
+    pub fn run_script(sh: &mut shell::Shell, args: &Vec<String>) -> i32
+    {
+        let src_file = &args[1];
+        let full_src_file: String;
+        if src_file.contains('/') {
+            full_src_file = src_file.clone();
+        } else {
+            let full_path = ::path::find_file_in_path(src_file, false);
+            if full_path.is_empty() {
+                // not in PATH and not in current work directory
+                if !Path::new(src_file).exists() {
+                    println_stderr!("cicada: {}: no such file", src_file);
+                    return 1;
+                }
+                full_src_file = format!("./{}", src_file);
+            } else {
+                full_src_file = full_path.clone();
+            }
+        }
+
+        if !Path::new(&full_src_file).exists() {
+            println_stderr!("cicada: {}: no such file", src_file);
+            return 1;
+        }
+        if Path::new(&full_src_file).is_dir() {
+            println_stderr!("cicada: {}: is a directory", src_file);
+            return 1;
+        }
+
+        let mut file;
+        match File::open(&full_src_file) {
+            Ok(x) => file = x,
+            Err(e) => {
+                println_stderr!(
+                    "cicada: {}: failed to open file - {:?}",
+                    &full_src_file,
+                    e.kind()
+                );
+                return 1;
+            }
+        }
+        let mut text = String::new();
+        match file.read_to_string(&mut text) {
+            Ok(_) => {}
+            Err(e) => {
+                match e.kind() {
+                    ErrorKind::InvalidData => {
+                        println_stderr!("cicada: {}: not a valid script file", &full_src_file);
+                    }
+                    _ => {
+                        println_stderr!("cicada: {}: error: {:?}", &full_src_file, e);
+                    }
+                }
+                return 1;
+            }
+        }
+
+        if text.contains("\\\n") {
+            let re = RegexBuilder::new(r#"([ \t]*\\\n[ \t]+)|([ \t]+\\\n[ \t]*)"#)
+                .multi_line(true)
+                .build()
+                .unwrap();
+            text = re.replace_all(&text, " ").to_string();
+
+            let re = RegexBuilder::new(r#"\\\n"#)
+                .multi_line(true)
+                .build()
+                .unwrap();
+            text = re.replace_all(&text, "").to_string();
+        }
+
+        let re_func_head =
+            Regex::new(r"^function ([a-zA-Z_-][a-zA-Z0-9_-]*) *(?:\(\))? *\{$").unwrap();
+        let re_func_tail = Regex::new(r"^\}$").unwrap();
+        let mut text_new = String::new();
+        let mut enter_func = false;
+        let mut func_name = String::new();
+        let mut func_body = String::new();
+        for line in text.clone().lines() {
+            if re_func_head.is_match(line.trim()) {
+                enter_func = true;
+                let cap = re_func_head.captures(line.trim()).unwrap();
+                func_name = cap[1].to_string();
+                func_body = String::new();
+                continue;
+            }
+            if re_func_tail.is_match(line.trim()) {
+                sh.set_func(&func_name, &func_body);
+                enter_func = false;
+                continue;
+            }
+            if enter_func {
+                func_body.push_str(line);
+                func_body.push('\n');
+            } else {
+                text_new.push_str(line);
+                text_new.push('\n');
+            }
+        }
+
+        let mut status = 0;
+        let cr_list = run_lines(sh, &text_new, args, false);
+        if let Some(last) = cr_list.last() {
+            status = last.status;
+        }
+
+        // FIXME: We probably need to fix the issue in the `set` builtin,
+        // which currently set `exit_on_error` at the shell session level,
+        // we should instead set in a script-level.
+        // Here is a work-around ugly fix.
+        sh.exit_on_error = false;
+
+        status
+    }
+
+    pub fn run_lines(
+        sh: &mut shell::Shell,
+        lines: &str,
+        args: &Vec<String>,
+        capture: bool,
+    ) -> Vec<CommandResult> {
+        let mut cr_list = Vec::new(); /*
+        match parsers::locust::parse_lines(lines) {
+            Ok(pairs_exp) => {
+                for pair in pairs_exp {
+                    let (mut _cr_list, _cont, _brk) = run_exp(sh, pair, args, false, capture);
+                    cr_list.append(&mut _cr_list);
+                }
+            }
+            Err(e) => {
+                println_stderr!("syntax error: {:?}", e);
+                return cr_list;
+            }
+        } */
+        cr_list
+    }
+
+    fn expand_args(line: &str, args: &[String]) -> String {
+        let linfo = parses::lines::parse_line(line);
+        let mut tokens = linfo.tokens;
+        expand_args_in_tokens(&mut tokens, args);
+        parses::lines::tokens_to_line(&tokens)
+    }
+
+    fn expand_line_to_toknes(line: &str, args: &[String], sh: &mut shell::Shell) -> types::Tokens {
+        let linfo = parses::lines::parse_line(line);
+        let mut tokens = linfo.tokens;
+        expand_args_in_tokens(&mut tokens, args);
+        shell::do_expansion(sh, &mut tokens);
+        tokens
+    }
+
+    fn is_args_in_token(token: &str) -> bool {
+        regex::contains(token, r"\$\{?[0-9@]+\}?")
+    }
+
+    fn expand_args_for_single_token(token: &str, args: &[String]) -> String {
+        let re = Regex::new(r"^(.*?)\$\{?([0-9]+|@)\}?(.*)$").unwrap();
+        if !re.is_match(token) {
+            return token.to_string();
+        }
+
+        let mut result = String::new();
+        let mut _token = token.to_string();
+        let mut _head = String::new();
+        let mut _output = String::new();
+        let mut _tail = String::new();
+        loop {
+            if !re.is_match(&_token) {
+                if !_token.is_empty() {
+                    result.push_str(&_token);
+                }
+                break;
+            }
+            for cap in re.captures_iter(&_token) {
+                _head = cap[1].to_string();
+                _tail = cap[3].to_string();
+                let _key = cap[2].to_string();
+                if _key == "@" {
+                    result.push_str(format!("{}{}", _head, args[1..].join(" ")).as_str());
+                } else if let Ok(arg_idx) = _key.parse::<usize>() {
+                    if arg_idx < args.len() {
+                        result.push_str(format!("{}{}", _head, args[arg_idx]).as_str());
+                    } else {
+                        result.push_str(&_head);
+                    }
+                } else {
+                    result.push_str(&_head);
+                }
+            }
+
+            if _tail.is_empty() {
+                break;
+            }
+            _token = _tail.clone();
+        }
+        result
+    }
+
+    fn expand_args_in_tokens(tokens: &mut types::Tokens, args: &[String]) {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for (sep, token) in tokens.iter() {
+            if sep == "`" || sep == "'" || !is_args_in_token(token) {
+                idx += 1;
+                continue;
+            }
+
+            let _token = expand_args_for_single_token(token, args);
+            buff.push((idx, _token));
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter().rev() {
+            tokens[*i].1 = text.to_string();
+        }
+    }
+
+    fn run_exp_test_br(
+        sh: &mut shell::Shell,
+        //pair_br: Pair<parsers::locust::Rule>,
+        //pair_br: Pair<Rule<()>, Option<Rule<()>>,
+        args: &Vec<String>,
+        in_loop: bool,
+        capture: bool,
+    ) -> (Vec<CommandResult>, bool, bool, bool)
+    {
+        let mut test_pass = true;
+        let mut cr_list = Vec::new();
+        /*
+        //let pairs = pair_br.into_inner();
+        //let mut test_pass = false;
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::IF_HEAD
+                || rule == parsers::locust::Rule::IF_ELSEIF_HEAD
+                || rule == parsers::locust::Rule::WHILE_HEAD
+            {
+                let pairs_test: Vec<Pair<parsers::locust::Rule>> = pair.into_inner().collect();
+                let pair_test = &pairs_test[0];
+                let line = pair_test.as_str().trim();
+                let line_new = expand_args(line, &args[1..]);
+                let mut _cr_list = execute::run_command_line(sh, &line_new, true, capture);
+                if let Some(last) = _cr_list.last() {
+                    if last.status == 0 {
+                        test_pass = true;
+                    }
+                }
+                continue;
+            }
+
+            if rule == parsers::locust::Rule::KW_ELSE {
+                test_pass = true;
+                continue;
+            }
+
+            if rule == parsers::locust::Rule::EXP_BODY {
+                if !test_pass {
+                    return (cr_list, false, false, false);
+                }
+                let (mut _cr_list, _cont, _brk) = run_exp(sh, pair, args, in_loop, capture);
+                cr_list.append(&mut _cr_list);
+                // branch executed successfully
+                return (cr_list, true, _cont, _brk);
+            }
+
+            unreachable!();
+        } */
+        (cr_list, test_pass, false, false)
+    }
+
+    fn run_exp_if
+    (
+        sh: &mut shell::Shell,
+        //pair_if: Pair<parsers::locust::Rule>,
+        //pair_if: Pair<Rule<()>, Option<Rule<()>>,
+        args: &Vec<String>,
+        in_loop: bool,
+        capture: bool,
+    ) -> (Vec<CommandResult>, bool, bool)
+    {
+        let mut cr_list = Vec::new();
+        let mut met_continue = false;
+        let mut met_break = false;
+        /*
+        let pairs = pair_if.into_inner();
+        for pair in pairs {
+            let (mut _cr_list, passed, _cont, _brk) =
+                run_exp_test_br(sh, pair, args, in_loop, capture);
+            met_continue = _cont;
+            met_break = _brk;
+            cr_list.append(&mut _cr_list);
+            // break at first successful branch
+            if passed {
+                break;
+            }
+        }*/
+        (cr_list, met_continue, met_break)
+    }
+
+    fn get_for_result_from_init(
+        sh: &mut shell::Shell,
+        //pair_init: Pair<Rule<()>, Option<Rule<()>>,
+        //pair_init: Pair<parsers::locust::Rule>,
+        args: &[String],
+    ) -> Vec<String> {
+        let mut result: Vec<String> = Vec::new();
+        /*
+        let pairs = pair_init.into_inner();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::TEST {
+                let line = pair.as_str().trim();
+                let tokens = expand_line_to_toknes(line, &args[1..], sh);
+                for (sep, token) in tokens {
+                    if sep.is_empty() {
+                        for x in token.split_whitespace() {
+                            result.push(x.to_string());
+                        }
+                    } else {
+                        result.push(token.clone());
+                    }
+                }
+            }
+        } */
+        result
+    }
+
+    fn get_for_result_list(
+        sh: &mut shell::Shell,
+        //pair_head: Pair<Rule<()>, Option<Rule<()>>,
+        //pair_head: Pair<parsers::locust::Rule>,
+        args: &[String],
+    ) -> Vec<String> {/*
+        let pairs = pair_head.into_inner();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::FOR_INIT {
+                return get_for_result_from_init(sh, pair, args);
+            }
+        }*/
+        Vec::new()
+    }
+    /*
+    fn get_for_var_name(pair_head: Pair<Rule<()>, Option<Rule<()>>) -> String {/*
+        let pairs = pair_head.into_inner();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::FOR_INIT {
+                let pairs_init = pair.into_inner();
+                for pair_init in pairs_init {
+                    let rule_init = pair_init.as_rule();
+                    if rule_init == parsers::locust::Rule::FOR_VAR {
+                        let line = pair_init.as_str().trim();
+                        return line.to_string();
+                    }
+                }
+            }
+        } */
+        String::new()
+    } */
+    fn run_exp_for(
+        sh: &mut shell::Shell,
+        //pair_for: Pair<Rule<()>, Option<Rule<()>>,
+        args: &Vec<String>,
+        capture: bool,
+    ) -> Vec<CommandResult> {
+        let mut cr_list = Vec::new();
+        /*
+        let pairs = pair_for.into_inner();
+        let mut result_list: Vec<String> = Vec::new();
+        let mut var_name: String = String::new();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::FOR_HEAD {
+                var_name = get_for_var_name(pair.clone());
+                result_list = get_for_result_list(sh, pair.clone(), args);
+                continue;
+            }
+            if rule == parsers::locust::Rule::EXP_BODY {
+                for value in &result_list {
+                    sh.set_env(&var_name, value);
+                    let (mut _cr_list, _cont, _brk) = run_exp(sh, pair.clone(), args, true, capture);
+                    cr_list.append(&mut _cr_list);
+                    if _brk {
+                        break;
+                    }
+                }
+            }
+        }*/
+        cr_list
+    }
+
+    fn run_exp_while(
+        sh: &mut shell::Shell,
+        //pair_while: Pair<Rule<()>, Option<Rule<()>>,
+        args: &Vec<String>,
+        capture: bool,
+    ) -> Vec<CommandResult> {
+        let mut cr_list = Vec::new();
+        /*
+        loop {
+            let (mut _cr_list, passed, _cont, _brk) =
+                run_exp_test_br(sh, pair_while.clone(), args, true, capture);
+            cr_list.append(&mut _cr_list);
+            if !passed || _brk {
+                break;
+            }
+        }
+        */
+        cr_list
+    }
+
+    fn run_exp
+    (
+        sh: &mut shell::Shell,
+        //pair_in: Pair<Rule<()>, Option<Rule<()>>,
+        args: &Vec<String>,
+        in_loop: bool,
+        capture: bool,
+    ) -> (Vec<CommandResult>, bool, bool)
+    {
+        let mut cr_list = Vec::new(); /*
+        let pairs = pair_in.into_inner();
+        for pair in pairs {
+            let line = pair.as_str().trim();
+            if line.is_empty() {
+                continue;
+            }
+
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::CMD {
+                if line == "continue" {
+                    if in_loop {
+                        return (cr_list, true, false);
+                    } else {
+                        println_stderr!("cicada: continue: only meaningful in loops");
+                        continue;
+                    }
+                }
+                if line == "break" {
+                    if in_loop {
+                        return (cr_list, false, true);
+                    } else {
+                        println_stderr!("cicada: break: only meaningful in loops");
+                        continue;
+                    }
+                }
+
+                let line_new = expand_args(line, &args[1..]);
+                let mut _cr_list = execute::run_command_line(sh, &line_new, true, capture);
+                cr_list.append(&mut _cr_list);
+                if let Some(last) = cr_list.last() {
+                    let status = last.status;
+                    if status != 0 && sh.exit_on_error {
+                        return (cr_list, false, false);
+                    }
+                }
+            } else if rule == parsers::locust::Rule::EXP_IF {
+                let (mut _cr_list, _cont, _brk) = run_exp_if(sh, pair, args, in_loop, capture);
+                cr_list.append(&mut _cr_list);
+                if _cont {
+                    return (cr_list, true, false);
+                }
+                if _brk {
+                    return (cr_list, false, true);
+                }
+            } else if rule == parsers::locust::Rule::EXP_FOR {
+                let mut _cr_list = run_exp_for(sh, pair, args, capture);
+                cr_list.append(&mut _cr_list);
+            } else if rule == parsers::locust::Rule::EXP_WHILE {
+                let mut _cr_list = run_exp_while(sh, pair, args, capture);
+                cr_list.append(&mut _cr_list);
+            }
+        } */
+        (cr_list, false, false)
+    }
 }
 
 pub mod shell
@@ -34030,7 +35288,8 @@ pub mod shell
             }
         }
 
-        pub fn get_job_by_id(&self, job_id: i32) -> Option<&types::Job> {
+        pub fn get_job_by_id(&self, job_id: i32) -> Option<&types::Job>
+        {
             self.jobs.get(&job_id)
         }
 
@@ -34225,7 +35484,8 @@ pub mod shell
             self.funcs.insert(name.to_string(), value.to_string());
         }
 
-        pub fn get_func(&self, name: &str) -> Option<String> {
+        pub fn get_func(&self, name: &str) -> Option<String>
+        {
             self.funcs.get(name).map(|x| x.to_string())
         }
 
@@ -36490,7 +37750,7 @@ pub mod system
 
                         let screen = Screen{
                             term: term,
-                            state: Some(state),
+                            state: state,
 
                             writer: Mutex::new(Writer{
                                 buffer: ScreenBuffer::new(size),
@@ -36847,69 +38107,52 @@ pub mod system
                         Terminal::new(STDIN_FILENO, STDERR_FILENO, false)
                     }
 
-                    pub fn name(&self) -> &str {
-                        self.info.name()
+                    pub fn name(&self) -> &str
+                    {
+                        //self.info.name().clone().as_str()
+                        ""
                     }
 
-                    fn is_xterm(&self) -> bool {
-                        is_xterm(self.name())
-                    }
+                    fn is_xterm(&self) -> bool { is_xterm(self.name()) }
 
-                    pub fn size(&self) -> io::Result<Size> {
-                        self.lock_writer().size()
-                    }
+                    pub fn size(&self) -> io::Result<Size> { self.lock_writer().size() }
 
-                    pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> {
-                        self.lock_reader().wait_event(timeout)
-                    }
+                    pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> 
+                    { self.lock_reader().wait_event(timeout) }
 
-                    pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                        self.lock_reader().read_event(timeout)
-                    }
+                    pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>>
+                    { self.lock_reader().read_event(timeout) }
 
-                    pub fn read_raw(&self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>> {
-                        self.lock_reader().read_raw(buf, timeout)
-                    }
+                    pub fn read_raw(&self, buf: &mut [u8], timeout: Option<Duration>) -> io::Result<Option<Event>>
+                    { self.lock_reader().read_raw(buf, timeout) }
 
-                    pub fn enter_screen(&self) -> io::Result<()> {
-                        self.lock_writer().enter_screen()
-                    }
+                    pub fn enter_screen(&self) -> io::Result<()> { self.lock_writer().enter_screen() }
 
-                    pub fn exit_screen(&self) -> io::Result<()> {
-                        self.lock_writer().exit_screen()
-                    }
+                    pub fn exit_screen(&self) -> io::Result<()> { self.lock_writer().exit_screen() }
 
-                    pub fn prepare(&self, config: PrepareConfig) -> io::Result<PrepareState> {
-                        self.lock_reader().prepare(config)
+                    pub fn prepare(&self, config: PrepareConfig) -> io::Result<Option<PrepareState>>
+                    {
+                        //self.lock_reader().prepare(config)
+                        Ok( None )
                     }
+                    
+                    pub fn restore(&self, state: PrepareState) -> io::Result<()> { self.lock_reader().restore(state) }
 
-                    pub fn restore(&self, state: PrepareState) -> io::Result<()> {
-                        self.lock_reader().restore(state)
-                    }
+                    pub fn clear_screen(&self) -> io::Result<()> { self.lock_writer().clear_screen() }
 
-                    pub fn clear_screen(&self) -> io::Result<()> {
-                        self.lock_writer().clear_screen()
-                    }
+                    pub fn clear_to_line_end(&self) -> io::Result<()> { self.lock_writer().clear_to_line_end() }
 
-                    pub fn clear_to_line_end(&self) -> io::Result<()> {
-                        self.lock_writer().clear_to_line_end()
-                    }
+                    pub fn clear_to_screen_end(&self) -> io::Result<()> { self.lock_writer().clear_to_screen_end() }
 
-                    pub fn clear_to_screen_end(&self) -> io::Result<()> {
-                        self.lock_writer().clear_to_screen_end()
-                    }
-
-                    pub fn move_up(&self, n: usize) -> io::Result<()> {
-                        if n != 0 {
-                            self.lock_writer().move_up(n)?;
-                        }
+                    pub fn move_up(&self, n: usize) -> io::Result<()>
+                    {
+                        if n != 0 { self.lock_writer().move_up(n)?; }
                         Ok(())
                     }
 
                     pub fn move_down(&self, n: usize) -> io::Result<()> {
                         if n != 0 {
-                            self.lock_writer().move_down(n)?;
-                        }
+                            self.lock_writer().move_down(n)?; }
                         Ok(())
                     }
 
@@ -37018,18 +38261,24 @@ pub mod system
                     }
                 }
 
-                impl<'a> TerminalReadGuard<'a> {
-                    fn new(term: &'a Terminal, reader: MutexGuard<'a, Reader>) -> TerminalReadGuard<'a> {
+                impl<'a> TerminalReadGuard<'a>
+                {
+                    fn new(term: &'a Terminal, reader: MutexGuard<'a, Reader>) -> TerminalReadGuard<'a>
+                    {
                         TerminalReadGuard{term, reader}
                     }
-
-                    pub fn prepare(&mut self, config: PrepareConfig) -> io::Result<PrepareState> {
-                        let mut writer = self.term.lock_writer();
-                        self.prepare_with_lock(&mut writer, config)
+                    
+                    pub fn prepare(&mut self, config: PrepareConfig) -> io::Result<Option<PrepareState>>
+                    {
+                        /*let mut writer = self.term.lock_writer();
+                        self.prepare_with_lock(&mut writer, config)*/
+                        Ok( None )
                     }
 
-                    pub fn prepare_with_lock(&mut self, writer: &mut TerminalWriteGuard,
-                            config: PrepareConfig) -> io::Result<PrepareState> {
+                    /*
+
+                    pub fn prepare_with_lock(&mut self, writer: &mut TerminalWriteGuard, config: PrepareConfig) -> io::Result<PrepareState>
+                    {
                         use nix::sys::termios::SpecialCharacterIndices::*;
 
                         let old_tio = tcgetattr(self.term.in_fd).map_err(nix_to_io)?;
@@ -37046,6 +38295,8 @@ pub mod system
                             restore_mouse: false,
                             prev_resume: self.reader.resume,
                         };
+
+                        Ok(state)
 
                         tio.input_flags.remove(
                             // Disable carriage return/line feed conversion
@@ -37118,15 +38369,16 @@ pub mod system
                         self.reader.resume = Some(Resume{config});
 
                         Ok(state)
-                    }
+                    } */
 
                     pub fn restore(&mut self, state: PrepareState) -> io::Result<()> {
                         let mut writer = self.term.lock_writer();
                         self.restore_with_lock(&mut writer, state)
                     }
 
-                    pub fn restore_with_lock(&mut self, writer: &mut TerminalWriteGuard,
-                            state: PrepareState) -> io::Result<()> {
+                    pub fn restore_with_lock(&mut self, writer: &mut TerminalWriteGuard, state: PrepareState) -> io::Result<()>
+                    {
+                        /*
                         self.reader.resume = state.prev_resume;
 
                         if state.restore_mouse {
@@ -37157,12 +38409,14 @@ pub mod system
                             if let Some(ref old) = state.old_sigwinch {
                                 sigaction(NixSignal::SIGWINCH, old).map_err(nix_to_io)?;
                             }
-                        }
+                        } */
 
                         Ok(())
                     }
 
-                    pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
+                    pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool>
+                    {
+                        /*
                         if get_signal().is_some() {
                             return Ok(true);
                         }
@@ -37173,29 +38427,26 @@ pub mod system
 
                         let mut timeout = timeout.map(to_timeval);
 
-                        let n = loop {
+                        let n = loop
+                        {
                             let in_fd = self.term.in_fd;
 
                             let mut r_fds = FdSet::new();
                             r_fds.insert(in_fd);
-
-                            // FIXME: FdSet does not implement Copy or Clone
+                            
                             let mut e_fds = FdSet::new();
                             e_fds.insert(in_fd);
 
-                            match select(in_fd + 1,
-                                    Some(&mut r_fds), None, Some(&mut e_fds), timeout.as_mut()) {
+                            match select(in_fd + 1, Some(&mut r_fds), None, Some(&mut e_fds), timeout.as_mut())
+                            {
                                 Ok(n) => break n,
-                                Err(Errno::EINTR) =>
-                                    if get_signal().is_some() {
-                                        return Ok(true);
-                                    }
-                                
+                                Err(Errno::EINTR) => if get_signal().is_some() { return Ok(true); }                                
                                 Err(e) => return Err(nix_to_io(e))
                             }
                         };
 
-                        Ok(n != 0)
+                        Ok(n != 0) */
+                        Ok( false )
                     }
 
                     pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>> {
@@ -37330,9 +38581,10 @@ pub mod system
                     }
 
                     fn resume(&mut self) -> io::Result<()> {
+                        /*
                         if let Some(resume) = self.reader.resume {
                             let _ = self.prepare(resume.config)?;
-                        }
+                        } */
                         Ok(())
                     }
                 }
@@ -37421,7 +38673,7 @@ pub mod system
                         } else {
                             Ok(false)
                         } */
-                        Ok(())
+                        Ok(true)
                     }
 
                     fn enter_screen(&mut self) -> io::Result<()> 
@@ -37766,9 +39018,11 @@ pub mod system
                         res
                     }
 
-                    fn write_data(&self, buf: &[u8]) -> (usize, io::Result<()>) {
+                    fn write_data(&self, buf: &[u8]) -> (usize, io::Result<()>)
+                    {
                         let mut offset = 0;
-
+                        let r = Ok(());
+                        /*
                         let r = loop {
                             if offset == buf.len() {
                                 break Ok(());
@@ -37780,17 +39034,19 @@ pub mod system
                                 Err(Errno::EINTR) => continue,
                                 Err(e) => break Err(nix_to_io(e))
                             }
-                        };
+                        }; */
 
                         (offset, r)
                     }
 
                     fn expand<T: AsRef<[u8]>>(&mut self, exp: Expansion<T>) -> io::Result<()> {
+                        /*
                         let writer = &mut *self.writer;
                         exp
                             .with(&mut writer.context)
                             .to(&mut writer.out_buffer)
-                            .map_err(ti_to_io)
+                            .map_err(ti_to_io) */
+                        Ok( () )
                     }
                 }
 
@@ -37939,13 +39195,15 @@ pub mod system
                         terminfo::Error::Expand(_) => io::Error::new(
                             io::ErrorKind::Other, "failed to expand terminfo entry"),
                     } */
-                    Ok(())
+                    io::Error::new( io::ErrorKind::NotFound, "terminfo entry not found")
                 }
 
-                fn to_timeval(d: Duration) -> TimeVal {
+                fn to_timeval(d: Duration) -> TimeVal 
+                {
                     const MAX_SECS: i64 = i64::max_value() / 1_000;
 
-                    let secs = match d.as_secs() {
+                    let secs = match d.as_secs() 
+                    {
                         n if n > MAX_SECS as u64 => MAX_SECS,
                         n => n as i64,
                     };
@@ -39771,23 +41029,13 @@ pub mod system
         
         impl Terminal 
         {
-            /// Prepares the terminal to read input.
-            ///
-            /// When reading operations have concluded, [`restore`] should be called
-            /// with the resulting `PrepareState` value to restore the terminal to
-            /// its previous state.
-            ///
-            /// This method may be called more than once before a corresponding
-            /// `restore` call. However, each `restore` call must receive the most
-            /// recently created `PrepareState` value.
-            ///
-            /// See [`PrepareConfig`] for details.
-            ///
-            /// [`PrepareConfig`]: struct.PrepareConfig.html
-            /// [`restore`]: #method.restore
-            pub fn prepare(&self, config: PrepareConfig) -> io::Result<PrepareState> {
-                self.0.prepare(config).map(PrepareState)
+            pub fn prepare(&self, config: PrepareConfig) -> io::Result<Option<PrepareState>> {
+                //self.0.prepare(config).map(PrepareState)
+                Ok( None )
             }
+            /*
+            /// Prepares the terminal to read input.
+            */
             /// Restores the terminal to its previous state.
             pub fn restore(&self, state: PrepareState) -> io::Result<()> {
                 self.0.restore(state.0)
@@ -39797,19 +41045,12 @@ pub mod system
         impl Terminal 
         {
             /// Waits for an event from the terminal.
-            ///
-            /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
-            ///
-            /// If `timeout` is `None`, this method will wait indefinitely.
             pub fn wait_event(&self, timeout: Option<Duration>) -> io::Result<bool> {
                 self.0.wait_event(timeout)
             }
             /// Waits for input and reads an event from the terminal.
-            ///
-            /// Returns `Ok(None)` if `timeout` elapses without an event occurring.
-            ///
-            /// If `timeout` is `None`, this method will wait indefinitely.
-            pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>>  {
+            pub fn read_event(&self, timeout: Option<Duration>) -> io::Result<Option<Event>>
+            {
                 self.0.read_event(timeout)
             }
         }
@@ -39976,74 +41217,34 @@ pub mod system
         impl<'a> TerminalReadGuard<'a> 
         {
             /// Prepares the terminal to read input.
-            ///
-            /// When reading operations have concluded, [`restore`]
-            /// should be called with the resulting `PrepareState` value to restore
-            /// the terminal to its previous state.
-            ///
-            /// This method may be called more than once before a corresponding
-            /// `restore` call. However, each `restore` call must receive the most recently
-            /// created `PrepareState` value.
-            ///
-            /// See [`PrepareConfig`] for details.
-            ///
-            /// [`PrepareConfig`]: struct.PrepareConfig.html
-            /// [`restore`]: #method.restore
-            ///
-            /// ## Locking
-            ///
-            /// This method internally acquires the [`Terminal`] write lock.
-            ///
-            /// If the write lock is already held by the current thread,
-            /// call [`prepare_with_lock`], in order to prevent deadlocks.
-            ///
-            /// [`Terminal`]: struct.Terminal.html
-            /// [`prepare_with_lock`]: #method.prepare_with_lock
-            pub fn prepare(&mut self, config: PrepareConfig) -> io::Result<PrepareState> {
-                self.0.prepare(config).map(PrepareState)
-            }
+            pub fn prepare(&mut self, config: PrepareConfig) -> io::Result<Option<PrepareState>> {
+                //self.0.prepare(config).map(PrepareState)
+                Ok( None )
+            } 
+            /* */
             /// Performs terminal preparation using both [`Terminal`] locks.
-            ///
-            /// [`Terminal`]: struct.Terminal.html
-            pub fn prepare_with_lock(&mut self, writer: &mut TerminalWriteGuard,
+            /* pub fn prepare_with_lock(&mut self, writer: &mut TerminalWriteGuard,
                     config: PrepareConfig) -> io::Result<PrepareState> {
                 self.0.prepare_with_lock(&mut writer.0, config).map(PrepareState)
-            }
+            } */
             /// Restores the terminal to its previous state.
-            ///
-            /// ## Locking
-            ///
-            /// This method internally acquires the [`Terminal`] write lock.
-            ///
-            /// If the write lock is already held by the current thread,
-            /// call [`restore_with_lock`], in order to prevent deadlocks.
-            ///
-            /// [`Terminal`]: struct.Terminal.html
-            /// [`restore_with_lock`]: #method.restore_with_lock
-            pub fn restore(&mut self, state: PrepareState) -> io::Result<()> {
+            pub fn restore(&mut self, state: PrepareState) -> io::Result<()> 
+            {
                 self.0.restore(state.0)
             }
             /// Performs terminal state restoration using both [`Terminal`] locks.
-            ///
-            /// [`Terminal`]: struct.Terminal.html
             pub fn restore_with_lock(&mut self, writer: &mut TerminalWriteGuard,
                     state: PrepareState) -> io::Result<()> {
                 self.0.restore_with_lock(&mut writer.0, state.0)
             }
             /// Waits for an event from the terminal.
-            ///
-            /// Returns `Ok(false)` if `timeout` elapses without an event occurring.
-            ///
-            /// If `timeout` is `None`, this method will wait indefinitely.
-            pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> {
+            pub fn wait_event(&mut self, timeout: Option<Duration>) -> io::Result<bool> 
+            {
                 self.0.wait_event(timeout)
             }
             /// Waits for input and reads an event from the terminal.
-            ///
-            /// Returns `Ok(None)` if `timeout` elapses without an event occurring.
-            ///
-            /// If `timeout` is `None`, this method will wait indefinitely.
-            pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>>  {
+            pub fn read_event(&mut self, timeout: Option<Duration>) -> io::Result<Option<Event>>  
+            {
                 self.0.read_event(timeout)
             }
         }
@@ -40471,7 +41672,8 @@ pub mod tuples
             }
         }
         /// Returns the type vector of this `Tup`.
-        pub fn inner_type_vec(&self) -> Vec<Type> {
+        pub fn inner_type_vec(&self) -> Vec<Type>
+        {
             self.inner.inner_tvec.clone()
         }
         /// Returns the length of this `Tup`.
@@ -40487,7 +41689,8 @@ pub mod tuples
             Arc::ptr_eq(&self.inner, &other.inner)
         }
         /// Returns an iterator over the Tup.
-        pub fn iter(&self) -> Iter<Value> {
+        pub fn iter(&self) -> Iter<Value>
+        {
             self.vec_ref().iter()
         }
     }
@@ -43510,6 +44713,2649 @@ pub mod values
 pub mod vec
 {
     pub use std::vec::{ * };
+
+    use ::
+    {
+        alloc::{ Layout, MallocSizeOf, MallocSizeOfOps, MallocShallowSizeOf, },
+        borrow::{ Borrow, BorrowMut },
+        boxed::{ Box },
+        fmt::{ Debug },
+        hash::{ Hash, Hasher },
+        marker::{ PhantomData },
+        mem::{ align_of, size_of, ManuallyDrop, MaybeUninit },
+        ptr::{ addr_of, addr_of_mut, copy, copy_nonoverlapping, NonNull },
+        *,
+    };
+    /*
+    //! Small vectors in various sizes. These store a certain number of elements inline, and fall back
+    //! to the heap for larger allocations.  This can be a useful optimization for improving cache
+    //! locality and reducing allocator traffic for workloads that fit within the inline buffer. */
+    /*
+    */
+    /// Error type for APIs with fallible heap allocation
+    #[derive(Debug)]
+    pub enum CollectionAllocErr {
+        /// Overflow `usize::MAX` or other error during size computation
+        CapacityOverflow,
+        /// The allocator return an error
+        AllocErr {
+            /// The layout that was passed to the allocator
+            layout: Layout,
+        },
+    }
+    impl ::fmt::Display for CollectionAllocErr {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            write!(f, "Allocation error: {:?}", self)
+        }
+    }
+
+    impl ::error::Error for CollectionAllocErr {}
+    /// Either a stack array with `length <= N` or a heap array
+    /// whose pointer and capacity are stored here.
+    ///
+    /// We store a `NonNull<T>` instead of a `*mut T`, so that
+    /// niche-optimization can be performed and the type is covariant
+    /// with respect to `T`.
+    #[repr( C )] pub union RawSmallVec<T, const N: usize> {
+        inline: ManuallyDrop<MaybeUninit<[T; N]>>,
+        heap: (NonNull<T>, usize),
+    }
+
+    #[inline] fn infallible<T>(result: Result<T, CollectionAllocErr>) -> T {
+        match result {
+            Ok(x) => x,
+            Err(CollectionAllocErr::CapacityOverflow) => panic!("capacity overflow"),
+            Err(CollectionAllocErr::AllocErr { layout }) => ::alloc::handle_alloc_error(layout),
+        }
+    }
+
+    #[inline]
+    /// A local copy of [`core::slice::range`]. The latter function is unstable and thus cannot be used yet.
+    fn slice_range<R>(range: R, bounds: core::ops::RangeTo<usize>) -> ::ops::Range<usize>
+    where
+        R: core::ops::RangeBounds<usize>,
+    {
+        let len = bounds.end;
+
+        let start = match range.start_bound() {
+            core::ops::Bound::Included(&start) => start,
+            core::ops::Bound::Excluded(start) => start
+                .checked_add(1)
+                .unwrap_or_else(|| panic!("attempted to index slice from after maximum usize")),
+            core::ops::Bound::Unbounded => 0,
+        };
+
+        let end = match range.end_bound() {
+            core::ops::Bound::Included(end) => end
+                .checked_add(1)
+                .unwrap_or_else(|| panic!("attempted to index slice up to maximum usize")),
+            core::ops::Bound::Excluded(&end) => end,
+            core::ops::Bound::Unbounded => len,
+        };
+
+        if start > end {
+            panic!("slice index starts at {start} but ends at {end}");
+        }
+        if end > len {
+            panic!("range end index {end} out of range for slice of length {len}");
+        }
+
+        core::ops::Range { start, end }
+    }
+
+    impl<T, const N: usize> RawSmallVec<T, N> {
+        #[inline]
+        const fn is_zst() -> bool {
+            size_of::<T>() == 0
+        }
+
+        #[inline]
+        const fn new() -> Self {
+            Self::new_inline(MaybeUninit::uninit())
+        }
+        #[inline]
+        const fn new_inline(inline: MaybeUninit<[T; N]>) -> Self {
+            Self {
+                inline: ManuallyDrop::new(inline),
+            }
+        }
+        #[inline]
+        const fn new_heap(ptr: NonNull<T>, capacity: usize) -> Self {
+            Self {
+                heap: (ptr, capacity),
+            }
+        }
+
+        #[inline]
+        const fn as_ptr_inline(&self) -> *const T {
+            // SAFETY: This is safe because we don't read the value. We only get a pointer to the data.
+            // Dereferencing the pointer is unsafe so unsafe code is required to misuse the return
+            // value.
+            (unsafe { addr_of!(self.inline) }) as *const T
+        }
+
+        #[inline]
+        const fn as_mut_ptr_inline(&mut self) -> *mut T {
+            // SAFETY: See above.
+            (unsafe { addr_of_mut!(self.inline) }) as *mut T
+        }
+
+        /// # Safety
+        ///
+        /// The vector must be on the heap
+        #[inline]
+        const unsafe fn as_ptr_heap(&self) -> *const T {
+            self.heap.0.as_ptr()
+        }
+
+        /// # Safety
+        ///
+        /// The vector must be on the heap
+        #[inline]
+        const unsafe fn as_mut_ptr_heap(&mut self) -> *mut T {
+            self.heap.0.as_ptr()
+        }
+        
+        unsafe fn try_grow_raw( &mut self, len:TaggedLen, new_capacity:usize ) -> Result<(), CollectionAllocErr>
+        {
+            use ::alloc::{ alloc, realloc };
+            debug_assert!(!Self::is_zst());
+            debug_assert!(new_capacity > 0);
+            debug_assert!(new_capacity >= len.value(Self::is_zst()));
+
+            let was_on_heap = len.on_heap(Self::is_zst());
+            let ptr = if was_on_heap {
+                self.as_mut_ptr_heap()
+            } else {
+                self.as_mut_ptr_inline()
+            };
+            let len = len.value(Self::is_zst());
+
+            let new_layout =
+                Layout::array::<T>(new_capacity).map_err(|_| CollectionAllocErr::CapacityOverflow)?;
+            if new_layout.size() > isize::MAX as usize {
+                return Err(CollectionAllocErr::CapacityOverflow);
+            }
+
+            let new_ptr = if len == 0 || !was_on_heap {
+                // get a fresh allocation
+                let new_ptr = alloc(new_layout) as *mut T; // `new_layout` has nonzero size.
+                let new_ptr =
+                    NonNull::new(new_ptr).ok_or(CollectionAllocErr::AllocErr { layout: new_layout })?;
+                copy_nonoverlapping(ptr, new_ptr.as_ptr(), len);
+                new_ptr
+            } else {
+                // use realloc
+
+                // this can't overflow since we already constructed an equivalent layout during
+                // the previous allocation
+                let old_layout =
+                    Layout::from_size_align_unchecked(self.heap.1 * size_of::<T>(), align_of::<T>());
+
+                // SAFETY: ptr was allocated with this allocator
+                // old_layout is the same as the layout used to allocate the previous memory block
+                // new_layout.size() is greater than zero
+                // does not overflow when rounded up to alignment. since it was constructed
+                // with Layout::array
+                let new_ptr = realloc(ptr as *mut u8, old_layout, new_layout.size()) as *mut T;
+                NonNull::new(new_ptr).ok_or(CollectionAllocErr::AllocErr { layout: new_layout })?
+            };
+            *self = Self::new_heap(new_ptr, new_capacity);
+            Ok(())
+        }
+    }
+    /// Vec guarantees that its length is always less than [`isize::MAX`] in *bytes*.
+    #[repr(transparent)]
+    #[derive(Clone, Copy)]
+    struct TaggedLen(usize);
+
+    impl TaggedLen
+    {
+        #[inline] pub const fn new(len: usize, on_heap: bool, is_zst: bool) -> Self {
+            if is_zst {
+                debug_assert!(!on_heap);
+                TaggedLen(len)
+            } else {
+                debug_assert!(len < isize::MAX as usize);
+                TaggedLen((len << 1) | on_heap as usize)
+            }
+        }
+
+        #[inline]
+        #[must_use]
+        pub const fn on_heap(self, is_zst: bool) -> bool {
+            if is_zst {
+                false
+            } else {
+                (self.0 & 1_usize) == 1
+            }
+        }
+
+        #[inline] pub const fn value(self, is_zst: bool) -> usize {
+            if is_zst {
+                self.0
+            } else {
+                self.0 >> 1
+            }
+        }
+    }
+
+    #[repr( C )] pub struct SmallVec<T, const N: usize>
+    {
+        len: TaggedLen,
+        raw: RawSmallVec<T, N>,
+        _marker: PhantomData<T>,
+    }
+
+    unsafe impl<T: Send, const N: usize> Send for SmallVec<T, N> {}
+    unsafe impl<T: Sync, const N: usize> Sync for SmallVec<T, N> {}
+
+    impl<T, const N: usize> Default for SmallVec<T, N>
+    {
+        #[inline] fn default() -> Self {
+            Self::new()
+        }
+    }
+    /// An iterator that removes the items from a `SmallVec` and yields them by value.
+    pub struct Drain<'a, T: 'a, const N: usize> 
+    {
+        // `vec` points to a valid object within its lifetime.
+        // This is ensured by the fact that we're holding an iterator to its items.
+        //
+        // # Safety
+        //
+        // Members in vec[tail_start..tail_start + tail_len] are initialized
+        // even though vec has length < tail_start
+        tail_start: usize,
+        tail_len: usize,
+        iter: core::slice::Iter<'a, T>,
+        vec: core::ptr::NonNull<SmallVec<T, N>>,
+    }
+
+    impl<'a, T: 'a, const N: usize> Iterator for Drain<'a, T, N> 
+    {
+        type Item = T;
+
+        #[inline] fn next(&mut self) -> Option<T> {
+            // SAFETY: we shrunk the length of the vector so it no longer owns these items, and we can
+            // take ownership of them.
+            self.iter
+                .next()
+                .map(|reference| unsafe { core::ptr::read(reference) })
+        }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
+            self.iter.size_hint()
+        }
+    }
+
+    impl<'a, T: 'a, const N: usize> DoubleEndedIterator for Drain<'a, T, N>
+    {
+        #[inline] fn next_back(&mut self) -> Option<T> {
+            // SAFETY: see above
+            self.iter
+                .next_back()
+                .map(|reference| unsafe { core::ptr::read(reference) })
+        }
+    }
+
+    impl<T, const N: usize> ExactSizeIterator for Drain<'_, T, N>
+    {
+        #[inline] fn len(&self) -> usize {
+            self.iter.len()
+        }
+    }
+
+    impl<T, const N: usize> ::iter::FusedIterator for Drain<'_, T, N> {}
+
+    impl<'a, T: 'a, const N: usize> Drop for Drain<'a, T, N> 
+    {
+        fn drop(&mut self) {
+            /// Moves back the un-`Drain`ed elements to restore the original `Vec`.
+            struct DropGuard<'r, 'a, T, const N: usize>(&'r mut Drain<'a, T, N>);
+
+            impl<'r, 'a, T, const N: usize> Drop for DropGuard<'r, 'a, T, N> {
+                fn drop(&mut self) {
+                    if self.0.tail_len > 0 {
+                        unsafe {
+                            let source_vec = self.0.vec.as_mut();
+                            // memmove back untouched tail, update to new length
+                            let start = source_vec.len();
+                            let tail = self.0.tail_start;
+                            if tail != start {
+                                let ptr = source_vec.as_mut_ptr();
+                                let src = ptr.add(tail);
+                                let dst = ptr.add(start);
+                                core::ptr::copy(src, dst, self.0.tail_len);
+                            }
+                            source_vec.set_len(start + self.0.tail_len);
+                        }
+                    }
+                }
+            }
+
+            let iter = core::mem::take(&mut self.iter);
+            let drop_len = iter.len();
+
+            let mut vec = self.vec;
+
+            if SmallVec::<T, N>::is_zst() {
+                // ZSTs have no identity, so we don't need to move them around, we only need to drop the correct amount.
+                // this can be achieved by manipulating the Vec length instead of moving values out from `iter`.
+                unsafe {
+                    let vec = vec.as_mut();
+                    let old_len = vec.len();
+                    vec.set_len(old_len + drop_len + self.tail_len);
+                    vec.truncate(old_len + self.tail_len);
+                }
+
+                return;
+            }
+
+            // ensure elements are moved back into their appropriate places, even when drop_in_place panics
+            let _guard = DropGuard(self);
+
+            if drop_len == 0 {
+                return;
+            }
+
+            // as_slice() must only be called when iter.len() is > 0 because
+            // it also gets touched by vec::Splice which may turn it into a dangling pointer
+            // which would make it and the vec pointer point to different allocations which would
+            // lead to invalid pointer arithmetic below.
+            let drop_ptr = iter.as_slice().as_ptr();
+
+            unsafe {
+                // drop_ptr comes from a slice::Iter which only gives us a &[T] but for drop_in_place
+                // a pointer with mutable provenance is necessary. Therefore we must reconstruct
+                // it from the original vec but also avoid creating a &mut to the front since that could
+                // invalidate raw pointers to it which some unsafe code might rely on.
+                let vec_ptr = vec.as_mut().as_mut_ptr();
+                // May be replaced with the line below later, once this crate's MSRV is >= 1.87.
+                //let drop_offset = drop_ptr.offset_from_unsigned(vec_ptr);
+                let drop_offset = drop_ptr.offset_from(vec_ptr) as usize;
+                let to_drop = core::ptr::slice_from_raw_parts_mut(vec_ptr.add(drop_offset), drop_len);
+                core::ptr::drop_in_place(to_drop);
+            }
+        }
+    }
+
+    impl<T, const N: usize> Drain<'_, T, N> 
+    {
+        #[must_use]
+        pub fn as_slice(&self) -> &[T] {
+            self.iter.as_slice()
+        }
+
+        /// The range from `self.vec.len` to `self.tail_start` contains elements
+        /// that have been moved out.
+        /// Fill that range as much as possible with new elements from the `replace_with` iterator.
+        /// Returns `true` if we filled the entire range. (`replace_with.next()` didn’t return `None`.)
+        unsafe fn fill<I: Iterator<Item = T>>(&mut self, replace_with: &mut I) -> bool {
+            let vec = unsafe { self.vec.as_mut() };
+            let range_start = vec.len();
+            let range_end = self.tail_start;
+            let range_slice = unsafe {
+                core::slice::from_raw_parts_mut(vec.as_mut_ptr().add(range_start), range_end - range_start)
+            };
+
+            for place in range_slice {
+                if let Some(new_item) = replace_with.next() {
+                    unsafe { core::ptr::write(place, new_item) };
+                    vec.set_len(vec.len() + 1);
+                } else {
+                    return false;
+                }
+            }
+            true
+        }
+
+        /// Makes room for inserting more elements before the tail.
+        #[track_caller]
+        unsafe fn move_tail(&mut self, additional: usize) {
+            let vec = unsafe { self.vec.as_mut() };
+            let len = self.tail_start + self.tail_len;
+
+            // Test
+            let old_len = vec.len();
+            vec.set_len(len);
+            vec.reserve(additional);
+            vec.set_len(old_len);
+
+            let new_tail_start = self.tail_start + additional;
+            unsafe {
+                let src = vec.as_ptr().add(self.tail_start);
+                let dst = vec.as_mut_ptr().add(new_tail_start);
+                core::ptr::copy(src, dst, self.tail_len);
+            }
+            self.tail_start = new_tail_start;
+        }
+    }
+
+    #[cfg(feature = "extract_if")]
+    /// An iterator which uses a closure to determine if an element should be removed.
+    ///
+    /// Returned from [`SmallVec::extract_if`][1].
+    ///
+    /// [1]: struct.SmallVec.html#method.extract_if
+    pub struct ExtractIf<'a, T, const N: usize, F>
+    where
+        F: FnMut(&mut T) -> bool,
+    {
+        vec: &'a mut SmallVec<T, N>,
+        /// The index of the item that will be inspected by the next call to `next`.
+        idx: usize,
+        /// Elements at and beyond this point will be retained. Must be equal or smaller than `old_len`.
+        end: usize,
+        /// The number of items that have been drained (removed) thus far.
+        del: usize,
+        /// The original length of `vec` prior to draining.
+        old_len: usize,
+        /// The filter test predicate.
+        pred: F,
+    }
+
+    pub struct Splice<'a, I: Iterator + 'a, const N: usize> {
+        drain: Drain<'a, I::Item, N>,
+        replace_with: I,
+    }
+
+    impl<'a, I, const N: usize> ::fmt::Debug for Splice<'a, I, N>
+    where
+        I: Debug + Iterator + 'a,
+        <I as Iterator>::Item: Debug,
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            f.debug_tuple("Splice").field(&self.drain).finish()
+        }
+    }
+
+    impl<I: Iterator, const N: usize> Iterator for Splice<'_, I, N> {
+        type Item = I::Item;
+
+        fn next(&mut self) -> Option<Self::Item>
+        {
+            self.drain.next()
+        }
+
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            self.drain.size_hint()
+        }
+    }
+
+    impl<I: Iterator, const N: usize> DoubleEndedIterator for Splice<'_, I, N> {
+        fn next_back(&mut self) -> Option<Self::Item>
+        {
+            self.drain.next_back()
+        }
+    }
+
+    impl<I: Iterator, const N: usize> ExactSizeIterator for Splice<'_, I, N> {}
+
+    impl<I: Iterator, const N: usize> Drop for Splice<'_, I, N> {
+        fn drop(&mut self) {
+            self.drain.by_ref().for_each(drop);
+            // At this point draining is done and the only remaining tasks are splicing
+            // and moving things into the final place.
+            // Which means we can replace the slice::Iter with pointers that won't point to deallocated
+            // memory, so that Drain::drop is still allowed to call iter.len(), otherwise it would break
+            // the ptr.sub_ptr contract.
+            self.drain.iter = [].iter();
+
+            unsafe {
+                if self.drain.tail_len == 0 {
+                    self.drain.vec.as_mut().extend(self.replace_with.by_ref());
+                    return;
+                }
+
+                // First fill the range left by drain().
+                if !self.drain.fill(&mut self.replace_with) {
+                    return;
+                }
+
+                // There may be more elements. Use the lower bound as an estimate.
+                // FIXME: Is the upper bound a better guess? Or something else?
+                let (lower_bound, _upper_bound) = self.replace_with.size_hint();
+                if lower_bound > 0 {
+                    self.drain.move_tail(lower_bound);
+                    if !self.drain.fill(&mut self.replace_with) {
+                        return;
+                    }
+                }
+
+                // Collect any remaining elements.
+                let mut collected = self.replace_with.by_ref().collect::<SmallVec<I::Item, N>>().into_iter();
+                // Now we have an exact count.
+                if collected.len() > 0 {
+                    self.drain.move_tail(collected.len());
+                    let filled = self.drain.fill(&mut collected);
+                    debug_assert!(filled);
+                    debug_assert_eq!(collected.len(), 0);
+                }
+            }
+            // Let `Drain::drop` move the tail back if necessary and restore `vec.len`.
+        }
+    }
+    /// An iterator that consumes a `SmallVec` and yields its items by value.
+    pub struct IntoIter<T, const N: usize> {
+        // # Safety
+        //
+        // `end` decides whether the data lives on the heap or not
+        //
+        // The members from begin..end are initialized
+        raw: RawSmallVec<T, N>,
+        begin: usize,
+        end: TaggedLen,
+        _marker: PhantomData<T>,
+    }
+    
+    unsafe impl<T, const N: usize> Send for IntoIter<T, N> where T: Send {}
+    unsafe impl<T, const N: usize> Sync for IntoIter<T, N> where T: Sync {}
+
+    impl<T, const N: usize> IntoIter<T, N> {
+        #[inline]
+        const fn is_zst() -> bool {
+            size_of::<T>() == 0
+        }
+
+        #[inline]
+        const fn as_ptr(&self) -> *const T {
+            let on_heap = self.end.on_heap(Self::is_zst());
+            if on_heap {
+                // SAFETY: vector is on the heap
+                unsafe { self.raw.as_ptr_heap() }
+            } else {
+                self.raw.as_ptr_inline()
+            }
+        }
+
+        #[inline]
+        const fn as_mut_ptr(&mut self) -> *mut T {
+            let on_heap = self.end.on_heap(Self::is_zst());
+            if on_heap {
+                // SAFETY: vector is on the heap
+                unsafe { self.raw.as_mut_ptr_heap() }
+            } else {
+                self.raw.as_mut_ptr_inline()
+            }
+        }
+
+        #[inline] pub const fn as_slice(&self) -> &[T] {
+            // SAFETY: The members in self.begin..self.end.value() are all initialized
+            // So the pointer arithmetic is valid, and so is the construction of the slice
+            unsafe {
+                let ptr = self.as_ptr();
+                core::slice::from_raw_parts(
+                    ptr.add(self.begin),
+                    self.end.value(Self::is_zst()) - self.begin,
+                )
+            }
+        }
+
+        #[inline] pub const fn as_mut_slice(&mut self) -> &mut [T] {
+            // SAFETY: see above
+            unsafe {
+                let ptr = self.as_mut_ptr();
+                core::slice::from_raw_parts_mut(
+                    ptr.add(self.begin),
+                    self.end.value(Self::is_zst()) - self.begin,
+                )
+            }
+        }
+    }
+
+    impl<T, const N: usize> Iterator for IntoIter<T, N> {
+        type Item = T;
+
+        #[inline] fn next(&mut self) -> Option<Self::Item> {
+            if self.begin == self.end.value(Self::is_zst()) {
+                None
+            } else {
+                // SAFETY: see above
+                unsafe {
+                    let ptr = self.as_mut_ptr();
+                    let value = ptr.add(self.begin).read();
+                    self.begin += 1;
+                    Some(value)
+                }
+            }
+        }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
+            let size = self.end.value(Self::is_zst()) - self.begin;
+            (size, Some(size))
+        }
+    }
+
+    impl<T, const N: usize> DoubleEndedIterator for IntoIter<T, N>
+    {
+        #[inline] fn next_back(&mut self) -> Option<Self::Item> {
+            let mut end = self.end.value(Self::is_zst());
+            if self.begin == end {
+                None
+            } else {
+                // SAFETY: see above
+                unsafe {
+                    let ptr = self.as_mut_ptr();
+                    let on_heap = self.end.on_heap(Self::is_zst());
+                    end -= 1;
+                    self.end = TaggedLen::new(end, on_heap, Self::is_zst());
+                    let value = ptr.add(end).read();
+                    Some(value)
+                }
+            }
+        }
+    }
+
+    impl<T, const N: usize> ExactSizeIterator for IntoIter<T, N> {}
+    impl<T, const N: usize> ::iter::FusedIterator for IntoIter<T, N> {}
+
+    impl<T, const N: usize> SmallVec<T, N> 
+    {
+        #[inline] pub const fn new() -> SmallVec<T, N> {
+            Self {
+                len: TaggedLen::new(0, false, Self::is_zst()),
+                raw: RawSmallVec::new(),
+                _marker: PhantomData,
+            }
+        }
+
+        #[inline] pub fn with_capacity(capacity: usize) -> Self {
+            let mut this = Self::new();
+            if capacity > Self::inline_size() {
+                this.grow(capacity);
+            }
+            this
+        }
+
+        #[inline] pub const fn from_buf<const S: usize>(elements: [T; S]) -> Self {
+            const { assert!(S <= N); }
+
+            // Althought we create a new buffer, since S and N are known at compile time,
+            // even with `-C opt-level=1`, it gets optimized as best as it could be. (Checked with <godbolt.org>)
+            let mut buf: MaybeUninit<[T; N]> = MaybeUninit::uninit();
+
+            // SAFETY: buf and elements do not overlap, are aligned and have space
+            // for at least S elements since S <= N.
+            // We will drop the elements only once since we do forget(elements).
+            unsafe {
+                copy_nonoverlapping(elements.as_ptr(), buf.as_mut_ptr() as *mut T, S);
+            }
+
+            // `elements` have been moved into buf and will be droped by SmallVec
+            core::mem::forget(elements);
+
+            // SAFETY: all the members in 0..S are initialized
+            Self {
+                len: TaggedLen::new(S, false, Self::is_zst()),
+                raw: RawSmallVec::new_inline(buf),
+                _marker: PhantomData,
+            }
+        }
+
+        #[inline] pub fn from_buf_and_len(buf: [T; N], len: usize) -> Self {
+            assert!(len <= N);
+            // SAFETY: all the members in 0..len are initialized
+            let mut vec = Self {
+                len: TaggedLen::new(len, false, Self::is_zst()),
+                raw: RawSmallVec::new_inline(MaybeUninit::new(buf)),
+                _marker: PhantomData,
+            };
+            // Deallocate the remaining elements so no memory is leaked.
+            unsafe {
+                // SAFETY: both the input and output pointers are in range of the stack allocation
+                let remainder_ptr = vec.raw.as_mut_ptr_inline().add(len);
+                let remainder_len = N - len;
+
+                // SAFETY: the values are initialized, so dropping them here is fine.
+                core::ptr::drop_in_place(core::ptr::slice_from_raw_parts_mut(
+                    remainder_ptr,
+                    remainder_len,
+                ));
+            }
+
+            vec
+        }
+
+        /// Constructs a new `SmallVec` on the stack from an A without copying elements. Also sets the length. The user is responsible for ensuring that `len <= A::size()`.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use smallvec::SmallVec;
+        /// use std::mem::MaybeUninit;
+        ///
+        /// let buf = [1, 2, 3, 4, 5, 0, 0, 0];
+        /// let small_vec = unsafe {
+        ///     SmallVec::from_buf_and_len_unchecked(MaybeUninit::new(buf), 5)
+        /// };
+        ///
+        /// assert_eq!(&*small_vec, &[1, 2, 3, 4, 5]);
+        /// ```
+        ///
+        /// # Safety
+        ///
+        /// `len <= N`, and all the elements in `buf[..len]` must be initialized
+        #[inline] pub const unsafe fn from_buf_and_len_unchecked(buf: MaybeUninit<[T; N]>, len: usize) -> Self {
+            debug_assert!(len <= N);
+            Self {
+                len: TaggedLen::new(len, false, Self::is_zst()),
+                raw: RawSmallVec::new_inline(buf),
+                _marker: PhantomData,
+            }
+        }
+    }
+
+    impl<T, const N: usize> SmallVec<T, N> 
+    {
+        #[inline]
+        const fn is_zst() -> bool {
+            size_of::<T>() == 0
+        }
+
+        #[inline] pub fn from_vec(vec: Vec<T>) -> Self {
+            if vec.capacity() == 0 {
+                return Self::new();
+            }
+
+            if Self::is_zst() {
+                // "Move" elements to stack buffer. They're ZST so we don't actually have to do
+                // anything. Just make sure they're not dropped.
+                // We don't wrap the vector in ManuallyDrop so that when it's dropped, the memory is
+                // deallocated, if it needs to be.
+                let mut vec = vec;
+                let len = vec.len();
+
+                // SAFETY: `0` is less than the vector's capacity.
+                // old_len..new_len is an empty range. So there are no uninitialized elements
+                unsafe { vec.set_len(0) };
+                Self {
+                    len: TaggedLen::new(len, false, Self::is_zst()),
+                    raw: RawSmallVec::new(),
+                    _marker: PhantomData,
+                }
+            } else {
+                let mut vec = ManuallyDrop::new(vec);
+                let len = vec.len();
+                let cap = vec.capacity();
+                // SAFETY: vec.capacity is not `0` (checked above), so the pointer
+                // can not dangle and thus specifically cannot be null.
+                let ptr = unsafe { NonNull::new_unchecked(vec.as_mut_ptr()) };
+
+                Self {
+                    len: TaggedLen::new(len, true, Self::is_zst()),
+                    raw: RawSmallVec::new_heap(ptr, cap),
+                    _marker: PhantomData,
+                }
+            }
+        }
+
+        /// Sets the tag to be on the heap
+        ///
+        /// # Safety
+        ///
+        /// The active union member must be the self.raw.heap
+        #[inline]
+        unsafe fn set_on_heap(&mut self) {
+            self.len = TaggedLen::new(self.len(), true, Self::is_zst());
+        }
+
+        /// Sets the tag to be inline
+        ///
+        /// # Safety
+        ///
+        /// The active union member must be the self.raw.inline
+        #[inline]
+        unsafe fn set_inline(&mut self) {
+            self.len = TaggedLen::new(self.len(), false, Self::is_zst());
+        }
+
+        /// Sets the length of a vector.
+        ///
+        /// This will explicitly set the size of the vector, without actually modifying its buffers, so
+        /// it is up to the caller to ensure that the vector is actually the specified size.
+        ///
+        /// # Safety
+        ///
+        /// `new_len <= self.capacity()` must be true, and all the elements in the range `..self.len`
+        /// must be initialized.
+        #[inline] pub unsafe fn set_len(&mut self, new_len: usize) {
+            debug_assert!(new_len <= self.capacity());
+            let on_heap = self.len.on_heap(Self::is_zst());
+            self.len = TaggedLen::new(new_len, on_heap, Self::is_zst());
+        }
+
+        #[inline] pub const fn inline_size() -> usize {
+            if Self::is_zst() {
+                usize::MAX
+            } else {
+                N
+            }
+        }
+
+        #[inline] pub const fn len(&self) -> usize {
+            self.len.value(Self::is_zst())
+        }
+
+        #[must_use]
+        #[inline] pub const fn is_empty(&self) -> bool {
+            self.len() == 0
+        }
+
+        #[inline] pub const fn capacity(&self) -> usize {
+            if self.len.on_heap(Self::is_zst()) {
+                // SAFETY: raw.heap is active
+                unsafe { self.raw.heap.1 }
+            } else {
+                Self::inline_size()
+            }
+        }
+
+        #[inline] pub const fn spilled(&self) -> bool {
+            self.len.on_heap(Self::is_zst())
+        }
+
+        /// Splits the collection into two at the given index.
+        ///
+        /// Returns a newly allocated vector containing the elements in the range
+        /// `[at, len)`. After the call, the original vector will be left containing
+        /// the elements `[0, at)` with its previous capacity unchanged.
+        ///
+        /// - If you want to take ownership of the entire contents and capacity of
+        ///   the vector, see [`core::mem::take`] or [`core::mem::replace`].
+        /// - If you don't need the returned vector at all, see [`SmallVec::truncate`].
+        /// - If you want to take ownership of an arbitrary subslice, or you don't
+        ///   necessarily want to store the removed items in a vector, see [`SmallVec::drain`].
+        ///
+        /// # Panics
+        ///
+        /// Panics if `at > len`.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// let mut vec = vec![1, 2, 3];
+        /// let vec2 = vec.split_off(1);
+        /// assert_eq!(vec, [1]);
+        /// assert_eq!(vec2, [2, 3]);
+        /// ```
+        #[inline] pub fn split_off(&mut self, at: usize) -> Self {
+            let len = self.len();
+            assert!(at <= len);
+
+            let other_len = len - at;
+            let mut other = Self::with_capacity(other_len);
+
+            // Unsafely `set_len` and copy items to `other`.
+            unsafe {
+                self.set_len(at);
+                other.set_len(other_len);
+
+                core::ptr::copy_nonoverlapping(self.as_ptr().add(at), other.as_mut_ptr(), other_len);
+            }
+            other
+        }
+
+        pub fn drain<R>(&mut self, range: R) -> Drain<'_, T, N> where
+            R: core::ops::RangeBounds<usize>,
+        {
+            let len = self.len();
+            let core::ops::Range { start, end } = slice_range(range, ..len);
+
+            unsafe {
+                // SAFETY: `start <= len`
+                self.set_len(start);
+
+                // SAFETY: all the elements in `start..end` are initialized
+                let range_slice = core::slice::from_raw_parts(self.as_ptr().add(start), end - start);
+
+                // SAFETY: all the elements in `end..len` are initialized
+                Drain {
+                    tail_start: end,
+                    tail_len: len - end,
+                    iter: range_slice.iter(),
+                    // Since self is a &mut, passing it to a function would invalidate the slice iterator.
+                    vec: core::ptr::NonNull::new_unchecked(self as *mut _),
+                    //vec: core::ptr::NonNull::from(self),
+                }
+            }
+        }
+
+        #[cfg(feature = "extract_if")]
+        /// Creates an iterator which uses a closure to determine if element in the range should be removed.
+        ///
+        /// If the closure returns true, then the element is removed and yielded.
+        /// If the closure returns false, the element will remain in the vector and will not be yielded
+        /// by the iterator.
+        ///
+        /// Only elements that fall in the provided range are considered for extraction, but any elements
+        /// after the range will still have to be moved if any element has been extracted.
+        ///
+        /// If the returned `ExtractIf` is not exhausted, e.g. because it is dropped without iterating
+        /// or the iteration short-circuits, then the remaining elements will be retained.
+        /// Use [`retain`] with a negated predicate if you do not need the returned iterator.
+        ///
+        /// [`retain`]: SmallVec::retain
+        ///
+        /// Using this method is equivalent to the following code:
+        /// ```
+        /// # use smallvec::SmallVec;
+        /// # use std::cmp::min;
+        /// # let some_predicate = |x: &mut i32| { *x == 2 || *x == 3 || *x == 6 };
+        /// # let mut vec: SmallVec<i32, 8> = SmallVec::from(&[1i32, 2, 3, 4, 5, 6]);
+        /// # let range = 1..4;
+        /// let mut i = 0;
+        /// while i < min(vec.len(), range.end) {
+        ///     if some_predicate(&mut vec[i]) {
+        ///         let val = vec.remove(i);
+        ///         // your code here
+        ///     } else {
+        ///         i += 1;
+        ///     }
+        /// }
+        ///
+        /// # assert_eq!(vec, SmallVec::<i32, 8>::from(&[1i32, 4, 5]));
+        /// ```
+        ///
+        /// But `extract_if` is easier to use. `extract_if` is also more efficient,
+        /// because it can backshift the elements of the array in bulk.
+        ///
+        /// Note that `extract_if` also lets you mutate the elements passed to the filter closure,
+        /// regardless of whether you choose to keep or remove them.
+        ///
+        /// # Panics
+        ///
+        /// If `range` is out of bounds.
+        ///
+        /// # Examples
+        ///
+        /// Splitting an array into evens and odds, reusing the original allocation:
+        ///
+        /// ```
+        /// # use smallvec::SmallVec;
+        /// let mut numbers: SmallVec<i32, 16> = SmallVec::from(&[1i32, 2, 3, 4, 5, 6, 8, 9, 11, 13, 14, 15]);
+        ///
+        /// let evens = numbers.extract_if(.., |x| *x % 2 == 0).collect::<SmallVec<i32, 16>>();
+        /// let odds = numbers;
+        ///
+        /// assert_eq!(evens, SmallVec::<i32, 16>::from(&[2i32, 4, 6, 8, 14]));
+        /// assert_eq!(odds, SmallVec::<i32, 16>::from(&[1i32, 3, 5, 9, 11, 13, 15]));
+        /// ```
+        ///
+        /// Using the range argument to only process a part of the vector:
+        ///
+        /// ```
+        /// # use smallvec::SmallVec;
+        /// let mut items: SmallVec<i32, 16> = SmallVec::from(&[0, 0, 0, 0, 0, 0, 0, 1, 2, 1, 2, 1, 2]);
+        /// let ones = items.extract_if(7.., |x| *x == 1).collect::<SmallVec<i32, 16>>();
+        /// assert_eq!(items, SmallVec::<i32, 16>::from(&[0, 0, 0, 0, 0, 0, 0, 2, 2, 2]));
+        /// assert_eq!(ones.len(), 3);
+        /// ```
+        pub fn extract_if<F, R>(&mut self, range: R, filter: F) -> ExtractIf<'_, T, N, F> where
+            F: FnMut(&mut T) -> bool,
+            R: core::ops::RangeBounds<usize>,
+        {
+            let old_len = self.len();
+            let core::ops::Range { start, end } = slice_range(range, ..old_len);
+
+            // Guard against us getting leaked (leak amplification)
+            unsafe {
+                self.set_len(0);
+            }
+
+            ExtractIf {
+                vec: self,
+                idx: start,
+                end,
+                del: 0,
+                old_len,
+                pred: filter,
+            }
+        }
+
+        pub fn splice<R, I>(&mut self, range: R, replace_with: I) -> Splice<'_, I::IntoIter, N> where
+            R: core::ops::RangeBounds<usize>,
+            I: IntoIterator<Item = T>,
+        {
+            Splice { drain: self.drain(range), replace_with: replace_with.into_iter() }
+        }
+
+        #[inline] pub fn push(&mut self, value: T) {
+            let len = self.len();
+            if len == self.capacity() {
+                self.reserve(1);
+            }
+            // SAFETY: both the input and output are within the allocation
+            let ptr = unsafe { self.as_mut_ptr().add(len) };
+            // SAFETY: we allocated enough space in case it wasn't enough, so the address is valid for
+            // writes.
+            unsafe { ptr.write(value) };
+            unsafe { self.set_len(len + 1) }
+        }
+
+        #[inline] pub fn pop(&mut self) -> Option<T> {
+            if self.is_empty() {
+                None
+            } else {
+                let len = self.len() - 1;
+                // SAFETY: len < old_len since this can't overflow, because the old length is non zero
+                unsafe { self.set_len(len) };
+                // SAFETY: this element was initialized and we just gave up ownership of it, so we can
+                // give it away
+                let value = unsafe { self.as_mut_ptr().add(len).read() };
+                Some(value)
+            }
+        }
+
+        #[inline] pub fn pop_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T> {
+            let last = self.last_mut()?;
+            if predicate(last) { self.pop() } else { None }
+        }
+
+        #[inline] pub fn append<const M: usize>(&mut self, other: &mut SmallVec<T, M>) {
+            // can't overflow since both are smaller than isize::MAX and 2 * isize::MAX < usize::MAX
+            let len = self.len();
+            let other_len = other.len();
+            let total_len = len + other_len;
+            if total_len > self.capacity() {
+                self.reserve(other_len);
+            }
+
+            // SAFETY: see `Self::push`
+            let ptr = unsafe { self.as_mut_ptr().add(len) };
+            unsafe { other.set_len(0) }
+            // SAFETY: we have a mutable reference to each vector and each uniquely owns its memory.
+            // so the ranges can't overlap
+            unsafe { copy_nonoverlapping(other.as_ptr(), ptr, other_len) };
+            unsafe { self.set_len(total_len) }
+        }
+
+        #[inline] pub fn grow(&mut self, new_capacity: usize) {
+            infallible(self.try_grow(new_capacity));
+        }
+
+        #[cold]
+        pub fn try_grow(&mut self, new_capacity: usize) -> Result<(), CollectionAllocErr> {
+            if Self::is_zst() {
+                return Ok(());
+            }
+
+            let len = self.len();
+            assert!(new_capacity >= len);
+
+            if new_capacity > Self::inline_size() {
+                // SAFETY: we checked all the preconditions
+                let result = unsafe { self.raw.try_grow_raw(self.len, new_capacity) };
+
+                if result.is_ok() {
+                    // SAFETY: the allocation succeeded, so self.raw.heap is now active
+                    unsafe { self.set_on_heap() };
+                }
+                result
+            } else {
+                // new_capacity <= Self::inline_size()
+                if self.spilled() {
+                    unsafe {
+                        // SAFETY: heap member is active
+                        let (ptr, old_cap) = self.raw.heap;
+                        // inline member is now active
+
+                        // SAFETY: len <= new_capacity <= Self::inline_size()
+                        // so the copy is within bounds of the inline member
+                        copy_nonoverlapping(ptr.as_ptr(), self.raw.as_mut_ptr_inline(), len);
+                        drop(DropDealloc {
+                            ptr: ptr.cast(),
+                            size_bytes: old_cap * size_of::<T>(),
+                            align: align_of::<T>(),
+                        });
+                        self.set_inline();
+                    }
+                }
+                Ok(())
+            }
+        }
+
+        #[inline] pub fn reserve(&mut self, additional: usize) {
+            // can't overflow since len <= capacity
+            if additional > self.capacity() - self.len() {
+                let new_capacity = infallible(
+                    self.len()
+                        .checked_add(additional)
+                        .and_then(usize::checked_next_power_of_two)
+                        .ok_or(CollectionAllocErr::CapacityOverflow),
+                );
+                self.grow(new_capacity);
+            }
+        }
+
+        #[inline] pub fn try_reserve(&mut self, additional: usize) -> Result<(), CollectionAllocErr> {
+            if additional > self.capacity() - self.len() {
+                let new_capacity = self
+                    .len()
+                    .checked_add(additional)
+                    .and_then(usize::checked_next_power_of_two)
+                    .ok_or(CollectionAllocErr::CapacityOverflow)?;
+                self.try_grow(new_capacity)
+            } else {
+                Ok(())
+            }
+        }
+
+        #[inline] pub fn reserve_exact(&mut self, additional: usize) {
+            if additional > self.capacity() - self.len() {
+                let new_capacity = infallible(
+                    self.len()
+                        .checked_add(additional)
+                        .ok_or(CollectionAllocErr::CapacityOverflow),
+                );
+                self.grow(new_capacity);
+            }
+        }
+
+        #[inline] pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), CollectionAllocErr> {
+            if additional > self.capacity() - self.len() {
+                let new_capacity = self
+                    .len()
+                    .checked_add(additional)
+                    .ok_or(CollectionAllocErr::CapacityOverflow)?;
+                self.try_grow(new_capacity)
+            } else {
+                Ok(())
+            }
+        }
+
+        #[inline] pub fn shrink_to_fit(&mut self) {
+            if !self.spilled() {
+                return;
+            }
+            let len = self.len();
+            if len <= Self::inline_size() {
+                unsafe {
+                    let (ptr, capacity) = self.raw.heap;
+                    self.raw = RawSmallVec::new_inline(MaybeUninit::uninit());
+                    copy_nonoverlapping(ptr.as_ptr(), self.raw.as_mut_ptr_inline(), len);
+                    self.set_inline();
+                    ::alloc::dealloc(
+                        ptr.cast().as_ptr(),
+                        Layout::from_size_align_unchecked(capacity * size_of::<T>(), align_of::<T>()),
+                    );
+                }
+            } else if len < self.capacity() {
+                unsafe { infallible(self.raw.try_grow_raw(self.len, len)) };
+            }
+        }
+
+        #[inline] pub fn shrink_to(&mut self, min_capacity: usize) {
+            if !self.spilled() {
+                return;
+            }
+            if self.capacity() > min_capacity {
+                let len = self.len();
+                let target = core::cmp::max(len, min_capacity);
+                if target <= Self::inline_size() {
+                    // SAFETY: self.spilled() is true, so we're on the heap
+                    unsafe {
+                        let (ptr, capacity) = self.raw.heap;
+                        self.raw = RawSmallVec::new_inline(MaybeUninit::uninit());
+                        copy_nonoverlapping(ptr.as_ptr(), self.raw.as_mut_ptr_inline(), len);
+                        self.set_inline();
+                        ::alloc::dealloc(
+                            ptr.cast().as_ptr(),
+                            Layout::from_size_align_unchecked(capacity * size_of::<T>(), align_of::<T>()),
+                        );
+                    }
+                } else if target < self.capacity() {
+                    // SAFETY: len > Self::inline_size() >= 0
+                    // so new capacity is non zero, it is equal to the length
+                    // T can't be a ZST because SmallVec<ZST, N> is never spilled.
+                    unsafe { infallible(self.raw.try_grow_raw(self.len, target)) };
+                }
+            }
+        }
+
+        #[inline] pub fn truncate(&mut self, len: usize) {
+            let old_len = self.len();
+            if len < old_len {
+                // SAFETY: we set `len` to a smaller value
+                // then we drop the previously initialized elements
+                unsafe {
+                    self.set_len(len);
+                    core::ptr::drop_in_place(core::ptr::slice_from_raw_parts_mut(
+                        self.as_mut_ptr().add(len),
+                        old_len - len,
+                    ))
+                }
+            }
+        }
+
+        #[inline] pub fn swap_remove(&mut self, index: usize) -> T {
+            let len = self.len();
+            assert!(index < len, "swap_remove index (is {index}) should be < len (is {len})");
+            // This can't overflow since `len > index >= 0`
+            let new_len = len - 1;
+            unsafe {
+                // We replace self[index] with the last element. Note that if the
+                // bounds check above succeeds there must be a last element (which
+                // can be self[index] itself).
+                let value = core::ptr::read(self.as_ptr().add(index));
+                let base_ptr = self.as_mut_ptr();
+                core::ptr::copy(base_ptr.add(new_len), base_ptr.add(index), 1);
+                self.set_len(new_len);
+                value
+            }
+        }
+
+        #[inline] pub fn clear(&mut self) {
+            // SAFETY: we set `len` to a smaller value
+            // then we drop the previously initialized elements
+            unsafe {
+                let old_len = self.len();
+                self.set_len(0);
+                core::ptr::drop_in_place(core::ptr::slice_from_raw_parts_mut(
+                    self.as_mut_ptr(),
+                    old_len,
+                ));
+            }
+        }
+
+        #[inline] pub fn remove(&mut self, index: usize) -> T {
+            let len = self.len();
+            assert!(index < len, "removal index (is {index}) should be < len (is {len})");
+            let new_len = len - 1;
+            unsafe {
+                // SAFETY: new_len < len
+                self.set_len(new_len);
+                let ptr = self.as_mut_ptr();
+                let ith = ptr.add(index);
+                // This item is initialized since index < len
+                let ith_item = ith.read();
+                copy(ith.add(1), ith, new_len - index);
+                ith_item
+            }
+        }
+
+        #[inline] pub fn insert(&mut self, index: usize, value: T) {
+            let len = self.len();
+            assert!(index <= len, "insertion index (is {index}) should be <= len (is {len})");
+            self.reserve(1);
+            let ptr = self.as_mut_ptr();
+            unsafe {
+                // the elements at `index + 1..len + 1` are now initialized
+                if index < len {
+                    copy(ptr.add(index), ptr.add(index + 1), len - index);
+                }
+                // the element at `index` is now initialized
+                ptr.add(index).write(value);
+
+                // SAFETY: all the elements are initialized
+                self.set_len(len + 1);
+            }
+        }
+
+        #[inline] pub const fn as_slice(&self) -> &[T] {
+            let len = self.len();
+            let ptr = self.as_ptr();
+            // SAFETY: all the elements in `..len` are initialized
+            unsafe { core::slice::from_raw_parts(ptr, len) }
+        }
+
+        #[inline] pub const fn as_mut_slice(&mut self) -> &mut [T] {
+            let len = self.len();
+            let ptr = self.as_mut_ptr();
+            // SAFETY: see above
+            unsafe { core::slice::from_raw_parts_mut(ptr, len) }
+        }
+
+        #[inline] pub const fn as_ptr(&self) -> *const T {
+            if self.len.on_heap(Self::is_zst()) {
+                // SAFETY: heap member is active
+                unsafe { self.raw.as_ptr_heap() }
+            } else {
+                self.raw.as_ptr_inline()
+            }
+        }
+
+        #[inline] pub const fn as_mut_ptr(&mut self) -> *mut T {
+            if self.len.on_heap(Self::is_zst()) {
+                // SAFETY: see above
+                unsafe { self.raw.as_mut_ptr_heap() }
+            } else {
+                self.raw.as_mut_ptr_inline()
+            }
+        }
+
+        #[inline] pub fn into_vec(self) -> Vec<T> {
+            let len = self.len();
+            if !self.spilled() {
+                let mut vec = Vec::with_capacity(len);
+                let this = ManuallyDrop::new(self);
+                // SAFETY: we create a new vector with sufficient capacity, copy our elements into it
+                // to transfer ownership and then set the length
+                // we don't drop the elements we previously held
+                unsafe {
+                    copy_nonoverlapping(this.raw.as_ptr_inline(), vec.as_mut_ptr(), len);
+                    vec.set_len(len);
+                }
+                vec
+            } else {
+                let this = ManuallyDrop::new(self);
+                // SAFETY:
+                // - `ptr` was created with the global allocator
+                // - `ptr` was created with the appropriate alignment for `T`
+                // - the allocation pointed to by ptr is exactly cap * sizeof(T)
+                // - `len` is less than or equal to `cap`
+                // - the first `len` entries are proper `T`-values
+                // - the allocation is not larger than `isize::MAX`
+                unsafe {
+                    let (ptr, cap) = this.raw.heap;
+                    Vec::from_raw_parts(ptr.as_ptr(), len, cap)
+                }
+            }
+        }
+
+        #[inline] pub fn into_boxed_slice(self) -> Box<[T]>
+        {
+            self.into_vec().into_boxed_slice()
+        }
+
+        #[inline] pub fn into_inner(self) -> Result<[T; N], Self> {
+            if self.len() != N {
+                Err(self)
+            } else {
+                // when `this` is dropped, the memory is released if it's on the heap.
+                let mut this = self;
+                // SAFETY: we release ownership of the elements we hold
+                unsafe {
+                    this.set_len(0);
+                }
+                let ptr = this.as_ptr() as *const [T; N];
+                // SAFETY: these elements are initialized since the length was `N`
+                unsafe { Ok(ptr.read()) }
+            }
+        }
+
+        #[inline] pub fn retain<F: FnMut(&T) -> bool>(&mut self, mut f: F) {
+            self.retain_mut(|elem| f(elem))
+        }
+
+        #[inline] pub fn retain_mut<F: FnMut(&mut T) -> bool>(&mut self, mut f: F) {
+            let mut del = 0;
+            let len = self.len();
+            let ptr = self.as_mut_ptr();
+            for i in 0..len {
+                // SAFETY: all the pointers are in bounds
+                // `i - del` never overflows since `del <= i` is a maintained invariant
+                unsafe {
+                    if !f(&mut *ptr.add(i)) {
+                        del += 1;
+                    } else if del > 0 {
+                        core::ptr::swap(ptr.add(i), ptr.add(i - del));
+                    }
+                }
+            }
+            self.truncate(len - del);
+        }
+
+        #[inline] pub fn dedup(&mut self)
+        where
+            T: PartialEq,
+        {
+            self.dedup_by(|a, b| a == b);
+        }
+
+        #[inline] pub fn dedup_by_key<F, K>(&mut self, mut key: F)
+        where
+            F: FnMut(&mut T) -> K,
+            K: PartialEq<K>,
+        {
+            self.dedup_by(|a, b| key(a) == key(b));
+        }
+
+        #[inline] pub fn dedup_by<F>(&mut self, mut same_bucket: F)
+        where
+            F: FnMut(&mut T, &mut T) -> bool,
+        {
+            // See the implementation of Vec::dedup_by in the
+            // standard library for an explanation of this algorithm.
+            let len = self.len();
+            if len <= 1 {
+                return;
+            }
+
+            let ptr = self.as_mut_ptr();
+            let mut w: usize = 1;
+
+            unsafe {
+                for r in 1..len {
+                    let p_r = ptr.add(r);
+                    let p_wm1 = ptr.add(w - 1);
+                    if !same_bucket(&mut *p_r, &mut *p_wm1) {
+                        if r != w {
+                            let p_w = p_wm1.add(1);
+                            core::ptr::swap(p_r, p_w);
+                        }
+                        w += 1;
+                    }
+                }
+            }
+
+            self.truncate(w);
+        }
+
+        pub fn resize_with<F>(&mut self, new_len: usize, f: F)
+        where
+            F: FnMut() -> T,
+        {
+            let old_len = self.len();
+            if old_len < new_len {
+                let mut f = f;
+                let additional = new_len - old_len;
+                self.reserve(additional);
+                for _ in 0..additional {
+                    self.push(f());
+                }
+            } else if old_len > new_len {
+                self.truncate(new_len);
+            }
+        }
+
+        pub fn leak<'a>(self) -> &'a mut [T] {
+            let mut me = ManuallyDrop::new(self);
+            unsafe { core::slice::from_raw_parts_mut(me.as_mut_ptr(), me.len()) }
+        }
+
+        /// Returns the remaining spare capacity of the vector as a slice of
+        /// `MaybeUninit<T>`.
+        ///
+        /// The returned slice can be used to fill the vector with data (e.g. by
+        /// reading from a file) before marking the data as initialized using the
+        /// [`set_len`](Self::set_len) method.
+        #[inline] pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<T>] {
+            unsafe {
+                core::slice::from_raw_parts_mut(
+                    self.as_mut_ptr().add(self.len()) as *mut MaybeUninit<T>,
+                    self.capacity() - self.len(),
+                )
+            }
+        }
+
+        /// Creates a `SmallVec` directly from the raw components of another `SmallVec`.
+        ///
+        /// # Safety
+        ///
+        /// This is highly unsafe, due to the number of invariants that aren’t checked:
+        ///
+        /// - `ptr` needs to have been previously allocated via `SmallVec` from its spilled storage (at least, it’s highly likely to be incorrect if it wasn’t).
+        /// - `ptr`’s `A::Item` type needs to be the same size and alignment that it was allocated with
+        /// - `length` needs to be less than or equal to `capacity`.
+        /// - `capacity` needs to be the capacity that the pointer was allocated with.
+        ///
+        /// Violating these may cause problems like corrupting the allocator’s internal data structures.
+        ///
+        /// Additionally, `capacity` must be greater than the amount of inline storage `A` has; that is, the new `SmallVec` must need to spill over into heap allocated storage. This condition is asserted against.
+        ///
+        /// The ownership of `ptr` is effectively transferred to the `SmallVec` which may then deallocate, reallocate or change the contents of memory pointed to by the pointer at will. Ensure that nothing else uses the pointer after calling this function.
+        ///
+        /// # Examples
+        ///
+        /// ```
+        /// use smallvec::{SmallVec, smallvec};
+        ///
+        /// let mut v: SmallVec<_, 1> = smallvec![1, 2, 3];
+        ///
+        /// // Pull out the important parts of `v`.
+        /// let p = v.as_mut_ptr();
+        /// let len = v.len();
+        /// let cap = v.capacity();
+        /// let spilled = v.spilled();
+        ///
+        /// unsafe {
+        ///     // Forget all about `v`. The heap allocation that stored the
+        ///     // three values won't be deallocated.
+        ///     std::mem::forget(v);
+        ///
+        ///     // Overwrite memory with [4, 5, 6].
+        ///     //
+        ///     // This is only safe if `spilled` is true! Otherwise, we are
+        ///     // writing into the old `SmallVec`'s inline storage on the
+        ///     // stack.
+        ///     assert!(spilled);
+        ///     for i in 0..len {
+        ///         std::ptr::write(p.add(i), 4 + i);
+        ///     }
+        ///
+        ///     // Put everything back together into a SmallVec with a different
+        ///     // amount of inline storage, but which is still less than `cap`.
+        ///     let rebuilt = SmallVec::<_, 2>::from_raw_parts(p, len, cap);
+        ///     assert_eq!(&*rebuilt, &[4, 5, 6]);
+        /// }
+        /// ```
+        #[inline] pub unsafe fn from_raw_parts(ptr: *mut T, length: usize, capacity: usize) -> SmallVec<T, N> {
+            assert!(!Self::is_zst());
+
+            // SAFETY: We require caller to provide same ptr as we alloc
+            // and we never alloc null pointer.
+            let ptr = unsafe {
+                debug_assert!(!ptr.is_null(), "Called `from_raw_parts` with null pointer.");
+                NonNull::new_unchecked(ptr)
+            };
+
+            SmallVec {
+                len: TaggedLen::new(length, true, Self::is_zst()),
+                raw: RawSmallVec::new_heap(ptr, capacity),
+                _marker: PhantomData,
+            }
+        }
+    }
+
+    impl<T: Clone, const N: usize> SmallVec<T, N> 
+    {
+        #[inline] pub fn resize(&mut self, len: usize, value: T) {
+            let old_len = self.len();
+            if len > old_len {
+                self.extend(core::iter::repeat_n(value, len - old_len));
+            } else {
+                self.truncate(len);
+            }
+        }
+
+        #[inline] pub fn extend_from_slice(&mut self, other: &[T]) {
+            self.extend(other.iter())
+        }
+
+        pub fn extend_from_within<R>(&mut self, src: R)
+        where
+            R: core::ops::RangeBounds<usize>,
+        {
+            let src = slice_range(src, ..self.len());
+            self.reserve(src.len());
+
+            // SAFETY: The call to `reserve` ensures that the capacity is large enough.
+            // The range is within bounds through the use of `core::slice::range`.
+            unsafe {
+                #[cfg(feature = "specialization")]
+                {
+                    <Self as spec_traits::SpecExtendFromWithin<T>>::spec_extend_from_within(self, src);
+                }
+
+                #[cfg(not(feature = "specialization"))]
+                {
+                    self.extend_from_within_fallback(src);
+                }
+            }
+        }
+
+        #[inline] pub fn extend_from_slice_copy(&mut self, other: &[T])
+        where
+            T: Copy
+        {
+            
+            let len = other.len();
+            let src = other.as_ptr();
+            
+            let l = self.len();
+            self.reserve(len);
+
+            // SAFETY: Additional memory has been reserved,
+            // therefore the pointer access is valid.
+            unsafe {
+                let dst = self.as_mut_ptr().add(l);
+                copy_nonoverlapping(src, dst, len);
+                self.set_len(l + len);
+            }
+        }
+
+        pub fn extend_from_within_copy<R>(&mut self, src: R)
+        where
+            R: core::ops::RangeBounds<usize>,
+            T: Copy
+        {
+            let src = slice_range(src, ..self.len());
+            let core::ops::Range { start, end } = src;
+            let len = end - start;
+            self.reserve(len);
+
+            // SAFETY: The call to `reserve` ensures that the capacity is large enough.
+            // The range is within bounds through the use of `core::slice::range`.
+            unsafe {
+                let l = self.len();
+                let ptr = self.as_mut_ptr();
+                copy_nonoverlapping(ptr.add(start), ptr.add(l), len);
+                self.set_len(l + len);
+            }
+        }
+
+        pub fn insert_from_slice_copy(&mut self, index: usize, other: &[T])
+        where
+            T: Copy
+        {
+            let l = self.len();
+            let len = other.len();
+            assert!(index <= l);
+            self.reserve(len);
+            unsafe {
+                let base_ptr = self.as_mut_ptr();
+                let ith_ptr = base_ptr.add(index);
+                let shifted_ptr = base_ptr.add(index + len);
+                // elements at `index + other_len..len + other_len` are now initialized
+                copy(ith_ptr, shifted_ptr, l - index);
+                // elements at `index..index + other_len` are now initialized
+                copy_nonoverlapping(other.as_ptr(), ith_ptr, len);
+
+                // SAFETY: all the elements are initialized
+                self.set_len(l + len);
+            }
+        }
+
+        /// A function for creating [`SmallVec`] values out of slices
+        /// for types with the [`Copy`] trait.
+        pub fn from_slice_copy(slice: &[T]) -> Self
+        where
+            T: Copy
+        {
+            let src = slice.as_ptr();
+            let len = slice.len();
+            let mut result = Self::with_capacity(len);
+
+            // SAFETY: By using `with_capacity`, the pointer will point to valid memory.
+            unsafe {
+                let dst = result.as_mut_ptr();
+                copy_nonoverlapping(src, dst, len);
+                result.set_len(len);
+            }
+
+            result
+        }
+    }
+
+    struct DropGuard<T> 
+    {
+        ptr: *mut T,
+        len: usize,
+    }
+
+    impl<T> Drop for DropGuard<T>
+    {
+        #[inline] fn drop(&mut self) {
+            unsafe {
+                core::ptr::slice_from_raw_parts_mut(self.ptr, self.len).drop_in_place();
+            }
+        }
+    }
+
+    struct DropDealloc {
+        ptr: NonNull<u8>,
+        size_bytes: usize,
+        align: usize,
+    }
+
+    impl Drop for DropDealloc 
+    {
+        #[inline] fn drop(&mut self) {
+            unsafe {
+                if self.size_bytes > 0 {
+                    ::alloc::dealloc(
+                        self.ptr.as_ptr(),
+                        Layout::from_size_align_unchecked(self.size_bytes, self.align),
+                    );
+                }
+            }
+        }
+    }
+
+    #[cfg(feature = "may_dangle")]
+    unsafe impl<#[may_dangle] T, const N: usize> Drop for SmallVec<T, N> {
+        fn drop(&mut self) {
+            let on_heap = self.spilled();
+            let len = self.len();
+            let ptr = self.as_mut_ptr();
+            // SAFETY: we first drop the elements, then `_drop_dealloc` is dropped, releasing memory we
+            // used to own
+            unsafe {
+                let _drop_dealloc = if on_heap {
+                    let capacity = self.capacity();
+                    Some(DropDealloc {
+                        ptr: NonNull::new_unchecked(ptr as *mut u8),
+                        size_bytes: capacity * size_of::<T>(),
+                        align: align_of::<T>(),
+                    })
+                } else {
+                    None
+                };
+                core::ptr::slice_from_raw_parts_mut(ptr, len).drop_in_place();
+            }
+        }
+    }
+
+    #[cfg(not(feature = "may_dangle"))]
+    impl<T, const N: usize> Drop for SmallVec<T, N> {
+        fn drop(&mut self) {
+            let on_heap = self.spilled();
+            let len = self.len();
+            let ptr = self.as_mut_ptr();
+            // SAFETY: see above
+            unsafe {
+                let _drop_dealloc = if on_heap {
+                    let capacity = self.capacity();
+                    Some(DropDealloc {
+                        ptr: NonNull::new_unchecked(ptr as *mut u8),
+                        size_bytes: capacity * size_of::<T>(),
+                        align: align_of::<T>(),
+                    })
+                } else {
+                    None
+                };
+                core::ptr::slice_from_raw_parts_mut(ptr, len).drop_in_place();
+            }
+        }
+    }
+
+    impl<T, const N: usize> Drop for IntoIter<T, N> {
+        fn drop(&mut self) {
+            // SAFETY: see above
+            unsafe {
+                let is_zst = size_of::<T>() == 0;
+                let on_heap = self.end.on_heap(is_zst);
+                let begin = self.begin;
+                let end = self.end.value(is_zst);
+                let ptr = self.as_mut_ptr();
+                let _drop_dealloc = if on_heap {
+                    let capacity = self.raw.heap.1;
+                    Some(DropDealloc {
+                        ptr: NonNull::new_unchecked(ptr as *mut u8),
+                        size_bytes: capacity * size_of::<T>(),
+                        align: align_of::<T>(),
+                    })
+                } else {
+                    None
+                };
+                core::ptr::slice_from_raw_parts_mut(ptr.add(begin), end - begin).drop_in_place();
+            }
+        }
+    }
+
+    impl<T, const N: usize> ::ops::Deref for SmallVec<T, N> {
+        type Target = [T];
+
+        #[inline] fn deref(&self) -> &Self::Target {
+            self.as_slice()
+        }
+    }
+    impl<T, const N: usize> ::ops::DerefMut for SmallVec<T, N>
+    {
+        #[inline] fn deref_mut(&mut self) -> &mut Self::Target {
+            self.as_mut_slice()
+        }
+    }
+    /// This function is used in the [`smallvec`] macro.
+    /// It is recommended to use the macro instead of using thís function.
+    #[doc(hidden)]
+    #[track_caller]
+    pub fn from_elem<T: Clone, const N: usize>(elem: T, n: usize) -> SmallVec<T, N> {
+        if n > SmallVec::<T, N>::inline_size() {
+            // Standard Rust vectors are already specialized.
+            SmallVec::<T, N>::from_vec(vec![elem; n])
+        } else {
+            #[cfg(feature = "specialization")]
+            {
+                // SAFETY: The precondition is checked in the initial comparison above.
+                unsafe { <SmallVec<T, N> as spec_traits::SpecFromElem<T>>::spec_from_elem(elem, n) }
+            }
+
+            #[cfg(not(feature = "specialization"))]
+            {
+                // SAFETY: The precondition is checked in the initial comparison above.
+                unsafe { SmallVec::<T, N>::from_elem_fallback(elem, n) }
+            }
+        }
+    }
+
+    #[cfg(feature = "specialization")]
+    mod spec_traits {
+        use super::*;
+
+        /// A trait for specializing the implementation of [`from_elem`].
+        ///
+        /// [`from_elem`]: crate::from_elem
+        pub(crate) trait SpecFromElem<T> {
+            /// Creates a `Smallvec` value where `elem` is repeated `n` times.
+            /// This will use the inline storage, not the heap.
+            ///
+            /// # Safety
+            ///
+            /// The caller must ensure that `n <= Self::inline_size()`.
+            unsafe fn spec_from_elem(elem: T, n: usize) -> Self;
+        }
+
+        impl<T: Clone, const N: usize> SpecFromElem<T> for SmallVec<T, N> {
+            #[inline]
+            default unsafe fn spec_from_elem(elem: T, n: usize) -> Self {
+                // SAFETY: Safety conditions are identical.
+                unsafe { SmallVec::from_elem_fallback(elem, n) }
+            }
+        }
+
+        impl<T: Copy, const N: usize> SpecFromElem<T> for SmallVec<T, N> {
+            unsafe fn spec_from_elem(elem: T, n: usize) -> Self {
+                let mut result = Self::new();
+
+                if n > 0 {
+                    let ptr = result.raw.as_mut_ptr_inline();
+
+                    // SAFETY: The caller ensures that the first `n`
+                    // is smaller than the inline size.
+                    unsafe {
+                        for i in 0..n {
+                            ptr.add(i).write(elem);
+                        }
+                    }
+                }
+
+                // SAFETY: The first `n` elements of the vector
+                // have been initialized in the loop above.
+                unsafe {
+                    result.set_len(n);
+                }
+
+                result
+            }
+        }
+
+        /// A trait for specializing the implementations of [`Extend`] and [`extend_from_slice`].
+        ///
+        /// [`extend_from_slice`]: crate::SmallVec::extend_from_slice
+        pub(crate) trait SpecExtend<T, I> {
+            fn spec_extend(&mut self, iter: I);
+        }
+
+        impl<T, I, const N: usize> SpecExtend<T, I> for SmallVec<T, N> where
+            I: Iterator<Item = T>,
+        {
+            #[inline]
+            default fn spec_extend(&mut self, iter: I) {
+                self.extend_fallback(iter);
+            }
+        }
+
+        impl<T, I, const N: usize> SpecExtend<T, I> for SmallVec<T, N> where
+            I: core::iter::TrustedLen<Item = T>,
+        {
+            fn spec_extend(&mut self, iter: I) {
+                let (_, Some(additional)) = iter.size_hint() else {
+                    panic!("capacity overflow")
+                };
+                self.reserve(additional);
+
+                // SAFETY: A `TrustedLen` iterator provides accurate information
+                // about its size, which was used to reserve additional memory.
+                // This ensures that the access operations inside the loop always
+                // operate on valid memory.
+                unsafe {
+                    let len = self.len();
+                    let ptr = self.as_mut_ptr().add(len);
+                    let mut guard = DropGuard { ptr, len: 0 };
+
+                    for x in iter {
+                        ptr.add(guard.len).write(x);
+                        guard.len += 1;
+                    }
+
+                    // The elements have been initialized in the loop above.
+                    self.set_len(len + guard.len);
+                    core::mem::forget(guard);
+                }
+            }
+        }
+
+        impl<T, const N: usize, const M: usize> SpecExtend<T, IntoIter<T, M>> for SmallVec<T, N> {
+            fn spec_extend(&mut self, mut iter: IntoIter<T, M>) {
+                let slice = iter.as_slice();
+                let len = slice.len();
+                let old_len = self.len();
+
+                self.reserve(len);
+
+                // SAFETY: Additional memory has been reserved above.
+                // Therefore, the copy operates on valid memory.
+                unsafe {
+                    let dst = self.as_mut_ptr().add(old_len);
+                    let src = slice.as_ptr();
+                    copy_nonoverlapping(src, dst, len);
+                }
+
+                // SAFETY: The elements were initialized above.
+                unsafe {
+                    self.set_len(old_len + len);
+                }
+
+                // Mark the iterator as fully consumed.
+                iter.begin = iter.end.value(Self::is_zst());
+            }
+        }
+
+        impl<'a, T: 'a, const N: usize, I> SpecExtend<&'a T, I> for SmallVec<T, N> where
+            I: Iterator<Item = &'a T>,
+            T: Clone,
+        {
+            #[inline]
+            default fn spec_extend(&mut self, iterator: I) {
+                self.spec_extend(iterator.cloned())
+            }
+        }
+
+        impl<'a, T: 'a, const N: usize> SpecExtend<&'a T, core::slice::Iter<'a, T>> for SmallVec<T, N> where
+            T: Copy,
+        {
+            fn spec_extend(&mut self, iter: core::slice::Iter<'a, T>) {
+                let slice = iter.as_slice();
+                let len = slice.len();
+                let old_len = self.len();
+
+                self.reserve(len);
+
+                // SAFETY: Additional memory has been reserved above.
+                // Therefore, the copy operates on valid memory.
+                unsafe {
+                    let dst = self.as_mut_ptr().add(old_len);
+                    let src = slice.as_ptr();
+                    copy_nonoverlapping(src, dst, len);
+                }
+
+                // SAFETY: The elements were initialized above.
+                unsafe {
+                    self.set_len(old_len + len);
+                }
+            }
+        }
+
+        /// A trait for specializing the implementation of [`extend_from_within`].
+        ///
+        /// [`extend_from_within`]: crate::SmallVec::extend_from_within
+        pub(crate) trait SpecExtendFromWithin<T> {
+            /// Main worker for [`extend_from_within`].
+            ///
+            /// # Safety
+            ///
+            /// * The length of the vector is larger than or equal to `src.len()`.
+            /// * The spare capacity of the vector is larger than or equal to `src.len()`.
+            ///
+            /// [`extend_from_within`]: SmallVec::extend_from_within
+            unsafe fn spec_extend_from_within(&mut self, src: core::ops::Range<usize>);
+        }
+
+        impl<T: Clone, const N: usize> SpecExtendFromWithin<T> for SmallVec<T, N> {
+            default unsafe fn spec_extend_from_within(&mut self, src: core::ops::Range<usize>) {
+                // SAFETY: Safety conditions are identical.
+                unsafe {
+                    self.extend_from_within_fallback(src);
+                }
+            }
+        }
+
+        impl<T: Copy, const N: usize> SpecExtendFromWithin<T> for SmallVec<T, N> {
+            unsafe fn spec_extend_from_within(&mut self, src: core::ops::Range<usize>) {
+                let old_len = self.len();
+
+                let start = src.start;
+                let len = src.len();
+
+                // SAFETY: The caller ensures that the vector has spare capacity
+                // for at least `src.len()` elements. This is alse the amount of memory
+                // accessed when the data is copied.
+                unsafe {
+                    let ptr = self.as_mut_ptr();
+                    let dst = ptr.add(old_len);
+                    let src = ptr.add(start);
+                    copy_nonoverlapping(src, dst, len);
+                }
+
+                // SAFETY: The elements were initialized above.
+                unsafe {
+                    self.set_len(old_len + len);
+                }
+            }
+        }
+
+        /// A trait for specializing the implementation of [`FromIterator`].
+        ///
+        /// [`clone_from`]: Clone::clone_from
+        pub(crate) trait SpecFromIterator<T, I> {
+            fn spec_from_iter(iter: I) -> Self;
+        }
+
+        impl<T, I, const N: usize> SpecFromIterator<T, I> for SmallVec<T, N> where
+            I: Iterator<Item = T>,
+        {
+            #[inline]
+            default fn spec_from_iter(iter: I) -> Self {
+                Self::from_iter_fallback(iter)
+            }
+        }
+
+        impl<T, I, const N: usize> SpecFromIterator<T, I> for SmallVec<T, N> where
+            I: core::iter::TrustedLen<Item = T>,
+        {
+            fn spec_from_iter(iter: I) -> Self {
+                let mut v = match iter.size_hint() {
+                    (_, Some(upper)) => SmallVec::with_capacity(upper),
+                    // TrustedLen contract guarantees that `size_hint() == (_, None)` means that there
+                    // are more than `usize::MAX` elements.
+                    // Since the previous branch would eagerly panic if the capacity is too large
+                    // (via `with_capacity`) we do the same here.
+                    _ => panic!("capacity overflow"),
+                };
+                // Reuse the extend specialization for TrustedLen.
+                v.spec_extend(iter);
+                v
+            }
+        }
+
+        /// A trait for specializing the implementation of [`clone_from`].
+        ///
+        /// [`clone_from`]: Clone::clone_from
+        pub(crate) trait SpecCloneFrom<T>
+        {
+            fn spec_clone_from(&mut self, source: &[T]);
+        }
+
+        impl<T: Clone, const N: usize> SpecCloneFrom<T> for SmallVec<T, N> {
+            #[inline]
+            default fn spec_clone_from(&mut self, source: &[T]) {
+                self.clone_from_fallback(source);
+            }
+        }
+
+        impl<T: Copy, const N: usize> SpecCloneFrom<T> for SmallVec<T, N> {
+            fn spec_clone_from(&mut self, source: &[T]) {
+                self.clear();
+                self.extend_from_slice(source);
+            }
+        }
+
+        /// A trait for specializing the implementation of [`From`]
+        /// with the source type being slices.
+        pub(crate) trait SpecFromSlice<T> {
+            /// Creates a `SmallVec` value based on the contents of `slice`.
+            /// This will use the inline storage, not the heap.
+            ///
+            /// # Safety
+            ///
+            /// The caller must ensure that `slice.len() <= Self::inline_size()`.
+            unsafe fn spec_from(slice: &[T]) -> Self;
+        }
+
+        impl<T: Clone, const N: usize> SpecFromSlice<T> for SmallVec<T, N> {
+            default unsafe fn spec_from(slice: &[T]) -> Self {
+                // SAFETY: Safety conditions are identical.
+                unsafe { Self::from_slice_fallback(slice) }
+            }
+        }
+
+        impl<T: Copy, const N: usize> SpecFromSlice<T> for SmallVec<T, N> {
+            unsafe fn spec_from(slice: &[T]) -> Self {
+                let mut v = Self::new();
+
+                let src = slice.as_ptr();
+                let len = slice.len();
+                let dst = v.as_mut_ptr();
+
+                // SAFETY: The caller ensures that the slice length is smaller
+                // than or equal to the inline length.
+                unsafe {
+                    copy_nonoverlapping(src, dst, len);
+                }
+
+                // SAFETY: The elements were initialized above.
+                unsafe {
+                    v.set_len(len);
+                }
+
+                v
+            }
+        }
+    }
+    /// Fallback functions for various specialized methods. These are kept in
+    /// a separate implementation block for easy access whenever specialization is disabled.
+    impl<T, const N: usize> SmallVec<T, N> {
+        /// Creates a `Smallvec` value where `elem` is repeated `n` times.
+        /// This will use the inline storage, not the heap.
+        ///
+        /// # Safety
+        ///
+        /// The caller must ensure that `n <= Self::inline_size()`.
+        unsafe fn from_elem_fallback(elem: T, n: usize) -> Self
+        where
+            T: Clone,
+        {
+            let mut result = Self::new();
+
+            if n > 0 {
+                let ptr = result.raw.as_mut_ptr_inline();
+                let mut guard = DropGuard { ptr, len: 0 };
+
+                // SAFETY: The caller ensures that the first `n`
+                // is smaller than the inline size.
+                unsafe {
+                    for i in 0..(n - 1) {
+                        ptr.add(i).write(elem.clone());
+                        guard.len += 1;
+                    }
+                    core::mem::forget(guard);
+                    ptr.add(n - 1).write(elem);
+                }
+            }
+
+            // SAFETY: The first `n` elements of the vector
+            // have been initialized in the loop above.
+            unsafe {
+                result.set_len(n);
+            }
+
+            result
+        }
+
+        fn extend_fallback<I>(&mut self, iter: I)
+        where
+            I: IntoIterator<Item = T>,
+        {
+            let iter = iter.into_iter();
+            let (size, _) = iter.size_hint();
+            self.reserve(size);
+            for x in iter {
+                self.push(x);
+            }
+        }
+
+        /// Main worker for [`extend_from_within`].
+        ///
+        /// # Safety
+        ///
+        /// * The length of the vector is larger than or equal to `src.len()`.
+        /// * The spare capacity of the vector is larger than or equal to `src.len()`.
+        ///
+        /// [`extend_from_within`]: SmallVec::extend_from_within
+        unsafe fn extend_from_within_fallback(&mut self, src: core::ops::Range<usize>)
+        where
+            T: Clone,
+        {
+            let old_len = self.len();
+
+            let start = src.start;
+            let len = src.len();
+
+            // SAFETY: The caller ensures that the vector has spare capacity
+            // for at least `src.len()` elements. This implies that the loop
+            // operates on valid memory.
+            unsafe {
+                let ptr = self.as_mut_ptr();
+                let dst = ptr.add(old_len);
+                let src = ptr.add(start);
+
+                let mut guard = DropGuard { ptr: dst, len: 0 };
+                for i in 0..len {
+                    let val = (*src.add(i)).clone();
+                    dst.add(i).write(val);
+                    guard.len += 1;
+                }
+                core::mem::forget(guard);
+            }
+
+            // SAFETY: The elements were initialized in the loop above.
+            unsafe {
+                self.set_len(old_len + len);
+            }
+        }
+
+        fn from_iter_fallback<I>(iter: I) -> Self
+        where
+            I: Iterator<Item = T>,
+        {
+            let (size, _) = iter.size_hint();
+            let mut v = Self::with_capacity(size);
+            for x in iter {
+                v.push(x);
+            }
+            v
+        }
+
+        fn clone_from_fallback(&mut self, source: &[T])
+        where
+            T: Clone,
+        {
+            // Inspired from `impl Clone for Vec`.
+
+            // Drop anything that will not be overwritten.
+            self.truncate(source.len());
+
+            // SAFETY: self.len <= other.len due to the truncate above, so the
+            // slices here are always in-bounds.
+            let (init, tail) = unsafe { source.split_at_unchecked(self.len()) };
+
+            // Reuse the contained values' allocations/resources.
+            self.clone_from_slice(init);
+            self.extend(tail.iter().cloned());
+        }
+
+        /// Creates a `SmallVec` value based on the contents of `slice`.
+        /// This will use the inline storage, not the heap.
+        ///
+        /// # Safety
+        ///
+        /// The caller must ensure that `slice.len() <= Self::inline_size()`.
+        unsafe fn from_slice_fallback(slice: &[T]) -> Self
+        where
+            T: Clone,
+        {
+            let mut v = Self::new();
+
+            let src = slice.as_ptr();
+            let len = slice.len();
+            let dst = v.as_mut_ptr();
+
+            // SAFETY: The caller ensures that the slice length is smaller
+            // than or equal to the inline length.
+            unsafe {
+                let mut guard = DropGuard { ptr: dst, len: 0 };
+                for i in 0..len {
+                    let val = (*src.add(i)).clone();
+                    dst.add(i).write(val);
+                    guard.len += 1;
+                }
+                core::mem::forget(guard);
+            }
+
+            // SAFETY: The elements were initialized in the loop above.
+            unsafe {
+                v.set_len(len);
+            }
+
+            v
+        }
+    }
+
+    impl<T: Clone, const N: usize> From<&[T]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &[T]) -> Self {
+            if slice.len() > Self::inline_size() {
+                // Standard Rust vectors are already specialized.
+                Self::from_vec(Vec::from(slice))
+            } else {
+                // SAFETY: The precondition is checked in the initial comparison above.
+                unsafe {
+                    #[cfg(feature = "specialization")]
+                    {
+                        <Self as spec_traits::SpecFromSlice<T>>::spec_from(slice)
+                    }
+
+                    #[cfg(not(feature = "specialization"))]
+                    {
+                        Self::from_slice_fallback(slice)
+                    }
+                }
+            }
+        }
+    }
+
+    impl<T: Clone, const N: usize> From<&mut [T]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &mut [T]) -> Self {
+            Self::from(slice as &[T])
+        }
+    }
+
+    impl<T: Clone, const M: usize, const N: usize> From<&[T; M]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &[T; M]) -> Self {
+            Self::from(slice as &[T])
+        }
+    }
+
+    impl<T: Clone, const M: usize, const N: usize> From<&mut [T; M]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &mut [T; M]) -> Self {
+            Self::from(slice as &[T])
+        }
+    }
+
+    impl<T, const N: usize, const M: usize> From<[T; M]> for SmallVec<T, N> {
+        fn from(array: [T; M]) -> Self {
+            if M > N {
+                // If M > N, we'd have to heap allocate anyway,
+                // so delegate for Vec for the allocation.
+                Self::from(Vec::from(array))
+            } else {
+                // M <= N
+                let mut this = Self::new();
+                debug_assert!(M <= this.capacity());
+                let array = ManuallyDrop::new(array);
+                // SAFETY: M <= this.capacity()
+                unsafe {
+                    copy_nonoverlapping(array.as_ptr(), this.as_mut_ptr(), M);
+                    this.set_len(M);
+                }
+                this
+            }
+        }
+    }
+
+    impl<T, const N: usize> From<Vec<T>> for SmallVec<T, N> {
+        fn from(array: Vec<T>) -> Self {
+            Self::from_vec(array)
+        }
+    }
+
+    impl<T: Clone, const N: usize> Clone for SmallVec<T, N>
+    {
+        #[inline] fn clone(&self) -> SmallVec<T, N> {
+            SmallVec::from(self.as_slice())
+        }
+
+        #[inline] fn clone_from(&mut self, source: &Self) {
+            #[cfg(feature = "specialization")]
+            {
+                <Self as spec_traits::SpecCloneFrom<T>>::spec_clone_from(self, source);
+            }
+
+            #[cfg(not(feature = "specialization"))]
+            {
+                self.clone_from_fallback(&*source);
+            }
+        }
+    }
+
+    impl<T: Clone, const N: usize> Clone for IntoIter<T, N>
+    {
+        #[inline] fn clone(&self) -> IntoIter<T, N> {
+            SmallVec::from(self.as_slice()).into_iter()
+        }
+    }
+
+    impl<T, const N: usize> Extend<T> for SmallVec<T, N>
+    {
+        #[inline] fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) {
+            #[cfg(feature = "specialization")]
+            {
+                spec_traits::SpecExtend::<T, _>::spec_extend(self, iter.into_iter());
+            }
+
+            #[cfg(not(feature = "specialization"))]
+            {
+                self.extend_fallback(iter);
+            }
+        }
+    }
+
+    impl<'a, T: Clone + 'a, const N: usize> Extend<&'a T> for SmallVec<T, N>
+    {
+        #[inline] fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) {
+            #[cfg(feature = "specialization")]
+            {
+                spec_traits::SpecExtend::<&'a T, _>::spec_extend(self, iter.into_iter());
+            }
+
+            #[cfg(not(feature = "specialization"))]
+            {
+                self.extend_fallback(iter.into_iter().cloned());
+            }
+        }
+    }
+
+    impl<T, const N: usize> ::iter::FromIterator<T> for SmallVec<T, N>
+    {
+        #[inline] fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self {
+            #[cfg(feature = "specialization")]
+            {
+                spec_traits::SpecFromIterator::<T, _>::spec_from_iter(iter.into_iter())
+            }
+
+            #[cfg(not(feature = "specialization"))]
+            {
+                Self::from_iter_fallback(iter.into_iter())
+            }
+        }
+    }
+
+    #[macro_export]
+    macro_rules! smallvec {
+        // count helper: transform any expression into 1
+        (@one $x:expr) => (1usize);
+        () => (
+            $crate::SmallVec::new()
+        );
+        ($elem:expr; $n:expr) => ({
+            $crate::from_elem($elem, $n)
+        });
+        ($($x:expr),+$(,)?) => ({
+            const COUNT: usize = 0usize $(+ $crate::smallvec!(@one $x))+;
+            let mut vec = $crate::SmallVec::new();
+            if COUNT <= vec.capacity() {
+                $(vec.push($x);)*
+                vec
+            } else {
+                $crate::SmallVec::from_vec($crate::alloc::vec![$($x,)+])
+            }
+        });
+    }
+
+    #[macro_export]
+    macro_rules! smallvec_inline {
+        // count helper: transform any expression into 1
+        (@one $x:expr) => (1usize);
+        ($elem:expr; $n:expr) => ({
+            $crate::SmallVec::<_, $n>::from_buf([$elem; $n])
+        });
+        ($($x:expr),+ $(,)?) => ({
+            const N: usize = 0usize $(+ $crate::smallvec_inline!(@one $x))*;
+            $crate::SmallVec::<_, N>::from_buf([$($x,)*])
+        });
+    }
+
+    impl<T, const N: usize> IntoIterator for SmallVec<T, N> {
+        type IntoIter = IntoIter<T, N>;
+        type Item = T;
+        fn into_iter(self) -> Self::IntoIter {
+            // SAFETY: we move out of this.raw by reading the value at its address, which is fine since
+            // we don't drop it
+            unsafe {
+                // Set SmallVec len to zero as `IntoIter` drop handles dropping of the elements
+                let this = ManuallyDrop::new(self);
+                IntoIter {
+                    raw: (&this.raw as *const RawSmallVec<T, N>).read(),
+                    begin: 0,
+                    end: this.len,
+                    _marker: PhantomData,
+                }
+            }
+        }
+    }
+
+    impl<'a, T, const N: usize> IntoIterator for &'a SmallVec<T, N> {
+        type IntoIter = core::slice::Iter<'a, T>;
+        type Item = &'a T;
+        fn into_iter(self) -> Self::IntoIter {
+            self.iter()
+        }
+    }
+
+    impl<'a, T, const N: usize> IntoIterator for &'a mut SmallVec<T, N> {
+        type IntoIter = core::slice::IterMut<'a, T>;
+        type Item = &'a mut T;
+        fn into_iter(self) -> Self::IntoIter {
+            self.iter_mut()
+        }
+    }
+
+    impl<T, U, const N: usize, const M: usize> PartialEq<SmallVec<U, M>> for SmallVec<T, N>
+    where
+        T: PartialEq<U>,
+    {
+        #[inline] fn eq(&self, other: &SmallVec<U, M>) -> bool {
+            self.as_slice().eq(other.as_slice())
+        }
+    }
+    impl<T, const N: usize> Eq for SmallVec<T, N> where T: Eq {}
+
+    impl<T, U, const N: usize, const M: usize> PartialEq<[U; M]> for SmallVec<T, N>
+    where
+        T: PartialEq<U>,
+    {
+        #[inline] fn eq(&self, other: &[U; M]) -> bool {
+            self[..] == other[..]
+        }
+    }
+
+    impl<T, U, const N: usize, const M: usize> PartialEq<&[U; M]> for SmallVec<T, N>
+    where
+        T: PartialEq<U>,
+    {
+        #[inline] fn eq(&self, other: &&[U; M]) -> bool {
+            self[..] == other[..]
+        }
+    }
+
+    impl<T, U, const N: usize> PartialEq<[U]> for SmallVec<T, N>
+    where
+        T: PartialEq<U>,
+    {
+        #[inline] fn eq(&self, other: &[U]) -> bool {
+            self[..] == other[..]
+        }
+    }
+
+    impl<T, U, const N: usize> PartialEq<&[U]> for SmallVec<T, N>
+    where
+        T: PartialEq<U>,
+    {
+        #[inline] fn eq(&self, other: &&[U]) -> bool {
+            self[..] == other[..]
+        }
+    }
+
+    impl<T, U, const N: usize> PartialEq<&mut [U]> for SmallVec<T, N>
+    where
+        T: PartialEq<U>,
+    {
+        #[inline] fn eq(&self, other: &&mut [U]) -> bool {
+            self[..] == other[..]
+        }
+    }
+
+    impl<T, const N: usize> PartialOrd for SmallVec<T, N>
+    where
+        T: PartialOrd,
+    {
+        #[inline] fn partial_cmp(&self, other: &SmallVec<T, N>) -> Option<core::cmp::Ordering>
+        {
+            self.as_slice().partial_cmp(other.as_slice())
+        }
+    }
+
+    impl<T, const N: usize> Ord for SmallVec<T, N>
+    where
+        T: Ord,
+    {
+        #[inline] fn cmp(&self, other: &SmallVec<T, N>) -> ::cmp::Ordering {
+            self.as_slice().cmp(other.as_slice())
+        }
+    }
+
+    impl<T: Hash, const N: usize> Hash for SmallVec<T, N> 
+    {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            self.as_slice().hash(state)
+        }
+    }
+
+    impl<T, const N: usize> Borrow<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn borrow(&self) -> &[T] {
+            self.as_slice()
+        }
+    }
+
+    impl<T, const N: usize> BorrowMut<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn borrow_mut(&mut self) -> &mut [T] {
+            self.as_mut_slice()
+        }
+    }
+
+    impl<T, const N: usize> AsRef<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn as_ref(&self) -> &[T] {
+            self.as_slice()
+        }
+    }
+
+    impl<T, const N: usize> AsMut<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn as_mut(&mut self) -> &mut [T] {
+            self.as_mut_slice()
+        }
+    }
+
+    impl<T: Debug, const N: usize> Debug for SmallVec<T, N> 
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            f.debug_list().entries(self.iter()).finish()
+        }
+    }
+
+    impl<T: Debug, const N: usize> Debug for IntoIter<T, N> 
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            f.debug_tuple("IntoIter").field(&self.as_slice()).finish()
+        }
+    }
+
+    impl<T: Debug, const N: usize> Debug for Drain<'_, T, N> 
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            f.debug_tuple("Drain").field(&self.iter.as_slice()).finish()
+        }
+    }
+    
+    impl<T, const N: usize> MallocShallowSizeOf for SmallVec<T, N> 
+    {
+        fn shallow_size_of(&self, ops: &mut MallocSizeOfOps) -> usize 
+        {
+            if self.spilled() { unsafe { ops.malloc_size_of(self.as_ptr()) } }
+
+            else { 0 }
+        }
+    }
+    
+    impl<T: MallocSizeOf, const N: usize> MallocSizeOf for SmallVec<T, N>
+    {
+        fn size_of(&self, ops: &mut MallocSizeOfOps) -> usize 
+        {
+            let mut n = self.shallow_size_of(ops);
+
+            for elem in self.iter()
+            {
+                n += elem.size_of(ops);
+            }
+
+            n
+        }
+    }
+    
+    impl<const N: usize> ::io::Write for SmallVec<u8, N>
+    {
+        #[inline] fn write(&mut self, buf: &[u8]) -> ::io::Result<usize>
+        {
+            self.extend_from_slice(buf);
+            Ok(buf.len())
+        }
+
+        #[inline] fn write_all(&mut self, buf: &[u8]) -> ::io::Result<()>
+        {
+            self.extend_from_slice(buf);
+            Ok(())
+        }
+
+        #[inline] fn flush(&mut self) -> ::io::Result<()> { Ok(()) }
+    }
 }
 /// Indent step in .over files.
 pub const INDENT_STEP: usize = 4;
@@ -43619,4 +47465,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 43622 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 47468 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
