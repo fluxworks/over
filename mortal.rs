@@ -48,6 +48,7 @@ pub mod parse;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate nix;
 #[macro_use] extern crate rand;
+#[macro_use] extern crate regex as re;
 #[macro_use] extern crate smallvec;
 #[macro_use] extern crate time as temporal;
 #[macro_use] extern crate unicode_normalization;
@@ -3543,6 +3544,87 @@ pub mod char
     pub fn ctrl(c: char) -> char { ((c as u8) & CTRL_MASK) as char }
     /// Returns the printable character corresponding to the given control character.
     pub fn unctrl(c: char) -> char { ((c as u8) | CTRL_BIT) as char }
+    /// Returns a string consisting of a `char`, repeated `n` times.
+    // pub fn repeat_char(ch: char, n: usize) -> String
+    pub fn repeat(ch: char, n: usize) -> String
+    {
+        let mut buf = [0; 4];
+        let s = ch.encode_utf8(&mut buf);
+        s.repeat(n)
+    }
+    // pub fn backward_char(n: usize, s: &str, cur: usize) -> usize
+    pub fn backward(n: usize, s: &str, cur: usize) -> usize
+    {
+        let mut chars = s[..cur].char_indices()
+            .filter(|&(_, ch)| !is::combining_mark(ch));
+        let mut res = cur;
+
+        for _ in 0..n {
+            match chars.next_back() {
+                Some((idx, _)) => res = idx,
+                None => return 0
+            }
+        }
+
+        res
+    }
+    // pub fn backward_search_char(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize>
+    pub fn backward_search(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize>
+    {
+        let mut pos = None;
+
+        for _ in 0..n {
+            match buf[..cur].rfind(ch) {
+                Some(p) => {
+                    cur = p;
+                    pos = Some(cur);
+                }
+                None => break
+            }
+        }
+
+        pos
+    }
+    // pub fn forward_char(n: usize, s: &str, cur: usize) -> usize
+    pub fn forward(n: usize, s: &str, cur: usize) -> usize
+    {
+        let mut chars = s[cur..].char_indices()
+            .filter(|&(_, ch)| !is::combining_mark(ch));
+
+        for _ in 0..n {
+            match chars.next() {
+                Some(_) => (),
+                None => return s.len()
+            }
+        }
+
+        match chars.next() {
+            Some((idx, _)) => cur + idx,
+            None => s.len()
+        }
+    }
+    // pub fn forward_search_char(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize>
+    pub fn forward_search(n: usize, buf: &str, mut cur: usize, ch: char) -> Option<usize>
+    {
+        let mut pos = None;
+
+        for _ in 0..n {
+            let off = match buf[cur..].chars().next() {
+                Some(ch) => ch.len_utf8(),
+                None => break
+            };
+
+            match buf[cur + off..].find(ch) {
+                Some(p) => {
+                    cur += off + p;
+                    pos = Some(cur);
+                }
+                None => break
+            }
+        }
+
+        pos
+    }
 }
 
 pub mod clone
@@ -3984,6 +4066,17 @@ pub mod get
             _ => None,
         }
     }
+    // pub fn get_open_paren(ch: char) -> Option<char>
+    pub fn open_parenthesis(ch: char) -> Option<char>
+    {
+        match ch
+        {
+            ')' => Some('('),
+            ']' => Some('['),
+            '}' => Some('{'),
+            _ => None
+        }
+    }
 }
 
 pub mod f32
@@ -4291,7 +4384,6 @@ pub mod is
     /*
     */
     /// Returns true if this character signifies the legal end of a value.
-   
     pub fn value_end_char(ch: char) -> bool 
     {
         whitespace(ch) || end_delimiter(ch) || operator(ch)
@@ -4411,7 +4503,12 @@ pub mod is
     {
         // Includes such terminal names as "xterm-256color"
         name == "xterm" || name.starts_with("xterm-")
-    }   
+    }
+    // pub fn is_wide(ch: char) -> bool
+    pub fn wide(ch: char) -> bool
+    {
+        char::width( ch ) == Some(2)
+    }
 }
 
 pub mod isize
@@ -4432,6 +4529,25 @@ pub mod io
 pub mod iter
 {
     pub use std::iter::{ * };
+    
+    pub fn drop_while<I, T, F>(iter: &mut I, mut f: F) where
+    I: Iterator<Item=T> + Clone, F: FnMut(T) -> bool
+    {
+        loop {
+            let mut clone = iter.clone();
+
+            match clone.next() {
+                None => break,
+                Some(t) => {
+                    if f(t) {
+                        *iter = clone;
+                    } else {
+                        break;
+                    }
+                }
+            }
+        }
+    }
 }
 
 pub mod marker
@@ -18959,6 +19075,33 @@ pub mod objects
 pub mod ops
 {
     pub use std::ops::{ * };
+
+    /// Implemented for built-in range types
+    pub trait RangeArgument<T>
+    {
+        /// Returns the start of range, if present.
+        fn start(&self) -> Option<&T> { None }
+        /// Returns the end of range, if present.
+        fn end(&self) -> Option<&T> { None }
+    }
+
+    impl<T> RangeArgument<T> for Range<T>
+    {
+        fn start(&self) -> Option<&T> { Some(&self.start) }
+        fn end(&self) -> Option<&T> { Some(&self.end) }
+    }
+
+    impl<T> RangeArgument<T> for RangeFrom<T>
+    {
+        fn start(&self) -> Option<&T> { Some(&self.start) }
+    }
+
+    impl<T> RangeArgument<T> for RangeTo<T>
+    {
+        fn end(&self) -> Option<&T> { Some(&self.end) }
+    }
+
+    impl<T> RangeArgument<T> for RangeFull {}
 }
 
 pub mod os
@@ -20454,6 +20597,195 @@ pub mod rc
     pub use std::rc::{ * };
 }
 
+pub mod regex
+{
+    /*!
+    */
+    pub use re::{ * };
+    use ::
+    {
+        *,
+    };
+    /*
+    */
+    /// Returns the longest common prefix of a set of strings.
+    pub fn longest_common_prefix<'a, I, S>(iter: I) -> Option<&'a str> where
+    I: IntoIterator<Item=&'a S>,
+    S: 'a + ?Sized + AsRef<str>
+    {
+        let mut iter = iter.into_iter();
+
+        let mut pfx = iter.next()?.as_ref();
+
+        for s in iter {
+            let s = s.as_ref();
+
+            let n = pfx.chars().zip(s.chars())
+                .take_while(|&(a, b)| a == b)
+                .map(|(ch, _)| ch.len_utf8()).sum();
+
+            if n == 0 {
+                return None;
+            } else {
+                pfx = &pfx[..n];
+            }
+        }
+
+        Some(pfx)
+    }
+    
+    pub fn backward_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize
+    {
+        let mut chars = buf[..cur].char_indices().rev();
+
+        for _ in 0..n {
+            drop_while(&mut chars, |(_, ch)| word_break.contains(ch));
+            if chars.clone().next().is_none() { break; }
+            drop_while(&mut chars, |(_, ch)| !word_break.contains(ch));
+            if chars.clone().next().is_none() { break; }
+        }
+
+        match chars.next() {
+            Some((ind, ch)) => ind + ch.len_utf8(),
+            None => 0
+        }
+    }
+
+    pub fn forward_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize
+    {
+        let mut chars = buf[cur..].char_indices();
+
+        for _ in 0..n {
+            drop_while(&mut chars, |(_, ch)| word_break.contains(ch));
+            if chars.clone().next().is_none() { break; }
+            drop_while(&mut chars, |(_, ch)| !word_break.contains(ch));
+            if chars.clone().next().is_none() { break; }
+        }
+
+        match chars.next() {
+            Some((ind, _)) => cur + ind,
+            None => buf.len()
+        }
+    }
+
+    pub fn back_n_words(n: usize, buf: &str, cur: usize, word_break: &str) -> Range<usize>
+    {
+        let prev = regex::backward_word(1, buf, cur, word_break);
+        let end = regex::word_end(&buf, prev, word_break);
+
+        if n > 1 {
+            let start = regex::backward_word(n - 1, buf, prev, word_break);
+            start..end
+        } else {
+            prev..end
+        }
+    }
+
+    pub fn forward_n_words(n: usize, buf: &str, cur: usize, word_break: &str) -> Range<usize>
+    {
+        let start = next_word(1, buf, cur, word_break);
+
+        if n > 1 {
+            let last = next_word(n - 1, buf, start, word_break);
+            let end = regex::word_end(buf, last, word_break);
+            start..end
+        } else {
+            let end = regex::word_end(buf, start, word_break);
+            start..end
+        }
+    }
+
+    pub fn first_word(buf: &str, word_break: &str) -> Option<usize>
+    {
+        let mut chars = buf.char_indices();
+
+        drop_while(&mut chars, |(_, ch)| word_break.contains(ch));
+
+        chars.next().map(|(idx, _)| idx)
+    }
+
+    pub fn word_start(buf: &str, cur: usize, word_break: &str) -> usize
+    {
+        let fwd = match buf[cur..].chars().next() {
+            Some(ch) => word_break.contains(ch),
+            None => return buf.len()
+        };
+
+        if fwd {
+            next_word(1, buf, cur, word_break)
+        } else {
+            let mut chars = buf[..cur].char_indices().rev();
+
+            drop_while(&mut chars, |(_, ch)| !word_break.contains(ch));
+
+            match chars.next() {
+                Some((idx, ch)) => idx + ch.len_utf8(),
+                None => 0
+            }
+        }
+    }
+
+    pub fn next_word(n: usize, buf: &str, cur: usize, word_break: &str) -> usize
+    {
+        let mut chars = buf[cur..].char_indices();
+
+        for _ in 0..n {
+            drop_while(&mut chars, |(_, ch)| !word_break.contains(ch));
+            if chars.clone().next().is_none() { break; }
+            drop_while(&mut chars, |(_, ch)| word_break.contains(ch));
+            if chars.clone().next().is_none() { break; }
+        }
+
+        match chars.next() {
+            Some((idx, _)) => cur + idx,
+            None => buf.len()
+        }
+    }
+
+    pub fn word_end(buf: &str, cur: usize, word_break: &str) -> usize
+    {
+        let mut chars = buf[cur..].char_indices();
+
+        drop_while(&mut chars, |(_, ch)| !word_break.contains(ch));
+
+        match chars.next() {
+            Some((idx, _)) => cur + idx,
+            None => buf.len()
+        }
+    }
+    
+    pub fn find_matching_parenthesis(s: &str, quotes: &str, open: char, close: char) -> Option<usize>
+    {
+        let mut chars = s.char_indices().rev();
+        let mut level = 0;
+        let mut string_delim = None;
+
+        while let Some((ind, ch)) = chars.next()
+        {
+            if string_delim == Some(ch) {
+                string_delim = None;
+            } else if quotes.contains(ch) {
+                string_delim = Some(ch);
+            } else if string_delim.is_none() && ch == close {
+                level += 1;
+            } else if string_delim.is_none() && ch == open {
+                level -= 1;
+
+                if level == 0 {
+                    return Some(ind);
+                }
+            }
+        }
+
+        None
+    }
+
+    pub fn match_name(name: &str, value: &str) -> bool
+    {
+        name == value || (name.starts_with(value) && name.as_bytes()[value.len()] == b'-')
+    }
+}
+
 pub mod result
 {
     pub use std::result::{ * };
@@ -20495,6 +20827,16 @@ pub mod str
     };
     /*
     */
+    macro_rules! eq_str 
+    {
+        ( $rhs:ty ) =>
+        {
+            impl<'a, A: Array<Item = u8>> PartialEq<$rhs> for SmallString<A>
+            {
+                #[inline] fn eq(&self, rhs: &$rhs) -> bool { self[..] == rhs[..] }
+            }
+        };
+    }
     /// Iterator over string prefixes.
     pub struct Prefixes<'a>
     {
@@ -21032,41 +21374,34 @@ pub mod str
         }
     }
 
-    macro_rules! eq_str {
-        ( $rhs:ty ) => {
-            impl<'a, A: Array<Item = u8>> PartialEq<$rhs> for SmallString<A> {
-                #[inline]
-                fn eq(&self, rhs: &$rhs) -> bool {
-                    self[..] == rhs[..]
-                }
-            }
-        };
-    }
-
     eq_str!(str);
     eq_str!(&'a str);
     eq_str!(String);
     eq_str!(Cow<'a, str>);
     
-    impl<A: Array<Item = u8>> PartialEq<OsStr> for SmallString<A> {
+    impl<A: Array<Item = u8>> PartialEq<OsStr> for SmallString<A> 
+    {
         #[inline] fn eq(&self, rhs: &OsStr) -> bool {
             &self[..] == rhs
         }
     }
     
-    impl<'a, A: Array<Item = u8>> PartialEq<&'a OsStr> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> PartialEq<&'a OsStr> for SmallString<A> 
+    {
         #[inline] fn eq(&self, rhs: &&OsStr) -> bool {
             &self[..] == *rhs
         }
     }
     
-    impl<A: Array<Item = u8>> PartialEq<OsString> for SmallString<A> {
+    impl<A: Array<Item = u8>> PartialEq<OsString> for SmallString<A> 
+    {
         #[inline] fn eq(&self, rhs: &OsString) -> bool {
             &self[..] == rhs
         }
     }
     
-    impl<'a, A: Array<Item = u8>> PartialEq<Cow<'a, OsStr>> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> PartialEq<Cow<'a, OsStr>> for SmallString<A> 
+    {
         #[inline] fn eq(&self, rhs: &Cow<OsStr>) -> bool {
             self[..] == **rhs
         }
@@ -21083,19 +21418,22 @@ pub mod str
 
     impl<A: Array<Item = u8>> Eq for SmallString<A> {}
 
-    impl<A: Array<Item = u8>> PartialOrd for SmallString<A> {
+    impl<A: Array<Item = u8>> PartialOrd for SmallString<A> 
+    {
         #[inline] fn partial_cmp(&self, rhs: &SmallString<A>) -> Option<Ordering> {
             Some(self.cmp(rhs))
         }
     }
 
-    impl<A: Array<Item = u8>> Ord for SmallString<A> {
+    impl<A: Array<Item = u8>> Ord for SmallString<A> 
+    {
         #[inline] fn cmp(&self, rhs: &SmallString<A>) -> Ordering {
             self[..].cmp(&rhs[..])
         }
     }
 
-    impl<A: Array<Item = u8>> Hash for SmallString<A> {
+    impl<A: Array<Item = u8>> Hash for SmallString<A> 
+    {
         #[inline] fn hash<H: Hasher>(&self, state: &mut H) {
             self[..].hash(state)
         }
@@ -21105,7 +21443,8 @@ pub mod str
         iter: Chars<'a>,
     }
 
-    impl<'a> Iterator for Drain<'a> {
+    impl<'a> Iterator for Drain<'a> 
+    {
         type Item = char;
 
         #[inline] fn next(&mut self) -> Option<char> {
@@ -21117,23 +21456,27 @@ pub mod str
         }
     }
 
-    impl<'a> DoubleEndedIterator for Drain<'a> {
+    impl<'a> DoubleEndedIterator for Drain<'a> 
+    {
         #[inline] fn next_back(&mut self) -> Option<char> {
             self.iter.next_back()
         }
     }
     /// A range draining iterator for `SmallString`.
-    pub struct DrainRange<'a, A: Array<Item = u8>> {
+    pub struct DrainRange<'a, A: Array<Item = u8>> 
+    {
         drain: smallvec::Drain<'a, A>,
     }
 
-    impl<A: Array<Item = u8>> fmt::Debug for DrainRange<'_, A> {
+    impl<A: Array<Item = u8>> fmt::Debug for DrainRange<'_, A> 
+    {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             self.drain.fmt(f)
         }
     }
 
-    impl<A: Array<Item = u8>> Iterator for DrainRange<'_, A> {
+    impl<A: Array<Item = u8>> Iterator for DrainRange<'_, A> 
+    {
         type Item = char;
 
         fn next(&mut self) -> Option<Self::Item>
@@ -21158,7 +21501,8 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> DoubleEndedIterator for DrainRange<'_, A> {
+    impl<A: Array<Item = u8>> DoubleEndedIterator for DrainRange<'_, A> 
+    {
         fn next_back(&mut self) -> Option<Self::Item>
         {
             let mut buf = [0; 4];
@@ -21179,12 +21523,14 @@ pub mod str
     impl<A: Array<Item = u8>> FusedIterator for DrainRange<'_, A> {}
     /// A possible error value when creating a `SmallString` from a byte array.
     #[derive(Debug)]
-    pub struct FromUtf8Error<A: Array<Item = u8>> {
+    pub struct FromUtf8Error<A: Array<Item = u8>> 
+    {
         buf: A,
         error: Utf8Error,
     }
 
-    impl<A: Array<Item = u8>> FromUtf8Error<A> {
+    impl<A: Array<Item = u8>> FromUtf8Error<A> 
+    {
         /// Returns the slice of `[u8]` bytes that were attempted to convert to a `SmallString`.
         #[inline] pub fn as_bytes(&self) -> &[u8] {
             let ptr = &self.buf as *const _ as *const u8;
@@ -21200,10 +21546,32 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> fmt::Display for FromUtf8Error<A> {
+    impl<A: Array<Item = u8>> fmt::Display for FromUtf8Error<A>
+    {
         #[inline] fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             fmt::Display::fmt(&self.error, f)
         }
+    }
+    
+    pub fn filter_visible(s: &str) -> Cow<str>
+    {
+        use ::system::reader::{START_INVISIBLE, END_INVISIBLE};
+
+        if !s.contains(START_INVISIBLE) { return Cow::Borrowed(s); }
+
+        let mut virt = String::new();
+        let mut ignore = false;
+
+        for ch in s.chars()
+        {
+            if ch == START_INVISIBLE { ignore = true; }
+            
+            else if ch == END_INVISIBLE { ignore = false; }
+
+            else if !ignore { virt.push( ch ); }
+        }
+
+        Cow::Owned(virt)
     }
 }
 
@@ -27009,7 +27377,10 @@ pub mod system
                     _lock: &mut dyn TerminalWriter<MemoryTerminal>, _state: ())
                     -> io::Result<()> { Ok(()) }
 
-            fn read(&mut self, buf: &mut Vec<u8>) -> io::Result<RawRead> {
+            fn read(&mut self, buf: &mut Vec<u8>) -> io::Result<Option<RawRead>>
+            {
+                None
+                /*
                 if let Some(size) = self.0.resize.take() {
                     return Ok(RawRead::Resize(size));
                 }
@@ -27026,7 +27397,7 @@ pub mod system
                     buf.set_len(len + n);
                 }
 
-                Ok(RawRead::Bytes(n))
+                Ok(RawRead::Bytes(n)) */
             }
         }
 
@@ -27098,20 +27469,12 @@ pub mod system
             system::
             {
                 command::{Category, Command},
-                complete::Completion,
-                function::Function,
+                complete::{ Completion },
+                function::{ Function },
                 reader::{BindingIter, InputState, ReadLock, ReadResult},
                 table::{format_columns, Line, Table},
                 terminal::{CursorMode, Signal, Size, Terminal},
-                variables::VariableIter,
-                util::
-                {
-                    get_open_paren, find_matching_paren, first_word,
-                    longest_common_prefix, repeat_char,
-                    back_n_words, forward_n_words,
-                    backward_char, forward_char, backward_word, forward_word,
-                    word_start, word_end, RangeArgument,
-                },
+                variables::{ VariableIter },
                 writer::
                 {
                     BLINK_DURATION, display_str,
@@ -27129,7 +27492,8 @@ pub mod system
             write: WriteLock<'b, Term>,
         }
 
-        impl<'a, 'b: 'a, Term: 'b + Terminal> Prompter<'a, 'b, Term> {
+        impl<'a, 'b: 'a, Term: 'b + Terminal> Prompter<'a, 'b, Term>
+        {
             pub fn new(read: &'a mut ReadLock<'b, Term>, write: WriteLock<'b, Term>)
                     -> Prompter<'a, 'b, Term> {
                 Prompter{read, write}
@@ -27385,7 +27749,9 @@ pub mod system
                 self.read.completions = completions;
             }
             /// Attempts to execute the current sequence.
-            fn execute_sequence(&mut self) -> io::Result<()> {
+            fn execute_sequence(&mut self) -> io::Result<()>
+            {
+                /*
                 match self.find_binding(&self.read.sequence) {
                     FindResult::Found(cmd) => {
                         let ch = self.read.sequence.chars().last().unwrap();
@@ -27407,12 +27773,14 @@ pub mod system
                         let expiry = self.keyseq_expiry();
                         self.read.state = InputState::ContinueSequence{expiry};
                     }
-                }
+                } */
 
                 Ok(())
             }
 
-            fn force_execute_sequence(&mut self) -> io::Result<()> {
+            fn force_execute_sequence(&mut self) -> io::Result<()>
+            {
+                /*
                 self.read.state = InputState::NewSequence;
 
                 match self.find_binding(&self.read.sequence) {
@@ -27428,7 +27796,7 @@ pub mod system
                         self.insert_first_char()?;
                     }
                     FindResult::Incomplete => unreachable!(),
-                }
+                } */
 
                 Ok(())
             }
@@ -27454,24 +27822,24 @@ pub mod system
 
                 Ok(())
             }
-
+            /*
             fn find_binding(&self, seq: &str) -> FindResult<Command> {
                 self.read.bindings.find(seq).cloned()
-            }
+            } */
 
             fn get_function(&self, name: &str) -> Option<&Arc<dyn Function<Term>>> {
                 self.read.functions.get(name)
             }
-
+            /*
             fn is_abort(&self, ch: char) -> bool {
                 let mut buf = [0; 4];
                 let s = ch.encode_utf8(&mut buf);
 
                 self.find_binding(&s) == FindResult::Found(Command::Abort)
-            }
-
-            fn execute_command(&mut self, cmd: Command, n: i32, ch: char) -> io::Result<()> {
-                use crate::command::Command::*;
+            } */
+            fn execute_command(&mut self, cmd: Command, n: i32, ch: char) -> io::Result<()> 
+            {
+                use system::command::Command::*;
 
                 let mut category = cmd.category();
 
@@ -27553,8 +27921,8 @@ pub mod system
                             }
 
                             if self.read.blink_matching_paren {
-                                if let Some(open) = get_open_paren(ch) {
-                                    if let Some(pos) = find_matching_paren(
+                                if let Some(open) = get::open_parenthesis(ch) {
+                                    if let Some(pos) = regex::find_matching_parenthesis(
                                             &self.write.buffer[..self.write.cursor],
                                             &self.read.string_chars, open, ch) {
                                         self.blink(pos)?;
@@ -27632,11 +28000,11 @@ pub mod system
                     }
                     ForwardWord => {
                         if n > 0 {
-                            let pos = forward_word(n as usize,
+                            let pos = regex::forward_word(n as usize,
                                 &self.write.buffer, self.write.cursor, &self.read.word_break);
                             self.write.move_to(pos)?;
                         } else if n < 0 {
-                            let pos = forward_word((-n) as usize,
+                            let pos = regex::forward_word((-n) as usize,
                                 &self.write.buffer, self.write.cursor, &self.read.word_break);
                             self.write.move_to(pos)?;
                         }
@@ -27651,12 +28019,12 @@ pub mod system
                     }
                     BackwardKillWord => {
                         if n > 0 {
-                            let pos = backward_word(n as usize,
+                            let pos = regex::backward_word(n as usize,
                                 &self.write.buffer, self.write.cursor, &self.read.word_break);
                             let r = pos..self.write.cursor;
                             self.kill_range(r)?;
                         } else if n < 0 {
-                            let pos = forward_word((-n) as usize,
+                            let pos = regex::forward_word((-n) as usize,
                                 &self.write.buffer, self.write.cursor, &self.read.word_break);
                             let r = self.write.cursor..pos;
                             self.kill_range(r)?;
@@ -27664,12 +28032,12 @@ pub mod system
                     }
                     KillWord => {
                         if n > 0 {
-                            let pos = forward_word(n as usize,
+                            let pos = regex::forward_word(n as usize,
                                 &self.write.buffer, self.write.cursor, &self.read.word_break);
                             let r = self.write.cursor..pos;
                             self.kill_range(r)?;
                         } else if n < 0 {
-                            let pos = backward_word((-n) as usize,
+                            let pos = regex::backward_word((-n) as usize,
                                 &self.write.buffer, self.write.cursor, &self.read.word_break);
                             let r = pos..self.write.cursor;
                             self.kill_range(r)?;
@@ -27677,12 +28045,12 @@ pub mod system
                     }
                     UnixWordRubout => {
                         if n > 0 {
-                            let pos = backward_word(n as usize,
+                            let pos = regex::backward_word(n as usize,
                                 &self.write.buffer, self.write.cursor, " \t\n");
                             let r = pos..self.write.cursor;
                             self.kill_range(r)?;
                         } else if n < 0 {
-                            let pos = forward_word((-n) as usize,
+                            let pos = regex::forward_word((-n) as usize,
                                 &self.write.buffer, self.write.cursor, " \t\n");
                             let r = self.write.cursor..pos;
                             self.kill_range(r)?;
@@ -27698,13 +28066,13 @@ pub mod system
                             if self.read.overwrite_mode {
                                 self.overwrite_back(n as usize)?;
                             } else {
-                                let pos = backward_char(n as usize,
+                                let pos = char::backward(n as usize,
                                     &self.write.buffer, self.write.cursor);
                                 let r = pos..self.write.cursor;
                                 self.delete_range(r)?;
                             }
                         } else if n < 0 {
-                            let pos = forward_char((-n) as usize,
+                            let pos = char::forward((-n) as usize,
                                 &self.write.buffer, self.write.cursor);
                             let r = self.write.cursor..pos;
                             self.delete_range(r)?;
@@ -27712,12 +28080,12 @@ pub mod system
                     }
                     DeleteChar => {
                         if n > 0 {
-                            let pos = forward_char(n as usize,
+                            let pos = char::forward(n as usize,
                                 &self.write.buffer, self.write.cursor);
                             let r = self.write.cursor..pos;
                             self.delete_range(r)?;
                         } else if n < 0 {
-                            let pos = backward_char(n as usize,
+                            let pos = char::backward(n as usize,
                                 &self.write.buffer, self.write.cursor);
                             let r = pos..self.write.cursor;
                             self.delete_range(r)?;
@@ -27728,22 +28096,22 @@ pub mod system
                             let (src, dest);
 
                             if !self.explicit_arg() && self.write.cursor == self.write.buffer.len() {
-                                let end = backward_char(1, &self.write.buffer, self.write.cursor);
-                                let start = backward_char(1, &self.write.buffer, end);
+                                let end = char::backward(1, &self.write.buffer, self.write.cursor);
+                                let start = char::backward(1, &self.write.buffer, end);
 
                                 src = start..end;
                                 dest = end..self.write.cursor;
                             } else {
-                                let start = backward_char(1, &self.write.buffer, self.write.cursor);
+                                let start = char::backward(1, &self.write.buffer, self.write.cursor);
                                 let end = self.write.cursor;
 
                                 src = start..end;
 
                                 dest = if n < 0 {
-                                    let back = backward_char((-n) as usize, &self.write.buffer, start);
+                                    let back = char::backward((-n) as usize, &self.write.buffer, start);
                                     back..start
                                 } else {
-                                    let fwd = forward_char(n as usize + 1, &self.write.buffer, start);
+                                    let fwd = char::forward(n as usize + 1, &self.write.buffer, start);
                                     end..fwd
                                 };
                             }
@@ -27753,31 +28121,31 @@ pub mod system
                     }
                     TransposeWords => {
                         if n != 0 {
-                            if let Some(first) = first_word(&self.write.buffer[..self.write.cursor], &self.read.word_break) {
-                                let start = word_start(&self.write.buffer, self.write.cursor, &self.read.word_break);
+                            if let Some(first) = regex::first_word(&self.write.buffer[..self.write.cursor], &self.read.word_break) {
+                                let start = regex::word_start(&self.write.buffer, self.write.cursor, &self.read.word_break);
 
                                 if first != start {
                                     let (src, dest);
 
                                     if !self.explicit_arg() && start == self.write.buffer.len() {
-                                        let dest_start = backward_word(1, &self.write.buffer, start, &self.read.word_break);
-                                        let dest_end = word_end(&self.write.buffer, dest_start, &self.read.word_break);
+                                        let dest_start = regex::backward_word(1, &self.write.buffer, start, &self.read.word_break);
+                                        let dest_end = regex::word_end(&self.write.buffer, dest_start, &self.read.word_break);
 
-                                        let src_start = backward_word(1, &self.write.buffer, dest_start, &self.read.word_break);
-                                        let src_end = word_end(&self.write.buffer, src_start, &self.read.word_break);
+                                        let src_start = regex::backward_word(1, &self.write.buffer, dest_start, &self.read.word_break);
+                                        let src_end = regex::word_end(&self.write.buffer, src_start, &self.read.word_break);
 
                                         src = src_start..src_end;
                                         dest = dest_start..dest_end;
                                     } else {
-                                        let src_start = backward_word(1, &self.write.buffer, start, &self.read.word_break);
-                                        let src_end = word_end(&self.write.buffer, src_start, &self.read.word_break);
+                                        let src_start = regex::backward_word(1, &self.write.buffer, start, &self.read.word_break);
+                                        let src_end = regex::word_end(&self.write.buffer, src_start, &self.read.word_break);
 
                                         src = src_start..src_end;
 
                                         dest = if n < 0 {
-                                            back_n_words((-n) as usize, &self.write.buffer, src_start, &self.read.word_break)
+                                            regex::back_n_words((-n) as usize, &self.write.buffer, src_start, &self.read.word_break)
                                         } else {
-                                            forward_n_words(n as usize, &self.write.buffer, src_start, &self.read.word_break)
+                                            regex::forward_n_words(n as usize, &self.write.buffer, src_start, &self.read.word_break)
                                         };
                                     }
 
@@ -27989,7 +28357,7 @@ pub mod system
                         let end = self.write.cursor;
 
                         {
-                            let pfx = longest_common_prefix(completions.iter()
+                            let pfx = regex::longest_common_prefix(completions.iter()
                                 .map(|compl| &compl.completion[..]))
                                 .unwrap_or_default();
                             self.replace_str_forward(start..end, &pfx)?;
@@ -28268,23 +28636,23 @@ pub mod system
             }
 
             fn backward_word(&mut self, n: usize) -> io::Result<()> {
-                let pos = backward_word(n,
+                let pos = regex::backward_word(n,
                     &self.write.buffer, self.write.cursor, &self.read.word_break);
                 self.write.move_to(pos)
             }
 
             fn forward_word(&mut self, n: usize) -> io::Result<()> {
-                let pos = forward_word(n,
+                let pos = regex::forward_word(n,
                     &self.write.buffer, self.write.cursor, &self.read.word_break);
                 self.write.move_to(pos)
             }
             /// Deletes a range of text from the input buffer.
-            pub fn delete_range<R: RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
+            pub fn delete_range<R: ops::RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
                 self.write.delete_range(range)
             }
             /// Deletes a range from the buffer and adds the removed text to the
             /// kill ring.
-            pub fn kill_range<R: RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
+            pub fn kill_range<R: ops::RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
                 let start = range.start().cloned().unwrap_or(0);
                 let end = range.end().cloned().unwrap_or_else(|| self.write.buffer.len());
                 let len = end - start;
@@ -28368,7 +28736,7 @@ pub mod system
             /// Overwrite `n` characters; assumes `n >= 1`
             fn overwrite(&mut self, n: usize, ch: char) -> io::Result<()> {
                 let start = self.write.cursor;
-                let end = forward_char(n, &self.write.buffer, start);
+                let end = char::forward(n, &self.write.buffer, start);
 
                 {
                     let over = &self.write.buffer[start..end];
@@ -28383,7 +28751,7 @@ pub mod system
                     }
                 }
 
-                let s = repeat_char(ch, n);
+                let s = char::repeat(ch, n);
                 self.replace_str_forward(start..end, &s)
             }
 
@@ -28391,7 +28759,7 @@ pub mod system
                 if self.read.overwritten_append != 0 {
                     let n_del = n.min(self.read.overwritten_append);
 
-                    let pos = backward_char(n_del, &self.write.buffer, self.write.cursor);
+                    let pos = char::backward(n_del, &self.write.buffer, self.write.cursor);
                     let r = pos..self.write.cursor;
                     self.delete_range(r)?;
 
@@ -28402,9 +28770,9 @@ pub mod system
                 if n != 0 && !self.read.overwritten_chars.is_empty() {
                     let n_repl = n.min(self.read.overwritten_chars.chars().count());
 
-                    let pos = backward_char(n_repl, &self.write.buffer, self.write.cursor);
+                    let pos = char::backward(n_repl, &self.write.buffer, self.write.cursor);
 
-                    let over_pos = backward_char(n_repl,
+                    let over_pos = char::backward(n_repl,
                         &self.read.overwritten_chars, self.read.overwritten_chars.len());
 
                     let over = self.read.overwritten_chars.drain(over_pos..).collect::<String>();
@@ -28424,7 +28792,7 @@ pub mod system
             /// Insert a given character at the current cursor position `n` times.
             pub fn insert(&mut self, n: usize, ch: char) -> io::Result<()> {
                 if n != 0 {
-                    let s = repeat_char(ch, n);
+                    let s = char::repeat(ch, n);
                     self.insert_str(&s)?;
                 }
 
@@ -28435,14 +28803,14 @@ pub mod system
                 self.write.insert_str(s)
             }
             /// Replaces a range in the buffer and redraws.
-            pub fn replace_str_backward<R: RangeArgument<usize>>(&mut self,
+            pub fn replace_str_backward<R: ops::RangeArgument<usize>>(&mut self,
                     range: R, s: &str) -> io::Result<()> {
                 self.replace_str_impl(range, s)?;
                 let len = self.write.buffer.len();
                 self.write.move_from(len)
             }
             /// Replaces a range in the buffer and redraws.
-            pub fn replace_str_forward<R: RangeArgument<usize>>(&mut self,
+            pub fn replace_str_forward<R: ops::RangeArgument<usize>>(&mut self,
                     range: R, s: &str) -> io::Result<()> {
                 self.replace_str_impl(range, s)?;
                 self.write.cursor += s.len();
@@ -28450,7 +28818,7 @@ pub mod system
                 self.write.move_from(len)
             }
             /// Replaces a range in the buffer and redraws.
-            fn replace_str_impl<R: RangeArgument<usize>>(&mut self,
+            fn replace_str_impl<R: ops::RangeArgument<usize>>(&mut self,
                     range: R, s: &str) -> io::Result<()> {
                 let start = range.start().cloned().unwrap_or(0);
                 let end = range.end().cloned().unwrap_or_else(|| self.write.buffer.len());
@@ -28472,22 +28840,1124 @@ pub mod system
         */
         use ::
         {
+            borrow::{ Cow },
+            collections::{ HashMap, VecDeque },
+            mem::{ replace },
+            ops::{ Deref, DerefMut },
+            path::{ Path, PathBuf },
+            regex::{ match_name },
+            sync::{ Arc, MutexGuard },
+            system::
+            {
+                self,
+                command::{ Category, Command },
+                common::sys::{ user_init_file, env_init_file, system_init_file },
+                complete::{ Completer, Completion, DummyCompleter },
+                function::{ Function },
+                input::{parse_file, Directive},
+                interface::{ Interface },
+                prompter::{ Prompter },
+                terminal::
+                {
+                    RawRead, Terminal, TerminalReader,
+                },
+                variables::{ Variable, Variables, VariableIter },
+            },
+            time::std::{ Duration, Instant },
             *,
         };
         /*
+            use mortal::SequenceMap;
+            use crate::util::{first_char, match_name};
         */
+        /// Default set of string characters
+        pub const STRING_CHARS: &str = "\"'";
+        /// Default set of word break characters
+        pub const WORD_BREAK_CHARS: &str = " \t\n\"\\'`@$><=;|&{(";
+        /// Indicates the start of a series of invisible characters in the prompt
+        pub const START_INVISIBLE: char = '\x01';
+        /// Indicates the end of a series of invisible characters in the prompt
+        pub const END_INVISIBLE: char = '\x02';
+        /// Maximum size of kill ring
+        const MAX_KILLS: usize = 10;
+        /// Provides access to data related to reading and processing user input.
+        pub struct Reader<'a, Term: 'a + Terminal>
+        {
+            iface: &'a Interface<Term>,
+            lock: ReadLock<'a, Term>,
+        }
+
+        pub struct Read<Term: Terminal> 
+        {
+            /// Application name
+            pub application: Cow<'static, str>,
+            /// Pending input
+            pub input_buffer: Vec<u8>,
+            /// Pending macro sequence
+            pub macro_buffer: String,
+            //pub bindings: Option<SequenceMap<Cow<'static, str>, Command>>,
+            pub functions: HashMap<Cow<'static, str>, Arc<dyn Function<Term>>>,
+            /// Current input sequence
+            pub sequence: String,
+            /// Whether newline has been received
+            pub input_accepted: bool,
+            /// Whether overwrite mode is currently active
+            pub overwrite_mode: bool,
+            /// Characters appended while in overwrite mode
+            pub overwritten_append: usize,
+            /// Characters overwritten in overwrite mode
+            pub overwritten_chars: String,
+            /// Configured completer
+            pub completer: Arc<dyn Completer<Term>>,
+            /// Character appended to completions
+            pub completion_append_character: Option<char>,
+            /// Current set of possible completions
+            pub completions: Option<Vec<Completion>>,
+            /// Current "menu-complete" entry being viewed:
+            pub completion_index: usize,
+            /// Start of the completed word
+            pub completion_start: usize,
+            /// Start of the inserted prefix of a completed word
+            pub completion_prefix: usize,
+
+            pub string_chars: Cow<'static, str>,
+            pub word_break: Cow<'static, str>,
+
+            pub last_cmd: Category,
+            pub last_yank: Option<(usize, usize)>,
+            pub kill_ring: VecDeque<String>,
+
+            pub catch_signals: bool,
+            pub ignore_signals: system::terminal::SignalSet,
+            pub report_signals: system::terminal::SignalSet,
+            pub last_resize: Option<system::terminal::Size>,
+            pub last_signal: Option<system::terminal::Signal>,
+
+            variables: Variables,
+
+            pub state: InputState,
+            pub max_wait_duration: Option<Duration>,
+        }
+
+        pub struct ReadLock<'a, Term: 'a + Terminal>
+        {
+            term: Box<dyn TerminalReader<Term> + 'a>,
+            data: MutexGuard<'a, Read<Term>>,
+        }
+        /// Returned from [`read_line`] to indicate user input
+        #[derive(Debug)]
+        pub enum ReadResult
+        {
+            /// User issued end-of-file.
+            Eof,
+            /// User input received.
+            Input(String),
+            /// Reported signal was received.
+            Signal( system::terminal::Signal ),
+        }
+
+        #[derive(Copy, Clone, Debug)]
+        pub enum InputState {
+            Inactive,
+            NewSequence,
+            ContinueSequence{
+                expiry: Option<Instant>,
+            },
+            Number,
+            CharSearch{
+                n: usize,
+                backward: bool,
+            },
+            TextSearch,
+            CompleteIntro,
+            CompleteMore(usize),
+            QuotedInsert(usize),
+        }
+
+        impl<'a, Term: 'a + Terminal> Reader<'a, Term> {
+            pub fn new(iface: &'a Interface<Term>, lock: ReadLock<'a, Term>)
+                    -> Reader<'a, Term> {
+                Reader{iface, lock}
+            }
+            /// Interactively reads a line from the terminal device.
+            pub fn read_line(&mut self) -> io::Result<ReadResult> {
+                loop {
+                    if let Some(res) = self.read_line_step(None)? {
+                        return Ok(res);
+                    }
+                }
+            }
+            /// Performs one step of the interactive `read_line` loop.
+            pub fn read_line_step(&mut self, timeout: Option<Duration>)
+                    -> io::Result<Option<ReadResult>> {
+                self.initialize_read_line()?;
+
+                let state = self.prepare_term()?;
+                let res = self.read_line_step_impl(timeout);
+                self.lock.term.restore(state)?;
+
+                res
+            }
+            /// Cancels an in-progress `read_line` operation.
+            pub fn cancel_read_line(&mut self) -> io::Result<()> {
+                self.end_read_line()
+            }
+
+            fn initialize_read_line(&mut self) -> io::Result<()> {
+                if !self.lock.is_active() {
+                    self.prompter().start_read_line()?;
+                }
+                Ok(())
+            }
+
+            fn read_line_step_impl(&mut self, timeout: Option<Duration>)
+                    -> io::Result<Option<ReadResult>> {
+                let do_read = if self.lock.is_input_available()
+                {
+                    self.lock.term.wait_for_input(Some(Duration::from_secs(0)))?
+                } else {
+                    let timeout = limit_duration(timeout, self.lock.max_wait_duration);
+                    self.lock.term.wait_for_input(timeout)?
+                };
+
+                if do_read {
+                    self.lock.read_input()?;
+                }
+
+                if let Some(size) = self.lock.take_resize() {
+                    self.handle_resize(size)?;
+                }
+
+                if let Some(sig) = self.lock.take_signal() {
+                    if self.lock.report_signals.contains(sig) {
+                        return Ok(Some(ReadResult::Signal(sig)));
+                    }
+                    if !self.lock.ignore_signals.contains(sig) {
+                        self.handle_signal(sig)?;
+                    }
+                }
+
+                // Acquire the write lock and process all available input
+                {
+                    let mut prompter = self.prompter();
+
+                    prompter.check_expire_timeout()?;
+                    
+                    let mut macro_len = prompter.read.data.macro_buffer.len();
+
+                    while prompter.read.is_input_available() {
+                        if let Some(ch) = prompter.read.read_char()? {
+                            if let Some(r) = prompter.handle_input(ch)? {
+                                prompter.end_read_line()?;
+                                return Ok(Some(r));
+                            }
+                        }
+
+                        let new_macro_len = prompter.read.data.macro_buffer.len();
+
+                        if new_macro_len != 0 && new_macro_len >= macro_len {
+                            break;
+                        }
+
+                        macro_len = new_macro_len;
+                    }
+                }
+
+                Ok(None)
+            }
+
+            fn end_read_line(&mut self) -> io::Result<()> {
+                if self.lock.is_active() {
+                    self.prompter().end_read_line()?;
+                }
+                Ok(())
+            }
+
+            fn prepare_term(&mut self) -> io::Result<Term::PrepareState> {
+                if self.read_next_raw() {
+                    self.lock.term.prepare(true, system::terminal::SignalSet::new())
+                } else {
+                    let mut signals = self.lock.report_signals.union(self.lock.ignore_signals);
+
+                    if self.lock.catch_signals {
+                        signals.insert( system::terminal::Signal::Interrupt );
+                    }
+
+                    let block_signals = !self.lock.catch_signals;
+
+                    self.lock.term.prepare(block_signals, signals)
+                }
+            }
+
+            fn read_next_raw(&self) -> bool {
+                match self.lock.state {
+                    InputState::QuotedInsert(_) => true,
+                    _ => false
+                }
+            }
+            /// Sets the input buffer to the given string.
+            pub fn set_buffer(&mut self, buf: &str) -> io::Result<()> {
+                if self.lock.is_active() {
+                    self.prompter().set_buffer(buf)
+                } else {
+                    self.iface.lock_write_data().set_buffer(buf);
+                    Ok(())
+                }
+            }
+            /// Sets the cursor position in the input buffer.
+            pub fn set_cursor(&mut self, pos: usize) -> io::Result<()> {
+                if self.lock.is_active() {
+                    self.prompter().set_cursor(pos)
+                } else {
+                    self.iface.lock_write_data().set_cursor(pos);
+                    Ok(())
+                }
+            }
+            /// Sets the prompt that will be displayed when `read_line` is called.
+            pub fn set_prompt(&mut self, prompt: &str) -> io::Result<()> {
+                self.prompter().set_prompt(prompt)
+            }
+            /// Adds a line to history.
+            pub fn add_history(&self, line: String) {
+                if !self.lock.is_active() {
+                    self.iface.lock_write().add_history(line);
+                }
+            }
+            /// Adds a line to history, unless it is identical to the most recent entry.
+            pub fn add_history_unique(&self, line: String) {
+                if !self.lock.is_active() {
+                    self.iface.lock_write().add_history_unique(line);
+                }
+            }
+            /// Removes all history entries.
+            pub fn clear_history(&self) {
+                if !self.lock.is_active() {
+                    self.iface.lock_write().clear_history();
+                }
+            }
+            /// Removes the history entry at the given index.
+            pub fn remove_history(&self, idx: usize) {
+                if !self.lock.is_active() {
+                    self.iface.lock_write().remove_history(idx);
+                }
+            }
+            /// Sets the maximum number of history entries.
+            pub fn set_history_size(&self, n: usize) {
+                if !self.lock.is_active() {
+                    self.iface.lock_write().set_history_size(n);
+                }
+            }
+            /// Truncates history to the only the most recent `n` entries.
+            pub fn truncate_history(&self, n: usize) {
+                if !self.lock.is_active() {
+                    self.iface.lock_write().truncate_history(n);
+                }
+            }
+            /// Returns the application name
+            pub fn application(&self) -> &str {
+                &self.lock.application
+            }
+            /// Sets the application name
+            pub fn set_application<T>(&mut self, application: T)
+                    where T: Into<Cow<'static, str>> {
+                self.lock.application = application.into();
+            }
+            /// Returns a reference to the current completer instance.
+            pub fn completer(&self) -> &Arc<dyn Completer<Term>> {
+                &self.lock.completer
+            }
+            /// Replaces the current completer, returning the previous instance.
+            pub fn set_completer(&mut self, completer: Arc<dyn Completer<Term>>)
+                    -> Arc<dyn Completer<Term>> {
+                replace(&mut self.lock.completer, completer)
+            }
+            /// Returns the value of the named variable or `None`
+            /// if no such variable exists.
+            pub fn get_variable(&self, name: &str) -> Option<Variable> {
+                self.lock.get_variable(name)
+            }
+            /// Sets the value of the named variable and returns the previous
+            /// value.
+            pub fn set_variable(&mut self, name: &str, value: &str) -> Option<Variable> {
+                self.lock.set_variable(name, value)
+            }
+            /// Returns an iterator over stored variables.
+            pub fn variables(&self) -> VariableIter {
+                self.lock.variables.iter()
+            }
+            /// Returns whether to "blink" matching opening parenthesis character
+            /// when a closing parenthesis character is entered.
+            pub fn blink_matching_paren(&self) -> bool {
+                self.lock.blink_matching_paren
+            }
+            /// Sets the `blink-matching-paren` variable.
+            pub fn set_blink_matching_paren(&mut self, set: bool) {
+                self.lock.blink_matching_paren = set;
+            }
+            /// Returns whether `linefeed` will catch certain signals.
+            pub fn catch_signals(&self) -> bool {
+                self.lock.catch_signals
+            }
+            /// Sets whether `linefeed` will catch certain signals.
+            pub fn set_catch_signals(&mut self, enabled: bool) {
+                self.lock.catch_signals = enabled;
+            }
+            /// Returns whether the given `Signal` is ignored.
+            pub fn ignore_signal(&self, signal: system::terminal::Signal ) -> bool {
+                self.lock.ignore_signals.contains(signal)
+            }
+            /// Sets whether the given `Signal` will be ignored.
+            pub fn set_ignore_signal(&mut self, signal: system::terminal::Signal, set: bool) {
+                if set {
+                    self.lock.ignore_signals.insert(signal);
+                    self.lock.report_signals.remove(signal);
+                } else {
+                    self.lock.ignore_signals.remove(signal);
+                }
+            }
+            /// Returns whether the given `Signal` is to be reported.
+            pub fn report_signal(&self, signal: system::terminal::Signal ) -> bool {
+                self.lock.report_signals.contains(signal)
+            }
+            /// Sets whether to report the given `Signal`.
+            pub fn set_report_signal(&mut self, signal: system::terminal::Signal, set: bool) {
+                if set {
+                    self.lock.report_signals.insert(signal);
+                    self.lock.ignore_signals.remove(signal);
+                } else {
+                    self.lock.report_signals.remove(signal);
+                }
+            }
+            /// Returns whether Tab completion is disabled.
+            pub fn disable_completion(&self) -> bool {
+                self.lock.disable_completion
+            }
+            /// Sets the `disable-completion` variable.
+            pub fn set_disable_completion(&mut self, disable: bool) {
+                self.lock.disable_completion = disable;
+            }
+            /// When certain control characters are pressed, a character sequence
+            /// equivalent to this character will be echoed.
+            pub fn echo_control_characters(&self) -> bool {
+                self.lock.echo_control_characters
+            }
+            /// Sets the `echo-control-characters` variable.
+            pub fn set_echo_control_characters(&mut self, echo: bool) {
+                self.lock.echo_control_characters = echo;
+            }
+            /// Returns the character, if any, that is appended to a successful completion.
+            pub fn completion_append_character(&self) -> Option<char> {
+                self.lock.completion_append_character
+            }
+            /// Sets the character, if any, that is appended to a successful completion.
+            pub fn set_completion_append_character(&mut self, ch: Option<char>) {
+                self.lock.completion_append_character = ch;
+            }
+            /// Returns the width of completion listing display.
+            pub fn completion_display_width(&self) -> usize {
+                self.lock.completion_display_width
+            }
+            /// Sets the `completion-display-width` variable.
+            pub fn set_completion_display_width(&mut self, n: usize) {
+                self.lock.completion_display_width = n;
+            }
+            /// Returns the minimum number of completion items that require user
+            /// confirmation before listing.
+            pub fn completion_query_items(&self) -> usize {
+                self.lock.completion_query_items
+            }
+            /// Sets the `completion-query-items` variable.
+            pub fn set_completion_query_items(&mut self, n: usize) {
+                self.lock.completion_query_items = n;
+            }
+            /// Returns the timeout to wait for further user input when an ambiguous
+            /// sequence has been entered. If the value is `None`, wait is indefinite.
+            pub fn keyseq_timeout(&self) -> Option<Duration> {
+                self.lock.keyseq_timeout
+            }
+            /// Sets the `keyseq-timeout` variable.
+            pub fn set_keyseq_timeout(&mut self, timeout: Option<Duration>) {
+                self.lock.keyseq_timeout = timeout;
+            }
+            /// Returns whether to list possible completions one page at a time.
+            pub fn page_completions(&self) -> bool {
+                self.lock.page_completions
+            }
+            /// Sets the `page-completions` variable.
+            pub fn set_page_completions(&mut self, set: bool) {
+                self.lock.page_completions = set;
+            }
+            /// Returns whether to list completions horizontally, rather than down
+            /// the screen.
+            pub fn print_completions_horizontally(&self) -> bool {
+                self.lock.print_completions_horizontally
+            }
+            /// Sets the `print-completions-horizontally` variable.
+            pub fn set_print_completions_horizontally(&mut self, set: bool) {
+                self.lock.print_completions_horizontally = set;
+            }
+            /// Returns the set of characters that delimit strings.
+            pub fn string_chars(&self) -> &str {
+                &self.lock.string_chars
+            }
+            /// Sets the set of characters that delimit strings.
+            pub fn set_string_chars<T>(&mut self, chars: T)
+                    where T: Into<Cow<'static, str>> {
+                self.lock.string_chars = chars.into();
+            }
+            /// Returns the set of characters that indicate a word break.
+            pub fn word_break_chars(&self) -> &str {
+                &self.lock.word_break
+            }
+            /// Sets the set of characters that indicate a word break.
+            pub fn set_word_break_chars<T>(&mut self, chars: T)
+                    where T: Into<Cow<'static, str>> {
+                self.lock.word_break = chars.into();
+            }
+            /// Returns an iterator over bound sequences
+            pub fn bindings(&self) -> BindingIter {
+                self.lock.bindings()
+            }
+            /// Binds a sequence to a command.
+            pub fn bind_sequence<T>(&mut self, seq: T, cmd: Command) -> Option<Command>
+                    where T: Into<Cow<'static, str>> {
+                self.lock.bind_sequence(seq, cmd)
+            }
+            /// Binds a sequence to a command, if and only if the given sequence
+            /// is not already bound to a command.
+            pub fn bind_sequence_if_unbound<T>(&mut self, seq: T, cmd: Command) -> bool
+                    where T: Into<Cow<'static, str>> {
+                self.lock.bind_sequence_if_unbound(seq, cmd)
+            }
+            /// Removes a binding for the given sequence.
+            pub fn unbind_sequence(&mut self, seq: &str) -> Option<Command> {
+                self.lock.unbind_sequence(seq)
+            }
+            /// Defines a named function to which sequences may be bound.
+            /// this is not a requirement.
+            pub fn define_function<T>(&mut self, name: T, cmd: Arc<dyn Function<Term>>)
+                    -> Option<Arc<dyn Function<Term>>> where T: Into<Cow<'static, str>> {
+                self.lock.define_function(name, cmd)
+            }
+            /// Removes a function defined with the given name.
+            pub fn remove_function(&mut self, name: &str) -> Option<Arc<dyn Function<Term>>> {
+                self.lock.remove_function(name)
+            }
+
+            pub fn evaluate_directives(&mut self, term: &Term, dirs: Vec<Directive>) {
+                self.lock.data.evaluate_directives(term, dirs)
+            }
+
+            pub fn evaluate_directive(&mut self, term: &Term, dir: Directive) {
+                self.lock.data.evaluate_directive(term, dir)
+            }
+
+            fn prompter<'b>(&'b mut self) -> Prompter<'b, 'a, Term> {
+                Prompter::new(
+                    &mut self.lock,
+                    self.iface.lock_write())
+            }
+
+            fn handle_resize(&mut self, size: system::terminal::Size) -> io::Result<()> {
+                self.prompter().handle_resize(size)
+            }
+
+            fn handle_signal(&mut self, sig: system::terminal::Signal) -> io::Result<()> {
+                self.prompter().handle_signal(sig)
+            }
+        }
+
+        impl<'a, Term: 'a + Terminal> ReadLock<'a, Term> {
+            pub fn new(term: Box<dyn TerminalReader<Term> + 'a>, data: MutexGuard<'a, Read<Term>>)
+                    -> ReadLock<'a, Term> {
+                ReadLock{term, data}
+            }
+            /// Reads the next character of input.
+            pub fn read_char(&mut self) -> io::Result<Option<char>> {
+                if let Some(ch) = self.macro_pop() {
+                    Ok(Some(ch))
+                } else if let Some(ch) = self.decode_input()? {
+                    Ok(Some(ch))
+                } else {
+                    Ok(None)
+                }
+            }
+
+            fn read_input(&mut self) -> io::Result<()> {
+                match self.term.read(&mut self.data.input_buffer)? {
+                    RawRead::Bytes(_) => (),
+                    RawRead::Resize(new_size) => {
+                        self.last_resize = Some(new_size);
+                    }
+                    RawRead::Signal(sig) => {
+                        self.last_signal = Some(sig);
+                    }
+                }
+
+                Ok(())
+            }
+
+            fn is_input_available(&self) -> bool {
+                !self.data.macro_buffer.is_empty() || match self.peek_input() {
+                    Ok(Some(_)) | Err(_) => true,
+                    Ok(None) => false
+                }
+            }
+
+            fn macro_pop(&mut self) -> Option<char> {
+                if self.data.macro_buffer.is_empty() {
+                    None
+                } else {
+                    Some(self.data.macro_buffer.remove(0))
+                }
+            }
+
+            fn decode_input(&mut self) -> io::Result<Option<char>> {
+                let res = self.peek_input();
+
+                if let Ok(Some(ch)) = res {
+                    self.data.input_buffer.drain(..ch.len_utf8());
+                }
+
+                res
+            }
+
+            fn peek_input(&self) -> io::Result<Option<char>> {
+                if self.data.input_buffer.is_empty() {
+                    Ok(None)
+                } else {
+                    char::first( &self.data.input_buffer )
+                }
+            }
+
+            pub fn reset_data(&mut self) {
+                self.data.reset_data();
+            }
+        }
+
+        impl<'a, Term: 'a + Terminal> Deref for ReadLock<'a, Term> {
+            type Target = Read<Term>;
+
+            fn deref(&self) -> &Read<Term> {
+                &self.data
+            }
+        }
+
+        impl<'a, Term: 'a + Terminal> DerefMut for ReadLock<'a, Term> {
+            fn deref_mut(&mut self) -> &mut Read<Term> {
+                &mut self.data
+            }
+        }
+
+        impl<Term: Terminal> Deref for Read<Term> {
+            type Target = Variables;
+
+            fn deref(&self) -> &Variables {
+                &self.variables
+            }
+        }
+
+        impl<Term: Terminal> DerefMut for Read<Term> 
+        {
+            fn deref_mut(&mut self) -> &mut Variables {
+                &mut self.variables
+            }
+        }
+
+        impl<Term: Terminal> Read<Term>
+        {
+            pub fn new(term: &Term, application: Cow<'static, str>) -> Read<Term>
+            {
+                let mut r = Read{
+                    application,
+
+                    //bindings: default_bindings(),
+                    functions: HashMap::new(),
+
+                    input_buffer: Vec::new(),
+                    macro_buffer: String::new(),
+
+                    sequence: String::new(),
+                    input_accepted: false,
+
+                    overwrite_mode: false,
+                    overwritten_append: 0,
+                    overwritten_chars: String::new(),
+
+                    completer: Arc::new(DummyCompleter),
+                    completion_append_character: Some(' '),
+                    completions: None,
+                    completion_index: 0,
+                    completion_start: 0,
+                    completion_prefix: 0,
+
+                    string_chars: STRING_CHARS.into(),
+                    word_break: WORD_BREAK_CHARS.into(),
+
+                    last_cmd: Category::Other,
+                    last_yank: None,
+                    kill_ring: VecDeque::with_capacity(MAX_KILLS),
+
+                    catch_signals: true,
+                    ignore_signals: system::terminal::SignalSet::new(),
+                    report_signals: system::terminal::SignalSet::new(),
+                    last_resize: None,
+                    last_signal: None,
+
+                    variables: Variables::default(),
+
+                    state: InputState::Inactive,
+                    max_wait_duration: None,
+                };
+
+                r.read_init(term);
+                r
+            }
+
+            /* pub fn bindings(&self) -> BindingIter { BindingIter(self.bindings.sequences().iter()) } */
+
+            pub fn variables(&self) -> VariableIter { self.variables.iter() }
+
+            fn take_resize(&mut self) -> Option<system::terminal::Size> { self.last_resize.take() }
+
+            fn take_signal(&mut self) -> Option<system::terminal::Signal> { self.last_signal.take() }
+
+            pub fn queue_input(&mut self, seq: &str) { self.macro_buffer.insert_str(0, seq); }
+
+            pub fn is_active(&self) -> bool
+            {
+                match self.state {
+                    InputState::Inactive => false,
+                    _ => true
+                }
+            }
+
+            pub fn reset_data(&mut self)
+            {
+                self.state = InputState::NewSequence;
+                self.input_accepted = false;
+                self.overwrite_mode = false;
+                self.overwritten_append = 0;
+                self.overwritten_chars.clear();
+                self.sequence.clear();
+
+                self.completions = None;
+
+                self.last_cmd = Category::Other;
+                self.last_yank = None;
+
+                self.last_resize = None;
+                self.last_signal = None;
+            }
+
+            pub fn bind_sequence<T>(&mut self, seq: T, cmd: Command) -> Option<Command>
+            where T: Into<Cow<'static, str>>
+            { self.bindings.insert(seq.into(), cmd) }
+
+            pub fn bind_sequence_if_unbound<T>(&mut self, seq: T, cmd: Command) -> bool where
+            T: Into<Cow<'static, str>>
+            {
+                false
+                /*
+                //use mortal::sequence::Entry;
+
+                match self.bindings.entry(seq.into()) {
+                    Entry::Occupied(_) => false,
+                    Entry::Vacant(ent) => {
+                        ent.insert(cmd);
+                        true
+                    }
+                } */
+            }
+
+            pub fn unbind_sequence(&mut self, seq: &str) -> Option<Command>
+            {
+                self.bindings.remove(seq)
+                    .map(|(_, cmd)| cmd)
+            }
+
+            pub fn define_function<T>(&mut self, name: T, cmd: Arc<dyn Function<Term>>) 
+            -> Option<Arc<dyn Function<Term>>> 
+            where 
+            T: Into<Cow<'static, str>>
+            { self.functions.insert(name.into(), cmd) }
+
+            pub fn remove_function(&mut self, name: &str) -> Option<Arc<dyn Function<Term>>>
+            { self.functions.remove(name) }
+
+            fn read_init(&mut self, term: &Term)
+            {
+                if let Some(path) = env_init_file()
+                {
+                    self.read_init_file_if_exists(term, Some(path));
+                } else {
+                    if !self.read_init_file_if_exists(term, user_init_file()) {
+                        self.read_init_file_if_exists(term, system_init_file());
+                    }
+                }
+            }
+
+            fn read_init_file_if_exists(&mut self, term: &Term, path: Option<PathBuf>) -> bool
+            {
+                match path {
+                    Some(ref path) if path.exists() => {
+                        self.read_init_file(term, path);
+                        true
+                    }
+                    _ => false
+                }
+            }
+
+            fn read_init_file(&mut self, term: &Term, path: &Path)
+            {
+                if let Some(dirs) = parse_file(path) {
+                    self.evaluate_directives(term, dirs);
+                }
+            }
+            /// Evaluates a series of configuration directives.
+            pub fn evaluate_directives(&mut self, term: &Term, dirs: Vec<Directive>)
+            {
+                for dir in dirs {
+                    self.evaluate_directive(term, dir);
+                }
+            }
+            /// Evaluates a single configuration directive.
+            pub fn evaluate_directive(&mut self, term: &Term, dir: Directive)
+            {
+                match dir 
+                {
+                    Directive::Bind(seq, cmd) => {
+                        self.bind_sequence(seq, cmd);
+                    }
+                    Directive::Conditional{name, value, then_group, else_group} => {
+                        let name = name.as_ref().map(|s| &s[..]);
+
+                        if self.eval_condition(term, name, &value) {
+                            self.evaluate_directives(term, then_group);
+                        } else {
+                            self.evaluate_directives(term, else_group);
+                        }
+                    }
+                    Directive::SetVariable(name, value) => {
+                        self.set_variable(&name, &value);
+                    }
+                }
+            }
+
+            fn eval_condition(&self, term: &Term, name: Option<&str>, value: &str) -> bool
+            {
+                match name
+                {
+                    None => self.application == value,
+                    Some("lib") => value == "linefeed",
+                    Some("mode") => value == "emacs",
+                    Some("term") => self.term_matches(term, value),
+                    _ => false
+                }
+            }
+
+            fn term_matches(&self, term: &Term, value: &str) -> bool
+            { match_name( term.name(), value ) }
+        }
+        /// Iterator over `Reader` bindings
+        pub struct BindingIter<'a>(slice::Iter<'a, (Cow<'static, str>, Command)>);
+
+        impl<'a> ExactSizeIterator for BindingIter<'a> {}
+
+        impl<'a> Iterator for BindingIter<'a> 
+        {
+            type Item = (&'a str, &'a Command);
+
+            #[inline] fn next(&mut self) -> Option<Self::Item> { self.0.next().map(|&(ref s, ref cmd)| (&s[..], cmd)) }
+            #[inline] fn nth(&mut self, n: usize) -> Option<Self::Item> { self.0.nth(n).map(|&(ref s, ref cmd)| (&s[..], cmd)) }
+            #[inline] fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
+        }
+
+        impl<'a> DoubleEndedIterator for BindingIter<'a>
+        {
+            #[inline] fn next_back(&mut self) -> Option<Self::Item>
+            { self.0.next_back().map(|&(ref s, ref cmd)| (&s[..], cmd)) }
+        }
+        /*
+        fn default_bindings() -> Option<SequenceMap<Cow<'static, str>, Command>>
+        {
+            None
+            /*
+            use super::command::Command::*;
+            SequenceMap::from(vec![
+                // Carriage return and line feed
+                ("\r".into(), AcceptLine),
+                ("\n".into(), AcceptLine),
+
+                // Possible sequences for arrow keys, Home, End
+                ("\x1b[A".into(), PreviousHistory),
+                ("\x1b[B".into(), NextHistory),
+                ("\x1b[C".into(), ForwardChar),
+                ("\x1b[D".into(), BackwardChar),
+                ("\x1b[H".into(), BeginningOfLine),
+                ("\x1b[F".into(), EndOfLine),
+
+                // More possible sequences for arrow keys, Home, End
+                ("\x1bOA".into(), PreviousHistory),
+                ("\x1bOB".into(), NextHistory),
+                ("\x1bOC".into(), ForwardChar),
+                ("\x1bOD".into(), BackwardChar),
+                ("\x1bOH".into(), BeginningOfLine),
+                ("\x1bOF".into(), EndOfLine),
+
+                // Possible sequences for Insert, Delete
+                ("\x1b[2~".into(), OverwriteMode),
+                ("\x1b[3~".into(), DeleteChar),
+
+                // Basic commands
+                ("\x01"    .into(), BeginningOfLine),           // Ctrl-A
+                ("\x02"    .into(), BackwardChar),              // Ctrl-B
+                ("\x04"    .into(), DeleteChar),                // Ctrl-D
+                ("\x05"    .into(), EndOfLine),                 // Ctrl-E
+                ("\x06"    .into(), ForwardChar),               // Ctrl-F
+                ("\x07"    .into(), Abort),                     // Ctrl-G
+                ("\x08"    .into(), BackwardDeleteChar),        // Ctrl-H
+                ("\x0b"    .into(), KillLine),                  // Ctrl-K
+                ("\x0c"    .into(), ClearScreen),               // Ctrl-L
+                ("\x0e"    .into(), NextHistory),               // Ctrl-N
+                ("\x10"    .into(), PreviousHistory),           // Ctrl-P
+                ("\x12"    .into(), ReverseSearchHistory),      // Ctrl-R
+                ("\x14"    .into(), TransposeChars),            // Ctrl-T
+                ("\x15"    .into(), BackwardKillLine),          // Ctrl-U
+                ("\x16"    .into(), QuotedInsert),              // Ctrl-V
+                ("\x17"    .into(), UnixWordRubout),            // Ctrl-W
+                ("\x19"    .into(), Yank),                      // Ctrl-Y
+                ("\x1d"    .into(), CharacterSearch),           // Ctrl-]
+                ("\x7f"    .into(), BackwardDeleteChar),        // Rubout
+                ("\x1b\x08".into(), BackwardKillWord),          // Escape, Ctrl-H
+                ("\x1b\x1d".into(), CharacterSearchBackward),   // Escape, Ctrl-]
+                ("\x1b\x7f".into(), BackwardKillWord),          // Escape, Rubout
+                ("\x1bb"   .into(), BackwardWord),              // Escape, b
+                ("\x1bd"   .into(), KillWord),                  // Escape, d
+                ("\x1bf"   .into(), ForwardWord),               // Escape, f
+                ("\x1bt"   .into(), TransposeWords),            // Escape, t
+                ("\x1by"   .into(), YankPop),                   // Escape, y
+                ("\x1b#"   .into(), InsertComment),             // Escape, #
+                ("\x1b<"   .into(), BeginningOfHistory),        // Escape, <
+                ("\x1b>"   .into(), EndOfHistory),              // Escape, >
+
+                // Completion commands
+                ("\t"   .into(), Complete),             // Tab
+                ("\x1b?".into(), PossibleCompletions),  // Escape, ?
+                ("\x1b*".into(), InsertCompletions),    // Escape, *
+
+                // Digit commands
+                ("\x1b-".into(), DigitArgument),    // Escape, -
+                ("\x1b0".into(), DigitArgument),    // Escape, 0
+                ("\x1b1".into(), DigitArgument),    // Escape, 1
+                ("\x1b2".into(), DigitArgument),    // Escape, 2
+                ("\x1b3".into(), DigitArgument),    // Escape, 3
+                ("\x1b4".into(), DigitArgument),    // Escape, 4
+                ("\x1b5".into(), DigitArgument),    // Escape, 5
+                ("\x1b6".into(), DigitArgument),    // Escape, 6
+                ("\x1b7".into(), DigitArgument),    // Escape, 7
+                ("\x1b8".into(), DigitArgument),    // Escape, 8
+                ("\x1b9".into(), DigitArgument),    // Escape, 9
+            ]) */
+        } */
+        fn limit_duration(dur: Option<Duration>, max: Option<Duration>) -> Option<Duration>
+        {
+            match (dur, max)
+            {
+                (dur, None) | (None, dur) => dur,
+                (Some(dur), Some(max)) => Some(dur.min(max)),
+            }
+        }
     }
 
     pub mod table
     {
         /*!
-        */
+        Provides utilities for formatting strings in a table */
         use ::
         {
             *,
         };
         /*
         */
+        const COL_SPACE: usize = 2;
+        /// Represents a table of strings, formatted into rows and columns.
+        pub struct Table<'a, S: 'a> {
+            strings: &'a [S],
+            sizes: Option<&'a [usize]>,
+            offset: usize,
+            per_col: usize,
+            rows: usize,
+            horizontal: bool,
+        }
+
+        impl<'a, S: 'a + AsRef<str>> Table<'a, S> {
+            /// Constructs a new table from the given set of strings, using the given column sizes.
+            pub fn new(strs: &'a [S], mut sizes: Option<&'a [usize]>,
+                    horizontal: bool) -> Table<'a, S> {
+                if let Some(sz) = sizes {
+                    if sz.is_empty() {
+                        sizes = None;
+                    }
+                }
+
+                let n_strs = strs.len();
+                let n_cols = sizes.map_or(1, |sz| sz.len());
+
+                let rows = n_strs / n_cols + (n_strs % n_cols != 0) as usize;
+
+                Table{
+                    strings: strs,
+                    sizes: sizes,
+                    offset: 0,
+                    per_col: (strs.len() + (n_cols - 1)) / n_cols,
+                    rows: rows,
+                    horizontal: horizontal,
+                }
+            }
+            /// Returns whether more lines are present in the table.
+            pub fn has_more(&self) -> bool {
+                self.offset < self.rows
+            }
+
+            fn num_cols(&self) -> usize {
+                self.sizes.map_or(1, |sz| sz.len())
+            }
+        }
+
+        impl<'a, S: 'a + AsRef<str>> Iterator for Table<'a, S> {
+            type Item = Line<'a, S>;
+
+            fn next(&mut self) -> Option<Line<'a, S>> {
+                if self.offset == self.rows {
+                    return None;
+                }
+
+                let n = self.num_cols();
+
+                let (start, end, stride) = if self.horizontal {
+                    let start = self.offset * n;
+                    let end = cmp::min(self.strings.len(), start + n);
+                    (start, end, 1)
+                } else {
+                    let start = self.offset;
+                    let end = cmp::min(self.strings.len(), start + self.per_col * n);
+                    (start, end, self.per_col)
+                };
+
+                self.offset += 1;
+
+                Some(Line{
+                    strings: &self.strings[start..end],
+                    sizes: self.sizes,
+                    stride: stride,
+                    offset: 0,
+                })
+            }
+        }
+        /// Represents a single line of the table.
+        pub struct Line<'a, S: 'a> 
+        {
+            strings: &'a [S],
+            sizes: Option<&'a [usize]>,
+            stride: usize,
+            offset: usize,
+        }
+
+        impl<'a, S: 'a + AsRef<str>> Iterator for Line<'a, S> 
+        {
+            type Item = (usize, &'a str);
+
+            fn next(&mut self) -> Option<(usize, &'a str)> {
+                let s = self.strings.get(self.offset * self.stride)?.as_ref();
+
+                let width = self.sizes.and_then(|sz| sz.get(self.offset).cloned())
+                    .unwrap_or_else(|| s.chars().count());
+
+                self.offset += 1;
+
+                Some((width, s))
+            }
+        }
+        /// Formats a series of strings into columns, fitting within a given screen width.
+        pub fn format_columns<S: AsRef<str>>(strs: &[S], screen_width: usize, horizontal: bool)
+        -> Option<Vec<usize>>
+        {
+            if strs.is_empty() {
+                return None;
+            }
+
+            let n_strs = strs.len();
+
+            let (mut min_len, mut max_len) = min_max(strs.iter().map(|s| s.as_ref().chars().count()));
+
+            if min_len == 0 { min_len = 1; }
+            if max_len == 0 { max_len = 1; }
+
+            let mut min_cols = cmp::min(n_strs, screen_width / max_len);
+            let max_cols = cmp::min(n_strs, screen_width / min_len);
+
+            if min_cols <= 1 {
+                min_cols = 2;
+            }
+
+            if max_cols <= 1 {
+                return None;
+            }
+
+            let mut col_sizes = if min_cols == max_cols {
+                vec![vec![0; max_cols]]
+            } else {
+                (min_cols..max_cols + 1)
+                    .map(|n| vec![0; n]).collect::<Vec<_>>()
+            };
+
+            for (i, s) in strs.iter().enumerate() {
+                let len = s.as_ref().chars().count();
+
+                for cols in &mut col_sizes {
+                    let n_cols = cols.len();
+
+                    let col = if horizontal {
+                        i % n_cols
+                    } else {
+                        let per_col = (n_strs + (n_cols - 1)) / n_cols;
+                        i / per_col
+                    };
+
+                    let real_len = if col == n_cols - 1 { len } else { len + COL_SPACE };
+
+                    if real_len > cols[col] {
+                        cols[col] = real_len;
+                    }
+                }
+            }
+
+            for cols in col_sizes.into_iter().rev() {
+                if cols.iter().fold(0, |a, b| a + b) <= screen_width {
+                    return Some(cols);
+                }
+            }
+
+            None
+        }
+
+        fn min_max<I>(iter: I) -> (usize, usize) where I: Iterator<Item=usize> {
+            let mut min = usize::max_value();
+            let mut max = 0;
+
+            for n in iter {
+                if n < min {
+                    min = n;
+                }
+                if n + COL_SPACE > max {
+                    max = n + COL_SPACE;
+                }
+            }
+
+            (min, max)
+        }
+
     }
 
     pub mod terminal
@@ -28498,11 +29968,12 @@ pub mod system
         {
             system::
             {
-                common::{ unix::terminal_read, CursorMode, Signal, SignalSet, Size, PrepareConfig, PrepareState, TerminalReadGuard, TerminalWriteGuard },
+                common::{ unix::terminal_read },
             },
             time::std::{ Duration },
             *,
         };
+        pub use system::common::{ * };
         /*
         */
         /// Default `Terminal` interface
@@ -28694,25 +30165,1593 @@ pub mod system
     pub mod variables
     {
         /*!
-        */
+        Contains types associated with user-configurable variables. */
         use ::
         {
+            borrow::{  Cow },
+            mem::{ replace },
+            time::std::{ Duration },
             *,
         };
         /*
         */
+        /// Default `keyseq_timeout`, in milliseconds
+        const KEYSEQ_TIMEOUT_MS: u64 = 500;
+
+        /// Iterator over `Reader` variable values
+        #[derive(Clone)]
+        pub struct VariableIter<'a> {
+            vars: &'a Variables,
+            n: usize,
+        }
+        /// Represents a `Reader` variable of a given type
+        #[derive(Clone, Debug)]
+        pub enum Variable {
+            /// Boolean variable
+            Boolean(bool),
+            /// Integer variable
+            Integer(i32),
+            /// String variable
+            String(Cow<'static, str>),
+        }
+
+        impl From<bool> for Variable {
+            fn from(b: bool) -> Variable {
+                Variable::Boolean(b)
+            }
+        }
+
+        impl From<i32> for Variable {
+            fn from(i: i32) -> Variable {
+                Variable::Integer(i)
+            }
+        }
+
+        impl From<&'static str> for Variable {
+            fn from(s: &'static str) -> Variable {
+                Variable::String(s.into())
+            }
+        }
+
+        impl From<Cow<'static, str>> for Variable {
+            fn from(s: Cow<'static, str>) -> Variable {
+                Variable::String(s)
+            }
+        }
+
+        impl From<String> for Variable {
+            fn from(s: String) -> Variable {
+                Variable::String(s.into())
+            }
+        }
+
+        impl fmt::Display for Variable {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                match *self {
+                    Variable::Boolean(b) => f.write_str(if b { "on" } else { "off" }),
+                    Variable::Integer(n) => fmt::Display::fmt(&n, f),
+                    Variable::String(ref s) => fmt::Display::fmt(&s[..], f),
+                }
+            }
+        }
+
+        macro_rules! define_variables {
+            ( $( $field:ident : $ty:ty => ( $name:expr , $conv:ident ,
+                    |$gr:ident| $getter:expr , |$sr:ident, $v:ident| $setter:expr ) , )+ ) => {
+                static VARIABLE_NAMES: &[&str] = &[ $( $name ),+ ];
+
+                pub struct Variables {
+                    $( pub $field : $ty ),*
+                }
+
+                impl Variables {
+                    pub fn get_variable(&self, name: &str) -> Option<Variable> {
+                        match name {
+                            $( $name => {
+                                let $gr = self;
+                                Some(Variable::from($getter))
+                            } )+
+                            _ => None
+                        }
+                    }
+
+                    pub fn set_variable(&mut self, name: &str, value: &str)
+                            -> Option<Variable> {
+                        match name {
+                            $( $name => {
+                                if let Some($v) = $conv(value) {
+                                    let $sr = self;
+                                    Some(Variable::from($setter))
+                                } else {
+                                    None
+                                }
+                            } )+
+                            _ => None
+                        }
+                    }
+
+                    pub fn iter(&self) -> VariableIter {
+                        VariableIter{vars: self, n: 0}
+                    }
+                }
+
+                impl<'a> Iterator for VariableIter<'a> {
+                    type Item = (&'static str, Variable);
+
+                    fn next(&mut self) -> Option<Self::Item> {
+                        let res = match VARIABLE_NAMES.get(self.n).cloned() {
+                            $( Some($name) => ($name, {
+                                let $gr = self.vars;
+                                Variable::from($getter)
+                            }) , )+
+                            _ => return None
+                        };
+
+                        self.n += 1;
+                        Some(res)
+                    }
+                }
+            }
+        }
+
+        define_variables!{
+            blink_matching_paren: bool => ("blink-matching-paren", parse_bool,
+                |r| r.blink_matching_paren,
+                |r, v| replace(&mut r.blink_matching_paren, v)),
+            comment_begin: Cow<'static, str> => ("comment-begin", parse_string,
+                |r| r.comment_begin.clone(),
+                |r, v| replace(&mut r.comment_begin, v.into())),
+            completion_display_width: usize => ("completion-display-width", parse_usize,
+                |r| usize_as_i32(r.completion_display_width),
+                |r, v| usize_as_i32(replace(&mut r.completion_display_width, v))),
+            completion_query_items: usize => ("completion-query-items", parse_usize,
+                |r| usize_as_i32(r.completion_query_items),
+                |r, v| usize_as_i32(replace(&mut r.completion_query_items, v))),
+            disable_completion: bool => ("disable-completion", parse_bool,
+                |r| r.disable_completion,
+                |r, v| replace(&mut r.disable_completion, v)),
+            echo_control_characters: bool => ("echo-control-characters", parse_bool,
+                |r| r.echo_control_characters,
+                |r, v| replace(&mut r.echo_control_characters, v)),
+            keyseq_timeout: Option<Duration> => ("keyseq-timeout", parse_duration,
+                |r| as_millis(r.keyseq_timeout),
+                |r, v| as_millis(replace(&mut r.keyseq_timeout, v))),
+            page_completions: bool => ("page-completions", parse_bool,
+                |r| r.page_completions,
+                |r, v| replace(&mut r.page_completions, v)),
+            print_completions_horizontally: bool => ("print-completions-horizontally", parse_bool,
+                |r| r.print_completions_horizontally,
+                |r, v| replace(&mut r.print_completions_horizontally, v)),
+        }
+
+        impl Default for Variables {
+            fn default() -> Variables {
+                Variables{
+                    blink_matching_paren: false,
+                    comment_begin: "#".into(),
+                    completion_display_width: usize::max_value(),
+                    completion_query_items: 100,
+                    disable_completion: false,
+                    echo_control_characters: true,
+                    keyseq_timeout: Some(Duration::from_millis(KEYSEQ_TIMEOUT_MS)),
+                    page_completions: true,
+                    print_completions_horizontally: false,
+                }
+            }
+        }
+
+        fn parse_bool(s: &str) -> Option<bool> {
+            match s {
+                "0" => Some(false),
+                "1" => Some(true),
+                s if s.eq_ignore_ascii_case("off") => Some(false),
+                s if s.eq_ignore_ascii_case("on") => Some(true),
+                _ => None
+            }
+        }
+
+        fn parse_string(s: &str) -> Option<String> {
+            Some(s.to_owned())
+        }
+
+        fn as_millis(timeout: Option<Duration>) -> i32 {
+            match timeout {
+                Some(t) => {
+                    let s = (t.as_secs() * 1_000) as i32;
+                    let ms = (t.subsec_nanos() / 1_000_000) as i32;
+
+                    s + ms
+                }
+                None => -1
+            }
+        }
+
+        fn parse_duration(s: &str) -> Option<Option<Duration>> {
+            match s.parse::<i32>() {
+                Ok(n) if n <= 0 => Some(None),
+                Ok(n) => Some(Some(Duration::from_millis(n as u64))),
+                Err(_) => Some(None)
+            }
+        }
+
+        fn usize_as_i32(u: usize) -> i32 {
+            match u {
+                u if u > i32::max_value() as usize => -1,
+                u => u as i32
+            }
+        }
+
+        fn parse_usize(s: &str) -> Option<usize> {
+            match s.parse::<i32>() {
+                Ok(n) if n < 0 => Some(usize::max_value()),
+                Ok(n) => Some(n as usize),
+                Err(_) => None
+            }
+        }
     }
 
     pub mod writer
     {
         /*!
-        */
+        Provides access to terminal write operations. */
         use ::
         {
+            borrow::Cow::{ self, Borrowed, Owned },
+            char::{ unctrl, ESCAPE, RUBOUT },
+            collections::{ vec_deque, VecDeque },
+            iter::{ repeat, Skip },
+            mem::{ swap },
+            ops::{ Deref, DerefMut, Range },
+            sync::{ MutexGuard },
+            system::
+            {
+                reader::{START_INVISIBLE, END_INVISIBLE},
+                terminal::{CursorMode, Size, Terminal, TerminalWriter},
+            },
+            time::std::{ Duration, Instant },
             *,
         };
         /*
         */
+        /// Duration to wait for input when "blinking"
+        pub const BLINK_DURATION: Duration = Duration::from_millis(500);
+
+        const COMPLETE_MORE: &'static str = "--More--";
+
+        /// Default maximum history size
+        const MAX_HISTORY: usize = !0;
+
+        /// Tab column interval
+        const TAB_STOP: usize = 8;
+
+        // Length of "(arg: "
+        const PROMPT_NUM_PREFIX: usize = 6;
+        // Length of ") "
+        const PROMPT_NUM_SUFFIX: usize = 2;
+
+        // Length of "(i-search)`"
+        const PROMPT_SEARCH_PREFIX: usize = 11;
+        // Length of "failed "
+        const PROMPT_SEARCH_FAILED_PREFIX: usize = 7;
+        // Length of "reverse-"
+        const PROMPT_SEARCH_REVERSE_PREFIX: usize = 8;
+        // Length of "': "
+        const PROMPT_SEARCH_SUFFIX: usize = 3;
+
+        /// Provides an interface to write line-by-line output to the terminal device.
+        pub struct Writer<'a, 'b: 'a, Term: 'b + Terminal> {
+            write: WriterImpl<'a, 'b, Term>,
+        }
+
+        enum WriterImpl<'a, 'b: 'a, Term: 'b + Terminal> {
+            Mutex(WriteLock<'b, Term>),
+            MutRef(&'a mut WriteLock<'b, Term>),
+        }
+
+        pub struct Write {
+            /// Input buffer
+            pub buffer: String,
+            /// Original buffer entered before searching through history
+            pub backup_buffer: String,
+            /// Position of the cursor
+            pub cursor: usize,
+            /// Position of the cursor if currently performing a blink
+            blink: Option<Blink>,
+
+            /// Stored history entries
+            pub history: VecDeque<String>,
+            /// History entry currently being edited;.
+            pub history_index: Option<usize>,
+            /// Maximum size of history
+            history_size: usize,
+            /// Number of history entries added since last loading history
+            history_new_entries: usize,
+
+            /// Whether the prompt is drawn; i.e. a `read_line` operation is in progress
+            pub is_prompt_drawn: bool,
+
+            /// Portion of prompt up to and including the final newline
+            pub prompt_prefix: String,
+            prompt_prefix_len: usize,
+            /// Portion of prompt after the final newline
+            pub prompt_suffix: String,
+            prompt_suffix_len: usize,
+
+            /// Current type of prompt
+            pub prompt_type: PromptType,
+
+            /// Whether a search in progress is a reverse search
+            pub reverse_search: bool,
+            /// Whether a search in progress has failed to find a match
+            pub search_failed: bool,
+            /// Current search string
+            pub search_buffer: String,
+            /// Last search string
+            pub last_search: String,
+            /// Selected history entry prior to a history search
+            pub prev_history: Option<usize>,
+            /// Position of the cursor prior to a history search
+            pub prev_cursor: usize,
+
+            /// Numerical argument
+            pub input_arg: Digit,
+            /// Whether a numerical argument was supplied
+            pub explicit_arg: bool,
+
+            /// Terminal size as of last draw operation
+            pub screen_size: Size,
+        }
+
+        pub struct WriteLock<'a, Term: 'a + Terminal> {
+            term: Box<dyn TerminalWriter<Term> + 'a>,
+            data: MutexGuard<'a, Write>,
+        }
+
+        impl<'a, Term: Terminal> WriteLock<'a, Term> {
+            pub fn new(term: Box<dyn TerminalWriter<Term> + 'a>, data: MutexGuard<'a, Write>)
+                    -> WriteLock<'a, Term> {
+                WriteLock{term, data}
+            }
+
+            pub fn size(&self) -> io::Result<Size> {
+                self.term.size()
+            }
+
+            pub fn flush(&mut self) -> io::Result<()> {
+                self.term.flush()
+            }
+
+            pub fn update_size(&mut self) -> io::Result<()> {
+                let size = self.size()?;
+                self.screen_size = size;
+                Ok(())
+            }
+
+            pub fn blink(&mut self, pos: usize) -> io::Result<()> {
+                self.expire_blink()?;
+
+                let orig = self.cursor;
+                self.move_to(pos)?;
+                self.cursor = orig;
+
+                let expiry = Instant::now() + BLINK_DURATION;
+
+                self.blink = Some(Blink{
+                    pos,
+                    expiry,
+                });
+
+                Ok(())
+            }
+
+            pub fn check_expire_blink(&mut self, now: Instant) -> io::Result<bool> {
+                if let Some(blink) = self.data.blink {
+                    if now >= blink.expiry {
+                        self.expire_blink()?;
+                    }
+                }
+
+                Ok(self.blink.is_none())
+            }
+
+            pub fn expire_blink(&mut self) -> io::Result<()> {
+                if let Some(blink) = self.data.blink.take() {
+                    self.move_from(blink.pos)?;
+                }
+
+                Ok(())
+            }
+
+            pub fn set_prompt(&mut self, prompt: &str) -> io::Result<()> {
+                self.expire_blink()?;
+
+                let redraw = self.is_prompt_drawn && self.prompt_type.is_normal();
+
+                if redraw {
+                    self.clear_full_prompt()?;
+                }
+
+                self.data.set_prompt(prompt);
+
+                if redraw {
+                    self.draw_prompt()?;
+                }
+
+                Ok(())
+            }
+            /// Draws the prompt and current input, assuming the cursor is at column 0
+            pub fn draw_prompt(&mut self) -> io::Result<()> {
+                self.draw_prompt_prefix()?;
+                self.draw_prompt_suffix()
+            }
+
+            pub fn draw_prompt_prefix(&mut self) -> io::Result<()> {
+                match self.prompt_type {
+                    // Prefix is not drawn when completions are shown
+                    PromptType::CompleteMore => Ok(()),
+                    _ => {
+                        let pfx = self.prompt_prefix.clone();
+                        self.draw_raw_prompt(&pfx)
+                    }
+                }
+            }
+
+            pub fn draw_prompt_suffix(&mut self) -> io::Result<()> {
+                match self.prompt_type {
+                    PromptType::Normal => {
+                        let sfx = self.prompt_suffix.clone();
+                        self.draw_raw_prompt(&sfx)?;
+                    }
+                    PromptType::Number => {
+                        let n = self.input_arg.to_i32();
+                        let s = format!("(arg: {}) ", n);
+                        self.draw_text(0, &s)?;
+                    }
+                    PromptType::Search => {
+                        let pre = match (self.reverse_search, self.search_failed) {
+                            (false, false) => "(i-search)",
+                            (false, true)  => "(failed i-search)",
+                            (true,  false) => "(reverse-i-search)",
+                            (true,  true)  => "(failed reverse-i-search)",
+                        };
+
+                        let ent = self.get_history(self.history_index).to_owned();
+                        let s = format!("{}`{}': {}", pre, self.search_buffer, ent);
+
+                        self.draw_text(0, &s)?;
+                        let pos = self.cursor;
+
+                        let (lines, cols) = self.move_delta(ent.len(), pos, &ent);
+                        return self.move_rel(lines, cols);
+                    }
+                    PromptType::CompleteIntro(n) => {
+                        return self.term.write(&complete_intro(n));
+                    }
+                    PromptType::CompleteMore => {
+                        return self.term.write(COMPLETE_MORE);
+                    }
+                }
+
+                self.draw_buffer(0)?;
+                let len = self.buffer.len();
+                self.move_from(len)
+            }
+
+            pub fn redraw_prompt(&mut self, new_prompt: PromptType) -> io::Result<()> {
+                self.clear_prompt()?;
+                self.prompt_type = new_prompt;
+                self.draw_prompt_suffix()
+            }
+            /// Draws a portion of the buffer, starting from the given cursor position
+            pub fn draw_buffer(&mut self, pos: usize) -> io::Result<()> {
+                let (_, col) = self.line_col(pos);
+
+                let buf = self.buffer[pos..].to_owned();
+                self.draw_text(col, &buf)?;
+                Ok(())
+            }
+            /// Draw some text with the cursor beginning at the given column.
+            fn draw_text(&mut self, start_col: usize, text: &str) -> io::Result<()> {
+                self.draw_text_impl(start_col, text, Display{
+                    allow_tab: true,
+                    allow_newline: true,
+                    .. Display::default()
+                }, false)
+            }
+
+            fn draw_raw_prompt(&mut self, text: &str) -> io::Result<()> {
+                self.draw_text_impl(0, text, Display{
+                    allow_tab: true,
+                    allow_newline: true,
+                    allow_escape: true,
+                }, true)
+            }
+
+            fn draw_text_impl(&mut self, start_col: usize, text: &str, disp: Display,
+                    handle_invisible: bool) -> io::Result<()> {
+                let width = self.screen_size.columns;
+                let mut col = start_col;
+                let mut out = String::with_capacity(text.len());
+
+                let mut clear = false;
+                let mut hidden = false;
+
+                for ch in text.chars() {
+                    if handle_invisible && ch == START_INVISIBLE {
+                        hidden = true;
+                    } else if handle_invisible && ch == END_INVISIBLE {
+                        hidden = false;
+                    } else if hidden {
+                        // Render the character, but assume it has 0 width.
+                        out.push(ch);
+                    } else {
+                        for ch in display(ch, disp) {
+                            if ch == '\t' {
+                                let n = TAB_STOP - (col % TAB_STOP);
+
+                                if col + n > width {
+                                    let pre = width - col;
+                                    out.extend(repeat(' ').take(pre));
+                                    out.push_str(" \r");
+                                    out.extend(repeat(' ').take(n - pre));
+                                    col = n - pre;
+                                } else {
+                                    out.extend(repeat(' ').take(n));
+                                    col += n;
+
+                                    if col == width {
+                                        out.push_str(" \r");
+                                        col = 0;
+                                    }
+                                }
+                            } else if ch == '\n' {
+                                if !clear {
+                                    self.term.write(&out)?;
+                                    out.clear();
+                                    self.term.clear_to_screen_end()?;
+                                    clear = true;
+                                }
+
+                                out.push('\n');
+                                col = 0;
+                            } else if is::combining_mark(ch) {
+                                out.push(ch);
+                            } else if is::wide(ch) {
+                                if col == width - 1 {
+                                    out.push_str("  \r");
+                                    out.push(ch);
+                                    col = 2;
+                                } else {
+                                    out.push(ch);
+                                    col += 2;
+                                }
+                            } else {
+                                out.push(ch);
+                                col += 1;
+
+                                if col == width {
+                                    // Space pushes the cursor to the next line,
+                                    // CR brings back to the start of the line.
+                                    out.push_str(" \r");
+                                    col = 0;
+                                }
+                            }
+                        }
+                    }
+                }
+
+                if col == width {
+                    out.push_str(" \r");
+                }
+
+                self.term.write(&out)
+            }
+
+            pub fn set_buffer(&mut self, buf: &str) -> io::Result<()> {
+                self.expire_blink()?;
+
+                self.move_to(0)?;
+                self.buffer.clear();
+                self.buffer.push_str(buf);
+                self.new_buffer()
+            }
+
+            pub fn set_cursor(&mut self, pos: usize) -> io::Result<()> {
+                self.expire_blink()?;
+
+                if !self.buffer.is_char_boundary(pos) {
+                    panic!("invalid cursor position {} in buffer {:?}",
+                        pos, self.buffer);
+                }
+
+                self.move_to(pos)
+            }
+
+            pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+                self.term.set_cursor_mode(mode)
+            }
+
+            pub fn history_len(&self) -> usize {
+                self.history.len()
+            }
+
+            pub fn history_size(&self) -> usize {
+                self.history_size
+            }
+
+            pub fn set_history_size(&mut self, n: usize) {
+                self.history_size = n;
+                self.truncate_history(n);
+            }
+
+            pub fn write_str(&mut self, s: &str) -> io::Result<()> {
+                self.term.write(s)
+            }
+
+            pub fn start_history_search(&mut self, reverse: bool) -> io::Result<()> {
+                self.search_buffer = self.buffer[..self.cursor].to_owned();
+
+                self.continue_history_search(reverse)
+            }
+
+            pub fn continue_history_search(&mut self, reverse: bool) -> io::Result<()> {
+                if let Some(idx) = self.find_history_search(reverse) {
+                    self.set_history_entry(Some(idx));
+
+                    let pos = self.cursor;
+                    let end = self.buffer.len();
+
+                    self.draw_buffer(pos)?;
+                    self.clear_to_screen_end()?;
+                    self.move_from(end)?;
+                }
+
+                Ok(())
+            }
+
+            fn find_history_search(&self, reverse: bool) -> Option<usize> {
+                let len = self.history.len();
+                let idx = self.history_index.unwrap_or(len);
+
+                if reverse {
+                    self.history.iter().rev().skip(len - idx)
+                        .position(|ent| ent.starts_with(&self.search_buffer))
+                        .map(|pos| idx - (pos + 1))
+                } else {
+                    self.history.iter().skip(idx + 1)
+                        .position(|ent| ent.starts_with(&self.search_buffer))
+                        .map(|pos| idx + (pos + 1))
+                }
+            }
+
+            pub fn start_search_history(&mut self, reverse: bool) -> io::Result<()> {
+                self.reverse_search = reverse;
+                self.search_failed = false;
+                self.search_buffer.clear();
+                self.prev_history = self.history_index;
+                self.prev_cursor = self.cursor;
+
+                self.redraw_prompt(PromptType::Search)
+            }
+
+            pub fn continue_search_history(&mut self, reverse: bool) -> io::Result<()> {
+                self.reverse_search = reverse;
+                self.search_failed = false;
+
+                {
+                    let data = &mut *self.data;
+                    data.search_buffer.clone_from(&data.last_search);
+                }
+
+                self.search_history_step()
+            }
+
+            pub fn end_search_history(&mut self) -> io::Result<()> {
+                self.redraw_prompt(PromptType::Normal)
+            }
+
+            pub fn abort_search_history(&mut self) -> io::Result<()> {
+                self.clear_prompt()?;
+
+                let ent = self.prev_history;
+                self.set_history_entry(ent);
+                self.cursor = self.prev_cursor;
+
+                self.prompt_type = PromptType::Normal;
+                self.draw_prompt_suffix()
+            }
+
+            fn show_search_match(&mut self, next_match: Option<(Option<usize>, usize)>)
+                    -> io::Result<()> {
+                self.clear_prompt()?;
+
+                if let Some((idx, pos)) = next_match {
+                    self.search_failed = false;
+                    self.set_history_entry(idx);
+                    self.cursor = pos;
+                } else {
+                    self.search_failed = true;
+                }
+
+                self.prompt_type = PromptType::Search;
+                self.draw_prompt_suffix()
+            }
+
+            pub fn search_history_update(&mut self) -> io::Result<()> {
+                // Search for the next match, perhaps including the current position
+                let next_match = if self.reverse_search {
+                    self.search_history_backward(&self.search_buffer, true)
+                } else {
+                    self.search_history_forward(&self.search_buffer, true)
+                };
+
+                self.show_search_match(next_match)
+            }
+
+            fn search_history_step(&mut self) -> io::Result<()> {
+                if self.search_buffer.is_empty() {
+                    return self.redraw_prompt(PromptType::Search);
+                }
+
+                // Search for the next match
+                let next_match = if self.reverse_search {
+                    self.search_history_backward(&self.search_buffer, false)
+                } else {
+                    self.search_history_forward(&self.search_buffer, false)
+                };
+
+                self.show_search_match(next_match)
+            }
+
+            fn search_history_backward(&self, s: &str, include_cur: bool)
+                    -> Option<(Option<usize>, usize)> {
+                let mut idx = self.history_index;
+                let mut pos = Some(self.cursor);
+
+                if include_cur && !self.search_failed {
+                    if let Some(p) = pos {
+                        if self.get_history(idx).is_char_boundary(p + s.len()) {
+                            pos = Some(p + s.len());
+                        }
+                    }
+                }
+
+                loop {
+                    let line = self.get_history(idx);
+
+                    match line[..pos.unwrap_or(line.len())].rfind(s) {
+                        Some(found) => {
+                            pos = Some(found);
+                            break;
+                        }
+                        None => {
+                            match idx {
+                                Some(0) => return None,
+                                Some(n) => {
+                                    idx = Some(n - 1);
+                                    pos = None;
+                                }
+                                None => {
+                                    if self.history.is_empty() {
+                                        return None;
+                                    } else {
+                                        idx = Some(self.history.len() - 1);
+                                        pos = None;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                pos.map(|pos| (idx, pos))
+            }
+
+            fn search_history_forward(&self, s: &str, include_cur: bool)
+                    -> Option<(Option<usize>, usize)> {
+                let mut idx = self.history_index;
+                let mut pos = Some(self.cursor);
+
+                if !include_cur {
+                    if let Some(p) = pos {
+                        pos = Some( char::forward(1, self.get_history(idx), p));
+                    }
+                }
+
+                loop {
+                    let line = self.get_history(idx);
+
+                    match line[pos.unwrap_or(0)..].find(s) {
+                        Some(found) => {
+                            pos = pos.map(|n| n + found).or(Some(found));
+                            break;
+                        }
+                        None => {
+                            if let Some(n) = idx {
+                                if n + 1 == self.history.len() {
+                                    idx = None;
+                                } else {
+                                    idx = Some(n + 1);
+                                }
+                                pos = None;
+                            } else {
+                                return None;
+                            }
+                        }
+                    }
+                }
+
+                pos.map(|pos| (idx, pos))
+            }
+
+            pub fn add_history(&mut self, line: String) {
+                if self.history.len() == self.history_size {
+                    self.history.pop_front();
+                }
+
+                self.history.push_back(line);
+                self.history_new_entries = self.history.len()
+                    .min(self.history_new_entries + 1);
+            }
+
+            pub fn add_history_unique(&mut self, line: String) {
+                let is_duplicate = self.history.back().map_or(false, |ent| *ent == line);
+
+                if !is_duplicate {
+                    self.add_history(line);
+                }
+            }
+
+            pub fn clear_history(&mut self) {
+                self.truncate_history(0);
+                self.history_new_entries = 0;
+            }
+
+            pub fn remove_history(&mut self, n: usize) {
+                if n < self.history.len() {
+                    let first_new = self.history.len() - self.history_new_entries;
+
+                    if n >= first_new {
+                        self.history_new_entries -= 1;
+                    }
+
+                    self.history.remove(n);
+                }
+            }
+
+            pub fn truncate_history(&mut self, n: usize) {
+                let len = self.history.len();
+
+                if n < len {
+                    let _ = self.history.drain(..len - n);
+                    self.history_new_entries = self.history_new_entries.max(n);
+                }
+            }
+
+            pub fn next_history(&mut self, n: usize) -> io::Result<()> {
+                if let Some(old) = self.history_index {
+                    let new = old.saturating_add(n);
+
+                    if new >= self.history.len() {
+                        self.select_history_entry(None)?;
+                    } else {
+                        self.select_history_entry(Some(new))?;
+                    }
+                }
+
+                Ok(())
+            }
+
+            pub fn prev_history(&mut self, n: usize) -> io::Result<()> {
+                if !self.history.is_empty() && self.history_index != Some(0) {
+                    let new = if let Some(old) = self.history_index {
+                        old.saturating_sub(n)
+                    } else {
+                        self.history.len().saturating_sub(n)
+                    };
+
+                    self.select_history_entry(Some(new))?;
+                }
+
+                Ok(())
+            }
+
+            pub fn select_history_entry(&mut self, new: Option<usize>) -> io::Result<()> {
+                if new != self.history_index {
+                    self.move_to(0)?;
+                    self.set_history_entry(new);
+                    self.new_buffer()?;
+                }
+
+                Ok(())
+            }
+
+            pub fn set_history_entry(&mut self, new: Option<usize>) {
+                let old = self.history_index;
+
+                if old != new {
+                    let data = &mut *self.data;
+                    data.history_index = new;
+
+                    if let Some(old) = old {
+                        data.history[old].clone_from(&data.buffer);
+                    } else {
+                        swap(&mut data.buffer, &mut data.backup_buffer);
+                    }
+
+                    if let Some(new) = new {
+                        data.buffer.clone_from(&data.history[new]);
+                    } else {
+                        data.buffer.clear();
+                        swap(&mut data.buffer, &mut data.backup_buffer);
+                    }
+                }
+            }
+
+            fn get_history(&self, n: Option<usize>) -> &str {
+                if self.history_index == n {
+                    &self.buffer
+                } else if let Some(n) = n {
+                    &self.history[n]
+                } else {
+                    &self.backup_buffer
+                }
+            }
+
+            pub fn backward_char(&mut self, n: usize) -> io::Result<()> {
+                let pos = char::backward(n, &self.buffer, self.cursor);
+                self.move_to(pos)
+            }
+
+            pub fn forward_char(&mut self, n: usize) -> io::Result<()> {
+                let pos = char::forward(n, &self.buffer, self.cursor);
+                self.move_to(pos)
+            }
+
+            pub fn backward_search_char(&mut self, n: usize, ch: char) -> io::Result<()> {
+                if let Some(pos) = char::backward_search(n, &self.buffer, self.cursor, ch) {
+                    self.move_to(pos)?;
+                }
+
+                Ok(())
+            }
+
+            pub fn forward_search_char(&mut self, n: usize, ch: char) -> io::Result<()> {
+                if let Some(pos) = char::forward_search(n, &self.buffer, self.cursor, ch) {
+                    self.move_to(pos)?;
+                }
+
+                Ok(())
+            }
+            /// Deletes a range from buffer; the cursor is moved to the end of the given range.
+            pub fn delete_range<R:ops::RangeArgument<usize>>(&mut self, r: R) -> io::Result<()>
+            {
+                let start = r.start().cloned().unwrap_or(0);
+                let end = r.end().cloned().unwrap_or_else(|| self.buffer.len());
+
+                self.move_to(start)?;
+
+                let _ = self.buffer.drain(start..end);
+
+                self.draw_buffer(start)?;
+                self.term.clear_to_screen_end()?;
+                let len = self.buffer.len();
+                self.move_from(len)?;
+
+                Ok(())
+            }
+
+            pub fn insert_str(&mut self, s: &str) -> io::Result<()> 
+            {
+                let moves_combining = match self.buffer[self.cursor..].chars().next() {
+                    Some(ch) if is::combining_mark(ch) => true,
+                    _ => false
+                };
+
+                let cursor = self.cursor;
+                self.buffer.insert_str(cursor, s);
+
+                if moves_combining && cursor != 0 {
+                    let pos = char::backward(1, &self.buffer, self.cursor);
+                    let (lines, cols) = self.move_delta(cursor, pos, &self.buffer);
+                    self.move_rel(lines, cols)?;
+                    self.draw_buffer(pos)?;
+                } else {
+                    self.draw_buffer(cursor)?;
+                }
+
+                self.cursor += s.len();
+
+                let len = self.buffer.len();
+                self.move_from(len)
+            }
+
+            pub fn transpose_range(&mut self, src: Range<usize>, dest: Range<usize>)
+                    -> io::Result<()> {
+                // Ranges must not overlap
+                assert!(src.end <= dest.start || src.start >= dest.end);
+
+                // Final cursor position
+                let final_cur = if src.start < dest.start {
+                    dest.end
+                } else {
+                    dest.start + (src.end - src.start)
+                };
+
+                let (left, right) = if src.start < dest.start {
+                    (src, dest)
+                } else {
+                    (dest, src)
+                };
+
+                self.move_to(left.start)?;
+
+                let a = self.buffer[left.clone()].to_owned();
+                let b = self.buffer[right.clone()].to_owned();
+
+                let _ = self.buffer.drain(right.clone());
+                self.buffer.insert_str(right.start, &a);
+
+                let _ = self.buffer.drain(left.clone());
+                self.buffer.insert_str(left.start, &b);
+
+                let cursor = self.cursor;
+                self.draw_buffer(cursor)?;
+                self.term.clear_to_screen_end()?;
+
+                self.cursor = final_cur;
+                let len = self.buffer.len();
+                self.move_from(len)
+            }
+
+            fn prompt_suffix_length(&self) -> usize {
+                match self.prompt_type {
+                    PromptType::Normal => self.prompt_suffix_len,
+                    PromptType::Number => {
+                        let n = number_len(self.input_arg.to_i32());
+                        PROMPT_NUM_PREFIX + PROMPT_NUM_SUFFIX + n
+                    }
+                    PromptType::Search => {
+                        let mut prefix = PROMPT_SEARCH_PREFIX;
+
+                        if self.reverse_search {
+                            prefix += PROMPT_SEARCH_REVERSE_PREFIX;
+                        }
+                        if self.search_failed {
+                            prefix += PROMPT_SEARCH_FAILED_PREFIX;
+                        }
+
+                        let n = self.display_size(&self.search_buffer, prefix);
+                        prefix + n + PROMPT_SEARCH_SUFFIX
+                    }
+                    PromptType::CompleteIntro(n) => complete_intro(n).len(),
+                    PromptType::CompleteMore => COMPLETE_MORE.len(),
+                }
+            }
+
+            fn line_col(&self, pos: usize) -> (usize, usize) {
+                let prompt_len = self.prompt_suffix_length();
+
+                match self.prompt_type {
+                    PromptType::CompleteIntro(_) |
+                    PromptType::CompleteMore => {
+                        let width = self.screen_size.columns;
+                        (prompt_len / width, prompt_len % width)
+                    }
+                    _ => self.line_col_with(pos, &self.buffer, prompt_len)
+                }
+            }
+
+            fn line_col_with(&self, pos: usize, buf: &str, start_col: usize) -> (usize, usize) {
+                let width = self.screen_size.columns;
+                if width == 0 {
+                    return (0, 0);
+                }
+
+                let n = start_col + self.display_size(&buf[..pos], start_col);
+
+                (n / width, n % width)
+            }
+
+            pub fn clear_screen(&mut self) -> io::Result<()> {
+                self.term.clear_screen()?;
+                self.draw_prompt()?;
+
+                Ok(())
+            }
+
+            pub fn clear_to_screen_end(&mut self) -> io::Result<()> {
+                self.term.clear_to_screen_end()
+            }
+            /// Draws a new buffer on the screen. Cursor position is assumed to be `0`.
+            pub fn new_buffer(&mut self) -> io::Result<()> {
+                self.draw_buffer(0)?;
+                self.cursor = self.buffer.len();
+
+                self.term.clear_to_screen_end()?;
+
+                Ok(())
+            }
+
+            pub fn clear_full_prompt(&mut self) -> io::Result<()> {
+                let prefix_lines = self.prompt_prefix_len / self.screen_size.columns;
+                let (line, _) = self.line_col(self.cursor);
+                self.term.move_up(prefix_lines + line)?;
+                self.term.move_to_first_column()?;
+                self.term.clear_to_screen_end()
+            }
+
+            pub fn clear_prompt(&mut self) -> io::Result<()> {
+                let (line, _) = self.line_col(self.cursor);
+
+                self.term.move_up(line)?;
+                self.term.move_to_first_column()?;
+                self.term.clear_to_screen_end()
+            }
+            /// Move back to true cursor position from some other position
+            pub fn move_from(&mut self, pos: usize) -> io::Result<()> {
+                let (lines, cols) = self.move_delta(pos, self.cursor, &self.buffer);
+                self.move_rel(lines, cols)
+            }
+
+            pub fn move_to(&mut self, pos: usize) -> io::Result<()> {
+                if pos != self.cursor {
+                    let (lines, cols) = self.move_delta(self.cursor, pos, &self.buffer);
+                    self.move_rel(lines, cols)?;
+                    self.cursor = pos;
+                }
+
+                Ok(())
+            }
+
+            pub fn move_to_end(&mut self) -> io::Result<()> {
+                let pos = self.buffer.len();
+                self.move_to(pos)
+            }
+
+            pub fn move_right(&mut self, n: usize) -> io::Result<()> {
+                self.term.move_right(n)
+            }
+            /// Moves from `old` to `new` cursor position, using the given buffer
+            /// as current input.
+            fn move_delta(&self, old: usize, new: usize, buf: &str) -> (isize, isize) {
+                let prompt_len = self.prompt_suffix_length();
+                let (old_line, old_col) = self.line_col_with(old, buf, prompt_len);
+                let (new_line, new_col) = self.line_col_with(new, buf, prompt_len);
+
+                (new_line as isize - old_line as isize,
+                new_col as isize - old_col as isize)
+            }
+
+            fn move_rel(&mut self, lines: isize, cols: isize) -> io::Result<()> {
+                if lines > 0 {
+                    self.term.move_down(lines as usize)?;
+                } else if lines < 0 {
+                    self.term.move_up((-lines) as usize)?;
+                }
+
+                if cols > 0 {
+                    self.term.move_right(cols as usize)?;
+                } else if cols < 0 {
+                    self.term.move_left((-cols) as usize)?;
+                }
+
+                Ok(())
+            }
+
+            pub fn reset_data(&mut self) {
+                self.data.reset_data();
+            }
+
+            pub fn set_digit_from_char(&mut self, ch: char) {
+                let digit = match ch {
+                    '-' => Digit::NegNone,
+                    '0' ..= '9' => Digit::from(ch),
+                    _ => Digit::None
+                };
+
+                self.input_arg = digit;
+                self.explicit_arg = true;
+            }
+        }
+
+        #[derive(Copy, Clone)]
+        struct Blink {
+            pos: usize,
+            expiry: Instant,
+        }
+
+        impl<'a, 'b: 'a, Term: 'b + Terminal> Writer<'a, 'b, Term> {
+            fn new(mut write: WriterImpl<'a, 'b, Term>, clear: bool) -> io::Result<Self> {
+                write.expire_blink()?;
+
+                if write.is_prompt_drawn {
+                    if clear {
+                        write.clear_full_prompt()?;
+                    } else {
+                        write.move_to_end()?;
+                        write.write_str("\n")?;
+                    }
+                }
+
+                Ok(Writer{write})
+            }
+
+            pub fn with_lock(write: WriteLock<'b, Term>, clear: bool) -> io::Result<Self> {
+                Writer::new(WriterImpl::Mutex(write), clear)
+            }
+
+            pub fn with_ref(write: &'a mut WriteLock<'b, Term>, clear: bool) -> io::Result<Self> {
+                Writer::new(WriterImpl::MutRef(write), clear)
+            }
+            /// Returns an iterator over history entries.
+            pub fn history(&self) -> HistoryIter {
+                self.write.history()
+            }
+            /// Writes some text to the terminal device.
+            pub fn write_str(&mut self, s: &str) -> io::Result<()> {
+                self.write.write_str(s)
+            }
+            /// Writes formatted text to the terminal display.
+            pub fn write_fmt(&mut self, args: fmt::Arguments) -> io::Result<()> {
+                let s = args.to_string();
+                self.write_str(&s)
+            }
+        }
+
+        impl<'a, 'b: 'a, Term: 'b + Terminal> Drop for Writer<'a, 'b, Term> {
+            fn drop(&mut self) {
+                if self.write.is_prompt_drawn {
+                    // There's not really anything useful to be done with this error.
+                    let _ = self.write.draw_prompt();
+                }
+            }
+        }
+
+        impl<'a, Term: 'a + Terminal> Deref for WriteLock<'a, Term> {
+            type Target = Write;
+
+            fn deref(&self) -> &Write {
+                &self.data
+            }
+        }
+
+        impl<'a, Term: 'a + Terminal> DerefMut for WriteLock<'a, Term> {
+            fn deref_mut(&mut self) -> &mut Write {
+                &mut self.data
+            }
+        }
+
+        impl Write {
+            pub fn new(screen_size: Size) -> Write {
+                Write{
+                    buffer: String::new(),
+                    backup_buffer: String::new(),
+                    cursor: 0,
+                    blink: None,
+
+                    history: VecDeque::new(),
+                    history_index: None,
+                    history_size: MAX_HISTORY,
+                    history_new_entries: 0,
+
+                    is_prompt_drawn: false,
+
+                    prompt_prefix: String::new(),
+                    prompt_prefix_len: 0,
+                    prompt_suffix: String::new(),
+                    prompt_suffix_len: 0,
+
+                    prompt_type: PromptType::Normal,
+
+                    reverse_search: false,
+                    search_failed: false,
+                    search_buffer: String::new(),
+                    last_search: String::new(),
+                    prev_history: None,
+                    prev_cursor: !0,
+
+                    input_arg: Digit::None,
+                    explicit_arg: false,
+
+                    screen_size,
+                }
+            }
+
+            pub fn history(&self) -> HistoryIter {
+                HistoryIter(self.history.iter())
+            }
+
+            pub fn new_history(&self) -> Skip<HistoryIter> {
+                let first_new = self.history.len() - self.history_new_entries;
+                self.history().skip(first_new)
+            }
+
+            pub fn new_history_entries(&self) -> usize {
+                self.history_new_entries
+            }
+
+            pub fn reset_data(&mut self) {
+                self.buffer.clear();
+                self.backup_buffer.clear();
+                self.cursor = 0;
+                self.history_index = None;
+
+                self.prompt_type = PromptType::Normal;
+
+                self.input_arg = Digit::None;
+                self.explicit_arg = false;
+            }
+
+            pub fn reset_new_history(&mut self) {
+                self.history_new_entries = 0;
+            }
+
+            pub fn set_buffer(&mut self, buf: &str) {
+                self.buffer.clear();
+                self.buffer.push_str(buf);
+                self.cursor = buf.len();
+            }
+
+            pub fn set_cursor(&mut self, pos: usize) {
+                if !self.buffer.is_char_boundary(pos) {
+                    panic!("invalid cursor position {} in buffer {:?}",
+                        pos, self.buffer);
+                }
+
+                self.cursor = pos;
+            }
+
+            pub fn set_prompt(&mut self, prompt: &str) {
+                let (pre, suf) = match prompt.rfind('\n') {
+                    Some(pos) => (&prompt[..pos + 1], &prompt[pos + 1..]),
+                    None => (&prompt[..0], prompt)
+                };
+
+                self.prompt_prefix = pre.to_owned();
+                self.prompt_suffix = suf.to_owned();
+
+                let pre_virt = str::filter_visible(pre);
+                self.prompt_prefix_len = self.display_size(&pre_virt, 0);
+
+                let suf_virt = str::filter_visible(suf);
+                self.prompt_suffix_len = self.display_size(&suf_virt, 0);
+            }
+
+            pub fn display_size(&self, s: &str, start_col: usize) -> usize 
+            {
+                let width = self.screen_size.columns;
+                let mut col = start_col;
+
+                let disp = Display{
+                    allow_tab: true,
+                    allow_newline: true,
+                    .. Display::default()
+                };
+
+                for ch in s.chars().flat_map(|ch| display(ch, disp)) 
+                {
+                    let n = match ch {
+                        '\n' => width - (col % width),
+                        '\t' => TAB_STOP - (col % TAB_STOP),
+                        ch if is::combining_mark(ch) => 0,
+                        ch if is::wide(ch) => {
+                            if col % width == width - 1 {
+                                // Can't render a fullwidth character into last column
+                                3
+                            } else {
+                                2
+                            }
+                        }
+                        _ => 1
+                    };
+
+                    col += n;
+                }
+
+                col - start_col
+            }
+        }
+        /// Maximum value of digit input
+        const NUMBER_MAX: i32 = 1_000_000;
+
+        #[derive(Copy, Clone, Debug)]
+        pub enum Digit {
+            None,
+            NegNone,
+            Num(i32),
+            NegNum(i32),
+        }
+
+        impl Digit {
+            pub fn input(&mut self, n: i32) {
+                match *self {
+                    Digit::None => *self = Digit::Num(n),
+                    Digit::NegNone => *self = Digit::NegNum(n),
+                    Digit::Num(ref mut m) | Digit::NegNum(ref mut m) => {
+                        *m *= 10;
+                        *m += n;
+                    }
+                }
+            }
+
+            pub fn is_out_of_bounds(&self) -> bool {
+                match *self {
+                    Digit::Num(n) | Digit::NegNum(n) if n > NUMBER_MAX => true,
+                    _ => false
+                }
+            }
+
+            pub fn to_i32(&self) -> i32 {
+                match *self {
+                    Digit::None => 1,
+                    Digit::NegNone => -1,
+                    Digit::Num(n) => n,
+                    Digit::NegNum(n) => -n,
+                }
+            }
+        }
+
+        impl From<char> for Digit {
+            /// Convert a decimal digit character to a `Digit` value.
+            ///
+            /// The input must be in the range `'0' ..= '9'`.
+            fn from(ch: char) -> Digit {
+                let n = (ch as u8) - b'0';
+                Digit::Num(n as i32)
+            }
+        }
+
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum PromptType {
+            Normal,
+            Number,
+            Search,
+            CompleteIntro(usize),
+            CompleteMore,
+        }
+
+        impl PromptType {
+            pub fn is_normal(&self) -> bool {
+                *self == PromptType::Normal
+            }
+        }
+
+        impl<'a, 'b, Term: 'b + Terminal> Deref for WriterImpl<'a, 'b, Term> {
+            type Target = WriteLock<'b, Term>;
+
+            fn deref(&self) -> &WriteLock<'b, Term> {
+                match *self {
+                    WriterImpl::Mutex(ref m) => m,
+                    WriterImpl::MutRef(ref m) => m,
+                }
+            }
+        }
+
+        impl<'a, 'b: 'a, Term: 'b + Terminal> DerefMut for WriterImpl<'a, 'b, Term> {
+            fn deref_mut(&mut self) -> &mut WriteLock<'b, Term> {
+                match *self {
+                    WriterImpl::Mutex(ref mut m) => m,
+                    WriterImpl::MutRef(ref mut m) => m,
+                }
+            }
+        }
+        /// Iterator over `Interface` history entries
+        pub struct HistoryIter<'a>(vec_deque::Iter<'a, String>);
+
+        impl<'a> ExactSizeIterator for HistoryIter<'a> {}
+
+        impl<'a> Iterator for HistoryIter<'a> 
+        {
+            type Item = &'a str;
+
+            #[inline] fn next(&mut self) -> Option<&'a str> { self.0.next().map(|s| &s[..]) }
+
+            #[inline] fn nth(&mut self, n: usize) -> Option<&'a str> 
+            { self.0.nth(n).map(|s| &s[..]) }
+
+            #[inline] fn size_hint(&self) -> (usize, Option<usize>) { self.0.size_hint() }
+        }
+
+        impl<'a> DoubleEndedIterator for HistoryIter<'a> 
+        {
+            #[inline] fn next_back(&mut self) -> Option<&'a str>
+            { self.0.next_back().map(|s| &s[..]) }
+        }
+
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum DisplaySequence 
+        {
+            Char(char),
+            Escape(char),
+            End,
+        }
+
+        impl Iterator for DisplaySequence 
+        {
+            type Item = char;
+
+            fn next(&mut self) -> Option<char> {
+                use self::DisplaySequence::*;
+
+                let (res, next) = match *self {
+                    Char(ch) => (ch, End),
+                    Escape(ch) => ('^', Char(ch)),
+                    End => return None
+                };
+
+                *self = next;
+                Some(res)
+            }
+
+            fn size_hint(&self) -> (usize, Option<usize>) 
+            {
+                use self::DisplaySequence::*;
+
+                let n = match *self {
+                    Char(_) => 1,
+                    Escape(_) => 2,
+                    End => 0,
+                };
+
+                (n, Some(n))
+            }
+        }
+
+        #[derive(Copy, Clone, Debug, Default)]
+        pub struct Display 
+        {
+            allow_tab: bool,
+            allow_newline: bool,
+            allow_escape: bool,
+        }
+
+        pub fn display(ch: char, style: Display) -> DisplaySequence 
+        {
+            match ch 
+            {
+                '\t' if style.allow_tab => DisplaySequence::Char(ch),
+                '\n' if style.allow_newline => DisplaySequence::Char(ch),
+                ESCAPE if style.allow_escape => DisplaySequence::Char(ch),
+                '\0' => DisplaySequence::Escape('@'),
+                RUBOUT => DisplaySequence::Escape('?'),
+                ch if is::control(ch) => DisplaySequence::Escape(unctrl(ch)),
+                ch => DisplaySequence::Char(ch)
+            }
+        }
+
+        pub fn display_str<'a>(s: &'a str, style: Display) -> Cow<'a, str> 
+        {
+            if s.chars().all(|ch| display(ch, style) == DisplaySequence::Char(ch)) {
+                Borrowed(s)
+            } else {
+                Owned(s.chars().flat_map(|ch| display(ch, style)).collect())
+            }
+        }
+
+        fn complete_intro(n: usize) -> String { format!("Display all {} possibilities? (y/n)", n) }
+
+        fn number_len(n: i32) -> usize
+        {
+            match n
+            {
+                -1_000_000              => 8,
+                -  999_999 ..= -100_000 => 7,
+                -   99_999 ..= - 10_000 => 6,
+                -    9_999 ..= -  1_000 => 5,
+                -      999 ..= -    100 => 4,
+                -       99 ..= -     10 => 3,
+                -        9 ..= -      1 => 2,
+                        0 ..=        9 => 1,
+                        10 ..=       99 => 2,
+                    100 ..=      999 => 3,
+                    1_000 ..=    9_999 => 4,
+                    10_000 ..=   99_999 => 5,
+                100_000 ..=  999_999 => 6,
+                1_000_000              => 7,
+                _ => unreachable!()
+            }
+        }
     }
 }
 
@@ -29553,4 +32592,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 29556 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 32595 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
