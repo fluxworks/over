@@ -21631,8 +21631,6 @@ pub mod system
         *,
     };
     /*
-    */
-    /*
     mortal v0.0.0 */
     pub mod common
     {
@@ -24111,6 +24109,9 @@ pub mod system
             {
                 /*!
                 */
+                use nix::sys::termios::Termios;
+                use std::os::fd::AsRawFd;
+                use os::fd::AsFd;
                 use ::
                 {
                     convert::{ TryFrom },
@@ -24483,6 +24484,40 @@ pub mod system
                     }
                 }
 
+                /// Return the configuration of a port.
+                pub fn read_port_configuration( fd:RawFd ) -> Result<Termios, Errno> 
+                {
+                    let mut termios = mem::MaybeUninit::uninit();
+
+                    let res = unsafe 
+                    {
+                        nix::libc::tcgetattr( fd, termios.as_mut_ptr() )
+                    };
+
+                    Errno::result(res)?;
+
+                    unsafe { Ok(termios.assume_init().into()) }
+                }
+                /// Set the configuration for a terminal.
+                pub fn write_port_configuration
+                (
+                    fd:RawFd,
+                    actions: SetArg,
+                    termios: &Termios,
+                ) -> Result<(), Errno> 
+                {
+                    let inner_termios = termios.get_libc_termios();
+                    Errno::result(unsafe {
+                        nix::libc::tcsetattr(
+                            fd,
+                            actions as c_int,
+                            &*inner_termios,
+                        )
+                    })
+                    .map(drop)
+                }
+
+
                 impl<'a> TerminalReadGuard<'a>
                 {
                     fn new(term: &'a Terminus, reader: MutexGuard<'a, Reader>) -> TerminalReadGuard<'a>
@@ -24497,7 +24532,42 @@ pub mod system
                     pub fn prepare_with_lock( &mut self, writer:&mut TerminalWriteGuard, config:PrepareConfig )
                     -> io::Result<PrepareState>
                     {
-                        Ok( PrepareState::new() )
+                        unsafe
+                        {
+                            use nix::sys::termios::SpecialCharacterIndices::{ * };
+
+                            let tiold = read_port_configuration( self.term.in_fd ).map_err( nix_to_io )?;
+                            let mut tio = tiold.clone();
+                            
+                            let mut state = PrepareState
+                            {
+                                old_tio: Some( tiold.into() ),
+                                old_sigcont: None,
+                                old_sigint: None,
+                                old_sigtstp: None,
+                                old_sigquit: None,
+                                old_sigwinch: None,
+                                restore_keypad: false,
+                                restore_mouse: false,
+                                prev_resume: self.reader.resume,
+                            };
+
+                            tio.input_flags.remove( InputFlags::INLCR  | InputFlags::ICRNL );
+                            tio.local_flags.remove( LocalFlags::ICANON | LocalFlags::ECHO  );
+                        
+                            if config.block_signals { tio.local_flags.remove(LocalFlags::ISIG); }
+                            else { tio.local_flags.insert(LocalFlags::ISIG); }
+                            
+                            if config.enable_control_flow { tio.input_flags.insert(InputFlags::IXON); }
+                            else { tio.input_flags.remove(InputFlags::IXON); }
+                            
+                            tio.control_chars[VMIN as usize] = 0;
+                            tio.control_chars[VTIME as usize] = 0;
+
+                            tcsetattr(self.term.into(), SetArg::TCSANOW, &tio).map_err(nix_to_io)?;
+                            
+                            Ok( PrepareState::new() )
+                        }
                         /*
                         use nix::sys::termios::SpecialCharacterIndices::*;
 
@@ -32639,4 +32709,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 32642 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 32712 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
