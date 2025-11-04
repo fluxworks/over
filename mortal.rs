@@ -46,7 +46,7 @@ pub mod parse;
 */
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
-#[macro_use] extern crate nix;
+#[macro_use] extern crate libc;
 #[macro_use] extern crate rand;
 #[macro_use] extern crate regex as re;
 #[macro_use] extern crate smallvec;
@@ -2464,6 +2464,265 @@ pub mod parse;
             }
         }
     }
+    
+    #[macro_export] macro_rules! libc_bitflags
+    {
+        (
+            $(#[$outer:meta])*
+            pub struct $BitFlags:ident: $T:ty {
+                $(
+                    $(#[$inner:ident $($args:tt)*])*
+                    $Flag:ident $(as $cast:ty)*;
+                )+
+            }
+        ) => {
+            ::bitflags::bitflags! {
+                #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+                #[repr(transparent)]
+                $(#[$outer])*
+                pub struct $BitFlags: $T {
+                    $(
+                        $(#[$inner $($args)*])*
+                        const $Flag = libc::$Flag $(as $cast)*;
+                    )+
+                }
+            }
+        };
+    }
+
+    #[macro_export] macro_rules! libc_enum
+    {
+        // Exit rule.
+        (@make_enum
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: [$($attrs:tt)*],
+                entries: [$($entries:tt)*],
+            }
+        ) => {
+            $($attrs)*
+            #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            $v enum $BitFlags {
+                $($entries)*
+            }
+        };
+
+        // Exit rule including TryFrom
+        (@make_enum
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: [$($attrs:tt)*],
+                entries: [$($entries:tt)*],
+                from_type: $repr:path,
+                try_froms: [$($try_froms:tt)*]
+            }
+        ) => {
+            $($attrs)*
+            #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            $v enum $BitFlags {
+                $($entries)*
+            }
+            impl ::std::convert::TryFrom<$repr> for $BitFlags {
+                type Error = $crate::Error;
+                #[allow(unused_doc_comments)]
+                #[allow(deprecated)]
+                #[allow(unused_attributes)]
+                fn try_from(x: $repr) -> $crate::Result<Self> {
+                    match x {
+                        $($try_froms)*
+                        _ => Err($crate::Error::EINVAL)
+                    }
+                }
+            }
+        };
+
+        // Done accumulating.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: $attrs:tt,
+            },
+            $entries:tt,
+            $try_froms:tt;
+        ) => {
+            libc_enum! {
+                @make_enum
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: $attrs,
+                    entries: $entries,
+                }
+            }
+        };
+
+        // Done accumulating and want TryFrom
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: $attrs:tt,
+                from_type: $repr:path,
+            },
+            $entries:tt,
+            $try_froms:tt;
+        ) => {
+            libc_enum! {
+                @make_enum
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: $attrs,
+                    entries: $entries,
+                    from_type: $repr,
+                    try_froms: $try_froms
+                }
+            }
+        };
+
+        // Munch an attr.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            #[$attr:meta] $($tail:tt)*
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    #[$attr]
+                ],
+                [
+                    $($try_froms)*
+                    #[$attr]
+                ];
+                $($tail)*
+            }
+        };
+
+        // Munch last ident if not followed by a comma.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            $entry:ident
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    $entry = libc::$entry,
+                ],
+                [
+                    $($try_froms)*
+                    libc::$entry => Ok($BitFlags::$entry),
+                ];
+            }
+        };
+
+        // Munch an ident; covers terminating comma case.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            $entry:ident,
+            $($tail:tt)*
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    $entry = libc::$entry,
+                ],
+                [
+                    $($try_froms)*
+                    libc::$entry => Ok($BitFlags::$entry),
+                ];
+                $($tail)*
+            }
+        };
+
+        // Munch an ident and cast it to the given type; covers terminating comma.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            $entry:ident as $ty:ty,
+            $($tail:tt)*
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    $entry = libc::$entry as $ty,
+                ],
+                [
+                    $($try_froms)*
+                    libc::$entry as $ty => Ok($BitFlags::$entry),
+                ];
+                $($tail)*
+            }
+        };
+
+        // Entry rule.
+        (
+            $(#[$attr:meta])*
+            $v:vis enum $BitFlags:ident {
+                $($vals:tt)*
+            }
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: [$(#[$attr])*],
+                },
+                [],
+                [];
+                $($vals)*
+            }
+        };
+
+        // Entry rule including TryFrom
+        (
+            $(#[$attr:meta])*
+            $v:vis enum $BitFlags:ident {
+                $($vals:tt)*
+            }
+            impl TryFrom<$repr:path>
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: [$(#[$attr])*],
+                    from_type: $repr,
+                },
+                [],
+                [];
+                $($vals)*
+            }
+        };
+    }
+
 }
 
 pub mod arch
@@ -21631,37 +21890,1562 @@ pub mod system
         *,
     };
     /*
-    nix v0.0.0 
+    nix v0.0.0
     
-    nix::Error
-    nix::sys::termios::SpecialCharacterIndices::*;
-    nix::sys::termios::Termios;
-    
-                
-
-    use nix::errno::Errno;
-    use nix::sys::select::{select, FdSet};
-    use nix::sys::signal::{
-        sigaction,
-        SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
-    };
-    use nix::sys::termios::{
-        tcgetattr, tcsetattr,
-        SetArg, InputFlags, LocalFlags,
-    };
-    use nix::sys::time::{TimeVal, TimeValLike};
     use nix::unistd::{read, write};
     */
     pub mod api
     {
         /*!
         */
+        use hash::Hasher;
+        use hash::Hash;
+        use iter::FromIterator;
+        use ops::BitOr;
+        use std::convert::TryFrom;
+        use iter::FusedIterator;
+        use ops::Range;
+        use libc::FD_SETSIZE;
+        use ptr::null_mut;
+        use ffi::c_void;
+        use libc::size_t;
+        use libc::EDEADLOCK;
+        use libc::time_t;
+        use libc::suseconds_t;
+        use libc::timespec;
+        use std::os::fd::AsRawFd;
+        use os::fd::RawFd;
+        use os::fd::AsFd;
+        use libc::timeval;
+        use os::fd::BorrowedFd;
+        use libc::c_int;
+        use libc::NCCS;
+        use libc::tcflag_t;
         use ::
         {
+            cell::{ Ref, RefCell },
             *,
         };
         /*
         */
+        /// nix Result type
+        pub type Result<Type> = ::result::Result<Type, Errno>;
+        /// nix Error type
+        pub type Error = Errno;
+        
+        pub type SaFlags_t = libc::c_int;
+        // Controls the behavior of a [`SigAction`]
+        libc_bitflags!
+        {
+            /// Controls the behavior of a [`SigAction`]
+            #[cfg_attr(docsrs, doc(cfg(feature = "signal")))]
+            pub struct SaFlags: SaFlags_t {
+                /// When catching a [`Signal::SIGCHLD`] signal, the signal will be
+                /// generated only when a child process exits, not when a child process
+                /// stops.
+                SA_NOCLDSTOP;
+                /// When catching a [`Signal::SIGCHLD`] signal, the system will not
+                /// create zombie processes when children of the calling process exit.
+                #[cfg(not(target_os = "hurd"))]
+                SA_NOCLDWAIT;
+                /// Further occurrences of the delivered signal are not masked during
+                /// the execution of the handler.
+                SA_NODEFER;
+                /// The system will deliver the signal to the process on a signal stack,
+                /// specified by each thread with sigaltstack(2).
+                SA_ONSTACK;
+                /// The handler is reset back to the default at the moment the signal is
+                /// delivered.
+                SA_RESETHAND;
+                /// Requests that certain system calls restart if interrupted by this
+                /// signal.  See the man page for complete details.
+                SA_RESTART;
+                /// This flag is controlled internally by Nix.
+                SA_SIGINFO;
+            }
+        }
+        
+        pub use self::Signal::*;
+        pub const SIGNALS: [Signal; 31] =
+        [
+            SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGBUS, SIGFPE, SIGKILL,
+            SIGUSR1, SIGSEGV, SIGUSR2, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGCONT,
+            SIGSTOP, SIGTSTP, SIGTTIN, SIGTTOU, SIGURG, SIGXCPU, SIGXFSZ, SIGVTALRM,
+            SIGPROF, SIGWINCH, SIGIO, SIGSYS
+        ];
+        /// Iterate through all signals defined by this operating system
+        #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct SignalIterator
+        {
+            next: usize,
+        }
+
+        impl Iterator for SignalIterator
+        {
+            type Item = Signal;
+
+            fn next(&mut self) -> Option<Signal>
+            {
+                if self.next < SIGNALS.len() {
+                    let next_signal = SIGNALS[self.next];
+                    self.next += 1;
+                    Some(next_signal)
+                } else {
+                    None
+                }
+            }
+        }
+
+        impl Signal {
+            /// Iterate through all signals defined by this OS
+            pub const fn iterator() -> SignalIterator {
+                SignalIterator{next: 0}
+            }
+        }
+        /// Specifies a set of [`Signal`]s that may be blocked, waited for, etc.
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq )]
+        pub struct SigSet
+        {
+            sigset: libc::sigset_t
+        }
+
+        impl SigSet
+        {
+            /// Add the specified signal to the set.
+            pub fn add(&mut self, signal: Signal)
+            {
+                unsafe { libc::sigaddset(&mut self.sigset as *mut libc::sigset_t, signal as libc::c_int) };
+            }
+            /// Return whether this set includes the specified signal.
+            pub fn contains(&self, signal: Signal) -> bool
+            {
+                let res = unsafe { libc::sigismember(&self.sigset as *const libc::sigset_t, signal as libc::c_int) };
+
+                match res {
+                    1 => true,
+                    0 => false,
+                    _ => unreachable!("unexpected value from sigismember"),
+            
+                }
+            }
+            /// Initialize to include nothing.
+            pub fn empty() -> SigSet {
+                let mut sigset = mem::MaybeUninit::uninit();
+                let _ = unsafe { libc::sigemptyset(sigset.as_mut_ptr()) };
+
+                unsafe{ SigSet { sigset: sigset.assume_init() } }
+            }
+        }
+
+        impl From<Signal> for SigSet {
+            fn from(signal: Signal) -> SigSet {
+                let mut sigset = SigSet::empty();
+                sigset.add(signal);
+                sigset
+            }
+        }
+
+        impl BitOr for Signal {
+            type Output = SigSet;
+
+            fn bitor(self, rhs: Self) -> Self::Output {
+                let mut sigset = SigSet::empty();
+                sigset.add(self);
+                sigset.add(rhs);
+                sigset
+            }
+        }
+
+        impl BitOr<Signal> for SigSet {
+            type Output = SigSet;
+
+            fn bitor(mut self, rhs: Signal) -> Self::Output {
+                self.add(rhs);
+                self
+            }
+        }
+
+        impl BitOr for SigSet {
+            type Output = Self;
+
+            fn bitor(self, rhs: Self) -> Self::Output {
+                self.iter().chain(rhs.iter()).collect()
+            }
+        }
+
+        impl AsRef<libc::sigset_t> for SigSet {
+            fn as_ref(&self) -> &libc::sigset_t {
+                &self.sigset
+            }
+        }
+
+        // TODO: Consider specialization for the case where T is &SigSet and libc::sigorset is available.
+        impl Extend<Signal> for SigSet {
+            fn extend<T>(&mut self, iter: T)
+            where T: IntoIterator<Item = Signal> {
+                for signal in iter {
+                    self.add(signal);
+                }
+            }
+        }
+
+        impl FromIterator<Signal> for SigSet {
+            fn from_iter<T>(iter: T) -> Self
+            where T: IntoIterator<Item = Signal> {
+                let mut sigset = SigSet::empty();
+                sigset.extend(iter);
+                sigset
+            }
+        }
+
+        impl PartialEq for SigSet {
+            fn eq(&self, other: &Self) -> bool {
+                for signal in Signal::iterator() {
+                    if self.contains(signal) != other.contains(signal) {
+                        return false;
+                    }
+                }
+                true
+            }
+        }
+
+        impl Hash for SigSet {
+            fn hash<H: Hasher>(&self, state: &mut H) {
+                for signal in Signal::iterator() {
+                    if self.contains(signal) {
+                        signal.hash(state);
+                    }
+                }
+            }
+        }
+        /// A signal handler.
+        #[derive( Clone, Copy, Debug, Hash )]
+        pub enum SigHandler 
+        {
+            /// Default signal handling.
+            SigDfl,
+            /// Request that the signal be ignored.
+            SigIgn,
+            /// Use the given signal-catching function, which takes in the signal.
+            Handler(extern "C" fn(libc::c_int)),
+            /// Use the given signal-catching function, which takes in the signal, information about how
+            /// the signal was generated, and a pointer to the threads `ucontext_t`.
+            #[cfg(not(target_os = "redox"))]
+            SigAction(extern "C" fn(libc::c_int, *mut libc::siginfo_t, *mut libc::c_void))
+        }
+        /// Action to take on receipt of a signal. Corresponds to `sigaction`.
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct SigAction
+        {
+            sigaction: libc::sigaction
+        }
+        
+        impl From<SigAction> for libc::sigaction
+        {
+            fn from(value: SigAction) -> libc::sigaction {
+                value.sigaction
+            }
+        }
+        /// Changes the action taken by a process on receipt of a specific signal.
+        pub unsafe fn sigaction( signal:Signal, sigaction:&SigAction ) -> Result<SigAction> 
+        {
+            let mut oldact = mem::MaybeUninit::<libc::sigaction>::uninit();
+
+            let res = unsafe { libc::sigaction(signal as libc::c_int,
+                                    &sigaction.sigaction as *const libc::sigaction,
+                                    oldact.as_mut_ptr()) };
+
+            Errno::result(res).map(|_| SigAction { sigaction: unsafe { oldact.assume_init() } })
+        }
+        // Types of operating system signals
+        libc_enum!
+        {
+            /// Types of operating system signals
+            #[repr( i32 )] #[non_exhaustive]
+            pub enum Signal {
+                /// Hangup
+                SIGHUP,
+                /// Interrupt
+                SIGINT,
+                /// Quit
+                SIGQUIT,
+                /// Illegal instruction (not reset when caught)
+                SIGILL,
+                /// Trace trap (not reset when caught)
+                SIGTRAP,
+                /// Abort
+                SIGABRT,
+                /// Bus error
+                SIGBUS,
+                /// Floating point exception
+                SIGFPE,
+                /// Kill (cannot be caught or ignored)
+                SIGKILL,
+                /// User defined signal 1
+                SIGUSR1,
+                /// Segmentation violation
+                SIGSEGV,
+                /// User defined signal 2
+                SIGUSR2,
+                /// Write on a pipe with no one to read it
+                SIGPIPE,
+                /// Alarm clock
+                SIGALRM,
+                /// Software termination signal from kill
+                SIGTERM,
+                /// Stack fault (obsolete)
+                #[cfg(all(any(linux_android, target_os = "emscripten",
+                            target_os = "fuchsia"),
+                        not(any(target_arch = "mips",
+                                target_arch = "mips32r6",
+                                target_arch = "mips64",
+                                target_arch = "mips64r6",
+                                target_arch = "sparc",
+                                target_arch = "sparc64"))))]
+                SIGSTKFLT,
+                /// To parent on child stop or exit
+                SIGCHLD,
+                /// Continue a stopped process
+                SIGCONT,
+                /// Sendable stop signal not from tty
+                SIGSTOP,
+                /// Stop signal from tty
+                SIGTSTP,
+                /// To readers pgrp upon background tty read
+                SIGTTIN,
+                /// Like TTIN if (tp->t_local&LTOSTOP)
+                SIGTTOU,
+                /// Urgent condition on IO channel
+                SIGURG,
+                /// Exceeded CPU time limit
+                SIGXCPU,
+                /// Exceeded file size limit
+                SIGXFSZ,
+                /// Virtual time alarm
+                SIGVTALRM,
+                /// Profiling time alarm
+                SIGPROF,
+                /// Window size changes
+                SIGWINCH,
+                /// Input/output possible signal
+                #[cfg(not(target_os = "haiku"))]
+                SIGIO,
+                #[cfg(any(linux_android, target_os = "emscripten",
+                        target_os = "fuchsia", target_os = "aix"))]
+                /// Power failure imminent.
+                SIGPWR,
+                /// Bad system call
+                SIGSYS,
+            }
+            impl TryFrom<i32>
+        }
+        /// Contains a set of file descriptors used by [`select`]
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct FdSet<'fd> 
+        {
+            set: libc::fd_set,
+            _fd: ::marker::PhantomData<BorrowedFd<'fd>>,
+        }
+
+        impl <'fd> FdSet<'fd>
+        {
+            /// Test an `FdSet` for the presence of a certain file descriptor.
+            pub fn contains(&self, fd: BorrowedFd<'fd>) -> bool {
+                assert_fd_valid(fd.as_raw_fd());
+                unsafe { libc::FD_ISSET(fd.as_raw_fd(), &self.set) }
+            }
+            /// Finds the highest file descriptor in the set.
+            pub fn highest(&self) -> Option<BorrowedFd<'_>> {
+                self.fds(None).next_back()
+            }
+            /// Returns an iterator over the file descriptors in the set.
+            #[inline]
+            pub fn fds(&self, highest: Option<RawFd>) -> Fds<'_, '_> {
+                Fds {
+                    set: self,
+                    range: 0..highest.map(|h| h as usize + 1).unwrap_or(FD_SETSIZE),
+                }
+            }
+        }
+        /// Iterator over `FdSet`.
+        #[derive(Debug)]
+        pub struct Fds<'a, 'fd> 
+        {
+            set: &'a FdSet<'fd>,
+            range: Range<usize>,
+        }
+        
+        impl<'fd> Iterator for Fds<'_, 'fd>
+        {
+            type Item = BorrowedFd<'fd>;
+
+            fn next(&mut self) -> Option<Self::Item> 
+            {
+                for i in &mut self.range {
+                    let borrowed_i = unsafe { BorrowedFd::borrow_raw(i as RawFd) };
+                    if self.set.contains(borrowed_i) {
+                        return Some(borrowed_i);
+                    }
+                }
+                None
+            }
+
+            #[inline] fn size_hint(&self) -> (usize, Option<usize>) 
+            {
+                let (_, upper) = self.range.size_hint();
+                (0, upper)
+            }
+        }
+
+        impl<'fd> DoubleEndedIterator for Fds<'_, 'fd>
+        {
+            #[inline] fn next_back(&mut self) -> Option<BorrowedFd<'fd>>
+            {
+                while let Some(i) = self.range.next_back() {
+                    let borrowed_i = unsafe { BorrowedFd::borrow_raw(i as RawFd) };
+                    if self.set.contains(borrowed_i) {
+                        return Some(borrowed_i);
+                    }
+                }
+                None
+            }
+        }
+
+        impl FusedIterator for Fds<'_, '_> {}
+        
+        pub const NANOS_PER_SEC: i64 = 1_000_000_000;
+        pub const SECS_PER_MINUTE: i64 = 60;
+        pub const SECS_PER_HOUR: i64 = 3600;
+        
+        pub trait TimeValLike:Sized
+        {
+            #[inline] fn zero() -> Self { Self::seconds(0) }
+
+            #[inline] fn hours(hours: i64) -> Self
+            {
+                let secs = hours
+                .checked_mul(SECS_PER_HOUR)
+                .expect("TimeValLike::hours ouf of bounds");
+                Self::seconds(secs)
+            }
+
+            #[inline]
+            fn minutes(minutes: i64) -> Self
+            {
+                let secs = minutes
+                    .checked_mul(SECS_PER_MINUTE)
+                    .expect("TimeValLike::minutes out of bounds");
+                Self::seconds(secs)
+            }
+
+            fn seconds(seconds: i64) -> Self;
+            fn milliseconds(milliseconds: i64) -> Self;
+            fn microseconds(microseconds: i64) -> Self;
+            fn nanoseconds(nanoseconds: i64) -> Self;
+
+            #[inline]
+            fn num_hours(&self) -> i64 {
+                self.num_seconds() / 3600
+            }
+
+            #[inline]
+            fn num_minutes(&self) -> i64 {
+                self.num_seconds() / 60
+            }
+
+            fn num_seconds(&self) -> i64;
+            fn num_milliseconds(&self) -> i64;
+            fn num_microseconds(&self) -> i64;
+            fn num_nanoseconds(&self) -> i64;
+        }
+        
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct TimeVal( timeval );
+        impl TimeVal
+        {
+            /// Makes a new `TimeVal` with given number of microseconds.
+            #[inline]
+            fn microseconds(microseconds: i64) -> TimeVal {
+                let (secs, micros) = div_mod_floor_64(microseconds, MICROS_PER_SEC);
+                assert!(
+                    (TV_MIN_SECONDS..=TV_MAX_SECONDS).contains(&secs),
+                    "TimeVal out of bounds"
+                );
+                #[cfg_attr(
+                    any(target_env = "musl", target_env = "ohos"),
+                    allow(deprecated)
+                )]
+                // https://github.com/rust-lang/libc/issues/1848
+                TimeVal(timeval {
+                    tv_sec: secs as time_t,
+                    tv_usec: micros as suseconds_t,
+                })
+            }
+
+            #[inline]
+            pub fn milliseconds(milliseconds: i64) -> TimeVal {
+                let microseconds = milliseconds
+                    .checked_mul(1_000)
+                    .expect("TimeVal::milliseconds out of bounds");
+
+                TimeVal::microseconds(microseconds)
+            }
+        }
+
+        /// Monitors file descriptors for readiness.
+        pub fn select<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int>
+        where
+        'fd: 'a,
+        N: Into<Option<c_int>>,
+        R: Into<Option<&'a mut FdSet<'fd>>>,
+        W: Into<Option<&'a mut FdSet<'fd>>>,
+        E: Into<Option<&'a mut FdSet<'fd>>>,
+        T: Into<Option<&'a mut TimeVal>>
+        {
+            let mut readfds = readfds.into();
+            let mut writefds = writefds.into();
+            let mut errorfds = errorfds.into();
+            let timeout = timeout.into();
+
+            let nfds = nfds.into().unwrap_or_else(|| {
+                readfds
+                    .iter_mut()
+                    .chain(writefds.iter_mut())
+                    .chain(errorfds.iter_mut())
+                    .map(|set| {
+                        set.highest()
+                            .map(|borrowed_fd| borrowed_fd.as_raw_fd())
+                            .unwrap_or(-1)
+                    })
+                    .max()
+                    .unwrap_or(-1)
+                    + 1
+            });
+
+            let readfds = readfds
+                .map(|set| set as *mut _ as *mut libc::fd_set)
+                .unwrap_or(null_mut());
+            let writefds = writefds
+                .map(|set| set as *mut _ as *mut libc::fd_set)
+                .unwrap_or(null_mut());
+            let errorfds = errorfds
+                .map(|set| set as *mut _ as *mut libc::fd_set)
+                .unwrap_or(null_mut());
+            let timeout = timeout
+                .map(|tv| tv as *mut _ as *mut libc::timeval)
+                .unwrap_or(null_mut());
+
+            let res =
+                unsafe { libc::select(nfds, readfds, writefds, errorfds, timeout) };
+
+            Errno::result(res)
+        }
+        
+        libc_bitflags!
+        {
+            /// Flags for configuring the input mode of a terminal
+            pub struct InputFlags: tcflag_t {
+                IGNBRK;
+                BRKINT;
+                IGNPAR;
+                PARMRK;
+                INPCK;
+                ISTRIP;
+                INLCR;
+                IGNCR;
+                ICRNL;
+                IXON;
+                IXOFF;
+                #[cfg(not(target_os = "redox"))]
+                IXANY;
+                #[cfg(not(any(target_os = "redox", target_os = "haiku")))]
+                IMAXBEL;
+                #[cfg(any(linux_android, apple_targets))]
+                IUTF8;
+            }
+        }
+
+        libc_bitflags! 
+        {
+            /// Flags for configuring the output mode of a terminal
+            pub struct OutputFlags: tcflag_t {
+                OPOST;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        target_os = "openbsd"))]
+                OLCUC;
+                ONLCR;
+                OCRNL as tcflag_t;
+                ONOCR as tcflag_t;
+                ONLRET as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                OFDEL as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                NL0 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                NL1 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                CR0 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                CR1 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                CR2 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                CR3 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "freebsd",
+                        target_os = "haiku",
+                        apple_targets))]
+                TAB0 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                TAB1 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                TAB2 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "freebsd",
+                        target_os = "haiku",
+                        apple_targets))]
+                TAB3 as tcflag_t;
+                #[cfg(linux_android)]
+                XTABS;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                BS0 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                BS1 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                VT0 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                VT1 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                FF0 as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                FF1 as tcflag_t;
+                #[cfg(bsd)]
+                OXTABS;
+                #[cfg(bsd)]
+                ONOEOT as tcflag_t;
+
+                // Bitmasks for use with OutputFlags to select specific settings
+                // These should be moved to be a mask once https://github.com/rust-lang-nursery/bitflags/issues/110
+                // is resolved.
+
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                NLDLY as tcflag_t; // FIXME: Datatype needs to be corrected in libc for mac
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                CRDLY as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "freebsd",
+                        target_os = "haiku",
+                        apple_targets))]
+                TABDLY as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                BSDLY as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                VTDLY as tcflag_t;
+                #[cfg(any(linux_android,
+                        target_os = "haiku",
+                        apple_targets))]
+                FFDLY as tcflag_t;
+            }
+        }
+
+        libc_bitflags! 
+        {
+            /// Flags for setting the control mode of a terminal
+            pub struct ControlFlags: tcflag_t {
+                #[cfg(bsd)]
+                CIGNORE;
+                CS5;
+                CS6;
+                CS7;
+                CS8;
+                CSTOPB;
+                CREAD;
+                PARENB;
+                PARODD;
+                HUPCL;
+                CLOCAL;
+                #[cfg(not(any(target_os = "redox", target_os = "aix")))]
+                CRTSCTS;
+                #[cfg(linux_android)]
+                CBAUD;
+                #[cfg(any(target_os = "android", all(target_os = "linux", not(target_arch = "mips"))))]
+                CMSPAR;
+                #[cfg(any(target_os = "android",
+                        all(target_os = "linux",
+                            not(any(target_arch = "powerpc", target_arch = "powerpc64")))))]
+                CIBAUD;
+                #[cfg(linux_android)]
+                CBAUDEX;
+                #[cfg(bsd)]
+                MDMBUF;
+                #[cfg(netbsdlike)]
+                CHWFLOW;
+                #[cfg(any(freebsdlike, netbsdlike))]
+                CCTS_OFLOW;
+                #[cfg(any(freebsdlike, netbsdlike))]
+                CRTS_IFLOW;
+                #[cfg(freebsdlike)]
+                CDTR_IFLOW;
+                #[cfg(freebsdlike)]
+                CDSR_OFLOW;
+                #[cfg(freebsdlike)]
+                CCAR_OFLOW;
+                CSIZE;
+            }
+        }
+
+        libc_bitflags! 
+        {
+            /// Flags for setting any local modes
+            pub struct LocalFlags: tcflag_t {
+                #[cfg(not(target_os = "redox"))]
+                ECHOKE;
+                ECHOE;
+                ECHOK;
+                ECHO;
+                ECHONL;
+                #[cfg(not(any(target_os = "redox", target_os = "cygwin")))]
+                ECHOPRT;
+                #[cfg(not(target_os = "redox"))]
+                ECHOCTL;
+                ISIG;
+                ICANON;
+                #[cfg(bsd)]
+                ALTWERASE;
+                IEXTEN;
+                #[cfg(not(any(target_os = "redox", target_os = "haiku", target_os = "aix", target_os = "cygwin")))]
+                EXTPROC;
+                TOSTOP;
+                #[cfg(not(target_os = "redox"))]
+                FLUSHO;
+                #[cfg(bsd)]
+                NOKERNINFO;
+                #[cfg(not(any(target_os = "redox", target_os = "cygwin")))]
+                PENDIN;
+                NOFLSH;
+            }
+        }
+        /// Stores settings for the termios API
+        #[derive(Clone, Debug, Eq, PartialEq)]
+        pub struct Termios 
+        {
+            inner: RefCell<libc::termios>,
+            /// Input mode flags (see `termios.c_iflag` documentation)
+            pub input_flags: InputFlags,
+            /// Output mode flags (see `termios.c_oflag` documentation)
+            pub output_flags: OutputFlags,
+            /// Control mode flags (see `termios.c_cflag` documentation)
+            pub control_flags: ControlFlags,
+            /// Local mode flags (see `termios.c_lflag` documentation)
+            pub local_flags: LocalFlags,
+            /// Control characters (see `termios.c_cc` documentation)
+            pub control_chars: [libc::cc_t; NCCS],
+        }
+
+        impl Termios
+        {
+            /// Exposes an immutable reference to the underlying `libc::termios` data structure.
+            pub fn get_libc_termios(&self) -> Ref<'_, libc::termios> 
+            {
+                {
+                    let mut termios = self.inner.borrow_mut();
+                    termios.c_iflag = self.input_flags.bits();
+                    termios.c_oflag = self.output_flags.bits();
+                    termios.c_cflag = self.control_flags.bits();
+                    termios.c_lflag = self.local_flags.bits();
+                    termios.c_cc = self.control_chars;
+                    #[cfg(any(linux_android, target_os = "haiku"))]
+                    {
+                        termios.c_line = self.line_discipline;
+                    }
+                }
+                self.inner.borrow()
+            }
+            /// Exposes the inner `libc::termios` datastore within `Termios`.
+            pub unsafe fn get_libc_termios_mut(&mut self) -> *mut libc::termios 
+            {
+                {
+                    let mut termios = self.inner.borrow_mut();
+                    termios.c_iflag = self.input_flags.bits();
+                    termios.c_oflag = self.output_flags.bits();
+                    termios.c_cflag = self.control_flags.bits();
+                    termios.c_lflag = self.local_flags.bits();
+                    termios.c_cc = self.control_chars;
+                    #[cfg(any(linux_android, target_os = "haiku"))]
+                    {
+                        termios.c_line = self.line_discipline;
+                    }
+                }
+                self.inner.as_ptr()
+            }
+        }
+
+        impl From<libc::termios> for Termios
+        {
+            fn from(termios: libc::termios) -> Self
+            {
+                Termios
+                {
+                    inner: RefCell::new(termios),
+                    input_flags: InputFlags::from_bits_truncate(termios.c_iflag),
+                    output_flags: OutputFlags::from_bits_truncate(termios.c_oflag),
+                    control_flags: ControlFlags::from_bits_truncate(termios.c_cflag),
+                    local_flags: LocalFlags::from_bits_truncate(termios.c_lflag),
+                    control_chars: termios.c_cc,
+                    #[cfg(any(linux_android, target_os = "haiku"))]
+                    line_discipline: termios.c_line,
+                }
+            }
+        }
+
+        impl From<Termios> for libc::termios
+        {
+            fn from(termios: Termios) -> Self { termios.inner.into_inner() }
+        }
+        /// Indices into the `termios.c_cc` array for special characters.
+        #[repr( usize )] #[non_exhaustive]
+        #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+        pub enum SpecialCharacterIndices 
+        {
+            VDISCARD,
+            VEOF,
+            VEOL,
+            VEOL2,
+            VERASE,
+            VINTR,
+            VKILL,
+            VLNEXT,
+            VQUIT,
+            VREPRINT,
+            VSTART,
+            VSTATUS,
+            VSTOP,
+            VSUSP,
+            VSWTC,
+            VWERASE,
+        }
+        // Specify when a port configuration change should occur.
+        libc_enum! 
+        {
+            /// Specify when a port configuration change should occur.
+            ///
+            /// Used as an argument to `tcsetattr()`
+            #[repr(i32)]
+            #[non_exhaustive]
+            pub enum SetArg {
+                /// The change will occur immediately
+                TCSANOW,
+                /// The change occurs after all output has been written
+                TCSADRAIN,
+                /// Same as `TCSADRAIN`, but will also flush the input buffer
+                TCSAFLUSH,
+            }
+        }
+
+        pub const MICROS_PER_SEC: i64 = 1_000_000;
+
+        
+
+        #[cfg(target_pointer_width = "64")]
+        pub const TS_MAX_SECONDS: i64 = (i64::MAX / NANOS_PER_SEC) - 1;
+
+        #[cfg(target_pointer_width = "32")]
+        pub const TS_MAX_SECONDS: i64 = isize::MAX as i64;
+
+        pub const TS_MIN_SECONDS: i64 = -TS_MAX_SECONDS;
+        
+        #[cfg(target_pointer_width = "64")]
+        pub const TV_MAX_SECONDS: i64 = (i64::MAX / MICROS_PER_SEC) - 1;
+
+        #[cfg(target_pointer_width = "32")]
+        pub const TV_MAX_SECONDS: i64 = isize::MAX as i64;
+
+        pub const TV_MIN_SECONDS: i64 = -TV_MAX_SECONDS;
+        
+        #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+        type timespec_tv_nsec_t = i64;
+        #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+        type timespec_tv_nsec_t = libc::c_long;
+
+        #[repr( C )] #[derive( Clone, Copy, Debug )]
+        pub struct TimeSpec( libc::timespec );
+        
+        impl TimeSpec
+        {
+             
+
+            pub fn nanoseconds(nanoseconds: i64) -> TimeSpec
+            {
+                let (secs, nanos) = div_mod_floor_64(nanoseconds, NANOS_PER_SEC);
+                assert!
+                (
+                    (TS_MIN_SECONDS..=TS_MAX_SECONDS).contains(&secs),
+                    "TimeSpec out of bounds"
+                );
+                let mut ts = zero_init_timespec();
+                ts.tv_sec = secs as time_t;
+                ts.tv_nsec = nanos as timespec_tv_nsec_t;
+                TimeSpec(ts)
+            }
+        }
+
+        impl Eq for TimeSpec {}
+
+        impl PartialEq for TimeSpec
+        {
+            fn eq( &self, other:&Self ) -> bool
+            {
+                self.0.tv_sec  == other.0.tv_sec &&
+                self.0.tv_nsec == other.0.tv_nsec
+            }
+        }
+        
+        impl Hash for TimeSpec
+        {
+            fn hash<H: Hasher>(&self, state: &mut H)
+            {
+                self.0.tv_sec.hash( state )
+            }
+        }
+        /// Nix's main error type.
+        #[repr( i32 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+        pub enum Errno
+        {
+            EUN = -1,
+            /// Operation not permitted
+            EPERM = 1,
+            /// No such file or directory
+            ENOENT = 2,
+            /// No such process
+            ESRCH = 3,
+            /// Interrupted system call
+            EINTR = 4,
+            /// I/O error
+            EIO = 5,
+            /// No such device or address
+            ENXIO = 6,
+            /// Argument list too long
+            E2BIG = 7,
+            /// Exec format error
+            ENOEXEC = 8,
+            /// Bad file number
+            EBADF = 9,
+            /// No child processes
+            ECHILD = 10,
+            /// Try again
+            EAGAIN = 11,
+            /// Out of memory
+            ENOMEM = 12,
+            /// Permission denied
+            EACCES = 13,
+            /// Bad address
+            EFAULT = 14,
+            /// Block device required
+            ENOTBLK = 15,
+            /// Device or resource busy
+            EBUSY = 16,
+            /// File exists
+            EEXIST = 17,
+            /// Cross-device link
+            EXDEV = 18,
+            /// No such device
+            ENODEV = 19,
+            /// Not a directory
+            ENOTDIR = 20,
+            /// Is a directory
+            EISDIR = 21,
+            /// Invalid argument
+            EINVAL = 22,
+            /// File table overflow
+            ENFILE = 23,
+            /// Too many open files
+            EMFILE = 24,
+            /// Not a typewriter
+            ENOTTY = 25,
+            /// Text file busy
+            ETXTBSY = 26,
+            /// File too large
+            EFBIG = 27,
+            /// No space left on device
+            ENOSPC = 28,
+            /// Illegal seek
+            ESPIPE = 29,
+            /// Read-only file system
+            EROFS = 30,
+            /// Too many links
+            EMLINK = 31,
+            /// Broken pipe
+            EPIPE = 32,
+            /// Math argument out of domain of func
+            EDOM = 33,
+            /// Math result not representable
+            ERANGE = 34,
+            /// Resource deadlock would occur
+            EDEADLK = 35,
+            /// File name too long
+            ENAMETOOLONG = 36,
+            /// No record locks available
+            ENOLCK = 37,
+            /// Invalid system call number
+            ENOSYS = 38,
+            /// Directory not empty
+            ENOTEMPTY = 39,
+            /// Too many symbolic links encountered
+            ELOOP = 40,
+            /// No message of desired type
+            ENOMSG = 42,
+            /// Identifier removed
+            EIDRM = 43,
+            /// Channel number out of range
+            ECHRNG = 44,
+            /// Level 2 not synchronized
+            EL2NSYNC = 45,
+            /// Level 3 halted
+            EL3HLT = 46,
+            /// Level 3 reset
+            EL3RST = 47,
+            /// Link number out of range
+            ELNRNG = 48,
+            /// Protocol driver not attached
+            EUNATCH = 49,
+            /// No CSI structure available
+            ENOCSI = 50,
+            /// Level 2 halted
+            EL2HLT = 51,
+            /// Invalid exchange
+            EBADE = 52,
+            /// Invalid request descriptor
+            EBADR = 53,
+            /// Exchange full
+            EXFULL = 54,
+            /// No anode
+            ENOANO = 55,
+            /// Invalid request code
+            EBADRQC = 56,
+            /// Invalid slot
+            EBADSLT = 57,
+            /// Bad font file format
+            EBFONT = 59,
+            /// Device not a stream
+            ENOSTR = 60,
+            /// No data available
+            ENODATA = 61,
+            /// Timer expired
+            ETIME = 62,
+            /// Out of streams resources
+            ENOSR = 63,
+            /// Machine is not on the network
+            ENONET = 64,
+            /// Package not installed
+            ENOPKG = 65,
+            /// Object is remote
+            EREMOTE = 66,
+            /// Link has been severed
+            ENOLINK = 67,
+            /// Advertise error
+            EADV = 68,
+            /// Srmount error
+            ESRMNT = 69,
+            /// Communication error on send
+            ECOMM = 70,
+            /// Protocol error
+            EPROTO = 71,
+            /// Multihop attempted
+            EMULTIHOP = 72,
+            /// RFS specific error
+            EDOTDOT = 73,
+            /// Not a data message
+            EBADMSG = 74,
+            /// Value too large for defined data type
+            EOVERFLOW = 75,
+            /// Name not unique on network
+            ENOTUNIQ = 76,
+            /// File descriptor in bad state
+            EBADFD = 77,
+            /// Remote address changed
+            EREMCHG = 78,
+            /// Can not access a needed shared library
+            ELIBACC = 79,
+            /// Accessing a corrupted shared library
+            ELIBBAD = 80,
+            /// .lib section in a.out corrupted
+            ELIBSCN = 81,
+            /// Attempting to link in too many shared libraries
+            ELIBMAX = 82,
+            /// Cannot exec a shared library directly
+            ELIBEXEC = 83,
+            /// Illegal byte sequence
+            EILSEQ = 84,
+            /// Interrupted system call should be restarted
+            ERESTART = 85,
+            /// Streams pipe error
+            ESTRPIPE = 86,
+            /// Too many users
+            EUSERS = 87,
+            /// Socket operation on non-socket
+            ENOTSOCK = 88,
+            /// Destination address required
+            EDESTADDRREQ = 89,
+            /// Message too long
+            EMSGSIZE = 90,
+            /// Protocol wrong type for socket
+            EPROTOTYPE = 91,
+            /// Protocol not available
+            ENOPROTOOPT = 92,
+            /// Protocol not supported
+            EPROTONOSUPPORT = 93,
+            /// Socket type not supported
+            ESOCKTNOSUPPORT = 94,
+            /// Operation not supported on transport endpoint
+            EOPNOTSUPP = 95,
+            /// Protocol family not supported
+            EPFNOSUPPORT = 96,
+            /// Address family not supported by protocol
+            EAFNOSUPPORT = 97,
+            /// Address already in use
+            EADDRINUSE = 98,
+            /// Cannot assign requested address
+            EADDRNOTAVAIL = 99,
+            /// Network is down
+            ENETDOWN = 100,
+            /// Network is unreachable
+            ENETUNREACH = 101,
+            /// Network dropped connection because of reset
+            ENETRESET = 102,
+            /// Software caused connection abort
+            ECONNABORTED = 103,
+            /// Connection reset by peer
+            ECONNRESET = 104,
+            /// No buffer space available
+            ENOBUFS = 105,
+            /// Transport endpoint is already connected
+            EISCONN = 106,
+            /// Transport endpoint is not connected
+            ENOTCONN = 107,
+            /// Cannot send after transport endpoint shutdown
+            ESHUTDOWN = 108,
+            /// Too many references: cannot splice
+            ETOOMANYREFS = 109,
+            /// Connection timed out
+            ETIMEDOUT = 110,
+            /// Connection refused
+            ECONNREFUSED = 111,
+            /// Host is down
+            EHOSTDOWN = 112,
+            /// No route to host
+            EHOSTUNREACH = 113,
+            /// Operation already in progress
+            EALREADY = 114,
+            /// Operation now in progress
+            EINPROGRESS = 115,
+            /// Stale file handle
+            ESTALE = 116,
+            /// Structure needs cleaning
+            EUCLEAN = 117,
+            /// Not a XENIX named type file
+            ENOTNAM = 118,
+            /// No XENIX semaphores available
+            ENAVAIL = 119,
+            /// Is a named type file
+            EISNAM = 120,
+            /// Remote I/O error
+            EREMOTEIO = 121,
+            /// Quota exceeded
+            EDQUOT = 122,
+            /// No medium found
+            ENOMEDIUM = 123,
+            /// Wrong medium type
+            EMEDIUMTYPE = 124,
+            /// Operation Canceled
+            ECANCELED = 125,
+            /// Required key not available
+            ENOKEY = 126,
+            /// Key has expired
+            EKEYEXPIRED = 127,
+            /// Key has been revoked
+            EKEYREVOKED = 128,
+            /// Key was rejected by service
+            EKEYREJECTED = 129,
+            /// Owner died
+            EOWNERDEAD = 130,
+            /// State not recoverable
+            ENOTRECOVERABLE = 131,
+            /// Operation not possible due to RF-kill
+            ERFKILL = 132,
+            /// Memory page has hardware error
+            EHWPOISON = 133,
+        }
+
+        impl Errno
+        {
+            pub const fn from_raw(err: i32) -> Errno { from_i32(err) }
+            /// Returns the current raw i32 value of errno
+            pub fn last_raw() -> i32 { unsafe { *errno_location() } }
+            /// Returns the current value of errno
+            pub fn last() -> Self { Self::from_raw(Self::last_raw()) }
+            /// Returns `Ok(value)` if it does not contain the sentinel value.
+            #[inline] pub fn result<S: ErrnoSentinel + PartialEq<S>>(value: S) -> Result<S>
+            {
+                if value == S::sentinel() { Err(Self::last()) }
+                else { Ok(value) }
+            }
+        }
+        /// Indicates that a function failed and more detailed information about the error can be found in `errno`.
+        pub trait ErrnoSentinel:Sized
+        {
+            fn sentinel() -> Self;
+        }
+
+        impl ErrnoSentinel for isize 
+        {
+            fn sentinel() -> Self {
+                -1
+            }
+        }
+
+        impl ErrnoSentinel for i32 {
+            fn sentinel() -> Self {
+                -1
+            }
+        }
+
+        impl ErrnoSentinel for i64 {
+            fn sentinel() -> Self {
+                -1
+            }
+        }
+
+        impl ErrnoSentinel for *mut c_void {
+            fn sentinel() -> Self {
+                -1isize as *mut c_void
+            }
+        }
+
+        impl ErrnoSentinel for libc::sighandler_t {
+            fn sentinel() -> Self {
+                libc::SIG_ERR
+            }
+        }
+
+        fn assert_fd_valid(fd: RawFd)
+        {
+            assert!(
+                usize::try_from(fd).map_or(false, |fd| fd < FD_SETSIZE),
+                "fd must be in the range 0..FD_SETSIZE",
+            );
+        }
+        /// Return the configuration of a port.
+        pub fn tcgetattr<Fd: AsFd>(fd: Fd) -> Result<Termios> 
+        {
+            let mut termios = ::mem::MaybeUninit::uninit();
+
+            let res = unsafe {
+                libc::tcgetattr(fd.as_fd().as_raw_fd(), termios.as_mut_ptr())
+            };
+
+            Errno::result(res)?;
+
+            unsafe { Ok(termios.assume_init().into()) }
+        }
+        /// Return the configuration of a port.
+        pub fn tcgetattraw(fd:RawFd) -> Result<Termios> 
+        {
+            let mut termios = ::mem::MaybeUninit::uninit();
+
+            let res = unsafe {
+                libc::tcgetattr( fd,termios.as_mut_ptr() )
+            };
+
+            Errno::result(res)?;
+
+            unsafe { Ok(termios.assume_init().into()) }
+        }
+        /// Set the configuration for a terminal.
+        pub fn tcsetattr<Fd: AsFd>
+        (
+            fd: Fd,
+            actions: SetArg,
+            termios: &Termios,
+        ) -> Result<()> 
+        {
+            let inner_termios = termios.get_libc_termios();
+            Errno::result(unsafe {
+                libc::tcsetattr(
+                    fd.as_fd().as_raw_fd(),
+                    actions as c_int,
+                    &*inner_termios,
+                )
+            })
+            .map(drop)
+        }
+        /// Set the configuration for a terminal.
+        pub fn tcsetattraw
+        (
+            fd: RawFd,
+            actions: SetArg,
+            termios: &Termios,
+        ) -> Result<()> 
+        {
+            let inner_termios = termios.get_libc_termios();
+            Errno::result(unsafe {
+                libc::tcsetattr(
+                    fd,
+                    actions as c_int,
+                    &*inner_termios,
+                )
+            })
+            .map(drop)
+        }
+
+        pub const fn from_i32(e: i32) -> Errno 
+        {
+            use self::Errno::*;
+
+            match e 
+            {
+                libc::EPERM => EPERM,
+                libc::ENOENT => ENOENT,
+                libc::ESRCH => ESRCH,
+                libc::EINTR => EINTR,
+                libc::EIO => EIO,
+                libc::ENXIO => ENXIO,
+                libc::E2BIG => E2BIG,
+                libc::ENOEXEC => ENOEXEC,
+                libc::EBADF => EBADF,
+                libc::ECHILD => ECHILD,
+                libc::EAGAIN => EAGAIN,
+                libc::ENOMEM => ENOMEM,
+                libc::EACCES => EACCES,
+                libc::EFAULT => EFAULT,
+                libc::ENOTBLK => ENOTBLK,
+                libc::EBUSY => EBUSY,
+                libc::EEXIST => EEXIST,
+                libc::EXDEV => EXDEV,
+                libc::ENODEV => ENODEV,
+                libc::ENOTDIR => ENOTDIR,
+                libc::EISDIR => EISDIR,
+                libc::EINVAL => EINVAL,
+                libc::ENFILE => ENFILE,
+                libc::EMFILE => EMFILE,
+                libc::ENOTTY => ENOTTY,
+                libc::ETXTBSY => ETXTBSY,
+                libc::EFBIG => EFBIG,
+                libc::ENOSPC => ENOSPC,
+                libc::ESPIPE => ESPIPE,
+                libc::EROFS => EROFS,
+                libc::EMLINK => EMLINK,
+                libc::EPIPE => EPIPE,
+                libc::EDOM => EDOM,
+                libc::ERANGE => ERANGE,
+                libc::ENOMSG => ENOMSG,
+                libc::EIDRM => EIDRM,
+                libc::ECHRNG => ECHRNG,
+                libc::EL2NSYNC => EL2NSYNC,
+                libc::EL3HLT => EL3HLT,
+                libc::EL3RST => EL3RST,
+                libc::ELNRNG => ELNRNG,
+                libc::EUNATCH => EUNATCH,
+                libc::ENOCSI => ENOCSI,
+                libc::EL2HLT => EL2HLT,
+                libc::EDEADLK => EDEADLK,
+                libc::ENOLCK => ENOLCK,
+                libc::EBADE => EBADE,
+                libc::EBADR => EBADR,
+                libc::EXFULL => EXFULL,
+                libc::ENOANO => ENOANO,
+                libc::EBADRQC => EBADRQC,
+                libc::EBADSLT => EBADSLT,
+                //libc::EDEADLOCK => EDEADLOCK,
+                libc::EBFONT => EBFONT,
+                libc::ENOSTR => ENOSTR,
+                libc::ENODATA => ENODATA,
+                libc::ETIME => ETIME,
+                libc::ENOSR => ENOSR,
+                libc::ENONET => ENONET,
+                libc::ENOPKG => ENOPKG,
+                libc::EREMOTE => EREMOTE,
+                libc::ENOLINK => ENOLINK,
+                libc::EADV => EADV,
+                libc::ESRMNT => ESRMNT,
+                libc::ECOMM => ECOMM,
+                libc::EPROTO => EPROTO,
+                libc::EMULTIHOP => EMULTIHOP,
+                libc::EDOTDOT => EDOTDOT,
+                libc::EBADMSG => EBADMSG,
+                libc::ENOTUNIQ => ENOTUNIQ,
+                libc::EBADFD => EBADFD,
+                libc::EREMCHG => EREMCHG,
+                libc::ELIBACC => ELIBACC,
+                libc::ELIBBAD => ELIBBAD,
+                libc::ELIBSCN => ELIBSCN,
+                libc::ELIBMAX => ELIBMAX,
+                libc::ELIBEXEC => ELIBEXEC,
+                libc::ENOSYS => ENOSYS,
+                libc::ENOTEMPTY => ENOTEMPTY,
+                libc::ENAMETOOLONG => ENAMETOOLONG,
+                libc::ELOOP => ELOOP,
+                libc::EOPNOTSUPP => EOPNOTSUPP,
+                libc::EPFNOSUPPORT => EPFNOSUPPORT,
+                libc::ECONNRESET => ECONNRESET,
+                libc::ENOBUFS => ENOBUFS,
+                libc::EAFNOSUPPORT => EAFNOSUPPORT,
+                libc::EPROTOTYPE => EPROTOTYPE,
+                libc::ENOTSOCK => ENOTSOCK,
+                libc::ENOPROTOOPT => ENOPROTOOPT,
+                libc::ESHUTDOWN => ESHUTDOWN,
+                libc::ECONNREFUSED => ECONNREFUSED,
+                libc::EADDRINUSE => EADDRINUSE,
+                libc::ECONNABORTED => ECONNABORTED,
+                libc::ENETUNREACH => ENETUNREACH,
+                libc::ENETDOWN => ENETDOWN,
+                libc::ETIMEDOUT => ETIMEDOUT,
+                libc::EHOSTDOWN => EHOSTDOWN,
+                libc::EHOSTUNREACH => EHOSTUNREACH,
+                libc::EINPROGRESS => EINPROGRESS,
+                libc::EALREADY => EALREADY,
+                libc::EDESTADDRREQ => EDESTADDRREQ,
+                libc::EMSGSIZE => EMSGSIZE,
+                libc::EPROTONOSUPPORT => EPROTONOSUPPORT,
+                libc::ESOCKTNOSUPPORT => ESOCKTNOSUPPORT,
+                libc::EADDRNOTAVAIL => EADDRNOTAVAIL,
+                libc::ENETRESET => ENETRESET,
+                libc::EISCONN => EISCONN,
+                libc::ENOTCONN => ENOTCONN,
+                libc::ETOOMANYREFS => ETOOMANYREFS,
+                libc::EUSERS => EUSERS,
+                libc::EDQUOT => EDQUOT,
+                libc::ESTALE => ESTALE,
+                libc::ENOMEDIUM => ENOMEDIUM,
+                libc::EILSEQ => EILSEQ,
+                libc::EOVERFLOW => EOVERFLOW,
+                libc::ECANCELED => ECANCELED,
+                libc::ENOTRECOVERABLE => ENOTRECOVERABLE,
+                libc::EOWNERDEAD => EOWNERDEAD,
+                libc::ESTRPIPE => ESTRPIPE,
+                _ => EUN,
+            }
+        }
+
+        unsafe fn errno_location() -> *mut c_int { unsafe { libc::__errno_location() } }
+        /// Read from a raw file descriptor.
+        pub fn read(fd:RawFd, buf: &mut [u8]) -> Result<usize> 
+        {
+            let res = unsafe {
+                libc::read(
+                    fd,
+                    buf.as_mut_ptr().cast(),
+                    buf.len() as size_t,
+                )
+            };
+
+            Errno::result(res).map(|r| r as usize)
+        }
+        /// Write to a raw file descriptor.
+        pub fn write(fd:RawFd, buf: &[u8]) -> Result<usize> 
+        {
+            let res = unsafe {
+                libc::write(
+                    fd,
+                    buf.as_ptr().cast(),
+                    buf.len() as size_t,
+                )
+            };
+
+            Errno::result(res).map(|r| r as usize)
+        }
+
+        #[inline] pub fn milliseconds(milliseconds: i64) -> TimeSpec
+        {
+            let nanoseconds = milliseconds
+            .checked_mul(1_000_000)
+            .expect("TimeSpec::milliseconds out of bounds");
+
+            TimeSpec::nanoseconds(nanoseconds)
+        }
+
+        #[inline] pub fn div_rem_64(this: i64, other: i64) -> (i64, i64) { (this / other, this % other) }
+        
+        #[inline] pub fn div_floor_64(this: i64, other: i64) -> i64
+        {
+            match div_rem_64(this, other)
+            {
+                (d, r) if (r > 0 && other < 0) || (r < 0 && other > 0) => d - 1,
+                (d, _) => d,
+            }
+        }
+        
+        #[inline] pub fn mod_floor_64(this: i64, other: i64) -> i64
+        {
+            match this % other 
+            {
+                r if (r > 0 && other < 0) || (r < 0 && other > 0) => r + other,
+                r => r,
+            }
+        }
+
+        #[inline] pub fn div_mod_floor_64(this: i64, other: i64) -> (i64, i64)
+        {
+            (div_floor_64(this, other), mod_floor_64(this, other))
+        }
+        /// Makes a new `TimeVal` with given number of nanoseconds.
+        #[inline] pub fn nanoseconds(nanoseconds: i64) -> TimeVal 
+        {
+            let microseconds = nanoseconds / 1000;
+            let (secs, micros) = div_mod_floor_64(microseconds, MICROS_PER_SEC);
+            assert!(
+                (TV_MIN_SECONDS..=TV_MAX_SECONDS).contains(&secs),
+                "TimeVal out of bounds"
+            );
+            // https://github.com/rust-lang/libc/issues/1848
+            TimeVal(timeval {
+                tv_sec: secs as time_t,
+                tv_usec: micros as suseconds_t,
+            })
+        }
+        
+        pub const fn zero_init_timespec() -> timespec
+        {
+            unsafe { ::mem::transmute([0u8; ::mem::size_of::<timespec>()]) }
+        }
     }
     /*
     mortal v0.0.0 */
@@ -24142,7 +25926,7 @@ pub mod system
             {
                 /*!
                 */
-                use nix::sys::termios::Termios;
+                //use nix::sys::termios::Termios;
                 use std::os::fd::AsRawFd;
                 use os::fd::AsFd;
                 use ::
@@ -24151,33 +25935,23 @@ pub mod system
                     fs::{ File },
                     map::{ map_lock_result, map_try_lock_result },
                     mem::{ replace, zeroed },
-                    nix::
-                    {
-                        errno::{ Errno },
-                        libc::
-                        { 
-                            ioctl, c_int, c_ushort, termios, STDIN_FILENO, STDOUT_FILENO, 
-                            STDERR_FILENO, TIOCGWINSZ
-                        },
-                        sys::
-                        {
-                            select::{ select, FdSet },
-                            signal::
-                            { 
-                                sigaction, SaFlags, SigAction, SigHandler, Signal as NixSignal, 
-                                SigSet
-                            },
-                            termios::{ tcgetattr, tcsetattr, SetArg, InputFlags, LocalFlags },
-                            time::{ TimeVal, TimeValLike },
-                        },
-                        unistd::{ read, write },
-                    },
+                    libc::
+                    { 
+                        ioctl, c_int, c_ushort, termios, STDIN_FILENO, STDOUT_FILENO, 
+                        STDERR_FILENO, TIOCGWINSZ
+                    },                    
                     os::unix::io::{ FromRawFd, IntoRawFd, RawFd },
                     path::{ Path },
                     str::{ from_utf8, SmallString },
                     sync::{ atomic::{ AtomicUsize, Ordering }, LockResult, Mutex, MutexGuard, TryLockResult },
                     system::
                     {
+                        api::
+                        {
+                            self, Errno, select, FdSet, sigaction, SaFlags, SigAction, SigHandler, Signal as NixSignal, 
+                            SigSet, tcgetattr, tcsetattr, SetArg, InputFlags, LocalFlags, TimeVal, TimeValLike, read,
+                            write
+                        },
                         common::
                         {
                             signal::{ Signal, SignalSet },
@@ -24201,20 +25975,6 @@ pub mod system
                 use crate::sequence::{FindResult, SequenceMap};
                 use crate::util::prefixes;
                 
-
-                use nix::errno::Errno;
-                use nix::sys::select::{select, FdSet};
-                use nix::sys::signal::{
-                    sigaction,
-                    SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
-                };
-                use nix::sys::termios::{
-                    tcgetattr, tcsetattr,
-                    SetArg, InputFlags, LocalFlags,
-                };
-                use nix::sys::time::{TimeVal, TimeValLike};
-                use nix::unistd::{read, write};
-
                 use smallstr::SmallString;
 
                 use terminfo::{self, capability as cap, Database};
@@ -24517,40 +26277,6 @@ pub mod system
                     }
                 }
 
-                /// Return the configuration of a port.
-                pub fn read_port_configuration( fd:RawFd ) -> Result<Termios, Errno> 
-                {
-                    let mut termios = mem::MaybeUninit::uninit();
-
-                    let res = unsafe 
-                    {
-                        nix::libc::tcgetattr( fd, termios.as_mut_ptr() )
-                    };
-
-                    Errno::result(res)?;
-
-                    unsafe { Ok(termios.assume_init().into()) }
-                }
-                /// Set the configuration for a terminal.
-                pub fn write_port_configuration
-                (
-                    fd:RawFd,
-                    actions: SetArg,
-                    termios: &Termios,
-                ) -> Result<(), Errno> 
-                {
-                    let inner_termios = termios.get_libc_termios();
-                    Errno::result(unsafe {
-                        nix::libc::tcsetattr(
-                            fd,
-                            actions as c_int,
-                            &*inner_termios,
-                        )
-                    })
-                    .map(drop)
-                }
-
-
                 impl<'a> TerminalReadGuard<'a>
                 {
                     fn new(term: &'a Terminus, reader: MutexGuard<'a, Reader>) -> TerminalReadGuard<'a>
@@ -24567,9 +26293,9 @@ pub mod system
                     {
                         unsafe
                         {
-                            use nix::sys::termios::SpecialCharacterIndices::{ * };
+                            use ::system::api::SpecialCharacterIndices::{ * };
 
-                            let tiold = read_port_configuration( self.term.in_fd ).map_err( nix_to_io )?;
+                            let tiold =  ::system::api::tcgetattraw( self.term.in_fd ).map_err( nix_to_io )?;
                             let mut tio = tiold.clone();
                             
                             let mut state = PrepareState
@@ -25482,7 +27208,7 @@ pub mod system
                     }
                 }
 
-                fn nix_to_io(e: nix::Error) -> io::Error 
+                fn nix_to_io( e:api::Error ) -> io::Error 
                 {
                     io::Error::from_raw_os_error(e as i32)
                 }
@@ -32742,4 +34468,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 32745 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 34471 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
