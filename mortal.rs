@@ -2492,7 +2492,6 @@ pub mod parse;
 
     #[macro_export] macro_rules! libc_enum
     {
-        // Exit rule.
         (@make_enum
             name: $BitFlags:ident,
             {
@@ -2500,15 +2499,16 @@ pub mod parse;
                 attrs: [$($attrs:tt)*],
                 entries: [$($entries:tt)*],
             }
-        ) => {
+        ) =>
+        {
             $($attrs)*
             #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            $v enum $BitFlags {
+            $v enum $BitFlags
+            {
                 $($entries)*
             }
         };
-
-        // Exit rule including TryFrom
+        
         (@make_enum
             name: $BitFlags:ident,
             {
@@ -2518,21 +2518,24 @@ pub mod parse;
                 from_type: $repr:path,
                 try_froms: [$($try_froms:tt)*]
             }
-        ) => {
+        ) =>
+        {
             $($attrs)*
-            #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            $v enum $BitFlags {
+            #[derive( Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+            $v enum $BitFlags
+            {
                 $($entries)*
             }
-            impl ::std::convert::TryFrom<$repr> for $BitFlags {
-                type Error = $crate::Error;
-                #[allow(unused_doc_comments)]
-                #[allow(deprecated)]
-                #[allow(unused_attributes)]
-                fn try_from(x: $repr) -> $crate::Result<Self> {
-                    match x {
+
+            impl ::convert::TryFrom<$repr> for $BitFlags
+            {
+                type Error = ::system::api::Error;
+                fn try_from(x: $repr) -> ::system::api::Result<Self>
+                {
+                    match x
+                    {
                         $($try_froms)*
-                        _ => Err($crate::Error::EINVAL)
+                        _ => Err( ::system::api::Error::EINVAL )
                     }
                 }
             }
@@ -2601,7 +2604,6 @@ pub mod parse;
                 ],
                 [
                     $($try_froms)*
-                    #[$attr]
                 ];
                 $($tail)*
             }
@@ -2722,7 +2724,62 @@ pub mod parse;
             }
         };
     }
+    /// A macro for defining #[cfg] if-else statements.
+    macro_rules! cfg_if
+    {
+        // match if/else chains with a final `else`
+        ($(
+            if #[cfg($($meta:meta),*)] { $($it:item)* }
+        ) else * else {
+            $($it2:item)*
+        }) => {
+            cfg_if! {
+                @__items
+                () ;
+                $( ( ($($meta),*) ($($it)*) ), )*
+                ( () ($($it2)*) ),
+            }
+        };
 
+        // match if/else chains lacking a final `else`
+        (
+            if #[cfg($($i_met:meta),*)] { $($i_it:item)* }
+            $(
+                else if #[cfg($($e_met:meta),*)] { $($e_it:item)* }
+            )*
+        ) => {
+            cfg_if! {
+                @__items
+                () ;
+                ( ($($i_met),*) ($($i_it)*) ),
+                $( ( ($($e_met),*) ($($e_it)*) ), )*
+                ( () () ),
+            }
+        };
+
+        // Internal and recursive macro to emit all the items
+        //
+        // Collects all the negated `cfg`s in a list at the beginning and after the
+        // semicolon is all the remaining items
+        (@__items ($($not:meta,)*) ; ) => {};
+        (@__items ($($not:meta,)*) ; ( ($($m:meta),*) ($($it:item)*) ),
+        $($rest:tt)*) => {
+            // Emit all items within one block, applying an appropriate #[cfg]. The
+            // #[cfg] will require all `$m` matchers specified and must also negate
+            // all previous matchers.
+            cfg_if! { @__apply cfg(all($($m,)* not(any($($not),*)))), $($it)* }
+
+            // Recurse to emit all other items in `$rest`, and when we do so add all
+            // our `$m` matchers to the list of `$not` matchers as future emissions
+            // will have to negate everything we just matched as well.
+            cfg_if! { @__items ($($not,)* $($m,)*) ; $($rest)* }
+        };
+
+        // Internal macro to Apply a cfg attribute to a list of items
+        (@__apply $m:meta, $($it:item)*) => {
+            $(#[$m] $it)*
+        };
+    }
 }
 
 pub mod arch
@@ -21898,6 +21955,7 @@ pub mod system
     {
         /*!
         */
+        use libc::c_ulong;
         use hash::Hasher;
         use hash::Hash;
         use iter::FromIterator;
@@ -21913,27 +21971,63 @@ pub mod system
         use libc::time_t;
         use libc::suseconds_t;
         use libc::timespec;
-        use std::os::fd::AsRawFd;
-        use os::fd::RawFd;
-        use os::fd::AsFd;
-        use libc::timeval;
-        use os::fd::BorrowedFd;
-        use libc::c_int;
-        use libc::NCCS;
-        use libc::tcflag_t;
         use ::
         {
             cell::{ Ref, RefCell },
+            os::
+            {
+                fd::{ AsFd, AsRawFd, BorrowedFd, RawFd },
+            },
             *,
         };
         /*
         */
-        /// nix Result type
-        pub type Result<Type> = ::result::Result<Type, Errno>;
-        /// nix Error type
+        pub type c_int = i32;
+        pub type c_long = i64;
+        pub type c_uchar = u8;
+        pub type c_uint = u32;
+        pub type cc_t = c_uchar;
+
         pub type Error = Errno;
+
+        pub type Result<Type> = ::result::Result<Type, Errno>;
         
-        pub type SaFlags_t = libc::c_int;
+        pub type SaFlags_t = c_int;
+        pub type sighandler_t = size_t;
+        pub type speed_t = c_uint;
+
+        pub type tcflag_t = c_uint;
+        
+        pub const NANOS_PER_SEC: i64 = 1_000_000_000;
+        pub const NCCS: usize = 32;
+
+        pub const SECS_PER_MINUTE: i64 = 60;
+        pub const SECS_PER_HOUR: i64 = 3600;
+
+        pub const VDISCARD: usize = 13;
+        pub const VMIN: usize = 6;
+        pub const VREPRINT: usize = 12;
+        pub const VSUSP: usize = 10;
+        pub const VSTART: usize = 8;
+        pub const VSTOP: usize = 9;        
+        pub const VTIME: usize = 5;
+        pub const VWERASE: usize = 14;
+        // External libc Unix Functions
+        extern "C"
+        {
+            pub fn select
+            (
+                nfds: c_int,
+                readfds: *mut FDSet,
+                writefds: *mut FDSet,
+                errorfds: *mut FDSet,
+                timeout: *mut TimeValue,
+            ) -> c_int;
+            pub fn sigaction( signum:c_int, act:*const SignalAction, oldact:*mut SignalAction ) -> c_int;
+            pub fn sigaddset( set:*mut SignalSet, signum:c_int ) -> c_int;
+            pub fn sigemptyset( set:*mut SignalSet ) -> c_int;
+            pub fn sigismember( set:*const SignalSet, signum:c_int ) -> c_int;
+        }
         // Controls the behavior of a [`SigAction`]
         libc_bitflags!
         {
@@ -21966,7 +22060,7 @@ pub mod system
         }
         
         pub use self::Signal::*;
-        pub const SIGNALS: [Signal; 31] =
+        pub const SIGNALS: [Signal; 29] =
         [
             SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGBUS, SIGFPE, SIGKILL,
             SIGUSR1, SIGSEGV, SIGUSR2, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGCONT,
@@ -21996,32 +22090,38 @@ pub mod system
             }
         }
 
-        impl Signal {
+        impl Signal
+        {
             /// Iterate through all signals defined by this OS
-            pub const fn iterator() -> SignalIterator {
-                SignalIterator{next: 0}
-            }
+            pub const fn iterator() -> SignalIterator { SignalIterator{ next:0 } }
+        }
+
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct SignalSet
+        {
+            #[cfg(target_pointer_width = "32")]
+            pub __val: [u32; 32],
+            #[cfg(target_pointer_width = "64")]
+            pub __val: [u64; 16],
         }
         /// Specifies a set of [`Signal`]s that may be blocked, waited for, etc.
-        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq )]
+        #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SigSet
         {
-            sigset: libc::sigset_t
+            sigset:SignalSet
         }
 
         impl SigSet
         {
             /// Add the specified signal to the set.
-            pub fn add(&mut self, signal: Signal)
-            {
-                unsafe { libc::sigaddset(&mut self.sigset as *mut libc::sigset_t, signal as libc::c_int) };
-            }
+            pub fn add(&mut self, signal: Signal) { unsafe { sigaddset( &mut self.sigset, signal as c_int ) }; }
             /// Return whether this set includes the specified signal.
             pub fn contains(&self, signal: Signal) -> bool
             {
-                let res = unsafe { libc::sigismember(&self.sigset as *const libc::sigset_t, signal as libc::c_int) };
+                let res = unsafe { sigismember( &self.sigset, signal as libc::c_int ) };
 
-                match res {
+                match res
+                {
                     1 => true,
                     0 => false,
                     _ => unreachable!("unexpected value from sigismember"),
@@ -22029,15 +22129,18 @@ pub mod system
                 }
             }
             /// Initialize to include nothing.
-            pub fn empty() -> SigSet {
+            pub fn empty() -> SigSet
+            {
                 let mut sigset = mem::MaybeUninit::uninit();
-                let _ = unsafe { libc::sigemptyset(sigset.as_mut_ptr()) };
-
+                let _ = unsafe { sigemptyset( sigset.as_mut_ptr() ) };
                 unsafe{ SigSet { sigset: sigset.assume_init() } }
             }
+            /// Returns an iterator that yields the signals contained in this set.
+            pub fn iter( &self ) -> SigSetIter<'_> { self.into_iter() }
         }
 
-        impl From<Signal> for SigSet {
+        impl From<Signal> for SigSet 
+        {
             fn from(signal: Signal) -> SigSet {
                 let mut sigset = SigSet::empty();
                 sigset.add(signal);
@@ -22045,7 +22148,8 @@ pub mod system
             }
         }
 
-        impl BitOr for Signal {
+        impl BitOr for Signal 
+        {
             type Output = SigSet;
 
             fn bitor(self, rhs: Self) -> Self::Output {
@@ -22056,7 +22160,8 @@ pub mod system
             }
         }
 
-        impl BitOr<Signal> for SigSet {
+        impl BitOr<Signal> for SigSet 
+        {
             type Output = SigSet;
 
             fn bitor(mut self, rhs: Signal) -> Self::Output {
@@ -22065,7 +22170,8 @@ pub mod system
             }
         }
 
-        impl BitOr for SigSet {
+        impl BitOr for SigSet 
+        {
             type Output = Self;
 
             fn bitor(self, rhs: Self) -> Self::Output {
@@ -22073,14 +22179,16 @@ pub mod system
             }
         }
 
-        impl AsRef<libc::sigset_t> for SigSet {
-            fn as_ref(&self) -> &libc::sigset_t {
+        impl AsRef<SignalSet> for SigSet
+        {
+            fn as_ref(&self) -> &SignalSet
+            {
                 &self.sigset
             }
         }
-
-        // TODO: Consider specialization for the case where T is &SigSet and libc::sigorset is available.
-        impl Extend<Signal> for SigSet {
+        
+        impl Extend<Signal> for SigSet 
+        {
             fn extend<T>(&mut self, iter: T)
             where T: IntoIterator<Item = Signal> {
                 for signal in iter {
@@ -22089,31 +22197,45 @@ pub mod system
             }
         }
 
-        impl FromIterator<Signal> for SigSet {
-            fn from_iter<T>(iter: T) -> Self
-            where T: IntoIterator<Item = Signal> {
+        impl<'a> IntoIterator for &'a SigSet
+        {
+            type Item = Signal;
+            type IntoIter = SigSetIter<'a>;
+            fn into_iter(self) -> Self::IntoIter
+            {
+                SigSetIter { sigset: self, inner: Signal::iterator() }
+            }
+        }
+
+        impl FromIterator<Signal> for SigSet 
+        {
+            fn from_iter<T>(iter: T) -> Self where T: IntoIterator<Item = Signal>
+            {
                 let mut sigset = SigSet::empty();
                 sigset.extend(iter);
                 sigset
             }
         }
-
-        impl PartialEq for SigSet {
-            fn eq(&self, other: &Self) -> bool {
-                for signal in Signal::iterator() {
-                    if self.contains(signal) != other.contains(signal) {
-                        return false;
-                    }
-                }
-                true
-            }
+        /// Iterator for a [`SigSet`].
+        #[derive(Clone, Debug)]
+        pub struct SigSetIter<'a>
+        {
+            sigset: &'a SigSet,
+            inner: SignalIterator,
         }
 
-        impl Hash for SigSet {
-            fn hash<H: Hasher>(&self, state: &mut H) {
-                for signal in Signal::iterator() {
-                    if self.contains(signal) {
-                        signal.hash(state);
+        impl Iterator for SigSetIter<'_>
+        {
+            type Item = Signal;
+            fn next(&mut self) -> Option<Signal>
+            {
+                loop
+                {
+                    match self.inner.next()
+                    {
+                        None => return None,
+                        Some(signal) if self.sigset.contains(signal) => return Some(signal),
+                        Some(_signal) => continue,
                     }
                 }
             }
@@ -22133,29 +22255,29 @@ pub mod system
             #[cfg(not(target_os = "redox"))]
             SigAction(extern "C" fn(libc::c_int, *mut libc::siginfo_t, *mut libc::c_void))
         }
+        
+        #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct SignalAction
+        {
+            pub sa_sigaction: sighandler_t,
+            pub sa_mask: SignalSet,
+            #[cfg(target_arch = "sparc64")]
+            __reserved0: c_int,
+            pub sa_flags: c_int,
+            pub sa_restorer: Option<extern "C" fn()>,
+        }
         /// Action to take on receipt of a signal. Corresponds to `sigaction`.
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SigAction
         {
-            sigaction: libc::sigaction
+            sigaction:SignalAction
         }
         
-        impl From<SigAction> for libc::sigaction
+        impl From<SigAction> for SignalAction
         {
-            fn from(value: SigAction) -> libc::sigaction {
+            fn from(value: SigAction) -> SignalAction {
                 value.sigaction
             }
-        }
-        /// Changes the action taken by a process on receipt of a specific signal.
-        pub unsafe fn sigaction( signal:Signal, sigaction:&SigAction ) -> Result<SigAction> 
-        {
-            let mut oldact = mem::MaybeUninit::<libc::sigaction>::uninit();
-
-            let res = unsafe { libc::sigaction(signal as libc::c_int,
-                                    &sigaction.sigaction as *const libc::sigaction,
-                                    oldact.as_mut_ptr()) };
-
-            Errno::result(res).map(|_| SigAction { sigaction: unsafe { oldact.assume_init() } })
         }
         // Types of operating system signals
         libc_enum!
@@ -22193,16 +22315,6 @@ pub mod system
                 SIGALRM,
                 /// Software termination signal from kill
                 SIGTERM,
-                /// Stack fault (obsolete)
-                #[cfg(all(any(linux_android, target_os = "emscripten",
-                            target_os = "fuchsia"),
-                        not(any(target_arch = "mips",
-                                target_arch = "mips32r6",
-                                target_arch = "mips64",
-                                target_arch = "mips64r6",
-                                target_arch = "sparc",
-                                target_arch = "sparc64"))))]
-                SIGSTKFLT,
                 /// To parent on child stop or exit
                 SIGCHLD,
                 /// Continue a stopped process
@@ -22230,20 +22342,32 @@ pub mod system
                 /// Input/output possible signal
                 #[cfg(not(target_os = "haiku"))]
                 SIGIO,
-                #[cfg(any(linux_android, target_os = "emscripten",
-                        target_os = "fuchsia", target_os = "aix"))]
-                /// Power failure imminent.
-                SIGPWR,
                 /// Bad system call
                 SIGSYS,
             }
             impl TryFrom<i32>
         }
+
+        cfg_if!
+        {
+            if #[cfg(target_pointer_width = "32")] {
+                const ULONG_SIZE: usize = 32;
+            } else if #[cfg(target_pointer_width = "64")] {
+                const ULONG_SIZE: usize = 64;
+            } else {
+                // Unknown target_pointer_width
+            }
+        }
+        #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct FDSet
+        {
+            pub fds_bits: [c_ulong; FD_SETSIZE as usize / ULONG_SIZE],
+        }
         /// Contains a set of file descriptors used by [`select`]
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct FdSet<'fd> 
         {
-            set: libc::fd_set,
+            set:FDSet,
             _fd: ::marker::PhantomData<BorrowedFd<'fd>>,
         }
 
@@ -22252,7 +22376,7 @@ pub mod system
             /// Test an `FdSet` for the presence of a certain file descriptor.
             pub fn contains(&self, fd: BorrowedFd<'fd>) -> bool {
                 assert_fd_valid(fd.as_raw_fd());
-                unsafe { libc::FD_ISSET(fd.as_raw_fd(), &self.set) }
+                unsafe { FD_ISSET(fd.as_raw_fd(), &self.set) }
             }
             /// Finds the highest file descriptor in the set.
             pub fn highest(&self) -> Option<BorrowedFd<'_>> {
@@ -22312,11 +22436,17 @@ pub mod system
         }
 
         impl FusedIterator for Fds<'_, '_> {}
-        
-        pub const NANOS_PER_SEC: i64 = 1_000_000_000;
-        pub const SECS_PER_MINUTE: i64 = 60;
-        pub const SECS_PER_HOUR: i64 = 3600;
-        
+
+        #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
+        pub struct TimeValue
+        {
+            pub tv_sec: time_t,
+            #[cfg(not(gnu_time_bits64))]
+            pub tv_usec: suseconds_t,
+            #[cfg(gnu_time_bits64)]
+            pub tv_usec: __suseconds64_t,
+        }
+
         pub trait TimeValLike:Sized
         {
             #[inline] fn zero() -> Self { Self::seconds(0) }
@@ -22360,7 +22490,7 @@ pub mod system
         }
         
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
-        pub struct TimeVal( timeval );
+        pub struct TimeVal( TimeValue );
         impl TimeVal
         {
             /// Makes a new `TimeVal` with given number of microseconds.
@@ -22376,7 +22506,7 @@ pub mod system
                     allow(deprecated)
                 )]
                 // https://github.com/rust-lang/libc/issues/1848
-                TimeVal(timeval {
+                TimeVal(TimeValue {
                     tv_sec: secs as time_t,
                     tv_usec: micros as suseconds_t,
                 })
@@ -22391,9 +22521,8 @@ pub mod system
                 TimeVal::microseconds(microseconds)
             }
         }
-
         /// Monitors file descriptors for readiness.
-        pub fn select<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int>
+        pub fn selects<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int>
         where
         'fd: 'a,
         N: Into<Option<c_int>>,
@@ -22402,43 +22531,47 @@ pub mod system
         E: Into<Option<&'a mut FdSet<'fd>>>,
         T: Into<Option<&'a mut TimeVal>>
         {
-            let mut readfds = readfds.into();
-            let mut writefds = writefds.into();
-            let mut errorfds = errorfds.into();
-            let timeout = timeout.into();
+            unsafe
+            {
+                
+                let mut readfds = readfds.into();
+                let mut writefds = writefds.into();
+                let mut errorfds = errorfds.into();
+                let timeout = timeout.into();
 
-            let nfds = nfds.into().unwrap_or_else(|| {
-                readfds
-                    .iter_mut()
-                    .chain(writefds.iter_mut())
-                    .chain(errorfds.iter_mut())
-                    .map(|set| {
-                        set.highest()
-                            .map(|borrowed_fd| borrowed_fd.as_raw_fd())
-                            .unwrap_or(-1)
-                    })
-                    .max()
-                    .unwrap_or(-1)
-                    + 1
-            });
+                let nfds = nfds.into().unwrap_or_else(|| {
+                    readfds
+                        .iter_mut()
+                        .chain(writefds.iter_mut())
+                        .chain(errorfds.iter_mut())
+                        .map(|set| {
+                            set.highest()
+                                .map(|borrowed_fd| borrowed_fd.as_raw_fd())
+                                .unwrap_or(-1)
+                        })
+                        .max()
+                        .unwrap_or(-1)
+                        + 1
+                });
 
-            let readfds = readfds
-                .map(|set| set as *mut _ as *mut libc::fd_set)
-                .unwrap_or(null_mut());
-            let writefds = writefds
-                .map(|set| set as *mut _ as *mut libc::fd_set)
-                .unwrap_or(null_mut());
-            let errorfds = errorfds
-                .map(|set| set as *mut _ as *mut libc::fd_set)
-                .unwrap_or(null_mut());
-            let timeout = timeout
-                .map(|tv| tv as *mut _ as *mut libc::timeval)
-                .unwrap_or(null_mut());
+                let readfds = readfds
+                    .map(|set| set as *mut _ as *mut FDSet )
+                    .unwrap_or(null_mut());
+                let writefds = writefds
+                    .map(|set| set as *mut _ as *mut FDSet )
+                    .unwrap_or(null_mut());
+                let errorfds = errorfds
+                    .map(|set| set as *mut _ as *mut FDSet )
+                    .unwrap_or(null_mut());
+                let timeout = timeout
+                    .map(|tv| tv as *mut _ as *mut TimeValue )
+                    .unwrap_or(null_mut());
 
-            let res =
-                unsafe { libc::select(nfds, readfds, writefds, errorfds, timeout) };
+                let res = select( nfds, readfds, writefds, errorfds, timeout );
 
-            Errno::result(res)
+                Errno::result(res)
+            }
+            
         }
         
         libc_bitflags!
@@ -22664,11 +22797,42 @@ pub mod system
                 NOFLSH;
             }
         }
+        /**
+        The termios functions describe a general terminal interface that
+        is provided to control asynchronous communications ports. */
+        #[repr(C)] #[derive(Clone, Debug, Eq, PartialEq)]
+        pub struct AsynchronousTerminalInterface
+        {
+            pub c_iflag: tcflag_t,
+            pub c_oflag: tcflag_t,
+            pub c_cflag: tcflag_t,
+            pub c_lflag: tcflag_t,
+            pub c_line: cc_t,
+            pub c_cc: [cc_t; NCCS],
+            #[cfg(not(any(
+                target_arch = "sparc",
+                target_arch = "sparc64",
+                target_arch = "mips",
+                target_arch = "mips32r6",
+                target_arch = "mips64",
+                target_arch = "mips64r6"
+            )))]
+            pub c_ispeed:speed_t,
+            #[cfg(not(any(
+                target_arch = "sparc",
+                target_arch = "sparc64",
+                target_arch = "mips",
+                target_arch = "mips32r6",
+                target_arch = "mips64",
+                target_arch = "mips64r6"
+            )))]
+            pub c_ospeed:speed_t,
+        }
         /// Stores settings for the termios API
         #[derive(Clone, Debug, Eq, PartialEq)]
         pub struct Termios 
         {
-            inner: RefCell<libc::termios>,
+            inner: RefCell<AsynchronousTerminalInterface>,
             /// Input mode flags (see `termios.c_iflag` documentation)
             pub input_flags: InputFlags,
             /// Output mode flags (see `termios.c_oflag` documentation)
@@ -22678,13 +22842,33 @@ pub mod system
             /// Local mode flags (see `termios.c_lflag` documentation)
             pub local_flags: LocalFlags,
             /// Control characters (see `termios.c_cc` documentation)
-            pub control_chars: [libc::cc_t; NCCS],
+            pub control_chars: [cc_t; NCCS],
         }
 
         impl Termios
         {
-            /// Exposes an immutable reference to the underlying `libc::termios` data structure.
-            pub fn get_libc_termios(&self) -> Ref<'_, libc::termios> 
+            pub fn create
+            (
+                ati:AsynchronousTerminalInterface,
+                input_flags:InputFlags,
+                output_flags:OutputFlags,
+                control_flags:ControlFlags,
+                local_flags:LocalFlags,
+                control_chars: [cc_t; NCCS]
+            ) -> Self
+            {
+                Self
+                {
+                    inner: RefCell::new( ati ),
+                    input_flags,
+                    output_flags,
+                    control_flags,
+                    local_flags,
+                    control_chars,
+                }
+            }
+            /// Exposes an immutable reference to the underlying `AsynchronousTerminalInterface` data structure.
+            pub fn get_libc_termios(&self) -> Ref<'_, AsynchronousTerminalInterface> 
             {
                 {
                     let mut termios = self.inner.borrow_mut();
@@ -22700,8 +22884,8 @@ pub mod system
                 }
                 self.inner.borrow()
             }
-            /// Exposes the inner `libc::termios` datastore within `Termios`.
-            pub unsafe fn get_libc_termios_mut(&mut self) -> *mut libc::termios 
+            /// Exposes the inner `AsynchronousTerminalInterface` datastore within `Termios`.
+            pub unsafe fn get_libc_termios_mut(&mut self) -> *mut AsynchronousTerminalInterface
             {
                 {
                     let mut termios = self.inner.borrow_mut();
@@ -22719,25 +22903,37 @@ pub mod system
             }
         }
 
-        impl From<libc::termios> for Termios
+        impl From<AsynchronousTerminalInterface> for Termios
         {
-            fn from(termios: libc::termios) -> Self
+            fn from( ati:AsynchronousTerminalInterface ) -> Self
             {
+                let a = ati.clone();
+                let input_flags   = InputFlags::from_bits_truncate( a.c_iflag );
+                let output_flags  = OutputFlags::from_bits_truncate( a.c_oflag );
+                let control_flags = ControlFlags::from_bits_truncate( a.c_cflag );
+                let local_flags   = LocalFlags::from_bits_truncate( a.c_lflag );
+                let control_chars = a.c_cc.clone();
                 Termios
                 {
-                    inner: RefCell::new(termios),
+                    inner: RefCell::new( ati ),
+                    input_flags,
+                    output_flags,
+                    control_flags,
+                    local_flags,
+                    control_chars,
+                    /*
                     input_flags: InputFlags::from_bits_truncate(termios.c_iflag),
                     output_flags: OutputFlags::from_bits_truncate(termios.c_oflag),
                     control_flags: ControlFlags::from_bits_truncate(termios.c_cflag),
                     local_flags: LocalFlags::from_bits_truncate(termios.c_lflag),
                     control_chars: termios.c_cc,
                     #[cfg(any(linux_android, target_os = "haiku"))]
-                    line_discipline: termios.c_line,
+                    line_discipline: termios.c_line, */
                 }
             }
         }
 
-        impl From<Termios> for libc::termios
+        impl From<Termios> for AsynchronousTerminalInterface
         {
             fn from(termios: Termios) -> Self { termios.inner.into_inner() }
         }
@@ -22782,9 +22978,7 @@ pub mod system
         }
 
         pub const MICROS_PER_SEC: i64 = 1_000_000;
-
         
-
         #[cfg(target_pointer_width = "64")]
         pub const TS_MAX_SECONDS: i64 = (i64::MAX / NANOS_PER_SEC) - 1;
 
@@ -22807,7 +23001,21 @@ pub mod system
         type timespec_tv_nsec_t = libc::c_long;
 
         #[repr( C )] #[derive( Clone, Copy, Debug )]
-        pub struct TimeSpec( libc::timespec );
+        pub struct TimeSpecification
+        {
+            pub tv_sec: time_t,
+            #[cfg(all(gnu_time_bits64, target_endian = "big"))]
+            __pad: i32,
+            #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+            pub tv_nsec: c_long,
+            #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+            pub tv_nsec: i64,
+            #[cfg(all(gnu_time_bits64, target_endian = "little"))]
+            __pad: i32,
+        }
+
+        #[repr( C )] #[derive( Clone, Copy, Debug )]
+        pub struct TimeSpec( TimeSpecification );
         
         impl TimeSpec
         {
@@ -22821,7 +23029,7 @@ pub mod system
                     (TS_MIN_SECONDS..=TS_MAX_SECONDS).contains(&secs),
                     "TimeSpec out of bounds"
                 );
-                let mut ts = zero_init_timespec();
+                let mut ts = zero_init_time_specification();
                 ts.tv_sec = secs as time_t;
                 ts.tv_nsec = nanos as timespec_tv_nsec_t;
                 TimeSpec(ts)
@@ -23174,48 +23382,33 @@ pub mod system
             );
         }
         /// Return the configuration of a port.
-        pub fn tcgetattr<Fd: AsFd>(fd: Fd) -> Result<Termios> 
+        pub fn tcgetattraw( d:RawFd ) -> Result<Termios> 
         {
-            let mut termios = ::mem::MaybeUninit::uninit();
-
-            let res = unsafe {
-                libc::tcgetattr(fd.as_fd().as_raw_fd(), termios.as_mut_ptr())
-            };
-
-            Errno::result(res)?;
-
-            unsafe { Ok(termios.assume_init().into()) }
-        }
-        /// Return the configuration of a port.
-        pub fn tcgetattraw(fd:RawFd) -> Result<Termios> 
-        {
-            let mut termios = ::mem::MaybeUninit::uninit();
-
-            let res = unsafe {
-                libc::tcgetattr( fd,termios.as_mut_ptr() )
-            };
-
-            Errno::result(res)?;
-
-            unsafe { Ok(termios.assume_init().into()) }
-        }
-        /// Set the configuration for a terminal.
-        pub fn tcsetattr<Fd: AsFd>
-        (
-            fd: Fd,
-            actions: SetArg,
-            termios: &Termios,
-        ) -> Result<()> 
-        {
-            let inner_termios = termios.get_libc_termios();
-            Errno::result(unsafe {
-                libc::tcsetattr(
-                    fd.as_fd().as_raw_fd(),
-                    actions as c_int,
-                    &*inner_termios,
+            unsafe
+            {
+                let mut t = ::mem::MaybeUninit::uninit();
+                let r = libc::tcgetattr( d, t.as_mut_ptr() );
+                Errno::result( r )?;
+                let a:AsynchronousTerminalInterface = ::mem::transmute( t.assume_init().clone() );
+                let b:AsynchronousTerminalInterface = a.clone();
+                Ok
+                (
+                    Termios::create
+                    (
+                        a,
+                        ::mem::transmute( b.c_iflag ),
+                        ::mem::transmute( b.c_oflag ),
+                        ::mem::transmute( b.c_cflag ),
+                        ::mem::transmute( b.c_lflag ),
+                        ::mem::transmute( b.c_cc ),
+                    )
                 )
-            })
-            .map(drop)
+                /*
+                let mut t = ::mem::MaybeUninit::uninit();
+                let r = libc::tcgetattr( d, t.as_mut_ptr() );
+                Errno::result( r )?;
+                Ok( ::mem::transmute::<libc::termios, Termios>( t.assume_init() ) )*/
+            }
         }
         /// Set the configuration for a terminal.
         pub fn tcsetattraw
@@ -23226,11 +23419,13 @@ pub mod system
         ) -> Result<()> 
         {
             let inner_termios = termios.get_libc_termios();
-            Errno::result(unsafe {
-                libc::tcsetattr(
+            Errno::result(unsafe 
+            {
+                libc::tcsetattr
+                (
                     fd,
                     actions as c_int,
-                    &*inner_termios,
+                    ::mem::transmute( &*inner_termios ) //&*inner_termios,
                 )
             })
             .map(drop)
@@ -23436,15 +23631,25 @@ pub mod system
                 "TimeVal out of bounds"
             );
             // https://github.com/rust-lang/libc/issues/1848
-            TimeVal(timeval {
+            TimeVal( TimeValue {
                 tv_sec: secs as time_t,
                 tv_usec: micros as suseconds_t,
             })
         }
         
-        pub const fn zero_init_timespec() -> timespec
+        pub const fn zero_init_time_specification() -> TimeSpecification
         {
-            unsafe { ::mem::transmute([0u8; ::mem::size_of::<timespec>()]) }
+            unsafe { ::mem::transmute([0u8; ::mem::size_of::<TimeSpecification>()]) }
+        }
+        
+        pub fn FD_ISSET( fd:c_int, set:*const FDSet ) -> bool
+        {
+            unsafe
+            {
+                let fd = fd as usize;
+                let size = size_of_val(&(*set).fds_bits[0]) * 8;
+                return ((*set).fds_bits[fd / size] & (1 << (fd % size))) != 0;
+            }
         }
     }
     /*
@@ -25927,6 +26132,8 @@ pub mod system
                 /*!
                 */
                 //use nix::sys::termios::Termios;
+                use system::api::AsynchronousTerminalInterface;
+                use system::api::tcsetattraw;
                 use std::os::fd::AsRawFd;
                 use os::fd::AsFd;
                 use ::
@@ -25949,8 +26156,8 @@ pub mod system
                         api::
                         {
                             self, Errno, select, FdSet, sigaction, SaFlags, SigAction, SigHandler, Signal as NixSignal, 
-                            SigSet, tcgetattr, tcsetattr, SetArg, InputFlags, LocalFlags, TimeVal, TimeValLike, read,
-                            write
+                            SigSet, SetArg, InputFlags, LocalFlags, TimeVal, TimeValLike, read,
+                            VMIN, VTIME, write
                         },
                         common::
                         {
@@ -26300,7 +26507,10 @@ pub mod system
                             
                             let mut state = PrepareState
                             {
-                                old_tio: Some( tiold.into() ),
+                                old_tio: Some
+                                (
+                                    ::mem::transmute::<AsynchronousTerminalInterface, termios>( tiold.into() )
+                                ),
                                 old_sigcont: None,
                                 old_sigint: None,
                                 old_sigtstp: None,
@@ -26323,7 +26533,7 @@ pub mod system
                             tio.control_chars[VMIN as usize] = 0;
                             tio.control_chars[VTIME as usize] = 0;
 
-                            tcsetattr(self.term.into(), SetArg::TCSANOW, &tio).map_err(nix_to_io)?;
+                            tcsetattraw( ::mem::transmute::<&Terminus, i32>( self.term ), SetArg::TCSANOW, &tio).map_err(nix_to_io)?;
                             
                             Ok( PrepareState::new() )
                         }
@@ -26474,7 +26684,7 @@ pub mod system
                             let mut e_fds = FdSet::new();
                             e_fds.insert(in_fd);
 
-                            match select(in_fd + 1,
+                            match selects(in_fd + 1,
                                     Some(&mut r_fds), None, Some(&mut e_fds), timeout.as_mut()) {
                                 Ok( n ) => break n,
                                 Err(Errno::EINTR) =>
@@ -34468,4 +34678,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 34471 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 34681 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
