@@ -12003,9 +12003,9 @@ pub mod num
             {
                 #[inline] fn hash<H: hash::Hasher>(&self, state: &mut H) {
                     debug_assert!((self.sign != NoSign) ^ self.data.is_zero());
-                    self.sign.hash(state);
+                    self.sign.hash( state );
                     if self.sign != NoSign {
-                        self.data.hash(state);
+                        self.data.hash( state );
                     }
                 }
             }
@@ -16486,7 +16486,7 @@ pub mod num
             {
                 #[inline] fn hash<H: hash::Hasher>(&self, state: &mut H) {
                     debug_assert!(self.data.last() != Some(&0));
-                    self.data.hash(state);
+                    self.data.hash( state );
                 }
             }
             
@@ -17895,10 +17895,10 @@ pub mod num
                 fn recurse<T: Integer + Hash, H: Hasher>(numer: &T, denom: &T, state: &mut H) {
                     if !denom.is_zero() {
                         let (int, rem) = numer.div_mod_floor(denom);
-                        int.hash(state);
+                        int.hash( state );
                         recurse(denom, &rem, state);
                     } else {
-                        denom.hash(state);
+                        denom.hash( state );
                     }
                 }
             }
@@ -21784,7 +21784,7 @@ pub mod str
     impl<A: Array<Item = u8>> Hash for SmallString<A> 
     {
         #[inline] fn hash<H: Hasher>(&self, state: &mut H) {
-            self[..].hash(state)
+            self[..].hash( state )
         }
     }
     /// A draining iterator for `SmallString`.
@@ -22027,6 +22027,7 @@ pub mod system
             pub fn sigaddset( set:*mut SignalSet, signum:c_int ) -> c_int;
             pub fn sigemptyset( set:*mut SignalSet ) -> c_int;
             pub fn sigismember( set:*const SignalSet, signum:c_int ) -> c_int;
+            pub fn sigfillset( set: *mut SignalSet ) -> c_int;
         }
         // Controls the behavior of a [`SigAction`]
         libc_bitflags!
@@ -22115,6 +22116,14 @@ pub mod system
         {
             /// Add the specified signal to the set.
             pub fn add(&mut self, signal: Signal) { unsafe { sigaddset( &mut self.sigset, signal as c_int ) }; }
+            /// Initialize to include all signals.
+            pub fn all() -> SigSet
+            {
+                let mut sigset = mem::MaybeUninit::uninit();
+                let _ = unsafe { sigfillset(sigset.as_mut_ptr()) };
+
+                unsafe{ SigSet { sigset: sigset.assume_init() } }
+            }
             /// Return whether this set includes the specified signal.
             pub fn contains(&self, signal: Signal) -> bool
             {
@@ -22271,6 +22280,43 @@ pub mod system
         pub struct SigAction
         {
             sigaction:SignalAction
+        }
+
+        impl SigAction
+        {
+            /// Creates a new action.
+            pub fn new( handler:SigHandler, flags:SaFlags, mask:SigSet ) -> SigAction
+            {
+                unsafe fn install_sig(p: *mut SignalAction, handler: SigHandler) 
+                {
+                    unsafe 
+                    {
+                        (*p).sa_sigaction = match handler 
+                        {
+                            SigHandler::SigDfl => libc::SIG_DFL,
+                            SigHandler::SigIgn => libc::SIG_IGN,
+                            SigHandler::Handler( f )   => f as *const extern "C" fn( c_int ) as usize,
+                            SigHandler::SigAction( f ) => f as *const extern "C" fn( c_int, *mut SignalAction, *mut c_void ) as usize,
+                        };
+                    }
+                }
+
+                let mut s = mem::MaybeUninit::<SignalAction>::uninit();
+                unsafe 
+                {
+                    let p = s.as_mut_ptr();
+                    install_sig(p, handler);
+                    (*p).sa_flags = match handler 
+                    {
+                        SigHandler::SigAction(_) => (flags | SaFlags::SA_SIGINFO).bits(),
+                        _ => (flags - SaFlags::SA_SIGINFO).bits(),
+                    };
+
+                    (*p).sa_mask = mask.sigset;
+
+                    SigAction { sigaction: s.assume_init() }
+                }
+            }
         }
         
         impl From<SigAction> for SignalAction
@@ -23650,6 +23696,18 @@ pub mod system
                 let size = size_of_val(&(*set).fds_bits[0]) * 8;
                 return ((*set).fds_bits[fd / size] & (1 << (fd % size))) != 0;
             }
+        }
+        /// Changes the action taken by a process on receipt of a specific signal.
+        //pub unsafe fn sigaction(signal: Signal, sigaction: &SigAction) -> Result<SigAction> 
+        pub unsafe fn react( s: Signal, a: &SigAction) -> Result<SigAction>
+        {
+            let mut oldact = mem::MaybeUninit::<SignalAction>::uninit();
+
+            let res = unsafe { sigaction( s as c_int,
+                                    &a.sigaction as *const SignalAction,
+                                    oldact.as_mut_ptr()) };
+
+            Errno::result(res).map(|_| SigAction { sigaction: unsafe { oldact.assume_init() } })
         }
     }
     /*
@@ -25953,7 +26011,7 @@ pub mod system
                         let screen = Screen
                         {
                             term: term,
-                            state: Some(state),
+                            state: Some( state ),
                             writer: Mutex::new(Writer
                             {
                                 buffer: ScreenBuffer::new(size),
@@ -26014,7 +26072,7 @@ pub mod system
                 {
                     fn drop(&mut self)
                     {
-                        let res = if let Some(state) = self.state.take() { self.term.restore(state) }
+                        let res = if let Some( state ) = self.state.take() { self.term.restore( state ) }
                         else { Ok(()) };
 
                         if let Err(e) = res.and_then(|_| self.term.exit_screen()) { eprintln!("failed to restore terminal: {}", e); }
@@ -26132,6 +26190,8 @@ pub mod system
                 /*!
                 */
                 //use nix::sys::termios::Termios;
+                use system::api::Termios;
+                use system::api::react;
                 use system::api::AsynchronousTerminalInterface;
                 use system::api::tcsetattraw;
                 use std::os::fd::AsRawFd;
@@ -26386,7 +26446,7 @@ pub mod system
                     { self.lock_reader().prepare(config) }
 
                     pub fn restore(&self, state: PrepareState) -> io::Result<()>
-                    { self.lock_reader().restore(state) }
+                    { self.lock_reader().restore( state ) }
 
                     pub fn clear_screen(&self) -> io::Result<()>
                     { self.lock_writer().clear_screen() }
@@ -26524,98 +26584,39 @@ pub mod system
                             tio.input_flags.remove( InputFlags::INLCR  | InputFlags::ICRNL );
                             tio.local_flags.remove( LocalFlags::ICANON | LocalFlags::ECHO  );
                         
-                            if config.block_signals { tio.local_flags.remove(LocalFlags::ISIG); }
-                            else { tio.local_flags.insert(LocalFlags::ISIG); }
+                            if config.block_signals { tio.local_flags.remove( LocalFlags::ISIG ); }
+                            else { tio.local_flags.insert( LocalFlags::ISIG ); }
                             
-                            if config.enable_control_flow { tio.input_flags.insert(InputFlags::IXON); }
-                            else { tio.input_flags.remove(InputFlags::IXON); }
+                            if config.enable_control_flow { tio.input_flags.insert( InputFlags::IXON ); }
+                            else { tio.input_flags.remove( InputFlags::IXON ); }
                             
                             tio.control_chars[VMIN as usize] = 0;
                             tio.control_chars[VTIME as usize] = 0;
 
-                            tcsetattraw( ::mem::transmute::<&Terminus, i32>( self.term ), SetArg::TCSANOW, &tio).map_err(nix_to_io)?;
-                            
-                            Ok( PrepareState::new() )
+                            tcsetattraw( ::mem::transmute( self.term.in_fd ), SetArg::TCSANOW, &tio ).map_err( nix_to_io )?;
+
+                            if config.enable_keypad { if writer.enable_keypad()? { state.restore_keypad = true; } }
+
+                            writer.flush()?;
+
+                            let action = SigAction::new( SigHandler::Handler( handle_signal ), SaFlags::empty(), SigSet::all() );
+                                
+                            state.old_sigcont = Some( react( NixSignal::SIGCONT, &action ).map_err( nix_to_io )? );
+                            state.old_sigwinch = Some( react( NixSignal::SIGWINCH, &action ).map_err( nix_to_io )? );
+
+                            if config.report_signals.contains( Signal::Interrupt )
+                            { state.old_sigint = Some( react( NixSignal::SIGINT, &action ).map_err( nix_to_io )? ); }
+
+                            if config.report_signals.contains( Signal::Suspend )
+                            { state.old_sigtstp = Some( react( NixSignal::SIGTSTP, &action ).map_err( nix_to_io )? ); }
+
+                            if config.report_signals.contains( Signal::Quit )
+                            { state.old_sigquit = Some( react( NixSignal::SIGQUIT, &action ).map_err( nix_to_io )? ); }
+
+                            self.reader.report_signals = config.report_signals;
+                            self.reader.resume = Some( Resume{ config } );
+                            Ok( state )
                         }
-                        /*
-                        use nix::sys::termios::SpecialCharacterIndices::*;
-
-                        let old_tio = tcgetattr(self.term.in_fd).map_err(nix_to_io)?;
-                        let mut tio = old_tio.clone();
-
-                        let mut state = PrepareState
-                        {
-                            old_tio: old_tio.into(),
-                            old_sigcont: None,
-                            old_sigint: None,
-                            old_sigtstp: None,
-                            old_sigquit: None,
-                            old_sigwinch: None,
-                            restore_keypad: false,
-                            restore_mouse: false,
-                            prev_resume: self.reader.resume,
-                        };
-
-                        tio.input_flags.remove(
-                            // Disable carriage return/line feed conversion
-                            InputFlags::INLCR | InputFlags::ICRNL
-                        );
-
-                        tio.local_flags.remove(
-                            LocalFlags::ICANON | LocalFlags::ECHO
-                        );
-                        
-                        if config.block_signals {
-                            tio.local_flags.remove(LocalFlags::ISIG);
-                        } else {
-                            tio.local_flags.insert(LocalFlags::ISIG);
-                        }
-                        
-                        if config.enable_control_flow {
-                            tio.input_flags.insert(InputFlags::IXON);
-                        } else {
-                            tio.input_flags.remove(InputFlags::IXON);
-                        }
-                        
-                        tio.control_chars[VMIN as usize] = 0;
-                        tio.control_chars[VTIME as usize] = 0;
-
-                        tcsetattr(self.term.in_fd, SetArg::TCSANOW, &tio).map_err(nix_to_io)?;
-
-                        if config.enable_mouse {
-                            if writer.enable_mouse(config.always_track_motion)? {
-                                state.restore_mouse = true;
-                            }
-                        }
-
-                        if config.enable_keypad {
-                            if writer.enable_keypad()? {
-                                state.restore_keypad = true;
-                            }
-                        }
-
-                        writer.flush()?;
-
-                        let action = SigAction::new(SigHandler::Handler(handle_signal),
-                            SaFlags::empty(), SigSet::all());
-                            
-                        state.old_sigcont = Some(unsafe { sigaction(NixSignal::SIGCONT, &action).map_err(nix_to_io)? });
-                        state.old_sigwinch = Some(unsafe { sigaction(NixSignal::SIGWINCH, &action).map_err(nix_to_io)? });
-
-                        if config.report_signals.contains(Signal::Interrupt) {
-                            state.old_sigint = Some(unsafe { sigaction(NixSignal::SIGINT, &action).map_err(nix_to_io)? });
-                        }
-                        if config.report_signals.contains(Signal::Suspend) {
-                            state.old_sigtstp = Some(unsafe { sigaction(NixSignal::SIGTSTP, &action).map_err(nix_to_io)? });
-                        }
-                        if config.report_signals.contains(Signal::Quit) {
-                            state.old_sigquit = Some(unsafe { sigaction(NixSignal::SIGQUIT, &action).map_err(nix_to_io)? });
-                        }
-
-                        self.reader.report_signals = config.report_signals;
-                        self.reader.resume = Some(Resume{config});
-
-                        Ok(state) */
                     }
 
                     pub fn restore( &mut self, state: PrepareState) -> io::Result<()>
@@ -26624,9 +26625,27 @@ pub mod system
                         self.restore_with_lock(&mut writer, state)
                     }
 
-                    pub fn restore_with_lock( &mut self, writer: &mut TerminalWriteGuard, state: PrepareState)
+                    pub fn restore_with_lock( &mut self, writer:&mut TerminalWriteGuard, state:PrepareState )
                     -> io::Result<()>
                     {
+                        self.reader.resume = state.prev_resume;
+
+                        if state.restore_mouse { writer.disable_mouse()?; }
+
+                        if state.restore_keypad { writer.disable_keypad()?; }
+
+                        writer.flush()?;
+
+                        tcsetattraw
+                        (
+                            self.term.in_fd,
+                            SetArg::TCSANOW, 
+                            //&state.old_tio.into()
+                            ::mem::transmute::<&Option<termios>, &Termios>( &state.old_tio )
+                        ).map_err( nix_to_io )?;
+
+
+
                         Ok( () )
                         /*
                         unsafe
@@ -31046,7 +31065,7 @@ pub mod system
 
                 let state = self.prepare_term()?;
                 let res = self.read_line_step_impl(timeout);
-                self.lock.term.restore(state)?;
+                self.lock.term.restore( state )?;
 
                 res
             }
@@ -32185,7 +32204,7 @@ pub mod system
                 })
             }
 
-            fn restore(&mut self, state: PrepareState) -> io::Result<()> { self.restore(state) }
+            fn restore(&mut self, state: PrepareState) -> io::Result<()> { self.restore( state ) }
 
             unsafe fn restore_with_lock
             (
@@ -34678,4 +34697,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 34681 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 34700 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
