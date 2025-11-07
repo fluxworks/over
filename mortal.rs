@@ -24279,6 +24279,30 @@ pub mod system
             ("zero_motion", "zerom"), 
         ];
 
+        pub const CanIdentTriplet: &[( &str, &str, &str, &str, &str, &str, &str, &str )] = 
+        &[
+            //define!(string SetTrueColorBackground => "8b"; r: u8, g: u8, b: u8);
+            (
+                "SetTrueColorBackground", "8b",
+                "r", "0",
+                "g", "0",
+                "b", "0",
+            )
+        ];
+
+        pub const CanIdent: &[( &str, &str )] = 
+        &[
+            //define!(string ResetCursorColor => "Cr");
+            ("ResetCursorColor", "Cr")
+        ];
+
+        pub const CanIdentKeyValue: &[( &str, &str, &str, &str )] = 
+        &[
+            //define!(string SetCursorColor => "Cs"; color: String);
+            ("SetCursorColor", "Cs", "color", "white")
+        ];
+        //string builder direct $ident:ident; $index:expr, $name:ident : $ty:ty
+
         pub static mut DATABASE:String = String::new();
 
         pub fn build() -> Result<(), error::parse::ParseError>
@@ -34783,4 +34807,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok(())
 }
-// 34786 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 34810 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
