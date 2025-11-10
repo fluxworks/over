@@ -2809,7 +2809,7 @@ pub mod parse;
                     const OUTPUT: $crate::Uuid = match $crate::Uuid::try_parse($uuid )
                     {
                         Ok(u ) => u,
-                        Err(_ ) => panic!("invalid UUID" ),
+                        Err(_ ) => panic!( "invalid UUID" ),
                     };
 
                     OUTPUT
@@ -2840,7 +2840,7 @@ pub mod parse;
     use self::std::mem::MaybeUninit;
     use self::std::prelude::v1::*;
     use self::std::sync::Once;
-    #[allow(deprecated)]
+    #[allow(deprecated )]
     pub use self::std::sync::ONCE_INIT;
     */
     use ::
@@ -2850,21 +2850,21 @@ pub mod parse;
         sync::{ Once, ONCE_INIT },
         *
     };
-    #[allow(dead_code)] // Used in macros
-    pub struct Lazy<T: Sync>(Cell<MaybeUninit<T>>, Once);
+    #[allow(dead_code )] // Used in macros
+    pub struct Lazy<T: Sync>(Cell<MaybeUninit<T>>, Once );
 
     impl<T: Sync> Lazy<T>
     {
-        #[allow(deprecated)]
-        pub const INIT: Self = Lazy(Cell::new(MaybeUninit::uninit()), ONCE_INIT);
+        #[allow(deprecated )]
+        pub const INIT: Self = Lazy(Cell::new(MaybeUninit::uninit() ), ONCE_INIT);
 
-        #[inline( always )] pub fn get<F>(&'static self, f: F) -> &T where
+        #[inline( always )] pub fn get<F>( &'static self, f: F) -> &T where
         F:FnOnce() -> T
         {
             unsafe
             { 
-                self.1.call_once(|| { self.0.set(MaybeUninit::new(f())); });
-                &*(*self.0.as_ptr()).as_ptr()
+                self.1.call_once(|| { self.0.set(MaybeUninit::new( f() ) ); });
+                &*(*self.0.as_ptr() ).as_ptr()
             }
         }
     }
@@ -2882,24 +2882,24 @@ pub mod parse;
     {
         ($(#[$attr:meta])* ($($vis:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) =>
         {
-            __lazy_static_internal!(@MAKE TY, $(#[$attr])*, ($($vis)*), $N);
-            __lazy_static_internal!(@TAIL, $N : $T = $e);
+            __lazy_static_internal!(@MAKE TY, $(#[$attr])*, ($($vis )*), $N);
+            __lazy_static_internal!(@TAIL, $N : $T = $e );
             lazy_static!($($t)*);
         };
         
-        (@TAIL, $N:ident : $T:ty = $e:expr) =>
+        (@TAIL, $N:ident : $T:ty = $e:expr ) =>
         {
             impl ::ops::Deref for $N
             {
                 type Target = $T;
-                fn deref(&self) -> &$T {
-                    #[inline(always)]
+                fn deref( &self ) -> &$T {
+                    #[inline( always )]
                     fn __static_ref_initialize() -> $T { $e }
 
-                    #[inline(always)]
+                    #[inline( always )]
                     fn __stability() -> &'static $T {
                         __lazy_static_create!(LAZY, $T);
-                        LAZY.get(__static_ref_initialize)
+                        LAZY.get(__static_ref_initialize )
                     }
                     __stability()
                 }
@@ -2913,19 +2913,19 @@ pub mod parse;
         
         (@MAKE TY, $(#[$attr:meta])*, ($($vis:tt)*), $N:ident) =>
         {
-            #[allow(missing_copy_implementations)]
-            #[allow(non_camel_case_types)]
-            #[allow(dead_code)]
+            #[allow(missing_copy_implementations )]
+            #[allow( non_camel_case_types )]
+            #[allow(dead_code )]
             $(#[$attr])*
-            $($vis)* struct $N {__private_field: ()}
-            #[doc(hidden)]
-            #[allow(non_upper_case_globals)]
-            $($vis)* static $N: $N = $N {__private_field: ()};
+            $($vis )* struct $N {__private_field: ()}
+            #[doc(hidden )]
+            #[allow( non_upper_case_globals )]
+            $($vis )* static $N: $N = $N {__private_field: ()};
         };
         () => ()
     }
 
-    #[macro_export(local_inner_macros)]
+    #[macro_export(local_inner_macros )]
     macro_rules! lazy_static
     {
         ($(#[$attr:meta])* static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) =>
@@ -2933,10 +2933,10 @@ pub mod parse;
             __lazy_static_internal!($(#[$attr])* () static ref $N : $T = $e; $($t)*);
         };
         ($(#[$attr:meta])* pub static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
-            __lazy_static_internal!($(#[$attr])* (pub) static ref $N : $T = $e; $($t)*);
+            __lazy_static_internal!($(#[$attr])* ( pub) static ref $N : $T = $e; $($t)*);
         };
         ($(#[$attr:meta])* pub ($($vis:tt)+) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
-            __lazy_static_internal!($(#[$attr])* (pub ($($vis)+)) static ref $N : $T = $e; $($t)*);
+            __lazy_static_internal!($(#[$attr])* ( pub ($($vis )+ ) ) static ref $N : $T = $e; $($t)*);
         };
         () => ()
     }
@@ -4030,8 +4030,8 @@ pub mod char
     /// Returns the printable character corresponding to the given control character.
     pub fn unctrl( c: char ) -> char { ( ( c as u8 ) | CTRL_BIT ) as char }
     /// Returns a string consisting of a `char`, repeated `n` times.
-    // pub fn repeat_char( ch: char, n: usize ) -> String
-    pub fn repeat( ch: char, n: usize ) -> String
+    // pub fn repeat_char( ch:char, n: usize ) -> String
+    pub fn repeat( ch:char, n: usize ) -> String
     {
         let mut buf = [0; 4];
         let s = ch.encode_utf8( &mut buf );
@@ -4623,12 +4623,12 @@ pub mod error
                 };
                 /*
                 */
-                fn from_utf8_lossy(input: &[u8]) -> &str
+                fn from_utf8_lossy(input:&[u8] ) -> &str
                 {
                     match str::from_utf8(input)
                     {
-                        Ok(valid) => valid,
-                        Err(error) => unsafe { str::from_utf8_unchecked(&input[..error.valid_up_to()]) },
+                        Ok(valid ) => valid,
+                        Err(error ) => unsafe { str::from_utf8_unchecked( &input[..error.valid_up_to()]) },
                     }
                 }
 
@@ -4642,22 +4642,22 @@ pub mod error
                         {
                             let fm_err = match rc < 0 {
                                 true => errno(),
-                                false => Errno(rc),
+                                false => Errno( rc ),
                             };
                             if fm_err != Errno( ERANGE) {
-                                return callback(Err(fm_err));
+                                return callback(Err( fm_err  ) );
                             }
                         }
-                        let c_str_len = strlen(buf.as_ptr() as *const _);
+                        let c_str_len = strlen(buf.as_ptr() as *const _ );
                         &buf[..c_str_len]
                     };
-                    callback(Ok(from_utf8_lossy(c_str)))
+                    callback(Ok( from_utf8_lossy(c_str  ) ) )
                 }
 
                 pub const STRERROR_NAME: &str = "strerror_r";
 
                 pub fn errno() -> Errno {
-                    unsafe { Errno(*errno_location()) }
+                    unsafe { Errno(*errno_location() ) }
                 }
 
                 pub fn set_errno(Errno(errno): Errno) {
@@ -4691,10 +4691,10 @@ pub mod error
                         link_name = "__errno"
                     )]
                     #[cfg_attr(
-                        any(target_os = "solaris", target_os = "illumos"),
+                        any(target_os = "solaris", target_os = "illumos" ),
                         link_name = "___errno"
                     )]
-                    #[cfg_attr(target_os = "haiku", link_name = "_errnop")]
+                    #[cfg_attr(target_os = "haiku", link_name = "_errnop" )]
                     #[cfg_attr(
                         any(
                             target_os = "linux",
@@ -4705,8 +4705,8 @@ pub mod error
                         ),
                         link_name = "__errno_location"
                     )]
-                    #[cfg_attr(target_os = "aix", link_name = "_Errno")]
-                    #[cfg_attr(target_os = "nto", link_name = "__get_errno_ptr")]
+                    #[cfg_attr(target_os = "aix", link_name = "_Errno" )]
+                    #[cfg_attr(target_os = "nto", link_name = "__get_errno_ptr" )]
                     fn errno_location() -> *mut c_int;
                 }
             }
@@ -4727,18 +4727,18 @@ pub mod error
             #[cfg( windows )] pub use self::windows::{ * };
         }
         /// Wraps a platform-specific error code.
-        #[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd, Hash)]
-        pub struct Errno(pub i32);
+        #[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd, Hash )]
+        pub struct Errno( pub i32);
 
         impl fmt::Debug for Errno
         {
-            fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result
+            fn fmt( &self, fmt: &mut fmt::Formatter ) -> fmt::Result
             {
                 sys::with_description(*self, |desc|
                 {
-                    fmt.debug_struct("Errno")
-                    .field("code", &self.0)
-                    .field("description", &desc.ok())
+                    fmt.debug_struct( "Errno" )
+                    .field( "code", &self.0)
+                    .field( "description", &desc.ok() )
                     .finish()
                 })
             }
@@ -4746,11 +4746,11 @@ pub mod error
 
         impl fmt::Display for Errno
         {
-            fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result
+            fn fmt( &self, fmt: &mut fmt::Formatter ) -> fmt::Result
             {
                 sys::with_description(*self, |desc| match desc {
-                    Ok(desc) => fmt.write_str(desc),
-                    Err(fm_err) => write!
+                    Ok(desc ) => fmt.write_str(desc ),
+                    Err( fm_err ) => write!
                     (
                         fmt,
                         "OS error {} ({} returned error {})",
@@ -4770,8 +4770,8 @@ pub mod error
         
         impl Error for Errno {
             // TODO: Remove when MSRV >= 1.27
-            #[allow(deprecated)]
-            fn description(&self) -> &str {
+            #[allow(deprecated )]
+            fn description( &self ) -> &str {
                 "system error"
             }
         }
@@ -4789,11 +4789,131 @@ pub mod error
 
         /// Sets the platform-specific value of `errno`.
         pub fn set_errno(err: Errno) {
-            sys::set_errno(err)
+            sys::set_errno(err )
         }
 
     }
 
+}
+
+pub mod expand
+{
+    /*!
+    */
+    use ::
+    {
+        *,
+    };
+    /*
+    */
+    
+    // pub fn expand_home(text:&str ) -> String
+    pub fn home(text:&str ) -> String
+    {
+        let mut s: String = text.to_string();
+        let v = vec!
+        [
+            r"(?P<head> +)~(?P<tail> +)",
+            r"(?P<head> +)~(?P<tail>/)",
+            r"^(?P<head> *)~(?P<tail>/)",
+            r"(?P<head> +)~(?P<tail> *$)",
+        ];
+        
+        for item in &v
+        {
+            let re;
+
+            if let Ok( x ) = Regex::new(item) { re = x; }
+            else { return String::new(); }
+
+            let home = tools::get_user_home();
+            let ss = s.clone();
+            let to = format!( "$head{}$tail", home );
+            let result = re.replace_all( ss.as_str(), to.as_str() );
+            s = result.to_string();
+        }
+
+        s
+    }
+    // pub fn expand_glob(tokens: &mut types::Tokens )
+    pub fn glob(tokens: &mut types::Tokens )
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for ( sep, text) in tokens.iter()
+        {
+            if !sep.is_empty() || !needs_globbing(text)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut result: Vec<String> = Vec::new();
+            let item = text.as_str();
+
+            if !item.contains('*') || item.trim().starts_with('\'') || item.trim().starts_with('"')
+            { result.push(item.to_string() ); }
+
+            else
+            {
+                let _basename = path::basename(item);
+                let show_hidden = _basename.starts_with( ".*" );
+
+                match glob::glob(item)
+                {
+                    Ok( paths ) =>
+                    {
+                        let mut is_empty = true;
+                        
+                        for entry in paths
+                        {
+                            match entry
+                            {
+                                Ok( path ) =>
+                                {
+                                    let file_path = path.to_string_lossy();
+                                    let _basename = path::basename( &file_path );
+
+                                    if _basename == ".." || _basename == "." { continue; }
+
+                                    if _basename.starts_with('.') && !show_hidden { continue; }
+
+                                    result.push( file_path.to_string() );
+                                    is_empty = false;
+                                }
+
+                                Err( e ) => { log!( "glob error: {:?}", e ); }
+                            }
+                        }
+
+                        if is_empty { result.push(item.to_string() ); }
+                    }
+
+                    Err( e ) =>
+                    {
+                        println!( "glob error: {:?}", e );
+                        result.push(item.to_string() );
+                        return;
+                    }
+                }
+            }
+
+            buff.push((idx, result ) );
+            idx += 1;
+        }
+
+        for (i, result) in buff.iter().rev()
+        {
+            tokens.remove(*i);
+            
+            for (j, token ) in result.iter().enumerate()
+            {
+                let sep = if token.contains(' ') { "\"" } else { "" };
+                tokens.insert(*i + j, ( sep.to_string(), token.clone() ) );
+            }
+        }
+    }
 }
 
 pub mod get
@@ -4807,7 +4927,7 @@ pub mod get
         path::{ Path, PathBuf },
         system::
         {
-            api::{ c_char },
+            api::{ c_char, size_t },
         },
         *,
     };
@@ -4861,28 +4981,24 @@ pub mod get
     // pub fn get_user_name() -> String
     pub fn user_name() -> String
     {
-        match env::var("USER")
+        match env::var( "USER" )
         {
-            Ok(x) => {
-                return x;
-            }
-            Err(e) => {
-                log!("cicada: env USER error: {}", e);
-            }
+            Ok( x ) => { return x; }
+            Err( e ) => { /* log!( "cicada: env USER error: {}", e ); */ }
         }
 
-        let cmd_result = now::run("whoami");
+        let cmd_result = now::run( "whoami" );
         cmd_result.stdout.trim().to_string()
     }
     // pub fn get_user_home() -> String
     pub fn user_home() -> String
     {
-        match env::var("HOME")
+        match env::var( "HOME" )
         {
-            Ok(x) => x,
-            Err(e) =>
+            Ok( x ) => x,
+            Err( e ) =>
             {
-                println_stderr!("cicada: env HOME error: {}", e);
+                println_stderr!( "cicada: env HOME error: {}", e );
                 String::new()
             }
         }
@@ -4890,35 +5006,39 @@ pub mod get
     // pub fn get_config_dir() -> String
     pub fn config_dir() -> String
     {
-        if let Ok(x) = env::var("XDG_CONFIG_HOME") {
-            format!("{}/cicada", x)
+        if let Ok( x ) = env::var( "XDG_CONFIG_HOME" ) {
+            format!( "{}/cicada", x)
         } else {
             let home = user_home();
-            format!("{}/.config/cicada", home)
+            format!( "{}/.config/cicada", home )
         }
     }
     // pub fn get_user_completer_dir() -> String
     pub fn user_completer_dir() -> String
     {
         let dir_config = config_dir();
-        format!("{}/completers", dir_config)
+        format!( "{}/completers", dir_config)
     }
     // pub fn get_hostname() -> String
     pub fn hostname() -> String
     {
         let len = 255;
-        let mut buf = Vec::<u8>::with_capacity(len);
+        let mut buf = Vec::<u8>::with_capacity(len );
 
         let ptr = buf.as_mut_slice().as_mut_ptr();
 
-        let err = unsafe { hostname(ptr as *mut c_char, len as size_t) } as i32;
+        let err = unsafe { hostname( ptr as *mut c_char, len as size_t) } as i32;
 
-        match err {
-            0 => {
+        match err
+        {
+            0 =>
+            {
                 let real_len;
                 let mut i = 0;
-                loop {
-                    let byte = unsafe { *(((ptr as u64) + (i as u64)) as *const u8) };
+                
+                loop
+                {
+                    let byte = unsafe { *((( ptr as u64) + (i as u64 ) ) as *const u8) };
                     if byte == 0 {
                         real_len = i;
                         break;
@@ -4926,28 +5046,29 @@ pub mod get
 
                     i += 1;
                 }
-                unsafe { buf.set_len(real_len) }
-                String::from_utf8_lossy(buf.as_slice()).into_owned()
+                
+                unsafe { buf.set_len( real_len ) }
+                String::from_utf8_lossy(buf.as_slice() ).into_owned()
             }
-            _ => String::from("unknown"),
+            _ => String::from( "unknown" ),
         }
     }
-    // pub fn get_fd_from_file(file_name: &str) -> i32
-    pub fn fd_from_file(file_name: &str) -> i32
+    // pub fn get_fd_from_file( file_name:&str ) -> i32
+    pub fn fd_from_file( file_name:&str ) -> i32
     {
-        let path = Path::new(file_name);
+        let path = Path::new( file_name );
         let display = path.display();
-        let file = match File::open(path) {
+        let file = match File::open( path ) {
             Err(why) => {
-                println_stderr!("cicada: {}: {}", display, why);
+                println_stderr!( "cicada: {}: {}", display, why);
                 return -1;
             }
-            Ok(file) => file,
+            Ok( file ) => file,
         };
         file.into_raw_fd()
     }
-    // pub fn get_prompt_len(prompt: &str) -> i32
-    pub fn prompt_len(prompt: &str) -> i32
+    // pub fn get_prompt_len( prompt:&str ) -> i32
+    pub fn prompt_len( prompt:&str ) -> i32
     {
         let mut count = 0;
         let mut met_x01 = false;
@@ -5293,11 +5414,11 @@ pub mod highlights
 
     lazy_static!
     {
-        pub static ref AVAILABLE_COMMANDS: Mutex<HashSet<String>> = Mutex::new(HashSet::new());
-        pub static ref ALIASES: Mutex<HashSet<String>> = Mutex::new(HashSet::new());
+        pub static ref AVAILABLE_COMMANDS: Mutex<HashSet<String>> = Mutex::new(HashSet::new() );
+        pub static ref ALIASES: Mutex<HashSet<String>> = Mutex::new(HashSet::new() );
     }
     /// Provides style information for a line of text.
-    #[derive( Clone)]
+    #[derive( Clone )]
     pub struct CicadaHighlighter;
     /// Represents a style to be applied to a text range.
     #[derive(Debug, Clone, PartialEq, Eq)]
@@ -5312,24 +5433,24 @@ pub mod highlights
     pub trait Highlighter
     {
         /// Takes the current line buffer and returns a list of styled ranges.
-        fn highlight(&self, line: &str) -> Vec<(Range<usize>, Style)>;
+        fn highlight( &self, line:&str ) -> Vec<(Range<usize>, Style )>;
     }
     /// Initialize the available commands cache by scanning PATH directories
     pub fn initialize()
     {
         let commands = scan_available_commands();
-        if let Ok(mut cache) = AVAILABLE_COMMANDS.lock() { *cache = commands; }
+        if let Ok( mut cache ) = AVAILABLE_COMMANDS.lock() { *cache = commands; }
     }
     /// Update aliases in the highlighter's cache
-    pub fn update(sh: &shell::Shell) 
+    pub fn update( sh: &shell::Shell) 
     {
-        if let Ok(mut aliases) = ALIASES.lock()
+        if let Ok( mut aliases ) = ALIASES.lock()
         {
             aliases.clear();
 
             for alias_name in sh.aliases.keys()
             {
-                aliases.insert(alias_name.clone());
+                aliases.insert( alias_name.clone() );
             }
         }
     }
@@ -5338,26 +5459,26 @@ pub mod highlights
     {
         let mut commands = HashSet::new();
 
-        if let Ok(path_var) = env::var("PATH")
+        if let Ok( path_var ) = env::var( "PATH" )
         {
-            for dir_path in env::split_paths(&path_var)
+            for dir_path in env::split_paths( &path_var )
             {
                 if !dir_path.is_dir() { continue; }
 
-                if let Ok(entries) = fs::read_dir(dir_path) 
+                if let Ok(entries ) = fs::read_dir(dir_path ) 
                 {
                     for entry in entries.filter_map(Result::ok) 
                     {
-                        if let Ok(file_type) = entry.file_type() 
+                        if let Ok( file_type ) = entry.file_type() 
                         {
                             if file_type.is_file() || file_type.is_symlink() 
                             {
-                                if let Ok(metadata) = entry.metadata() 
+                                if let Ok(metadata ) = entry.metadata() 
                                 {
                                     if metadata.permissions().mode() & 0o111 != 0 
                                     {
-                                        if let Some(name) = entry.file_name().to_str()
-                                        { commands.insert(name.to_string()); }
+                                        if let Some( name ) = entry.file_name().to_str()
+                                        { commands.insert( name.to_string() ); }
                                     }
                                 }
                             }
@@ -5372,15 +5493,15 @@ pub mod highlights
 
     fn find( line: &str, start_byte: usize, token: &(String, String) ) -> Option<Range<usize>> 
     {
-        let (sep, word) = token;
+        let ( sep, word ) = token;
         let mut search_area = &line[start_byte..];
 
-        let token_start_byte = if let Some(non_ws_offset) = search_area.find(|c: char| !c.is_whitespace())
+        let token_start_byte = if let Some( non_ws_offset) = search_area.find(|c: char| !c.is_whitespace() )
         {
             start_byte + search_area
             .char_indices()
-            .nth(non_ws_offset)
-            .map_or(0, |(idx, _)| idx)
+            .nth( non_ws_offset)
+            .map_or(0, |(idx, _ )| idx)
         }
         else { return None; };
 
@@ -5388,50 +5509,50 @@ pub mod highlights
         let mut estimated_len = 0;
         let mut current_search_offset = 0;
         
-        if !sep.is_empty() && search_area.starts_with(sep)
+        if !sep.is_empty() && search_area.starts_with( sep)
         {
             estimated_len += sep.len();
             current_search_offset += sep.len();
         }
         
-        if search_area[current_search_offset..].starts_with(word)
+        if search_area[current_search_offset..].starts_with(word )
         {
             estimated_len += word.len();
             current_search_offset += word.len();
             
-            if !sep.is_empty() && search_area[current_search_offset..].starts_with(sep) { estimated_len += sep.len(); }
+            if !sep.is_empty() && search_area[current_search_offset..].starts_with( sep) { estimated_len += sep.len(); }
 
-            Some(token_start_byte..(token_start_byte + estimated_len))
+            Some(token_start_byte..(token_start_byte + estimated_len ) )
         }
         
         else if word.is_empty()
         && !sep.is_empty()
-        && search_area.starts_with(sep)
-        && search_area[sep.len()..].starts_with(sep)
+        && search_area.starts_with( sep)
+        && search_area[sep.len()..].starts_with( sep)
         {
             estimated_len += sep.len() * 2;
-            Some(token_start_byte..(token_start_byte + estimated_len))
+            Some(token_start_byte..(token_start_byte + estimated_len ) )
         }
 
         else
         {
-            if search_area.starts_with(word) { Some(token_start_byte..(token_start_byte + word.len())) }
+            if search_area.starts_with(word ) { Some(token_start_byte..(token_start_byte + word.len() ) ) }
             else { None }
         }
     }
 
     impl Highlighter for CicadaHighlighter 
     {
-        fn highlight(&self, line: &str) -> Vec<(Range<usize>, Style)> 
+        fn highlight( &self, line:&str ) -> Vec<(Range<usize>, Style )> 
         {
             let mut styles = Vec::new();
             if line.is_empty() { return styles; }
 
-            let line_info = parser_line::parse_line(line);
+            let line_info = parser_line::parse_line(line );
             
             if line_info.tokens.is_empty()
             {
-                styles.push((0..line.len(), Style::Default));
+                styles.push((0..line.len(), Style::Default ) );
                 return styles;
             }
 
@@ -5440,27 +5561,27 @@ pub mod highlights
 
             for token in &line_info.tokens
             {
-                match find_token_range_heuristic(line, current_byte_idx, token)
+                match find_token_range_heuristic(line, current_byte_idx, token )
                 {
-                    Some(token_range) =>
+                    Some(token_range ) =>
                     {
                         if token_range.start > current_byte_idx {
-                            styles.push((current_byte_idx..token_range.start, Style::Default));
+                            styles.push((current_byte_idx..token_range.start, Style::Default ) );
                         }
 
-                        let (_sep, word) = token;
+                        let (_sep, word ) = token;
                         let mut current_token_style = Style::Default;
 
                         if is_start_of_segment && !word.is_empty() {
-                            if is_command(word) {
-                                current_token_style = Style::AnsiColor(GREEN.to_string());
+                            if is_command(word ) {
+                                current_token_style = Style::AnsiColor(GREEN.to_string() );
                             }
                             is_start_of_segment = false;
                         }
 
-                        styles.push((token_range.clone(), current_token_style));
+                        styles.push((token_range.clone(), current_token_style  ) );
                         
-                        if ["|", "&&", "||", ";"].contains(&word.as_str()) {
+                        if ["|", "&&", "||", ";"].contains( &word.as_str() ) {
                             is_start_of_segment = true;
                         }
 
@@ -5470,7 +5591,7 @@ pub mod highlights
                     None => 
                     {
                         if current_byte_idx < line.len() 
-                        { styles.push((current_byte_idx..line.len(), Style::Default)); }
+                        { styles.push((current_byte_idx..line.len(), Style::Default ) ); }
 
                         current_byte_idx = line.len();
                         break;
@@ -5478,13 +5599,13 @@ pub mod highlights
                 }
             }
             
-            if current_byte_idx < line.len() { styles.push((current_byte_idx..line.len(), Style::Default)); }
+            if current_byte_idx < line.len() { styles.push((current_byte_idx..line.len(), Style::Default ) ); }
 
             styles
         }
     }
 
-    pub fn create() -> Arc<CicadaHighlighter> { Arc::new(CicadaHighlighter) }
+    pub fn create() -> Arc<CicadaHighlighter> { Arc::new(CicadaHighlighter ) }
 }
 
 pub mod i8
@@ -5643,25 +5764,25 @@ pub mod is
     {
         char::width( ch ) == Some( 2 )
     }    
-    // pub fn is_env(line: &str) -> bool
-    pub fn env(line: &str) -> bool
+    // pub fn is_env(line:&str ) -> bool
+    pub fn env(line:&str ) -> bool
     {
-        regex::contains(line, r"^[a-zA-Z_][a-zA-Z0-9_]*=.*$")
+        regex::contains(line, r"^[a-zA-Z_][a-zA-Z0-9_]*=.*$" )
     }
     // pub fn is_signal_handler_enabled() -> bool
     pub fn signal_handler_enabled() -> bool
     {
-        env::var("CICADA_ENABLE_SIG_HANDLER").is_ok_and(|x| x == "1")
+        env::var( "CICADA_ENABLE_SIG_HANDLER" ).is_ok_and(|x| x == "1" )
     }
-    // pub fn is_arithmetic(line: &str) -> bool
-    pub fn arithmetic(line: &str) -> bool
+    // pub fn is_arithmetic(line:&str ) -> bool
+    pub fn arithmetic(line:&str ) -> bool
     {
-        if !regex::contains(line, r"[0-9]+") { return false; }
-        if !regex::contains(line, r"\+|\-|\*|/|\^") { return false; }
-        regex::contains(line, r"^[ 0-9\.\(\)\+\-\*/\^]+[\.0-9 \)]$")
+        if !regex::contains(line, r"[0-9]+" ) { return false; }
+        if !regex::contains(line, r"\+|\-|\*|/|\^" ) { return false; }
+        regex::contains(line, r"^[ 0-9\.\(\)\+\-\*/\^]+[\.0-9 \)]$" )
     }
-    // pub fn is_builtin(s: &str) -> bool
-    pub fn builtin(s: &str) -> bool
+    // pub fn is_builtin( s:&str ) -> bool
+    pub fn builtin( s:&str ) -> bool
     {
         let builtins = 
         [
@@ -5669,68 +5790,73 @@ pub mod is
             "ulimit", "unalias", "vox", "minfd", "set", "unset", "unpath",
         ];
 
-        builtins.contains(&s)
+        builtins.contains( &s )
     }
-    // pub fn is_shell_altering_command(line: &str) -> bool
-    pub fn shell_altering_command(line: &str) -> bool
+    // pub fn is_shell_altering_command(line:&str ) -> bool
+    pub fn shell_altering_command(line:&str ) -> bool
     {
         let line = line.trim();
         if regex::contains( line, r"^[A-Za-z_][A-Za-z0-9_]*=.*$" ) { return true; }
 
-        line.starts_with("alias ")
-        || line.starts_with("export ")
-        || line.starts_with("unalias ")
-        || line.starts_with("unset ")
-        || line.starts_with("source ")
+        line.starts_with( "alias " )
+        || line.starts_with( "export " )
+        || line.starts_with( "unalias " )
+        || line.starts_with( "unset " )
+        || line.starts_with( "source " )
     }
-    // pub fn is_login(args: &[String]) -> bool
-    pub fn login(args: &[String]) -> bool
+    // pub fn is_login( args:&[String] ) -> bool
+    pub fn login( args:&[String] ) -> bool
     {
-        if !args.is_empty() && args[0].starts_with("-") { return true; }
+        if !args.is_empty() && args[0].starts_with( "-" ) { return true; }
 
-        if args.len() > 1 && (args[1] == "--login" || args[1] == "-l") { return true; }
+        if args.len() > 1 && ( args[1] == "--login" || args[1] == "-l" ) { return true; }
 
-        if let Ok(term_program) = ::env::var("TERM_PROGRAM")
+        if let Ok(term_program) = ::env::var( "TERM_PROGRAM" )
         {
             if term_program == "vscode" { return true; }
         }
 
         false
     }
-    // pub fn is_script(args: &[String]) -> bool 
-    pub fn script(args: &[String]) -> bool { args.len() > 1 && !args[1].starts_with("-") }
-    // pub fn is_command_string(args: &[String]) -> bool
-    pub fn command_string(args: &[String]) -> bool { args.len() > 1 && args[1] == "-c" }
+    // pub fn is_script( args:&[String] ) -> bool 
+    pub fn script( args:&[String] ) -> bool { args.len() > 1 && !args[1].starts_with( "-" ) }
+    // pub fn is_command_string( args:&[String] ) -> bool
+    pub fn command_string( args:&[String] ) -> bool { args.len() > 1 && args[1] == "-c" }
     // pub fn is_non_tty() -> bool 
     pub fn non_tty() -> bool { unsafe { ::system::api::isatty(0) == 0 } }
 
-    // pub fn is_command(word: &str) -> bool
-    pub fn command(word: &str) -> bool
+    // pub fn is_command(word:&str ) -> bool
+    pub fn command(word:&str ) -> bool
     {
-        if builtin(word) { return true; }
+        if builtin(word ) { return true; }
 
-        if let Ok(aliases) = ::highlights::ALIASES.lock()
+        if let Ok( aliases ) = ::highlights::ALIASES.lock()
         {
-            if aliases.contains(word) { return true; }
+            if aliases.contains(word ) { return true; }
         }
 
-        if let Ok(commands) = ::highlights::AVAILABLE_COMMANDS.lock()
+        if let Ok(commands ) = ::highlights::AVAILABLE_COMMANDS.lock()
         {
-            if commands.contains(word) { return true; }
+            if commands.contains(word ) { return true; }
         }
 
         false
     }
-    // pub fn is_prefix_char(c: char) -> bool
-    pub fn prefix_char(c: char) -> bool { c == '[' || c == '{' }
-    //pub fn is_suffix_char(c: char) -> bool
-    pub fn suffix_char(c: char) -> bool { c == ']' || c == '}' }
-    // pub fn is_prompt_item_char(c: char, token: &str) -> bool
-    pub fn prompt_item_char(c: char, token: &str) -> bool
+    // pub fn is_prefix_char(c: char ) -> bool
+    pub fn prefix_char(c: char ) -> bool { c == '[' || c == '{' }
+    //pub fn is_suffix_char(c: char ) -> bool
+    pub fn suffix_char(c: char ) -> bool { c == ']' || c == '}' }
+    // pub fn is_prompt_item_char(c:char, token:&str ) -> bool
+    pub fn prompt_item_char(c:char, token:&str ) -> bool
     {
         let s = c.to_string();
-        if token.is_empty() { regex::contains(&s, r#"^[a-zA-Z_]$"#) }
-        else { regex::contains(&s, r#"^[a-zA-Z0-9_]$"#) }
+        if token.is_empty() { regex::contains( &s, r#"^[a-zA-Z_]$"#) }
+        else { regex::contains( &s, r#"^[a-zA-Z0-9_]$"#) }
+    }
+
+    pub fn tty( fd:system::api::c_int ) -> bool
+    {
+        system::api::isatty( fd )
     }
 }
 
@@ -19872,25 +19998,22 @@ pub mod now
     };
     /*
     */
-    /// Entry point for non-ttys (e.g. Cmd-N on MacVim)
-    pub fn run_procs_for_non_tty(sh: &mut Shell)
+    /// Entry point for non-ttys ( e.g. Cmd-N on MacVim)
+    pub fn run_procs_for_non_tty( sh: &mut Shell)
     {
         let mut buffer = String::new();
         let stdin = io::stdin();
         let mut handle = stdin.lock();
 
-        match handle.read_to_string(&mut buffer)
+        match handle.read_to_string( &mut buffer )
         {
-            Ok(_) =>
+            Ok(_ ) =>
             {
-                log!("run non tty command: {}", &buffer);
-                run_command_line(sh, &buffer, false, false);
+                /*log!( "run non tty command: {}", &buffer ); */
+                run_command_line( sh, &buffer, false, false );
             }
             
-            Err(e) =>
-            {
-                println!("cicada: stdin.read_to_string() failed: {:?}", e);
-            }
+            Err( e ) => { println!( "cicada: stdin.read_to_string() failed: {:?}", e ); }
         }
     }
 
@@ -19900,7 +20023,7 @@ pub mod now
         let mut status = 0;
         let mut sep = String::new();
 
-        for token in parsers::parser_line::line_to_cmds(line)
+        for token in parsers::parser_line::line_to_cmds(line )
         {
             if token == ";" || token == "&&" || token == "||"
             {
@@ -19913,10 +20036,10 @@ pub mod now
             if sep == "||" && status == 0 { break; }
 
             let cmd = token.clone();
-            let cr = run_proc(sh, &cmd, tty, capture);
+            let cr = run_proc( sh, &cmd, tty, capture );
             status = cr.status;
             sh.previous_status = status;
-            cr_list.push(cr);
+            cr_list.push(cr );
         }
 
         cr_list
@@ -19924,94 +20047,94 @@ pub mod now
 
     fn line_to_tokens( sh: &mut Shell, line: &str ) -> ( Tokens, HashMap<String, String> )
     {
-        let linfo = parsers::parser_line::parse_line(line);
+        let linfo = parsers::parser_line::parse_line(line );
         let mut tokens = linfo.tokens;
-        shell::do_expansion(sh, &mut tokens);
-        let envs = drain_env_tokens(&mut tokens);
-        (tokens, envs)
+        shell::do_expansion( sh, &mut tokens );
+        let envs = drain_env_tokens( &mut tokens );
+        (tokens, envs )
     }
 
-    fn set_shell_vars(sh: &mut Shell, envs: &HashMap<String, String>)
+    fn set_shell_vars( sh: &mut Shell, envs: &HashMap<String, String>)
     {
-        for (name, value) in envs.iter()
+        for ( name, value ) in envs.iter()
         {
-            sh.set_env(name, value);
+            sh.set_env( name, value );
         }
     }
     /// Run simple command or pipeline without using `&&`, `||`, `;`.
-    fn run_proc(sh: &mut Shell, line: &str, tty: bool, capture: bool) -> CommandResult
+    fn run_proc( sh: &mut Shell, line: &str, tty: bool, capture:bool ) -> CommandResult
     {
         let log_cmd = !sh.cmd.starts_with(' ');
-        match CommandLine::from_line(line, sh)
+        match CommandLine::from_line(line, sh )
         {
             Ok(cl) =>
             {
                 if cl.is_empty()
                 {
-                    if !cl.envs.is_empty() { set_shell_vars(sh, &cl.envs); }
+                    if !cl.envs.is_empty() { set_shell_vars( sh, &cl.envs ); }
 
                     return CommandResult::new();
                 }
 
-                let (term_given, cr) = core::run_pipeline(sh, &cl, tty, capture, log_cmd);
+                let (term_given, cr ) = run_pipeline( sh, &cl, tty, capture, log_cmd );
                 
                 if term_given
                 {
                     unsafe
                     {
                         let gid = getpgid(0);
-                        shell::give_terminal_to(gid);
+                        shell::give_terminal_to(gid );
                     }
                 }
 
                 cr
             }
-            Err(e) => {
-                println_stderr!("cicada: {}", e);
+            Err( e ) => {
+                println_stderr!( "cicada: {}", e );
                 CommandResult::from_status(0, 1)
             }
         }
     }
 
-    fn run_with_shell(sh: &mut Shell, line: &str) -> CommandResult
+    fn run_with_shell( sh: &mut Shell, line:&str ) -> CommandResult
     {
-        let (tokens, envs) = line_to_tokens(sh, line);
+        let (tokens, envs ) = line_to_tokens( sh, line );
 
         if tokens.is_empty()
         {
-            set_shell_vars(sh, &envs);
+            set_shell_vars( sh, &envs );
             return CommandResult::new();
         }
 
-        match CommandLine::from_line(line, sh)
+        match CommandLine::from_line(line, sh )
         {
-            Ok(c) =>
+            Ok( c ) =>
             {
-                let (term_given, cr) = run_pipeline(sh, &c, false, true, false);
+                let (term_given, cr ) = run_pipeline( sh, &c, false, true, false );
                 if term_given
                 {
                     unsafe
                     {
                         let gid = getpgid(0);
-                        shell::give_terminal_to(gid);
+                        shell::give_terminal_to(gid );
                     }
                 }
 
                 cr
             }
 
-            Err(e) =>
+            Err( e ) =>
             {
-                println_stderr!("cicada: {}", e);
+                println_stderr!( "cicada: {}", e );
                 CommandResult::from_status(0, 1)
             }
         }
     }
 
-    pub fn run(line: &str) -> CommandResult
+    pub fn run(line:&str ) -> CommandResult
     {
         let mut sh = Shell::new();
-        run_with_shell(&mut sh, line)
+        run_with_shell( &mut sh, line )
     }
 
     fn try_run_builtin_in_subprocess
@@ -20022,7 +20145,7 @@ pub mod now
         capture: bool,
     ) -> Option<i32>
     {
-        if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture) { return Some(cr.status); }
+        if let Some(cr ) = try_run_builtin( sh, cl, idx_cmd, capture ) { return Some(cr.status ); }
 
         None
     }
@@ -20039,7 +20162,7 @@ pub mod now
 
         if idx_cmd >= cl.commands.len()
         {
-            println_stderr!("unexpected error in try_run_builtin");
+            println_stderr!( "unexpected error in try_run_builtin" );
             return None;
         }
 
@@ -20049,122 +20172,122 @@ pub mod now
 
         if cname == "alias"
         {
-            let cr = ::api::run_alias(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_alias( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "bg"
         {
-            let cr = ::api::run_bg(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_bg( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "cd"
         {
-            let cr = ::api::run_cd(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_cd( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "cinfo"
         {
-            let cr = ::api::run_info(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_info( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "exec"
         {
-            let cr = ::api::run_exec(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_exec( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "exit"
         {
-            let cr = ::api::run_exit(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_exit( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "export"
         {
-            let cr = ::api::run_export(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_export( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
          else if cname == "fg"
          {
-            let cr = ::api::run_fg(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_fg( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "history"
         {
-            let cr = ::api::run_history(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_history( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "jobs"
         {
-            let cr = ::api::run_jobs(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_jobs( sh, cl, cmd, capture );
+            return Some(cr );
         
         }
         
         else if cname == "minfd"
         {
-            let cr = ::api::run_minfd(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_minfd( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "read"
         {
-            let cr = ::api::run_read(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_read( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "set"
         {
-            let cr = ::api::run_set(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_set( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "source"
         {
-            let cr = ::api::run_source(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_source( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "ulimit"
         {
-            let cr = ::api::run_ulimit(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_ulimit( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "unalias"
         {
-            let cr = ::api::run_unalias(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_unalias( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "unset"
         {
-            let cr = ::api::run_unset(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_unset( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "unpath"
         {
-            let cr = ::api::run_unpath(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_unpath( sh, cl, cmd, capture );
+            return Some(cr );
         }
         
         else if cname == "vox"
         {
-            let cr = ::api::run_vox(sh, cl, cmd, capture);
-            return Some(cr);
+            let cr = ::api::run_vox( sh, cl, cmd, capture );
+            return Some(cr );
         }
 
         None
     }
-    /// Run a pipeline (e.g. `echo hi | wc -l`).
+    /// Run a pipeline ( e.g. `echo hi | wc -l`).
     pub fn run_pipeline
     (
         sh: &mut shell::Shell,
@@ -20176,36 +20299,36 @@ pub mod now
     {
         let mut term_given = false;
         if cl.background && capture {
-            println_stderr!("cicada: cannot capture output of background cmd");
-            return (term_given, CommandResult::error());
+            println_stderr!( "cicada: cannot capture output of background cmd" );
+            return (term_given, CommandResult::error() );
         }
         /*
-        if let Some(cr) = try_run_calculator(&cl.line, capture) {
-            return (term_given, cr);
+        if let Some(cr ) = try_run_calculator( &cl.line, capture ) {
+            return (term_given, cr );
         } */
         
-        if let Some(cr) = try_run_func(sh, cl, capture, log_cmd) {
-            return (term_given, cr);
+        if let Some(cr ) = try_run_func( sh, cl, capture, log_cmd ) {
+            return (term_given, cr );
         }
         /*
         if log_cmd {
-            log!("run: {}", cl.line);
+            log!( "run: {}", cl.line );
         } */
 
         let length = cl.commands.len();
         if length == 0 {
-            println!("cicada: invalid command: cmds with empty length");
-            return (false, CommandResult::error());
+            println!( "cicada: invalid command: cmds with empty length" );
+            return ( false, CommandResult::error() );
         }
 
         let mut pipes = Vec::new();
         let mut errored_pipes = false;
         for _ in 0..length - 1 {
             match pipe() {
-                Ok(fds) => pipes.push(fds),
-                Err(e) => {
+                Ok( fds ) => pipes.push( fds ),
+                Err( e ) => {
                     errored_pipes = true;
-                    println_stderr!("cicada: pipeline1: {}", e);
+                    println_stderr!( "cicada: pipeline1: {}", e );
                     break;
                 }
             }
@@ -20215,25 +20338,22 @@ pub mod now
         {
             for fds in pipes
             {
-                ::process::close(fds.0);
-                ::process::close(fds.1);
+                ::process::close( fds.0);
+                ::process::close( fds.1);
             }
-            return (false, CommandResult::error());
+            return ( false, CommandResult::error() );
         }
 
         if pipes.len() + 1 != length {
-            println!("cicada: invalid command: unmatched pipes count");
-            return (false, CommandResult::error());
+            println!( "cicada: invalid command: unmatched pipes count" );
+            return ( false, CommandResult::error() );
         }
 
         let mut pgid: i32 = 0;
         let mut fg_pids: Vec<i32> = Vec::new();
 
-        let isatty = if tty {
-            unsafe { is:tty(1) == 1 }
-        } else {
-            false
-        };
+        let isatty = if tty { unsafe { is::tty(1) == 1 } }
+        else { false };
 
         let options = CommandOptions
         {
@@ -20249,26 +20369,26 @@ pub mod now
         {
             match ::process::pipe()
             {
-                Ok(fds) => fds_capture_stdout = Some(fds),
-                Err(e) => {
-                    println_stderr!("cicada: pipeline2: {}", e);
-                    return (false, CommandResult::error());
+                Ok( fds ) => fds_capture_stdout = Some( fds ),
+                Err( e ) => {
+                    println_stderr!( "cicada: pipeline2: {}", e );
+                    return ( false, CommandResult::error() );
                 }
             }
 
             match pipe()
             {
-                Ok(fds) => fds_capture_stderr = Some(fds),
-                Err(e) =>
+                Ok( fds ) => fds_capture_stderr = Some( fds ),
+                Err( e ) =>
                 {
-                    if let Some(fds) = fds_capture_stdout
+                    if let Some( fds ) = fds_capture_stdout
                     {
-                        process::close(fds.0);
-                        process::close(fds.1);
+                        process::close( fds.0);
+                        process::close( fds.1);
                     }
 
-                    println_stderr!("cicada: pipeline3: {}", e);
-                    return (false, CommandResult::error());
+                    println_stderr!( "cicada: pipeline3: {}", e );
+                    return ( false, CommandResult::error() );
                 }
             }
         }
@@ -20290,23 +20410,23 @@ pub mod now
             );
 
             if child_id > 0 && !cl.background {
-                fg_pids.push(child_id);
+                fg_pids.push(child_id );
             }
         }
 
         if cl.is_single_and_builtin() {
-            return (false, cmd_result);
+            return ( false, cmd_result);
         }
 
         if cl.background {
-            if let Some(job) = sh.get_job_by_gid(pgid) {
-                println_stderr!("[{}] {}", job.id, job.gid);
+            if let Some(job) = sh.get_job_by_gid( pgid ) {
+                println_stderr!( "[{}] {}", job.id, job.gid );
             }
         }
 
         if !fg_pids.is_empty()
         {
-            let _cr = process::wait_fg_job(sh, pgid, &fg_pids);
+            let _cr = process::wait_fg_job( sh, pgid, &fg_pids );
             if !capture
             {
                 cmd_result = _cr;
@@ -20325,37 +20445,37 @@ pub mod now
         pgid: &mut i32,
         term_given: &mut bool,
         cmd_result: &mut CommandResult,
-        pipes: &[(RawFd, RawFd)],
-        fds_capture_stdout: &Option<(RawFd, RawFd)>,
-        fds_capture_stderr: &Option<(RawFd, RawFd)>,
+        pipes:&[(RawFd, RawFd )],
+        fds_capture_stdout: &Option<(RawFd, RawFd )>,
+        fds_capture_stderr: &Option<(RawFd, RawFd )>,
     ) -> i32
     {
         let capture = options.capture_output;
         if cl.is_single_and_builtin()
         {
-            if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture)
+            if let Some(cr ) = try_run_builtin( sh, cl, idx_cmd, capture )
             {
                 *cmd_result = cr;
                 return unsafe { getpid() };
             }
             /*
-            println_stderr!("cicada: error when run singler builtin");
-            log!("error when run singler builtin: {:?}", cl); */
+            println_stderr!( "cicada: error when run singler builtin" );
+            log!( "error when run singler builtin: {:?}", cl); */
             return 1;
         }
 
         let pipes_count = pipes.len();
         let mut fds_stdin = None;
-        let cmd = cl.commands.get(idx_cmd).unwrap();
+        let cmd = cl.commands.get(idx_cmd ).unwrap();
 
         if cmd.has_here_string()
         {
             match pipe()
             {
-                Ok(fds) => fds_stdin = Some(fds),
-                Err(e) =>
+                Ok( fds ) => fds_stdin = Some( fds ),
+                Err( e ) =>
                 {
-                    println_stderr!("cicada: pipeline4: {}", e);
+                    println_stderr!( "cicada: pipeline4: {}", e );
                     return 1;
                 }
             }
@@ -20363,7 +20483,7 @@ pub mod now
 
         match process::fork()
         {
-            Ok(ForkResult::Child) =>
+            Ok(ForkResult::Child ) =>
             {
                 unsafe
                 {
@@ -20376,30 +20496,30 @@ pub mod now
                     for i in 0..idx_cmd - 1
                     {
                         let fds = pipes[i];
-                        process::close(fds.0);
-                        process::close(fds.1);
+                        process::close( fds.0);
+                        process::close( fds.1);
                     }
                 }
                 
                 for i in idx_cmd + 1..pipes_count
                 {
                     let fds = pipes[i];
-                    process::close(fds.0);
-                    process::close(fds.1);
+                    process::close( fds.0);
+                    process::close( fds.1);
                 }
                 
                 if idx_cmd < pipes_count
                 {
-                    if let Some(fds) = fds_capture_stdout
+                    if let Some( fds ) = fds_capture_stdout
                     {
-                        process::close(fds.0);
-                        process::close(fds.1);
+                        process::close( fds.0);
+                        process::close( fds.1);
                     }
 
-                    if let Some(fds) = fds_capture_stderr
+                    if let Some( fds ) = fds_capture_stderr
                     {
-                        process::close(fds.0);
-                        process::close(fds.1);
+                        process::close( fds.0);
+                        process::close( fds.1);
                     }
                 }
 
@@ -20407,52 +20527,52 @@ pub mod now
                 {
                     unsafe {
                         let pid = getpid();
-                        setpgid(0, pid);
+                        setpgid(0, pid );
                     }
                 }
                 
                 else
                 {
-                    unsafe { setpgid(0, *pgid); }
+                    unsafe { setpgid(0, *pgid ); }
                 }
                 
                 if idx_cmd > 0
                 {
                     let fds_prev = pipes[idx_cmd - 1];
-                    process::dup2(fds_prev.0, 0);
-                    process::close(fds_prev.0);
-                    process::close(fds_prev.1);
+                    process::dup2( fds_prev.0, 0);
+                    process::close( fds_prev.0);
+                    process::close( fds_prev.1);
                 }
 
                 if idx_cmd < pipes_count
                 {
                     let fds = pipes[idx_cmd];
-                    process::dup2(fds.1, 1);
-                    process::close(fds.1);
-                    process::close(fds.0);
+                    process::dup2( fds.1, 1);
+                    process::close( fds.1);
+                    process::close( fds.0);
                 }
 
                 if cmd.has_redirect_from()
                 {
-                    if let Some(redirect_from) = &cmd.redirect_from
+                    if let Some( redirect_from) = &cmd.redirect_from
                     {
-                        let fd = getg::fd_from_file(&redirect_from.clone().1);
+                        let fd = getg::fd_from_file( &redirect_from.clone().1);
                         if fd == -1 {
                             process::exit(1);
                         }
 
-                        process::dup2(fd, 0);
-                        process::close(fd);
+                        process::dup2( fd, 0);
+                        process::close( fd );
                     }
                 }
 
                 if cmd.has_here_string()
                 {
-                    if let Some(fds) = fds_stdin
+                    if let Some( fds ) = fds_stdin
                     {
-                        process::close(fds.1);
-                        process::dup2(fds.0, 0);
-                        process::close(fds.0);
+                        process::close( fds.1);
+                        process::dup2( fds.0, 0);
+                        process::close( fds.0);
                     }
                 }
 
@@ -20475,10 +20595,10 @@ pub mod now
                         {
                             let fd = process::dup(1);
                             if fd == -1 {
-                                println_stderr!("cicada: dup error");
+                                println_stderr!( "cicada: dup error" );
                                 process::exit(1);
                             }
-                            process::dup2(fd, 2);
+                            process::dup2( fd, 2);
                         }
 
                         else { }
@@ -20489,10 +20609,10 @@ pub mod now
                         if idx_cmd < pipes_count || !options.capture_output {
                             let fd = process::dup(2);
                             if fd == -1 {
-                                println_stderr!("cicada: dup error");
+                                println_stderr!( "cicada: dup error" );
                                 process::exit(1);
                             }
-                            process::dup2(fd, 1);
+                            process::dup2( fd, 1);
                         }
                         
                         else { }
@@ -20501,32 +20621,32 @@ pub mod now
                     else
                     {
                         let append = op_ == ">>";
-                        match fs::create_raw_fd_from_file(to_, append)
+                        match fs::create_raw_fd_from_file(to_, append )
                         {
-                            Ok(fd) =>
+                            Ok( fd ) =>
                             {
                                 if fd == -1
                                 {
-                                    println_stderr!("cicada: fork: fd error");
+                                    println_stderr!( "cicada: fork: fd error" );
                                     process::exit(1);
                                 }
 
                                 if from_ == "1"
                                 {
-                                    process::dup2(fd, 1);
+                                    process::dup2( fd, 1);
                                     stdout_redirected = true;
                                 }
                                 
                                 else
                                 {
-                                    process::dup2(fd, 2);
+                                    process::dup2( fd, 2);
                                     stderr_redirected = true;
                                 }
                             }
 
-                            Err(e) =>
+                            Err( e ) =>
                             {
-                                println_stderr!("cicada: fork: {}", e);
+                                println_stderr!( "cicada: fork: {}", e );
                                 process::exit(1);
                             }
                         }
@@ -20535,24 +20655,24 @@ pub mod now
                 
                 if idx_cmd == pipes_count && options.capture_output {
                     if !stdout_redirected {
-                        if let Some(fds) = fds_capture_stdout {
-                            libs::close(fds.0);
-                            libs::dup2(fds.1, 1);
-                            libs::close(fds.1);
+                        if let Some( fds ) = fds_capture_stdout {
+                            libs::close( fds.0);
+                            libs::dup2( fds.1, 1);
+                            libs::close( fds.1);
                         }
                     }
                     if !stderr_redirected {
-                        if let Some(fds) = fds_capture_stderr {
-                            libs::close(fds.0);
-                            libs::dup2(fds.1, 2);
-                            libs::close(fds.1);
+                        if let Some( fds ) = fds_capture_stderr {
+                            libs::close( fds.0);
+                            libs::dup2( fds.1, 2);
+                            libs::close( fds.1);
                         }
                     }
                 }
 
                 if cmd.is_builtin() {
-                    if let Some(status) = try_run_builtin_in_subprocess(sh, cl, idx_cmd, capture) {
-                        process::exit(status);
+                    if let Some( status ) = try_run_builtin_in_subprocess( sh, cl, idx_cmd, capture ) {
+                        process::exit( status );
                     }
                 }
 
@@ -20560,12 +20680,12 @@ pub mod now
                 // we can use CString::new().expect() safely.
                 let mut c_envs: Vec<_> = env::vars()
                     .map(|(k, v)| {
-                        CString::new(format!("{}={}", k, v).as_str()).expect("CString error")
+                        CString::new( format!( "{}={}", k, v).as_str() ).expect( "CString error" )
                     })
                     .collect();
-                for (key, value) in cl.envs.iter() {
+                for (key, value ) in cl.envs.iter() {
                     c_envs.push(
-                        CString::new(format!("{}={}", key, value).as_str()).expect("CString error"),
+                        CString::new( format!( "{}={}", key, value ).as_str() ).expect( "CString error" ),
                     );
                 }
 
@@ -20573,36 +20693,36 @@ pub mod now
                 let path = if program.contains('/') {
                     program.clone()
                 } else {
-                    libs::path::find_file_in_path(program, true)
+                    libs::path::find_file_in_path( program, true )
                 };
                 if path.is_empty() {
-                    println_stderr!("cicada: {}: command not found", program);
+                    println_stderr!( "cicada: {}: command not found", program);
                     process::exit(127);
                 }
 
-                let c_program = CString::new(path.as_str()).expect("CString::new failed");
+                let c_program = CString::new( path.as_str() ).expect( "CString::new failed" );
                 let c_args: Vec<_> = cmd
                     .tokens
                     .iter()
-                    .map(|x| CString::new(x.1.as_str()).expect("CString error"))
+                    .map(|x| CString::new(x.1.as_str() ).expect( "CString error" ) )
                     .collect();
 
-                let c_args: Vec<&CStr> = c_args.iter().map(|x| x.as_c_str()).collect();
-                let c_envs: Vec<&CStr> = c_envs.iter().map(|x| x.as_c_str()).collect();
-                match execve(&c_program, &c_args, &c_envs) {
-                    Ok(_) => {}
-                    Err(e) => match e {
+                let c_args: Vec<&CStr> = c_args.iter().map(|x| x.as_c_str() ).collect();
+                let c_envs: Vec<&CStr> = c_envs.iter().map(|x| x.as_c_str() ).collect();
+                match execve( &c_program, &c_args, &c_envs ) {
+                    Ok(_ ) => {}
+                    Err( e ) => match e {
                         nix::Error::ENOEXEC => {
-                            println_stderr!("cicada: {}: exec format error (ENOEXEC)", program);
+                            println_stderr!( "cicada: {}: exec format error (ENOEXEC)", program);
                         }
                         nix::Error::ENOENT => {
-                            println_stderr!("cicada: {}: file does not exist", program);
+                            println_stderr!( "cicada: {}: file does not exist", program);
                         }
                         nix::Error::EACCES => {
-                            println_stderr!("cicada: {}: Permission denied", program);
+                            println_stderr!( "cicada: {}: Permission denied", program);
                         }
                         _ => {
-                            println_stderr!("cicada: {}: {:?}", program, e);
+                            println_stderr!( "cicada: {}: {:?}", program, e );
                         }
                     },
                 }
@@ -20615,14 +20735,14 @@ pub mod now
                     *pgid = pid;
                     unsafe {
                         // we need to wait pgid of child set to itself,
-                        // before give terminal to it (for macos).
+                        // before give terminal to it ( for macos ).
                         // 1. this loop causes `bash`, `htop` etc to go `T` status
                         //    immediate after start on linux (ubuntu).
                         // 2. but on mac, we need this loop, otherwise commands
                         //    like `vim` will go to `T` status after start.
-                        if cfg!(target_os = "macos") {
+                        if cfg!(target_os = "macos" ) {
                             loop {
-                                let _pgid = libc::getpgid(pid);
+                                let _pgid = libc::getpgid( pid );
                                 if _pgid == pid {
                                     break;
                                 }
@@ -20630,30 +20750,30 @@ pub mod now
                         }
 
                         if sh.has_terminal && options.isatty && !cl.background {
-                            *term_given = shell::give_terminal_to(pid);
+                            *term_given = shell::give_terminal_to( pid );
                         }
                     }
                 }
 
                 if options.isatty && !options.capture_output {
-                    let _cmd = parsers::parser_line::tokens_to_line(&cmd.tokens);
-                    sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background);
+                    let _cmd = parsers::parser_line::tokens_to_line( &cmd.tokens );
+                    sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background );
                 }
 
-                if let Some(redirect_from) = &cmd.redirect_from {
+                if let Some( redirect_from) = &cmd.redirect_from {
                     if redirect_from.0 == "<<<" {
-                        if let Some(fds) = fds_stdin {
+                        if let Some( fds ) = fds_stdin {
                             unsafe {
-                                libs::close(fds.0);
+                                libs::close( fds.0);
 
-                                let mut f = File::from_raw_fd(fds.1);
-                                match f.write_all(redirect_from.1.clone().as_bytes()) {
-                                    Ok(_) => {}
-                                    Err(e) => println_stderr!("cicada: write_all: {}", e),
+                                let mut f = File::from_raw_fd( fds.1);
+                                match f.write_all( redirect_from.1.clone().as_bytes() ) {
+                                    Ok(_ ) => {}
+                                    Err( e ) => println_stderr!( "cicada: write_all: {}", e ),
                                 }
-                                match f.write_all(b"\n") {
-                                    Ok(_) => {}
-                                    Err(e) => println_stderr!("cicada: write_all: {}", e),
+                                match f.write_all(b"\n" ) {
+                                    Ok(_ ) => {}
+                                    Err( e ) => println_stderr!( "cicada: write_all: {}", e ),
                                 }
                             }
                         }
@@ -20663,12 +20783,12 @@ pub mod now
                 // (in parent) close unused pipe ends
                 if idx_cmd < pipes_count {
                     let fds = pipes[idx_cmd];
-                    libs::close(fds.1);
+                    libs::close( fds.1);
                 }
                 if idx_cmd > 0 {
                     // close pipe end only after dupped in the child
                     let fds = pipes[idx_cmd - 1];
-                    libs::close(fds.0);
+                    libs::close( fds.0);
                 }
 
                 if idx_cmd == pipes_count && options.capture_output {
@@ -20676,21 +20796,21 @@ pub mod now
                     let mut s_err = String::new();
 
                     unsafe {
-                        if let Some(fds) = fds_capture_stdout {
-                            libs::close(fds.1);
+                        if let Some( fds ) = fds_capture_stdout {
+                            libs::close( fds.1);
 
-                            let mut f = File::from_raw_fd(fds.0);
-                            match f.read_to_string(&mut s_out) {
-                                Ok(_) => {}
-                                Err(e) => println_stderr!("cicada: readstr: {}", e),
+                            let mut f = File::from_raw_fd( fds.0);
+                            match f.read_to_string( &mut s_out) {
+                                Ok(_ ) => {}
+                                Err( e ) => println_stderr!( "cicada: readstr: {}", e ),
                             }
                         }
-                        if let Some(fds) = fds_capture_stderr {
-                            libs::close(fds.1);
-                            let mut f_err = File::from_raw_fd(fds.0);
-                            match f_err.read_to_string(&mut s_err) {
-                                Ok(_) => {}
-                                Err(e) => println_stderr!("cicada: readstr: {}", e),
+                        if let Some( fds ) = fds_capture_stderr {
+                            libs::close( fds.1);
+                            let mut f_err = File::from_raw_fd( fds.0);
+                            match f_err.read_to_string( &mut s_err ) {
+                                Ok(_ ) => {}
+                                Err( e ) => println_stderr!( "cicada: readstr: {}", e ),
                             }
                         }
                     }
@@ -20706,8 +20826,8 @@ pub mod now
                 pid
             }
 
-            Err(_) => {
-                println_stderr!("Fork failed");
+            Err(_ ) => {
+                println_stderr!( "Fork failed" );
                 *cmd_result = CommandResult::error();
                 0
             }
@@ -20725,35 +20845,36 @@ pub mod now
         if cl.is_empty() { return None; }
 
         let command = &cl.commands[0];
-        if let Some(func_body) = sh.get_func(&command.tokens[0].1)
+
+        if let Some( func_body) = sh.get_func( &command.tokens[0].1)
         {
             let mut args = vec!["cicada".to_string()];
             
             for token in &command.tokens
             {
-                args.push(token.1.to_string());
+                args.push(token.1.to_string() );
             }
             /*
             if log_cmd {
-                log!("run func: {:?}", &args);
+                log!( "run func: {:?}", &args );
             }*/
 
-            let cr_list = scripts::run_lines(sh, &func_body, &args, capture);
+            let cr_list = scripts::run_lines( sh, &func_body, &args, capture );
             let mut stdout = String::new();
             let mut stderr = String::new();
             
             for cr in cr_list
             {
-                stdout.push_str(cr.stdout.trim());
+                stdout.push_str(cr.stdout.trim() );
                 stdout.push(' ');
-                stderr.push_str(cr.stderr.trim());
+                stderr.push_str(cr.stderr.trim() );
                 stderr.push(' ');
             }
 
             let mut cr = CommandResult::new();
             cr.stdout = stdout;
             cr.stderr = stderr;
-            return Some(cr);
+            return Some(cr );
         }
 
         None
@@ -21084,7 +21205,7 @@ pub mod objects
             true
         }
         /// Returns true if the given char is valid for a field, depending on whether it is the first char or not.
-        pub fn is_valid_field_char( ch: char, first: bool ) -> bool 
+        pub fn is_valid_field_char( ch:char, first: bool ) -> bool 
         {
             match ch 
             {
@@ -21418,7 +21539,7 @@ pub mod parses
         } else if is_parent {
             let par = value
                 .get_obj()
-                .map_err( |e| ParseError::from_over( &e, stream.file(), value_line, value_col ) )?;
+                .map_err( | e |ParseError::from_over( &e, stream.file(), value_line, value_col ) )?;
             *parent = Some( par );
         } else {
             obj.insert( field, value );
@@ -21856,7 +21977,7 @@ pub mod parses
         mut included:&mut IncludedMap,
         depth: usize,
         cur_brace: Option<char>,
-        ch: char,
+        ch:char,
     ) -> ParseResult<Value> 
     {
         let _ = stream.next();
@@ -22081,7 +22202,7 @@ pub mod parses
                         Value::Int( int ) => match int.to_usize() {
                             Some( index ) => arr
                                 .get( index )
-                                .map_err( |e| ParseError::from_over( &e, stream.file(), line, col ) )?,
+                                .map_err( | e |ParseError::from_over( &e, stream.file(), line, col ) )?,
                             None => return parse_err( stream.file(), InvalidIndex( int, line, col ) ),
                         },
                         _ => {
@@ -22110,7 +22231,7 @@ pub mod parses
                         Value::Int( int ) => match int.to_usize() {
                             Some( index ) => tup
                                 .get( index )
-                                .map_err( |e| ParseError::from_over( &e, stream.file(), line, col ) )?,
+                                .map_err( | e |ParseError::from_over( &e, stream.file(), line, col ) )?,
                             None => return parse_err( stream.file(), InvalidIndex( int, line, col ) ),
                         },
                         _ => {
@@ -22418,7 +22539,7 @@ pub mod parses
     ( 
         stream:&CharStream,
         val: Value,
-        op: char,
+        op:char,
         line: usize,
         col: usize,
     ) -> ParseResult<Value> 
@@ -22446,7 +22567,7 @@ pub mod parses
         stream:&CharStream,
         mut val1: Value,
         mut val2: Value,
-        op: char,
+        op:char,
         line: usize,
         col: usize,
     ) -> ParseResult<Value> 
@@ -22663,6 +22784,953 @@ pub mod parses
 pub mod path
 {
     pub use std::path::{ * };
+    use ::
+    {
+        borrow::{ Cow },
+        cmp::{ self, Ordering },
+        error::{ Error },
+        fs::{ self, DirEntry, read_dir },
+        io::{ self, ErrorKind, Write },
+        ops::{ Deref },
+        os::unix::fs::PermissionsExt,
+        regex::{ Regex },
+        str::{ FromStr },
+        *,
+    };
+    
+    pub const ERROR_WILDCARDS: &str = "wildcards are either regular `*` or recursive `**`";
+    pub const ERROR_RECURSIVE_WILDCARDS: &str = "recursive wildcards must form a single path component";
+    pub const ERROR_INVALID_RANGE: &str = "invalid range pattern";
+    /*
+    */
+    pub fn basename( path:&str ) -> Cow<'_, str>
+    {
+        let mut pieces = path.rsplit('/');
+        
+        match pieces.next()
+        {
+            Some( p) => p.into(),
+            None => path.into(),
+        }
+    }
+    // pub fn find_file_in_path( filename: &str, exec:bool ) -> String
+    pub fn find_file( filename: &str, exec:bool ) -> String
+    {
+        let env_path = match env::var( "PATH" )
+        {
+            Ok( x ) => x,
+            Err( e ) => {
+                println_stderr!( "cicada: error with env PATH: {:?}", e );
+                return String::new();
+            }
+        };
+        let vec_path = env::split_paths( &env_path );
+        for p in vec_path {
+            match read_dir( &p) {
+                Ok(list) => {
+                    for entry in list.flatten() {
+                        if let Ok( name ) = entry.file_name().into_string() {
+                            if name != filename {
+                                continue;
+                            }
+
+                            if exec {
+                                let _mode = match entry.metadata() {
+                                    Ok( x ) => x,
+                                    Err( e ) => {
+                                        println_stderr!( "cicada: metadata error: {:?}", e );
+                                        continue;
+                                    }
+                                };
+                                let mode = _mode.permissions().mode();
+                                if mode & 0o111 == 0 {
+                                    // not binary
+                                    continue;
+                                }
+                            }
+
+                            return entry.path().to_string_lossy().to_string();
+                        }
+                    }
+                }
+                Err( e ) => {
+                    if e.kind() == ErrorKind::NotFound {
+                        continue;
+                    }
+                    log!( "cicada: fs read_dir error: {}: {}", p.display(), e );
+                }
+            }
+        }
+        String::new()
+    }
+
+    pub fn current_dir() -> String
+    {
+        let _current_dir = match env::current_dir()
+        {
+            Ok( x ) => x,
+            Err( e ) =>
+            {
+                // log!( "cicada: PROMPT: env current_dir error: {}", e );
+                return String::new();
+            }
+        };
+
+        let current_dir = match _current_dir.to_str()
+        {
+            Some( x ) => x,
+            None =>
+            {
+                // log!( "cicada: PROMPT: to_str error" );
+                return String::new();
+            }
+        };
+
+        current_dir.to_string()
+    }
+    // Support for matching file paths against Unix shell style patterns.
+    /// An iterator that yields `Path`s from the filesystem that match a particular pattern.
+    #[derive( Debug )]
+    pub struct Paths
+    {
+        dir_patterns: Vec<Pattern>,
+        require_dir: bool,
+        options: MatchOptions,
+        todo: Vec<Result<( PathWrapper, usize ), GlobError>>,
+        scope: Option<PathWrapper>,
+    }
+    /// Return an iterator for all the `Path`s that match the given pattern using default match options.
+    pub fn glob( pattern:&str ) -> Result<Paths, PatternError> { glob_with( pattern, MatchOptions::new() ) }
+    /// Return an iterator that produces all the `Path`s that match the given pattern using specified match options.
+    pub fn glob_with( pattern:&str, options:MatchOptions ) -> Result<Paths, PatternError>
+    {
+        #[cfg( windows )]
+        fn check_windows_verbatim( p:&Path ) -> bool
+        {
+            match p.components().next()
+            {
+                Some(Component::Prefix( ref p ) ) =>
+                {
+                    p.kind().is_verbatim() && if let std::path::Prefix::VerbatimDisk(_ ) = p.kind() { false }
+                    else { true }
+                }
+                _ => false,
+            }
+        }
+
+        #[cfg( not( windows  ) )]
+        fn check_windows_verbatim( _:&Path ) -> bool { false }
+
+        #[cfg( windows )]
+        fn to_scope( p:&Path ) -> PathBuf { p.to_path_buf() }
+
+        #[cfg( not( windows  ) )]
+        fn to_scope( p:&Path ) -> PathBuf { p.to_path_buf() }
+        
+        let _ = Pattern::new( pattern )?;
+
+        let mut components = Path::new( pattern ).components().peekable();
+
+        loop
+        {
+            match components.peek()
+            {
+                Some( &Component::Prefix(..) ) | Some( &Component::RootDir ) => { components.next(); }
+                _ => break,
+            }
+        }
+
+        let rest = components.map( |s| s.as_os_str() ).collect::<PathBuf>();
+        let normalized_pattern = Path::new( pattern ).iter().collect::<PathBuf>();
+        let root_len = normalized_pattern.to_str().unwrap().len() - rest.to_str().unwrap().len();
+
+        let root = if root_len > 0 { Some( Path::new( &pattern[..root_len] ) ) }
+        else { None };
+
+        if root_len > 0 && check_windows_verbatim( root.unwrap() )
+        {
+            return Ok
+            (
+                Paths
+                {
+                    dir_patterns: Vec::new(),
+                    require_dir: false,
+                    options,
+                    todo: Vec::new(),
+                    scope: None,
+                }
+            );
+        }
+
+        let scope = root.map_or_else( || PathBuf::from( "." ), to_scope );
+        let scope = PathWrapper::from_path( scope );
+
+        let mut dir_patterns = Vec::new();
+        let components = pattern[cmp::min( root_len, pattern.len() )..].split_terminator( is_separator );
+
+        for component in components
+        {
+            dir_patterns.push( Pattern::new( component )? );
+        }
+
+        if root_len == pattern.len()
+        {
+            dir_patterns.push
+            (
+                Pattern
+                {
+                    original: "".to_string(),
+                    tokens: Vec::new(),
+                    is_recursive: false,
+                    has_metachars: false,
+                }
+            );
+        }
+
+        let last_is_separator = pattern.chars().next_back().map( is_separator );
+        let require_dir = last_is_separator == Some( true );
+        let todo = Vec::new();
+
+        Ok
+        (
+            Paths
+            {
+                dir_patterns,
+                require_dir,
+                options,
+                todo,
+                scope: Some( scope ),
+            }
+        )
+    }
+    /// A glob iteration error.
+    #[derive( Debug )]
+    pub struct GlobError
+    {
+        path:PathBuf,
+        error:io::Error,
+    }
+
+    impl GlobError
+    {
+        /// The Path that the error corresponds to.
+        pub fn path( &self ) -> &Path { &self.path }
+        /// The error in question.
+        pub fn error( &self ) -> &io::Error { &self.error }
+        /// Consumes self, returning the _raw_ underlying `io::Error`
+        #[deprecated( note = "use `.into` instead" )]
+        pub fn into_error( self ) -> io::Error { self.error }
+    }
+
+    impl From<GlobError> for io::Error
+    {
+        fn from( value:GlobError ) -> Self { value.error }
+    }
+
+    impl Error for GlobError
+    {
+        fn description( &self ) -> &str { self.error.description() }
+        fn cause( &self ) -> Option<&Error> { Some( &self.error ) }
+    }
+
+    impl fmt::Display for GlobError
+    {
+        fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result
+        {
+            write!
+            (
+                f,
+                "attempting to read `{}` resulted in an error: {}",
+                self.path.display(),
+                self.error
+            )
+        }
+    }
+
+    #[derive( Debug )]
+    pub struct PathWrapper
+    {
+        path: PathBuf,
+        is_directory: bool,
+    }
+
+    impl PathWrapper
+    {
+        fn from_dir_entry( path: PathBuf, e: DirEntry) -> Self
+        {
+            let is_directory = e
+            .file_type()
+            .ok()
+            .and_then(|file_type|
+            {
+                if file_type.is_symlink() { None }                    
+                else { Some( file_type.is_dir() ) }
+            })
+            .or_else(|| fs::metadata( &path ).map(|m| m.is_dir() ).ok() )
+            .unwrap_or( false );
+
+            Self { path, is_directory }
+        }
+
+        fn from_path( path: PathBuf) -> Self
+        {
+            let is_directory = fs::metadata( &path ).map(|m| m.is_dir() ).unwrap_or( false );
+            Self { path, is_directory }
+        }
+
+        fn into_path( self ) -> PathBuf { self.path }
+    }
+
+    impl Deref for PathWrapper 
+    {
+        type Target = Path;
+
+        fn deref( &self ) -> &Self::Target {
+            self.path.deref()
+        }
+    }
+
+    impl AsRef<Path> for PathWrapper 
+    {
+        fn as_ref( &self ) -> &Path {
+            self.path.as_ref()
+        }
+    }
+    
+    /// An alias for a glob iteration result.
+    pub type GlobResult = Result<PathBuf, GlobError>;
+
+    impl Iterator for Paths
+    {
+        type Item = GlobResult;
+
+        fn next( &mut self) -> Option<GlobResult>
+        {
+            if let Some( scope ) = self.scope.take()
+            {
+                if !self.dir_patterns.is_empty()
+                {
+                    assert!( self.dir_patterns.len() < usize::MAX);
+                    fill_todo( &mut self.todo, &self.dir_patterns, 0, &scope, self.options );
+                }
+            }
+
+            loop
+            {
+                if self.dir_patterns.is_empty() || self.todo.is_empty() { return None; }
+
+                let ( path, mut idx) = match self.todo.pop().unwrap()
+                {
+                    Ok( pair ) => pair,
+                    Err( e ) => return Some(Err( e  ) ),
+                };
+                
+                if idx == usize::MAX
+                {
+                    if self.require_dir && !path.is_directory { continue; }
+
+                    return Some(Ok( path.into_path() ) );
+                }
+
+                if self.dir_patterns[idx].is_recursive
+                {
+                    let mut next = idx;
+                    
+                    while ( next + 1) < self.dir_patterns.len() && self.dir_patterns[next + 1].is_recursive 
+                    { next += 1; }
+
+                    if path.is_directory
+                    {
+                        fill_todo
+                        (
+                            &mut self.todo,
+                            &self.dir_patterns,
+                            next,
+                            &path,
+                            self.options,
+                        );
+
+                        if next == self.dir_patterns.len() - 1 { return Some(Ok( path.into_path() ) ); }
+                        else { idx = next + 1; }
+                    }
+                    
+                    else if next == self.dir_patterns.len() - 1 { continue; }
+                    else { idx = next + 1; }
+                }
+                
+                if self.dir_patterns[idx].matches_with
+                (
+                    {
+                        match path.file_name().and_then(|s| s.to_str() )
+                        {
+                            None => continue,
+                            Some( x ) => x,
+                        }
+                    },
+                    self.options,
+                )
+                {
+                    if idx == self.dir_patterns.len() - 1
+                    {
+                        if !self.require_dir || path.is_directory { return Some(Ok( path.into_path() ) ); }
+                    }
+
+                    else
+                    {
+                        fill_todo
+                        (
+                            &mut self.todo,
+                            &self.dir_patterns,
+                            idx + 1,
+                            &path,
+                            self.options,
+                        );
+                    }
+                }
+            }
+        }
+    }
+    /// A pattern parsing error.
+    #[derive( Debug )]
+    pub struct PatternError
+    {
+        /// The approximate character index of where the error occurred.
+        pub pos: usize,
+        /// A message describing the error.
+        pub msg: &'static str,
+    }
+
+    impl Error for PatternError
+    {
+        fn description( &self ) -> &str { self.msg }
+    }
+
+    impl fmt::Display for PatternError
+    {
+        fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result
+        {
+            write!
+            (
+                f,
+                "Pattern syntax error near position {}: {}",
+                self.pos, self.msg
+            )
+        }
+    }
+    /// A compiled Unix shell style pattern.
+    #[derive( Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub struct Pattern
+    {
+        original: String,
+        tokens: Vec<PatternToken>,
+        is_recursive: bool,
+        has_metachars: bool,
+    }
+    /// Show the original glob pattern.
+    impl fmt::Display for Pattern
+    {
+        fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result { self.original.fmt( f) }
+    }
+
+    impl FromStr for Pattern
+    {
+        type Err = PatternError;
+        fn from_str( s:&str ) -> Result<Self, PatternError> { Self::new( s ) }
+    }
+
+    #[derive( Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub enum PatternToken
+    {
+        Char( char ),
+        AnyChar,
+        AnySequence,
+        AnyRecursiveSequence,
+        AnyWithin( Vec<CharSpecifier> ),
+        AnyExcept( Vec<CharSpecifier> ),
+    } pub use self::PatternToken::{ AnyChar, AnyExcept, AnyRecursiveSequence, AnySequence, AnyWithin, Char };
+
+    #[derive( Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub enum CharSpecifier
+    {
+        SingleChar( char ),
+        CharRange( char, char ),
+    } pub use self::CharSpecifier::{CharRange, SingleChar};
+
+    #[derive( Clone, Copy, PartialEq )]
+    pub enum MatchResult
+    {
+        Match,
+        SubPatternDoesntMatch,
+        EntirePatternDoesntMatch,
+    } pub use self::MatchResult::{ EntirePatternDoesntMatch, Match, SubPatternDoesntMatch };
+
+    impl Pattern
+    {
+        /// This function compiles Unix shell style patterns.
+        pub fn new( pattern:&str ) -> Result<Self, PatternError>
+        {
+            let chars = pattern.chars().collect::<Vec<_>>();
+            let mut tokens = Vec::new();
+            let mut is_recursive = false;
+            let mut has_metachars = false;
+            let mut i = 0;
+
+            while i < chars.len()
+            {
+                match chars[i]
+                {
+                    '?' =>
+                    {
+                        has_metachars = true;
+                        tokens.push(AnyChar );
+                        i += 1;
+                    }
+
+                    '*' =>
+                    {
+                        has_metachars = true;
+
+                        let old = i;
+
+                        while i < chars.len() && chars[i] == '*' { i += 1; }
+
+                        let count = i - old;
+
+                        match count.cmp( &2)
+                        {
+                            Ordering::Greater =>
+                            {
+                                return Err( PatternError
+                                {
+                                    pos: old + 2,
+                                    msg: ERROR_WILDCARDS,
+                                })
+                            }
+
+                            Ordering::Equal =>
+                            {
+                                let is_valid = if i == 2 || path::is_separator(chars[i - count - 1])
+                                {
+                                    if i < chars.len() && path::is_separator(chars[i])
+                                    {
+                                        i += 1;
+                                        true
+                                    }
+                                    else if i == chars.len() { true }
+                                    else
+                                    {
+                                        return Err( PatternError
+                                        {
+                                            pos: i,
+                                            msg: ERROR_RECURSIVE_WILDCARDS,
+                                        });
+                                    }
+                                }
+                                
+                                else
+                                {
+                                    return Err( PatternError
+                                    {
+                                        pos: old - 1,
+                                        msg: ERROR_RECURSIVE_WILDCARDS,
+                                    });
+                                };
+
+                                if is_valid
+                                {
+                                    let tokens_len = tokens.len();
+
+                                    if !(tokens_len > 1 && tokens[tokens_len - 1] == AnyRecursiveSequence )
+                                    {
+                                        is_recursive = true;
+                                        tokens.push(AnyRecursiveSequence );
+                                    }
+                                }
+                            }
+
+                            Ordering::Less => tokens.push(AnySequence ),
+                        }
+                    }
+
+                    '[' =>
+                    {
+                        has_metachars = true;
+
+                        if i + 4 <= chars.len() && chars[i + 1] == '!'
+                        {
+                            match chars[i + 3..].iter().position(|x| *x == ']') 
+                            {
+                                None => (),
+                                Some(j) => {
+                                    let chars = &chars[i + 2..i + 3 + j];
+                                    let cs = parse_char_specifiers(chars );
+                                    tokens.push(AnyExcept(cs  ) );
+                                    i += j + 4;
+                                    continue;
+                                }
+                            }
+                        }
+                        
+                        else if i + 3 <= chars.len() && chars[i + 1] != '!'
+                        {
+                            match chars[i + 2..].iter().position(|x| *x == ']')
+                            {
+                                None => (),
+                                Some(j) => {
+                                    let cs = parse_char_specifiers( &chars[i + 1..i + 2 + j]);
+                                    tokens.push(AnyWithin(cs  ) );
+                                    i += j + 3;
+                                    continue;
+                                }
+                            }
+                        }
+                        
+                        return Err( PatternError {
+                            pos: i,
+                            msg: ERROR_INVALID_RANGE,
+                        });
+                    }
+
+                    c =>
+                    {
+                        tokens.push(Char( c  ) );
+                        i += 1;
+                    }
+                }
+            }
+
+            Ok(Self
+            {
+                tokens,
+                original: pattern.to_string(),
+                is_recursive,
+                has_metachars,
+            })
+        }
+        /// Escape metacharacters within the given string by surrounding them in brackets.
+        pub fn escape( s:&str ) -> String
+        {
+            let mut escaped = String::new();
+            for c in s.chars()
+            {
+                match c
+                {
+                    '?' | '*' | '[' | ']' => {
+                        escaped.push('[');
+                        escaped.push( c );
+                        escaped.push(']');
+                    }
+                    c => {
+                        escaped.push( c );
+                    }
+                }
+            }
+            escaped
+        }
+        /// Return if the given `str` matches this `Pattern` using the default match options.
+        pub fn matches( &self, str:&str ) -> bool { self.matches_with( str, MatchOptions::new() ) }
+        /// Return if the given `Path`, when converted to a `str`, matches this
+        /// `Pattern` using the default match options (i.e. `MatchOptions::new()`).
+        pub fn matches_path( &self, path:&Path ) -> bool { path.to_str().map_or( false, |s| self.matches( s ) ) }
+        /// Return if the given `str` matches this `Pattern` using the specified match options.
+        pub fn matches_with( &self, str: &str, options:MatchOptions ) -> bool
+        { self.matches_from( true, str.chars(), 0, options ) == Match }
+        /// Return if the given `Path` matches this `Pattern` using the specified match options.
+        pub fn matches_path_with( &self, path: &Path, options: MatchOptions ) -> bool
+        {
+            path.to_str().map_or( false, |s| self.matches_with( s, options ) )
+        }
+        /// Access the original glob pattern.
+        pub fn as_str( &self ) -> &str { &self.original }
+
+        fn matches_from
+        (
+            &self,
+            mut follows_separator: bool,
+            mut file: ::str::Chars,
+            i: usize,
+            options: MatchOptions,
+        ) -> MatchResult
+        {
+            for (ti, token ) in self.tokens[i..].iter().enumerate()
+            {
+                match *token
+                {
+                    AnySequence | AnyRecursiveSequence =>
+                    {
+                        debug_assert!(match *token
+                        {
+                            AnyRecursiveSequence => follows_separator,
+                            _ => true,
+                        });
+                        
+                        match self.matches_from( follows_separator, file.clone(), i + ti + 1, options )
+                        {
+                            SubPatternDoesntMatch => (),
+                            m => return m,
+                        };
+
+                        while let Some( c ) = file.next()
+                        {
+                            if follows_separator && options.require_literal_leading_dot && c == '.'
+                            { return SubPatternDoesntMatch; }
+
+                            follows_separator = path::is_separator( c );
+                            
+                            match *token
+                            {
+                                AnyRecursiveSequence if !follows_separator => continue,
+                                AnySequence if options.require_literal_separator && follows_separator =>
+                                { return SubPatternDoesntMatch }
+                                _ => (),
+                            }
+
+                            match self.matches_from
+                            (
+                                follows_separator,
+                                file.clone(),
+                                i + ti + 1,
+                                options,
+                            )
+                            {
+                                SubPatternDoesntMatch => (),
+                                m => return m,
+                            }
+                        }
+                    }
+                    
+                    _ =>
+                    {
+                        let c = match file.next()
+                        {
+                            Some( c ) => c,
+                            None => return EntirePatternDoesntMatch,
+                        };
+
+                        let is_sep = path::is_separator( c );
+
+                        if !match *token
+                        {
+                            AnyChar       |
+                            AnyWithin(..) |
+                            AnyExcept(..) if (options.require_literal_separator && is_sep) ||
+                            ( follows_separator && options.require_literal_leading_dot && c == '.' ) => { false }
+                            AnyChar => true,
+                            AnyWithin( ref specifiers ) => in_char_specifiers( specifiers, c, options ),
+                            AnyExcept( ref specifiers ) => !in_char_specifiers( specifiers, c, options ),
+                            Char( c2 ) => chars_eq( c, c2, options.case_sensitive ),
+                            AnySequence | AnyRecursiveSequence => unreachable!(),
+                        }
+                        { return SubPatternDoesntMatch; }
+
+                        follows_separator = is_sep;
+                    }
+                }
+            }
+            
+            if file.next().is_none() { Match }
+            else { SubPatternDoesntMatch }
+        }
+    }
+    
+    fn fill_todo
+    (
+        todo: &mut Vec<Result<( PathWrapper, usize ), GlobError>>,
+        patterns:&[Pattern],
+        idx: usize,
+        path: &PathWrapper,
+        options: MatchOptions,
+    )
+    {
+        let add = | todo:&mut Vec<_>, next_path: PathWrapper |
+        {
+            if idx + 1 == patterns.len() { todo.push( Ok( ( next_path, usize::MAX ) ) ); }
+            else { fill_todo( todo, patterns, idx + 1, &next_path, options ); }
+        };
+
+        let pattern = &patterns[idx];
+        let is_dir = path.is_directory;
+        let curdir = path.as_ref() == Path::new( "." );
+
+        match ( pattern.has_metachars, is_dir )
+        {
+            ( false, _ ) =>
+            {
+                debug_assert!
+                (
+                    pattern
+                    .tokens
+                    .iter()
+                    .all( | tok | matches!( tok, PatternToken::Char( _ ) ) ),
+                    "broken invariant: pattern has metachars but shouldn't"
+                );
+                
+                let s = pattern.as_str();                
+                let special = "." == s || ".." == s;
+                let next_path = if curdir { PathBuf::from( s ) }
+                
+                else { path.join( s ) };
+                
+                let next_path = PathWrapper::from_path( next_path );
+                
+                if  ( special && is_dir ) ||
+                    (!special && ( fs::metadata( &next_path ).is_ok() || fs::symlink_metadata( &next_path ).is_ok() ) )
+                    { add( todo, next_path ); }
+            }
+
+            ( true, true ) => 
+            {
+                let dirs = fs::read_dir( path ).and_then(|d| 
+                {
+                    d.map(| e |
+                    {
+                        e.map(| e |
+                        {
+                            let path = if curdir { PathBuf::from( e.path().file_name().unwrap() ) }
+                            
+                            else { e.path() };
+
+                            PathWrapper::from_dir_entry( path, e )
+                        })
+                    })
+                    .collect::<Result<Vec<_>, _>>()
+                });
+
+                match dirs
+                {
+                    Ok( mut children ) =>
+                    {
+                        if options.require_literal_leading_dot
+                        {
+                            children.retain(|x| !x.file_name().unwrap().to_str().unwrap().starts_with('.' ) );
+                        }
+
+                        children.sort_by(|p1, p2| p2.file_name().cmp( &p1.file_name() ) );
+                        todo.extend(children.into_iter().map(|x| Ok((x, idx ) )  ) );
+                        
+                        if !pattern.tokens.is_empty() && pattern.tokens[0] == Char('.')
+                        {
+                            for &special in &[".", ".."]
+                            {
+                                if pattern.matches_with( special, options )
+                                {
+                                    add(todo, PathWrapper::from_path( path.join( special ) ) );
+                                }
+                            }
+                        }
+                    }
+
+                    Err( e ) =>
+                    {
+                        todo.push
+                        (
+                            Err
+                            (
+                                GlobError
+                                {
+                                    path: path.to_path_buf(),
+                                    error: e
+                                }
+                            )
+                        );
+                    }
+                }
+            }
+
+            ( true, false ) => {}
+        }
+    }
+
+    fn parse_char_specifiers( s:&[char] ) -> Vec<CharSpecifier>
+    {
+        let mut cs = Vec::new();
+        let mut i = 0;
+
+        while i < s.len()
+        {
+            if i + 3 <= s.len() && s[i + 1] == '-' {
+                cs.push(CharRange( s[i], s[i + 2] ) );
+                i += 3;
+            } else {
+                cs.push(SingleChar( s[i] ) );
+                i += 1;
+            }
+        }
+
+        cs
+    }
+
+    fn in_char_specifiers( specifiers:&[CharSpecifier], c:char, options:MatchOptions ) -> bool
+    {
+        for &specifier in specifiers.iter()
+        {
+            match specifier
+            {
+                SingleChar( sc ) =>
+                {
+                    if chars_eq( c, sc, options.case_sensitive ) { return true; }
+                }
+                
+                CharRange( start, end ) =>
+                {
+                    if !options.case_sensitive && c.is_ascii() && start.is_ascii() && end.is_ascii()
+                    {
+                        let start = start.to_ascii_lowercase();
+                        let end = end.to_ascii_lowercase();
+
+                        let start_up = start.to_uppercase().next().unwrap();
+                        let end_up = end.to_uppercase().next().unwrap();
+                        
+                        if start != start_up && end != end_up
+                        {
+                            let c = c.to_ascii_lowercase();
+                            if c >= start && c <= end { return true; }
+                        }
+                    }
+
+                    if c >= start && c <= end { return true; }
+                }
+            }
+        }
+
+        false
+    }
+    /// A helper function to determine if two chars are ( possibly case-insensitively) equal.
+    fn chars_eq( a:char, b:char, case_sensitive:bool ) -> bool 
+    {
+        if cfg!( windows ) && path::is_separator( a ) && path::is_separator( b ) { true }
+        
+        else if !case_sensitive && a.is_ascii() && b.is_ascii() { a.eq_ignore_ascii_case( &b ) }
+
+        else { a == b }
+    }
+    /// Configuration options to modify the behaviour of `Pattern::matches_with(..)`.
+    #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub struct MatchOptions
+    {
+        /// Whether or not patterns should be matched in a case-sensitive manner.
+        pub case_sensitive: bool,
+        /// Whether path-component separator characters must be matched by a literal `/`
+        /// rather than by `*` or `?` or `[...]`.
+        pub require_literal_separator: bool,
+        /// Whether path-components that start with a `.` will require that `.` appears literally in the pattern;
+        /// `*`, `?`, `**`, or `[...]` will not match.
+        pub require_literal_leading_dot: bool,
+    }
+
+    impl MatchOptions 
+    {
+        /// Constructs a new `MatchOptions` with default field values.
+        pub fn new() -> Self
+        {
+            Self
+            {
+                case_sensitive: true,
+                require_literal_separator: false,
+                require_literal_leading_dot: false,
+            }
+        }
+    }
 }
 
 pub mod primitive
@@ -22673,6 +23741,42 @@ pub mod primitive
 pub mod process
 {
     pub use std::process::{ * };
+
+    use ::
+    {
+        error::no::{ Errno },
+        os::fd::{ RawFd },
+        system::
+        {
+            api::
+            {
+                Result, ForkResult, Pid, c_int
+            },
+        },
+        *,
+    };
+    /*
+    */
+    /// Create a new child process duplicating the parent process.
+    #[inline] pub unsafe fn fork() -> Result<ForkResult>
+    {
+        use self::ForkResult::*;
+        let res = unsafe { ::system::api::fork() };
+
+        Errno::result( res ).map(|res| match res
+        {
+            0 => Child,
+            res => Parent { child: Pid( res ) },
+        })
+    }
+    
+    pub fn pipe() -> Result<(RawFd, RawFd )>
+    {
+        let mut fds = mem::MaybeUninit::<[c_int; 2]>::uninit();
+        let res = unsafe { system::api::pipe( fds.as_mut_ptr() as *mut c_int) };
+        Errno::result( res )?;
+        unsafe { Ok(( fds.assume_init()[0], fds.assume_init()[1] ) ) }
+    }
 }
 
 pub mod prompts
@@ -22711,37 +23815,37 @@ pub mod prompts
         // pub fn get_prompt_string() -> String
         pub fn read_string() -> String
         {
-            if let Ok(x) = env::var("PROMPT") { return x; }
+            if let Ok( x ) = env::var( "PROMPT" ) { return x; }
             DEFAULT_PROMPT.to_string()
         }
-        // pub fn apply_prompt_item(sh: &shell::Shell, result: &mut String, token: &str)
-        pub fn apply_item(sh: &shell::Shell, result: &mut String, token: &str)
+        // pub fn apply_prompt_item( sh: &shell::Shell, result: &mut String, token:&str )
+        pub fn apply_item( sh: &shell::Shell, result: &mut String, token:&str )
         {
-            if let Some(x) = sh.get_env(token)
+            if let Some( x ) = sh.get_env(token )
             {
-                result.push_str(&x);
+                result.push_str( &x);
                 return;
             }
 
-            apply_preset_item(sh, result, token);
+            apply_preset_item( sh, result, token );
         }
 
-        pub fn apply_command(result: &mut String, token: &str, prefix: &str, suffix: &str)
+        pub fn apply_command( result: &mut String, token: &str, prefix: &str, suffix:&str )
         {
-            let cr = now::run(token);
+            let cr = now::run(token );
             let output = cr.stdout.trim();
             if !output.is_empty()
             {
-                result.push_str(prefix);
+                result.push_str( prefix);
                 result.push_str(output);
-                result.push_str(suffix);
+                result.push_str( suffix);
             }
         }
-        // pub fn render_prompt(sh: &shell::Shell, ps: &str) -> String
-        pub fn render(sh: &shell::Shell, ps: &str) -> String
+        // pub fn render_prompt( sh: &shell::Shell, ps:&str ) -> String
+        pub fn render( sh: &shell::Shell, ps:&str ) -> String
         {
             let mut prompt = String::new();
-            apply_pyenv(&mut prompt);
+            apply_pyenv( &mut prompt);
 
             let mut met_dollar = false;
             let mut met_brace = false;
@@ -22756,7 +23860,7 @@ pub mod prompts
                         continue;
                     }
                     if c == ')' && met_paren {
-                        apply_command(&mut prompt, &token, &prefix, &suffix);
+                        apply_command( &mut prompt, &token, &prefix, &suffix);
                         token.clear();
                         prefix.clear();
                         suffix.clear();
@@ -22768,7 +23872,7 @@ pub mod prompts
                         met_brace = true;
                         continue;
                     } else if c == '}' && met_brace {
-                        apply_item(sh, &mut prompt, &token);
+                        apply_item( sh, &mut prompt, &token );
                         token.clear();
                         met_dollar = false;
                         met_brace = false;
@@ -22780,26 +23884,26 @@ pub mod prompts
                             met_dollar = true;
                             continue;
                         } else {
-                            apply_item(sh, &mut prompt, &token);
+                            apply_item( sh, &mut prompt, &token );
                             token.clear();
                             // met_dollar is still true
                             continue;
                         }
                     } else if met_paren {
-                        if is::prefix_char(c) {
-                            prefix.push(c);
-                        } else if is::suffix_char(c) {
-                            suffix.push(c);
+                        if is::prefix_char( c ) {
+                            prefix.push( c );
+                        } else if is::suffix_char( c ) {
+                            suffix.push( c );
                         } else {
-                            token.push(c);
+                            token.push( c );
                         }
                         continue;
-                    } else if is::prompt_item_char(c, &token) {
-                        token.push(c);
+                    } else if is::prompt_item_char( c, &token ) {
+                        token.push( c );
                         continue;
                     } else if token.is_empty() {
                         prompt.push('$');
-                        prompt.push(c);
+                        prompt.push( c );
                         met_dollar = false;
                         continue;
                     }
@@ -22811,15 +23915,15 @@ pub mod prompts
                 }
 
                 if !token.is_empty() {
-                    apply_item(sh, &mut prompt, &token);
+                    apply_item( sh, &mut prompt, &token );
                     token.clear();
                 }
-                prompt.push(c);
+                prompt.push( c );
                 met_dollar = false;
             }
 
             if !token.is_empty() {
-                apply_item(sh, &mut prompt, &token);
+                apply_item( sh, &mut prompt, &token );
                 met_dollar = false;
             }
 
@@ -22829,7 +23933,7 @@ pub mod prompts
             }
             /*
             if prompt.trim().is_empty() {
-                return format!("cicada-{} >> ", env!("CARGO_PKG_VERSION"));
+                return format!( "cicada-{} >> ", env!( "CARGO_PKG_VERSION" ) );
             } */
             prompt
         }
@@ -22857,7 +23961,7 @@ pub mod prompts
 
         impl<T: Terminal> Function<T> for EnterFunction
         {
-            fn execute(&self, prompter: &mut Prompter<T>, count: i32, _ch: char) -> io::Result<()>
+            fn execute( &self, prompter: &mut Prompter<T>, count: i32, _ch: char ) -> io::Result<()>
             {
                 let buf = prompter.buffer();
                 let linfo = parser_line::parse_line(buf);
@@ -22865,14 +23969,14 @@ pub mod prompts
                     prompter.accept_input()
                 } else if count > 0 {
                     match prompter.insert(count as usize, '\n') {
-                        Ok(_) => {}
-                        Err(e) => {
-                            println!("sub-prompt error: {}", e);
+                        Ok(_ ) => {}
+                        Err( e ) => {
+                            println!( "sub-prompt error: {}", e );
                         }
                     }
-                    prompter.insert_str(">> ")
+                    prompter.insert_str( ">> " )
                 } else {
-                    Ok(())
+                    Ok(() )
                 }
             }
         }
@@ -22891,232 +23995,232 @@ pub mod prompts
         };
         /*
         */
-        fn apply_seq(prompt: &mut String) {
+        fn apply_seq( prompt: &mut String) {
             prompt.push_str(libs::colored::SEQ);
         }
 
-        fn apply_end_seq(prompt: &mut String) {
+        fn apply_end_seq( prompt: &mut String) {
             prompt.push_str(libs::colored::END_SEQ);
         }
 
-        fn apply_esc(prompt: &mut String) {
+        fn apply_esc( prompt: &mut String) {
             prompt.push_str(libs::colored::ESC);
         }
 
-        fn apply_underlined(prompt: &mut String) {
+        fn apply_underlined( prompt: &mut String) {
             prompt.push_str(libs::colored::UNDERLINED);
         }
 
-        fn apply_user(prompt: &mut String) {
+        fn apply_user( prompt: &mut String) {
             let username = tools::get_user_name();
-            prompt.push_str(&username);
+            prompt.push_str( &username );
         }
 
-        fn apply_black(prompt: &mut String) {
+        fn apply_black( prompt: &mut String) {
             prompt.push_str(libs::colored::BLACK);
         }
 
-        fn apply_black_b(prompt: &mut String) {
+        fn apply_black_b( prompt: &mut String) {
             prompt.push_str(libs::colored::BLACK_B);
         }
 
-        fn apply_black_bg(prompt: &mut String) {
+        fn apply_black_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::BLACK_BG);
         }
 
-        fn apply_blue(prompt: &mut String) {
+        fn apply_blue( prompt: &mut String) {
             prompt.push_str(libs::colored::BLUE);
         }
 
-        fn apply_blue_b(prompt: &mut String) {
+        fn apply_blue_b( prompt: &mut String) {
             prompt.push_str(libs::colored::BLUE_B);
         }
 
-        fn apply_blue_bg(prompt: &mut String) {
+        fn apply_blue_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::BLUE_BG);
         }
 
-        fn apply_bold(prompt: &mut String) {
+        fn apply_bold( prompt: &mut String) {
             prompt.push_str(libs::colored::BOLD);
         }
 
-        fn apply_green(prompt: &mut String) {
+        fn apply_green( prompt: &mut String) {
             prompt.push_str(libs::colored::GREEN);
         }
 
-        fn apply_green_b(prompt: &mut String) {
+        fn apply_green_b( prompt: &mut String) {
             prompt.push_str(libs::colored::GREEN_B);
         }
 
-        fn apply_green_bg(prompt: &mut String) {
+        fn apply_green_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::GREEN_BG);
         }
 
-        fn apply_red(prompt: &mut String) {
+        fn apply_red( prompt: &mut String) {
             prompt.push_str(libs::colored::RED);
         }
 
-        fn apply_red_b(prompt: &mut String) {
+        fn apply_red_b( prompt: &mut String) {
             prompt.push_str(libs::colored::RED_B);
         }
 
-        fn apply_red_bg(prompt: &mut String) {
+        fn apply_red_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::RED_BG);
         }
 
-        fn apply_white(prompt: &mut String) {
+        fn apply_white( prompt: &mut String) {
             prompt.push_str(libs::colored::WHITE);
         }
 
-        fn apply_white_b(prompt: &mut String) {
+        fn apply_white_b( prompt: &mut String) {
             prompt.push_str(libs::colored::WHITE_B);
         }
 
-        fn apply_white_bg(prompt: &mut String) {
+        fn apply_white_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::WHITE_BG);
         }
 
-        fn apply_hidden(prompt: &mut String) {
+        fn apply_hidden( prompt: &mut String) {
             prompt.push_str(libs::colored::HIDDEN);
         }
 
-        fn apply_reset(prompt: &mut String) {
+        fn apply_reset( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET);
         }
 
-        fn apply_reverse(prompt: &mut String) {
+        fn apply_reverse( prompt: &mut String) {
             prompt.push_str(libs::colored::REVERSE);
         }
 
-        fn apply_dim(prompt: &mut String) {
+        fn apply_dim( prompt: &mut String) {
             prompt.push_str(libs::colored::DIM);
         }
 
-        fn apply_blink(prompt: &mut String) {
+        fn apply_blink( prompt: &mut String) {
             prompt.push_str(libs::colored::BLINK);
         }
 
-        fn apply_reset_underlined(prompt: &mut String) {
+        fn apply_reset_underlined( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET_UNDERLINED);
         }
 
-        fn apply_reset_dim(prompt: &mut String) {
+        fn apply_reset_dim( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET_DIM);
         }
 
-        fn apply_reset_reverse(prompt: &mut String) {
+        fn apply_reset_reverse( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET_REVERSE);
         }
 
-        fn apply_reset_hidden(prompt: &mut String) {
+        fn apply_reset_hidden( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET_HIDDEN);
         }
 
-        fn apply_reset_blink(prompt: &mut String) {
+        fn apply_reset_blink( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET_BLINK);
         }
 
-        fn apply_reset_bold(prompt: &mut String) {
+        fn apply_reset_bold( prompt: &mut String) {
             prompt.push_str(libs::colored::RESET_BOLD);
         }
 
-        fn apply_default(prompt: &mut String) {
+        fn apply_default( prompt: &mut String) {
             prompt.push_str(libs::colored::DEFAULT);
         }
 
-        fn apply_default_bg(prompt: &mut String) {
+        fn apply_default_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::DEFAULT_BG);
         }
 
-        fn apply_cyan(prompt: &mut String) {
+        fn apply_cyan( prompt: &mut String) {
             prompt.push_str(libs::colored::CYAN);
         }
 
-        fn apply_cyan_l(prompt: &mut String) {
+        fn apply_cyan_l( prompt: &mut String) {
             prompt.push_str(libs::colored::CYAN_L);
         }
 
-        fn apply_cyan_bg(prompt: &mut String) {
+        fn apply_cyan_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::CYAN_BG);
         }
 
-        fn apply_cyan_l_bg(prompt: &mut String) {
+        fn apply_cyan_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::CYAN_L_BG);
         }
 
-        fn apply_red_l(prompt: &mut String) {
+        fn apply_red_l( prompt: &mut String) {
             prompt.push_str(libs::colored::RED_L);
         }
 
-        fn apply_red_l_bg(prompt: &mut String) {
+        fn apply_red_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::RED_L_BG);
         }
 
-        fn apply_green_l(prompt: &mut String) {
+        fn apply_green_l( prompt: &mut String) {
             prompt.push_str(libs::colored::GREEN_L);
         }
 
-        fn apply_green_l_bg(prompt: &mut String) {
+        fn apply_green_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::GREEN_L_BG);
         }
 
-        fn apply_gray_l(prompt: &mut String) {
+        fn apply_gray_l( prompt: &mut String) {
             prompt.push_str(libs::colored::GRAY_L);
         }
 
-        fn apply_gray_l_bg(prompt: &mut String) {
+        fn apply_gray_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::GRAY_L_BG);
         }
 
-        fn apply_gray_d(prompt: &mut String) {
+        fn apply_gray_d( prompt: &mut String) {
             prompt.push_str(libs::colored::GRAY_D);
         }
 
-        fn apply_gray_d_bg(prompt: &mut String) {
+        fn apply_gray_d_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::GRAY_D_BG);
         }
 
-        fn apply_magenta(prompt: &mut String) {
+        fn apply_magenta( prompt: &mut String) {
             prompt.push_str(libs::colored::MAGENTA);
         }
 
-        fn apply_magenta_bg(prompt: &mut String) {
+        fn apply_magenta_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::MAGENTA_BG);
         }
 
-        fn apply_magenta_l(prompt: &mut String) {
+        fn apply_magenta_l( prompt: &mut String) {
             prompt.push_str(libs::colored::MAGENTA_L);
         }
 
-        fn apply_magenta_l_bg(prompt: &mut String) {
+        fn apply_magenta_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::MAGENTA_L_BG);
         }
 
-        fn apply_yellow(prompt: &mut String) {
+        fn apply_yellow( prompt: &mut String) {
             prompt.push_str(libs::colored::YELLOW);
         }
 
-        fn apply_yellow_bg(prompt: &mut String) {
+        fn apply_yellow_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::YELLOW_BG);
         }
 
-        fn apply_yellow_l(prompt: &mut String) {
+        fn apply_yellow_l( prompt: &mut String) {
             prompt.push_str(libs::colored::YELLOW_L);
         }
 
-        fn apply_yellow_l_bg(prompt: &mut String) {
+        fn apply_yellow_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::YELLOW_L_BG);
         }
 
-        fn apply_blue_l(prompt: &mut String) {
+        fn apply_blue_l( prompt: &mut String) {
             prompt.push_str(libs::colored::BLUE_L);
         }
 
-        fn apply_blue_l_bg(prompt: &mut String) {
+        fn apply_blue_l_bg( prompt: &mut String) {
             prompt.push_str(libs::colored::BLUE_L_BG);
         }
 
-        fn apply_color_status(sh: &shell::Shell, prompt: &mut String) {
+        fn apply_color_status( sh: &shell::Shell, prompt: &mut String) {
             if sh.previous_status == 0 {
                 prompt.push_str(libs::colored::GREEN_B);
             } else {
@@ -23126,18 +24230,18 @@ pub mod prompts
 
         fn _find_git_root() -> String {
             let current_dir = libs::path::current_dir();
-            let dir_git = format!("{}/.git", current_dir);
-            if Path::new(&dir_git).exists() {
+            let dir_git = format!( "{}/.git", current_dir );
+            if Path::new( &dir_git).exists() {
                 return current_dir;
             }
 
             let mut _dir = current_dir.clone();
-            while Path::new(&_dir).parent().is_some() {
-                match Path::new(&_dir).parent() {
-                    Some(p) => {
+            while Path::new( &_dir ).parent().is_some() {
+                match Path::new( &_dir ).parent() {
+                    Some( p) => {
                         _dir = p.to_string_lossy().to_string();
-                        let dir_git = format!("{}/.git", _dir);
-                        if Path::new(&dir_git).exists() {
+                        let dir_git = format!( "{}/.git", _dir );
+                        if Path::new( &dir_git).exists() {
                             return _dir;
                         }
                     }
@@ -23150,46 +24254,46 @@ pub mod prompts
             String::new()
         }
 
-        fn apply_gitbr(prompt: &mut String) {
+        fn apply_gitbr( prompt: &mut String) {
             let git_root = _find_git_root();
             if git_root.is_empty() {
                 return;
             }
 
-            let file_head = format!("{}/.git/HEAD", git_root);
-            if !Path::new(&file_head).exists() {
+            let file_head = format!( "{}/.git/HEAD", git_root);
+            if !Path::new( &file_head ).exists() {
                 return;
             }
 
             let mut file;
-            match File::open(&file_head) {
-                Ok(x) => file = x,
-                Err(e) => {
-                    println!("cicada: .git/HEAD err: {:?}", e);
+            match File::open( &file_head ) {
+                Ok( x ) => file = x,
+                Err( e ) => {
+                    println!( "cicada: .git/HEAD err: {:?}", e );
                     return;
                 }
             }
             let mut text = String::new();
-            match file.read_to_string(&mut text) {
-                Ok(_) => {}
-                Err(e) => {
-                    println!("cicada: read_to_string error: {:?}", e);
+            match file.read_to_string( &mut text) {
+                Ok(_ ) => {}
+                Err( e ) => {
+                    println!( "cicada: read_to_string error: {:?}", e );
                     return;
                 }
             }
 
-            if let Some(branch) = libs::re::find_first_group(r"^[a-z]+: ?[a-z]+/[a-z]+/(.+)$", text.trim())
+            if let Some(branch ) = regex::find_first_group( r"^[a-z]+: ?[a-z]+/[a-z]+/(.+)$", text.trim() )
             {
-                apply_blue_b(prompt);
-                if let Ok(x) = env::var("CICADA_GITBR_PREFIX") {
-                    prompt.push_str(&x);
+                apply_blue_b( prompt);
+                if let Ok( x ) = env::var( "CICADA_GITBR_PREFIX" ) {
+                    prompt.push_str( &x);
                 }
 
                 let _len_default: i32 = 32;
-                let mut len_max = if let Ok(x) = env::var("CICADA_GITBR_MAX_LEN") {
+                let mut len_max = if let Ok( x ) = env::var( "CICADA_GITBR_MAX_LEN" ) {
                     match x.parse::<i32>() {
-                        Ok(n) => n,
-                        Err(_) => _len_default,
+                        Ok( n ) => n,
+                        Err(_ ) => _len_default,
                     }
                 } else {
                     _len_default
@@ -23199,38 +24303,38 @@ pub mod prompts
                 }
 
                 if branch.len() as i32 <= len_max {
-                    prompt.push_str(&branch);
+                    prompt.push_str( &branch );
                 } else {
                     let len = branch.len() as i32;
                     let offset = (len - len_max + 2) as usize;
-                    let branch_short = format!("..{}", &branch[offset..]);
-                    prompt.push_str(&branch_short);
+                    let branch_short = format!( "..{}", &branch[offset..]);
+                    prompt.push_str( &branch_short);
                 }
-                if let Ok(x) = env::var("CICADA_GITBR_SUFFIX") {
-                    prompt.push_str(&x);
+                if let Ok( x ) = env::var( "CICADA_GITBR_SUFFIX" ) {
+                    prompt.push_str( &x);
                 }
-                apply_reset(prompt);
+                apply_reset( prompt);
             }
         }
 
-        pub fn apply_cwd(prompt: &mut String)
+        pub fn apply_cwd( prompt: &mut String)
         {
             let _current_dir = match env::current_dir()
             {
-                Ok(x) => x,
-                Err(e) =>
+                Ok( x ) => x,
+                Err( e ) =>
                 {
-                    println_stderr!("cicada: PROMPT: env current_dir error: {}", e);
+                    println_stderr!( "cicada: PROMPT: env current_dir error: {}", e );
                     return;
                 }
             };
 
             let current_dir = match _current_dir.to_str()
             {
-                Some(x) => x,
+                Some( x ) => x,
                 None =>
                 {
-                    println_stderr!("cicada: PROMPT: to_str error");
+                    println_stderr!( "cicada: PROMPT: to_str error" );
                     return;
                 }
             };
@@ -23239,10 +24343,10 @@ pub mod prompts
 
             let last = match _tokens.last()
             {
-                Some(x) => x,
+                Some( x ) => x,
                 None =>
                 {
-                    //log!("cicada: PROMPT: token last error");
+                    //log!( "cicada: PROMPT: token last error" );
                     return;
                 }
             };
@@ -23253,125 +24357,125 @@ pub mod prompts
 
             else { last };
 
-            prompt.push_str(pwd);
+            prompt.push_str( pwd );
         }
 
-        pub fn apply_hostname(prompt: &mut String)
+        pub fn apply_hostname( prompt: &mut String)
         {
             let hostname = tools::get_hostname();
-            prompt.push_str(&hostname);
+            prompt.push_str( &hostname );
         }
 
-        pub fn apply_newline(prompt: &mut String) { prompt.push('\n'); }
+        pub fn apply_newline( prompt: &mut String) { prompt.push('\n'); }
 
-        pub fn apply_pyenv(prompt: &mut String)
+        pub fn apply_pyenv( prompt: &mut String)
         {
-            if let Ok(x) = env::var("VIRTUAL_ENV")
+            if let Ok( x ) = env::var( "VIRTUAL_ENV" )
             {
                 if !x.is_empty()
                 {
                     let _tokens: Vec<&str> = x.split('/').collect();
                     let env_name = match _tokens.last()
                     {
-                        Some(x) => x,
+                        Some( x ) => x,
                         None =>
                         {
-                            //log!("prompt token last error");
+                            //log!( "prompt token last error" );
                             return;
                         }
                     };
 
-                    apply_blue_b(prompt);
+                    apply_blue_b( prompt);
                     prompt.push('(');
-                    prompt.push_str(env_name);
+                    prompt.push_str(env_name );
                     prompt.push(')');
-                    apply_reset(prompt);
+                    apply_reset( prompt);
                 }
             }
         }
 
-        pub fn apply_preset_item(sh: &shell::Shell, prompt: &mut String, token: &str)
+        pub fn apply_preset_item( sh: &shell::Shell, prompt: &mut String, token:&str )
         {
             match token.to_ascii_lowercase().as_ref()
             {
-                "black" => apply_black(prompt),
-                "black_b" => apply_black_b(prompt),
-                "black_bg" => apply_black_bg(prompt),
-                "blink" => apply_blink(prompt),
-                "blue" => apply_blue(prompt),
-                "blue_b" => apply_blue_b(prompt),
-                "blue_bg" => apply_blue_bg(prompt),
-                "blue_l" => apply_blue_l(prompt),
-                "blue_l_bg" => apply_blue_l_bg(prompt),
-                "bold" => apply_bold(prompt),
-                "color_status" => apply_color_status(sh, prompt),
-                "cwd" => apply_cwd(prompt),
-                "cyan" => apply_cyan(prompt),
-                "cyan_bg" => apply_cyan_bg(prompt),
-                "cyan_l" => apply_cyan_l(prompt),
-                "cyan_l_bg" => apply_cyan_l_bg(prompt),
-                "default" => apply_default(prompt),
-                "default_bg" => apply_default_bg(prompt),
-                "dim" => apply_dim(prompt),
-                "end_seq" => apply_end_seq(prompt),
-                "esc" => apply_esc(prompt),
-                "gitbr" => apply_gitbr(prompt),
-                "gray_d" => apply_gray_d(prompt),
-                "gray_d_bg" => apply_gray_d_bg(prompt),
-                "gray_l" => apply_gray_l(prompt),
-                "gray_l_bg" => apply_gray_l_bg(prompt),
-                "green" => apply_green(prompt),
-                "green_b" => apply_green_b(prompt),
-                "green_bg" => apply_green_bg(prompt),
-                "green_l" => apply_green_l(prompt),
-                "green_l_bg" => apply_green_l_bg(prompt),
-                "hidden" => apply_hidden(prompt),
-                "hostname" => apply_hostname(prompt),
-                "magenta" => apply_magenta(prompt),
-                "magenta_bg" => apply_magenta_bg(prompt),
-                "magenta_l" => apply_magenta_l(prompt),
-                "magenta_l_bg" => apply_magenta_l_bg(prompt),
-                "newline" => apply_newline(prompt),
-                "red" => apply_red(prompt),
-                "red_b" => apply_red_b(prompt),
-                "red_bg" => apply_red_bg(prompt),
-                "red_l" => apply_red_l(prompt),
-                "red_l_bg" => apply_red_l_bg(prompt),
-                "reset" => apply_reset(prompt),
-                "reset_blink" => apply_reset_blink(prompt),
-                "reset_bold" => apply_reset_bold(prompt),
-                "reset_dim" => apply_reset_dim(prompt),
-                "reset_hidden" => apply_reset_hidden(prompt),
-                "reset_reverse" => apply_reset_reverse(prompt),
-                "reset_underlined" => apply_reset_underlined(prompt),
-                "reverse" => apply_reverse(prompt),
-                "seq" => apply_seq(prompt),
-                "underlined" => apply_underlined(prompt),
-                "user" => apply_user(prompt),
-                "white" => apply_white(prompt),
-                "white_b" => apply_white_b(prompt),
-                "white_bg" => apply_white_bg(prompt),
-                "yellow" => apply_yellow(prompt),
-                "yellow_bg" => apply_yellow_bg(prompt),
-                "yellow_l" => apply_yellow_l(prompt),
-                "yellow_l_bg" => apply_yellow_l_bg(prompt),
+                "black" => apply_black( prompt),
+                "black_b" => apply_black_b( prompt),
+                "black_bg" => apply_black_bg( prompt),
+                "blink" => apply_blink( prompt),
+                "blue" => apply_blue( prompt),
+                "blue_b" => apply_blue_b( prompt),
+                "blue_bg" => apply_blue_bg( prompt),
+                "blue_l" => apply_blue_l( prompt),
+                "blue_l_bg" => apply_blue_l_bg( prompt),
+                "bold" => apply_bold( prompt),
+                "color_status" => apply_color_status( sh, prompt),
+                "cwd" => apply_cwd( prompt),
+                "cyan" => apply_cyan( prompt),
+                "cyan_bg" => apply_cyan_bg( prompt),
+                "cyan_l" => apply_cyan_l( prompt),
+                "cyan_l_bg" => apply_cyan_l_bg( prompt),
+                "default" => apply_default( prompt),
+                "default_bg" => apply_default_bg( prompt),
+                "dim" => apply_dim( prompt),
+                "end_seq" => apply_end_seq( prompt),
+                "esc" => apply_esc( prompt),
+                "gitbr" => apply_gitbr( prompt),
+                "gray_d" => apply_gray_d( prompt),
+                "gray_d_bg" => apply_gray_d_bg( prompt),
+                "gray_l" => apply_gray_l( prompt),
+                "gray_l_bg" => apply_gray_l_bg( prompt),
+                "green" => apply_green( prompt),
+                "green_b" => apply_green_b( prompt),
+                "green_bg" => apply_green_bg( prompt),
+                "green_l" => apply_green_l( prompt),
+                "green_l_bg" => apply_green_l_bg( prompt),
+                "hidden" => apply_hidden( prompt),
+                "hostname" => apply_hostname( prompt),
+                "magenta" => apply_magenta( prompt),
+                "magenta_bg" => apply_magenta_bg( prompt),
+                "magenta_l" => apply_magenta_l( prompt),
+                "magenta_l_bg" => apply_magenta_l_bg( prompt),
+                "newline" => apply_newline( prompt),
+                "red" => apply_red( prompt),
+                "red_b" => apply_red_b( prompt),
+                "red_bg" => apply_red_bg( prompt),
+                "red_l" => apply_red_l( prompt),
+                "red_l_bg" => apply_red_l_bg( prompt),
+                "reset" => apply_reset( prompt),
+                "reset_blink" => apply_reset_blink( prompt),
+                "reset_bold" => apply_reset_bold( prompt),
+                "reset_dim" => apply_reset_dim( prompt),
+                "reset_hidden" => apply_reset_hidden( prompt),
+                "reset_reverse" => apply_reset_reverse( prompt),
+                "reset_underlined" => apply_reset_underlined( prompt),
+                "reverse" => apply_reverse( prompt),
+                "seq" => apply_seq( prompt),
+                "underlined" => apply_underlined( prompt),
+                "user" => apply_user( prompt),
+                "white" => apply_white( prompt),
+                "white_b" => apply_white_b( prompt),
+                "white_bg" => apply_white_bg( prompt),
+                "yellow" => apply_yellow( prompt),
+                "yellow_bg" => apply_yellow_bg( prompt),
+                "yellow_l" => apply_yellow_l( prompt),
+                "yellow_l_bg" => apply_yellow_l_bg( prompt),
                 _ => (),
             }
         }
     }
-    // pub fn get_prompt(sh: &shell::Shell) -> String
-    pub fn read(sh: &shell::Shell) -> String
+    // pub fn get_prompt( sh: &shell::Shell) -> String
+    pub fn read( sh: &shell::Shell) -> String
     {
         let ps = read_string();
-        let mut prompt = render(sh, &ps);
-        if let Some((w, _h)) = libs::term_size::dimensions() {
-            if get::prompt_len(&prompt) > (w / 2) as i32
-                && !regex::contains(&ps, r#"(?i)\$\{?newline.\}?"#)
+        let mut prompt = render( sh, &ps );
+        if let Some((w, _h ) ) = libs::term_size::dimensions() {
+            if get::prompt_len( &prompt) > (w / 2) as i32
+                && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#)
             {
-                prompt.push_str("\n$ ");
+                prompt.push_str( "\n$ " );
             }
         } else {
-            log!("ERROR: Failed to get term size");
+            log!( "ERROR: Failed to get term size" );
         }
         prompt
     }
@@ -23400,31 +24504,31 @@ pub mod rc
         pub fn read() -> String
         {
             let dir_config = tools::get_config_dir();
-            let rc_file = format!("{}/cicadarc", dir_config);
-            if Path::new(&rc_file).exists() {
+            let rc_file = format!( "{}/cicadarc", dir_config);
+            if Path::new( &rc_file ).exists() {
                 return rc_file;
             }
 
             // fail back to $HOME/.cicadarc
             let home = tools::get_user_home();
-            let rc_file_home = format!("{}/{}", home, ".cicadarc");
-            if Path::new(&rc_file_home).exists() {
+            let rc_file_home = format!( "{}/{}", home, ".cicadarc" );
+            if Path::new( &rc_file_home ).exists() {
                 return rc_file_home;
             }
 
             // use std path if both absent
             rc_file
         }
-        // pub fn load_rc_files(sh: &mut shell::Shell)
-        pub fn run(sh: &mut shell::Shell)
+        // pub fn load_rc_files( sh: &mut shell::Shell)
+        pub fn run( sh: &mut shell::Shell)
         {
             let rc_file = get_rc_file();
-            if !Path::new(&rc_file).exists() {
+            if !Path::new( &rc_file ).exists() {
                 return;
             }
 
             let args = vec!["source".to_string(), rc_file];
-            scripting::run_script(sh, &args);
+            scripting::run_script( sh, &args );
         }
     }
 }
@@ -23595,7 +24699,7 @@ pub mod regex
         }
     }
     
-    pub fn find_matching_parenthesis( s:&str, quotes:&str, open: char, close: char ) -> Option<usize>
+    pub fn find_matching_parenthesis( s:&str, quotes:&str, open:char, close: char ) -> Option<usize>
     {
         let mut chars = s.char_indices().rev();
         let mut level = 0;
@@ -23630,10 +24734,10 @@ pub mod regex
     {
         let haystack = match Regex::new( haystack )
         {
-            Ok(x) => x,
-            Err(e) =>
+            Ok( x ) => x,
+            Err( e ) =>
             {
-                println!("Regex new error: {:?}", e);
+                println!( "Regex new error: {:?}", e );
                 return false;
             }
         };
@@ -23641,19 +24745,19 @@ pub mod regex
         haystack.is_match( needle )
     }
 
-    pub fn find_first_group(ptn: &str, text: &str) -> Option<String>
+    pub fn find_first_group( ptn: &str, text:&str ) -> Option<String>
     {
-        let re = match regex::Regex::new(ptn)
+        let re = match regex::Regex::new( ptn )
         {
-            Ok(x) => x,
-            Err(_) => return None,
+            Ok( x ) => x,
+            Err(_ ) => return None,
         };
 
         match re.captures(text)
         {
-            Some(caps) =>
+            Some(caps ) =>
             {
-                if let Some(x) = caps.get(1) { return Some(x.as_str().to_owned()); }
+                if let Some( x ) = caps.get(1) { return Some(x.as_str().to_owned() ); }
             }
 
             None => { return None; }
@@ -23662,9 +24766,9 @@ pub mod regex
         None
     }
 
-    pub fn replace_all(text: &str, ptn: &str, ptn_to: &str) -> String
+    pub fn replace_all(text: &str, ptn: &str, ptn_to:&str ) -> String
     {
-        let re = regex::Regex::new(ptn).unwrap();
+        let re = regex::Regex::new( ptn ).unwrap();
         let result = re.replace_all(text, ptn_to);
         result.to_string()
     }
@@ -24588,6 +25692,8 @@ pub mod system
         
         pub type Error = Errno;
 
+        pub type gid_t = u32;
+
         pub type intptr_t = isize;
 
         pub type pid_t = i32;
@@ -24606,7 +25712,9 @@ pub mod system
         pub type time_t = i64;
 
         pub type uintptr_t = usize;
-
+        
+        pub type uid_t = u32;
+        
         pub const EDEADLOCK: c_int = 35;
         pub const EISNAM: c_int = 120;
         pub const ENAVAIL: c_int = 119;
@@ -24686,6 +25794,14 @@ pub mod system
         // External libc Unix Functions
         extern "C"
         {
+            pub fn fork() -> pid_t;
+            pub fn getpgid( pid: pid_t) -> pid_t;
+            pub fn getpgrp() -> pid_t;
+            pub fn getpid() -> pid_t;
+            pub fn getppid() -> pid_t;
+            pub fn getuid() -> uid_t;
+            pub fn isatty( fd: c_int) -> c_int;
+            pub fn pipe( fds: *mut c_int) -> c_int;
             pub fn select
             ( 
                 nfds: c_int,
@@ -24700,16 +25816,10 @@ pub mod system
             pub fn sigemptyset( set:*mut SignalSet ) -> c_int;
             pub fn sigismember( set:*const SignalSet, signum:c_int ) -> c_int;
             pub fn sigfillset( set: *mut SignalSet ) -> c_int;
-            pub fn strlen(cs: *const c_char) -> size_t;
+            pub fn strlen(cs: *const c_char ) -> size_t;
             pub fn strerror_r( errnum:c_int, buf: *mut c_char, buflen: size_t ) -> c_int;
             pub fn tcgetpgrp( fd:c_int ) -> pid_t;
             pub fn tcsetpgrp( fd:c_int, pgrp:pid_t ) -> c_int;
-            pub fn getpgid(pid: pid_t) -> pid_t;
-            pub fn getpgrp() -> pid_t;
-            pub fn getpid() -> pid_t;
-            pub fn getppid() -> pid_t;
-            pub fn getuid() -> uid_t;
-            pub fn isatty(fd: c_int) -> c_int;
         }
         // Controls the behavior of a [`SigAction`]
         libc_bitflags!
@@ -24936,7 +26046,7 @@ pub mod system
             pub si_signo: c_int,
             pub si_errno: c_int,
             pub si_code: c_int,
-            #[doc(hidden)]
+            #[doc(hidden )]
             #[deprecated(
                 since = "0.2.54",
                 note = "Please leave a comment on \
@@ -25205,13 +26315,13 @@ pub mod system
         pub struct timespec
         {
             pub tv_sec: time_t,
-            #[cfg(all(gnu_time_bits64, target_endian = "big"))]
+            #[cfg( all(gnu_time_bits64, target_endian = "big" ) )]
             __pad: i32,
-            #[cfg(not(all(target_arch = "x86_64", target_pointer_width = "32")))]
+            #[cfg( not( all(target_arch = "x86_64", target_pointer_width = "32" ) ) )]
             pub tv_nsec: c_long,
-            #[cfg(all(target_arch = "x86_64", target_pointer_width = "32"))]
+            #[cfg( all(target_arch = "x86_64", target_pointer_width = "32" ) )]
             pub tv_nsec: i64,
-            #[cfg(all(gnu_time_bits64, target_endian = "little"))]
+            #[cfg( all(gnu_time_bits64, target_endian = "little" ) )]
             __pad: i32,
         }
 
@@ -26146,6 +27256,24 @@ pub mod system
                 libc::SIG_ERR
             }
         }
+        /// Process identifier
+        #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
+        pub struct Pid( pid_t);
+        /// Represents the successful result of calling `fork`
+        #[derive(Clone, Copy, Debug)]
+        pub enum ForkResult
+        {
+            /// This is the parent process of the fork.
+            Parent
+            {
+                /// The PID of the fork's child process
+                child: Pid
+            },
+            /// This is the child process of the fork.
+            Child,
+        }
+
+        
 
         fn assert_fd_valid( fd: RawFd )
         {
@@ -35024,25 +36152,25 @@ pub mod system
         }
 
         // Unfortunately the actual command is not standardised...
-        #[cfg(any(target_os = "linux", target_os = "android"))]
+        #[cfg( any(target_os = "linux", target_os = "android" ) )]
         static TIOCGWINSZ: c_ulong = 0x5413;
 
-        #[cfg(any(
+        #[cfg( any(
             target_os = "macos",
             target_os = "ios",
             target_os = "dragonfly",
             target_os = "freebsd",
             target_os = "netbsd",
             target_os = "openbsd"
-        ))]
+         ) )]
         static TIOCGWINSZ: c_ulong = 0x40087468;
 
-        #[cfg(target_os = "solaris")]
+        #[cfg(target_os = "solaris" )]
         static TIOCGWINSZ: c_ulong = 0x5468;
 
         extern "C"
         {
-            fn ioctl(fd: c_int, request: c_ulong, ...) -> c_int;
+            fn ioctl( fd: c_int, request: c_ulong, ...) -> c_int;
         }
 
         /// Runs the ioctl command.
@@ -35066,13 +36194,13 @@ pub mod system
         }
         /// Query the current processes's output (`stdout`), input (`stdin`), and error (`stderr`) in
         /// that order, in the attempt to dtermine terminal width.
-        pub fn dimensions() -> Option<(usize, usize)> {
+        pub fn dimensions() -> Option<(usize, usize )> {
             let w = unsafe { get_dimensions_any() };
 
             if w.ws_col == 0 || w.ws_row == 0 {
                 None
             } else {
-                Some((w.ws_col as usize, w.ws_row as usize))
+                Some((w.ws_col as usize, w.ws_row as usize  ) )
             }
         }
     }
@@ -36643,7 +37771,7 @@ pub mod system
             allow_escape: bool,
         }
 
-        pub fn display( ch: char, style: Display ) -> DisplaySequence 
+        pub fn display( ch:char, style: Display ) -> DisplaySequence 
         {
             match ch 
             {
@@ -37100,29 +38228,29 @@ pub mod types
         }
     }
 
-    #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+    #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
     pub struct WaitStatus( i32, i32, i32 );
 
     impl WaitStatus 
     {
-        pub fn from_exited(pid: i32, status: i32) -> Self 
+        pub fn from_exited( pid: i32, status: i32) -> Self 
         {
-            WaitStatus(pid, 0, status)
+            WaitStatus( pid, 0, status )
         }
 
-        pub fn from_signaled(pid: i32, sig: i32) -> Self 
+        pub fn from_signaled( pid: i32, sig: i32) -> Self 
         {
-            WaitStatus(pid, 1, sig)
+            WaitStatus( pid, 1, sig)
         }
 
-        pub fn from_stopped(pid: i32, sig: i32) -> Self 
+        pub fn from_stopped( pid: i32, sig: i32) -> Self 
         {
-            WaitStatus(pid, 2, sig)
+            WaitStatus( pid, 2, sig)
         }
 
-        pub fn from_continuted(pid: i32) -> Self 
+        pub fn from_continuted( pid: i32) -> Self 
         {
-            WaitStatus(pid, 3, 0)
+            WaitStatus( pid, 3, 0)
         }
 
         pub fn from_others() -> Self 
@@ -37140,57 +38268,57 @@ pub mod types
             WaitStatus(0, 0, 0)
         }
 
-        pub fn is_error(&self) -> bool 
+        pub fn is_error( &self ) -> bool 
         {
             self.1 == 255
         }
 
-        pub fn is_others(&self) -> bool 
+        pub fn is_others( &self ) -> bool 
         {
             self.1 == 9
         }
 
-        pub fn is_signaled(&self) -> bool 
+        pub fn is_signaled( &self ) -> bool 
         {
             self.1 == 1
         }
 
-        pub fn get_errno(&self) -> nix::Error 
+        pub fn get_errno( &self ) -> nix::Error 
         {
-            nix::Error::from_raw(self.2)
+            nix::Error::from_raw( self.2)
         }
 
-        pub fn is_exited(&self) -> bool 
+        pub fn is_exited( &self ) -> bool 
         {
             self.0 != 0 && self.1 == 0
         }
 
-        pub fn is_stopped(&self) -> bool 
+        pub fn is_stopped( &self ) -> bool 
         {
             self.1 == 2
         }
 
-        pub fn is_continued(&self) -> bool 
+        pub fn is_continued( &self ) -> bool 
         {
             self.1 == 3
         }
 
-        pub fn get_pid(&self) -> i32 
+        pub fn get_pid( &self ) -> i32 
         {
             self.0
         }
 
-        fn _get_signaled_status(&self) -> i32 
+        fn _get_signaled_status( &self ) -> i32 
         {
             self.2 + 128
         }
 
-        pub fn get_signal(&self) -> i32 
+        pub fn get_signal( &self ) -> i32 
         {
             self.2
         }
 
-        pub fn get_name(&self) -> String 
+        pub fn get_name( &self ) -> String 
         {
             if self.is_exited() {
                 "Exited".to_string()
@@ -37205,11 +38333,11 @@ pub mod types
             } else if self.is_error() {
                 "Error".to_string()
             } else {
-                format!("unknown: {}", self.2)
+                format!( "unknown: {}", self.2)
             }
         }
 
-        pub fn get_status(&self) -> i32 
+        pub fn get_status( &self ) -> i32 
         {
             if self.is_exited() {
                 self.2
@@ -37221,13 +38349,13 @@ pub mod types
 
     impl fmt::Debug for WaitStatus
     {
-        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+        fn fmt( &self, f: &mut fmt::Formatter<'_>) -> fmt::Result
         {
-            let mut formatter = f.debug_struct("WaitStatus");
-            formatter.field("pid", &self.0);
+            let mut formatter = f.debug_struct( "WaitStatus" );
+            formatter.field( "pid", &self.0);
             let name = self.get_name();
-            formatter.field("name", &name);
-            formatter.field("ext", &self.2);
+            formatter.field( "name", &name );
+            formatter.field( "ext", &self.2);
             formatter.finish()
         }
     }
@@ -37241,7 +38369,7 @@ pub mod types
 
     impl LineInfo
     {
-        pub fn new(tokens: Tokens) -> Self
+        pub fn new(tokens: Tokens ) -> Self
         {
             LineInfo
             {
@@ -37270,16 +38398,16 @@ pub mod types
 
     impl Command
     {
-        pub fn from_tokens(tokens: Tokens) -> Result<Command, String>
+        pub fn from_tokens(tokens: Tokens ) -> Result<Command, String>
         {
             let mut tokens_new = tokens.clone();
             let mut redirects_from_type = String::new();
             let mut redirects_from_value = String::new();
-            let mut has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<");
+            let mut has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<" );
 
             let mut len = tokens_new.len();
             while has_redirect_from {
-                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<") {
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<" ) {
                     redirects_from_type = "<".to_string();
                     tokens_new.remove(idx);
                     len -= 1;
@@ -37288,7 +38416,7 @@ pub mod types
                         len -= 1;
                     }
                 }
-                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<<<") {
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<<<" ) {
                     redirects_from_type = "<<<".to_string();
                     tokens_new.remove(idx);
                     len -= 1;
@@ -37298,25 +38426,25 @@ pub mod types
                     }
                 }
 
-                has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<");
+                has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<" );
             }
 
             let tokens_final;
             let redirects_to;
-            match tokens_to_redirections(&tokens_new) {
-                Ok((_tokens, _redirects_to)) => {
+            match tokens_to_redirections( &tokens_new) {
+                Ok((_tokens, _redirects_to ) ) => {
                     tokens_final = _tokens;
                     redirects_to = _redirects_to;
                 }
-                Err(e) => {
-                    return Err(e);
+                Err( e ) => {
+                    return Err( e );
                 }
             }
 
             let redirect_from = if redirects_from_type.is_empty() {
                 None
             } else {
-                Some((redirects_from_type, redirects_from_value))
+                Some(( redirects_from_type, redirects_from_value  ) )
             };
 
             Ok(Command {
@@ -37326,15 +38454,15 @@ pub mod types
             })
         }
 
-        pub fn has_redirect_from(&self) -> bool
+        pub fn has_redirect_from( &self ) -> bool
         { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<" }
 
-        pub fn has_here_string(&self) -> bool
+        pub fn has_here_string( &self ) -> bool
         { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<<<" }
 
-        pub fn is_builtin(&self) -> bool
+        pub fn is_builtin( &self ) -> bool
         {
-            is::builtin(&self.tokens[0].1)
+            is::builtin( &self.tokens[0].1)
         }
     }
 
@@ -37352,23 +38480,23 @@ pub mod types
 
     impl Job 
     {
-        pub fn all_members_stopped(&self) -> bool 
+        pub fn all_members_stopped( &self ) -> bool 
         {
             for pid in &self.pids
             {
-                if !self.pids_stopped.contains(pid) { return false; }
+                if !self.pids_stopped.contains( pid ) { return false; }
             }
 
             true
         }
 
-        pub fn all_members_running(&self) -> bool 
+        pub fn all_members_running( &self ) -> bool 
         {
             self.pids_stopped.is_empty()
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code )]
     #[derive( Clone, Debug, Default )]
     pub struct CommandResult 
     {
@@ -37414,7 +38542,7 @@ pub mod types
         }
     }
 
-    #[allow(dead_code)]
+    #[allow(dead_code )]
     #[derive( Clone, Debug, Default )]
     pub struct CommandOptions
     {
@@ -37424,7 +38552,7 @@ pub mod types
         pub envs: HashMap<String, String>,
     }
 
-    pub fn split_tokens_by_pipes(tokens: &[Token]) -> Vec<Tokens> 
+    pub fn split_tokens_by_pipes(tokens:&[Token] ) -> Vec<Tokens> 
     {
         let mut cmd = Vec::new();
         let mut cmds = Vec::new();
@@ -37438,40 +38566,40 @@ pub mod types
             {
                 if cmd.is_empty() { return Vec::new(); }
 
-                cmds.push(cmd.clone());
+                cmds.push(cmd.clone() );
                 cmd = Vec::new();
             }
 
-            else { cmd.push(token.clone()); }
+            else { cmd.push(token.clone() ); }
         }
         
         if cmd.is_empty() { return Vec::new(); }
 
-        cmds.push(cmd.clone());
+        cmds.push(cmd.clone() );
         cmds
     }
 
-    pub fn drain_env_tokens(tokens: &mut Tokens) -> HashMap<String, String> 
+    pub fn drain_env_tokens(tokens: &mut Tokens ) -> HashMap<String, String> 
     {
         let mut envs: HashMap<String, String> = HashMap::new();
         let mut n = 0;
-        let re = Regex::new(r"^([a-zA-Z0-9_]+)=(.*)$").unwrap();
+        let re = Regex::new( r"^([a-zA-Z0-9_]+)=(.*)$" ).unwrap();
 
-        for (sep, text) in tokens.iter() {
-            if !sep.is_empty() || !::regex::contains(text, r"^([a-zA-Z0-9_]+)=(.*)$") {
+        for ( sep, text) in tokens.iter() {
+            if !sep.is_empty() || !::regex::contains(text, r"^([a-zA-Z0-9_]+)=(.*)$" ) {
                 break;
             }
 
             for cap in re.captures_iter(text) {
                 let name = cap[1].to_string();
-                let value = parsers::parser_line::unquote(&cap[2]);
-                envs.insert(name, value);
+                let value = parsers::parser_line::unquote( &cap[2]);
+                envs.insert( name, value );
             }
 
             n += 1;
         }
         
-        if n > 0 { tokens.drain(0..n); }
+        if n > 0 { tokens.drain(0..n ); }
 
         envs
     }
@@ -37480,10 +38608,10 @@ pub mod types
     {
         pub fn from_line(line: &str, sh: &mut shell::Shell) -> Result<CommandLine, String>
         {
-            let linfo = parsers::parser_line::parse_line(line);
+            let linfo = parsers::parser_line::parse_line(line );
             let mut tokens = linfo.tokens;
-            shell::do_expansion(sh, &mut tokens);
-            let envs = drain_env_tokens(&mut tokens);
+            shell::do_expansion( sh, &mut tokens );
+            let envs = drain_env_tokens( &mut tokens );
 
             let mut background = false;
             let len = tokens.len();
@@ -37498,12 +38626,12 @@ pub mod types
 
             for sub_tokens in split_tokens_by_pipes( &tokens )
             {
-                match Command::from_tokens(sub_tokens) {
-                    Ok(c) => {
-                        commands.push(c);
+                match Command::from_tokens( sub_tokens ) {
+                    Ok( c ) => {
+                        commands.push( c );
                     }
-                    Err(e) => {
-                        return Err(e);
+                    Err( e ) => {
+                        return Err( e );
                     }
                 }
             }
@@ -37520,11 +38648,11 @@ pub mod types
             )
         }
 
-        pub fn is_empty(&self) -> bool { self.commands.is_empty() }
+        pub fn is_empty( &self ) -> bool { self.commands.is_empty() }
 
-        pub fn with_pipeline(&self) -> bool { self.commands.len() > 1 }
+        pub fn with_pipeline( &self ) -> bool { self.commands.len() > 1 }
 
-        pub fn is_single_and_builtin(&self) -> bool { self.commands.len() == 1 && self.commands[0].is_builtin() }
+        pub fn is_single_and_builtin( &self ) -> bool { self.commands.len() == 1 && self.commands[0].is_builtin() }
     }
 }
 
@@ -37802,7 +38930,7 @@ pub mod uuid
         pub enum ErrorKind 
         {
             /// Invalid character in the [`Uuid`] string.
-            ParseChar { character: char, index: usize },
+            ParseChar { character:char, index: usize },
             /// A simple [`Uuid`] didn't contain 32 characters.
             ParseSimpleLength { len: usize },
             /// A byte array didn't contain 16 bytes
@@ -39740,7 +40868,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
         let mut sh = shell::Shell::new();
         let args:Vec<String> = env::args().collect();
 
-        if is::login(&args)
+        if is::login( &args )
         {
             rc::file::run( &mut sh );
             sh.is_login = true;
@@ -39750,39 +40878,39 @@ pub fn main() -> Result<(), error::parse::ParseError>
         highlights::initialize();
         highlights::update( &sh );
         
-        if is::script(&args)
+        if is::script( &args )
         {
-            //log!("run script: {:?} ", &args);
-            let status = scripts::run(&mut sh, &args);
-            ::process::exit(status);
+            //log!( "run script: {:?} ", &args );
+            let status = scripts::run( &mut sh, &args );
+            ::process::exit( status );
         }
         
-        if is::command_string(&args)
+        if is::command_string( &args )
         {
             let line = env::args_to_command_line();
-            now::run_command_line(&mut sh, &line, false, false);
-            ::process::exit(sh.previous_status);
+            now::run_command_line( &mut sh, &line, false, false );
+            ::process::exit( sh.previous_status );
         }
 
         if is::non_tty()
         {
-            now::run_procs_for_non_tty(&mut sh);
+            now::run_procs_for_non_tty( &mut sh );
             return;
         }
 
         let mut rl;
-        match ::system::interface::Interface::new("cicada")
+        match ::system::interface::Interface::new( "cicada" )
         {
             Ok( x ) => rl = x,
             Err( e ) => 
             {
-                println!("cicada: lineread error: {}", e);
+                println!( "cicada: lineread error: {}", e );
                 return;
             }
         }
         
         rl.define_function( "enter-function", ::sync::Arc::new( prompts::EnterFunction ) );
-        rl.bind_sequence( "\r", types::Command::from_str("enter-function") );
+        rl.bind_sequence( "\r", types::Command::from_str( "enter-function" ) );
     }
     /*
     let document = ::parses::load_from_str
@@ -39889,4 +41017,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 39892 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 41020 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
