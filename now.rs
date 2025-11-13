@@ -378,7 +378,7 @@ pub mod parse;
                 &mut $tokens,
                 ::__private::Delimiter::Parenthesis,
                 ::quote!( $( $inner )* ),
-             );
+            );
         };
 
         ( [ $( $inner:tt )* ] $tokens:ident ) =>
@@ -388,7 +388,7 @@ pub mod parse;
                 &mut $tokens,
                 ::__private::Delimiter::Bracket,
                 ::quote!( $( $inner )* ),
-             );
+            );
         };
 
         ( { $( $inner:tt )* } $tokens:ident ) =>
@@ -398,7 +398,7 @@ pub mod parse;
                 &mut $tokens,
                 ::__private::Delimiter::Brace,
                 ::quote!( $( $inner )* ),
-             );
+            );
         };
 
         ( # $tokens:ident ) =>
@@ -652,7 +652,7 @@ pub mod parse;
                 $span,
                 ::__private::Delimiter::Parenthesis,
                 ::quote_spanned!( $span=> $( $inner )* ),
-             );
+            );
         };
 
         ( [ $( $inner:tt )* ] $tokens:ident $span:ident ) =>
@@ -663,7 +663,7 @@ pub mod parse;
                 $span,
                 ::__private::Delimiter::Bracket,
                 ::quote_spanned!( $span=> $( $inner )* ),
-             );
+            );
         };
 
         ( { $( $inner:tt )* } $tokens:ident $span:ident ) =>
@@ -675,7 +675,7 @@ pub mod parse;
                 $span,
                 ::__private::Delimiter::Brace,
                 ::quote_spanned!( $span=> $( $inner )* ),
-             );
+            );
         };
 
         ( # $tokens:ident $span:ident ) =>
@@ -1066,7 +1066,7 @@ pub mod parse;
             generate_to_tokens!( 
                 ( $( $arms )* $( #[cfg $cfg_attr] )* $name::$variant => {} )
                 $tokens $name { $( $next )* }
-             );
+            );
         };
 
         ( 
@@ -1080,7 +1080,7 @@ pub mod parse;
             generate_to_tokens!( 
                 ( $( $arms )* $( #[cfg $cfg_attr] )* $name::$variant( _e ) => _e.to_tokens( $tokens ), )
                 $tokens $name { $( $next )* }
-             );
+            );
         };
 
         ( ( $( $arms:tt )* ) $tokens:ident $name:ident {} ) => {
@@ -1427,7 +1427,10 @@ pub mod parse;
                 fn peek( cursor: ::syntax::buffer::Cursor ) -> ::syntax::__private::bool {
                     if let ::syntax::__private::Some( ( ident, _rest ) ) = cursor.ident() {
                         ident == ::syntax::__private::stringify!( $ident )
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
@@ -1731,7 +1734,10 @@ pub mod parse;
                    
                     if self.capacity() >= other.capacity() {
                         $imp::$method( self, &other )
-                    } else {
+                    }
+            
+            else
+            {
                         $imp::$method( other, &self )
                     }
                 }
@@ -1768,7 +1774,10 @@ pub mod parse;
                    
                     if self.len() >= other.len() {
                         $imp::$method( self.clone(), other )
-                    } else {
+                    }
+            
+            else
+            {
                         $imp::$method( other.clone(), self )
                     }
                 }
@@ -2335,7 +2344,7 @@ pub mod parse;
             pub fn write_str( &self, s:&str ) 
             {
                 let $slf = self;
-                let _ = $field.write_str( s  );
+                let _ = $field.write_str( s );
             }
 
             pub fn write_at( &self, pos: ::system::common::terminal::Cursor, text:&str ) 
@@ -2439,7 +2448,7 @@ pub mod parse;
             pub fn write_str( &mut self, s:&str ) 
             {
                 let $slf = self;
-                let _ = $field.write_str( s  );
+                let _ = $field.write_str( s );
             }
 
             pub fn write_at( &mut self, pos: ::system::common::terminal::Cursor, text:&str )
@@ -2785,17 +2794,19 @@ pub mod parse;
                 Ok( _ ) => {}
                 Err( e ) => println!( "write to stderr failed: {:?}", e )
             }
-         );
+        );
 
         ( $fmt:expr, $( $arg:tt )* ) =>
-        ( 
-            use io::Write;
+        (
             match writeln!( &mut ::io::stderr(), $fmt, $( $arg )* )
             {
                 Ok( _ ) => {}
-                Err( e ) => println!( "write to stderr failed: {:?}", e )
+                Err( e ) =>
+                {
+                    println!( "write to stderr failed: {:?}", e ) 
+                }
             }
-         );
+        );
     }
 
     #[macro_export] macro_rules! define_uuid_macro
@@ -2826,12 +2837,12 @@ pub mod parse;
     #[macro_export] macro_rules! unsafe_transmute_ref
     (
         ($e:expr ) => { unsafe { ::mem::transmute::<&_, &_>($e ) } }
-    );
+   );
 
     #[macro_export] macro_rules! unsafe_transmute
     (
         ($e:expr ) => { unsafe { ::mem::transmute::<_, _>($e ) } }
-    );
+   );
     /*
     extern crate core;
     extern crate std;
@@ -2858,7 +2869,7 @@ pub mod parse;
         #[allow(deprecated )]
         pub const INIT: Self = Lazy(Cell::new(MaybeUninit::uninit() ), ONCE_INIT);
 
-        #[inline( always )] pub fn get<F>( &'static self, f: F) -> &T where
+        #[inline( always )] pub fn get<F>( &'static self, f: F ) -> &T where
         F:FnOnce() -> T
         {
             unsafe
@@ -2951,6 +2962,1292 @@ pub mod parse;
     }
 }
 
+pub mod api
+{
+	/*!
+	*/
+	use ::
+	{
+        database::{ * },
+        io::{ self, Error, Write },
+        os::
+        {
+            fd::{ AsRawFd },
+        },
+        path::{ Path },
+        regex::{ Regex, contains },
+        shell::{ self, Shell },
+        types::{ * },
+		*,
+	};
+	/*
+	use exec;
+	use crate::jobc;
+	*/
+    /*
+	#[derive(Debug, StructOpt)]
+	#[structopt(name = "set", about = "Set shell options (BETA)")]
+	struct OptMainSet
+	{
+		#[structopt(short, help = "exit on error status")]
+		exit_on_error: bool,
+	}*/	
+	pub fn run_alias
+    (
+		sh: &mut shell::Shell,
+		cl: &CommandLine,
+		cmd: &Command,
+		capture: bool,
+	) -> CommandResult 
+	{
+		let mut cr = CommandResult::new();
+		let tokens = cmd.tokens.clone();
+
+		if tokens.len() == 1 
+        {
+			return show_alias_list(sh, cmd, cl, capture);
+		}
+
+		if tokens.len() > 2 
+        {
+			let info = "alias syntax error: usage: alias foo='echo foo'";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let input = &tokens[1].1;
+		let re_single_read = Regex::new(r"^[a-zA-Z0-9_\.-]+$").unwrap();
+
+		if re_single_read.is_match(input) 
+        {
+			return show_single_alias(sh, input, cmd, cl, capture);
+		}
+
+		let re_to_add = Regex::new(r"^([a-zA-Z0-9_\.-]+)=(.*)$").unwrap();
+		for cap in re_to_add.captures_iter(input)
+        {
+			let name = tools::unquote(&cap[1]);
+			let value = if cap[2].starts_with('"') || cap[2].starts_with('\'') {
+				tools::unquote(&cap[2])
+			} else {
+				cap[2].to_string()
+			};
+			sh.add_alias(name.as_str(), value.as_str());
+		}
+
+		CommandResult::new()
+	}
+
+	pub fn run_bg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let tokens = cmd.tokens.clone();
+		let mut cr = CommandResult::new();
+
+		if sh.jobs.is_empty()
+        {
+			let info = "cicada: bg: no job found";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let mut job_id = -1;
+		if tokens.len() == 1 {
+			if let Some((gid, _)) = sh.jobs.iter().next() {
+				job_id = *gid;
+			}
+		}
+
+		if tokens.len() >= 2 {
+			let mut job_str = tokens[1].1.clone();
+			if job_str.starts_with("%") {
+				job_str = job_str.trim_start_matches('%').to_string();
+			}
+
+			match job_str.parse::<i32>()
+            {
+				Ok(n) => job_id = n,
+				Err(_) => {
+					let info = "cicada: bg: invalid job id";
+					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+			}
+		}
+		if job_id == -1 {
+			let info = "cicada: bg: not such job";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let gid: i32;
+
+		{
+			let mut result = sh.get_job_by_id(job_id);
+			if result.is_none() {
+				result = sh.get_job_by_gid(job_id);
+			}
+
+			match result {
+				Some(job) => {
+					unsafe {
+						libc::killpg(job.gid, libc::SIGCONT);
+						gid = job.gid;
+						if job.status == "Running" {
+							let info = format!("cicada: bg: job {} already in background", job.id);
+							print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+							return cr;
+						}
+					}
+
+					let info_cmd = format!("[{}]  {} &", job.id, job.cmd);
+					print_stderr_with_capture(&info_cmd, &mut cr, cl, cmd, capture);
+					cr.status = 0;
+				}
+				None => {
+					let info = "cicada: bg: not such job";
+					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+			}
+		}
+
+		jobc::mark_job_as_running(sh, gid, true);
+		cr
+	}
+
+	pub fn run_cd
+	(
+		sh: &mut shell::Shell,
+		cl: &CommandLine,
+		cmd: &Command,
+		capture: bool,
+	) -> CommandResult 
+	{
+		let tokens = cmd.tokens.clone();
+		let mut cr = CommandResult::new();
+		let args = parsers::line::tokens_to_args(&tokens);
+
+		if args.len() > 2 {
+			let info = "cicada: cd: too many argument";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let str_current_dir = tools::get_current_dir();
+
+		let mut dir_to = if args.len() == 1 {
+			let home = tools::get_user_home();
+			home.to_string()
+		} else {
+			args[1..].join("")
+		};
+
+		if dir_to == "-" {
+			if sh.previous_dir.is_empty() {
+				let info = "no previous dir";
+				print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+			dir_to = sh.previous_dir.clone();
+		} else if !dir_to.starts_with('/') {
+			dir_to = format!("{}/{}", str_current_dir, dir_to);
+		}
+
+		if !Path::new(&dir_to).exists()
+        {
+			let info = format!("cicada: cd: {}: No such file or directory", &args[1]);
+			print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		match Path::new(&dir_to).canonicalize()
+        {
+			Ok(p) => {
+				dir_to = p.as_path().to_string_lossy().to_string();
+			}
+			Err(e) => {
+				let info = format!("cicada: cd: error: {}", e);
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+		}
+
+		match env::set_current_dir(&dir_to)
+        {
+			Ok(_) => {
+				sh.current_dir = dir_to.clone();
+				if str_current_dir != dir_to {
+					sh.previous_dir = str_current_dir.clone();
+					env::set_var("PWD", &sh.current_dir);
+				};
+				cr.status = 0;
+				cr
+			}
+			Err(e) => {
+				let info = format!("cicada: cd: {}", e);
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				cr
+			}
+		}
+	}
+
+	pub fn run_cinfo(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+        /*
+        let mut info = vec![];
+		const VERSION: &str = env!("CARGO_PKG_VERSION");
+        
+		info.push(("version", VERSION));
+
+		let os_name = libs::os_type::get_os_name();
+		info.push(("os-name", &os_name));
+
+		let hfile = history::get_history_file();
+		info.push(("history-file", &hfile));
+
+		let rcf = rcfile::get_rc_file();
+		info.push(("rc-file", &rcf));
+
+		let git_hash = env!("GIT_HASH");
+		if !git_hash.is_empty() {
+			info.push(("git-commit", env!("GIT_HASH")));
+		}
+
+		let git_branch = env!("GIT_BRANCH");
+		let mut branch = String::new();
+		if !git_branch.is_empty() {
+			branch.push_str(git_branch);
+			let git_status = env!("GIT_STATUS");
+			if git_status != "0" {
+				branch.push_str(" (dirty)");
+			}
+			info.push(("git-branch", &branch));
+		}
+
+		info.push(("built-with", env!("BUILD_RUSTC_VERSION")));
+		info.push(("built-at", env!("BUILD_DATE")));
+
+		let mut lines = Vec::new();
+		for (k, v) in &info {
+			lines.push(format!("{: >12}: {}", k, v));
+		}
+		let buffer = lines.join("\n");
+		
+		print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);*/
+		cr
+	}
+
+	pub fn run_exec(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = cmd.tokens.clone();
+		let args = parsers::line::tokens_to_args(&tokens);
+		let len = args.len();
+		if len == 1 {
+			print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let mut _cmd = exec::Command::new(&args[1]);
+		let err = _cmd.args(&args[2..len]).exec();
+		let info = format!("cicada: exec: {}", err);
+		print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+		cr
+	}
+
+	pub fn run_exit( sh:&Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = cmd.tokens.clone();
+		if tokens.len() > 2 {
+			let info = "cicada: exit: too many arguments";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		if tokens.len() == 2 {
+			let _code = &tokens[1].1;
+			match _code.parse::<i32>()
+            {
+				Ok(x) => {
+					process::exit(x);
+				}
+				Err(_) => {
+					let info = format!("cicada: exit: {}: numeric argument required", _code);
+					print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+					process::exit(255);
+				}
+			}
+		}
+
+		for (_i, job) in sh.jobs.iter() {
+			if !job.cmd.starts_with("nohup ") {
+				let mut info = String::new();
+				info.push_str("There are background jobs.");
+				info.push_str("Run `jobs` to see details; `exit 1` to force quit.");
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+		}
+
+		process::exit(0);
+		cr
+	}
+
+	pub fn run_export(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = cmd.tokens.clone();
+
+		let re_name_ptn = Regex::new(r"^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$").unwrap();
+		for (_, text) in tokens.iter() {
+			if text == "export" {
+				continue;
+			}
+
+			if !::is::env(text) {
+				let mut info = String::new();
+				info.push_str("export: invalid command\n");
+				info.push_str("usage: export XXX=YYY");
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+
+			if !re_name_ptn.is_match(text) {
+				let mut info = String::new();
+				info.push_str("export: invalid command\n");
+				info.push_str("usage: export XXX=YYY ZZ=123");
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+
+			for cap in re_name_ptn.captures_iter(text) {
+				let name = cap[1].to_string();
+				let token = parsers::line::unquote(&cap[2]);
+				let value = libs::path::expand_home(&token);
+				env::set_var(name, &value);
+			}
+		}
+		cr
+	}
+
+	pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let tokens = cmd.tokens.clone();
+		let mut cr = CommandResult::new();
+
+		if sh.jobs.is_empty()
+        {
+			let info = "cicada: fg: no job found";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let mut job_id = -1;
+		if tokens.len() == 1 {
+			if let Some((gid, _)) = sh.jobs.iter().next() {
+				job_id = *gid;
+			}
+		}
+
+		if tokens.len() >= 2 {
+			let mut job_str = tokens[1].1.clone();
+			if job_str.starts_with("%") {
+				job_str = job_str.trim_start_matches('%').to_string();
+			}
+
+			match job_str.parse::<i32>()
+            {
+				Ok(n) => job_id = n,
+				Err(_) => {
+					let info = "cicada: fg: invalid job id";
+					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+			}
+		}
+
+		if job_id == -1 {
+			let info = "cicada: not job id found";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let gid: i32;
+		let pid_list: Vec<i32>;
+
+		{
+			let mut result = sh.get_job_by_id(job_id);
+			if result.is_none() {
+				result = sh.get_job_by_gid(job_id);
+			}
+
+			match result {
+				Some(job) => {
+					print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
+					cr.status = 0;
+
+					unsafe {
+						if !shell::give_terminal_to(job.gid) {
+							return CommandResult::error();
+						}
+
+						libc::killpg(job.gid, libc::SIGCONT);
+						pid_list = job.pids.clone();
+						gid = job.gid;
+					}
+				}
+				None => {
+					let info = "cicada: fg: no such job";
+					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+			}
+		}
+
+		unsafe {
+			jobc::mark_job_as_running(sh, gid, false);
+
+			let cr = jobc::wait_fg_job(sh, gid, &pid_list);
+
+			let gid_shell = libc::getpgid(0);
+			if !shell::give_terminal_to(gid_shell) {
+				log!("failed to give term to back to shell : {}", gid_shell);
+			}
+
+			cr
+		}
+	}
+
+	pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let hfile = history::get_history_file();
+		let path = Path::new(hfile.as_str());
+		if !path.exists()
+        {
+			let info = "no history file";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+		let conn = match Connection::open(&hfile)
+        {
+			Ok(x) => x,
+			Err(e) => {
+				let info = format!("history: sqlite error: {:?}", e);
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+		};
+
+		let tokens = cmd.tokens.clone();
+		let args = parsers::line::tokens_to_args(&tokens);
+
+		let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+		let opt = OptMainHistory::from_iter_safe(args);
+		match opt {
+			Ok(opt) => match opt.cmd {
+				Some(SubCommand::Delete { rowid: rowids }) => {
+					let mut _count = 0;
+					for rowid in rowids {
+						let _deleted = delete_history_item(&conn, rowid);
+						if _deleted {
+							_count += 1;
+						}
+					}
+					if _count > 0 {
+						let info = format!("deleted {} items", _count);
+						print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+					}
+					cr
+				}
+				Some(SubCommand::Add {
+					timestamp: ts,
+					input,
+				}) => {
+					let ts = ts.unwrap_or(0 as f64);
+					add_history(sh, ts, &input);
+					cr
+				}
+				None => {
+					let (str_out, str_err) = list_current_history(sh, &conn, &opt);
+					if !str_out.is_empty() {
+						print_stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
+					}
+					if !str_err.is_empty() {
+						print_stderr_with_capture(&str_err, &mut cr, cl, cmd, capture);
+					}
+					cr
+				}
+			},
+			Err(e) => {
+				let info = format!("{}", e);
+				if show_usage {
+					print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+					cr.status = 0;
+				} else {
+					print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+					cr.status = 1;
+				}
+				cr
+			}
+		}
+	}
+
+	pub fn run_jobs(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+
+		if sh.jobs.is_empty() { return cr; }
+        
+		jobc::try_wait_bg_jobs(sh, false, false);
+
+		let mut lines = Vec::new();
+		let jobs = sh.jobs.clone();
+		let no_trim = cmd.tokens.len() >= 2 && cmd.tokens[1].1 == "-f";
+		for (_i, job) in jobs.iter()
+        {
+			let line = jobc::get_job_line(job, !no_trim);
+			lines.push(line);
+		}
+		let buffer = lines.join("\n");
+
+		print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+		cr
+	}
+	
+	pub fn run_minfd(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+
+		let fd = nix::fcntl::open(
+			"/dev/null",
+			nix::fcntl::OFlag::empty(),
+			nix::sys::stat::Mode::empty(),
+		);
+		match fd {
+			Ok(fd) => {
+				let info = format!("{}", fd.as_raw_fd());
+				print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+			}
+			Err(e) => {
+				println_stderr!("cicada: minfd: error: {}", e);
+			}
+		}
+
+		cr
+	}
+
+	pub fn run_read(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = cmd.tokens.clone();
+
+		let name_list: Vec<String>;
+		if tokens.len() <= 1 {
+			name_list = vec!["REPLY".to_string()];
+		} else {
+			name_list = tokens[1..].iter().map(|x| x.1.clone()).collect();
+			if let Some(id_) = _find_invalid_identifier(&name_list) {
+				let info = format!("cicada: read: `{}': not a valid identifier", id_);
+				print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+		}
+
+		let mut buffer = String::new();
+
+		if cmd.has_here_string() {
+			if let Some(redirect_from) = &cmd.redirect_from {
+				buffer.push_str(&redirect_from.1);
+				buffer.push('\n');
+			}
+		} else {
+			match io::stdin().read_line(&mut buffer)
+            {
+				Ok(_) => {}
+				Err(e) => {
+					let info = format!("cicada: read: error in reading stdin: {:?}", e);
+					print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+			}
+		}
+
+		let envs = cl.envs.clone();
+		let value_list = tools::split_into_fields(sh, buffer.trim(), &envs);
+
+		let idx_2rd_last = name_list.len() - 1;
+		for i in 0..idx_2rd_last {
+			let name = name_list.get(i);
+			if name.is_none() {
+				let info = "cicada: read: name index error";
+				print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+				return cr;
+			}
+			let name = name.unwrap();
+
+			let value = value_list.get(i).unwrap_or(&String::new()).clone();
+			sh.set_env(name, &value);
+		}
+
+		let name_last = &name_list[idx_2rd_last];
+		let value_left: String = if value_list.len() > idx_2rd_last {
+			value_list[idx_2rd_last..].join(" ")
+		} else {
+			String::new()
+		};
+		sh.set_env(name_last, &value_left);
+		cr
+	}
+	
+	pub fn run_set(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult 
+	{
+		let mut cr = CommandResult::new();
+		let tokens = &cmd.tokens;
+		let args = parsers::line::tokens_to_args(tokens);
+		let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+
+		let opt = OptMain::from_iter_safe(args);
+		match opt {
+			Ok(opt) => {
+				if opt.exit_on_error {
+					sh.exit_on_error = true;
+					cr
+				} else {
+					let info = "cicada: set: option not implemented";
+					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+					cr
+				}
+			}
+			Err(e) => {
+				let info = format!("{}", e);
+				if show_usage {
+					print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+					cr.status = 0;
+				} else {
+					print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+					cr.status = 1;
+				}
+				cr
+			}
+		}
+	}
+	
+	pub fn run_source(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = &cmd.tokens;
+		let args = parsers::line::tokens_to_args(tokens);
+
+		if args.len() < 2 {
+			let info = "cicada: source: no file specified";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let status = scripts::run_script(sh, &args);
+		cr.status = status;
+		cr
+	}
+
+	pub fn run_ulimit(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = &cmd.tokens;
+		let args = parsers::line::tokens_to_args(tokens);
+
+		if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
+			App::command().print_help().unwrap();
+			println!();
+			return cr;
+		}
+
+		let app = App::parse_from(args);
+
+		if app.H && app.S {
+			println!("cicada: ulimit: Cannot both hard and soft.");
+			cr.status = 1;
+			return cr;
+		}
+
+		let mut all_stdout = String::new();
+		let mut all_stderr = String::new();
+
+		if app.a {
+			report_all(&app, &mut all_stdout, &mut all_stderr);
+		} else if handle_limit(app.n, "open_files", app.H, &mut all_stdout, &mut all_stderr)
+			|| handle_limit(
+				app.c,
+				"core_file_size",
+				app.H,
+				&mut all_stdout,
+				&mut all_stderr,
+			)
+		{
+		} else {
+			report_all(&app, &mut all_stdout, &mut all_stderr);
+		}
+
+		if !all_stdout.is_empty() {
+			print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
+		}
+		if !all_stderr.is_empty() {
+			print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
+		}
+
+		cr
+	}
+
+	pub fn run_unalias(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let tokens = cmd.tokens.clone();
+		let mut cr = CommandResult::new();
+
+		if tokens.len() != 2 {
+			let info = "cicada: unalias: syntax error";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let input = &tokens[1].1;
+		if !sh.remove_alias(input)
+        {
+			let info = format!("cicada: unalias: {}: not found", input);
+			print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+		cr
+	}
+
+	pub fn run_unpath(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let tokens = cmd.tokens.clone();
+		let mut cr = CommandResult::new();
+
+		if tokens.len() != 2 {
+			let info = "cicada: unpath: syntax error";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let input = &tokens[1].1;
+		sh.remove_path(input);
+		cr
+	}
+
+	pub fn run_unset(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let tokens = cmd.tokens.clone();
+		let mut cr = CommandResult::new();
+
+		if tokens.len() != 2 {
+			let info = "cicada: unset: syntax error";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+
+		let input = &tokens[1].1;
+		if !sh.remove_env(input)
+        {
+			let info = format!("cicada: unset: invalid varname: {:?}", input);
+			print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+			return cr;
+		}
+		cr
+	}
+
+	pub fn run_vox(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+	{
+		let mut cr = CommandResult::new();
+		let tokens = cmd.tokens.clone();
+		let args = parsers::line::tokens_to_args(&tokens);
+		let len = args.len();
+		let subcmd = if len > 1 { &args[1] } else { "" };
+
+		if len == 1 || (len == 2 && subcmd == "ls") {
+			match get_all_venvs()
+            {
+				Ok(venvs) => {
+					let info = venvs.join("\n");
+					print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+				Err(reason) => {
+					print_stderr_with_capture(&reason, &mut cr, cl, cmd, capture);
+					return cr;
+				}
+			}
+		}
+
+		if len == 3 && subcmd == "create" {
+			let pybin = match env::var("VIRTUALENV_PYBIN")
+            {
+				Ok(x) => x,
+				Err(_) => "python3".to_string(),
+			};
+			let dir_venv = get_envs_home();
+			let venv_name = args[2].to_string();
+			let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
+			print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
+			let cr_list = execute::run_command_line(sh, &line, false, false);
+			return cr_list[0].clone();
+		}
+
+		if len == 3 && subcmd == "enter" {
+			let _err = enter_env(sh, args[2].as_str());
+			if !_err.is_empty() {
+				print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+			}
+			cr
+		} else if len == 2 && subcmd == "exit" {
+			let _err = exit_env(sh);
+			if !_err.is_empty() {
+				print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+			}
+			cr
+		} else {
+			let info = "cicada: vox: invalid option";
+			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+			cr
+		}
+	}
+
+	fn in_env() -> bool 
+    {
+		env::var("VIRTUAL_ENV").is_ok_and(|x| !x.is_empty())
+	}
+
+	fn get_envs_home() -> String 
+    {
+		env::var("VIRTUALENV_HOME").unwrap_or_default()
+	}
+
+	fn get_all_venvs() -> Result<Vec<String>, String>
+    {
+		let home_envs = get_envs_home();
+		if home_envs.is_empty()
+        {
+			let info = String::from("you need to set VIRTUALENV_HOME to use vox");
+			return Err(info);
+		}
+		if !Path::new(home_envs.as_str()).exists() {
+			match fs::create_dir_all(home_envs.as_str())
+            {
+				Ok(_) => {}
+				Err(e) => {
+					let info = format!("fs create_dir_all failed: {:?}", e);
+					return Err(info);
+				}
+			}
+		}
+
+		let mut venvs = Vec::new();
+		let pdir = home_envs.clone();
+		if let Ok(list) = fs::read_dir(home_envs)
+        {
+			for ent in list.flatten() {
+				let ent_name = ent.file_name();
+				if let Ok(path) = ent_name.into_string() {
+					let full_path = format!("{}/{}/bin/activate", pdir, path);
+					if !Path::new(full_path.as_str()).exists() {
+						continue;
+					}
+					venvs.push(path);
+				}
+			}
+		}
+
+		Ok(venvs)
+	}
+
+	fn enter_env( sh:&Shell, path: &str) -> String 
+    {
+		if in_env() {
+			return "vox: already in env".to_string();
+		}
+
+		let home_envs = get_envs_home();
+		let full_path = format!("{}/{}/bin/activate", home_envs, path);
+		if !Path::new(full_path.as_str()).exists() {
+			return format!("no such env: {}", full_path);
+		}
+
+		let path_env = format!("{}/{}", home_envs, path);
+		env::set_var("VIRTUAL_ENV", &path_env);
+		let path_new = String::from("${VIRTUAL_ENV}/bin:$PATH");
+		let mut tokens: types::Tokens = Vec::new();
+		tokens.push((String::new(), path_new));
+		shell::expand_env(sh, &mut tokens);
+		env::set_var("PATH", &tokens[0].1);
+		String::new()
+	}
+
+	fn exit_env(sh: &Shell) -> String 
+    {
+		if !in_env() {
+			return String::from("vox: not in an env");
+		}
+
+		let env_path = match env::var("PATH")
+        {
+			Ok(x) => x,
+			Err(_) => {
+				return String::from("vox: cannot read PATH env");
+			}
+		};
+
+		let mut _tokens: Vec<&str> = env_path.split(':').collect();
+		let mut path_virtual_env = String::from("${VIRTUAL_ENV}/bin");
+		// shell::extend_env(sh, &mut path_virtual_env);
+		let mut tokens: types::Tokens = Vec::new();
+		tokens.push((String::new(), path_virtual_env));
+		shell::expand_env(sh, &mut tokens);
+		path_virtual_env = tokens[0].1.clone();
+		_tokens
+			.iter()
+			.position(|&n| n == path_virtual_env)
+			.map(|e| _tokens.remove(e));
+		let env_path_new = _tokens.join(":");
+		env::set_var("PATH", &env_path_new);
+		env::set_var("VIRTUAL_ENV", "");
+
+		String::new()
+	}
+	
+	fn set_limit(limit_name: &str, value: u64, for_hard: bool) -> String
+	{
+
+		unsafe
+        {
+            let limit_id = match limit_name 
+            {
+                "open_files" => libc::RLIMIT_NOFILE,
+                "core_file_size" => libc::RLIMIT_CORE,
+                _ => return String::from("invalid limit name"),
+            };
+
+            let mut rlp = libc::rlimit 
+            {
+                rlim_cur: 0,
+                rlim_max: 0,
+            };
+                        
+            if libc::getrlimit(limit_id, &mut rlp) != 0 
+            {
+                return format!
+                (
+                    "cicada: ulimit: error getting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+            
+            if for_hard 
+            {
+                #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+                {
+                    rlp.rlim_max = value as u32;
+                }
+                #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+                {
+                    rlp.rlim_max = value;
+                }
+            }
+
+            else 
+            {
+                #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+                {
+                    rlp.rlim_cur = value as u32;
+                }
+                #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+                {
+                    rlp.rlim_cur = value;
+                }
+            }
+
+            if setrlimit(limit_id, &rlp) != 0
+            {
+				return format!(
+					"cicada: ulimit: error setting limit: {}",
+					Error::last_os_error()
+				);
+			}
+
+            String::new()
+        }
+
+		
+	}
+
+	fn get_limit(limit_name: &str, single_print: bool, for_hard: bool) -> (String, String)
+    {
+		let (desc, limit_id) = match limit_name {
+			"open_files" => ("open files", libc::RLIMIT_NOFILE),
+			"core_file_size" => ("core file size", libc::RLIMIT_CORE),
+			_ => {
+				return (
+					String::new(),
+					String::from("ulimit: error: invalid limit name"),
+				)
+			}
+		};
+
+		let mut rlp = libc::rlimit {
+			rlim_cur: 0,
+			rlim_max: 0,
+		};
+
+		let mut result_stdout = String::new();
+		let mut result_stderr = String::new();
+
+		unsafe {
+			if libc::getrlimit(limit_id, &mut rlp) != 0 {
+				result_stderr.push_str(&format!("error getting limit: {}", Error::last_os_error()));
+				return (result_stdout, result_stderr);
+			}
+
+			let to_print = if for_hard { rlp.rlim_max } else { rlp.rlim_cur };
+
+			let info = if to_print == libc::RLIM_INFINITY {
+				if single_print {
+					"unlimited\n".to_string()
+				} else {
+					format!("{}\t\tunlimited\n", desc)
+				}
+			} else if single_print {
+				format!("{}\n", to_print)
+			} else {
+				format!("{}\t\t{}\n", desc, to_print)
+			};
+
+			result_stdout.push_str(&info);
+		}
+
+		(result_stdout, result_stderr)
+	}
+
+	fn report_all(app: &App, all_stdout: &mut String, all_stderr: &mut String)
+    {
+		for limit_name in &["open_files", "core_file_size"]
+        {
+			let (out, err) = get_limit(limit_name, false, app.H);
+			all_stdout.push_str(&out);
+			all_stderr.push_str(&err);
+		}
+	}
+
+	fn handle_limit
+    (
+		limit_option: Option<Option<u64>>,
+		limit_name: &str,
+		for_hard: bool,
+		all_stdout: &mut String,
+		all_stderr: &mut String,
+	) -> bool
+    {
+		match limit_option 
+        {
+			None => false,
+			Some(None) => {
+				let (out, err) = get_limit(limit_name, true, for_hard);
+				all_stdout.push_str(&out);
+				all_stderr.push_str(&err);
+				true
+			}
+			Some(Some(value)) => {
+				let err = set_limit(limit_name, value, for_hard);
+				if !err.is_empty() {
+					all_stderr.push_str(&err);
+				}
+				true
+			}
+		}
+	}
+	
+	pub fn add_history( sh:&Shell, ts:f64, input:&str )
+	{
+        /*
+		let (tsb, tse) = (ts, ts + 1.0);
+		history::add_raw(sh, input, 0, tsb, tse); */
+	}
+
+	pub fn list_current_history( sh:&Shell, conn:&Connection, opt:&OptMainHistory ) -> (String, String)
+    {
+		let mut result_stderr = String::new();
+		let result_stdout = String::new();
+        ( result_stdout, result_stderr )
+        /*
+		let history_table = history::get_history_table();
+		let mut sql = format!(
+			"SELECT ROWID, inp, tsb FROM {} WHERE ROWID > 0",
+			history_table
+		);
+		if !opt.pattern.is_empty() {
+			sql = format!("{} AND inp LIKE '%{}%'", sql, opt.pattern)
+		}
+		if opt.session {
+			sql = format!("{} AND sessionid = '{}'", sql, sh.session_id)
+		}
+		if opt.pwd {
+			sql = format!("{} AND info like '%dir:{}|%'", sql, sh.current_dir)
+		}
+
+		if opt.asc {
+			sql = format!("{} ORDER BY tsb", sql);
+		} else {
+			sql = format!("{} order by tsb desc", sql);
+		};
+		sql = format!("{} limit {} ", sql, opt.limit);
+
+		let mut stmt = match conn.prepare(&sql)
+        {
+			Ok(x) => x,
+			Err(e) => {
+				let info = format!("history: prepare select error: {:?}", e);
+				result_stderr.push_str(&info);
+				return (result_stdout, result_stderr);
+			}
+		};
+
+		let mut rows = match stmt.query([])
+        {
+			Ok(x) => x,
+			Err(e) => {
+				let info = format!("history: query error: {:?}", e);
+				result_stderr.push_str(&info);
+				return (result_stdout, result_stderr);
+			}
+		};
+
+		let mut lines = Vec::new();
+		loop {
+			match rows.next()
+            {
+				Ok(_rows) => {
+					if let Some(row) = _rows {
+						let row_id: i32 = match row.get(0) {
+							Ok(x) => x,
+							Err(e) => {
+								let info = format!("history: error: {:?}", e);
+								result_stderr.push_str(&info);
+								return (result_stdout, result_stderr);
+							}
+						};
+						let inp: String = match row.get(1) {
+							Ok(x) => x,
+							Err(e) => {
+								let info = format!("history: error: {:?}", e);
+								result_stderr.push_str(&info);
+								return (result_stdout, result_stderr);
+							}
+						};
+
+						if opt.no_id {
+							lines.push(inp.to_string());
+						} else if opt.only_id {
+							lines.push(row_id.to_string());
+						} else if opt.show_date {
+							let tsb: f64 = match row.get(2) {
+								Ok(x) => x,
+								Err(e) => {
+									let info = format!("history: error: {:?}", e);
+									result_stderr.push_str(&info);
+									return (result_stdout, result_stderr);
+								}
+							};
+							let dt = ctime::DateTime::from_timestamp(tsb);
+							lines.push(format!("{}: {}: {}", row_id, dt, inp));
+						} else {
+							lines.push(format!("{}: {}", row_id, inp));
+						}
+					} else {
+						break;
+					}
+				}
+				Err(e) => {
+					let info = format!("history: rows next error: {:?}", e);
+					result_stderr.push_str(&info);
+					return (result_stdout, result_stderr);
+				}
+			}
+		}
+
+		if !opt.asc {
+			lines.reverse();
+		}
+
+		let buffer = lines.join("\n");
+
+		(buffer, result_stderr) */
+	}
+
+	pub fn delete_history_item(conn: &Connection, rowid: usize) -> bool
+    {
+        /*
+		let history_table = history::get_history_table();
+		let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
+		match conn.execute(&sql, [])
+        {
+			Ok(_) => true,
+			Err(e) => {
+				log!("history: error when delete: {:?}", e);
+				false
+			}
+		} */
+        true
+	}
+	
+	pub fn show_alias_list
+    (
+		sh: &shell::Shell,
+		cmd: &Command,
+		cl: &CommandLine,
+		capture: bool,
+	) -> CommandResult
+    {
+		let mut lines = Vec::new();
+		
+        for (name, value) in sh.get_alias_list()
+        {
+			let line = format!("alias {}='{}'", name, value);
+			lines.push(line);
+		}
+
+		let buffer = lines.join("\n");
+		let mut cr = CommandResult::new();
+		emit::stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+		cr
+	}
+
+	pub fn show_single_alias
+    (
+		sh: &shell::Shell,
+		name_to_find: &str,
+		cmd: &Command,
+		cl: &CommandLine,
+		capture: bool,
+	) -> CommandResult
+    {
+		let mut cr = CommandResult::new();
+
+		if let Some(content) = sh.get_alias_content(name_to_find)
+        {
+			let info = format!("alias {}='{}'", name_to_find, content);
+			print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+		}
+        
+        else
+        {
+			let info = format!("cicada: alias: {}: not found", name_to_find);
+			print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+		}
+
+		cr
+	}
+}
+
 pub mod arch
 {
     pub use std::arch::{ * };
@@ -3039,7 +4336,10 @@ pub mod arrays
         {
             if index >= self.inner.vec.len() {
                 Err( OverError::ArrOutOfBounds( index ) )
-            } else {
+            }
+            
+            else
+            {
                 Ok( self.inner.vec[index].clone() )
             }
         }
@@ -3902,7 +5202,10 @@ pub mod char
                         let line = self.line();
                         self.set_line( line + 1 );
                         self.set_col( 1 );
-                    } else {
+                    }
+            
+            else
+            {
                         let col = self.col();
                         self.set_col( col + 1 );
                     }
@@ -4124,7 +5427,7 @@ pub mod char
                     return Err
                     ( 
                         io::Error::new( io::ErrorKind::InvalidData, "invalid utf-8 input received" )
-                     );
+                    );
                 }
 
                 let valid = e.valid_up_to();
@@ -4156,9 +5459,157 @@ pub mod convert
     pub use std::convert::{ * };
 }
 
+pub mod database
+{
+    /*!
+    */
+    use ::
+    {
+        *,
+    };
+    /*
+    */    
+    #[derive( Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub struct Database
+    {
+    }
+
+    impl Database
+    {
+        pub const fn new() -> Self
+        {
+            Self
+            {
+                
+            }
+        }
+    }
+    
+    #[derive( Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub struct Connection
+    {
+        db:Option<Database>,
+    }
+
+    impl Connection
+    {
+        pub const fn new() -> Self
+        {
+            Self
+            {
+                db:None,
+            }
+        }
+    }
+}
+
 pub mod default
 {
     pub use std::default::{ * };
+}
+
+pub mod emit
+{
+    /*!
+    */
+    use ::
+    {
+        fs::{ File },
+        io::{ Read, Write },
+        os::fd::FromRawFd,
+        types::{ * },
+        *,
+    };
+    /*
+    */
+    // pub fn print_stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        unsafe
+        {
+            
+            let fd = get::dupped_stdout_fd(cmd, cl);
+            if fd == -1 {
+                return;
+            }
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            match f.write_all(info.as_bytes()) {
+                Ok(_) => {}
+                Err(e) => {
+                    println_stderr!("write_all: error: {}", e);
+                }
+            }
+            if !info.is_empty() {
+                match f.write_all(b"\n") {
+                    Ok(_) => {}
+                    Err(e) => {
+                        println_stderr!("write_all: error: {}", e);
+                    }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        unsafe
+        {
+            let fd = get::dupped_stderr_fd(cmd, cl);
+            
+            if fd == -1 { return; }
+
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            
+            match f.write_all(info.as_bytes())
+            {
+                Ok(_) => (),
+                Err(e) => {
+                    println_stderr!("write_all: error: {}", e);
+                }
+            }
+
+            if !info.is_empty()
+            {
+                match f.write_all(b"\n")
+                {
+                    Ok(_) => (),
+                    Err(e) => { println_stderr!("write_all: error: {}", e); }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr_with_capture
+    pub fn stderr_with_capture
+    (
+        info: &str,
+        cr: &mut CommandResult,
+        cl: &CommandLine,
+        cmd: &Command,
+        capture: bool
+    )
+    {
+        cr.status = 1;
+
+        if capture { cr.stderr = info.to_string(); }
+        else { stderr(info, cmd, cl); }
+    }
+    // pub fn print_stdout_with_capture
+    pub fn stdout_with_capture
+    (
+        info: &str,
+        cr: &mut CommandResult,
+        cl: &CommandLine,
+        cmd: &Command,
+        capture: bool
+    )
+    {
+        cr.status = 0;
+        if capture { cr.stdout = info.to_string(); }
+        else { stdout(info, cmd, cl); }
+    }
+    
 }
 
 pub mod env
@@ -4200,6 +5651,22 @@ pub mod env
         
         let paths = paths.join( ":" );
         set_var( "PATH", paths );
+    }
+    // pub fn env_args_to_command_line() -> String
+    pub fn args_to_command_line() -> String
+    {
+        let mut result = String::new();
+        let env_args = env::args();
+        if env_args.len() <= 1 {
+            return result;
+        }
+        for (i, arg) in env_args.enumerate() {
+            if i == 0 || arg == "-c" {
+                continue;
+            }
+            result.push_str(arg.as_str());
+        }
+        result
     }
 }
 
@@ -4632,7 +6099,7 @@ pub mod error
                     }
                 }
 
-                pub fn with_description<F, T>(err: Errno, callback: F) -> T where
+                pub fn with_description<F, T>(err: Errno, callback: F ) -> T where
                 F:FnOnce( ::result::Result<&str, Errno> ) -> T,
                 {
                     let mut buf = [0u8; 1024];
@@ -4763,7 +6230,7 @@ pub mod error
         }
 
         impl From<Errno> for i32 {
-            fn from(e: Errno) -> Self {
+            fn from(e: Errno ) -> Self {
                 e.0
             }
         }
@@ -4777,7 +6244,7 @@ pub mod error
         }
         
         impl From<Errno> for io::Error {
-            fn from(errno: Errno) -> Self {
+            fn from(errno: Errno ) -> Self {
                 io::Error::from_raw_os_error(errno.0)
             }
         }
@@ -4860,7 +6327,7 @@ pub mod expand
                 let _basename = path::basename(item);
                 let show_hidden = _basename.starts_with( ".*" );
 
-                match glob::glob(item)
+                match glob(item)
                 {
                     Ok( paths ) =>
                     {
@@ -4883,7 +6350,10 @@ pub mod expand
                                     is_empty = false;
                                 }
 
-                                Err( e ) => { log!( "glob error: {:?}", e ); }
+                                Err( e ) =>
+                                {
+                                    // log!( "glob error: {:?}", e );
+                                }
                             }
                         }
 
@@ -4909,7 +6379,10 @@ pub mod expand
             
             for (j, token ) in result.iter().enumerate()
             {
-                let sep = if token.contains(' ') { "\"" } else { "" };
+                let sep = if token.contains(' ') { "\"" }
+            
+            else
+            { "" };
                 tokens.insert(*i + j, ( sep.to_string(), token.clone() ) );
             }
         }
@@ -4929,6 +6402,7 @@ pub mod get
         {
             api::{ c_char, size_t },
         },
+        types::{ * },
         *,
     };
     /*
@@ -5008,7 +6482,10 @@ pub mod get
     {
         if let Ok( x ) = env::var( "XDG_CONFIG_HOME" ) {
             format!( "{}/cicada", x)
-        } else {
+        }
+            
+            else
+            {
             let home = user_home();
             format!( "{}/.config/cicada", home )
         }
@@ -5086,6 +6563,41 @@ pub mod get
         }
         count
     }
+    // fn _get_dupped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    pub fn dupped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    {
+        if cl.with_pipeline() {
+            return 2;
+        }
+
+        let (_fd_out, _fd_err) = _get_std_fds(&cmd.redirects_to);
+        if let Some(fd) = _fd_out {
+            unsafe {
+                process::close(fd);
+            }
+        }
+
+        if let Some(fd) = _fd_err {
+            fd
+        } else {
+            let fd = unsafe { libc::dup(2) };
+            if fd == -1 {
+                let eno = error::no::errno();
+                //println_stderr!("cicada: dup: {}", eno);
+            }
+            fd
+        }
+    }
+    //fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
+	fn invalid_identifier(name_list: &Vec<String>) -> Option<String>
+	{
+		for id_ in name_list
+        {
+			if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") { return Some(id_.to_string()); }
+		}
+
+		None
+	}
 }
 
 pub mod f32
@@ -5152,8 +6664,8 @@ pub mod fmt
 
         for ch in s.chars() 
         {
-            if let Some( s ) = get_char_map( ch  ) { string.push_str( s  ); }            
-            else { string.push( ch  ); }
+            if let Some( s ) = get_char_map( ch  ) { string.push_str( s ); }            
+            else { string.push( ch ); }
         }
 
         string
@@ -5171,7 +6683,10 @@ pub mod fmt
 
             if *self.denom() == BigInt::one() {
                 format!( "{}.0", frac_fmt )
-            } else {
+            }
+            
+            else
+            {
                 frac_fmt
             }
         }
@@ -5182,7 +6697,10 @@ pub mod fmt
         fn format( &self, _full: bool, _indent_amt: usize ) -> String {
             if let Some( s ) = get_char_map( *self ) {
                 format!( "\'{}\'", s )
-            } else {
+            }
+            
+            else
+            {
                 format!( "\'{}\'", *self )
             }
         }
@@ -5207,7 +6725,10 @@ pub mod fmt
                 {
                     if *inner {
                         String::from( "true" )
-                    } else {
+                    }
+            
+            else
+            {
                         String::from( "false" )
                     }
                 }
@@ -5232,7 +6753,10 @@ pub mod fmt
                 0 => {
                     if full {
                         String::from( "[]" )
-                    } else {
+                    }
+            
+            else
+            {
                         String::new()
                     }
                 }
@@ -5240,14 +6764,20 @@ pub mod fmt
                     let f = self.get( 0 ).unwrap().format( true, indent_amt );
                     if full {
                         format!( "[{}]", f )
-                    } else {
+                    }
+            
+            else
+            {
                         f
                     }
                 }
                 _ => {
                     let mut s = if full {
                         String::from( "[\n" )
-                    } else {
+                    }
+            
+            else
+            {
                         String::new()
                     };
 
@@ -5262,7 +6792,10 @@ pub mod fmt
                     if full {
                         let actual_indent_amt = if indent_amt == 0 {
                             0
-                        } else {
+                        }
+            
+            else
+            {
                             indent_amt - INDENT_STEP
                         };
                         s.push_str( &format!( "{}]", indent( actual_indent_amt ) ) );
@@ -5280,7 +6813,10 @@ pub mod fmt
                 0 => {
                     if full {
                         String::from( "()" )
-                    } else {
+                    }
+            
+            else
+            {
                         String::new()
                     }
                 }
@@ -5288,14 +6824,20 @@ pub mod fmt
                     let f = self.get( 0 ).unwrap().format( true, indent_amt );
                     if full {
                         format!( "( {} )", f )
-                    } else {
+                    }
+            
+            else
+            {
                         f
                     }
                 }
                 _ => {
                     let mut s = if full {
                         String::from( "( \n" )
-                    } else {
+                    }
+            
+            else
+            {
                         String::new()
                     };
 
@@ -5322,13 +6864,22 @@ pub mod fmt
             if self.is_empty() && !self.has_parent() {
                 if full {
                     String::from( "{}" )
-                } else {
+                }
+            
+            else
+            {
                     String::new()
                 }
-            } else {
+            }
+            
+            else
+            {
                 let mut s = if full {
                     String::from( "{\n" )
-                } else {
+                }
+            
+            else
+            {
                     String::new()
                 };
 
@@ -5854,10 +7405,7 @@ pub mod is
         else { regex::contains( &s, r#"^[a-zA-Z0-9_]$"#) }
     }
 
-    pub fn tty( fd:system::api::c_int ) -> bool
-    {
-        system::api::isatty( fd )
-    }
+    pub fn tty( fd:system::api::c_int ) -> bool { system::api::isatty( fd ) != 0 }
 }
 
 pub mod isize
@@ -5890,7 +7438,10 @@ pub mod iter
                 Some( t ) => {
                     if f( t ) {
                         *iter = clone;
-                    } else {
+                    }
+            
+            else
+            {
                         break;
                     }
                 }
@@ -5913,7 +7464,7 @@ pub mod marker
     pub const MARKER: ProcMacroAutoTraits = ProcMacroAutoTraits( PhantomData );
     /// Zero sized marker with the correct set of autotrait impls we want all proc macro types to have.
     #[derive( Copy, Clone, PartialEq, Eq )]
-    pub struct ProcMacroAutoTraits( pub PhantomData<Rc<()>>  );
+    pub struct ProcMacroAutoTraits( pub PhantomData<Rc<()>> );
     impl UnwindSafe for ProcMacroAutoTraits {}
     impl RefUnwindSafe for ProcMacroAutoTraits {}
 }
@@ -6073,11 +7624,11 @@ pub mod num
             {
                 ( $m:ident !! ) => ( 
                     $m! { }
-                 );
+                );
                 ( $m:ident !! $h:ident, $( $t:ident, )* ) => ( 
                     $m! { $h $( $t )* }
                     for_each_tuple_! { $m !! $( $t, )* }
-                 );
+                );
             }
             macro_rules! for_each_tuple 
             {
@@ -6098,7 +7649,7 @@ pub mod num
                             ( $( $name::max_value(), )* )
                         }
                     }
-                 );
+                );
             }
             for_each_tuple!( bounded_tuple );
             bounded_impl!( f64, f64::MIN, f64::MAX );
@@ -6166,7 +7717,10 @@ pub mod num
                         let max = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() <= size_of::<$DstT>() || ( min <= *self && *self <= max ) {
                             Some( *self as $DstT )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
                     }
@@ -6179,7 +7733,10 @@ pub mod num
                         let max = $DstT::MAX as $SrcT;
                         if 0 <= *self && ( size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= max ) {
                             Some( *self as $DstT )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
                     }
@@ -6230,7 +7787,10 @@ pub mod num
                         let max = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() < size_of::<$DstT>() || *self <= max {
                             Some( *self as $DstT )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
                     }
@@ -6243,7 +7803,10 @@ pub mod num
                         let max = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= max {
                             Some( *self as $DstT )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
                     }
@@ -6365,7 +7928,10 @@ pub mod num
                             if *self > MIN_M1 && *self < MAX_P1 {
                                 return Some( float_to_int_unchecked!( *self => $i ) );
                             }
-                        } else {
+                        }
+            
+            else
+            {
                            
                            
                             const MIN: $f = $i::MIN as $f;
@@ -6392,7 +7958,10 @@ pub mod num
                             if *self > -1.0 && *self < MAX_P1 {
                                 return Some( float_to_int_unchecked!( *self => $u ) );
                             }
-                        } else {
+                        }
+            
+            else
+            {
                            
                            
                            
@@ -6694,7 +8263,7 @@ pub mod num
             }
             macro_rules! impl_from_primitive_wrapping 
             {
-                ( $( fn $method:ident ( $i:ident  ); )* ) => {$( 
+                ( $( fn $method:ident ( $i:ident ); )* ) => {$( 
                     #[inline] fn $method( n: $i ) -> Option<Self> {
                         T::$method( n ).map( Wrapping )
                     }
@@ -6897,7 +8466,10 @@ pub mod num
                         self
                     } else if self < Self::zero() {
                         self - f - Self::one()
-                    } else {
+                    }
+            
+            else
+            {
                         self - f
                     }
                 }
@@ -6908,7 +8480,10 @@ pub mod num
                         self
                     } else if self > Self::zero() {
                         self - f + Self::one()
-                    } else {
+                    }
+            
+            else
+            {
                         self - f
                     }
                 }
@@ -6922,12 +8497,18 @@ pub mod num
                     } else if self > Self::zero() {
                         if f < h {
                             self - f
-                        } else {
+                        }
+            
+            else
+            {
                             self - f + one
                         }
                     } else if -f < h {
                         self - f
-                    } else {
+                    }
+            
+            else
+            {
                         self - f - one
                     }
                 }
@@ -6936,7 +8517,10 @@ pub mod num
                     let f = self.fract();
                     if f.is_nan() {
                         self
-                    } else {
+                    }
+            
+            else
+            {
                         self - f
                     }
                 }
@@ -6944,7 +8528,10 @@ pub mod num
                 #[inline] fn fract( self ) -> Self {
                     if self.is_zero() {
                         Self::zero()
-                    } else {
+                    }
+            
+            else
+            {
                         self % Self::one()
                     }
                 }
@@ -6964,7 +8551,10 @@ pub mod num
                         Self::nan()
                     } else if self.is_sign_negative() {
                         -Self::one()
-                    } else {
+                    }
+            
+            else
+            {
                         Self::one()
                     }
                 }
@@ -6987,7 +8577,10 @@ pub mod num
                     }
                     if self < other {
                         self
-                    } else {
+                    }
+            
+            else
+            {
                         other
                     }
                 }
@@ -7001,7 +8594,10 @@ pub mod num
                     }
                     if self > other {
                         self
-                    } else {
+                    }
+            
+            else
+            {
                         other
                     }
                 }
@@ -7266,7 +8862,10 @@ pub mod num
                 fn copysign( self, sign: Self ) -> Self {
                     if self.is_sign_negative() == sign.is_sign_negative() {
                         self
-                    } else {
+                    }
+            
+            else
+            {
                         self.neg()
                     }
                 }
@@ -7353,11 +8952,17 @@ pub mod num
             fn integer_decode_f32( f: f32 ) -> ( u64, i16, i8 )
             {
                 let bits: u32 = f.to_bits();
-                let sign: i8 = if bits >> 31 == 0 { 1 } else { -1 };
+                let sign: i8 = if bits >> 31 == 0 { 1 }
+            
+            else
+            { -1 };
                 let mut exponent: i16 = (( bits >> 23 ) & 0xff ) as i16;
                 let mantissa = if exponent == 0 {
                     ( bits & 0x7fffff ) << 1
-                } else {
+                }
+            
+            else
+            {
                     ( bits & 0x7fffff ) | 0x800000
                 };
                
@@ -7367,11 +8972,17 @@ pub mod num
             fn integer_decode_f64( f: f64 ) -> ( u64, i16, i8 )
             {
                 let bits: u64 = f.to_bits();
-                let sign: i8 = if bits >> 63 == 0 { 1 } else { -1 };
+                let sign: i8 = if bits >> 63 == 0 { 1 }
+            
+            else
+            { -1 };
                 let mut exponent: i16 = (( bits >> 52 ) & 0x7ff ) as i16;
                 let mantissa = if exponent == 0 {
                     ( bits & 0xfffffffffffff ) << 1
-                } else {
+                }
+            
+            else
+            {
                     ( bits & 0xfffffffffffff ) | 0x10000000000000
                 };
                
@@ -7405,7 +9016,7 @@ pub mod num
                     }
                     float_const_impl! { @float f32, $( $constant, )+ }
                     float_const_impl! { @float f64, $( $constant, )+ }
-                 );
+                );
                 ( @float $T:ident, $( $constant:ident, )+ ) => ( 
                     impl FloatConst for $T {
                         constant! {
@@ -7415,7 +9026,7 @@ pub mod num
                             LOG2_10() -> 3.32192809488736234787031942948939018;
                         }
                     }
-                 );
+                );
             }
             float_const_impl!
             {
@@ -9317,11 +10928,17 @@ pub mod num
                     impl Signed for $t {
                         #[inline]
                         fn abs( &self ) -> $t {
-                            if self.is_negative() { -*self } else { *self }
+                            if self.is_negative() { -*self }
+            
+            else
+            { *self }
                         }
                         #[inline]
                         fn abs_sub( &self, other:&$t ) -> $t {
-                            if *self <= *other { 0 } else { *self - *other }
+                            if *self <= *other { 0 }
+            
+            else
+            { *self - *other }
                         }
                         #[inline]
                         fn signum( &self ) -> $t {
@@ -9374,7 +10991,10 @@ pub mod num
                         fn abs_sub( &self, other:&$t ) -> $t {
                             if *self <= *other {
                                 0.
-                            } else {
+                            }
+            
+            else
+            {
                                 *self - *other
                             }
                         }
@@ -9550,7 +11170,10 @@ pub mod num
                        
                         if radix == 10 {
                             return src.parse().map_err( |_| PFE {
-                                kind: if src.is_empty() { Empty } else { Invalid },
+                                kind: if src.is_empty() { Empty }
+            
+            else
+            { Invalid },
                             } );
                         }
                        
@@ -9579,7 +11202,10 @@ pub mod num
                         };
 
                        
-                        let mut sig = if is_positive { 0.0 } else { -0.0 };
+                        let mut sig = if is_positive { 0.0 }
+            
+            else
+            { -0.0 };
                        
                         let mut prev_sig = sig;
                         let mut cs = src.chars().enumerate();
@@ -9596,7 +11222,10 @@ pub mod num
                                    
                                     if is_positive {
                                         sig += ( digit as isize ) as $t;
-                                    } else {
+                                    }
+            
+            else
+            {
                                         sig -= ( digit as isize ) as $t;
                                     }
                                    
@@ -9640,7 +11269,10 @@ pub mod num
                                        
                                         sig = if is_positive {
                                             sig + ( digit as $t ) * power
-                                        } else {
+                                        }
+            
+            else
+            {
                                             sig - ( digit as $t ) * power
                                         };
                                        
@@ -9709,7 +11341,10 @@ pub mod num
                 min
             } else if input > max {
                 max
-            } else {
+            }
+            
+            else
+            {
                 input
             }
         }
@@ -9719,7 +11354,10 @@ pub mod num
             debug_assert!( min == min, "min must not be NAN" );
             if input < min {
                 min
-            } else {
+            }
+            
+            else
+            {
                 input
             }
         }
@@ -9729,7 +11367,10 @@ pub mod num
             debug_assert!( max == max, "max must not be NAN" );
             if input > max {
                 max
-            } else {
+            }
+            
+            else
+            {
                 input
             }
         }
@@ -9812,7 +11453,10 @@ pub mod num
             /// and arbitrary `n`th root.
             pub trait Roots: Integer {
                 /// Returns the truncated principal `n`th root of an integer
-                /// -- `if x >= 0 { ⌊ⁿ√x⌋ } else { ⌈ⁿ√x⌉ }`
+                /// -- `if x >= 0 { ⌊ⁿ√x⌋ }
+            
+            else
+            { ⌈ⁿ√x⌉ }`
                 fn nth_root( &self, n: u32 ) -> Self;
                 /// Returns the truncated principal square root of an integer -- `⌊√x⌋`
                 ///
@@ -9821,7 +11465,10 @@ pub mod num
                     self.nth_root( 2 )
                 }
                 /// Returns the truncated principal cube root of an integer --
-                /// `if x >= 0 { ⌊∛x⌋ } else { ⌈∛x⌉ }`
+                /// `if x >= 0 { ⌊∛x⌋ }
+            
+            else
+            { ⌈∛x⌉ }`
                 ///
                 /// This is solving for `r` in `r³ = x`, rounding toward zero.
                 #[inline] fn cbrt( &self ) -> Self {
@@ -9850,7 +11497,10 @@ pub mod num
                         fn nth_root( &self, n: u32 ) -> Self {
                             if *self >= 0 {
                                 ( *self as $U ).nth_root( n ) as Self
-                            } else {
+                            }
+            
+            else
+            {
                                 assert!( n.is_odd(), "even roots of a negative are imaginary" );
                                 -( ( self.wrapping_neg() as $U ).nth_root( n ) as Self )
                             }
@@ -9864,7 +11514,10 @@ pub mod num
                         fn cbrt( &self ) -> Self {
                             if *self >= 0 {
                                 ( *self as $U ).cbrt() as Self
-                            } else {
+                            }
+            
+            else
+            {
                                 -( ( self.wrapping_neg() as $U ).cbrt() as Self )
                             }
                         }
@@ -9924,7 +11577,10 @@ pub mod num
                                    
                                     return if a <= ::u64::MAX as $T {
                                         ( a as u64 ).nth_root( n ) as $T
-                                    } else {
+                                    }
+            
+            else
+            {
                                         let lo = ( a >> n ).nth_root( n ) << 1;
                                         let hi = lo + 1;
                                        
@@ -9934,10 +11590,16 @@ pub mod num
                                                 Some( x ) if x <= a => hi,
                                                 _ => lo,
                                             }
-                                        } else {
+                                        }
+            
+            else
+            {
                                             if hi.pow( n ) <= a {
                                                 hi
-                                            } else {
+                                            }
+            
+            else
+            {
                                                 lo
                                             }
                                         }
@@ -9948,7 +11610,10 @@ pub mod num
                                    
                                     if bits::<$T>() <= 32 || x <= ::u32::MAX as $T {
                                         1 << ( ( log2( x ) + n - 1 ) / n )
-                                    } else {
+                                    }
+            
+            else
+            {
                                         ( ( x as f64 ).ln() / f64::from( n ) ).exp() as $T
                                     }
                                 }
@@ -9972,12 +11637,18 @@ pub mod num
                                    
                                     return if a <= ::u64::MAX as $T {
                                         ( a as u64 ).sqrt() as $T
-                                    } else {
+                                    }
+            
+            else
+            {
                                         let lo = ( a >> 2u32 ).sqrt() << 1;
                                         let hi = lo + 1;
                                         if hi * hi <= a {
                                             hi
-                                        } else {
+                                        }
+            
+            else
+            {
                                             lo
                                         }
                                     };
@@ -10002,12 +11673,18 @@ pub mod num
                                    
                                     return if a <= ::u64::MAX as $T {
                                         ( a as u64 ).cbrt() as $T
-                                    } else {
+                                    }
+            
+            else
+            {
                                         let lo = ( a >> 3u32 ).cbrt() << 1;
                                         let hi = lo + 1;
                                         if hi * hi * hi <= a {
                                             hi
-                                        } else {
+                                        }
+            
+            else
+            {
                                             lo
                                         }
                                     };
@@ -10069,7 +11746,10 @@ pub mod num
                 let ( q, r ) = self.div_mod_floor( other );
                 if r.is_zero() {
                     q
-                } else {
+                }
+            
+            else
+            {
                     q + Self::one()
                 }
             }
@@ -10099,7 +11779,7 @@ pub mod num
                         r
                     };
                     r = f( r );
-                    s = f( s  );
+                    s = f( s );
                     t = f( t );
                 }
                 if r.1 >= Self::zero() {
@@ -10108,7 +11788,10 @@ pub mod num
                         x: s.1,
                         y: t.1,
                     }
-                } else {
+                }
+            
+            else
+            {
                     ExtendedGcd {
                         gcd: Self::zero() - r.1,
                         x: Self::zero() - s.1,
@@ -10149,7 +11832,10 @@ pub mod num
                 self.clone()
                     + if m.is_zero() {
                         Self::zero()
-                    } else {
+                    }
+            
+            else
+            {
                         other.clone() - m
                     }
             }
@@ -10237,7 +11923,10 @@ pub mod num
                         let ( d, r ) = self.div_rem( other );
                         if ( r > 0 && *other < 0 ) || ( r < 0 && *other > 0 ) {
                             d - 1
-                        } else {
+                        }
+            
+            else
+            {
                             d
                         }
                     }
@@ -10248,7 +11937,10 @@ pub mod num
                         let r = *self % *other;
                         if ( r > 0 && *other < 0 ) || ( r < 0 && *other > 0 ) {
                             r + *other
-                        } else {
+                        }
+            
+            else
+            {
                             r
                         }
                     }
@@ -10259,7 +11951,10 @@ pub mod num
                         let ( d, r ) = self.div_rem( other );
                         if ( r > 0 && *other < 0 ) || ( r < 0 && *other > 0 ) {
                             ( d - 1, r + *other )
-                        } else {
+                        }
+            
+            else
+            {
                             ( d, r )
                         }
                     }
@@ -10267,7 +11962,10 @@ pub mod num
                         let ( d, r ) = self.div_rem( other );
                         if ( r > 0 && *other > 0 ) || ( r < 0 && *other < 0 ) {
                             d + 1
-                        } else {
+                        }
+            
+            else
+            {
                             d
                         }
                     }
@@ -10306,7 +12004,10 @@ pub mod num
                             if m > n {
                                 m -= n;
                                 m >>= m.trailing_zeros();
-                            } else {
+                            }
+            
+            else
+            {
                                 n -= m;
                                 n >>= n.trailing_zeros();
                             }
@@ -10318,7 +12019,10 @@ pub mod num
                        
                         let lcm = if egcd.gcd.is_zero() {
                             Self::zero()
-                        } else {
+                        }
+            
+            else
+            {
                             ( *self * ( *other / egcd.gcd ) ).abs()
                         };
                         ( egcd, lcm )
@@ -10365,7 +12069,10 @@ pub mod num
                             return *self;
                         }
                         let m = Integer::mod_floor( self, other );
-                        *self + if m == 0 { 0 } else { other - m }
+                        *self + if m == 0 { 0 }
+            
+            else
+            { other - m }
                     }
                     /// Rounds down to nearest multiple of argument.
                     #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self {
@@ -10420,7 +12127,10 @@ pub mod num
                             if m > n {
                                 m -= n;
                                 m >>= m.trailing_zeros();
-                            } else {
+                            }
+            
+            else
+            {
                                 n -= m;
                                 n >>= n.trailing_zeros();
                             }
@@ -10432,7 +12142,10 @@ pub mod num
                        
                         let lcm = if egcd.gcd.is_zero() {
                             Self::zero()
-                        } else {
+                        }
+            
+            else
+            {
                             *self * ( *other / egcd.gcd )
                         };
                         ( egcd, lcm )
@@ -10530,7 +12243,10 @@ pub mod num
                         self.n.clone() - self.k.clone() + T::one(),
                         self.k.clone(),
                     )
-                } else {
+                }
+            
+            else
+            {
                     T::one()
                 };
                 self.k = self.k.clone() + T::one();
@@ -11075,7 +12791,10 @@ pub mod num
                             self % other
                         } else if let Some( other ) = other.to_i32() {
                             self % other
-                        } else {
+                        }
+            
+            else
+            {
                             let ( _, r ) = self.div_rem( other );
                             r
                         }
@@ -11277,10 +12996,16 @@ pub mod num
                         if r.is_negative() {
                             if v.is_positive() {
                                 q - 1
-                            } else {
+                            }
+            
+            else
+            {
                                 q + 1
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             q
                         }
                     }
@@ -11289,10 +13014,16 @@ pub mod num
                         if r.is_negative() {
                             if v.is_positive() {
                                 r + v
-                            } else {
+                            }
+            
+            else
+            {
                                 r - v
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             r
                         }
                     }
@@ -11301,10 +13032,16 @@ pub mod num
                         if r.is_negative() {
                             if v.is_positive() {
                                 ( q - 1, r + v )
-                            } else {
+                            }
+            
+            else
+            {
                                 ( q + 1, r - v )
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             ( q, r )
                         }
                     }
@@ -11371,7 +13108,10 @@ pub mod num
                                 self.data *= y;
                                 if self.data.is_zero() {
                                     self.sign = NoSign;
-                                } else {
+                                }
+            
+            else
+            {
                                     self.sign = self.sign * other.sign;
                                 }
                             }
@@ -11904,7 +13644,10 @@ pub mod num
                                
                                 if self.len() >= other.len() {
                                     self.clone() & other
-                                } else {
+                                }
+            
+            else
+            {
                                     other.clone() & self
                                 }
                             }
@@ -12030,7 +13773,10 @@ pub mod num
                                
                                 if self.len() <= other.len() {
                                     self.clone() | other
-                                } else {
+                                }
+            
+            else
+            {
                                     other.clone() | self
                                 }
                             }
@@ -12214,7 +13960,10 @@ pub mod num
                         if !value {
                             data.set_bit( bit, true );
                         }
-                    } else {
+                    }
+            
+            else
+            {
                        
                        
                        
@@ -12270,14 +14019,20 @@ pub mod num
 
                             if index_lo == index_hi {
                                 digits[index_lo] ^= bit_mask_lo & bit_mask_hi;
-                            } else {
+                            }
+            
+            else
+            {
                                 digits[index_lo] = bit_mask_lo;
                                 for digit in &mut digits[index_lo + 1..index_hi] {
                                     *digit = ::num::big::digit::MAX;
                                 }
                                 digits[index_hi] ^= bit_mask_hi;
                             }
-                        } else {
+                        }
+            
+            else
+            {
                            
                            
                            
@@ -12323,7 +14078,10 @@ pub mod num
                                 s = tail
                             }
                             Minus
-                        } else {
+                        }
+            
+            else
+            {
                             Plus
                         };
                         let bu = BigUint::from_str_radix( s, radix )?;
@@ -12378,11 +14136,17 @@ pub mod num
                     }
                     #[inline] fn to_f32( &self ) -> Option<f32> {
                         let n = self.data.to_f32()?;
-                        Some( if self.sign == Minus { -n } else { n } )
+                        Some( if self.sign == Minus { -n }
+            
+            else
+            { n } )
                     }
                     #[inline] fn to_f64( &self ) -> Option<f64> {
                         let n = self.data.to_f64()?;
-                        Some( if self.sign == Minus { -n } else { n } )
+                        Some( if self.sign == Minus { -n }
+            
+            else
+            { n } )
                     }
                 }
                 macro_rules! impl_try_from_bigint 
@@ -12437,7 +14201,10 @@ pub mod num
                     #[inline] fn from_f64( n: f64 ) -> Option<BigInt> {
                         if n >= 0.0 {
                             BigUint::from_f64( n ).map( BigInt::from )
-                        } else {
+                        }
+            
+            else
+            {
                             let x = BigUint::from_f64( -n )?;
                             Some( -BigInt::from( x ) )
                         }
@@ -12448,7 +14215,10 @@ pub mod num
                     #[inline] fn from( n: i64 ) -> Self {
                         if n >= 0 {
                             BigInt::from( n as u64 )
-                        } else {
+                        }
+            
+            else
+            {
                             let u = u64::MAX - ( n as u64 ) + 1;
                             BigInt {
                                 sign: Minus,
@@ -12462,7 +14232,10 @@ pub mod num
                     #[inline] fn from( n: i128 ) -> Self {
                         if n >= 0 {
                             BigInt::from( n as u128 )
-                        } else {
+                        }
+            
+            else
+            {
                             let u = u128::MAX - ( n as u128 ) + 1;
                             BigInt {
                                 sign: Minus,
@@ -12495,7 +14268,10 @@ pub mod num
                                 sign: Plus,
                                 data: BigUint::from( n ),
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             Self::ZERO
                         }
                     }
@@ -12508,7 +14284,10 @@ pub mod num
                                 sign: Plus,
                                 data: BigUint::from( n ),
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             Self::ZERO
                         }
                     }
@@ -12534,7 +14313,10 @@ pub mod num
                     #[inline] fn from( n: BigUint ) -> Self {
                         if n.is_zero() {
                             Self::ZERO
-                        } else {
+                        }
+            
+            else
+            {
                             BigInt {
                                 sign: Plus,
                                 data: n,
@@ -12553,7 +14335,10 @@ pub mod num
                     #[inline] fn to_bigint( &self ) -> Option<BigInt> {
                         if self.is_zero() {
                             Some( BigInt::ZERO )
-                        } else {
+                        }
+            
+            else
+            {
                             Some( BigInt {
                                 sign: Plus,
                                 data: self.clone(),
@@ -12588,7 +14373,10 @@ pub mod num
                     #[inline] fn try_from( value: BigInt ) -> Result<BigUint, TryFromBigIntError<BigInt>> {
                         if value.sign() == Sign::Minus {
                             Err( TryFromBigIntError::new( value ) )
-                        } else {
+                        }
+            
+            else
+            {
                             Ok( value.data )
                         }
                     }
@@ -12626,7 +14414,10 @@ pub mod num
                     fn from( x: bool ) -> Self {
                         if x {
                             One::one()
-                        } else {
+                        }
+            
+            else
+            {
                             Self::ZERO
                         }
                     }
@@ -12644,7 +14435,10 @@ pub mod num
                         let mut digits = Vec::from( digits );
                         twos_complement_be( &mut digits );
                         BigInt::from_biguint( sign, BigUint::from_bytes_be( &digits ) )
-                    } else {
+                    }
+            
+            else
+            {
                         BigInt::from_biguint( sign, BigUint::from_bytes_be( digits ) )
                     }
                 }
@@ -12661,7 +14455,10 @@ pub mod num
                         let mut digits = Vec::from( digits );
                         twos_complement_le( &mut digits );
                         BigInt::from_biguint( sign, BigUint::from_bytes_le( &digits ) )
-                    } else {
+                    }
+            
+            else
+            {
                         BigInt::from_biguint( sign, BigUint::from_bytes_le( digits ) )
                     }
                 }
@@ -12745,7 +14542,10 @@ pub mod num
                         Plus
                     } else if sign != Minus || other.is_odd() {
                         sign
-                    } else {
+                    }
+            
+            else
+            {
                         -sign
                     }
                 }
@@ -12797,11 +14597,11 @@ pub mod num
                     assert!( 
                         !exponent.is_negative(),
                         "negative exponentiation is not supported!"
-                     );
+                    );
                     assert!( 
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
-                     );
+                    );
 
                     let result = x.data.modpow( &exponent.data, &modulus.data );
                     if result.is_zero() {
@@ -12886,7 +14686,10 @@ pub mod num
                             fn shr( self, rhs: $rhs ) -> BigInt {
                                 let round_down = shr_round_down( &self, rhs );
                                 let data = self.data >> rhs;
-                                let data = if round_down { data + 1u8 } else { data };
+                                let data = if round_down { data + 1u8 }
+            
+            else
+            { data };
                                 BigInt::from_biguint( self.sign, data )
                             }
                         }
@@ -12897,7 +14700,10 @@ pub mod num
                             fn shr( self, rhs: $rhs ) -> BigInt {
                                 let round_down = shr_round_down( self, rhs );
                                 let data = &self.data >> rhs;
-                                let data = if round_down { data + 1u8 } else { data };
+                                let data = if round_down { data + 1u8 }
+            
+            else
+            { data };
                                 BigInt::from_biguint( self.sign, data )
                             }
                         }
@@ -12924,7 +14730,10 @@ pub mod num
                     if i.is_negative() {
                         let zeros = i.trailing_zeros().expect( "negative values are non-zero" );
                         shift > T::zero() && shift.to_u64().map( |shift| zeros < shift ).unwrap_or( true )
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
@@ -12975,9 +14784,9 @@ pub mod num
             {
                 #[inline] fn hash<H: hash::Hasher>( &self, state:&mut H ) {
                     debug_assert!( ( self.sign != NoSign ) ^ self.data.is_zero() );
-                    self.sign.hash( state  );
+                    self.sign.hash( state );
                     if self.sign != NoSign {
-                        self.data.hash( state  );
+                        self.data.hash( state );
                     }
                 }
             }
@@ -13080,7 +14889,10 @@ pub mod num
                         }
                         Minus => {
                             self.data -= 1u32;
-                            self.sign = if self.data.is_zero() { NoSign } else { Plus };
+                            self.sign = if self.data.is_zero() { NoSign }
+            
+            else
+            { Plus };
                         }
                     }
                     self
@@ -13148,7 +14960,10 @@ pub mod num
                 #[inline] fn abs_sub( &self, other:&BigInt ) -> BigInt {
                     if *self <= *other {
                         Self::ZERO
-                    } else {
+                    }
+            
+            else
+            {
                         self - other
                     }
                 }
@@ -13188,7 +15003,10 @@ pub mod num
                         fn checked_uabs( self ) -> CheckedUnsignedAbs<Self::Unsigned> {
                             if self >= 0 {
                                 Positive( self as $Unsigned )
-                            } else {
+                            }
+            
+            else
+            {
                                 Negative( self.wrapping_neg() as $Unsigned )
                             }
                         }
@@ -13231,7 +15049,10 @@ pub mod num
                     let r = BigInt::from_biguint( self.sign, r_ui );
                     if other.is_negative() {
                         ( -d, r )
-                    } else {
+                    }
+            
+            else
+            {
                         ( d, r )
                     }
                 }
@@ -13243,7 +15064,10 @@ pub mod num
                         ( Plus, Minus ) | ( NoSign, Minus ) | ( Minus, Plus ) => {
                             if m.is_zero() {
                                 -d
-                            } else {
+                            }
+            
+            else
+            {
                                 -d - 1u32
                             }
                         }
@@ -13259,7 +15083,10 @@ pub mod num
                         ( Plus, Minus ) | ( NoSign, Minus ) | ( Minus, Plus ) => {
                             if m.is_zero() {
                                 m
-                            } else {
+                            }
+            
+            else
+            {
                                 other - m
                             }
                         }
@@ -13276,7 +15103,10 @@ pub mod num
                         ( Plus, Minus ) | ( NoSign, Minus ) | ( Minus, Plus ) => {
                             if m.is_zero() {
                                 ( -d, m )
-                            } else {
+                            }
+            
+            else
+            {
                                 ( -d - 1u32, other - m )
                             }
                         }
@@ -13291,7 +15121,10 @@ pub mod num
                         ( Plus, Plus ) | ( NoSign, Plus ) | ( Minus, Minus ) => {
                             if m.is_zero() {
                                 d
-                            } else {
+                            }
+            
+            else
+            {
                                 d + 1u32
                             }
                         }
@@ -13317,7 +15150,10 @@ pub mod num
                     let egcd = self.extended_gcd( other );
                     let lcm = if egcd.gcd.is_zero() {
                         Self::ZERO
-                    } else {
+                    }
+            
+            else
+            {
                         BigInt::from( &self.data / &egcd.gcd.data * &other.data )
                     };
                     ( egcd, lcm )
@@ -13343,7 +15179,10 @@ pub mod num
                     let m = self.mod_floor( other );
                     if m.is_zero() {
                         self.clone()
-                    } else {
+                    }
+            
+            else
+            {
                         self + ( other - m )
                     }
                 }
@@ -13367,7 +15206,7 @@ pub mod num
                         !( self.is_negative() && n.is_even() ),
                         "root of degree {} is imaginary",
                         n
-                     );
+                    );
 
                     BigInt::from_biguint( self.sign, self.data.nth_root( n ) )
                 }
@@ -13430,9 +15269,15 @@ pub mod num
                 #[inline] pub fn assign_from_slice( &mut self, sign: Sign, slice:&[u32] ) {
                     if sign == NoSign {
                         self.set_zero();
-                    } else {
+                    }
+            
+            else
+            {
                         self.data.assign_from_slice( slice );
-                        self.sign = if self.data.is_zero() { NoSign } else { sign };
+                        self.sign = if self.data.is_zero() { NoSign }
+            
+            else
+            { sign };
                     }
                 }
                 /// Creates and initializes a [`BigInt`].
@@ -13643,7 +15488,10 @@ pub mod num
                             if value {
                                 self.data.set_bit( bit, true );
                                 self.sign = Sign::Plus;
-                            } else {
+                            }
+            
+            else
+            {
                                
                             }
                         }
@@ -13764,7 +15612,7 @@ pub mod num
                         }
                         biguint_from_vec( data )
                     }
-                 );
+                );
 
                 fn gen_bigint( &mut self, bit_size: u64 ) -> BigInt {
                     loop {
@@ -13778,12 +15626,18 @@ pub mod num
                            
                             if self.gen() {
                                 continue;
-                            } else {
+                            }
+            
+            else
+            {
                                 NoSign
                             }
                         } else if self.gen() {
                             Plus
-                        } else {
+                        }
+            
+            else
+            {
                             Minus
                         };
                         return BigInt::from_biguint( sign, biguint );
@@ -13803,7 +15657,10 @@ pub mod num
                     assert!( *lbound < *ubound );
                     if lbound.is_zero() {
                         self.gen_biguint_below( ubound )
-                    } else {
+                    }
+            
+            else
+            {
                         lbound + self.gen_biguint_below( &( ubound - lbound ) )
                     }
                 }
@@ -13813,7 +15670,10 @@ pub mod num
                         BigInt::from( self.gen_biguint_below( ubound.magnitude() ) )
                     } else if ubound.is_zero() {
                         lbound + BigInt::from( self.gen_biguint_below( lbound.magnitude() ) )
-                    } else {
+                    }
+            
+            else
+            {
                         let delta = ubound - lbound;
                         lbound + BigInt::from( self.gen_biguint_below( delta.magnitude() ) )
                     }
@@ -13999,7 +15859,7 @@ pub mod num
                        
                         unsafe { arch::_addcarry_u64( carry, a, b, out ) }
                     }
-                 );
+                );
                 /// Two argument addition of raw slices, `a += b`, returning the carry.
                 #[inline] pub fn __add2( a:&mut [BigDigit], b:&[BigDigit] ) -> BigDigit {
                     debug_assert!( a.len() >= b.len() );
@@ -14050,7 +15910,10 @@ pub mod num
                             let lo_carry = __add2( &mut self.data[..], &other.data[..self_len] );
                             self.data.extend_from_slice( &other.data[self_len..] );
                             __add2( &mut self.data[self_len..], &[lo_carry] )
-                        } else {
+                        }
+            
+            else
+            {
                             __add2( &mut self.data[..], &other.data[..] )
                         };
                         if carry != 0 {
@@ -14103,7 +15966,10 @@ pub mod num
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             if hi == 0 {
                                 *self += lo;
-                            } else {
+                            }
+            
+            else
+            {
                                 while self.data.len() < 2 {
                                     self.data.push( 0 );
                                 }
@@ -14125,7 +15991,7 @@ pub mod num
                                 }
                             }
                         }
-                     );
+                    );
                 }
                 impl Add<u128> for BigUint
                 {
@@ -14142,14 +16008,20 @@ pub mod num
                         fn add_assign( &mut self, other: u128 ) {
                             if other <= u128::from( u64::MAX ) {
                                 *self += other as u64
-                            } else {
+                            }
+            
+            else
+            {
                                 let ( a, b, c, d ) = super::u32_from_u128( other );
                                 let carry = if a > 0 {
                                     while self.data.len() < 4 {
                                         self.data.push( 0 );
                                     }
                                     __add2( &mut self.data, &[d, c, b, a] )
-                                } else {
+                                }
+            
+            else
+            {
                                     debug_assert!( b > 0 );
                                     while self.data.len() < 3 {
                                         self.data.push( 0 );
@@ -14167,7 +16039,10 @@ pub mod num
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             if hi == 0 {
                                 *self += lo;
-                            } else {
+                            }
+            
+            else
+            {
                                 while self.data.len() < 2 {
                                     self.data.push( 0 );
                                 }
@@ -14177,7 +16052,7 @@ pub mod num
                                 }
                             }
                         }
-                     );
+                    );
                 }
                 impl CheckedAdd for BigUint
                 {
@@ -14239,7 +16114,7 @@ pub mod num
                                     "div {0:r}"
                                 };
                             }
-                         );
+                        );
 
                         ::arch::asm!( 
                             div!(),
@@ -14247,7 +16122,7 @@ pub mod num
                             inout( "dx" ) hi => rem,
                             inout( "ax" ) lo => div,
                             options( pure, nomem, nostack ),
-                         );
+                        );
 
                         ( div, rem )
                     }
@@ -14275,7 +16150,10 @@ pub mod num
                             *d = q;
                             rem = r;
                         }
-                    } else {
+                    }
+            
+            else
+            {
                         for d in a.data.iter_mut().rev() {
                             let ( q, r ) = div_wide( rem, *d, b );
                             *d = q;
@@ -14296,7 +16174,10 @@ pub mod num
                             let ( _, r ) = div_half( rem, digit, b );
                             rem = r;
                         }
-                    } else {
+                    }
+            
+            else
+            {
                         for &digit in a.data.iter().rev() {
                             let ( _, r ) = div_wide( rem, digit, b );
                             rem = r;
@@ -14368,7 +16249,10 @@ pub mod num
                     if shift == 0 {
                        
                         div_rem_core( u, &d.data )
-                    } else {
+                    }
+            
+            else
+            {
                         let ( q, r ) = div_rem_core( u << shift, &( d << shift ).data );
                        
                         ( q, r >> shift )
@@ -14406,7 +16290,10 @@ pub mod num
                     if shift == 0 {
                        
                         div_rem_core( u.clone(), &d.data )
-                    } else {
+                    }
+            
+            else
+            {
                         let ( q, r ) = div_rem_core( u << shift, &( d << shift ).data );
                        
                         ( q, r >> shift )
@@ -14458,7 +16345,10 @@ pub mod num
                         let ( mut q0, mut r ) = if a0 < b0 {
                             let ( q0, r ) = div_wide( a0, a1, b0 );
                             ( q0, r as DoubleBigDigit )
-                        } else {
+                        }
+            
+            else
+            {
                             debug_assert!( a0 == b0 );
                            
                            
@@ -14602,7 +16492,7 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
-                     );
+                    );
                 }
                 impl Div<u128> for BigUint
                 {
@@ -14648,7 +16538,7 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
-                     );
+                    );
                 }
                 forward_val_ref_binop_big!( impl Rem for BigUint, rem );
                 forward_ref_val_binop_big!( impl Rem for BigUint, rem );
@@ -14661,7 +16551,10 @@ pub mod num
                     #[inline] fn rem( self, other: BigUint ) -> BigUint {
                         if let Some( other ) = other.to_u32() {
                             &self % other
-                        } else {
+                        }
+            
+            else
+            {
                             let ( _, r ) = div_rem( self, other );
                             r
                         }
@@ -14674,7 +16567,10 @@ pub mod num
                     #[inline] fn rem( self, other:&BigUint ) -> BigUint {
                         if let Some( other ) = other.to_u32() {
                             self % other
-                        } else {
+                        }
+            
+            else
+            {
                             let ( _, r ) = self.div_rem( other );
                             r
                         }
@@ -14892,7 +16788,10 @@ pub mod num
 
                     let final_carry = if carry_hi == 0 {
                         __add2( a_hi, &[carry_lo] )
-                    } else {
+                    }
+            
+            else
+            {
                         __add2( a_hi, &[carry_hi, carry_lo] )
                     };
                     assert_eq!( final_carry, 0, "carry overflow during multiplication!" );
@@ -14909,7 +16808,10 @@ pub mod num
                         if let Some( nz ) = b.iter().position( |&d| d != 0 ) {
                             b = &b[nz..];
                             acc = &mut acc[nz..];
-                        } else {
+                        }
+            
+            else
+            {
                             return;
                         }
                     }
@@ -14917,12 +16819,18 @@ pub mod num
                         if let Some( nz ) = c.iter().position( |&d| d != 0 ) {
                             c = &c[nz..];
                             acc = &mut acc[nz..];
-                        } else {
+                        }
+            
+            else
+            {
                             return;
                         }
                     }
                     let acc = acc;
-                    let ( x, y ) = if b.len() < c.len() { ( b, c ) } else { ( c, b ) };
+                    let ( x, y ) = if b.len() < c.len() { ( b, c ) }
+            
+            else
+            { ( c, b ) };
 
                    
                     //
@@ -15113,7 +17021,10 @@ pub mod num
                             }
                             NoSign => (),
                         }
-                    } else {
+                    }
+            
+            else
+            {
                        
                         //
                        
@@ -15258,7 +17169,10 @@ pub mod num
                         _ => {
                             if b.is_power_of_two() {
                                 *a <<= b.trailing_zeros();
-                            } else {
+                            }
+            
+            else
+            {
                                 let mut carry = 0;
                                 for a in a.data.iter_mut() {
                                     *a = mul_with_carry( *a, b, &mut carry );
@@ -15377,7 +17291,10 @@ pub mod num
                         fn mul_assign( &mut self, other: u64 ) {
                             if let Some( other ) = BigDigit::from_u64( other ) {
                                 scalar_mul( self, other );
-                            } else {
+                            }
+            
+            else
+            {
                                 let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                                 *self = mul3( &self.data, &[lo, hi] );
                             }
@@ -15386,7 +17303,7 @@ pub mod num
                         fn mul_assign( &mut self, other: u64 ) {
                             scalar_mul( self, other );
                         }
-                     );
+                    );
                 }
                 impl Mul<u128> for BigUint
                 {
@@ -15403,7 +17320,10 @@ pub mod num
                         fn mul_assign( &mut self, other: u128 ) {
                             if let Some( other ) = BigDigit::from_u128( other ) {
                                 scalar_mul( self, other );
-                            } else {
+                            }
+            
+            else
+            {
                                 *self = match super::u32_from_u128( other ) {
                                     ( 0, 0, c, d ) => mul3( &self.data, &[d, c] ),
                                     ( 0, b, c, d ) => mul3( &self.data, &[d, c, b] ),
@@ -15415,12 +17335,15 @@ pub mod num
                         fn mul_assign( &mut self, other: u128 ) {
                             if let Some( other ) = BigDigit::from_u128( other ) {
                                 scalar_mul( self, other );
-                            } else {
+                            }
+            
+            else
+            {
                                 let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                                 *self = mul3( &self.data, &[lo, hi] );
                             }
                         }
-                     );
+                    );
                 }
                 impl CheckedMul for BigUint
                 {
@@ -15460,7 +17383,7 @@ pub mod num
                        
                         unsafe { arch::_subborrow_u64( borrow, a, b, out ) }
                     }
-                 );
+                );
                 
                 cfg_32!( 
                     #[inline] fn sbb( borrow: u8, a: u32, b: u32, out:&mut u32 ) -> u8 {
@@ -15468,7 +17391,7 @@ pub mod num
                        
                         unsafe { arch::_subborrow_u32( borrow, a, b, out ) }
                     }
-                 );
+                );
                 
                 pub( super ) fn sub2( a:&mut [BigDigit], b:&[BigDigit] ) {
                     let mut borrow = 0;
@@ -15492,7 +17415,7 @@ pub mod num
                     assert!( 
                         borrow == 0 && b_hi.iter().all( |x| *x == 0 ),
                         "Cannot subtract b from a because b is larger than a."
-                     );
+                    );
                 }
                
                 #[inline] fn __sub2rev( a:&[BigDigit], b:&mut [BigDigit] ) -> u8 {
@@ -15520,7 +17443,7 @@ pub mod num
                     assert!( 
                         borrow == 0 && b_hi.iter().all( |x| *x == 0 ),
                         "Cannot subtract b from a because b is larger than a."
-                     );
+                    );
                 }
                 forward_val_val_binop!( impl Sub for BigUint, sub );
                 forward_ref_ref_binop_big!( impl Sub for BigUint, sub );
@@ -15554,7 +17477,10 @@ pub mod num
                             if lo_borrow != 0 {
                                 sub2( &mut other.data[other_len..], &[1] )
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             sub2rev( &self.data[..], &mut other.data[..] );
                         }
                         other.normalized()
@@ -15591,7 +17517,10 @@ pub mod num
                         fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.len() == 0 {
                                 other.data.push( self );
-                            } else {
+                            }
+            
+            else
+            {
                                 sub2rev( &[self], &mut other.data[..] );
                             }
                             other.normalized()
@@ -15600,12 +17529,15 @@ pub mod num
                         fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push( self as BigDigit );
-                            } else {
+                            }
+            
+            else
+            {
                                 sub2rev( &[self as BigDigit], &mut other.data[..] );
                             }
                             other.normalized()
                         }
-                     );
+                    );
                 }
                 impl Sub<u64> for BigUint
                 {
@@ -15630,7 +17562,7 @@ pub mod num
                             sub2( &mut self.data[..], &[other as BigDigit] );
                             self.normalize();
                         }
-                     );
+                    );
                 }
                 impl Sub<BigUint> for u64 
                 {
@@ -15650,12 +17582,15 @@ pub mod num
                         fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push( self );
-                            } else {
+                            }
+            
+            else
+            {
                                 sub2rev( &[self], &mut other.data[..] );
                             }
                             other.normalized()
                         }
-                     );
+                    );
                 }
                 impl Sub<u128> for BigUint
                 {
@@ -15681,7 +17616,7 @@ pub mod num
                             sub2( &mut self.data[..], &[lo, hi] );
                             self.normalize();
                         }
-                     );
+                    );
                 }
                 impl Sub<BigUint> for u128 
                 {
@@ -15706,7 +17641,7 @@ pub mod num
                             sub2rev( &[lo, hi], &mut other.data[..] );
                             other.normalized()
                         }
-                     );
+                    );
                 }
                 impl CheckedSub for BigUint
                 {
@@ -15742,7 +17677,10 @@ pub mod num
                        
                         if self.data.len() <= other.data.len() {
                             self.clone() & other
-                        } else {
+                        }
+            
+            else
+            {
                             other.clone() & self
                         }
                     }
@@ -15937,7 +17875,10 @@ pub mod num
                     let radix = radix as BigDigit;
 
                     let r = v.len() % power;
-                    let i = if r == 0 { power } else { r };
+                    let i = if r == 0 { power }
+            
+            else
+            { r };
                     let ( head, tail ) = v.split_at( i );
 
                     let first = head
@@ -15967,7 +17908,7 @@ pub mod num
                     assert!( 
                         2 <= radix && radix <= 256,
                         "The radix must be within 2...256"
-                     );
+                    );
 
                     if buf.is_empty() {
                         return Some( BigUint::ZERO );
@@ -15982,10 +17923,16 @@ pub mod num
                         v.reverse();
                         if ::num::big::digit::BITS % bits == 0 {
                             from_bitwise_digits_le( &v, bits )
-                        } else {
+                        }
+            
+            else
+            {
                             from_inexact_bitwise_digits_le( &v, bits )
                         }
-                    } else {
+                    }
+            
+            else
+            {
                         from_radix_digits_be( buf, radix )
                     };
 
@@ -15995,7 +17942,7 @@ pub mod num
                     assert!( 
                         2 <= radix && radix <= 256,
                         "The radix must be within 2...256"
-                     );
+                    );
 
                     if buf.is_empty() {
                         return Some( BigUint::ZERO );
@@ -16008,10 +17955,16 @@ pub mod num
                         let bits = ilog2( radix );
                         if ::num::big::digit::BITS % bits == 0 {
                             from_bitwise_digits_le( buf, bits )
-                        } else {
+                        }
+            
+            else
+            {
                             from_inexact_bitwise_digits_le( buf, bits )
                         }
-                    } else {
+                    }
+            
+            else
+            {
                         let mut v = Vec::from( buf );
                         v.reverse();
                         from_radix_digits_be( &v, radix )
@@ -16051,7 +18004,10 @@ pub mod num
                             };
                             if d < radix as u8 {
                                 v.push( d );
-                            } else {
+                            }
+            
+            else
+            {
                                 return Err( ParseBigIntError::invalid() );
                             }
                         }
@@ -16061,10 +18017,16 @@ pub mod num
                             v.reverse();
                             if ::num::big::digit::BITS % bits == 0 {
                                 from_bitwise_digits_le( &v, bits )
-                            } else {
+                            }
+            
+            else
+            {
                                 from_inexact_bitwise_digits_le( &v, bits )
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             from_radix_digits_be( &v, radix )
                         };
                         Ok( res )
@@ -16158,7 +18120,10 @@ pub mod num
 
                         if exponent > f32::MAX_EXP as u64 {
                             Some( f32::INFINITY )
-                        } else {
+                        }
+            
+            else
+            {
                             Some( ( mantissa as f32 ) * 2.0f32.powi( exponent as i32 ) )
                         }
                     }
@@ -16168,7 +18133,10 @@ pub mod num
 
                         if exponent > f64::MAX_EXP as u64 {
                             Some( f64::INFINITY )
-                        } else {
+                        }
+            
+            else
+            {
                             Some( ( mantissa as f64 ) * 2.0f64.powi( exponent as i32 ) )
                         }
                     }
@@ -16212,14 +18180,20 @@ pub mod num
                     #[inline] fn from_i64( n: i64 ) -> Option<BigUint> {
                         if n >= 0 {
                             Some( BigUint::from( n as u64 ) )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
                     }
                     #[inline] fn from_i128( n: i128 ) -> Option<BigUint> {
                         if n >= 0 {
                             Some( BigUint::from( n as u128 ) )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
                     }
@@ -16241,7 +18215,7 @@ pub mod num
                         if n.is_zero() {
                             return Some( Self::ZERO );
                         }
-                        let ( mantissa, exponent, sign ) = Float::integer_decode( n  );
+                        let ( mantissa, exponent, sign ) = Float::integer_decode( n );
 
                         if sign == -1 {
                             return None;
@@ -16351,7 +18325,10 @@ pub mod num
                     fn from( x: bool ) -> Self {
                         if x {
                             One::one()
-                        } else {
+                        }
+            
+            else
+            {
                             Self::ZERO
                         }
                     }
@@ -16435,7 +18412,10 @@ pub mod num
                    
                     let ( base, power ) = if FAST_DIV_WIDE {
                         get_radix_base( radix )
-                    } else {
+                    }
+            
+            else
+            {
                         get_half_radix_base( radix )
                     };
                     let radix = radix as BigDigit;
@@ -16494,14 +18474,20 @@ pub mod num
                         let bits = ilog2( radix );
                         if ::num::big::digit::BITS % bits == 0 {
                             to_bitwise_digits_le( u, bits )
-                        } else {
+                        }
+            
+            else
+            {
                             to_inexact_bitwise_digits_le( u, bits )
                         }
                     } else if radix == 10 {
                        
                        
                         to_radix_digits_le( u, 10 )
-                    } else {
+                    }
+            
+            else
+            {
                         to_radix_digits_le( u, radix )
                     }
                 }
@@ -16518,7 +18504,10 @@ pub mod num
                         debug_assert!( u32::from( *r ) < radix );
                         if *r < 10 {
                             *r += b'0';
-                        } else {
+                        }
+            
+            else
+            {
                             *r += b'a' - 10;
                         }
                     }
@@ -16591,7 +18580,7 @@ pub mod num
                         next_is_lo: bool,
                         last_hi_is_zero: bool,
                     }
-                 );
+                );
 
                 cfg_digit!
                 ( 
@@ -16666,12 +18655,18 @@ pub mod num
                                         self.next_is_lo = !next_is_lo;
                                         if next_is_lo {
                                             Some( first as u32 )
-                                        } else {
+                                        }
+            
+            else
+            {
                                             self.data = data;
                                             if data.is_empty() && self.last_hi_is_zero {
                                                 self.last_hi_is_zero = false;
                                                 None
-                                            } else {
+                                            }
+            
+            else
+            {
                                                 Some( ( first >> 32 ) as u32 )
                                             }
                                         }
@@ -16689,7 +18684,10 @@ pub mod num
                                 self.data.last().map( |&last| {
                                     if self.last_hi_is_zero {
                                         last as u32
-                                    } else {
+                                    }
+            
+            else
+            {
                                         ( last >> 32 ) as u32
                                     }
                                 } )
@@ -16710,10 +18708,16 @@ pub mod num
                                             if data.is_empty() && !self.next_is_lo {
                                                 self.next_is_lo = true;
                                                 None
-                                            } else {
+                                            }
+            
+            else
+            {
                                                 Some( last as u32 )
                                             }
-                                        } else {
+                                        }
+            
+            else
+            {
                                             Some( ( last >> 32 ) as u32 )
                                         }
                                     }
@@ -16730,7 +18734,7 @@ pub mod num
                             }
                         }
                     };
-                 );
+                );
 
                 impl FusedIterator for U32Digits<'_> {}
                 cfg_digit!
@@ -16745,7 +18749,7 @@ pub mod num
                     pub struct U64Digits<'a> {
                         it: ::slice::Iter<'a, u64>,
                     }
-                 );
+                );
 
                 cfg_digit!
                 ( 
@@ -16819,7 +18823,7 @@ pub mod num
                             }
                         }
                     };
-                 );
+                );
 
                 impl ExactSizeIterator for U64Digits<'_>
                 {
@@ -16892,7 +18896,7 @@ pub mod num
                         y,
                         m,
                         n
-                     );
+                    );
 
                     let mut z = BigUint::ZERO;
                     z.data.resize( n * 2, 0 );
@@ -16907,15 +18911,21 @@ pub mod num
                         z.data[n + i] = cy;
                         if cx < c2 || cy < c3 {
                             c = 1;
-                        } else {
+                        }
+            
+            else
+            {
                             c = 0;
                         }
                     }
                     if c == 0 {
                         z.data = z.data[n..].to_vec();
-                    } else {
+                    }
+            
+            else
+            {
                         {
-                            let ( first, second ) = z.data.split_at_mut( n  );
+                            let ( first, second ) = z.data.split_at_mut( n );
                             sub_vv( first, second, &m.data );
                         }
                         z.data = z.data[..n].to_vec();
@@ -16947,7 +18957,10 @@ pub mod num
                 #[inline( always )] fn add_ww( x: BigDigit, y: BigDigit, c: BigDigit ) -> ( BigDigit, BigDigit ) {
                     let yc = y.wrapping_add( c );
                     let z0 = x.wrapping_add( yc );
-                    let z1 = if z0 < x || yc < y { 1 } else { 0 };
+                    let z1 = if z0 < x || yc < y { 1 }
+            
+            else
+            { 0 };
 
                     ( z1, z0 )
                 }
@@ -17016,7 +19029,7 @@ pub mod num
                                 m,
                                 mr.n0inv,
                                 num_words,
-                             );
+                            );
                             mem::swap( &mut z, &mut zz );
                             yi <<= n;
                             j += n;
@@ -17077,7 +19090,10 @@ pub mod num
                             self.pow( exp )
                         } else if let Some( exp ) = exp.to_u128() {
                             self.pow( exp )
-                        } else {
+                        }
+            
+            else
+            {
                            
                            
                             panic!( "memory overflow" )
@@ -17101,7 +19117,10 @@ pub mod num
                             BigUint::one()
                         } else if self.is_zero() {
                             BigUint::ZERO
-                        } else {
+                        }
+            
+            else
+            {
                             self.clone().pow( exp )
                         }
                     }
@@ -17185,12 +19204,15 @@ pub mod num
                     assert!( 
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
-                     );
+                    );
 
                     if modulus.is_odd() {
                        
                         monty_modpow( x, exponent, modulus )
-                    } else {
+                    }
+            
+            else
+            {
                        
                         plain_modpow( x, &exponent.data, modulus )
                     }
@@ -17200,7 +19222,7 @@ pub mod num
                     assert!( 
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
-                     );
+                    );
 
                     let i = match exp_data.iter().position( |&r| r != 0 ) {
                         None => return BigUint::one(),
@@ -17458,7 +19480,7 @@ pub mod num
             {
                 #[inline] fn hash<H: hash::Hasher>( &self, state:&mut H ) {
                     debug_assert!( self.data.last() != Some( &0 ) );
-                    self.data.hash( state  );
+                    self.data.hash( state );
                 }
             }
             
@@ -17596,7 +19618,10 @@ pub mod num
                     let ( d, m ) = division::div_rem_ref( self, other );
                     if m.is_zero() {
                         d
-                    } else {
+                    }
+            
+            else
+            {
                         d + 1u32
                     }
                 }
@@ -17637,7 +19662,10 @@ pub mod num
                 {
                     if self.is_zero() && other.is_zero() {
                         Self::ZERO
-                    } else {
+                    }
+            
+            else
+            {
                         self / self.gcd( other ) * other
                     }
                 }
@@ -17647,7 +19675,10 @@ pub mod num
                     let gcd = self.gcd( other );
                     let lcm = if gcd.is_zero() {
                         Self::ZERO
-                    } else {
+                    }
+            
+            else
+            {
                         self / &gcd * other
                     };
                     ( gcd, lcm )
@@ -17680,7 +19711,10 @@ pub mod num
                     let m = self.mod_floor( other );
                     if m.is_zero() {
                         self.clone()
-                    } else {
+                    }
+            
+            else
+            {
                         self + ( other - m )
                     }
                 }
@@ -17708,7 +19742,10 @@ pub mod num
                    
                     x = if xn.bits() > max_bits {
                         BigUint::one() << max_bits
-                    } else {
+                    }
+            
+            else
+            {
                         xn
                     };
                     xn = f( &x );
@@ -17738,7 +19775,7 @@ pub mod num
                     }
                    
                     let bits = self.bits();
-                    let n64 = u64::from( n  );
+                    let n64 = u64::from( n );
                     if bits <= n64 {
                         return BigUint::one();
                     }
@@ -17764,7 +19801,10 @@ pub mod num
                             let scale = root_scale * n64;
                             if scale < bits && bits - scale > n64 {
                                 ( self >> scale ).nth_root( n ) << root_scale
-                            } else {
+                            }
+            
+            else
+            {
                                 BigUint::one() << max_bits
                             }
                         }
@@ -17886,7 +19926,7 @@ pub mod num
                             big.normalize();
                         },
                         big.assign_from_slice( &digits )
-                     );
+                    );
 
                     big
                 }
@@ -17905,7 +19945,7 @@ pub mod num
                     cfg_digit_expr!( 
                         self.data.extend_from_slice( slice ),
                         self.data.extend( slice.chunks( 2 ).map( u32_chunk_to_u64 ) )
-                     );
+                    );
 
                     self.normalize();
                 }
@@ -17914,7 +19954,10 @@ pub mod num
                 {
                     if bytes.is_empty() {
                         Self::ZERO
-                    } else {
+                    }
+            
+            else
+            {
                         let mut v = bytes.to_vec();
                         v.reverse();
                         BigUint::from_bytes_le( &v )
@@ -17925,7 +19968,10 @@ pub mod num
                 {
                     if bytes.is_empty() {
                         Self::ZERO
-                    } else {
+                    }
+            
+            else
+            {
                         convert::from_bitwise_digits_le( bytes, 8 )
                     }
                 }
@@ -17955,7 +20001,10 @@ pub mod num
                 #[inline] pub fn to_bytes_le( &self ) -> Vec<u8> {
                     if self.is_zero() {
                         vec![0]
-                    } else {
+                    }
+            
+            else
+            {
                         convert::to_bitwise_digits_le( self, 8 )
                     }
                 }
@@ -18033,7 +20082,7 @@ pub mod num
                     assert!( 
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
-                     );
+                    );
                     if modulus.is_one() {
                         return Some( Self::zero() );
                     }
@@ -18047,7 +20096,10 @@ pub mod num
                         return None;
                     } else if r1.is_one() {
                         return Some( r1 );
-                    } else {
+                    }
+            
+            else
+            {
                         let ( q, r2 ) = modulus.div_rem( &r1 );
                         if r2.is_zero() {
                             return None;
@@ -18066,7 +20118,10 @@ pub mod num
                         let qt1 = q * &t1 % modulus;
                         let t2 = if t0 < qt1 {
                             t0 + ( modulus - qt1 )
-                        } else {
+                        }
+            
+            else
+            {
                             t0 - qt1
                         };
                         t0 = t1;
@@ -18074,7 +20129,10 @@ pub mod num
                     }
                     if r0.is_one() {
                         Some( t0 )
-                    } else {
+                    }
+            
+            else
+            {
                         None
                     }
                 }
@@ -18102,7 +20160,10 @@ pub mod num
                     if let Some( i ) = self.data.iter().position( |&digit| !digit != 0 ) {
                         let ones: u64 = self.data[i].trailing_ones().into();
                         i as u64 * u64::from( ::num::big::digit::BITS ) + ones
-                    } else {
+                    }
+            
+            else
+            {
                         self.data.len() as u64 * u64::from( ::num::big::digit::BITS )
                     }
                 }
@@ -18203,7 +20264,7 @@ pub mod num
                 #[inline] fn u32_to_u128( a: u32, b: u32, c: u32, d: u32 ) -> u128 {
                     u128::from( d ) | ( u128::from( c ) << 32 ) | ( u128::from( b ) << 64 ) | ( u128::from( a ) << 96 )
                 }
-             );
+            );
 
             cfg_32_or_test!( 
                 /// Split a single `u128` into four `u32`.
@@ -18215,7 +20276,7 @@ pub mod num
                         n as u32,
                     )
                 }
-             );
+            );
         }
 
         #[cfg( target_pointer_width = "32" )]
@@ -18328,13 +20389,13 @@ pub mod num
             ( 
                 pub type BigDigit = u32;
                 pub type BigDigit = u64;
-             );
+            );
             
             cfg_digit!
             ( 
                 pub type DoubleBigDigit = u64;
                 pub type DoubleBigDigit = u128;
-             );
+            );
 
             pub const BITS: u8 = BigDigit::BITS as u8;
             pub const HALF_BITS: u8 = BITS / 2;
@@ -18680,7 +20741,10 @@ pub mod num
                     Ratio::from_integer( 
                         ( self.numer.clone() - self.denom.clone() + one ) / self.denom.clone(),
                     )
-                } else {
+                }
+            
+            else
+            {
                     Ratio::from_integer( self.numer.clone() / self.denom.clone() )
                 }
             }
@@ -18688,7 +20752,10 @@ pub mod num
             #[inline] pub fn ceil( &self ) -> Ratio<T> {
                 if *self < Zero::zero() {
                     Ratio::from_integer( self.numer.clone() / self.denom.clone() )
-                } else {
+                }
+            
+            else
+            {
                     let one: T = One::one();
                     Ratio::from_integer( 
                         ( self.numer.clone() + self.denom.clone() - one ) / self.denom.clone(),
@@ -18712,7 +20779,10 @@ pub mod num
                
                 let half_or_larger = if fractional.denom.is_even() {
                     fractional.numer >= fractional.denom / two
-                } else {
+                }
+            
+            else
+            {
                     fractional.numer >= ( fractional.denom / two ) + one
                 };
 
@@ -18720,10 +20790,16 @@ pub mod num
                     let one: Ratio<T> = One::one();
                     if *self >= Zero::zero() {
                         self.trunc() + one
-                    } else {
+                    }
+            
+            else
+            {
                         self.trunc() - one
                     }
-                } else {
+                }
+            
+            else
+            {
                     self.trunc()
                 }
             }
@@ -18751,13 +20827,19 @@ pub mod num
                     return None;
                 }
                 let ( mantissa, exponent, sign ) = f.integer_decode();
-                let bigint_sign = if sign == 1 { Sign::Plus } else { Sign::Minus };
+                let bigint_sign = if sign == 1 { Sign::Plus }
+            
+            else
+            { Sign::Minus };
                 if exponent < 0 {
                     let one: BigInt = One::one();
                     let denom: BigInt = one << ( ( -exponent ) as usize );
                     let numer: BigUint = FromPrimitive::from_u64( mantissa ).unwrap();
                     Some( Ratio::new( BigInt::from_biguint( bigint_sign, numer ), denom ) )
-                } else {
+                }
+            
+            else
+            {
                     let mut numer: BigUint = FromPrimitive::from_u64( mantissa ).unwrap();
                     numer <<= exponent as usize;
                     Some( Ratio::from_integer( BigInt::from_biguint( 
@@ -18800,7 +20882,10 @@ pub mod num
                     let ord = self.numer.cmp( &other.numer );
                     return if self.denom < T::zero() {
                         ord.reverse()
-                    } else {
+                    }
+            
+            else
+            {
                         ord
                     };
                 }
@@ -18812,7 +20897,10 @@ pub mod num
                     let ord = self.denom.cmp( &other.denom );
                     return if self.numer < T::zero() {
                         ord
-                    } else {
+                    }
+            
+            else
+            {
                         ord.reverse()
                     };
                 }
@@ -18867,10 +20955,13 @@ pub mod num
                 fn recurse<T: Integer + Hash, H: Hasher>( numer:&T, denom:&T, state:&mut H ) {
                     if !denom.is_zero() {
                         let ( int, rem ) = numer.div_mod_floor( denom );
-                        int.hash( state  );
+                        int.hash( state );
                         recurse( denom, &rem, state );
-                    } else {
-                        denom.hash( state  );
+                    }
+            
+            else
+            {
+                        denom.hash( state );
                     }
                 }
             }
@@ -18950,7 +21041,10 @@ pub mod num
                 fn add_assign( &mut self, other: Ratio<T> ) {
                     if self.denom == other.denom {
                         self.numer += other.numer
-                    } else {
+                    }
+            
+            else
+            {
                         let lcm = self.denom.lcm( &other.denom );
                         let lhs_numer = self.numer.clone() * ( lcm.clone() / self.denom.clone() );
                         let rhs_numer = other.numer * ( lcm.clone() / other.denom );
@@ -18992,7 +21086,10 @@ pub mod num
                 fn rem_assign( &mut self, other: Ratio<T> ) {
                     if self.denom == other.denom {
                         self.numer %= other.numer
-                    } else {
+                    }
+            
+            else
+            {
                         let lcm = self.denom.lcm( &other.denom );
                         let lhs_numer = self.numer.clone() * ( lcm.clone() / self.denom.clone() );
                         let rhs_numer = other.numer * ( lcm.clone() / other.denom );
@@ -19008,7 +21105,10 @@ pub mod num
                 fn sub_assign( &mut self, other: Ratio<T> ) {
                     if self.denom == other.denom {
                         self.numer -= other.numer
-                    } else {
+                    }
+            
+            else
+            {
                         let lcm = self.denom.lcm( &other.denom );
                         let lhs_numer = self.numer.clone() * ( lcm.clone() / self.denom.clone() );
                         let rhs_numer = other.numer * ( lcm.clone() / other.denom );
@@ -19196,7 +21296,10 @@ pub mod num
                     ( self.numer.clone(), rhs.numer.clone() )
                 } else if self.numer == rhs.numer {
                     ( rhs.denom.clone(), self.denom.clone() )
-                } else {
+                }
+            
+            else
+            {
                     let gcd_ac = self.numer.gcd( &rhs.numer );
                     let gcd_bd = self.denom.gcd( &rhs.denom );
                     ( 
@@ -19212,7 +21315,10 @@ pub mod num
                     Some( Self::zero() )
                 } else if numer == denom {
                     Some( Self::one() )
-                } else {
+                }
+            
+            else
+            {
                     let g = numer.gcd( &denom );
                     let numer = numer / g.clone();
                     let denom = denom / g;
@@ -19221,7 +21327,10 @@ pub mod num
                        
                         let n1 = T::zero() - T::one();
                         Ratio::new_raw( numer.checked_mul( &n1 )?, denom.checked_mul( &n1 )? )
-                    } else {
+                    }
+            
+            else
+            {
                         Ratio::new_raw( numer, denom )
                     };
                     Some( raw )
@@ -19354,10 +21463,16 @@ pub mod num
                         Err( ParseRatioError {
                             kind: RatioErrorKind::ZeroDenominator,
                         } )
-                    } else {
+                    }
+            
+            else
+            {
                         Ok( Ratio::new( numer, denom ) )
                     }
-                } else {
+                }
+            
+            else
+            {
                     Err( ParseRatioError {
                         kind: RatioErrorKind::ParseError,
                     } )
@@ -19370,14 +21485,20 @@ pub mod num
             #[inline] fn abs( &self ) -> Ratio<T> {
                 if self.is_negative() {
                     -self.clone()
-                } else {
+                }
+            
+            else
+            {
                     self.clone()
                 }
             }
             #[inline] fn abs_sub( &self, other:&Ratio<T> ) -> Ratio<T> {
                 if *self <= *other {
                     Zero::zero()
-                } else {
+                }
+            
+            else
+            {
                     self - other
                 }
             }
@@ -19386,7 +21507,10 @@ pub mod num
                     Self::one()
                 } else if self.is_zero() {
                     Self::zero()
-                } else {
+                }
+            
+            else
+            {
                     -Self::one()
                 }
             }
@@ -19407,16 +21531,25 @@ pub mod num
                             fn fmt( &self, f:&mut Formatter<'_> ) -> fmt::Result
                 {        let pre_pad = if self.denom.is_one() {
                             format!( $fmt_str, self.numer )
-                        } else {
+                        }
+            
+            else
+            {
                             if f.alternate() {
                                 format!( concat!( $fmt_str, "/", $fmt_alt ), self.numer, self.denom )
-                            } else {
+                            }
+            
+            else
+            {
                                 format!( concat!( $fmt_str, "/", $fmt_str ), self.numer, self.denom )
                             }
                         };
                         if let Some( pre_pad ) = pre_pad.strip_prefix( "-" ) {
                             f.pad_integral( false, $prefix, pre_pad )
-                        } else {
+                        }
+            
+            else
+            {
                             f.pad_integral( true, $prefix, &pre_pad )
                         }
                     }
@@ -19455,7 +21588,10 @@ pub mod num
                     Err( ParseRatioError {
                         kind: RatioErrorKind::ZeroDenominator,
                     } )
-                } else {
+                }
+            
+            else
+            {
                     Ok( Ratio::new( num, den ) )
                 }
             }
@@ -19600,7 +21736,10 @@ pub mod num
             let r = approximate_float_unsigned( abs_val, max_error, max_iterations )?;
 
            
-            Some( if negative { r.neg() } else { r } )
+            Some( if negative { r.neg() }
+            
+            else
+            { r } )
         }
         
         fn approximate_float_unsigned<T, F>( val: F, max_error: F, max_iterations: usize ) -> Option<Ratio<T>> where
@@ -19714,7 +21853,10 @@ pub mod num
                 };
                 if float.is_nan() {
                     None
-                } else {
+                }
+            
+            else
+            {
                     Some( float )
                 }
             }
@@ -19748,7 +21890,7 @@ pub mod num
             assert_eq!( 
                 RADIX, 2,
                 "only floating point implementations with radix 2 are supported"
-             );
+            );
 
            
             const MAX_EXACT_INT: i64 = 1i64 << MANTISSA_DIGITS;
@@ -19788,7 +21930,10 @@ pub mod num
             }
             let diff = if is_diff_positive {
                 absolute_diff.to_isize().unwrap()
-            } else {
+            }
+            
+            else
+            {
                 -absolute_diff.to_isize().unwrap()
             };
 
@@ -19797,7 +21942,10 @@ pub mod num
             let shift: isize = diff.max( MIN_EXP as isize ) - MANTISSA_DIGITS as isize - 2;
             if shift >= 0 {
                 denom <<= shift as usize
-            } else {
+            }
+            
+            else
+            {
                 numer <<= -shift as usize
             };
 
@@ -19836,7 +21984,7 @@ pub mod num
             assert_eq!( 
                 RADIX, 2,
                 "only floating point implementations with radix 2 are supported"
-             );
+            );
 
             const EXPONENT_MASK: u64 = 0x7ff << 52;
             const MAX_UNSIGNED_EXPONENT: i32 = 0x7fe;
@@ -19862,7 +22010,10 @@ pub mod num
                     bits,
                     ( ( bits & EXPONENT_MASK ) >> 52 ) as i32 - MIN_SUBNORMAL_POWER,
                 )
-            } else {
+            }
+            
+            else
+            {
                 let bits = x.to_bits();
                 let curr_exp = ( bits & EXPONENT_MASK ) >> 52;
                
@@ -19888,7 +22039,10 @@ pub mod num
                 debug_assert!( new_exp >= 0 );
                 let new_bits = ( bits & !EXPONENT_MASK ) | ( ( new_exp as u64 ) << 52 );
                 f64::from_bits( new_bits ) * 2f64.powi( -MIN_SUBNORMAL_POWER )
-            } else {
+            }
+            
+            else
+            {
                
                 return 0.0 * x.signum();
             }
@@ -20407,7 +22561,7 @@ pub mod now
                 &pipes,
                 &fds_capture_stdout,
                 &fds_capture_stderr,
-            );
+           );
 
             if child_id > 0 && !cl.background {
                 fg_pids.push(child_id );
@@ -20665,7 +22819,7 @@ pub mod now
                         if let Some( fds ) = fds_capture_stderr {
                             libs::close( fds.0);
                             libs::dup2( fds.1, 2);
-                            libs::close( fds.1);
+                            process::close( fds.1);
                         }
                     }
                 }
@@ -20686,14 +22840,17 @@ pub mod now
                 for (key, value ) in cl.envs.iter() {
                     c_envs.push(
                         CString::new( format!( "{}={}", key, value ).as_str() ).expect( "CString error" ),
-                    );
+                   );
                 }
 
                 let program = &cmd.tokens[0].1;
                 let path = if program.contains('/') {
                     program.clone()
-                } else {
-                    libs::path::find_file_in_path( program, true )
+                }
+            
+            else
+            {
+                    ::path::find_file( program, true )
                 };
                 if path.is_empty() {
                     println_stderr!( "cicada: {}: command not found", program);
@@ -21110,7 +23267,7 @@ pub mod objects
             or if the `Value` at `field` is not `Bool`.",
             get_bool,
             bool
-         );
+        );
 
         get_fn!
         ( 
@@ -21119,7 +23276,7 @@ pub mod objects
             or if the `Value` at `field` is not `Int`.",
             get_int,
             BigInt
-         );
+        );
 
         get_fn!
         ( 
@@ -21128,7 +23285,7 @@ pub mod objects
             or if the `Value` at `field` is not `Frac`.",
             get_frac,
             BigRational
-         );
+        );
 
         get_fn!
         ( 
@@ -21137,7 +23294,7 @@ pub mod objects
             or if the `Value` at `field` is not `Char`.",
             get_char,
             char
-         );
+        );
 
         get_fn!
         ( 
@@ -21146,7 +23303,7 @@ pub mod objects
             or if the `Value` at `field` is not `Str`.",
             get_str,
             String
-         );
+        );
 
         get_fn!
         ( 
@@ -21155,7 +23312,7 @@ pub mod objects
             or if the `Value` at `field` is not `Arr`.",
             get_arr,
             Arr
-         );
+        );
 
         get_fn!
         ( 
@@ -21164,7 +23321,7 @@ pub mod objects
             or if the `Value` at `field` is not `Tup`.",
             get_tup,
             Tup
-         );
+        );
 
         get_fn!
         ( 
@@ -21173,7 +23330,7 @@ pub mod objects
             or if the `Value` at `field` is not `Obj`.",
             get_obj,
             Obj
-         );
+        );
         /// Returns whether this `Obj` has a parent.
         pub fn has_parent( &self ) -> bool 
         {
@@ -21494,7 +23651,7 @@ pub mod parses
             return parse_err( 
                 stream.file(),
                 InvalidClosingBracket( cur_brace, peek, stream.line(), stream.col() ),
-             );
+            );
         }
 
        
@@ -21509,7 +23666,7 @@ pub mod parses
             return parse_err( 
                 stream.file(),
                 DuplicateField( "^".into(), field_line, field_col ),
-             );
+            );
         }
 
        
@@ -21541,7 +23698,10 @@ pub mod parses
                 .get_obj()
                 .map_err( | e |ParseError::from_over( &e, stream.file(), value_line, value_col ) )?;
             *parent = Some( par );
-        } else {
+        }
+            
+            else
+            {
             obj.insert( field, value );
         }
 
@@ -21597,14 +23757,14 @@ pub mod parses
                         return parse_err( 
                             stream.file(),
                             ExpectedType( tcur, tnew, value_line, value_col ),
-                         );
+                        );
                     }
                 }
             } else if tcur != tnew {
                 return parse_err( 
                     stream.file(),
                     ExpectedType( tcur, tnew, value_line, value_col ),
-                 );
+                );
             }
             vec.push( value );
         }
@@ -21656,7 +23816,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     InvalidClosingBracket( Some( ']' ), peek, stream.line(), stream.col() ),
-                 );
+                );
             }
            
             let ( value_line, value_col ) = ( stream.line(), stream.col() );
@@ -21684,14 +23844,14 @@ pub mod parses
                         return parse_err( 
                             stream.file(),
                             ExpectedType( tcur, tnew, value_line, value_col ),
-                         );
+                        );
                     }
                 }
             } else if tcur != tnew {
                 return parse_err( 
                     stream.file(),
                     ExpectedType( tcur, tnew, value_line, value_col ),
-                 );
+                );
             }
             vec.push( value );
         }
@@ -21771,7 +23931,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     InvalidClosingBracket( Some( ')' ), peek, stream.line(), stream.col() ),
-                 );
+                );
             }
            
             let ( value_line, value_col ) = ( stream.line(), stream.col() );
@@ -21826,7 +23986,7 @@ pub mod parses
                     return parse_err( 
                         stream.file(),
                         InvalidFieldChar( ch, stream.line(), stream.col() - 1 ),
-                     );
+                    );
                 }
             }
             first = false;
@@ -22014,35 +24174,44 @@ pub mod parses
                 ch if is::digit( ch ) => {
                     if !dec {
                         s1.push( ch );
-                    } else {
+                    }
+            
+            else
+            {
                         s2.push( ch );
                     }
                 }
                 '.' | ',' => {
                     if !dec {
                         dec = true;
-                    } else {
+                    }
+            
+            else
+            {
                         return parse_err( 
                             stream.file(),
                             InvalidValueChar( ch, stream.line(), stream.col() ),
-                         );
+                        );
                     }
                 }
                 '_' => {
                     if !under {
                         under = true;
-                    } else {
+                    }
+            
+            else
+            {
                         return parse_err( 
                             stream.file(),
                             InvalidValueChar( ch, stream.line(), stream.col() ),
-                         );
+                        );
                     }
                 }
                 _ => {
                     return parse_err( 
                         stream.file(),
                         InvalidValueChar( ch, stream.line(), stream.col() ),
-                     );
+                    );
                 }
             }
             if ch != '_' {
@@ -22058,7 +24227,10 @@ pub mod parses
             }
             let whole: BigInt = if s1.is_empty() {
                 0u8.into()
-            } else {
+            }
+            
+            else
+            {
                 s1.parse()?
             };
 
@@ -22067,13 +24239,19 @@ pub mod parses
 
             let ( decimal, dec_len ): ( BigInt, usize ) = if s2.is_empty() {
                 ( 0u8.into(), 1 )
-            } else {
+            }
+            
+            else
+            {
                 ( s2.parse()?, s2.len() )
             };
 
             let f = frac_from_whole_and_dec( whole, decimal, dec_len );
             Ok( f.into() )
-        } else {
+        }
+            
+            else
+            {
            
             if s1.is_empty() {
                 return parse_err( stream.file(), InvalidNumeric( line, col ) );
@@ -22121,7 +24299,7 @@ pub mod parses
                             return parse_err( 
                                 stream.file(),
                                 InvalidValueChar( ch, stream.line(), stream.col() ),
-                             );
+                            );
                         }
                         None => return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ),
                     }
@@ -22137,7 +24315,7 @@ pub mod parses
                     return parse_err( 
                         stream.file(),
                         InvalidValueChar( ch, stream.line(), stream.col() ),
-                     );
+                    );
                 }
             }
         }
@@ -22209,7 +24387,7 @@ pub mod parses
                             return parse_err( 
                                 stream.file(),
                                 ExpectedType( Type::Int, value.get_type(), line, col ),
-                             );
+                            );
                         }
                     }
                 }
@@ -22238,7 +24416,7 @@ pub mod parses
                             return parse_err( 
                                 stream.file(),
                                 ExpectedType( Type::Int, value.get_type(), line, col ),
-                             );
+                            );
                         }
                     }
                 }
@@ -22278,7 +24456,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     InvalidValueChar( ch, stream.line(), stream.col() - 1 ),
-                 );
+                );
             }
             Some( ch ) => ( false, ch ),
             None => return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ),
@@ -22295,7 +24473,7 @@ pub mod parses
                         return parse_err( 
                             stream.file(),
                             InvalidEscapeChar( ch, stream.line(), stream.col() - 1 ),
-                         );
+                        );
                     }
                 },
 
@@ -22310,7 +24488,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     InvalidValueChar( ch, stream.line(), stream.col() - 1 ),
-                 );
+                );
             }
             None => return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ),
         }
@@ -22345,11 +24523,14 @@ pub mod parses
                                 return parse_err( 
                                     stream.file(),
                                     InvalidEscapeChar( ch, stream.line(), stream.col() - 1 ),
-                                 );
+                                );
                             }
                         }
                         escape = false;
-                    } else {
+                    }
+            
+            else
+            {
                         match ch {
                             '"' => break,
                             '\\' => escape = true,
@@ -22420,7 +24601,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     InvalidIncludeToken( value.get_type(), line, col ),
-                 );
+                );
             }
         }
 
@@ -22455,7 +24636,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     InvalidClosingBracket( Some( '>' ), ch, stream.line(), stream.col() - 1 ),
-                 );
+                );
             }
         }
 
@@ -22466,7 +24647,7 @@ pub mod parses
                 return parse_err( 
                     stream.file(),
                     ExpectedType( Type::Str, value.get_type(), line, col ),
-                 );
+                );
             }
         };
 
@@ -22504,7 +24685,10 @@ pub mod parses
             let full_file = String::from( Path::new( &file ).canonicalize().unwrap().to_str().unwrap() );
             included.1.insert( full_file.clone() );
             Some( full_file )
-        } else {
+        }
+            
+            else
+            {
             None
         };
         
@@ -22516,7 +24700,10 @@ pub mod parses
         let value = if included.0.contains_key( full_path_str ) {
             let value = &included.0[full_path_str];
             value.clone()
-        } else {
+        }
+            
+            else
+            {
             let value: Value = match include_type {
                 IncludeType::Obj => parse_obj_file_includes( path_str, included )?.into(),
                 IncludeType::Str => parse_str_file( path_str )?.into(),
@@ -22634,7 +24821,10 @@ pub mod parses
                                 let arr = if let Arr( ref t ) = t {
                                    
                                     arrays::Arr::from_vec_unchecked( vec, t.deref().clone() )
-                                } else {
+                                }
+            
+            else
+            {
                                     panic!( "Logic error" )
                                 };
 
@@ -22644,7 +24834,7 @@ pub mod parses
                                 return parse_err( 
                                     stream.file(),
                                     BinaryOperatorError( type1, type2, op, line, col ),
-                                 );
+                                );
                             }
                         }
                     }
@@ -22652,7 +24842,7 @@ pub mod parses
                         return parse_err( 
                             stream.file(),
                             BinaryOperatorError( type1, type2, op, line, col ),
-                         );
+                        );
                     }
                 }
             }
@@ -22663,7 +24853,7 @@ pub mod parses
                     return parse_err( 
                         stream.file(),
                         BinaryOperatorError( type1, type2, op, line, col ),
-                     );
+                    );
                 }
             },
             '*' => match type1 {
@@ -22673,7 +24863,7 @@ pub mod parses
                     return parse_err( 
                         stream.file(),
                         BinaryOperatorError( type1, type2, op, line, col ),
-                     );
+                    );
                 }
             },
             '/' => match type1 {
@@ -22695,7 +24885,7 @@ pub mod parses
                     return parse_err( 
                         stream.file(),
                         BinaryOperatorError( type1, type2, op, line, col ),
-                     );
+                    );
                 }
             },
             '%' => match type1 {
@@ -22710,14 +24900,14 @@ pub mod parses
                     return parse_err( 
                         stream.file(),
                         BinaryOperatorError( type1, type2, op, line, col ),
-                     );
+                    );
                 }
             },
             _ => {
                 return parse_err( 
                     stream.file(),
                     BinaryOperatorError( type1, type2, op, line, col ),
-                 );
+                );
             }
         } )
     }
@@ -22825,9 +25015,13 @@ pub mod path
             }
         };
         let vec_path = env::split_paths( &env_path );
-        for p in vec_path {
-            match read_dir( &p) {
-                Ok(list) => {
+        
+        for p in vec_path
+        {
+            match read_dir( &p)
+            {
+                Ok(list) =>
+                {
                     for entry in list.flatten() {
                         if let Ok( name ) = entry.file_name().into_string() {
                             if name != filename {
@@ -22853,14 +25047,14 @@ pub mod path
                         }
                     }
                 }
-                Err( e ) => {
-                    if e.kind() == ErrorKind::NotFound {
-                        continue;
-                    }
-                    log!( "cicada: fs read_dir error: {}: {}", p.display(), e );
+                Err( e ) =>
+                {
+                    if e.kind() == ErrorKind::NotFound { continue; }
+                    //log!( "cicada: fs read_dir error: {}: {}", p.display(), e );
                 }
             }
         }
+
         String::new()
     }
 
@@ -22959,7 +25153,7 @@ pub mod path
                     todo: Vec::new(),
                     scope: None,
                 }
-            );
+           );
         }
 
         let scope = root.map_or_else( || PathBuf::from( "." ), to_scope );
@@ -22984,7 +25178,7 @@ pub mod path
                     is_recursive: false,
                     has_metachars: false,
                 }
-            );
+           );
         }
 
         let last_is_separator = pattern.chars().next_back().map( is_separator );
@@ -23056,7 +25250,7 @@ pub mod path
 
     impl PathWrapper
     {
-        fn from_dir_entry( path: PathBuf, e: DirEntry) -> Self
+        fn from_dir_entry( path: PathBuf, e: DirEntry ) -> Self
         {
             let is_directory = e
             .file_type()
@@ -23072,7 +25266,7 @@ pub mod path
             Self { path, is_directory }
         }
 
-        fn from_path( path: PathBuf) -> Self
+        fn from_path( path: PathBuf ) -> Self
         {
             let is_directory = fs::metadata( &path ).map(|m| m.is_dir() ).unwrap_or( false );
             Self { path, is_directory }
@@ -23104,7 +25298,7 @@ pub mod path
     {
         type Item = GlobResult;
 
-        fn next( &mut self) -> Option<GlobResult>
+        fn next( &mut self ) -> Option<GlobResult>
         {
             if let Some( scope ) = self.scope.take()
             {
@@ -23148,7 +25342,7 @@ pub mod path
                             next,
                             &path,
                             self.options,
-                        );
+                       );
 
                         if next == self.dir_patterns.len() - 1 { return Some(Ok( path.into_path() ) ); }
                         else { idx = next + 1; }
@@ -23184,7 +25378,7 @@ pub mod path
                             idx + 1,
                             &path,
                             self.options,
-                        );
+                       );
                     }
                 }
             }
@@ -23563,7 +25757,7 @@ pub mod path
                     .iter()
                     .all( | tok | matches!( tok, PatternToken::Char( _ ) ) ),
                     "broken invariant: pattern has metachars but shouldn't"
-                );
+               );
                 
                 let s = pattern.as_str();                
                 let special = "." == s || ".." == s;
@@ -23632,7 +25826,7 @@ pub mod path
                                     error: e
                                 }
                             )
-                        );
+                       );
                     }
                 }
             }
@@ -23651,7 +25845,10 @@ pub mod path
             if i + 3 <= s.len() && s[i + 1] == '-' {
                 cs.push(CharRange( s[i], s[i + 2] ) );
                 i += 3;
-            } else {
+            }
+            
+            else
+            {
                 cs.push(SingleChar( s[i] ) );
                 i += 1;
             }
@@ -23883,7 +26080,10 @@ pub mod prompts
                             prompt.push('$');
                             met_dollar = true;
                             continue;
-                        } else {
+                        }
+            
+            else
+            {
                             apply_item( sh, &mut prompt, &token );
                             token.clear();
                             // met_dollar is still true
@@ -23894,7 +26094,10 @@ pub mod prompts
                             prefix.push( c );
                         } else if is::suffix_char( c ) {
                             suffix.push( c );
-                        } else {
+                        }
+            
+            else
+            {
                             token.push( c );
                         }
                         continue;
@@ -23975,7 +26178,10 @@ pub mod prompts
                         }
                     }
                     prompter.insert_str( ">> " )
-                } else {
+                }
+            
+            else
+            {
                     Ok(() )
                 }
             }
@@ -24197,7 +26403,7 @@ pub mod prompts
         }
 
         fn apply_yellow( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW);
+            prompt.push_str(libs::colored::YELLOw );
         }
 
         fn apply_yellow_bg( prompt: &mut String) {
@@ -24223,13 +26429,16 @@ pub mod prompts
         fn apply_color_status( sh: &shell::Shell, prompt: &mut String) {
             if sh.previous_status == 0 {
                 prompt.push_str(libs::colored::GREEN_B);
-            } else {
+            }
+            
+            else
+            {
                 prompt.push_str(libs::colored::RED_B);
             }
         }
 
         fn _find_git_root() -> String {
-            let current_dir = libs::path::current_dir();
+            let current_dir = ::path::current_dir();
             let dir_git = format!( "{}/.git", current_dir );
             if Path::new( &dir_git).exists() {
                 return current_dir;
@@ -24295,7 +26504,10 @@ pub mod prompts
                         Ok( n ) => n,
                         Err(_ ) => _len_default,
                     }
-                } else {
+                }
+            
+            else
+            {
                     _len_default
                 };
                 if len_max <= 0 {
@@ -24304,7 +26516,10 @@ pub mod prompts
 
                 if branch.len() as i32 <= len_max {
                     prompt.push_str( &branch );
-                } else {
+                }
+            
+            else
+            {
                     let len = branch.len() as i32;
                     let offset = (len - len_max + 2) as usize;
                     let branch_short = format!( "..{}", &branch[offset..]);
@@ -24463,19 +26678,23 @@ pub mod prompts
             }
         }
     }
-    // pub fn get_prompt( sh: &shell::Shell) -> String
-    pub fn read( sh: &shell::Shell) -> String
+    // pub fn get_prompt( sh: &shell::Shell ) -> String
+    pub fn read( sh: &shell::Shell ) -> String
     {
         let ps = read_string();
         let mut prompt = render( sh, &ps );
-        if let Some((w, _h ) ) = libs::term_size::dimensions() {
+        if let Some((w, _h ) ) = dimensions()
+        {
             if get::prompt_len( &prompt) > (w / 2) as i32
                 && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#)
             {
                 prompt.push_str( "\n$ " );
             }
-        } else {
-            log!( "ERROR: Failed to get term size" );
+        }
+        
+        else
+        {
+            //log!( "ERROR: Failed to get term size" );
         }
         prompt
     }
@@ -24522,13 +26741,15 @@ pub mod rc
         // pub fn load_rc_files( sh: &mut shell::Shell)
         pub fn run( sh: &mut shell::Shell)
         {
-            let rc_file = get_rc_file();
-            if !Path::new( &rc_file ).exists() {
+            let rc_file = read();
+
+            if !Path::new( &rc_file ).exists()
+            {
                 return;
             }
 
             let args = vec!["source".to_string(), rc_file];
-            scripting::run_script( sh, &args );
+            scripts::run_script( sh, &args );
         }
     }
 }
@@ -24562,7 +26783,10 @@ pub mod regex
 
             if n == 0 {
                 return None;
-            } else {
+            }
+            
+            else
+            {
                 pfx = &pfx[..n];
             }
         }
@@ -24617,7 +26841,10 @@ pub mod regex
         if n > 1 {
             let start = regex::backward_word( n - 1, buf, prev, word_break );
             start..end
-        } else {
+        }
+            
+            else
+            {
             prev..end
         }
     }
@@ -24630,7 +26857,10 @@ pub mod regex
             let last = next_word( n - 1, buf, start, word_break );
             let end = regex::word_end( buf, last, word_break );
             start..end
-        } else {
+        }
+            
+            else
+            {
             let end = regex::word_end( buf, start, word_break );
             start..end
         }
@@ -24654,7 +26884,10 @@ pub mod regex
 
         if fwd {
             next_word( 1, buf, cur, word_break )
-        } else {
+        }
+            
+            else
+            {
             let mut chars = buf[..cur].char_indices().rev();
 
             iter::drop_while( &mut chars, |( _, ch )| !word_break.contains( ch ) );
@@ -24832,6 +27065,7 @@ pub mod shell
             let current_dir = get::current_directory();
             let has_terminal = has::terminal();
             let ( session_id, _ ) = uuid.split_at( 13 );
+
             Shell
             {
                 jobs: HashMap::new(),
@@ -24848,6 +27082,30 @@ pub mod shell
                 has_terminal,
                 session_id: session_id.to_string(),
             }
+        }
+
+        pub fn get_alias_content(&self, name: &str) -> Option<String>
+        {
+            let result = match self.aliases.get(name)
+            {
+                Some(x) => x.to_string(),
+                None => String::new(),
+            };
+
+            if result.is_empty() { None }
+            else { Some(result) }
+        }
+        
+        pub fn get_alias_list(&self) -> Vec<(String, String)>
+        {
+            let mut result = Vec::new();
+            
+            for (name, value) in &self.aliases
+            {
+                result.push((name.clone(), value.clone()));
+            }
+
+            result
         }
     }
 }
@@ -25190,7 +27448,7 @@ pub mod str
                             ptr.add( guard.idx ),
                             ptr.add( guard.idx - guard.del_bytes ),
                             ch_len,
-                         );
+                        );
                     }
                 }
                 
@@ -25249,7 +27507,7 @@ pub mod str
 
     impl<A: Array<Item = u8>> fmt::Write for SmallString<A> {
         #[inline] fn write_str( &mut self, s:&str ) -> fmt::Result {
-            self.push_str( s  );
+            self.push_str( s );
             Ok( () )
         }
 
@@ -25398,7 +27656,7 @@ pub mod str
     impl<'a, A: Array<Item = u8>> Extend<&'a str> for SmallString<A> {
         fn extend<I: IntoIterator<Item = &'a str>>( &mut self, iter: I ) {
             for s in iter {
-                self.push_str( s  );
+                self.push_str( s );
             }
         }
     }
@@ -25617,7 +27875,7 @@ pub mod str
             
             else if ch == END_INVISIBLE { ignore = false; }
 
-            else if !ignore { virt.push( ch  ); }
+            else if !ignore { virt.push( ch ); }
         }
 
         Cow::Owned( virt )
@@ -25795,13 +28053,13 @@ pub mod system
         extern "C"
         {
             pub fn fork() -> pid_t;
-            pub fn getpgid( pid: pid_t) -> pid_t;
+            pub fn getpgid( pid: pid_t ) -> pid_t;
             pub fn getpgrp() -> pid_t;
             pub fn getpid() -> pid_t;
             pub fn getppid() -> pid_t;
             pub fn getuid() -> uid_t;
-            pub fn isatty( fd: c_int) -> c_int;
-            pub fn pipe( fds: *mut c_int) -> c_int;
+            pub fn isatty( fd: c_int ) -> c_int;
+            pub fn pipe( fds: *mut c_int ) -> c_int;
             pub fn select
             ( 
                 nfds: c_int,
@@ -25877,7 +28135,10 @@ pub mod system
                     let next_signal = SIGNALS[self.next];
                     self.next += 1;
                     Some( next_signal )
-                } else {
+                }
+            
+            else
+            {
                     None
                 }
             }
@@ -26208,7 +28469,10 @@ pub mod system
                 const ULONG_SIZE: usize = 32;
             } else if #[cfg( target_pointer_width = "64" )] {
                 const ULONG_SIZE: usize = 64;
-            } else {
+            }
+            
+            else
+            {
                 // Unknown target_pointer_width
             }
         }
@@ -26245,8 +28509,8 @@ pub mod system
             /// Add a file descriptor to an `FdSet`
             pub fn insert( &mut self, fd:RawFd )
             {
-                assert_fd_valid( fd  );
-                unsafe { FD_SET( fd.into(), &mut self.set ) };
+                assert_fd_valid( fd );
+                FD_SET( fd.into(), &mut self.set );
             }
             /// Test an `FdSet` for the presence of a certain file descriptor.
             pub fn contains( &self, fd: BorrowedFd<'fd> ) -> bool
@@ -26375,7 +28639,7 @@ pub mod system
         }
         
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
-        pub struct TimeVal( TimeValue  );
+        pub struct TimeVal( TimeValue );
         impl TimeVal
         {
             /// Makes a new `TimeVal` with given number of microseconds.
@@ -26384,7 +28648,7 @@ pub mod system
                 assert!( 
                     ( TV_MIN_SECONDS..=TV_MAX_SECONDS ).contains( &secs ),
                     "TimeVal out of bounds"
-                 );
+                );
                 #[cfg_attr( 
                     any( target_env = "musl", target_env = "ohos" ),
                     allow( deprecated )
@@ -26450,7 +28714,7 @@ pub mod system
                     .map( |tv| tv as *mut _ as *mut TimeValue )
                     .unwrap_or( null_mut() );
 
-                let res = select( nfds, readfds, writefds, errorfds, timeout  );
+                let res = select( nfds, readfds, writefds, errorfds, timeout );
 
                 Errno::result( res )
             }
@@ -26791,10 +29055,10 @@ pub mod system
             fn from( ati:AsynchronousTerminalInterface ) -> Self
             {
                 let a = ati.clone();
-                let input_flags   = InputFlags::from_bits_truncate( a.c_iflag  );
-                let output_flags  = OutputFlags::from_bits_truncate( a.c_oflag  );
-                let control_flags = ControlFlags::from_bits_truncate( a.c_cflag  );
-                let local_flags   = LocalFlags::from_bits_truncate( a.c_lflag  );
+                let input_flags   = InputFlags::from_bits_truncate( a.c_iflag );
+                let output_flags  = OutputFlags::from_bits_truncate( a.c_oflag );
+                let control_flags = ControlFlags::from_bits_truncate( a.c_cflag );
+                let local_flags   = LocalFlags::from_bits_truncate( a.c_lflag );
                 let control_chars = a.c_cc.clone();
                 Termios
                 {
@@ -26898,7 +29162,7 @@ pub mod system
         }
 
         #[repr( C )] #[derive( Clone, Copy, Debug )]
-        pub struct TimeSpec( TimeSpecification  );
+        pub struct TimeSpec( TimeSpecification );
         
         impl TimeSpec
         {
@@ -26911,7 +29175,7 @@ pub mod system
                 ( 
                     ( TS_MIN_SECONDS..=TS_MAX_SECONDS ).contains( &secs ),
                     "TimeSpec out of bounds"
-                 );
+                );
                 let mut ts = zero_init_time_specification();
                 ts.tv_sec = secs as time_t;
                 ts.tv_nsec = nanos as timespec_tv_nsec_t;
@@ -27280,7 +29544,7 @@ pub mod system
             assert!( 
                 usize::try_from( fd ).map_or( false, |fd| fd < FD_SETSIZE ),
                 "fd must be in the range 0..FD_SETSIZE",
-             );
+            );
         }
         /// Return the configuration of a port.
         pub fn tcgetattraw( d:RawFd ) -> Result<Termios> 
@@ -27288,9 +29552,9 @@ pub mod system
             unsafe
             {
                 let mut t = ::mem::MaybeUninit::uninit();
-                let r = libc::tcgetattr( d, t.as_mut_ptr()  );
+                let r = libc::tcgetattr( d, t.as_mut_ptr() );
                 Errno::result( r )?;
-                let a:AsynchronousTerminalInterface = ::mem::transmute( t.assume_init().clone()  );
+                let a:AsynchronousTerminalInterface = ::mem::transmute( t.assume_init().clone() );
                 let b:AsynchronousTerminalInterface = a.clone();
                 Ok
                 ( 
@@ -27306,7 +29570,7 @@ pub mod system
                 )
                 /*
                 let mut t = ::mem::MaybeUninit::uninit();
-                let r = libc::tcgetattr( d, t.as_mut_ptr()  );
+                let r = libc::tcgetattr( d, t.as_mut_ptr() );
                 Errno::result( r )?;
                 Ok( ::mem::transmute::<libc::termios, Termios>( t.assume_init() ) )*/
             }
@@ -27530,7 +29794,7 @@ pub mod system
             assert!( 
                 ( TV_MIN_SECONDS..=TV_MAX_SECONDS ).contains( &secs ),
                 "TimeVal out of bounds"
-             );
+            );
             // https://github.com/rust-lang/libc/issues/1848
             TimeVal( TimeValue {
                 tv_sec: secs as time_t,
@@ -28140,77 +30404,77 @@ pub mod system
                 /*
                 Handle Booleans Table */
                 BOOLEANS.push_str( r#"booleans:  {
-                "#  );
+                "# );
 
                 for ( index, name ) in BOOLEAN.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#, index, name );
                     BOOLEANS.push_str
                     ( 
                         format!( r#"   b{}: "{}"
                         "#, index, name ).as_str()
-                     );
+                    );
                 }
 
-                BOOLEANS.push_str( r#"}"#  );
+                BOOLEANS.push_str( r#"}"# );
                 /*
                 Handle Numbers Table */
                 NUMBERS.push_str( r#"numbers:  {
-                "#  );
+                "# );
 
                 for ( index, name ) in NUMBER.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#, index, name );
                     NUMBERS.push_str
                     ( 
                         format!( r#"   n{}: "{}"
                     "#, index, name ).as_str()
-                     );
+                    );
                 }
 
-                NUMBERS.push_str( r#"}"#  );
+                NUMBERS.push_str( r#"}"# );
                 /*
                 Handle Strings Table */
                 STRINGS.push_str( r#"strings:  {
-                "#  );
+                "# );
 
                 for ( index, name ) in STRING.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#, index, name );
                     STRINGS.push_str
                     ( 
                         format!( r#"   s{}: "{}"
                     "#, index, name ).as_str()
-                     );
+                    );
                 }
 
-                STRINGS.push_str( r#"}"#  );
+                STRINGS.push_str( r#"}"# );
                 /*
                 Handle Information & Alias Table */
                 INFORMATION.push_str( r#"information:  {
-                "#  );
+                "# );
                 ALIASES.push_str( r#"aliases:  {
-                "#  );
+                "# );
 
                 for ( index, pair ) in TERMINFO.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#, index, name );
                     INFORMATION.push_str
                     ( 
                         format!( r#"   i{}: ( "{}" "{}" )
                         "#, index, pair.0, pair.1 ).as_str()
-                     );
+                    );
 
                     ALIASES.push_str
                     ( 
                         format!( r#"   {}: "{}"
                         "#, pair.0, pair.1 ).as_str()
-                     );
+                    );
                 }
 
-                INFORMATION.push_str( r#"}"#  );
+                INFORMATION.push_str( r#"}"# );
 
-                ALIASES.push_str( r#"}"#  );
+                ALIASES.push_str( r#"}"# );
 
                 DATABASE = format!( r#"
                 {}
@@ -28218,7 +30482,7 @@ pub mod system
                 {}
                 {}
                 {}
-                "#, BOOLEANS, NUMBERS, STRINGS, INFORMATION, ALIASES  );
+                "#, BOOLEANS, NUMBERS, STRINGS, INFORMATION, ALIASES );
                 Ok( () )
             }
         }
@@ -28624,11 +30888,11 @@ pub mod system
             /*
             */
             /// Provides operations on an underlying terminal device in screen mode.
-            pub struct Screen( sys::Screen  );
+            pub struct Screen( sys::Screen );
             /// Holds an exclusive lock for read operations on a `Screen`.
-            pub struct ScreenReadGuard<'a>( sys::ScreenReadGuard<'a>  );
+            pub struct ScreenReadGuard<'a>( sys::ScreenReadGuard<'a> );
             /// Holds an exclusive lock for write operations on a `Screen`.
-            pub struct ScreenWriteGuard<'a>( sys::ScreenWriteGuard<'a>  );
+            pub struct ScreenWriteGuard<'a>( sys::ScreenWriteGuard<'a> );
 
             impl Screen
             {
@@ -28768,7 +31032,7 @@ pub mod system
                 /// Writes a string at the cursor position
                 /// using the current style and color settings.
                 pub fn write_str( &self, s:&str ) {
-                    self.0.write_str( s  );
+                    self.0.write_str( s );
                 }
                 /// Writes formatted text at the cursor position
                 /// using the current style and color settings.
@@ -29014,7 +31278,7 @@ pub mod system
             }
             /// Represents a set of `Signal` values
             #[derive( Copy, Clone, Default, Eq, PartialEq )]
-            pub struct SignalSet( u8  );
+            pub struct SignalSet( u8 );
 
             impl SignalSet
             {
@@ -29481,7 +31745,7 @@ pub mod system
             /// Represents a previous device state of a [`Terminal`].
             #[must_use = "the result of `terminal.prepare()` should be passed to \
             `terminal.restore()` to restore terminal to its original state"]
-            pub struct PrepareState( sys::PrepareState  );
+            pub struct PrepareState( sys::PrepareState );
             /// Represents the size of a terminal window.
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub struct Size
@@ -29505,11 +31769,11 @@ pub mod system
                 { self.lines.checked_mul( self.columns ) }
             }
             /// Provides concurrent read and write access to a terminal device.
-            pub struct Terminal( pub sys::Terminus  );
+            pub struct Terminal( pub sys::Terminus );
             /// Holds an exclusive lock for read operations on a `Terminal`.
-            pub struct TerminalReadGuard<'a>( sys::TerminalReadGuard<'a>  );
+            pub struct TerminalReadGuard<'a>( sys::TerminalReadGuard<'a> );
             /// Holds an exclusive lock for write operations on a `Terminal`.
-            pub struct TerminalWriteGuard<'a>( sys::TerminalWriteGuard<'a>  );
+            pub struct TerminalWriteGuard<'a>( sys::TerminalWriteGuard<'a> );
 
             impl Terminal
             {
@@ -30079,7 +32343,7 @@ pub mod system
                         if self.real_cursor.is_out_of_bounds( new_size )
                         { self.real_cursor = ( !0, !0 ).into(); }
 
-                        self.buffer.resize( new_size  );
+                        self.buffer.resize( new_size );
                         self.clear_screen = true;
                     }
                 }
@@ -30163,7 +32427,10 @@ pub mod system
                     { {
                         if let Some( cap ) = $slf.term.info.get::<$cap>() {
                             $slf.expand( cap.expand() )
-                        } else {
+                        }
+            
+            else
+            {
                             Ok( () )
                         }
                     } };
@@ -30173,7 +32440,10 @@ pub mod system
                         if let Some( cap ) = $slf.term.info.get::<$cap>() {
                             let $ex = cap.expand();
                             $slf.expand( $expansion )
-                        } else {
+                        }
+            
+            else
+            {
                             Ok( () )
                         }
                     } }
@@ -30480,14 +32750,14 @@ pub mod system
                                 prev_resume: self.reader.resume,
                             };
 
-                            tio.input_flags.remove( InputFlags::INLCR  | InputFlags::ICRNL  );
-                            tio.local_flags.remove( LocalFlags::ICANON | LocalFlags::ECHO   );
+                            tio.input_flags.remove( InputFlags::INLCR  | InputFlags::ICRNL );
+                            tio.local_flags.remove( LocalFlags::ICANON | LocalFlags::ECHO  );
                         
-                            if c.block_signals { tio.local_flags.remove( LocalFlags::ISIG  ); }
-                            else { tio.local_flags.insert( LocalFlags::ISIG  ); }
+                            if c.block_signals { tio.local_flags.remove( LocalFlags::ISIG ); }
+                            else { tio.local_flags.insert( LocalFlags::ISIG ); }
                             
-                            if c.enable_control_flow { tio.input_flags.insert( InputFlags::IXON  ); }
-                            else { tio.input_flags.remove( InputFlags::IXON  ); }
+                            if c.enable_control_flow { tio.input_flags.insert( InputFlags::IXON ); }
+                            else { tio.input_flags.remove( InputFlags::IXON ); }
                             
                             tio.control_chars[VMIN as usize] = 0;
                             tio.control_chars[VTIME as usize] = 0;
@@ -30498,22 +32768,22 @@ pub mod system
 
                             w.flush()?;
 
-                            let action = SigAction::new( SigHandler::Handler( handle_signal ), SaFlags::empty(), SigSet::all()  );
+                            let action = SigAction::new( SigHandler::Handler( handle_signal ), SaFlags::empty(), SigSet::all() );
                                 
-                            state.old_sigcont = Some( react( NixSignal::SIGCONT, &action ).map_err( nix_to_io )?  );
-                            state.old_sigwinch = Some( react( NixSignal::SIGWINCH, &action ).map_err( nix_to_io )?  );
+                            state.old_sigcont = Some( react( NixSignal::SIGCONT, &action ).map_err( nix_to_io )? );
+                            state.old_sigwinch = Some( react( NixSignal::SIGWINCH, &action ).map_err( nix_to_io )? );
 
                             if c.report_signals.contains( Signal::Interrupt )
-                            { state.old_sigint = Some( react( NixSignal::SIGINT, &action ).map_err( nix_to_io )?  ); }
+                            { state.old_sigint = Some( react( NixSignal::SIGINT, &action ).map_err( nix_to_io )? ); }
 
                             if c.report_signals.contains( Signal::Suspend )
-                            { state.old_sigtstp = Some( react( NixSignal::SIGTSTP, &action ).map_err( nix_to_io )?  ); }
+                            { state.old_sigtstp = Some( react( NixSignal::SIGTSTP, &action ).map_err( nix_to_io )? ); }
 
                             if c.report_signals.contains( Signal::Quit )
-                            { state.old_sigquit = Some( react( NixSignal::SIGQUIT, &action ).map_err( nix_to_io )?  ); }
+                            { state.old_sigquit = Some( react( NixSignal::SIGQUIT, &action ).map_err( nix_to_io )? ); }
 
                             self.reader.report_signals = c.report_signals;
-                            self.reader.resume = Some( Resume{ config:c }  );
+                            self.reader.resume = Some( Resume{ config:c } );
                             Ok( state )
                         }
                     }
@@ -30565,8 +32835,8 @@ pub mod system
                     pub fn wait_event( &mut self, t:Option<Duration> ) -> io::Result<bool>
                     {
 
-                        if get_signal().is_some() { return Ok( true  ); }
-                        let mut t = t.map( to_timeval  );
+                        if get_signal().is_some() { return Ok( true ); }
+                        let mut t = t.map( to_timeval );
                         
                         let n = loop
                         {
@@ -30633,7 +32903,10 @@ pub mod system
                             {
                                 if let Some( ev ) = self.handle_signal( sig )? {
                                     Ok( Some( ev ) )
-                                } else {
+                                }
+            
+            else
+            {
                                     Ok( None )
                                 }
                             }
@@ -30658,7 +32931,10 @@ pub mod system
                             Some( Event::Signal( sig ) ) => {
                                 if let Some( event ) = self.handle_signal( sig )? {
                                     Ok( Some( event ) )
-                                } else {
+                                }
+            
+            else
+            {
                                     Ok( None )
                                 }
                             }
@@ -30694,9 +32970,9 @@ pub mod system
                     fn read_input( &mut self, buf:&mut [u8], timeout: Option<Duration> ) -> io::Result<Option<Event>>
                     {
                         if let Some( sig ) = take_signal()
-                        { return Ok( Some( Event::Signal( sig ) )  ); }
+                        { return Ok( Some( Event::Signal( sig ) ) ); }
 
-                        if !self.wait_event( timeout )? { return Ok( None  ); }
+                        if !self.wait_event( timeout )? { return Ok( None ); }
                         
                         if let Some( sig ) = take_signal() {
                             return Ok( Some( Event::Signal( sig ) ) );
@@ -30723,7 +32999,10 @@ pub mod system
 
                         if in_buffer.is_empty() {
                             Ok( None )
-                        } else {
+                        }
+            
+            else
+            {
                             match peek_event( &in_buffer, &self.term.sequences ) {
                                 Ok( Some( ( ev, n ) ) ) => {
                                     let _ = in_buffer.drain( ..n );
@@ -30750,7 +33029,10 @@ pub mod system
 
                         if self.reader.report_signals.contains( sig ) {
                             Ok( Some( Event::Signal( sig ) ) )
-                        } else {
+                        }
+            
+            else
+            {
                             Ok( None )
                         }
                     }
@@ -30791,7 +33073,10 @@ pub mod system
                         if let Some( xmit ) = self.term.info.get::<cap::KeypadXmit>() {
                             self.expand( xmit.expand() )?;
                             Ok( true )
-                        } else {
+                        }
+            
+            else
+            {
                             Ok( false )
                         } */
                         Ok( true )
@@ -30811,7 +33096,10 @@ pub mod system
                                 self.write_bytes( XTERM_ENABLE_MOUSE_MOTION.as_bytes() )?;
                             }
                             Ok( true )
-                        } else {
+                        }
+            
+            else
+            {
                             Ok( false )
                         }
                     }
@@ -30870,10 +33158,16 @@ pub mod system
                     {
                         if self.writer.fg == fg {
                             Ok( () )
-                        } else {
+                        }
+            
+            else
+            {
                             if let Some( fg ) = fg {
                                 self.set_fg_color( fg )?;
-                            } else {
+                            }
+            
+            else
+            {
                                 self.clear_fg()?;
                             }
 
@@ -30886,10 +33180,16 @@ pub mod system
                     {
                         if self.writer.bg == bg {
                             Ok( () )
-                        } else {
+                        }
+            
+            else
+            {
                             if let Some( bg ) = bg {
                                 self.set_bg_color( bg )?;
-                            } else {
+                            }
+            
+            else
+            {
                                 self.clear_bg()?;
                             }
 
@@ -30935,7 +33235,10 @@ pub mod system
                             self.add_style( new_style )?;
                             self.set_fg( fg )?;
                             self.set_bg( bg )?;
-                        } else {
+                        }
+            
+            else
+            {
                             if remove.contains( Style::ITALIC ) {
                                 expand_opt!( self, cap::ExitItalicsMode )?;
                             }
@@ -30961,7 +33264,10 @@ pub mod system
                             self.set_fg( fg )?;
                             self.set_bg( bg )?;
                             self.add_style( style )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.add_style( add )?;
                             self.remove_style( remove )?;
                         }
@@ -31149,7 +33455,10 @@ pub mod system
 
                         if buf.len() > self.writer.out_buffer.capacity() {
                             self.write_data( buf ).1
-                        } else {
+                        }
+            
+            else
+            {
                             self.writer.out_buffer.extend( buf );
                             Ok( () )
                         }
@@ -31332,7 +33641,10 @@ pub mod system
 
                     if res == -1 {
                         Err( io::Error::last_os_error() )
-                    } else {
+                    }
+            
+            else
+            {
                         let size = Size{
                             lines: winsz.ws_row as usize,
                             columns: winsz.ws_col as usize,
@@ -31405,7 +33717,10 @@ pub mod system
                                 SeqData::XTermMouse => {
                                     if let Some( ( data, len ) ) = parse_mouse_data( &buf[seq.len()..] ) {
                                         Some( ( Event::Mouse( data ), seq.len() + len ) )
-                                    } else {
+                                    }
+            
+            else
+            {
                                         None
                                     }
                                 }
@@ -31414,7 +33729,10 @@ pub mod system
 
                         if let Some( res ) = res {
                             res
-                        } else {
+                        }
+            
+            else
+            {
                             let ch = s.chars().next().unwrap();
                             ( Event::Key( ch.into() ), ch.len_utf8() )
                         }
@@ -31509,7 +33827,10 @@ pub mod system
 
                     if is_pressed {
                         MouseInput::ButtonPressed( button )
-                    } else {
+                    }
+            
+            else
+            {
                         MouseInput::ButtonReleased( button )
                     }
                 }
@@ -31524,7 +33845,10 @@ pub mod system
                             } else if e.error_len().is_some() {
                                 Err( io::Error::new( io::ErrorKind::Other,
                                     "read invalid utf-8 data from terminal" ) )
-                            } else {
+                            }
+            
+            else
+            {
                                 Ok( "" )
                             }
                         }
@@ -31637,7 +33961,6 @@ pub mod system
                     /// Execute a given key sequence
                     Macro( Cow<'static, str> ),
                 }
-
                 /// List of all command names
                 pub static COMMANDS:&[&str] = &[ $( $str ),+ ];
 
@@ -31883,7 +34206,10 @@ pub mod system
             pub fn display_chars( &self ) -> usize 
             {
                 let n = self.display_str().chars().count();
-                n + if self.suffix.is_some() { 1 } else { 0 }
+                n + if self.suffix.is_some() { 1 }
+            
+            else
+            { 0 }
             }
 
             fn display_str( &self ) -> &str 
@@ -32009,7 +34335,10 @@ pub mod system
                                 let ( name, display ) = if let Some( dir ) = base_dir {
                                     ( format!( "{}{}{}", dir, MAIN_SEPARATOR, path ),
                                         Some( path ) )
-                                } else {
+                                }
+            
+            else
+            {
                                     ( path, None )
                                 };
 
@@ -32018,7 +34347,10 @@ pub mod system
 
                                 let suffix = if is_dir {
                                     Suffix::Some( MAIN_SEPARATOR )
-                                } else {
+                                }
+            
+            else
+            {
                                     Suffix::Default
                                 };
 
@@ -32073,7 +34405,10 @@ pub mod system
                             if ch == '\\' {
                                 chars = clone;
                                 n += 1;
-                            } else {
+                            }
+            
+            else
+            {
                                 break;
                             }
                         }
@@ -32098,7 +34433,10 @@ pub mod system
 
             if n == 0 {
                 Borrowed( s )
-            } else {
+            }
+            
+            else
+            {
                 let mut res = String::with_capacity( s.len() + n );
 
                 for ch in s.chars() {
@@ -32123,13 +34461,19 @@ pub mod system
                         if let Some( ch ) = chars.next() {
                             res.push( ch );
                         }
-                    } else {
+                    }
+            
+            else
+            {
                         res.push( ch );
                     }
                 }
 
                 Owned( res )
-            } else {
+            }
+            
+            else
+            {
                 Borrowed( s )
             }
         }
@@ -32354,7 +34698,10 @@ pub mod system
                         Token::SpecialWord( "else" ) => {
                             if parse_else {
                                 self.error( "duplicate $else directive" );
-                            } else {
+                            }
+            
+            else
+            {
                                 parse_else = true;
                             }
                         }
@@ -32365,7 +34712,10 @@ pub mod system
                             if let Some( dir ) = self.parse_line( line ) {
                                 if parse_else {
                                     else_group.push( dir );
-                                } else {
+                                }
+            
+            else
+            {
                                     then_group.push( dir );
                                 }
                             }
@@ -32837,9 +35187,9 @@ pub mod system
             pub fn set_report_signal( &self, signal: system::terminal::Signal, set: bool )
             { self.lock_reader().set_report_signal( signal, set ) }
             /// Binds a sequence to a command.
-            pub fn bind_sequence<T>( &self, seq: T, cmd: Command ) -> Option<Command> where
+            pub fn bind_sequence<T>( &self, seq: T, dir:types::Directive ) -> Option<types::Directive> where 
             T: Into<Cow<'static, str>>
-            { self.lock_reader().bind_sequence( seq, cmd ) }
+            { self.lock_reader().bind_sequence( seq, dir ) }
             /// Binds a sequence to a command, if and only if the given sequence is not already bound to a command.
             pub fn bind_sequence_if_unbound<T>( &self, seq: T, cmd: Command ) -> bool where
             T: Into<Cow<'static, str>>
@@ -33213,7 +35563,10 @@ pub mod system
 
                     let ( n_copy, n_extra ) = if new_size.columns > self.size.columns {
                         ( self.size.columns, new_size.columns - self.size.columns )
-                    } else {
+                    }
+            
+            else
+            {
                         ( new_size.columns, 0 )
                     };
 
@@ -33257,7 +35610,10 @@ pub mod system
                         self.advance_line();
                     } else if ch == '\r' {
                         self.col = 0;
-                    } else {
+                    }
+            
+            else
+            {
                         self.write_char( ch );
                     }
                 }
@@ -33298,7 +35654,10 @@ pub mod system
             pub fn next( &mut self ) -> Option<&[char]> {
                 if self.line >= self.writer.size.lines {
                     None
-                } else {
+                }
+            
+            else
+            {
                     let start = self.writer.size.columns * self.line;
                     self.line += 1;
                     let end = self.writer.size.columns * self.line;
@@ -33521,7 +35880,10 @@ pub mod system
                             self.write.write_str( "\n" )?;
                             self.write.is_prompt_drawn = false;
                             return Ok( Some( ReadResult::Eof ) );
-                        } else {
+                        }
+            
+            else
+            {
                             self.read.sequence.push( ch );
                             self.execute_sequence()?;
 
@@ -33550,10 +35912,16 @@ pub mod system
                                 self.write.input_arg = Digit::None;
                                 self.write.explicit_arg = false;
                                 self.write.redraw_prompt( PromptType::Normal )?;
-                            } else {
+                            }
+            
+            else
+            {
                                 self.write.redraw_prompt( PromptType::Number )?;
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             self.read.state = InputState::NewSequence;
                             self.write.redraw_prompt( PromptType::Normal )?;
                             self.read.macro_buffer.insert( 0, ch );
@@ -33563,7 +35931,10 @@ pub mod system
                         if n != 0 {
                             if backward {
                                 self.write.backward_search_char( n, ch )?;
-                            } else {
+                            }
+            
+            else
+            {
                                 self.write.forward_search_char( n, ch )?;
                             }
                         }
@@ -33586,7 +35957,10 @@ pub mod system
                         else if is::control( ch ) {
                             self.end_search_history()?;
                             self.read.macro_buffer.insert( 0, ch );
-                        } else {
+                        }
+            
+            else
+            {
                             {
                                 let write = &mut *self.write;
                                 write.search_buffer.push( ch );
@@ -33866,7 +36240,10 @@ pub mod system
 
                         if n > 0 {
                             self.next_completion( n as usize )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.prev_completion( ( -n ) as usize )?;
                         }
                     }
@@ -33877,7 +36254,10 @@ pub mod system
 
                         if n > 0 {
                             self.prev_completion( n as usize )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.next_completion( ( -n ) as usize )?;
                         }
                     }
@@ -33892,7 +36272,10 @@ pub mod system
 
                             if self.read.overwrite_mode {
                                 self.overwrite( n, ch )?;
-                            } else {
+                            }
+            
+            else
+            {
                                 self.insert( n, ch )?;
                             }
 
@@ -33920,7 +36303,10 @@ pub mod system
 
                             self.delete_range( ..n )?;
                             self.accept_input()?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.write.move_to( 0 )?;
                             let s = self.read.comment_begin.clone();
                             self.insert_str( &s )?;
@@ -33947,7 +36333,10 @@ pub mod system
                                 n: n as usize,
                                 backward: false,
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             self.read.state = InputState::CharSearch{
                                 n: ( -n ) as usize,
                                 backward: true,
@@ -33960,7 +36349,10 @@ pub mod system
                                 n: n as usize,
                                 backward: true,
                             }
-                        } else {
+                        }
+            
+            else
+            {
                             self.read.state = InputState::CharSearch{
                                 n: ( -n ) as usize,
                                 backward: false,
@@ -34041,7 +36433,10 @@ pub mod system
                         if n > 0 {
                             if self.read.overwrite_mode {
                                 self.overwrite_back( n as usize )?;
-                            } else {
+                            }
+            
+            else
+            {
                                 let pos = char::backward( n as usize,
                                     &self.write.buffer, self.write.cursor );
                                 let r = pos..self.write.cursor;
@@ -34077,7 +36472,10 @@ pub mod system
 
                                 src = start..end;
                                 dest = end..self.write.cursor;
-                            } else {
+                            }
+            
+            else
+            {
                                 let start = char::backward( 1, &self.write.buffer, self.write.cursor );
                                 let end = self.write.cursor;
 
@@ -34086,7 +36484,10 @@ pub mod system
                                 dest = if n < 0 {
                                     let back = char::backward( ( -n ) as usize, &self.write.buffer, start );
                                     back..start
-                                } else {
+                                }
+            
+            else
+            {
                                     let fwd = char::forward( n as usize + 1, &self.write.buffer, start );
                                     end..fwd
                                 };
@@ -34112,7 +36513,10 @@ pub mod system
 
                                         src = src_start..src_end;
                                         dest = dest_start..dest_end;
-                                    } else {
+                                    }
+            
+            else
+            {
                                         let src_start = regex::backward_word( 1, &self.write.buffer, start, &self.read.word_break );
                                         let src_end = regex::word_end( &self.write.buffer, src_start, &self.read.word_break );
 
@@ -34120,7 +36524,10 @@ pub mod system
 
                                         dest = if n < 0 {
                                             regex::back_n_words( ( -n ) as usize, &self.write.buffer, src_start, &self.read.word_break )
-                                        } else {
+                                        }
+            
+            else
+            {
                                             regex::forward_n_words( n as usize, &self.write.buffer, src_start, &self.read.word_break )
                                         };
                                     }
@@ -34154,7 +36561,10 @@ pub mod system
                         self.read.state = InputState::TextSearch;
                         if self.read.last_cmd == Category::IncrementalSearch {
                             self.write.continue_search_history( false )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.write.start_search_history( false )?;
                         }
                     }
@@ -34162,27 +36572,39 @@ pub mod system
                         self.read.state = InputState::TextSearch;
                         if self.read.last_cmd == Category::IncrementalSearch {
                             self.write.continue_search_history( true )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.write.start_search_history( true )?;
                         }
                     }
                     HistorySearchForward => {
                         if self.read.last_cmd == Category::Search {
                             self.write.continue_history_search( false )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.write.start_history_search( false )?;
                         }
                     }
                     HistorySearchBackward => {
                         if self.read.last_cmd == Category::Search {
                             self.write.continue_history_search( true )?;
-                        } else {
+                        }
+            
+            else
+            {
                             self.write.start_history_search( true )?;
                         }
                     }
                     QuotedInsert => {
                         self.read.state = InputState::QuotedInsert( 
-                            if n >= 0 { n as usize } else { 0 } );
+                            if n >= 0 { n as usize }
+            
+            else
+            { 0 } );
                     }
                     OverwriteMode => {
                         self.read.overwrite_mode = !self.read.overwrite_mode;
@@ -34194,7 +36616,10 @@ pub mod system
 
                         let mode = if self.read.overwrite_mode {
                             CursorMode::Overwrite
-                        } else {
+                        }
+            
+            else
+            {
                             CursorMode::Normal
                         };
 
@@ -34276,7 +36701,10 @@ pub mod system
                 if let Some( t ) = self.read.keyseq_timeout {
                     self.read.max_wait_duration = Some( t );
                     Some( Instant::now() + t )
-                } else {
+                }
+            
+            else
+            {
                     None
                 }
             }
@@ -34318,11 +36746,17 @@ pub mod system
                 if let Some( completions ) = self.read.completions.take() {
                     if completions.len() == 1 {
                         self.substitute_completion( &completions[0] )?;
-                    } else {
+                    }
+            
+            else
+            {
                         self.show_completions( &completions )?;
                         self.read.completions = Some( completions );
                     }
-                } else {
+                }
+            
+            else
+            {
                     self.build_completions();
                     let completions = self.read.completions.take().unwrap_or_default();
 
@@ -34396,7 +36830,10 @@ pub mod system
                 if self.read.page_completions &&
                         n_completions >= self.read.completion_query_items {
                     self.start_page_completions( n_completions )
-                } else {
+                }
+            
+            else
+            {
                     self.show_list_completions( table )?;
                     self.write.draw_prompt()
                 }
@@ -34444,7 +36881,10 @@ pub mod system
                         self.read.state = InputState::CompleteMore( offset + n_lines );
                         self.write.prompt_type = PromptType::CompleteMore;
                         self.write.draw_prompt()?;
-                    } else {
+                    }
+            
+            else
+            {
                         self.end_page_completions()?;
                     }
                 }
@@ -34474,7 +36914,10 @@ pub mod system
                         self.read.state = InputState::CompleteMore( offset + 1 );
                         self.write.prompt_type = PromptType::CompleteMore;
                         self.write.draw_prompt()?;
-                    } else {
+                    }
+            
+            else
+            {
                         self.end_page_completions()?;
                     }
                 }
@@ -34530,7 +36973,10 @@ pub mod system
                 let old = self.read.completion_index;
                 let new = if n <= old {
                     max - old - n
-                } else {
+                }
+            
+            else
+            {
                     old - n
                 };
 
@@ -34549,7 +36995,10 @@ pub mod system
                         let end = self.write.cursor;
 
                         self.delete_range( start..end )?;
-                    } else {
+                    }
+            
+            else
+            {
                         let start = self.read.completion_start;
                         let end = self.write.cursor;
                         let s = self.read.completions.as_ref().unwrap()[new]
@@ -34640,7 +37089,10 @@ pub mod system
                         self.push_kill_ring( buf );
                     } else if end == self.write.cursor {
                         self.prepend_kill_ring( buf );
-                    } else {
+                    }
+            
+            else
+            {
                         self.append_kill_ring( buf );
                     }
 
@@ -35057,11 +37509,14 @@ pub mod system
             fn prepare_term( &mut self ) -> io::Result<Term::PrepareState> {
                 if self.read_next_raw() {
                     self.lock.term.prepare( true, system::terminal::SignalSet::new() )
-                } else {
+                }
+            
+            else
+            {
                     let mut signals = self.lock.report_signals.union( self.lock.ignore_signals );
 
                     if self.lock.catch_signals {
-                        signals.insert( system::terminal::Signal::Interrupt  );
+                        signals.insert( system::terminal::Signal::Interrupt );
                     }
 
                     let block_signals = !self.lock.catch_signals;
@@ -35080,7 +37535,10 @@ pub mod system
             pub fn set_buffer( &mut self, buf:&str ) -> io::Result<()> {
                 if self.lock.is_active() {
                     self.prompter().set_buffer( buf )
-                } else {
+                }
+            
+            else
+            {
                     self.iface.lock_write_data().set_buffer( buf );
                     Ok( () )
                 }
@@ -35089,7 +37547,10 @@ pub mod system
             pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> {
                 if self.lock.is_active() {
                     self.prompter().set_cursor( pos )
-                } else {
+                }
+            
+            else
+            {
                     self.iface.lock_write_data().set_cursor( pos );
                     Ok( () )
                 }
@@ -35192,7 +37653,10 @@ pub mod system
                 if set {
                     self.lock.ignore_signals.insert( signal );
                     self.lock.report_signals.remove( signal );
-                } else {
+                }
+            
+            else
+            {
                     self.lock.ignore_signals.remove( signal );
                 }
             }
@@ -35205,7 +37669,10 @@ pub mod system
                 if set {
                     self.lock.report_signals.insert( signal );
                     self.lock.ignore_signals.remove( signal );
-                } else {
+                }
+            
+            else
+            {
                     self.lock.report_signals.remove( signal );
                 }
             }
@@ -35356,7 +37823,10 @@ pub mod system
                     Ok( Some( ch ) )
                 } else if let Some( ch ) = self.decode_input()? {
                     Ok( Some( ch ) )
-                } else {
+                }
+            
+            else
+            {
                     Ok( None )
                 }
             }
@@ -35388,7 +37858,10 @@ pub mod system
             fn macro_pop( &mut self ) -> Option<char> {
                 if self.data.macro_buffer.is_empty() {
                     None
-                } else {
+                }
+            
+            else
+            {
                     Some( self.data.macro_buffer.remove( 0 ) )
                 }
             }
@@ -35406,7 +37879,10 @@ pub mod system
             fn peek_input( &self ) -> io::Result<Option<char>> {
                 if self.data.input_buffer.is_empty() {
                     Ok( None )
-                } else {
+                }
+            
+            else
+            {
                     char::first( &self.data.input_buffer )
                 }
             }
@@ -35575,7 +38051,10 @@ pub mod system
                 if let Some( path ) = env_init_file()
                 {
                     self.read_init_file_if_exists( term, Some( path ) );
-                } else {
+                }
+            
+            else
+            {
                     if !self.read_init_file_if_exists( term, user_init_file() ) {
                         self.read_init_file_if_exists( term, system_init_file() );
                     }
@@ -35619,7 +38098,10 @@ pub mod system
 
                         if self.eval_condition( term, name, &value ) {
                             self.evaluate_directives( term, then_group );
-                        } else {
+                        }
+            
+            else
+            {
                             self.evaluate_directives( term, else_group );
                         }
                     }
@@ -35824,7 +38306,10 @@ pub mod system
                     let start = self.offset * n;
                     let end = cmp::min( self.strings.len(), start + n );
                     ( start, end, 1 )
-                } else {
+                }
+            
+            else
+            {
                     let start = self.offset;
                     let end = cmp::min( self.strings.len(), start + self.per_col * n );
                     ( start, end, self.per_col )
@@ -35892,7 +38377,10 @@ pub mod system
 
             let mut col_sizes = if min_cols == max_cols {
                 vec![vec![0; max_cols]]
-            } else {
+            }
+            
+            else
+            {
                 ( min_cols..max_cols + 1 )
                     .map( |n| vec![0; n] ).collect::<Vec<_>>()
             };
@@ -35905,12 +38393,18 @@ pub mod system
 
                     let col = if horizontal {
                         i % n_cols
-                    } else {
+                    }
+            
+            else
+            {
                         let per_col = ( n_strs + ( n_cols - 1 ) ) / n_cols;
                         i / per_col
                     };
 
-                    let real_len = if col == n_cols - 1 { len } else { len + COL_SPACE };
+                    let real_len = if col == n_cols - 1 { len }
+            
+            else
+            { len + COL_SPACE };
 
                     if real_len > cols[col] {
                         cols[col] = real_len;
@@ -35954,7 +38448,7 @@ pub mod system
             mem::{ zeroed },
             system::
             {
-                api::{ * },
+                api::{ c_int, c_ulong, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO },
                 common::{ unix::terminal_read },
             },
             time::std::{ Duration },
@@ -35962,12 +38456,9 @@ pub mod system
         };
         pub use system::common::{ * };
         /*
-        // via: https://github.com/clap-rs/term_size-rs/blob/644f28c3a8811e56edcf42036b5e754dbb24a0d7/src/platform/unix.rs
-        use libc::{c_int, c_ulong, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
-        use std::mem::zeroed;
         */
         /// Default `Terminal` interface
-        pub struct DefaultTerminal( system::common::Terminal  );
+        pub struct DefaultTerminal( system::common::Terminal );
         /// Represents the result of a `Terminal` read operation
         pub enum RawRead
         {
@@ -36170,21 +38661,21 @@ pub mod system
 
         extern "C"
         {
-            fn ioctl( fd: c_int, request: c_ulong, ...) -> c_int;
+            fn ioctl( fd: c_int, request: c_ulong, ... ) -> c_int;
         }
 
         /// Runs the ioctl command.
         pub unsafe fn get_dimensions_any() -> winsize
         {
             let mut window: winsize = zeroed();
-            let mut result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window);
+            let mut result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window );
 
             if result == -1 {
                 window = zeroed();
-                result = ioctl(STDIN_FILENO, TIOCGWINSZ, &mut window);
+                result = ioctl(STDIN_FILENO, TIOCGWINSZ, &mut window );
                 if result == -1 {
                     window = zeroed();
-                    result = ioctl(STDERR_FILENO, TIOCGWINSZ, &mut window);
+                    result = ioctl(STDERR_FILENO, TIOCGWINSZ, &mut window );
                     if result == -1 {
                         return zeroed();
                     }
@@ -36199,7 +38690,10 @@ pub mod system
 
             if w.ws_col == 0 || w.ws_row == 0 {
                 None
-            } else {
+            }
+            
+            else
+            {
                 Some((w.ws_col as usize, w.ws_row as usize  ) )
             }
         }
@@ -36270,7 +38764,10 @@ pub mod system
         impl fmt::Display for Variable {
             fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
                 match *self {
-                    Variable::Boolean( b ) => f.write_str( if b { "on" } else { "off" } ),
+                    Variable::Boolean( b ) => f.write_str( if b { "on" }
+            
+            else
+            { "off" } ),
                     Variable::Integer( n ) => fmt::Display::fmt( &n, f ),
                     Variable::String( ref s ) => fmt::Display::fmt( &s[..], f ),
                 }
@@ -36304,7 +38801,10 @@ pub mod system
                                 if let Some( $v ) = $conv( value ) {
                                     let $sr = self;
                                     Some( Variable::from( $setter ) )
-                                } else {
+                                }
+            
+            else
+            {
                                     None
                                 }
                             } )+
@@ -36874,7 +39374,10 @@ pub mod system
                     self.history.iter().rev().skip( len - idx )
                         .position( |ent| ent.starts_with( &self.search_buffer ) )
                         .map( |pos| idx - ( pos + 1 ) )
-                } else {
+                }
+            
+            else
+            {
                     self.history.iter().skip( idx + 1 )
                         .position( |ent| ent.starts_with( &self.search_buffer ) )
                         .map( |pos| idx + ( pos + 1 ) )
@@ -36926,7 +39429,10 @@ pub mod system
                     self.search_failed = false;
                     self.set_history_entry( idx );
                     self.cursor = pos;
-                } else {
+                }
+            
+            else
+            {
                     self.search_failed = true;
                 }
 
@@ -36937,7 +39443,10 @@ pub mod system
             pub fn search_history_update( &mut self ) -> io::Result<()> {
                 let next_match = if self.reverse_search {
                     self.search_history_backward( &self.search_buffer, true )
-                } else {
+                }
+            
+            else
+            {
                     self.search_history_forward( &self.search_buffer, true )
                 };
 
@@ -36951,7 +39460,10 @@ pub mod system
                 
                 let next_match = if self.reverse_search {
                     self.search_history_backward( &self.search_buffer, false )
-                } else {
+                }
+            
+            else
+            {
                     self.search_history_forward( &self.search_buffer, false )
                 };
 
@@ -36989,7 +39501,10 @@ pub mod system
                                 None => {
                                     if self.history.is_empty() {
                                         return None;
-                                    } else {
+                                    }
+            
+            else
+            {
                                         idx = Some( self.history.len() - 1 );
                                         pos = None;
                                     }
@@ -37025,11 +39540,17 @@ pub mod system
                             if let Some( n ) = idx {
                                 if n + 1 == self.history.len() {
                                     idx = None;
-                                } else {
+                                }
+            
+            else
+            {
                                     idx = Some( n + 1 );
                                 }
                                 pos = None;
-                            } else {
+                            }
+            
+            else
+            {
                                 return None;
                             }
                         }
@@ -37089,7 +39610,10 @@ pub mod system
 
                     if new >= self.history.len() {
                         self.select_history_entry( None )?;
-                    } else {
+                    }
+            
+            else
+            {
                         self.select_history_entry( Some( new ) )?;
                     }
                 }
@@ -37101,7 +39625,10 @@ pub mod system
                 if !self.history.is_empty() && self.history_index != Some( 0 ) {
                     let new = if let Some( old ) = self.history_index {
                         old.saturating_sub( n )
-                    } else {
+                    }
+            
+            else
+            {
                         self.history.len().saturating_sub( n )
                     };
 
@@ -37130,13 +39657,19 @@ pub mod system
 
                     if let Some( old ) = old {
                         data.history[old].clone_from( &data.buffer );
-                    } else {
+                    }
+            
+            else
+            {
                         swap( &mut data.buffer, &mut data.backup_buffer );
                     }
 
                     if let Some( new ) = new {
                         data.buffer.clone_from( &data.history[new] );
-                    } else {
+                    }
+            
+            else
+            {
                         data.buffer.clear();
                         swap( &mut data.buffer, &mut data.backup_buffer );
                     }
@@ -37148,7 +39681,10 @@ pub mod system
                     &self.buffer
                 } else if let Some( n ) = n {
                     &self.history[n]
-                } else {
+                }
+            
+            else
+            {
                     &self.backup_buffer
                 }
             }
@@ -37211,7 +39747,10 @@ pub mod system
                     let ( lines, cols ) = self.move_delta( cursor, pos, &self.buffer );
                     self.move_rel( lines, cols )?;
                     self.draw_buffer( pos )?;
-                } else {
+                }
+            
+            else
+            {
                     self.draw_buffer( cursor )?;
                 }
 
@@ -37228,13 +39767,19 @@ pub mod system
                 
                 let final_cur = if src.start < dest.start {
                     dest.end
-                } else {
+                }
+            
+            else
+            {
                     dest.start + ( src.end - src.start )
                 };
 
                 let ( left, right ) = if src.start < dest.start {
                     ( src, dest )
-                } else {
+                }
+            
+            else
+            {
                     ( dest, src )
                 };
 
@@ -37424,7 +39969,10 @@ pub mod system
                 if write.is_prompt_drawn {
                     if clear {
                         write.clear_full_prompt()?;
-                    } else {
+                    }
+            
+            else
+            {
                         write.move_to_end()?;
                         write.write_str( "\n" )?;
                     }
@@ -37597,7 +40145,10 @@ pub mod system
                         ch if is::wide( ch ) => {
                             if col % width == width - 1 {
                                 3
-                            } else {
+                            }
+            
+            else
+            {
                                 2
                             }
                         }
@@ -37789,7 +40340,10 @@ pub mod system
         {
             if s.chars().all( |ch| display( ch, style ) == DisplaySequence::Char( ch ) ) {
                 Borrowed( s )
-            } else {
+            }
+            
+            else
+            {
                 Owned( s.chars().flat_map( |ch| display( ch, style ) ).collect() )
             }
         }
@@ -37895,7 +40449,10 @@ pub mod tuples
         pub fn get( &self, index: usize ) -> OverResult<Value> {
             if index >= self.inner.vec.len() {
                 Err( OverError::TupOutOfBounds( index ) )
-            } else {
+            }
+            
+            else
+            {
                 Ok( self.inner.vec[index].clone() )
             }
         }
@@ -37966,6 +40523,63 @@ pub mod types
     use crate::parsers;
     use crate::parsers::parser_line::tokens_to_redirections;
     */
+    macro_rules! define_directives
+    {
+        ( $( #[$meta:meta] $name:ident => $str:expr , )+ ) =>
+        {
+            /// Represents a directive to modify `Reader` state
+            #[derive(Clone, Debug, Eq, PartialEq)]
+            pub enum Directive
+            {
+                $( #[$meta] $name , )+
+                /// Custom application-defined directive
+                Custom(Cow<'static, str>),
+                /// Execute a given key sequence
+                Macro(Cow<'static, str>),
+            }
+
+            /// List of all command names
+            pub static DIRECTIVES: &[&str] = &[ $( $str ),+ ];
+
+            impl fmt::Display for Directive 
+            {
+                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result 
+                {
+                    match *self 
+                    {
+                        $( Directive::$name => f.write_str($str) , )+
+                        Directive::Custom(ref s) => f.write_str(s),
+                        Directive::Macro(ref s) => write!(f, "\"{}\"", escape_sequence(s))
+                    }
+                }
+            }
+
+            impl Directive 
+            {
+                /// Constructs a directive from a `'static str` reference.
+                pub fn from_str(name: &'static str) -> Directive {
+                    Directive::opt_from_str(name)
+                        .unwrap_or_else(|| Directive::Custom(Borrowed(name)))
+                }
+                /// Constructs a directive from a non-`'static` string-like type.
+                pub fn from_string<T>(name: T) -> Directive where
+                T: AsRef<str> + Into<String> 
+                {
+                    Directive::opt_from_str(name.as_ref())
+                    .unwrap_or_else(|| Directive::Custom(Owned(name.into())))
+                }
+
+                fn opt_from_str(s: &str) -> Option<Directive>
+                {
+                    match s
+                    {
+                        $( $str => Some(Directive::$name), )+
+                        _ => None
+                    }
+                }
+            }
+        }
+    }
     pub type Token = (String, String);
     pub type Tokens = Vec<Token>;
     pub type Redirection = (String, String, String);
@@ -38012,77 +40626,110 @@ pub mod types
                 Any => {
                     if let Any = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Null => {
                     if let Null = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Bool => {
                     if let Bool = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Int => {
                     if let Int = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Integer => {
                     if let Integer = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Frac => {
                     if let Frac = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Char => {
                     if let Char = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Str => {
                     if let Str = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Strand => {
                     if let Strand = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Obj => {
                     if let Obj = *other {
                         true
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
                 Arr( ref t1 ) => {
                     if let Arr( ref t2 ) = *other {
                         t1.is( t2 )
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
@@ -38092,7 +40739,10 @@ pub mod types
                             return false;
                         }
                         tvec1.iter().zip( tvec2.iter() ).all( |( t1, t2 )| t1.is( t2 ) )
-                    } else {
+                    }
+            
+            else
+            {
                         false
                     }
                 }
@@ -38123,7 +40773,10 @@ pub mod types
                 Arr( ref t1 ) => {
                     if let Arr( ref t2 ) = *type2 {
                         Self::most_specific( t1, t2 ).map( |( t, any )| ( Arr( Box::new( t ) ), any ) )
-                    } else {
+                    }
+            
+            else
+            {
                         None
                     }
                 }
@@ -38146,17 +40799,26 @@ pub mod types
                                 .collect();
 
                             tvec.map( |tvec| ( Tup( tvec ), has_any ) )
-                        } else {
+                        }
+            
+            else
+            {
                             None
                         }
-                    } else {
+                    }
+            
+            else
+            {
                         None
                     }
                 }
                 ref t => {
                     if t == type2 {
                         Some( ( t.clone(), false ) )
-                    } else {
+                    }
+            
+            else
+            {
                         None
                     }
                 }
@@ -38233,22 +40895,22 @@ pub mod types
 
     impl WaitStatus 
     {
-        pub fn from_exited( pid: i32, status: i32) -> Self 
+        pub fn from_exited( pid: i32, status: i32 ) -> Self 
         {
             WaitStatus( pid, 0, status )
         }
 
-        pub fn from_signaled( pid: i32, sig: i32) -> Self 
+        pub fn from_signaled( pid: i32, sig: i32 ) -> Self 
         {
             WaitStatus( pid, 1, sig)
         }
 
-        pub fn from_stopped( pid: i32, sig: i32) -> Self 
+        pub fn from_stopped( pid: i32, sig: i32 ) -> Self 
         {
             WaitStatus( pid, 2, sig)
         }
 
-        pub fn from_continuted( pid: i32) -> Self 
+        pub fn from_continuted( pid: i32 ) -> Self 
         {
             WaitStatus( pid, 3, 0)
         }
@@ -38258,7 +40920,7 @@ pub mod types
             WaitStatus(0, 9, 9)
         }
 
-        pub fn from_error(errno: i32) -> Self 
+        pub fn from_error(errno: i32 ) -> Self 
         {
             WaitStatus(0, 255, errno)
         }
@@ -38283,7 +40945,7 @@ pub mod types
             self.1 == 1
         }
 
-        pub fn get_errno( &self ) -> nix::Error 
+        pub fn get_errno( &self ) -> system::api::Error 
         {
             nix::Error::from_raw( self.2)
         }
@@ -38332,7 +40994,10 @@ pub mod types
                 "Others".to_string()
             } else if self.is_error() {
                 "Error".to_string()
-            } else {
+            }
+            
+            else
+            {
                 format!( "unknown: {}", self.2)
             }
         }
@@ -38341,7 +41006,10 @@ pub mod types
         {
             if self.is_exited() {
                 self.2
-            } else {
+            }
+            
+            else
+            {
                 self._get_signaled_status()
             }
         }
@@ -38349,7 +41017,7 @@ pub mod types
 
     impl fmt::Debug for WaitStatus
     {
-        fn fmt( &self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+        fn fmt( &self, f: &mut fmt::Formatter<'_> ) -> fmt::Result
         {
             let mut formatter = f.debug_struct( "WaitStatus" );
             formatter.field( "pid", &self.0);
@@ -38378,6 +41046,136 @@ pub mod types
             }
         }
     }
+
+    define_directives!
+    {
+        /// Abort history search
+        Abort => "abort",
+        /// Accepts the current input line
+        AcceptLine => "accept-line",
+        /// Perform completion
+        Complete => "complete",
+        /// Insert all completions into the input buffer
+        InsertCompletions => "insert-completions",
+        /// Show possible completions
+        PossibleCompletions => "possible-completions",
+        /// Insert the next possible completion
+        MenuComplete => "menu-complete",
+        /// Insert the previous possible completion
+        MenuCompleteBackward => "menu-complete-backward",
+        /// Begin numeric argument input
+        DigitArgument => "digit-argument",
+        /// Insert character or sequence at the cursor
+        SelfInsert => "self-insert",
+        /// Inserts a tab character
+        TabInsert => "tab-insert",
+        /// Toggles insert/overwrite mode
+        OverwriteMode => "overwrite-mode",
+        /// Insert a comment and accept input
+        InsertComment => "insert-comment",
+        /// Move the cursor backward one character
+        BackwardChar => "backward-char",
+        /// Move the cursor forward one character
+        ForwardChar => "forward-char",
+        /// Search for a given character
+        CharacterSearch => "character-search",
+        /// Search backward for a given character
+        CharacterSearchBackward => "character-search-backward",
+        /// Move the cursor backward one word
+        BackwardWord => "backward-word",
+        /// Move the cursor forward one word
+        ForwardWord => "forward-word",
+        /// Kill all characters before the cursor
+        BackwardKillLine => "backward-kill-line",
+        /// Kill all characters after the cursor
+        KillLine => "kill-line",
+        /// Kill a word before the cursor
+        BackwardKillWord => "backward-kill-word",
+        /// Kill a word after the cursor
+        KillWord => "kill-word",
+        /// Kill a word before the cursor, delimited by whitespace
+        UnixWordRubout => "unix-word-rubout",
+        /// Clear the screen
+        ClearScreen => "clear-screen",
+        /// Move the cursor to the beginning of the line
+        BeginningOfLine => "beginning-of-line",
+        /// Move the cursor to the end of the line
+        EndOfLine => "end-of-line",
+        /// Delete one character before the cursor
+        BackwardDeleteChar => "backward-delete-char",
+        /// Delete one character after the cursor
+        DeleteChar => "delete-char",
+        /// Drag the character before the cursor forward
+        TransposeChars => "transpose-chars",
+        /// Drag the word before the cursor forward
+        TransposeWords => "transpose-words",
+        /// Move to the first line of history
+        BeginningOfHistory => "beginning-of-history",
+        /// Move to the last line of history
+        EndOfHistory => "end-of-history",
+        /// Select next line in history
+        NextHistory => "next-history",
+        /// Select previous line in history
+        PreviousHistory => "previous-history",
+        /// Incremental search in history
+        ForwardSearchHistory => "forward-search-history",
+        /// Incremental reverse search in history
+        ReverseSearchHistory => "reverse-search-history",
+        /// Non-incremental forward history search using input up to the cursor
+        HistorySearchForward => "history-search-forward",
+        /// Non-incremental backward history search using input up to the cursor
+        HistorySearchBackward => "history-search-backward",
+        /// Insert literal character
+        QuotedInsert => "quoted-insert",
+        /// Insert text into buffer from the kill ring
+        Yank => "yank",
+        /// Rotate the kill ring and yank the new top
+        YankPop => "yank-pop",
+    }
+    /// Describes the category of a command
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum Category 
+    {
+        /// Completion command
+        Complete,
+        /// Kill command
+        Kill,
+        /// Non-incremental search command
+        Search,
+        /// Incremental search command
+        IncrementalSearch,
+        /// Yank command
+        Yank,
+        /// Digit argument command
+        Digit,
+        /// Other command
+        Other,
+    }
+
+    impl Directive
+    {
+        /// Returns the category of the directive
+        pub fn category(&self) -> Category
+        {
+            use self::Directive::*;
+
+            match *self
+            {
+                DigitArgument => Category::Digit,
+                Complete | InsertCompletions | PossibleCompletions | MenuComplete | MenuCompleteBackward => Category::Complete,
+                BackwardKillLine | KillLine | BackwardKillWord | KillWord | UnixWordRubout => Category::Kill,
+                ForwardSearchHistory | ReverseSearchHistory => Category::IncrementalSearch,
+                HistorySearchForward | HistorySearchBackward => Category::Search,
+                Yank | YankPop => Category::Yank,
+                _ => Category::Other
+            }
+        }
+    }
+
+    impl Default for Directive
+    {
+        fn default() -> Self { Directive::Custom(Borrowed("")) }
+    }
     
     #[derive( Debug )]
     pub struct Command
@@ -38385,15 +41183,6 @@ pub mod types
         pub tokens: Tokens,
         pub redirects_to: Vec<Redirection>,
         pub redirect_from: Option<Token>,
-    }
-
-    #[derive( Debug )]
-    pub struct CommandLine
-    {
-        pub line: String,
-        pub commands: Vec<Command>,
-        pub envs: HashMap<String, String>,
-        pub background: bool,
     }
 
     impl Command
@@ -38404,23 +41193,31 @@ pub mod types
             let mut redirects_from_type = String::new();
             let mut redirects_from_value = String::new();
             let mut has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<" );
-
             let mut len = tokens_new.len();
-            while has_redirect_from {
-                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<" ) {
+
+            while has_redirect_from
+            {
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<" )
+                {
                     redirects_from_type = "<".to_string();
                     tokens_new.remove(idx);
                     len -= 1;
-                    if len > idx {
+                    
+                    if len > idx
+                    {
                         redirects_from_value = tokens_new.remove(idx).1;
                         len -= 1;
                     }
                 }
-                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<<<" ) {
+                
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<<<" )
+                {
                     redirects_from_type = "<<<".to_string();
                     tokens_new.remove(idx);
                     len -= 1;
-                    if len > idx {
+                    
+                    if len > idx
+                    {
                         redirects_from_value = tokens_new.remove(idx).1;
                         len -= 1;
                     }
@@ -38431,27 +41228,32 @@ pub mod types
 
             let tokens_final;
             let redirects_to;
-            match tokens_to_redirections( &tokens_new) {
-                Ok((_tokens, _redirects_to ) ) => {
+            match tokens_to_redirections( &tokens_new )
+            {
+                Ok((_tokens, _redirects_to ) ) =>
+                {
                     tokens_final = _tokens;
                     redirects_to = _redirects_to;
                 }
-                Err( e ) => {
-                    return Err( e );
-                }
+
+                Err( e ) => { return Err( e ); }
             }
 
-            let redirect_from = if redirects_from_type.is_empty() {
-                None
-            } else {
+            let redirect_from = if redirects_from_type.is_empty() { None }            
+            else
+            {
                 Some(( redirects_from_type, redirects_from_value  ) )
             };
 
-            Ok(Command {
-                tokens: tokens_final,
-                redirects_to,
-                redirect_from,
-            })
+            Ok
+            (
+                Command
+                {
+                    tokens: tokens_final,
+                    redirects_to,
+                    redirect_from,
+                }
+            )
         }
 
         pub fn has_redirect_from( &self ) -> bool
@@ -38460,10 +41262,16 @@ pub mod types
         pub fn has_here_string( &self ) -> bool
         { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<<<" }
 
-        pub fn is_builtin( &self ) -> bool
-        {
-            is::builtin( &self.tokens[0].1)
-        }
+        pub fn is_builtin( &self ) -> bool { is::builtin( &self.tokens[0].1) }
+    }
+
+    #[derive( Debug )]
+    pub struct CommandLine
+    {
+        pub line: String,
+        pub commands: Vec<Command>,
+        pub envs: HashMap<String, String>,
+        pub background: bool,
     }
 
     #[derive( Clone, Debug, Default )]
@@ -38519,7 +41327,7 @@ pub mod types
             }
         }
 
-        pub fn from_status(gid: i32, status: i32) -> CommandResult 
+        pub fn from_status(gid: i32, status: i32 ) -> CommandResult 
         {
             CommandResult 
             {
@@ -38606,7 +41414,7 @@ pub mod types
 
     impl CommandLine
     {
-        pub fn from_line(line: &str, sh: &mut shell::Shell) -> Result<CommandLine, String>
+        pub fn from_line(line: &str, sh: &mut shell::Shell ) -> Result<CommandLine, String>
         {
             let linfo = parsers::parser_line::parse_line(line );
             let mut tokens = linfo.tokens;
@@ -38654,6 +41462,64 @@ pub mod types
 
         pub fn is_single_and_builtin( &self ) -> bool { self.commands.len() == 1 && self.commands[0].is_builtin() }
     }
+
+    #[derive( Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+    pub struct App
+    {
+        /// The maximum number of open files.
+        pub a:bool,
+        /// The maximum number of open file descriptors.
+        pub n:Option<Option<u64>>,
+        /// The maximum size of core files created.
+        pub c:Option<Option<u64>>,
+        /// Set a soft limit for the given resource.
+        pub S:bool,
+        /// Set a hard limit for the given resource.
+        pub H:bool,
+    }
+
+    impl App
+    {
+        pub const fn new() -> Self
+        {
+            Self
+            {
+                a:false,
+                n:None,
+                c:None,
+                S:false,
+                H:false,
+            }
+        }
+    }
+    
+    #[derive( Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+	pub struct OptMainHistory
+	{
+		session:bool,
+		asc:bool,
+		pwd:bool,
+		only_id:bool,
+		no_id:bool,
+		show_date:bool,
+		limit:i32,
+		pattern:String,
+		cmd:Option<SubCommandHistory>,
+	}
+    
+	#[derive( Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
+	enum SubCommandHistory
+	{
+		Add
+        {
+			timestamp: Option<f64>,
+			input:String,
+		},
+		Delete
+        {
+			rowid: Vec<usize>,
+		},
+	}
 }
 
 pub mod u8
@@ -38709,7 +41575,7 @@ pub mod uuid
         */
         /// A builder for creating a UUID.
         #[derive( Debug )]
-        pub struct Builder( Uuid  );
+        pub struct Builder( Uuid );
 
         impl Uuid
         {
@@ -39008,7 +41874,7 @@ pub mod uuid
                                 character: byte as char,
                                 index: index + offset + 1,
                             }
-                         );
+                        );
                     }
                 }
 
@@ -39208,7 +42074,10 @@ pub mod uuid
 
         #[inline] const fn format_simple( src:&[u8; 16], upper: bool ) -> [u8; 32]
         {
-            let lut = if upper { &UPPER } else { &LOWER };
+            let lut = if upper { &UPPER }
+            
+            else
+            { &LOWER };
             let mut dst = [0; 32];
             let mut i = 0;
 
@@ -39224,7 +42093,10 @@ pub mod uuid
 
         #[inline] const fn format_hyphenated( src:&[u8; 16], upper: bool ) -> [u8; 36] 
         {
-            let lut = if upper { &UPPER } else { &LOWER };
+            let lut = if upper { &UPPER }
+            
+            else
+            { &LOWER };
             let groups = [( 0, 8 ), ( 9, 13 ), ( 14, 18 ), ( 19, 23 ), ( 24, 36 )];
             let mut dst = [0; 36];
 
@@ -40060,12 +42932,12 @@ pub mod uuid
         
         impl ::convert::TryFrom<std::time::SystemTime> for Timestamp
         {
-            type Error = super::Error;
+            type Error = super::error::Error;
             /// Perform the conversion.
             fn try_from( st: ::time::std::SystemTime ) -> Result<Self, Self::Error>
             {
                 let dur = st.duration_since( ::time::std::UNIX_EPOCH )
-                .map_err( |_| super::Error( super::error::ErrorKind::InvalidSystemTime( "unable to convert the system tie into a Unix timestamp" ) ) )?;
+                .map_err( |_| super::error::Error( super::error::ErrorKind::InvalidSystemTime( "unable to convert the system tie into a Unix timestamp" ) ) )?;
 
                 Ok( Self::from_unix_time
                 ( 
@@ -40160,7 +43032,7 @@ pub mod uuid
             | ( ( bytes[6] & 0xF ) as u64 ) << 8
             | ( bytes[7] as u64 );
 
-            let counter: u16 = (( bytes[8] & 0x3F ) as u16 ) << 8 | ( bytes[9] as u16  );
+            let counter: u16 = (( bytes[8] & 0x3F ) as u16 ) << 8 | ( bytes[9] as u16 );
 
             ( ticks, counter )
         }
@@ -40205,7 +43077,7 @@ pub mod uuid
         fn now() -> ( u64, u32 )
         {
             let dur = ::time::std::SystemTime::UNIX_EPOCH.elapsed()
-            .expect( "Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality",  );
+            .expect( "Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality", );
 
             ( dur.as_secs(), dur.subsec_nanos() )
         }
@@ -40380,6 +43252,17 @@ pub mod uuid
                 _ => None,
             }
         }
+        /// Creates a UUID using the supplied bytes.
+        #[inline] pub const fn from_bytes(bytes: Bytes) -> Uuid { Uuid(bytes) }
+        /// Creates a UUID using the supplied bytes.
+        pub fn from_slice(b: &[u8]) -> Result<Uuid, error::Error>
+        {
+            if b.len() != 16 { return Err( error::Error( error::ErrorKind::ParseByteLength { len: b.len() })); }
+
+            let mut bytes: Bytes = [0; 16];
+            bytes.copy_from_slice(b);
+            Ok(Uuid::from_bytes(bytes))
+        }
         /// Returns the four field values of the UUID.
         pub fn as_fields( &self ) -> ( u32, u16, u16, &[u8; 8] )
         {
@@ -40494,7 +43377,7 @@ pub mod uuid
 
     impl Hash for Uuid
     {
-        fn hash<H:Hasher>( &self, state:&mut H ) { state.write( &self.0  ); }
+        fn hash<H:Hasher>( &self, state:&mut H ) { state.write( &self.0 ); }
     }
 
     impl Default for Uuid
@@ -40557,7 +43440,10 @@ pub mod values
             pub fn $name( &self ) -> OverResult<$type> {
                 if let Value::$variant( ref inner ) = *self {
                     Ok( inner.clone() )
-                } else {
+                }
+            
+            else
+            {
                     Err( OverError::TypeMismatch( Type::$variant, self.get_type() ) )
                 }
             }
@@ -40699,8 +43585,8 @@ pub mod values
             }
         }
 
-        get_fn!( r#"Returns the `bool` contained in this `Value`."#, get_bool, bool, Bool  );        
-        get_fn! ( "Returns the `BigInt` contained in this `Value`.", get_int, BigInt, Int  );
+        get_fn!( r#"Returns the `bool` contained in this `Value`."#, get_bool, bool, Bool );        
+        get_fn! ( "Returns the `BigInt` contained in this `Value`.", get_int, BigInt, Int );
         /// Returns the `BigRational` contained in this `Value`.
         pub fn get_frac( &self ) -> OverResult<BigRational>
         {
@@ -40712,9 +43598,9 @@ pub mod values
             }
         }
 
-        get_fn!( "Returns the `char` contained in this `Value`.", get_char, char, Char  );        
-        get_fn!( r#"Returns the `String` contained in this `Value`."#, get_str, String, Str  );        
-        get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj  );
+        get_fn!( "Returns the `char` contained in this `Value`.", get_char, char, Char );        
+        get_fn!( r#"Returns the `String` contained in this `Value`."#, get_str, String, Str );        
+        get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj );
         /// Returns the `Arr` contained in this `Value`.
         pub fn get_arr( &self ) -> OverResult<arrays::Arr>
         {
@@ -40832,9 +43718,9 @@ pub mod values
     impl_from!( BigRational, Frac );
     impl_from!( char, Char );
     impl_from!( String, Str );
-    impl_from!( arrays::Arr, Arr  );
-    impl_from!( tuples::Tup, Tup  );
-    impl_from!( objects::Obj, Obj  );
+    impl_from!( arrays::Arr, Arr );
+    impl_from!( tuples::Tup, Tup );
+    impl_from!( objects::Obj, Obj );
 }
 
 pub mod vec
@@ -40857,7 +43743,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
             r#"{}"#,
             //::system::common::INFORMATION
             document.read( "aliases" )?,
-         );
+        );
 
         signal( SIG_PIPE, SIG_DFL );
         signal( SIG_TSTP, SIG_IGN );
@@ -40910,7 +43796,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
         }
         
         rl.define_function( "enter-function", ::sync::Arc::new( prompts::EnterFunction ) );
-        rl.bind_sequence( "\r", types::Command::from_str( "enter-function" ) );
+        rl.bind_sequence( "\r", types::Directive::from_str( "enter-function" ) );
     }
     /*
     let document = ::parses::load_from_str
@@ -40954,7 +43840,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
     "# )?;
     
     assert_eq!( document.read( "receipt" )?, "Oz-Ware Purchase Invoice" );
-    assert_eq!( document.read( "date"    )?, "2012-08-06"               );
+    assert_eq!( document.read( "date"    )?, "2012-08-06"              );
     assert_eq!
     ( 
         document.read( "customer" )?,
@@ -40963,7 +43849,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
             "first_name"  => "Dorothy", 
             "family_name" => "Gale"
         }
-     );
+    );
 
     assert_eq!
     ( 
@@ -40987,7 +43873,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
                 "quantity" => 1
             },
         ]
-     );
+    );
 
     assert_eq!
     ( 
@@ -40998,23 +43884,23 @@ pub fn main() -> Result<(), error::parse::ParseError>
             "city" => "East Centerville",
             "state" => "KS",
         }
-     );
+    );
 
     assert_eq!
     ( 
         document.read( "ship_to" )?,
         document.read( "bill_to" )?,
-     );
+    );
 
     assert_eq!
     ( 
         document.read( "specialDelivery" )?,
         r#"Follow the Yellow Brick Road to the Emerald City.
         Pay no attention to the man behind the curtain."#
-     ); */
+    ); */
 
     /*
     */
     Ok( () )
 }
-// 41020 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 43906 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
