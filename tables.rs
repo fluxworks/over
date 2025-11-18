@@ -92,7 +92,7 @@ pub mod parse;
         }};
        
         
-        ( # $var:ident ) => 
+        ( #[derive( Clone, Debug, Eq, PartialEq )]$var:ident ) => 
         {{
             let mut _s = ::__private::TokenStream::new();
             ::ToTokens::to_tokens( &$var, &mut _s );
@@ -128,7 +128,7 @@ pub mod parse;
             _s
         }};
        
-        ( $span:expr=> # $var:ident ) => {{
+        ( $span:expr=> #[derive( Clone, Debug, Eq, PartialEq )]$var:ident ) => {{
             let mut _s = ::__private::TokenStream::new();
             let _: ::__private::Span = ::__private::get_span( $span ).__into_span();
             ::ToTokens::to_tokens( &$var, &mut _s );
@@ -183,7 +183,7 @@ pub mod parse;
             ::pounded_var_names!{$call! $extra $( $inner )*}
         };
 
-        ( $call:ident!( $( $extra:tt )* ) # $var:ident ) => {
+        ( $call:ident!( $( $extra:tt )* ) #[derive( Clone, Debug, Eq, PartialEq )]$var:ident ) => {
             ::$call!( $( $extra )* $var );
         };
 
@@ -271,7 +271,7 @@ pub mod parse;
     {  
         ( $tokens:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) * $a3:tt ) => 
+        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( #[derive( Clone, Debug, Eq, PartialEq )]) ( $( $inner:tt )* ) * $a3:tt ) => 
         {{
             use ::__private::ext::*;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
@@ -285,11 +285,11 @@ pub mod parse;
             }
         }};
        
-        ( $tokens:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) * $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $b3:tt $b2:tt #[derive( Clone, Debug, Eq, PartialEq )]( ( $( $inner:tt )* ) ) * $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt # ( $( $inner:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $b3:tt #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) $sep:tt * ) => 
+        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( #[derive( Clone, Debug, Eq, PartialEq )]) ( $( $inner:tt )* ) $sep:tt * ) => 
         {{
             use ::__private::ext::*;
             let mut _i = 0usize;
@@ -306,22 +306,22 @@ pub mod parse;
             }
         }};
        
-        ( $tokens:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) $sep:tt * $a3:tt ) => {};
+        ( $tokens:ident $b3:tt $b2:tt #[derive( Clone, Debug, Eq, PartialEq )]( ( $( $inner:tt )* ) ) $sep:tt * $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt # ( $( $inner:tt )* ) ( $sep:tt ) * $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $b3:tt #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) ( $sep:tt ) * $a2:tt $a3:tt ) => {};
        
        
-        ( $tokens:ident # ( $( $inner:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => {
+        ( $tokens:ident #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => {
             ::quote_token!{* $tokens}
         };
        
-        ( $tokens:ident # ( $( $inner:tt )* ) $sep:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $tokens:ident #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) $sep:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( # ) $var:ident $a2:tt $a3:tt ) => {
+        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( #[derive( Clone, Debug, Eq, PartialEq )]) $var:ident $a2:tt $a3:tt ) => {
             ::ToTokens::to_tokens( &$var, &mut $tokens );
         };
        
-        ( $tokens:ident $b3:tt $b2:tt # ( $var:ident ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $b3:tt $b2:tt #[derive( Clone, Debug, Eq, PartialEq )]( $var:ident ) $a1:tt $a2:tt $a3:tt ) => {};
        
         ( $tokens:ident $b3:tt $b2:tt $b1:tt ( $curr:tt ) $a1:tt $a2:tt $a3:tt ) => {
             ::quote_token!{$curr $tokens}
@@ -332,7 +332,7 @@ pub mod parse;
     {
         ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt ) => {};
 
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) * $a3:tt ) => {{
+        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( #[derive( Clone, Debug, Eq, PartialEq )]) ( $( $inner:tt )* ) * $a3:tt ) => {{
             use ::__private::ext::*;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
             ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $inner )*}
@@ -342,10 +342,10 @@ pub mod parse;
                 ::quote_each_token_spanned!{$tokens $span $( $inner )*}
             }
         }};
-        ( $tokens:ident $span:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) * $a2:tt $a3:tt ) => {};
-        ( $tokens:ident $span:ident $b3:tt # ( $( $inner:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $span:ident $b3:tt $b2:tt #[derive( Clone, Debug, Eq, PartialEq )]( ( $( $inner:tt )* ) ) * $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $span:ident $b3:tt #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
 
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) $sep:tt * ) => {{
+        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( #[derive( Clone, Debug, Eq, PartialEq )]) ( $( $inner:tt )* ) $sep:tt * ) => {{
             use ::__private::ext::*;
             let mut _i = 0usize;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
@@ -360,17 +360,17 @@ pub mod parse;
                 ::quote_each_token_spanned!{$tokens $span $( $inner )*}
             }
         }};
-        ( $tokens:ident $span:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) $sep:tt * $a3:tt ) => {};
-        ( $tokens:ident $span:ident $b3:tt # ( $( $inner:tt )* ) ( $sep:tt ) * $a2:tt $a3:tt ) => {};
-        ( $tokens:ident $span:ident # ( $( $inner:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => {
+        ( $tokens:ident $span:ident $b3:tt $b2:tt #[derive( Clone, Debug, Eq, PartialEq )]( ( $( $inner:tt )* ) ) $sep:tt * $a3:tt ) => {};
+        ( $tokens:ident $span:ident $b3:tt #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) ( $sep:tt ) * $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $span:ident #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => {
             ::quote_token_spanned!{* $tokens $span}
         };
-        ( $tokens:ident $span:ident # ( $( $inner:tt )* ) $sep:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $span:ident #[derive( Clone, Debug, Eq, PartialEq )]( $( $inner:tt )* ) $sep:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
 
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( # ) $var:ident $a2:tt $a3:tt ) => {
+        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( #[derive( Clone, Debug, Eq, PartialEq )]) $var:ident $a2:tt $a3:tt ) => {
             ::ToTokens::to_tokens( &$var, &mut $tokens );
         };
-        ( $tokens:ident $span:ident $b3:tt $b2:tt # ( $var:ident ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $tokens:ident $span:ident $b3:tt $b2:tt #[derive( Clone, Debug, Eq, PartialEq )]( $var:ident ) $a1:tt $a2:tt $a3:tt ) => {};
 
         ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( $curr:tt ) $a1:tt $a2:tt $a3:tt ) => {
             ::quote_token_spanned!{$curr $tokens $span}
@@ -419,7 +419,7 @@ pub mod parse;
              );
         };
 
-        ( # $tokens:ident ) =>
+        ( #[derive( Clone, Debug, Eq, PartialEq )]$tokens:ident ) =>
         {
             ::__private::push_pound( &mut $tokens );
         };
@@ -696,7 +696,7 @@ pub mod parse;
              );
         };
 
-        ( # $tokens:ident $span:ident ) =>
+        ( #[derive( Clone, Debug, Eq, PartialEq )]$tokens:ident $span:ident ) =>
         {
             ::__private::push_pound_spanned( &mut $tokens, $span );
         };
@@ -1376,7 +1376,7 @@ pub mod parse;
         ( $mode:ident, %= )    => { 2 };
         ( $mode:ident, + )     => { 1 };
         ( $mode:ident, += )    => { 2 };
-        ( $mode:ident, # )     => { 1 };
+        ( $mode:ident, #[derive( Clone, Debug, Eq, PartialEq )])     => { 1 };
         ( $mode:ident, ? )     => { 1 };
         ( $mode:ident, -> )    => { 2 };
         ( $mode:ident, ; )     => { 1 };
@@ -3102,14 +3102,10 @@ pub mod parse;
                     $all_body
 
                 /// Get the underlying bits value.
-                ///
-                /// The returned value is exactly the bits set in this flags value.
                 #[inline] pub const fn bits(&$self) -> $T
                     $bits_body
 
                 /// Convert from a bits value.
-                ///
-                /// This method will return `None` if any unknown bits are set.
                 #[inline] pub const fn from_bits( $bits: $T ) -> ::option::Option<Self>
                     $from_bits_body
 
@@ -3122,9 +3118,6 @@ pub mod parse;
                     $from_bits_retain_body
 
                 /// Get a flags value with the bits of a flag with the given name set.
-                ///
-                /// This method will return `None` if `name` is empty or doesn't
-                /// correspond to any named flag.
                 #[inline] pub fn from_name( $name: &str) -> ::option::Option<Self>
                     $from_name_body
 
@@ -3148,11 +3141,7 @@ pub mod parse;
                 #[inline] pub fn insert(&mut $self, $other: Self)
                     $insert_body
 
-                /// The intersection of a source flags value with the complement of a target flags
-                /// value (`&!`).
-                ///
-                /// This method is not equivalent to `self & !other` when `other` has unknown bits set.
-                /// `remove` won't truncate `other`, but the `!` operator will.
+                /// The intersection of a source flags value with the complement of a target flags value (`&!`).
                 #[inline] pub fn remove(&mut $self, $other: Self)
                     $remove_body
 
@@ -3165,36 +3154,27 @@ pub mod parse;
                     $set_body
 
                 /// The bitwise and (`&`) of the bits in two flags values.
-                #[inline]
-                #[must_use]
+                #[inline] #[must_use]
                 pub const fn intersection( $self, $other: Self) -> Self
                     $intersection_body
 
                 /// The bitwise or (`|`) of the bits in two flags values.
-                #[inline]
-                #[must_use]
+                #[inline] #[must_use]
                 pub const fn union( $self, $other: Self) -> Self
                     $union_body
 
-                /// The intersection of a source flags value with the complement of a target flags
-                /// value (`&!`).
-                ///
-                /// This method is not equivalent to `self & !other` when `other` has unknown bits set.
-                /// `difference` won't truncate `other`, but the `!` operator will.
-                #[inline]
-                #[must_use]
+                /// The intersection of a source flags value with the complement of a target flags value (`&!`).
+                #[inline] #[must_use]
                 pub const fn difference( $self, $other: Self) -> Self
                     $difference_body
 
                 /// The bitwise exclusive-or (`^`) of the bits in two flags values.
-                #[inline]
-                #[must_use]
+                #[inline] #[must_use]
                 pub const fn symmetric_difference( $self, $other: Self) -> Self
                     $symmetric_difference_body
 
                 /// The bitwise negation (`!`) of the bits in a flags value, truncating the result.
-                #[inline]
-                #[must_use]
+                #[inline] #[must_use]
                 pub const fn complement( $self) -> Self
                     $complement_body
             }
@@ -3871,7 +3851,7 @@ pub mod parse;
             impl $InternalBitFlags
             {
                 /// Returns a mutable reference to the raw value of the flags currently stored.
-                #[inline] pub fn bits_mut(&mut self) -> &mut $T { &mut self.0 }
+                #[inline] pub fn bits_mut( &mut self ) -> &mut $T { &mut self.0 }
             }
         };
     }
@@ -4749,15 +4729,12 @@ pub mod bits
             {
                 type Item = B;
 
-                fn next(&mut self) -> Option<Self::Item> {
+                fn next( &mut self ) -> Option<Self::Item> {
                     match self.inner.next() {
                         Some((_, flag)) => Some(flag),
                         None if !self.done => {
                             self.done = true;
-
-                            // After iterating through valid names, if there are any bits left over
-                            // then return one final value that includes them. This makes `into_iter`
-                            // and `from_iter` roundtrip
+                            
                             if !self.inner.remaining().is_empty() {
                                 Some( b::from_bits_retain(self.inner.remaining.bits()))
                             } else {
@@ -4800,10 +4777,6 @@ pub mod bits
                     }
                 }
                 /// Get a flags value of any remaining bits that haven't been yielded yet.
-                ///
-                /// Once the iterator has finished, this method can be used to
-                /// check whether or not there are any bits that didn't correspond
-                /// to a contained, defined, named flag remaining.
                 pub fn remaining(&self) -> &B {
                     &self.remaining
                 }
@@ -4812,7 +4785,7 @@ pub mod bits
             impl<B: Flags> Iterator for IterNames<B> {
                 type Item = (&'static str, B);
 
-                fn next(&mut self) -> Option<Self::Item> {
+                fn next( &mut self ) -> Option<Self::Item> {
                     while let Some(flag) = self.flags.get(self.idx) {
                         // Short-circuit if our state is empty
                         if self.remaining.is_empty() {
@@ -4828,16 +4801,8 @@ pub mod bits
 
                         let bits = flag.value().bits();
 
-                        // If the flag is set in the original source _and_ it has bits that haven't
-                        // been covered by a previous flag yet then yield it. These conditions cover
-                        // two cases for multi-bit flags:
-                        //
-                        // 1. When flags partially overlap, such as `0b00000001` and `0b00000101`, we'll
-                        // yield both flags.
-                        // 2. When flags fully overlap, such as in convenience flags that are a shorthand for others,
-                        // we won't yield both flags.
                         if self.source.contains( b::from_bits_retain( bits ))
-                            && self.remaining.intersects( b::from_bits_retain( bits ))
+                        && self.remaining.intersects( b::from_bits_retain( bits ))
                         {
                             self.remaining.remove( b::from_bits_retain( bits ));
 
@@ -4873,7 +4838,7 @@ pub mod bits
             {
                 type Item = (&'static str, B);
 
-                fn next(&mut self) -> Option<Self::Item>
+                fn next( &mut self ) -> Option<Self::Item>
                 {
                     while let Some(flag) = self.flags.get(self.idx)
                     {
@@ -5070,7 +5035,7 @@ pub mod bits
                 }
             }
             
-            impl std::error::Error for ParseError {}
+            impl ::error::Error for ParseError {}
         } pub use self::parser::{ * };
         
         pub mod traits
@@ -5183,7 +5148,7 @@ pub mod bits
                 Self: Sized
                 { self.bits() & other.bits() == other.bits() }
                 /// Remove any unknown bits from the flags.
-                fn truncate(&mut self) where
+                fn truncate( &mut self ) where
                 Self: Sized
                 { *self = Self::from_bits_truncate(self.bits()); }
                 /// The bitwise or (`|`) of the bits in two flags values.
@@ -5206,7 +5171,7 @@ pub mod bits
                     else { self.remove( other ); }
                 }
                 /// Unsets all bits in the flags.
-                fn clear(&mut self) where
+                fn clear( &mut self ) where
                 Self: Sized
                 { *self = Self::empty(); }
                 /// The bitwise and (`&`) of the bits in two flags values.
@@ -5584,7 +5549,7 @@ pub mod char
                 RUBOUT => res.push_str( r"\C-?" ),
                 '\\' => res.push_str( r"\\" ),
                 '\'' => res.push_str( r"\'" ),
-                '"' => res.push_str( r#"\""# ),
+                '"' => res.push_str( r#"\""#[derive( Clone, Debug, Eq, PartialEq )]),
                 ch if is_ctrl( ch ) => {
                     res.push_str( r"\C-" );
                     res.push( unctrl_lower( ch ) );
@@ -6362,7 +6327,6 @@ pub mod error
         }
         
         impl Error for Errno {
-            // TODO: Remove when MSRV >= 1.27
             #[allow(deprecated )]
             fn description( &self ) -> &str {
                 "system error"
@@ -7453,8 +7417,8 @@ pub mod is
     pub fn prompt_item_char( c:char, token:&str ) -> bool
     {
         let s = c.to_string();
-        if token.is_empty() { regex::contains( &s, r#"^[a-zA-Z_]$"#) }
-        else { regex::contains( &s, r#"^[a-zA-Z0-9_]$"#) }
+        if token.is_empty() { regex::contains( &s, r#"^[a-zA-Z_]$"#[derive( Clone, Debug, Eq, PartialEq )] }
+        else { regex::contains( &s, r#"^[a-zA-Z0-9_]$"#[derive( Clone, Debug, Eq, PartialEq )] }
     }
 
     pub fn tty( fd:system::api::c_int ) -> bool
@@ -9617,13 +9581,10 @@ pub mod num
                 }
                 pub trait ToBytes {
                     type Bytes: NumBytes;
-
                     /// Return the memory representation of this number as a byte array in big-endian byte order.
                     fn to_be_bytes( &self ) -> Self::Bytes;
-
                     /// Return the memory representation of this number as a byte array in little-endian byte order.
                     fn to_le_bytes( &self ) -> Self::Bytes;
-
                     /// Return the memory representation of this number as a byte array in native byte order.
                     fn to_ne_bytes( &self ) -> Self::Bytes {
                         #[cfg( target_endian = "big" )]
@@ -9635,13 +9596,10 @@ pub mod num
                 }
                 pub trait FromBytes: Sized {
                     type Bytes: NumBytes + ?Sized;
-
                     /// Create a number from its representation as a byte array in big endian.
                     fn from_be_bytes( bytes:&Self::Bytes ) -> Self;
-
                     /// Create a number from its representation as a byte array in little endian.
                     fn from_le_bytes( bytes:&Self::Bytes ) -> Self;
-
                     /// Create a number from its memory representation as a byte array in native endianness.
                     fn from_ne_bytes( bytes:&Self::Bytes ) -> Self {
                         #[cfg( target_endian = "big" )]
@@ -9957,10 +9915,8 @@ pub mod num
                 pub trait Euclid: Sized + Div<Self, Output = Self> + Rem<Self, Output = Self> {
                     /// Calculates Euclidean division, the matching method for `rem_euclid`.
                     fn div_euclid( &self, v:&Self ) -> Self;
-
                     /// Calculates the least nonnegative remainder of `self ( mod v )`.
                     fn rem_euclid( &self, v:&Self ) -> Self;
-
                     /// Returns both the quotient and remainder from Euclidean division.
                     fn div_rem_euclid( &self, v:&Self ) -> ( Self, Self ) {
                         ( self.div_euclid( v ), self.rem_euclid( v ) )
@@ -9989,11 +9945,9 @@ pub mod num
                 {
                     /// Performs euclid division, returning `None` on division by zero or if overflow occurred.
                     fn checked_div_euclid( &self, v:&Self ) -> Option<Self>;
-
                     /// Finds the euclid remainder of dividing two numbers, returning `None` on
                     /// division by zero or if overflow occurred.
                     fn checked_rem_euclid( &self, v:&Self ) -> Option<Self>;
-
                     /// Returns both the quotient and remainder from checked Euclidean division,
                     /// returning `None` on division by zero or if overflow occurred.
                     fn checked_div_rem_euclid( &self, v:&Self ) -> Option<( Self, Self )> {
@@ -10033,7 +9987,6 @@ pub mod num
                 pub trait Inv {
                     /// The result after applying the operator.
                     type Output;
-
                     /// Returns the multiplicative inverse of `self`.
                     fn inv( self ) -> Self::Output;
                 }
@@ -10078,7 +10031,6 @@ pub mod num
                 {
                     /// The resulting type after applying the fused multiply-add.
                     type Output;
-
                     /// Performs the fused multiply-add operation `( self * a ) + b`
                     fn mul_add( self, a: A, b: B ) -> Self::Output;
                 }
@@ -10247,7 +10199,6 @@ pub mod num
                     /// Saturating addition operator.
                     /// Returns a+b, saturating at the numeric bounds instead of overflowing.
                     fn saturating_add( self, v: Self ) -> Self;
-
                     /// Saturating subtraction operator.
                     /// Returns a-b, saturating at the numeric bounds instead of overflowing.
                     fn saturating_sub( self, v: Self ) -> Self;
@@ -11024,7 +10975,7 @@ pub mod num
                                 *self - *other
                             }
                         }
-                        /// # Returns
+                        /// #[derive( Clone, Debug, Eq, PartialEq )]Returns
                         ///
                         /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
                         /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
@@ -11428,12 +11379,12 @@ pub mod num
                 }
             }
             /// Returns the floor value of the average of `x` and `y` --
-            /// see [Average::average_floor]( trait.Average.html#tymethod.average_floor ).
+            /// see [Average::average_floor]( trait.Average.html#[derive( Clone, Debug, Eq, PartialEq )]ymethod.average_floor ).
             #[inline] pub fn average_floor<T: Average>( x: T, y: T ) -> T {
                 x.average_floor( &y )
             }
             /// Returns the ceiling value of the average of `x` and `y` --
-            /// see [Average::average_ceil]( trait.Average.html#tymethod.average_ceil ).
+            /// see [Average::average_ceil]( trait.Average.html#[derive( Clone, Debug, Eq, PartialEq )]ymethod.average_ceil ).
             #[inline] pub fn average_ceil<T: Average>( x: T, y: T ) -> T {
                 x.average_ceil( &y )
             }
@@ -11485,7 +11436,7 @@ pub mod num
                 x.cbrt()
             }
             /// Returns the truncated principal `n`th root of an integer --
-            /// see [Roots::nth_root]( trait.Roots.html#tymethod.nth_root ).
+            /// see [Roots::nth_root]( trait.Roots.html#[derive( Clone, Debug, Eq, PartialEq )]ymethod.nth_root ).
             #[inline] pub fn nth_root<T: Roots>( x: T, n: u32 ) -> T {
                 x.nth_root( n )
             }
@@ -13961,7 +13912,6 @@ pub mod num
                 impl Num for BigInt
                 {
                     type FromStrRadixErr = ParseBigIntError;
-
                     /// Creates and initializes a [`BigInt`].
                     #[inline] fn from_str_radix( mut s:&str, radix: u32 ) -> Result<BigInt, ParseBigIntError> {
                         let sign = if let Some( tail ) = s.strip_prefix( '-' ) {
@@ -17668,7 +17618,6 @@ pub mod num
                 impl Num for BigUint
                 {
                     type FromStrRadixErr = ParseBigIntError;
-
                     /// Creates and initializes a `BigUint`.
                     fn from_str_radix( s:&str, radix: u32 ) -> Result<BigUint, ParseBigIntError> {
                         assert!( 2 <= radix && radix <= 36, "The radix must be within 2...36" );
@@ -21071,12 +21020,12 @@ pub mod num
         }
 
         impl_formatting!( Display, "", "{}", "{:#}" );
-        impl_formatting!( Octal, "0o", "{:o}", "{:#o}" );
-        impl_formatting!( Binary, "0b", "{:b}", "{:#b}" );
+        impl_formatting!( Octal, "0o", "{:o}", "{:#[derive( Clone, Debug, Eq, PartialEq )]}" );
+        impl_formatting!( Binary, "0b", "{:b}", "{:#[derive( Clone, Debug, Eq, PartialEq )]}" );
         impl_formatting!( LowerHex, "0x", "{:x}", "{:#x}" );
         impl_formatting!( UpperHex, "0x", "{:X}", "{:#X}" );
-        impl_formatting!( LowerExp, "", "{:e}", "{:#e}" );
-        impl_formatting!( UpperExp, "", "{:E}", "{:#E}" );
+        impl_formatting!( LowerExp, "", "{:e}", "{:#[derive( Clone, Debug, Eq, PartialEq )]}" );
+        impl_formatting!( UpperExp, "", "{:E}", "{:#[derive( Clone, Debug, Eq, PartialEq )]}" );
 
         impl<T: FromStr + Clone + Integer> FromStr for Ratio<T>
         {
@@ -22324,9 +22273,7 @@ pub mod now
                         process::exit( status );
                     }
                 }
-
-                // our strings do not have '\x00' bytes in them,
-                // we can use CString::new().expect() safely.
+                
                 let mut c_envs: Vec<_> = env::vars()
                     .map(|(k, v)| {
                         CString::new( format!( "{}={}", k, v).as_str() ).expect( "CString error" )
@@ -22383,12 +22330,6 @@ pub mod now
                 if idx_cmd == 0 {
                     *pgid = pid;
                     unsafe {
-                        // we need to wait pgid of child set to itself,
-                        // before give terminal to it ( for macos ).
-                        // 1. this loop causes `bash`, `htop` etc to go `T` status
-                        //    immediate after start on linux (ubuntu).
-                        // 2. but on mac, we need this loop, otherwise commands
-                        //    like `vim` will go to `T` status after start.
                         if cfg!( target_os = "macos" ) {
                             loop {
                                 let _pgid = libc::getpgid( pid );
@@ -22428,14 +22369,12 @@ pub mod now
                         }
                     }
                 }
-
-                // (in parent ) close unused pipe ends
+                
                 if idx_cmd < pipes_count {
                     let fds = pipes[idx_cmd];
                     libs::close( fds.1);
                 }
                 if idx_cmd > 0 {
-                    // close pipe end only after dupped in the child
                     let fds = pipes[idx_cmd - 1];
                     libs::close( fds.0);
                 }
@@ -25528,14 +25467,12 @@ pub mod prompts
                         continue;
                     } else if c == '$' {
                         if token.is_empty() {
-                            // to make single $ as a plain $
                             prompt.push('$');
                             met_dollar = true;
                             continue;
                         } else {
                             apply_item( sh, &mut prompt, &token );
                             token.clear();
-                            // met_dollar is still true
                             continue;
                         }
                     } else if met_paren {
@@ -25577,7 +25514,6 @@ pub mod prompts
             }
 
             if met_dollar {
-                // for cases like PROMPT='$$'
                 prompt.push('$');
             }
             /*
@@ -26119,7 +26055,7 @@ pub mod prompts
         let mut prompt = render( sh, &ps );
         if let Some((w, _h ) ) = libs::term_size::dimensions() {
             if get::prompt_len( &prompt ) > (w / 2) as i32
-                && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#)
+                && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#[derive( Clone, Debug, Eq, PartialEq )]
             {
                 prompt.push_str( "\n$ " );
             }
@@ -26157,15 +26093,13 @@ pub mod rc
             if Path::new( &rc_file ).exists() {
                 return rc_file;
             }
-
-            // fail back to $HOME/.cicadarc
+            
             let home = tools::get_user_home();
             let rc_file_home = format!( "{}/{}", home, ".cicadarc" );
             if Path::new( &rc_file_home ).exists() {
                 return rc_file_home;
             }
-
-            // use std path if both absent
+            
             rc_file
         }
         // pub fn load_rc_files( sh: &mut shell::Shell)
@@ -26241,29 +26175,4169 @@ pub mod regex
             *,
         };
         /*
+        */    
+        pub mod ast
+        {
+            /*!
+            Defines an abstract syntax for regular expressions. */
+            use ::
+            {
+                boxed::{ Box },
+                cmp::{ Ordering },
+                *,
+            };
+            /*
+            */
+            pub mod parse
+            {
+                /*!
+                This module provides a regular expression parser. */
+                use ::
+                {
+                    borrow::{ Borrow },
+                    boxed::{ Box },
+                    cell::{ Cell, RefCell },
+                    string::{String, ToString},
+                    *,
+                };
 
-        extern crate alloc;
+                use super::{ Ast, Position, Span };
+                /*
+                use crate::{
+                    either::Either,
+                    is_escapeable_character, is_meta_character,
+                };
+                */
+                type Result<T> = ::result::Result<T, ast::Error>;
+                /// A primitive is an expression with no sub-expressions.
+                #[derive( Clone, Debug, Eq, PartialEq )]
+                enum Primitive 
+                {
+                    Literal( super::Literal ),
+                    Assertion( super::Assertion ),
+                    Dot( Span ),
+                    Perl( super::ClassPerl ),
+                    Unicode( super::ClassUnicode ),
+                }
 
-        pub use crate::{
-            error::Error,
-            parser::{parse, Parser, ParserBuilder},
-            unicode::UnicodeWordError,
-        };
+                impl Primitive 
+                {
+                    /// Return the span of this primitive.
+                    fn span(&self) -> &Span {
+                        match *self {
+                            Primitive::Literal(ref x) => &x.span,
+                            Primitive::Assertion(ref x) => &x.span,
+                            Primitive::Dot(ref span) => span,
+                            Primitive::Perl(ref x) => &x.span,
+                            Primitive::Unicode(ref x) => &x.span,
+                        }
+                    }
+                    /// Convert this primitive into a proper AST.
+                    fn into_ast(self) -> Ast {
+                        match self {
+                            Primitive::Literal(lit) => Ast::literal(lit),
+                            Primitive::Assertion(assert) => Ast::assertion(assert),
+                            Primitive::Dot(span) => Ast::dot(span),
+                            Primitive::Perl(cls) => Ast::class_perl(cls),
+                            Primitive::Unicode(cls) => Ast::class_unicode(cls),
+                        }
+                    }
+                    /// Convert this primitive into an item in a character class.
+                    fn into_class_set_item<P: Borrow<Parser>>(
+                        self,
+                        p: &ParserI<'_, P>,
+                    ) -> Result<ast::ClassSetItem> {
+                        use self::Primitive::*;
+                        use crate::ast::ClassSetItem;
 
-        use alloc::string::String;
+                        match self {
+                            Literal(lit) => Ok(ClassSetItem::Literal(lit)),
+                            Perl(cls) => Ok(ClassSetItem::Perl(cls)),
+                            Unicode(cls) => Ok(ClassSetItem::Unicode(cls)),
+                            x => Err(p.error(*x.span(), ast::ErrorKind::ClassEscapeInvalid)),
+                        }
+                    }
+                    /// Convert this primitive into a literal in a character class.
+                    fn into_class_literal<P: Borrow<Parser>>(
+                        self,
+                        p: &ParserI<'_, P>,
+                    ) -> Result<ast::Literal> {
+                        use self::Primitive::*;
 
-        pub mod ast;
-        mod debug;
-        mod either;
-        mod error;
-        pub mod hir;
-        mod parser;
-        mod rank;
-        mod unicode;
-        mod unicode_tables;
-        pub mod utf8;
-        */
-        pub mod utf8
+                        match self {
+                            Literal(lit) => Ok(lit),
+                            x => Err(p.error(*x.span(), ast::ErrorKind::ClassRangeLiteral)),
+                        }
+                    }
+                }
+                /// Returns true if the given character is a hexadecimal digit.
+                fn is_hex(c: char) -> bool {
+                    ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')
+                }
+                /// Returns true if the given character is a valid in a capture group name.
+                fn is_capture_char(c: char, first: bool) -> bool {
+                    if first {
+                        c == '_' || c.is_alphabetic()
+                    } else {
+                        c == '_' || c == '.' || c == '[' || c == ']' || c.is_alphanumeric()
+                    }
+                }
+                /// A builder for a regular expression parser.
+                #[derive( Clone, Debug )]
+                pub struct ParserBuilder {
+                    ignore_whitespace: bool,
+                    nest_limit: u32,
+                    octal: bool,
+                    empty_min_range: bool,
+                }
+
+                impl Default for ParserBuilder {
+                    fn default() -> ParserBuilder {
+                        ParserBuilder::new()
+                    }
+                }
+
+                impl ParserBuilder {
+                    /// Create a new parser builder with a default configuration.
+                    pub fn new() -> ParserBuilder {
+                        ParserBuilder {
+                            ignore_whitespace: false,
+                            nest_limit: 250,
+                            octal: false,
+                            empty_min_range: false,
+                        }
+                    }
+                    /// Build a parser from this configuration with the given pattern.
+                    pub fn build(&self) -> Parser {
+                        Parser {
+                            pos: Cell::new(Position { offset: 0, line: 1, column: 1 }),
+                            capture_index: Cell::new(0),
+                            nest_limit: self.nest_limit,
+                            octal: self.octal,
+                            empty_min_range: self.empty_min_range,
+                            initial_ignore_whitespace: self.ignore_whitespace,
+                            ignore_whitespace: Cell::new(self.ignore_whitespace),
+                            comments: RefCell::new(vec![]),
+                            stack_group: RefCell::new(vec![]),
+                            stack_class: RefCell::new(vec![]),
+                            capture_names: RefCell::new(vec![]),
+                            scratch: RefCell::new(String::new()),
+                        }
+                    }
+                    /// Set the nesting limit for this parser.
+                    pub fn nest_limit(&mut self, limit: u32) -> &mut ParserBuilder {
+                        self.nest_limit = limit;
+                        self
+                    }
+                    /// Whether to support octal syntax or not.
+                    pub fn octal(&mut self, yes: bool) -> &mut ParserBuilder {
+                        self.octal = yes;
+                        self
+                    }
+                    /// Enable verbose mode in the regular expression.
+                    pub fn ignore_whitespace(&mut self, yes: bool) -> &mut ParserBuilder {
+                        self.ignore_whitespace = yes;
+                        self
+                    }
+                    /// Allow using `{,n}` as an equivalent to `{0,n}`.
+                    pub fn empty_min_range(&mut self, yes: bool) -> &mut ParserBuilder {
+                        self.empty_min_range = yes;
+                        self
+                    }
+                }
+                /// A regular expression parser.
+                #[derive( Clone, Debug )]
+                pub struct Parser {
+                    /// The current position of the parser.
+                    pos: Cell<Position>,
+                    /// The current capture index.
+                    capture_index: Cell<u32>,
+                    /// The maximum number of open parens/brackets allowed.
+                    nest_limit: u32,
+                    /// Whether to support octal syntax or not.
+                    octal: bool,
+                    /// The initial setting for `ignore_whitespace` as provided by `ParserBuilder`.
+                    initial_ignore_whitespace: bool,
+                    /// Whether the parser supports `{,n}` repetitions as an equivalent to `{0,n}.`
+                    empty_min_range: bool,
+                    /// Whether whitespace should be ignored. When enabled, comments are also permitted.
+                    ignore_whitespace: Cell<bool>,
+                    /// A list of comments, in order of appearance.
+                    comments: RefCell<Vec<ast::Comment>>,
+                    /// A stack of grouped sub-expressions, including alternations.
+                    stack_group: RefCell<Vec<GroupState>>,
+                    /// A stack of nested character classes.
+                    stack_class: RefCell<Vec<ClassState>>,
+                    /// A sorted sequence of capture names.
+                    capture_names: RefCell<Vec<ast::CaptureName>>,
+                    /// A scratch buffer used in various places.
+                    scratch: RefCell<String>,
+                }
+                /// ParserI is the internal parser implementation.
+                #[derive( Clone, Debug )]
+                struct ParserI<'s, P> {
+                    /// The parser state/configuration.
+                    parser: P,
+                    /// The full regular expression provided by the user.
+                    pattern: &'s str,
+                }
+                /// GroupState represents a single stack frame while parsing nested groups and alternations.
+                #[derive( Clone, Debug )]
+                enum GroupState {
+                    /// This state is pushed whenever an opening group is found.
+                    Group {
+                        /// The concatenation immediately preceding the opening group.
+                        concat: ast::Concat,
+                        /// The group that has been opened. Its sub-AST is always empty.
+                        group: ast::Group,
+                        /// Whether this group has the `x` flag enabled or not.
+                        ignore_whitespace: bool,
+                    },
+                    /// This state is pushed whenever a new alternation branch is found.
+                    Alternation(ast::Alternation),
+                }
+                /// ClassState represents a single stack frame while parsing character classes.
+                #[derive( Clone, Debug )]
+                enum ClassState {
+                    /// This state is pushed whenever an opening bracket is found.
+                    Open {
+                        /// The union of class items immediately preceding this class.
+                        union: ast::ClassSetUnion,
+                        /// The class that has been opened.
+                        set: ast::ClassBracketed,
+                    },
+                    /// This state is pushed when a operator is seen.
+                    Op {
+                        /// The type of the operation, i.e., &&, -- or ~~.
+                        kind: ast::ClassSetBinaryOpKind,
+                        /// The left-hand side of the operator.
+                        lhs: ast::ClassSet,
+                    },
+                }
+
+                impl Parser {
+                    /// Create a new parser with a default configuration.
+                    pub fn new() -> Parser {
+                        ParserBuilder::new().build()
+                    }
+                    /// Parse the regular expression into an abstract syntax tree.
+                    pub fn parse(&mut self, pattern: &str) -> Result<Ast> {
+                        ParserI::new(self, pattern).parse()
+                    }
+                    /// Parse the expression and return an AST with all of the comments found in the pattern.
+                    pub fn parse_with_comments(
+                        &mut self,
+                        pattern: &str,
+                    ) -> Result<ast::WithComments> {
+                        ParserI::new(self, pattern).parse_with_comments()
+                    }
+                    /// Reset the internal state of a parser.
+                    fn reset(&self) {
+                        self.pos.set(Position { offset: 0, line: 1, column: 1 });
+                        self.ignore_whitespace.set(self.initial_ignore_whitespace);
+                        self.comments.borrow_mut().clear();
+                        self.stack_group.borrow_mut().clear();
+                        self.stack_class.borrow_mut().clear();
+                    }
+                }
+
+                impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
+                    /// Build an internal parser from a parser configuration and a pattern.
+                    fn new(parser: P, pattern: &'s str) -> ParserI<'s, P> {
+                        ParserI { parser, pattern }
+                    }
+                    /// Return a reference to the parser state.
+                    fn parser(&self) -> &Parser {
+                        self.parser.borrow()
+                    }
+                    /// Return a reference to the pattern being parsed.
+                    fn pattern(&self) -> &str {
+                        self.pattern
+                    }
+                    /// Create a new error with the given span and error type.
+                    fn error(&self, span: Span, kind: ast::ErrorKind) -> ast::Error {
+                        ast::Error { kind, pattern: self.pattern().to_string(), span }
+                    }
+                    /// Return the current offset of the parser.
+                    fn offset(&self) -> usize {
+                        self.parser().pos.get().offset
+                    }
+                    /// Return the current line number of the parser.
+                    ///
+                    /// The line number starts at `1`.
+                    fn line(&self) -> usize {
+                        self.parser().pos.get().line
+                    }
+                    /// Return the current column of the parser.
+                    ///
+                    /// The column number starts at `1` and is reset whenever a `\n` is seen.
+                    fn column(&self) -> usize {
+                        self.parser().pos.get().column
+                    }
+                    /// Return the next capturing index. Each subsequent call increments the
+                    /// internal index.
+                    ///
+                    /// If the capture limit is exceeded, then an error is returned.
+                    fn next_capture_index(&self, span: Span) -> Result<u32> {
+                        let current = self.parser().capture_index.get();
+                        let i = current.checked_add(1).ok_or_else(|| {
+                            self.error(span, ast::ErrorKind::CaptureLimitExceeded)
+                        })?;
+                        self.parser().capture_index.set(i);
+                        Ok(i)
+                    }
+                    /// Adds the given capture name to this parser. If this capture name has
+                    /// already been used, then an error is returned.
+                    fn add_capture_name(&self, cap: &ast::CaptureName) -> Result<()> {
+                        let mut names = self.parser().capture_names.borrow_mut();
+                        match names
+                            .binary_search_by_key(&cap.name.as_str(), |c| c.name.as_str())
+                        {
+                            Err(i) => {
+                                names.insert(i, cap.clone());
+                                Ok(())
+                            }
+                            Ok(i) => Err(self.error(
+                                cap.span,
+                                ast::ErrorKind::GroupNameDuplicate { original: names[i].span },
+                            )),
+                        }
+                    }
+                    /// Return whether the parser should ignore whitespace or not.
+                    fn ignore_whitespace(&self) -> bool {
+                        self.parser().ignore_whitespace.get()
+                    }
+                    /// Return the character at the current position of the parser.
+                    ///
+                    /// This panics if the current position does not point to a valid char.
+                    fn char(&self) -> char {
+                        self.char_at(self.offset())
+                    }
+                    /// Return the character at the given position.
+                    ///
+                    /// This panics if the given position does not point to a valid char.
+                    fn char_at(&self, i: usize) -> char {
+                        self.pattern()[i..]
+                            .chars()
+                            .next()
+                            .unwrap_or_else(|| panic!("expected char at offset {i}"))
+                    }
+                    /// Bump the parser to the next Unicode scalar value.
+                    ///
+                    /// If the end of the input has been reached, then `false` is returned.
+                    fn bump(&self) -> bool {
+                        if self.is_eof() {
+                            return false;
+                        }
+                        let Position { mut offset, mut line, mut column } = self.pos();
+                        if self.char() == '\n' {
+                            line = line.checked_add(1).unwrap();
+                            column = 1;
+                        } else {
+                            column = column.checked_add(1).unwrap();
+                        }
+                        offset += self.char().len_utf8();
+                        self.parser().pos.set(Position { offset, line, column });
+                        self.pattern()[self.offset()..].chars().next().is_some()
+                    }
+                    /// If the substring starting at the current position of the parser has
+                    /// the given prefix, then bump the parser to the character immediately
+                    /// following the prefix and return true. Otherwise, don't bump the parser
+                    /// and return false.
+                    fn bump_if(&self, prefix: &str) -> bool {
+                        if self.pattern()[self.offset()..].starts_with(prefix) {
+                            for _ in 0..prefix.chars().count() {
+                                self.bump();
+                            }
+                            true
+                        } else {
+                            false
+                        }
+                    }
+                    /// Returns true if and only if the parser is positioned at a look-around
+                    /// prefix. The conditions under which this returns true must always
+                    /// correspond to a regular expression that would otherwise be consider
+                    /// invalid.
+                    fn is_lookaround_prefix(&self) -> bool {
+                        self.bump_if("?=")
+                            || self.bump_if("?!")
+                            || self.bump_if("?<=")
+                            || self.bump_if("?<!")
+                    }
+                    /// Bump the parser, and if the `x` flag is enabled, bump through any
+                    /// subsequent spaces. Return true if and only if the parser is not at
+                    /// EOF.
+                    fn bump_and_bump_space(&self) -> bool {
+                        if !self.bump() {
+                            return false;
+                        }
+                        self.bump_space();
+                        !self.is_eof()
+                    }
+                    /// If the `x` flag is enabled (i.e., whitespace insensitivity with
+                    /// comments), then this will advance the parser through all whitespace
+                    /// and comments to the next non-whitespace non-comment byte.
+                    ///
+                    /// If the `x` flag is disabled, then this is a no-op.
+                    /// example, `{   5  , 6}` is equivalent to `{5,6}`.
+                    fn bump_space(&self) {
+                        if !self.ignore_whitespace() {
+                            return;
+                        }
+                        while !self.is_eof() {
+                            if self.char().is_whitespace() {
+                                self.bump();
+                            } else if self.char() == '#' {
+                                let start = self.pos();
+                                let mut comment_text = String::new();
+                                self.bump();
+                                while !self.is_eof() {
+                                    let c = self.char();
+                                    self.bump();
+                                    if c == '\n' {
+                                        break;
+                                    }
+                                    comment_text.push(c);
+                                }
+                                let comment = ast::Comment {
+                                    span: Span::new(start, self.pos()),
+                                    comment: comment_text,
+                                };
+                                self.parser().comments.borrow_mut().push(comment);
+                            } else {
+                                break;
+                            }
+                        }
+                    }
+                    /// Peek at the next character in the input without advancing the parser.
+                    ///
+                    /// If the input has been exhausted, then this returns `None`.
+                    fn peek(&self) -> Option<char> {
+                        if self.is_eof() {
+                            return None;
+                        }
+                        self.pattern()[self.offset() + self.char().len_utf8()..].chars().next()
+                    }
+                    /// Like peek, but will ignore spaces when the parser is in whitespace
+                    /// insensitive mode.
+                    fn peek_space(&self) -> Option<char> {
+                        if !self.ignore_whitespace() {
+                            return self.peek();
+                        }
+                        if self.is_eof() {
+                            return None;
+                        }
+                        let mut start = self.offset() + self.char().len_utf8();
+                        let mut in_comment = false;
+                        for (i, c) in self.pattern()[start..].char_indices() {
+                            if c.is_whitespace() {
+                                continue;
+                            } else if !in_comment && c == '#' {
+                                in_comment = true;
+                            } else if in_comment && c == '\n' {
+                                in_comment = false;
+                            } else {
+                                start += i;
+                                break;
+                            }
+                        }
+                        self.pattern()[start..].chars().next()
+                    }
+                    /// Returns true if the next call to `bump` would return false.
+                    fn is_eof(&self) -> bool {
+                        self.offset() == self.pattern().len()
+                    }
+                    /// Return the current position of the parser, which includes the offset,
+                    /// line and column.
+                    fn pos(&self) -> Position {
+                        self.parser().pos.get()
+                    }
+                    /// Create a span at the current position of the parser. Both the start
+                    /// and end of the span are set.
+                    fn span(&self) -> Span {
+                        Span::splat(self.pos())
+                    }
+                    /// Create a span that covers the current character.
+                    fn span_char(&self) -> Span {
+                        let mut next = Position {
+                            offset: self.offset().checked_add(self.char().len_utf8()).unwrap(),
+                            line: self.line(),
+                            column: self.column().checked_add(1).unwrap(),
+                        };
+                        if self.char() == '\n' {
+                            next.line += 1;
+                            next.column = 1;
+                        }
+                        Span::new(self.pos(), next)
+                    }
+                    /// Parse and push a single alternation on to the parser's internal stack.
+                    /// If the top of the stack already has an alternation, then add to that
+                    /// instead of pushing a new one.
+                    ///
+                    /// This assumes the parser is currently positioned at `|` and will advance
+                    /// the parser to the character following `|`.
+                    #[inline( never )] fn push_alternate(&self, mut concat: ast::Concat) -> Result<ast::Concat> {
+                        assert_eq!(self.char(), '|');
+                        concat.span.end = self.pos();
+                        self.push_or_add_alternation(concat);
+                        self.bump();
+                        Ok(ast::Concat { span: self.span(), asts: vec![] })
+                    }
+                    /// Pushes or adds the given branch of an alternation to the parser's
+                    /// internal stack of state.
+                    fn push_or_add_alternation(&self, concat: ast::Concat) {
+                        use self::GroupState::*;
+
+                        let mut stack = self.parser().stack_group.borrow_mut();
+                        if let Some(&mut Alternation(ref mut alts)) = stack.last_mut() {
+                            alts.asts.push(concat.into_ast());
+                            return;
+                        }
+                        stack.push(Alternation(ast::Alternation {
+                            span: Span::new(concat.span.start, self.pos()),
+                            asts: vec![concat.into_ast()],
+                        }));
+                    }
+                    /// Parse and push a group AST (and its parent concatenation) on to the
+                    /// parser's internal stack. Return a fresh concatenation corresponding
+                    /// to the group's sub-AST.
+                    ///
+                    /// This assumes that the parser is currently positioned on the opening
+                    /// parenthesis. It advances the parser to the character at the start
+                    /// of the sub-expression (or adjoining expression).
+                    #[inline( never )] fn push_group(&self, mut concat: ast::Concat) -> Result<ast::Concat> {
+                        assert_eq!(self.char(), '(');
+                        match self.parse_group()? {
+                            Either::Left(set) => {
+                                let ignore = set.flags.flag_state(ast::Flag::IgnoreWhitespace);
+                                if let Some(v) = ignore {
+                                    self.parser().ignore_whitespace.set(v);
+                                }
+
+                                concat.asts.push(Ast::flags(set));
+                                Ok(concat)
+                            }
+                            Either::Right(group) => {
+                                let old_ignore_whitespace = self.ignore_whitespace();
+                                let new_ignore_whitespace = group
+                                    .flags()
+                                    .and_then(|f| f.flag_state(ast::Flag::IgnoreWhitespace))
+                                    .unwrap_or(old_ignore_whitespace);
+                                self.parser().stack_group.borrow_mut().push(
+                                    GroupState::Group {
+                                        concat,
+                                        group,
+                                        ignore_whitespace: old_ignore_whitespace,
+                                    },
+                                );
+                                self.parser().ignore_whitespace.set(new_ignore_whitespace);
+                                Ok(ast::Concat { span: self.span(), asts: vec![] })
+                            }
+                        }
+                    }
+                    /// Pop a group AST from the parser's internal stack and set the group's
+                    /// AST to the given concatenation. Return the concatenation containing
+                    /// the group.
+                    ///
+                    /// If no such group could be popped, then an unopened group error is
+                    /// returned.
+                    #[inline( never )] fn pop_group(&self, mut group_concat: ast::Concat) -> Result<ast::Concat> {
+                        use self::GroupState::*;
+
+                        assert_eq!(self.char(), ')');
+                        let mut stack = self.parser().stack_group.borrow_mut();
+                        let (mut prior_concat, mut group, ignore_whitespace, alt) = match stack
+                            .pop()
+                        {
+                            Some(Group { concat, group, ignore_whitespace }) => {
+                                (concat, group, ignore_whitespace, None)
+                            }
+                            Some(Alternation(alt)) => match stack.pop() {
+                                Some(Group { concat, group, ignore_whitespace }) => {
+                                    (concat, group, ignore_whitespace, Some(alt))
+                                }
+                                None | Some(Alternation(_)) => {
+                                    return Err(self.error(
+                                        self.span_char(),
+                                        ast::ErrorKind::GroupUnopened,
+                                    ));
+                                }
+                            },
+                            None => {
+                                return Err(self
+                                    .error(self.span_char(), ast::ErrorKind::GroupUnopened));
+                            }
+                        };
+                        self.parser().ignore_whitespace.set(ignore_whitespace);
+                        group_concat.span.end = self.pos();
+                        self.bump();
+                        group.span.end = self.pos();
+                        match alt {
+                            Some(mut alt) => {
+                                alt.span.end = group_concat.span.end;
+                                alt.asts.push(group_concat.into_ast());
+                                group.ast = Box::new(alt.into_ast());
+                            }
+                            None => {
+                                group.ast = Box::new(group_concat.into_ast());
+                            }
+                        }
+                        prior_concat.asts.push(Ast::group(group));
+                        Ok(prior_concat)
+                    }
+                    /// Pop the last state from the parser's internal stack, if it exists, and
+                    /// add the given concatenation to it.
+                    #[inline( never )] fn pop_group_end(&self, mut concat: ast::Concat) -> Result<Ast> {
+                        concat.span.end = self.pos();
+                        let mut stack = self.parser().stack_group.borrow_mut();
+                        let ast = match stack.pop() {
+                            None => Ok(concat.into_ast()),
+                            Some(GroupState::Alternation(mut alt)) => {
+                                alt.span.end = self.pos();
+                                alt.asts.push(concat.into_ast());
+                                Ok(Ast::alternation(alt))
+                            }
+                            Some(GroupState::Group { group, .. }) => {
+                                return Err(
+                                    self.error(group.span, ast::ErrorKind::GroupUnclosed)
+                                );
+                            }
+                        };
+                        
+                        match stack.pop() {
+                            None => ast,
+                            Some(GroupState::Alternation(_)) => {
+                                unreachable!()
+                            }
+                            Some(GroupState::Group { group, .. }) => {
+                                Err(self.error(group.span, ast::ErrorKind::GroupUnclosed))
+                            }
+                        }
+                    }
+                    /// Parse the opening of a character class and push the current class
+                    /// parsing context onto the parser's stack.
+                    #[inline( never )] fn push_class_open(
+                        &self,
+                        parent_union: ast::ClassSetUnion,
+                    ) -> Result<ast::ClassSetUnion> {
+                        assert_eq!(self.char(), '[');
+
+                        let (nested_set, nested_union) = self.parse_set_class_open()?;
+                        self.parser()
+                            .stack_class
+                            .borrow_mut()
+                            .push(ClassState::Open { union: parent_union, set: nested_set });
+                        Ok(nested_union)
+                    }
+                    /// Parse the end of a character class set and pop the character class
+                    /// parser stack.
+                    #[inline( never )] fn pop_class(
+                        &self,
+                        nested_union: ast::ClassSetUnion,
+                    ) -> Result<Either<ast::ClassSetUnion, ast::ClassBracketed>> {
+                        assert_eq!(self.char(), ']');
+
+                        let item = ast::ClassSet::Item(nested_union.into_item());
+                        let prevset = self.pop_class_op(item);
+                        let mut stack = self.parser().stack_class.borrow_mut();
+                        match stack.pop() {
+                            None => {
+                                panic!("unexpected empty character class stack")
+                            }
+                            Some(ClassState::Op { .. }) => {
+                                panic!("unexpected ClassState::Op")
+                            }
+                            Some(ClassState::Open { mut union, mut set }) => {
+                                self.bump();
+                                set.span.end = self.pos();
+                                set.kind = prevset;
+                                if stack.is_empty() {
+                                    Ok(Either::Right(set))
+                                } else {
+                                    union.push(ast::ClassSetItem::Bracketed(Box::new(set)));
+                                    Ok(Either::Left(union))
+                                }
+                            }
+                        }
+                    }
+                    /// Return an "unclosed class" error whose span points to the most
+                    /// recently opened class.
+                    #[inline( never )] fn unclosed_class_error(&self) -> ast::Error {
+                        for state in self.parser().stack_class.borrow().iter().rev() {
+                            if let ClassState::Open { ref set, .. } = *state {
+                                return self.error(set.span, ast::ErrorKind::ClassUnclosed);
+                            }
+                        }
+                        
+                        panic!("no open character class found")
+                    }
+                    /// Push the current set of class items on to the class parser's stack as
+                    /// the left hand side of the given operator.
+                    #[inline( never )] fn push_class_op(
+                        &self,
+                        next_kind: ast::ClassSetBinaryOpKind,
+                        next_union: ast::ClassSetUnion,
+                    ) -> ast::ClassSetUnion {
+                        let item = ast::ClassSet::Item(next_union.into_item());
+                        let new_lhs = self.pop_class_op(item);
+                        self.parser()
+                            .stack_class
+                            .borrow_mut()
+                            .push(ClassState::Op { kind: next_kind, lhs: new_lhs });
+                        ast::ClassSetUnion { span: self.span(), items: vec![] }
+                    }
+                    /// Pop a character class set from the character class parser stack.
+                    #[inline( never )] fn pop_class_op(&self, rhs: ast::ClassSet) -> ast::ClassSet {
+                        let mut stack = self.parser().stack_class.borrow_mut();
+                        let (kind, lhs) = match stack.pop() {
+                            Some(ClassState::Op { kind, lhs }) => (kind, lhs),
+                            Some(state @ ClassState::Open { .. }) => {
+                                stack.push(state);
+                                return rhs;
+                            }
+                            None => unreachable!(),
+                        };
+                        let span = Span::new(lhs.span().start, rhs.span().end);
+                        ast::ClassSet::BinaryOp(ast::ClassSetBinaryOp {
+                            span,
+                            kind,
+                            lhs: Box::new(lhs),
+                            rhs: Box::new(rhs),
+                        })
+                    }
+                }
+
+                impl<'s, P: Borrow<Parser>> ParserI<'s, P> {
+                    /// Parse the regular expression into an abstract syntax tree.
+                    fn parse(&self) -> Result<Ast> {
+                        self.parse_with_comments().map(|astc| astc.ast)
+                    }
+                    /// Parse the regular expression and return an abstract syntax tree with
+                    /// all of the comments found in the pattern.
+                    fn parse_with_comments(&self) -> Result<ast::WithComments> {
+                        assert_eq!(self.offset(), 0, "parser can only be used once");
+                        self.parser().reset();
+                        let mut concat = ast::Concat { span: self.span(), asts: vec![] };
+                        loop {
+                            self.bump_space();
+                            if self.is_eof() {
+                                break;
+                            }
+                            match self.char() {
+                                '(' => concat = self.push_group(concat)?,
+                                ')' => concat = self.pop_group(concat)?,
+                                '|' => concat = self.push_alternate(concat)?,
+                                '[' => {
+                                    let class = self.parse_set_class()?;
+                                    concat.asts.push(Ast::class_bracketed(class));
+                                }
+                                '?' => {
+                                    concat = self.parse_uncounted_repetition(
+                                        concat,
+                                        ast::RepetitionKind::ZeroOrOne,
+                                    )?;
+                                }
+                                '*' => {
+                                    concat = self.parse_uncounted_repetition(
+                                        concat,
+                                        ast::RepetitionKind::ZeroOrMore,
+                                    )?;
+                                }
+                                '+' => {
+                                    concat = self.parse_uncounted_repetition(
+                                        concat,
+                                        ast::RepetitionKind::OneOrMore,
+                                    )?;
+                                }
+                                '{' => {
+                                    concat = self.parse_counted_repetition(concat)?;
+                                }
+                                _ => concat.asts.push(self.parse_primitive()?.into_ast()),
+                            }
+                        }
+                        let ast = self.pop_group_end(concat)?;
+                        NestLimiter::new(self).check(&ast)?;
+                        Ok(ast::WithComments {
+                            ast,
+                            comments: mem::replace(
+                                &mut *self.parser().comments.borrow_mut(),
+                                vec![],
+                            ),
+                        })
+                    }
+                    /// Parses an uncounted repetition operation. An uncounted repetition
+                    /// operator includes ?, * and +, but does not include the {m,n} syntax.
+                    #[inline( never )] fn parse_uncounted_repetition(
+                        &self,
+                        mut concat: ast::Concat,
+                        kind: ast::RepetitionKind,
+                    ) -> Result<ast::Concat> {
+                        assert!(
+                            self.char() == '?' || self.char() == '*' || self.char() == '+'
+                        );
+                        let op_start = self.pos();
+                        let ast = match concat.asts.pop() {
+                            Some(ast) => ast,
+                            None => {
+                                return Err(
+                                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                                )
+                            }
+                        };
+                        match ast {
+                            Ast::Empty(_) | Ast::Flags(_) => {
+                                return Err(
+                                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                                )
+                            }
+                            _ => {}
+                        }
+                        let mut greedy = true;
+                        if self.bump() && self.char() == '?' {
+                            greedy = false;
+                            self.bump();
+                        }
+                        concat.asts.push(Ast::repetition(ast::Repetition {
+                            span: ast.span().with_end(self.pos()),
+                            op: ast::RepetitionOp {
+                                span: Span::new(op_start, self.pos()),
+                                kind,
+                            },
+                            greedy,
+                            ast: Box::new(ast),
+                        }));
+                        Ok(concat)
+                    }
+                    /// Parses a counted repetition operation.
+                    #[inline( never )] fn parse_counted_repetition(
+                        &self,
+                        mut concat: ast::Concat,
+                    ) -> Result<ast::Concat> {
+                        assert!(self.char() == '{');
+                        let start = self.pos();
+                        let ast = match concat.asts.pop() {
+                            Some(ast) => ast,
+                            None => {
+                                return Err(
+                                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                                )
+                            }
+                        };
+                        match ast {
+                            Ast::Empty(_) | Ast::Flags(_) => {
+                                return Err(
+                                    self.error(self.span(), ast::ErrorKind::RepetitionMissing)
+                                )
+                            }
+                            _ => {}
+                        }
+                        if !self.bump_and_bump_space() {
+                            return Err(self.error(
+                                Span::new(start, self.pos()),
+                                ast::ErrorKind::RepetitionCountUnclosed,
+                            ));
+                        }
+                        let count_start = specialize_err(
+                            self.parse_decimal(),
+                            ast::ErrorKind::DecimalEmpty,
+                            ast::ErrorKind::RepetitionCountDecimalEmpty,
+                        );
+                        if self.is_eof() {
+                            return Err(self.error(
+                                Span::new(start, self.pos()),
+                                ast::ErrorKind::RepetitionCountUnclosed,
+                            ));
+                        }
+                        let range = if self.char() == ',' {
+                            if !self.bump_and_bump_space() {
+                                return Err(self.error(
+                                    Span::new(start, self.pos()),
+                                    ast::ErrorKind::RepetitionCountUnclosed,
+                                ));
+                            }
+                            if self.char() != '}' {
+                                let count_start = match count_start {
+                                    Ok(c) => c,
+                                    Err(err)
+                                        if err.kind
+                                            == ast::ErrorKind::RepetitionCountDecimalEmpty =>
+                                    {
+                                        if self.parser().empty_min_range {
+                                            0
+                                        } else {
+                                            return Err(err);
+                                        }
+                                    }
+                                    err => err?,
+                                };
+                                let count_end = specialize_err(
+                                    self.parse_decimal(),
+                                    ast::ErrorKind::DecimalEmpty,
+                                    ast::ErrorKind::RepetitionCountDecimalEmpty,
+                                )?;
+                                ast::RepetitionRange::Bounded(count_start, count_end)
+                            } else {
+                                ast::RepetitionRange::AtLeast(count_start?)
+                            }
+                        } else {
+                            ast::RepetitionRange::Exactly(count_start?)
+                        };
+
+                        if self.is_eof() || self.char() != '}' {
+                            return Err(self.error(
+                                Span::new(start, self.pos()),
+                                ast::ErrorKind::RepetitionCountUnclosed,
+                            ));
+                        }
+
+                        let mut greedy = true;
+                        if self.bump_and_bump_space() && self.char() == '?' {
+                            greedy = false;
+                            self.bump();
+                        }
+
+                        let op_span = Span::new(start, self.pos());
+                        if !range.is_valid() {
+                            return Err(
+                                self.error(op_span, ast::ErrorKind::RepetitionCountInvalid)
+                            );
+                        }
+                        concat.asts.push(Ast::repetition(ast::Repetition {
+                            span: ast.span().with_end(self.pos()),
+                            op: ast::RepetitionOp {
+                                span: op_span,
+                                kind: ast::RepetitionKind::Range(range),
+                            },
+                            greedy,
+                            ast: Box::new(ast),
+                        }));
+                        Ok(concat)
+                    }
+                    /// Parse a group (which contains a sub-expression) or a set of flags.
+                    #[inline( never )] fn parse_group(&self) -> Result<Either<ast::SetFlags, ast::Group>> {
+                        assert_eq!(self.char(), '(');
+                        let open_span = self.span_char();
+                        self.bump();
+                        self.bump_space();
+                        if self.is_lookaround_prefix() {
+                            return Err(self.error(
+                                Span::new(open_span.start, self.span().end),
+                                ast::ErrorKind::UnsupportedLookAround,
+                            ));
+                        }
+                        let inner_span = self.span();
+                        let mut starts_with_p = true;
+                        if self.bump_if("?P<") || {
+                            starts_with_p = false;
+                            self.bump_if("?<")
+                        } {
+                            let capture_index = self.next_capture_index(open_span)?;
+                            let name = self.parse_capture_name(capture_index)?;
+                            Ok(Either::Right(ast::Group {
+                                span: open_span,
+                                kind: ast::GroupKind::CaptureName { starts_with_p, name },
+                                ast: Box::new(Ast::empty(self.span())),
+                            }))
+                        } else if self.bump_if("?") {
+                            if self.is_eof() {
+                                return Err(
+                                    self.error(open_span, ast::ErrorKind::GroupUnclosed)
+                                );
+                            }
+                            let flags = self.parse_flags()?;
+                            let char_end = self.char();
+                            self.bump();
+                            if char_end == ')' {
+                                if flags.items.is_empty() {
+                                    return Err(self.error(
+                                        inner_span,
+                                        ast::ErrorKind::RepetitionMissing,
+                                    ));
+                                }
+                                Ok(Either::Left(ast::SetFlags {
+                                    span: Span { end: self.pos(), ..open_span },
+                                    flags,
+                                }))
+                            } else {
+                                assert_eq!(char_end, ':');
+                                Ok(Either::Right(ast::Group {
+                                    span: open_span,
+                                    kind: ast::GroupKind::NonCapturing(flags),
+                                    ast: Box::new(Ast::empty(self.span())),
+                                }))
+                            }
+                        } else {
+                            let capture_index = self.next_capture_index(open_span)?;
+                            Ok(Either::Right(ast::Group {
+                                span: open_span,
+                                kind: ast::GroupKind::CaptureIndex(capture_index),
+                                ast: Box::new(Ast::empty(self.span())),
+                            }))
+                        }
+                    }
+                    /// Parses a capture group name.
+                    #[inline( never )] fn parse_capture_name(
+                        &self,
+                        capture_index: u32,
+                    ) -> Result<ast::CaptureName> {
+                        if self.is_eof() {
+                            return Err(self
+                                .error(self.span(), ast::ErrorKind::GroupNameUnexpectedEof));
+                        }
+                        let start = self.pos();
+                        loop {
+                            if self.char() == '>' {
+                                break;
+                            }
+                            if !is_capture_char(self.char(), self.pos() == start) {
+                                return Err(self.error(
+                                    self.span_char(),
+                                    ast::ErrorKind::GroupNameInvalid,
+                                ));
+                            }
+                            if !self.bump() {
+                                break;
+                            }
+                        }
+                        let end = self.pos();
+                        if self.is_eof() {
+                            return Err(self
+                                .error(self.span(), ast::ErrorKind::GroupNameUnexpectedEof));
+                        }
+                        assert_eq!(self.char(), '>');
+                        self.bump();
+                        let name = &self.pattern()[start.offset..end.offset];
+                        if name.is_empty() {
+                            return Err(self.error(
+                                Span::new(start, start),
+                                ast::ErrorKind::GroupNameEmpty,
+                            ));
+                        }
+                        let capname = ast::CaptureName {
+                            span: Span::new(start, end),
+                            name: name.to_string(),
+                            index: capture_index,
+                        };
+                        self.add_capture_name(&capname)?;
+                        Ok(capname)
+                    }
+                    /// Parse a sequence of flags starting at the current character.
+                    #[inline( never )] fn parse_flags(&self) -> Result<ast::Flags> {
+                        let mut flags = ast::Flags { span: self.span(), items: vec![] };
+                        let mut last_was_negation = None;
+                        while self.char() != ':' && self.char() != ')' {
+                            if self.char() == '-' {
+                                last_was_negation = Some(self.span_char());
+                                let item = ast::FlagsItem {
+                                    span: self.span_char(),
+                                    kind: ast::FlagsItemKind::Negation,
+                                };
+                                if let Some(i) = flags.add_item(item) {
+                                    return Err(self.error(
+                                        self.span_char(),
+                                        ast::ErrorKind::FlagRepeatedNegation {
+                                            original: flags.items[i].span,
+                                        },
+                                    ));
+                                }
+                            } else {
+                                last_was_negation = None;
+                                let item = ast::FlagsItem {
+                                    span: self.span_char(),
+                                    kind: ast::FlagsItemKind::Flag(self.parse_flag()?),
+                                };
+                                if let Some(i) = flags.add_item(item) {
+                                    return Err(self.error(
+                                        self.span_char(),
+                                        ast::ErrorKind::FlagDuplicate {
+                                            original: flags.items[i].span,
+                                        },
+                                    ));
+                                }
+                            }
+                            if !self.bump() {
+                                return Err(
+                                    self.error(self.span(), ast::ErrorKind::FlagUnexpectedEof)
+                                );
+                            }
+                        }
+                        if let Some(span) = last_was_negation {
+                            return Err(self.error(span, ast::ErrorKind::FlagDanglingNegation));
+                        }
+                        flags.span.end = self.pos();
+                        Ok(flags)
+                    }
+                    /// Parse the current character as a flag. Do not advance the parser.
+                    #[inline( never )] fn parse_flag(&self) -> Result<ast::Flag> {
+                        match self.char() {
+                            'i' => Ok(ast::Flag::CaseInsensitive),
+                            'm' => Ok(ast::Flag::MultiLine),
+                            's' => Ok(ast::Flag::DotMatchesNewLine),
+                            'U' => Ok(ast::Flag::SwapGreed),
+                            'u' => Ok(ast::Flag::Unicode),
+                            'R' => Ok(ast::Flag::CRLF),
+                            'x' => Ok(ast::Flag::IgnoreWhitespace),
+                            _ => {
+                                Err(self
+                                    .error(self.span_char(), ast::ErrorKind::FlagUnrecognized))
+                            }
+                        }
+                    }
+                    /// Parse a primitive AST. e.g., A literal, non-set character class or assertion.
+                    fn parse_primitive(&self) -> Result<Primitive> {
+                        match self.char() {
+                            '\\' => self.parse_escape(),
+                            '.' => {
+                                let ast = Primitive::Dot(self.span_char());
+                                self.bump();
+                                Ok(ast)
+                            }
+                            '^' => {
+                                let ast = Primitive::Assertion(ast::Assertion {
+                                    span: self.span_char(),
+                                    kind: ast::AssertionKind::StartLine,
+                                });
+                                self.bump();
+                                Ok(ast)
+                            }
+                            '$' => {
+                                let ast = Primitive::Assertion(ast::Assertion {
+                                    span: self.span_char(),
+                                    kind: ast::AssertionKind::EndLine,
+                                });
+                                self.bump();
+                                Ok(ast)
+                            }
+                            c => {
+                                let ast = Primitive::Literal(ast::Literal {
+                                    span: self.span_char(),
+                                    kind: ast::LiteralKind::Verbatim,
+                                    c,
+                                });
+                                self.bump();
+                                Ok(ast)
+                            }
+                        }
+                    }
+                    /// Parse an escape sequence as a primitive AST.
+                    #[inline( never )] fn parse_escape(&self) -> Result<Primitive> {
+                        assert_eq!(self.char(), '\\');
+                        let start = self.pos();
+                        if !self.bump() {
+                            return Err(self.error(
+                                Span::new(start, self.pos()),
+                                ast::ErrorKind::EscapeUnexpectedEof,
+                            ));
+                        }
+                        let c = self.char();
+                        
+                        match c {
+                            '0'..='7' => {
+                                if !self.parser().octal {
+                                    return Err(self.error(
+                                        Span::new(start, self.span_char().end),
+                                        ast::ErrorKind::UnsupportedBackreference,
+                                    ));
+                                }
+                                let mut lit = self.parse_octal();
+                                lit.span.start = start;
+                                return Ok(Primitive::Literal(lit));
+                            }
+                            '8'..='9' if !self.parser().octal => {
+                                return Err(self.error(
+                                    Span::new(start, self.span_char().end),
+                                    ast::ErrorKind::UnsupportedBackreference,
+                                ));
+                            }
+                            'x' | 'u' | 'U' => {
+                                let mut lit = self.parse_hex()?;
+                                lit.span.start = start;
+                                return Ok(Primitive::Literal(lit));
+                            }
+                            'p' | 'P' => {
+                                let mut cls = self.parse_unicode_class()?;
+                                cls.span.start = start;
+                                return Ok(Primitive::Unicode(cls));
+                            }
+                            'd' | 's' | 'w' | 'D' | 'S' | 'W' => {
+                                let mut cls = self.parse_perl_class();
+                                cls.span.start = start;
+                                return Ok(Primitive::Perl(cls));
+                            }
+                            _ => {}
+                        }
+                        
+                        self.bump();
+                        let span = Span::new(start, self.pos());
+                        if is_meta_character(c) {
+                            return Ok(Primitive::Literal(ast::Literal {
+                                span,
+                                kind: ast::LiteralKind::Meta,
+                                c,
+                            }));
+                        }
+                        if is_escapeable_character(c) {
+                            return Ok(Primitive::Literal(ast::Literal {
+                                span,
+                                kind: ast::LiteralKind::Superfluous,
+                                c,
+                            }));
+                        }
+                        let special = |kind, c| {
+                            Ok(Primitive::Literal(ast::Literal {
+                                span,
+                                kind: ast::LiteralKind::Special(kind),
+                                c,
+                            }))
+                        };
+                        match c {
+                            'a' => special(ast::SpecialLiteralKind::Bell, '\x07'),
+                            'f' => special(ast::SpecialLiteralKind::FormFeed, '\x0C'),
+                            't' => special(ast::SpecialLiteralKind::Tab, '\t'),
+                            'n' => special(ast::SpecialLiteralKind::LineFeed, '\n'),
+                            'r' => special(ast::SpecialLiteralKind::CarriageReturn, '\r'),
+                            'v' => special(ast::SpecialLiteralKind::VerticalTab, '\x0B'),
+                            'A' => Ok(Primitive::Assertion(ast::Assertion {
+                                span,
+                                kind: ast::AssertionKind::StartText,
+                            })),
+                            'z' => Ok(Primitive::Assertion(ast::Assertion {
+                                span,
+                                kind: ast::AssertionKind::EndText,
+                            })),
+                            'b' => {
+                                let mut wb = ast::Assertion {
+                                    span,
+                                    kind: ast::AssertionKind::WordBoundary,
+                                };
+                                
+                                if !self.is_eof() && self.char() == '{' {
+                                    if let Some(kind) =
+                                        self.maybe_parse_special_word_boundary(start)?
+                                    {
+                                        wb.kind = kind;
+                                        wb.span.end = self.pos();
+                                    }
+                                }
+                                Ok(Primitive::Assertion(wb))
+                            }
+                            'B' => Ok(Primitive::Assertion(ast::Assertion {
+                                span,
+                                kind: ast::AssertionKind::NotWordBoundary,
+                            })),
+                            '<' => Ok(Primitive::Assertion(ast::Assertion {
+                                span,
+                                kind: ast::AssertionKind::WordBoundaryStartAngle,
+                            })),
+                            '>' => Ok(Primitive::Assertion(ast::Assertion {
+                                span,
+                                kind: ast::AssertionKind::WordBoundaryEndAngle,
+                            })),
+                            _ => Err(self.error(span, ast::ErrorKind::EscapeUnrecognized)),
+                        }
+                    }
+                    /// Attempt to parse a specialty word boundary.
+                    fn maybe_parse_special_word_boundary(
+                        &self,
+                        wb_start: Position,
+                    ) -> Result<Option<ast::AssertionKind>> {
+                        assert_eq!(self.char(), '{');
+
+                        let is_valid_char = |c| match c {
+                            'A'..='Z' | 'a'..='z' | '-' => true,
+                            _ => false,
+                        };
+                        let start = self.pos();
+                        if !self.bump_and_bump_space() {
+                            return Err(self.error(
+                                Span::new(wb_start, self.pos()),
+                                ast::ErrorKind::SpecialWordOrRepetitionUnexpectedEof,
+                            ));
+                        }
+
+                        let start_contents = self.pos();
+                        if !is_valid_char(self.char()) {
+                            self.parser().pos.set(start);
+                            return Ok(None);
+                        }
+                        
+                        let mut scratch = self.parser().scratch.borrow_mut();
+                        scratch.clear();
+                        while !self.is_eof() && is_valid_char(self.char()) {
+                            scratch.push(self.char());
+                            self.bump_and_bump_space();
+                        }
+                        if self.is_eof() || self.char() != '}' {
+                            return Err(self.error(
+                                Span::new(start, self.pos()),
+                                ast::ErrorKind::SpecialWordBoundaryUnclosed,
+                            ));
+                        }
+                        let end = self.pos();
+                        self.bump();
+                        let kind = match scratch.as_str() {
+                            "start" => ast::AssertionKind::WordBoundaryStart,
+                            "end" => ast::AssertionKind::WordBoundaryEnd,
+                            "start-half" => ast::AssertionKind::WordBoundaryStartHalf,
+                            "end-half" => ast::AssertionKind::WordBoundaryEndHalf,
+                            _ => {
+                                return Err(self.error(
+                                    Span::new(start_contents, end),
+                                    ast::ErrorKind::SpecialWordBoundaryUnrecognized,
+                                ))
+                            }
+                        };
+                        Ok(Some(kind))
+                    }
+                    /// Parse an octal representation of a Unicode codepoint up to 3 digits long.
+                    #[inline( never )] fn parse_octal(&self) -> ast::Literal {
+                        assert!(self.parser().octal);
+                        assert!('0' <= self.char() && self.char() <= '7');
+                        let start = self.pos();
+                        
+                        while self.bump()
+                            && '0' <= self.char()
+                            && self.char() <= '7'
+                            && self.pos().offset - start.offset <= 2
+                        {}
+                        let end = self.pos();
+                        let octal = &self.pattern()[start.offset..end.offset];
+                        
+                        let codepoint =
+                            u32::from_str_radix(octal, 8).expect("valid octal number");
+                            
+                        let c = char::from_u32(codepoint).expect("Unicode scalar value");
+                        ast::Literal {
+                            span: Span::new(start, end),
+                            kind: ast::LiteralKind::Octal,
+                            c,
+                        }
+                    }
+                    /// Parse a hex representation of a Unicode codepoint.
+                    #[inline( never )] fn parse_hex(&self) -> Result<ast::Literal> {
+                        assert!(
+                            self.char() == 'x' || self.char() == 'u' || self.char() == 'U'
+                        );
+
+                        let hex_kind = match self.char() {
+                            'x' => ast::HexLiteralKind::X,
+                            'u' => ast::HexLiteralKind::UnicodeShort,
+                            _ => ast::HexLiteralKind::UnicodeLong,
+                        };
+                        if !self.bump_and_bump_space() {
+                            return Err(
+                                self.error(self.span(), ast::ErrorKind::EscapeUnexpectedEof)
+                            );
+                        }
+                        if self.char() == '{' {
+                            self.parse_hex_brace(hex_kind)
+                        } else {
+                            self.parse_hex_digits(hex_kind)
+                        }
+                    }
+                    /// Parse an N-digit hex representation of a Unicode codepoint.
+                    #[inline( never )] fn parse_hex_digits(
+                        &self,
+                        kind: ast::HexLiteralKind,
+                    ) -> Result<ast::Literal> {
+                        let mut scratch = self.parser().scratch.borrow_mut();
+                        scratch.clear();
+
+                        let start = self.pos();
+                        for i in 0..kind.digits() {
+                            if i > 0 && !self.bump_and_bump_space() {
+                                return Err(self
+                                    .error(self.span(), ast::ErrorKind::EscapeUnexpectedEof));
+                            }
+                            if !is_hex(self.char()) {
+                                return Err(self.error(
+                                    self.span_char(),
+                                    ast::ErrorKind::EscapeHexInvalidDigit,
+                                ));
+                            }
+                            scratch.push(self.char());
+                        }
+                        
+                        self.bump_and_bump_space();
+                        let end = self.pos();
+                        let hex = scratch.as_str();
+                        match u32::from_str_radix(hex, 16).ok().and_then(char::from_u32) {
+                            None => Err(self.error(
+                                Span::new(start, end),
+                                ast::ErrorKind::EscapeHexInvalid,
+                            )),
+                            Some(c) => Ok(ast::Literal {
+                                span: Span::new(start, end),
+                                kind: ast::LiteralKind::HexFixed(kind),
+                                c,
+                            }),
+                        }
+                    }
+                    /// Parse a hex representation of any Unicode scalar value.
+                    #[inline( never )] fn parse_hex_brace(
+                        &self,
+                        kind: ast::HexLiteralKind,
+                    ) -> Result<ast::Literal> {
+                        let mut scratch = self.parser().scratch.borrow_mut();
+                        scratch.clear();
+
+                        let brace_pos = self.pos();
+                        let start = self.span_char().end;
+                        while self.bump_and_bump_space() && self.char() != '}' {
+                            if !is_hex(self.char()) {
+                                return Err(self.error(
+                                    self.span_char(),
+                                    ast::ErrorKind::EscapeHexInvalidDigit,
+                                ));
+                            }
+                            scratch.push(self.char());
+                        }
+                        if self.is_eof() {
+                            return Err(self.error(
+                                Span::new(brace_pos, self.pos()),
+                                ast::ErrorKind::EscapeUnexpectedEof,
+                            ));
+                        }
+                        let end = self.pos();
+                        let hex = scratch.as_str();
+                        assert_eq!(self.char(), '}');
+                        self.bump_and_bump_space();
+
+                        if hex.is_empty() {
+                            return Err(self.error(
+                                Span::new(brace_pos, self.pos()),
+                                ast::ErrorKind::EscapeHexEmpty,
+                            ));
+                        }
+                        match u32::from_str_radix(hex, 16).ok().and_then(char::from_u32) {
+                            None => Err(self.error(
+                                Span::new(start, end),
+                                ast::ErrorKind::EscapeHexInvalid,
+                            )),
+                            Some(c) => Ok(ast::Literal {
+                                span: Span::new(start, self.pos()),
+                                kind: ast::LiteralKind::HexBrace(kind),
+                                c,
+                            }),
+                        }
+                    }
+                    /// Parse a decimal number into a u32 while trimming leading and trailing whitespace.
+                    fn parse_decimal(&self) -> Result<u32> {
+                        let mut scratch = self.parser().scratch.borrow_mut();
+                        scratch.clear();
+
+                        while !self.is_eof() && self.char().is_whitespace() {
+                            self.bump();
+                        }
+                        let start = self.pos();
+                        while !self.is_eof() && '0' <= self.char() && self.char() <= '9' {
+                            scratch.push(self.char());
+                            self.bump_and_bump_space();
+                        }
+                        let span = Span::new(start, self.pos());
+                        while !self.is_eof() && self.char().is_whitespace() {
+                            self.bump_and_bump_space();
+                        }
+                        let digits = scratch.as_str();
+                        if digits.is_empty() {
+                            return Err(self.error(span, ast::ErrorKind::DecimalEmpty));
+                        }
+                        match u32::from_str_radix(digits, 10).ok() {
+                            Some(n) => Ok(n),
+                            None => Err(self.error(span, ast::ErrorKind::DecimalInvalid)),
+                        }
+                    }
+                    /// Parse a standard character class consisting primarily of characters or
+                    /// character ranges, but can also contain nested character classes of
+                    /// any type (sans `.`).
+                    #[inline( never )] fn parse_set_class(&self) -> Result<ast::ClassBracketed> {
+                        assert_eq!(self.char(), '[');
+
+                        let mut union =
+                            ast::ClassSetUnion { span: self.span(), items: vec![] };
+                        loop {
+                            self.bump_space();
+                            if self.is_eof() {
+                                return Err(self.unclosed_class_error());
+                            }
+                            match self.char() {
+                                '[' => {
+                                    if !self.parser().stack_class.borrow().is_empty() {
+                                        if let Some(cls) = self.maybe_parse_ascii_class() {
+                                            union.push(ast::ClassSetItem::Ascii(cls));
+                                            continue;
+                                        }
+                                    }
+                                    union = self.push_class_open(union)?;
+                                }
+                                ']' => match self.pop_class(union)? {
+                                    Either::Left(nested_union) => {
+                                        union = nested_union;
+                                    }
+                                    Either::Right(class) => return Ok(class),
+                                },
+                                '&' if self.peek() == Some('&') => {
+                                    assert!(self.bump_if("&&"));
+                                    union = self.push_class_op(
+                                        ast::ClassSetBinaryOpKind::Intersection,
+                                        union,
+                                    );
+                                }
+                                '-' if self.peek() == Some('-') => {
+                                    assert!(self.bump_if("--"));
+                                    union = self.push_class_op(
+                                        ast::ClassSetBinaryOpKind::Difference,
+                                        union,
+                                    );
+                                }
+                                '~' if self.peek() == Some('~') => {
+                                    assert!(self.bump_if("~~"));
+                                    union = self.push_class_op(
+                                        ast::ClassSetBinaryOpKind::SymmetricDifference,
+                                        union,
+                                    );
+                                }
+                                _ => {
+                                    union.push(self.parse_set_class_range()?);
+                                }
+                            }
+                        }
+                    }
+                    /// Parse a single primitive item in a character class set.
+                    #[inline( never )] fn parse_set_class_range(&self) -> Result<ast::ClassSetItem> {
+                        let prim1 = self.parse_set_class_item()?;
+                        self.bump_space();
+                        if self.is_eof() {
+                            return Err(self.unclosed_class_error());
+                        }
+                        
+                        if self.char() != '-'
+                            || self.peek_space() == Some(']')
+                            || self.peek_space() == Some('-')
+                        {
+                            return prim1.into_class_set_item(self);
+                        }
+                        
+                        if !self.bump_and_bump_space() {
+                            return Err(self.unclosed_class_error());
+                        }
+                        let prim2 = self.parse_set_class_item()?;
+                        let range = ast::ClassSetRange {
+                            span: Span::new(prim1.span().start, prim2.span().end),
+                            start: prim1.into_class_literal(self)?,
+                            end: prim2.into_class_literal(self)?,
+                        };
+                        if !range.is_valid() {
+                            return Err(
+                                self.error(range.span, ast::ErrorKind::ClassRangeInvalid)
+                            );
+                        }
+                        Ok(ast::ClassSetItem::Range(range))
+                    }
+                    /// Parse a single item in a character class as a primitive, where the
+                    /// primitive either consists of a verbatim literal or a single escape
+                    /// sequence.
+                    #[inline( never )] fn parse_set_class_item(&self) -> Result<Primitive> {
+                        if self.char() == '\\' {
+                            self.parse_escape()
+                        } else {
+                            let x = Primitive::Literal(ast::Literal {
+                                span: self.span_char(),
+                                kind: ast::LiteralKind::Verbatim,
+                                c: self.char(),
+                            });
+                            self.bump();
+                            Ok(x)
+                        }
+                    }
+                    /// Parses the opening of a character class set.
+                    #[inline( never )] fn parse_set_class_open(
+                        &self,
+                    ) -> Result<(ast::ClassBracketed, ast::ClassSetUnion)> {
+                        assert_eq!(self.char(), '[');
+                        let start = self.pos();
+                        if !self.bump_and_bump_space() {
+                            return Err(self.error(
+                                Span::new(start, self.pos()),
+                                ast::ErrorKind::ClassUnclosed,
+                            ));
+                        }
+
+                        let negated = if self.char() != '^' {
+                            false
+                        } else {
+                            if !self.bump_and_bump_space() {
+                                return Err(self.error(
+                                    Span::new(start, self.pos()),
+                                    ast::ErrorKind::ClassUnclosed,
+                                ));
+                            }
+                            true
+                        };
+                        
+                        let mut union =
+                            ast::ClassSetUnion { span: self.span(), items: vec![] };
+                        while self.char() == '-' {
+                            union.push(ast::ClassSetItem::Literal(ast::Literal {
+                                span: self.span_char(),
+                                kind: ast::LiteralKind::Verbatim,
+                                c: '-',
+                            }));
+                            if !self.bump_and_bump_space() {
+                                return Err(self.error(
+                                    Span::new(start, start),
+                                    ast::ErrorKind::ClassUnclosed,
+                                ));
+                            }
+                        }
+                        
+                        if union.items.is_empty() && self.char() == ']' {
+                            union.push(ast::ClassSetItem::Literal(ast::Literal {
+                                span: self.span_char(),
+                                kind: ast::LiteralKind::Verbatim,
+                                c: ']',
+                            }));
+                            if !self.bump_and_bump_space() {
+                                return Err(self.error(
+                                    Span::new(start, self.pos()),
+                                    ast::ErrorKind::ClassUnclosed,
+                                ));
+                            }
+                        }
+                        let set = ast::ClassBracketed {
+                            span: Span::new(start, self.pos()),
+                            negated,
+                            kind: ast::ClassSet::union(ast::ClassSetUnion {
+                                span: Span::new(union.span.start, union.span.start),
+                                items: vec![],
+                            }),
+                        };
+                        Ok((set, union))
+                    }
+                    /// Attempt to parse an ASCII character class, e.g., `[:alnum:]`.
+                    #[inline( never )] fn maybe_parse_ascii_class(&self) -> Option<ast::ClassAscii> {
+                        assert_eq!(self.char(), '[');
+                        let start = self.pos();
+                        let mut negated = false;
+                        if !self.bump() || self.char() != ':' {
+                            self.parser().pos.set(start);
+                            return None;
+                        }
+                        if !self.bump() {
+                            self.parser().pos.set(start);
+                            return None;
+                        }
+                        if self.char() == '^' {
+                            negated = true;
+                            if !self.bump() {
+                                self.parser().pos.set(start);
+                                return None;
+                            }
+                        }
+                        let name_start = self.offset();
+                        while self.char() != ':' && self.bump() {}
+                        if self.is_eof() {
+                            self.parser().pos.set(start);
+                            return None;
+                        }
+                        let name = &self.pattern()[name_start..self.offset()];
+                        if !self.bump_if(":]") {
+                            self.parser().pos.set(start);
+                            return None;
+                        }
+                        let kind = match ast::ClassAsciiKind::from_name(name) {
+                            Some(kind) => kind,
+                            None => {
+                                self.parser().pos.set(start);
+                                return None;
+                            }
+                        };
+                        Some(ast::ClassAscii {
+                            span: Span::new(start, self.pos()),
+                            kind,
+                            negated,
+                        })
+                    }
+                    /// Parse a Unicode class in either the single character notation, `\pN`
+                    /// or the multi-character bracketed notation, `\p{Greek}`.
+                    #[inline( never )] fn parse_unicode_class(&self) -> Result<ast::ClassUnicode> {
+                        assert!(self.char() == 'p' || self.char() == 'P');
+
+                        let mut scratch = self.parser().scratch.borrow_mut();
+                        scratch.clear();
+
+                        let negated = self.char() == 'P';
+                        if !self.bump_and_bump_space() {
+                            return Err(
+                                self.error(self.span(), ast::ErrorKind::EscapeUnexpectedEof)
+                            );
+                        }
+                        let (start, kind) = if self.char() == '{' {
+                            let start = self.span_char().end;
+                            while self.bump_and_bump_space() && self.char() != '}' {
+                                scratch.push(self.char());
+                            }
+                            if self.is_eof() {
+                                return Err(self
+                                    .error(self.span(), ast::ErrorKind::EscapeUnexpectedEof));
+                            }
+                            assert_eq!(self.char(), '}');
+                            self.bump();
+
+                            let name = scratch.as_str();
+                            if let Some(i) = name.find("!=") {
+                                (
+                                    start,
+                                    ast::ClassUnicodeKind::NamedValue {
+                                        op: ast::ClassUnicodeOpKind::NotEqual,
+                                        name: name[..i].to_string(),
+                                        value: name[i + 2..].to_string(),
+                                    },
+                                )
+                            } else if let Some(i) = name.find(':') {
+                                (
+                                    start,
+                                    ast::ClassUnicodeKind::NamedValue {
+                                        op: ast::ClassUnicodeOpKind::Colon,
+                                        name: name[..i].to_string(),
+                                        value: name[i + 1..].to_string(),
+                                    },
+                                )
+                            } else if let Some(i) = name.find('=') {
+                                (
+                                    start,
+                                    ast::ClassUnicodeKind::NamedValue {
+                                        op: ast::ClassUnicodeOpKind::Equal,
+                                        name: name[..i].to_string(),
+                                        value: name[i + 1..].to_string(),
+                                    },
+                                )
+                            } else {
+                                (start, ast::ClassUnicodeKind::Named(name.to_string()))
+                            }
+                        } else {
+                            let start = self.pos();
+                            let c = self.char();
+                            if c == '\\' {
+                                return Err(self.error(
+                                    self.span_char(),
+                                    ast::ErrorKind::UnicodeClassInvalid,
+                                ));
+                            }
+                            self.bump_and_bump_space();
+                            let kind = ast::ClassUnicodeKind::OneLetter(c);
+                            (start, kind)
+                        };
+                        Ok(ast::ClassUnicode {
+                            span: Span::new(start, self.pos()),
+                            negated,
+                            kind,
+                        })
+                    }
+                    /// Parse a Perl character class, e.g., `\d` or `\W`.
+                    #[inline( never )] fn parse_perl_class(&self) -> ast::ClassPerl {
+                        let c = self.char();
+                        let span = self.span_char();
+                        self.bump();
+                        let (negated, kind) = match c {
+                            'd' => (false, ast::ClassPerlKind::Digit),
+                            'D' => (true, ast::ClassPerlKind::Digit),
+                            's' => (false, ast::ClassPerlKind::Space),
+                            'S' => (true, ast::ClassPerlKind::Space),
+                            'w' => (false, ast::ClassPerlKind::Word),
+                            'W' => (true, ast::ClassPerlKind::Word),
+                            c => panic!("expected valid Perl class but got '{c}'"),
+                        };
+                        ast::ClassPerl { span, kind, negated }
+                    }
+                }
+                /// A type that traverses a fully parsed Ast and checks whether its depth
+                /// exceeds the specified nesting limit. If it does, then an error is returned.
+                #[derive(Debug)]
+                struct NestLimiter<'p, 's, P> {
+                    /// The parser that is checking the nest limit.
+                    p: &'p ParserI<'s, P>,
+                    /// The current depth while walking an Ast.
+                    depth: u32,
+                }
+
+                impl<'p, 's, P: Borrow<Parser>> NestLimiter<'p, 's, P> {
+                    fn new(p: &'p ParserI<'s, P>) -> NestLimiter<'p, 's, P> {
+                        NestLimiter { p, depth: 0 }
+                    }
+
+                    #[inline( never )] fn check(self, ast: &Ast) -> Result<()> {
+                        ast::visit(ast, self)
+                    }
+
+                    fn increment_depth(&mut self, span: &Span) -> Result<()> {
+                        let new = self.depth.checked_add(1).ok_or_else(|| {
+                            self.p.error(
+                                span.clone(),
+                                ast::ErrorKind::NestLimitExceeded(u32::MAX),
+                            )
+                        })?;
+                        let limit = self.p.parser().nest_limit;
+                        if new > limit {
+                            return Err(self.p.error(
+                                span.clone(),
+                                ast::ErrorKind::NestLimitExceeded(limit),
+                            ));
+                        }
+                        self.depth = new;
+                        Ok(())
+                    }
+
+                    fn decrement_depth(&mut self) {
+                        self.depth = self.depth.checked_sub(1).unwrap();
+                    }
+                }
+
+                impl<'p, 's, P: Borrow<Parser>> ast::Visitor for NestLimiter<'p, 's, P> {
+                    type Output = ();
+                    type Err = ast::Error;
+
+                    fn finish(self) -> Result<()> {
+                        Ok(())
+                    }
+
+                    fn visit_pre(&mut self, ast: &Ast) -> Result<()> {
+                        let span = match *ast {
+                            Ast::Empty(_)
+                            | Ast::Flags(_)
+                            | Ast::Literal(_)
+                            | Ast::Dot(_)
+                            | Ast::Assertion(_)
+                            | Ast::ClassUnicode(_)
+                            | Ast::ClassPerl(_) => {
+                                return Ok(());
+                            }
+                            Ast::ClassBracketed(ref x) => &x.span,
+                            Ast::Repetition(ref x) => &x.span,
+                            Ast::Group(ref x) => &x.span,
+                            Ast::Alternation(ref x) => &x.span,
+                            Ast::Concat(ref x) => &x.span,
+                        };
+                        self.increment_depth(span)
+                    }
+
+                    fn visit_post(&mut self, ast: &Ast) -> Result<()> {
+                        match *ast {
+                            Ast::Empty(_)
+                            | Ast::Flags(_)
+                            | Ast::Literal(_)
+                            | Ast::Dot(_)
+                            | Ast::Assertion(_)
+                            | Ast::ClassUnicode(_)
+                            | Ast::ClassPerl(_) => {
+                                Ok(())
+                            }
+                            Ast::ClassBracketed(_)
+                            | Ast::Repetition(_)
+                            | Ast::Group(_)
+                            | Ast::Alternation(_)
+                            | Ast::Concat(_) => {
+                                self.decrement_depth();
+                                Ok(())
+                            }
+                        }
+                    }
+
+                    fn visit_class_set_item_pre(
+                        &mut self,
+                        ast: &ast::ClassSetItem,
+                    ) -> Result<()> {
+                        let span = match *ast {
+                            ast::ClassSetItem::Empty(_)
+                            | ast::ClassSetItem::Literal(_)
+                            | ast::ClassSetItem::Range(_)
+                            | ast::ClassSetItem::Ascii(_)
+                            | ast::ClassSetItem::Unicode(_)
+                            | ast::ClassSetItem::Perl(_) => {
+                                return Ok(());
+                            }
+                            ast::ClassSetItem::Bracketed(ref x) => &x.span,
+                            ast::ClassSetItem::Union(ref x) => &x.span,
+                        };
+                        self.increment_depth(span)
+                    }
+
+                    fn visit_class_set_item_post(
+                        &mut self,
+                        ast: &ast::ClassSetItem,
+                    ) -> Result<()> {
+                        match *ast {
+                            ast::ClassSetItem::Empty(_)
+                            | ast::ClassSetItem::Literal(_)
+                            | ast::ClassSetItem::Range(_)
+                            | ast::ClassSetItem::Ascii(_)
+                            | ast::ClassSetItem::Unicode(_)
+                            | ast::ClassSetItem::Perl(_) => {
+                                Ok(())
+                            }
+                            ast::ClassSetItem::Bracketed(_) | ast::ClassSetItem::Union(_) => {
+                                self.decrement_depth();
+                                Ok(())
+                            }
+                        }
+                    }
+
+                    fn visit_class_set_binary_op_pre(
+                        &mut self,
+                        ast: &ast::ClassSetBinaryOp,
+                    ) -> Result<()> {
+                        self.increment_depth(&ast.span)
+                    }
+
+                    fn visit_class_set_binary_op_post(
+                        &mut self,
+                        _ast: &ast::ClassSetBinaryOp,
+                    ) -> Result<()> {
+                        self.decrement_depth();
+                        Ok(())
+                    }
+                }
+                /// When the result is an error, transforms the ast::ErrorKind from the source
+                /// Result into another one.
+                fn specialize_err<T>(
+                    result: Result<T>,
+                    from: ast::ErrorKind,
+                    to: ast::ErrorKind,
+                ) -> Result<T> {
+                    if let Err(e) = result {
+                        if e.kind == from {
+                            Err(ast::Error { kind: to, pattern: e.pattern, span: e.span })
+                        } else {
+                            Err(e)
+                        }
+                    } else {
+                        result
+                    }
+                }
+            }
+
+            pub mod print
+            {
+                /*!
+                This module provides a regular expression printer for `Ast`. */
+                use ::
+                {
+                    *,
+                };
+                
+                use super::
+                {
+                    visitor::{self, Visitor},
+                    Ast,
+                };
+                /*
+                */
+                /// A builder for constructing a printer.
+                ///
+                /// Note that since a printer doesn't have any configuration knobs, this type
+                /// remains unexported.
+                #[derive( Clone, Debug )]
+                struct PrinterBuilder {
+                    _priv: (),
+                }
+
+                impl Default for PrinterBuilder {
+                    fn default() -> PrinterBuilder {
+                        PrinterBuilder::new()
+                    }
+                }
+
+                impl PrinterBuilder {
+                    fn new() -> PrinterBuilder {
+                        PrinterBuilder { _priv: () }
+                    }
+
+                    fn build(&self) -> Printer {
+                        Printer { _priv: () }
+                    }
+                }
+                /// A printer for a regular expression abstract syntax tree.
+                ///
+                /// A printer converts an abstract syntax tree (AST) to a regular expression
+                /// pattern string. This particular printer uses constant stack space and heap
+                /// space proportional to the size of the AST.
+                ///
+                /// This printer will not necessarily preserve the original formatting of the
+                /// regular expression pattern string. For example, all whitespace and comments
+                /// are ignored.
+                #[derive(Debug)]
+                pub struct Printer {
+                    _priv: (),
+                }
+
+                impl Printer {
+                    /// Create a new printer.
+                    pub fn new() -> Printer {
+                        PrinterBuilder::new().build()
+                    }
+                    /// Print the given `Ast` to the given writer. The writer must implement
+                    /// `fmt::Write`. Typical implementations of `fmt::Write` that can be used
+                    /// here are a `fmt::Formatter` (which is available in `fmt::Display`
+                    /// implementations) or a `&mut String`.
+                    pub fn print<W: fmt::Write>(&mut self, ast: &Ast, wtr: W) -> fmt::Result {
+                        visitor::visit(ast, Writer { wtr })
+                    }
+                }
+
+                #[derive(Debug)]
+                struct Writer<W> {
+                    wtr: W,
+                }
+
+                impl<W: fmt::Write> Visitor for Writer<W> {
+                    type Output = ();
+                    type Err = fmt::Error;
+
+                    fn finish(self) -> fmt::Result {
+                        Ok(())
+                    }
+
+                    fn visit_pre(&mut self, ast: &Ast) -> fmt::Result {
+                        match *ast {
+                            Ast::Group(ref x) => self.fmt_group_pre(x),
+                            Ast::ClassBracketed(ref x) => self.fmt_class_bracketed_pre(x),
+                            _ => Ok(()),
+                        }
+                    }
+
+                    fn visit_post(&mut self, ast: &Ast) -> fmt::Result {
+                        match *ast {
+                            Ast::Empty(_) => Ok(()),
+                            Ast::Flags(ref x) => self.fmt_set_flags(x),
+                            Ast::Literal(ref x) => self.fmt_literal(x),
+                            Ast::Dot(_) => self.wtr.write_str("."),
+                            Ast::Assertion(ref x) => self.fmt_assertion(x),
+                            Ast::ClassPerl(ref x) => self.fmt_class_perl(x),
+                            Ast::ClassUnicode(ref x) => self.fmt_class_unicode(x),
+                            Ast::ClassBracketed(ref x) => self.fmt_class_bracketed_post(x),
+                            Ast::Repetition(ref x) => self.fmt_repetition(x),
+                            Ast::Group(ref x) => self.fmt_group_post(x),
+                            Ast::Alternation(_) => Ok(()),
+                            Ast::Concat(_) => Ok(()),
+                        }
+                    }
+
+                    fn visit_alternation_in(&mut self) -> fmt::Result {
+                        self.wtr.write_str("|")
+                    }
+
+                    fn visit_class_set_item_pre(
+                        &mut self,
+                        ast: &ast::ClassSetItem,
+                    ) -> Result<(), Self::Err> {
+                        match *ast {
+                            ast::ClassSetItem::Bracketed(ref x) => {
+                                self.fmt_class_bracketed_pre(x)
+                            }
+                            _ => Ok(()),
+                        }
+                    }
+
+                    fn visit_class_set_item_post(
+                        &mut self,
+                        ast: &ast::ClassSetItem,
+                    ) -> Result<(), Self::Err> {
+                        use crate::ast::ClassSetItem::*;
+
+                        match *ast {
+                            Empty(_) => Ok(()),
+                            Literal(ref x) => self.fmt_literal(x),
+                            Range(ref x) => {
+                                self.fmt_literal(&x.start)?;
+                                self.wtr.write_str("-")?;
+                                self.fmt_literal(&x.end)?;
+                                Ok(())
+                            }
+                            Ascii(ref x) => self.fmt_class_ascii(x),
+                            Unicode(ref x) => self.fmt_class_unicode(x),
+                            Perl(ref x) => self.fmt_class_perl(x),
+                            Bracketed(ref x) => self.fmt_class_bracketed_post(x),
+                            Union(_) => Ok(()),
+                        }
+                    }
+
+                    fn visit_class_set_binary_op_in(
+                        &mut self,
+                        ast: &ast::ClassSetBinaryOp,
+                    ) -> Result<(), Self::Err> {
+                        self.fmt_class_set_binary_op_kind(&ast.kind)
+                    }
+                }
+
+                impl<W: fmt::Write> Writer<W> {
+                    fn fmt_group_pre(&mut self, ast: &ast::Group) -> fmt::Result {
+                        use crate::ast::GroupKind::*;
+                        match ast.kind {
+                            CaptureIndex(_) => self.wtr.write_str("("),
+                            CaptureName { ref name, starts_with_p } => {
+                                let start = if starts_with_p { "(?P<" } else { "(?<" };
+                                self.wtr.write_str(start)?;
+                                self.wtr.write_str(&name.name)?;
+                                self.wtr.write_str(">")?;
+                                Ok(())
+                            }
+                            NonCapturing(ref flags) => {
+                                self.wtr.write_str("(?")?;
+                                self.fmt_flags(flags)?;
+                                self.wtr.write_str(":")?;
+                                Ok(())
+                            }
+                        }
+                    }
+
+                    fn fmt_group_post(&mut self, _ast: &ast::Group) -> fmt::Result {
+                        self.wtr.write_str(")")
+                    }
+
+                    fn fmt_repetition(&mut self, ast: &ast::Repetition) -> fmt::Result {
+                        use crate::ast::RepetitionKind::*;
+                        match ast.op.kind {
+                            ZeroOrOne if ast.greedy => self.wtr.write_str("?"),
+                            ZeroOrOne => self.wtr.write_str("??"),
+                            ZeroOrMore if ast.greedy => self.wtr.write_str("*"),
+                            ZeroOrMore => self.wtr.write_str("*?"),
+                            OneOrMore if ast.greedy => self.wtr.write_str("+"),
+                            OneOrMore => self.wtr.write_str("+?"),
+                            Range(ref x) => {
+                                self.fmt_repetition_range(x)?;
+                                if !ast.greedy {
+                                    self.wtr.write_str("?")?;
+                                }
+                                Ok(())
+                            }
+                        }
+                    }
+
+                    fn fmt_repetition_range(
+                        &mut self,
+                        ast: &ast::RepetitionRange,
+                    ) -> fmt::Result {
+                        use crate::ast::RepetitionRange::*;
+                        match *ast {
+                            Exactly(x) => write!(self.wtr, "{{{x}}}"),
+                            AtLeast(x) => write!(self.wtr, "{{{x},}}"),
+                            Bounded(x, y) => write!(self.wtr, "{{{x},{y}}}"),
+                        }
+                    }
+
+                    fn fmt_literal(&mut self, ast: &ast::Literal) -> fmt::Result {
+                        use crate::ast::LiteralKind::*;
+
+                        match ast.kind {
+                            Verbatim => self.wtr.write_char(ast.c),
+                            Meta | Superfluous => write!(self.wtr, r"\{}", ast.c),
+                            Octal => write!(self.wtr, r"\{:o}", u32::from(ast.c)),
+                            HexFixed(ast::HexLiteralKind::X) => {
+                                write!(self.wtr, r"\x{:02X}", u32::from(ast.c))
+                            }
+                            HexFixed(ast::HexLiteralKind::UnicodeShort) => {
+                                write!(self.wtr, r"\u{:04X}", u32::from(ast.c))
+                            }
+                            HexFixed(ast::HexLiteralKind::UnicodeLong) => {
+                                write!(self.wtr, r"\U{:08X}", u32::from(ast.c))
+                            }
+                            HexBrace(ast::HexLiteralKind::X) => {
+                                write!(self.wtr, r"\x{{{:X}}}", u32::from(ast.c))
+                            }
+                            HexBrace(ast::HexLiteralKind::UnicodeShort) => {
+                                write!(self.wtr, r"\u{{{:X}}}", u32::from(ast.c))
+                            }
+                            HexBrace(ast::HexLiteralKind::UnicodeLong) => {
+                                write!(self.wtr, r"\U{{{:X}}}", u32::from(ast.c))
+                            }
+                            Special(ast::SpecialLiteralKind::Bell) => {
+                                self.wtr.write_str(r"\a")
+                            }
+                            Special(ast::SpecialLiteralKind::FormFeed) => {
+                                self.wtr.write_str(r"\f")
+                            }
+                            Special(ast::SpecialLiteralKind::Tab) => self.wtr.write_str(r"\t"),
+                            Special(ast::SpecialLiteralKind::LineFeed) => {
+                                self.wtr.write_str(r"\n")
+                            }
+                            Special(ast::SpecialLiteralKind::CarriageReturn) => {
+                                self.wtr.write_str(r"\r")
+                            }
+                            Special(ast::SpecialLiteralKind::VerticalTab) => {
+                                self.wtr.write_str(r"\v")
+                            }
+                            Special(ast::SpecialLiteralKind::Space) => {
+                                self.wtr.write_str(r"\ ")
+                            }
+                        }
+                    }
+
+                    fn fmt_assertion(&mut self, ast: &ast::Assertion) -> fmt::Result {
+                        use crate::ast::AssertionKind::*;
+                        match ast.kind {
+                            StartLine => self.wtr.write_str("^"),
+                            EndLine => self.wtr.write_str("$"),
+                            StartText => self.wtr.write_str(r"\A"),
+                            EndText => self.wtr.write_str(r"\z"),
+                            WordBoundary => self.wtr.write_str(r"\b"),
+                            NotWordBoundary => self.wtr.write_str(r"\B"),
+                            WordBoundaryStart => self.wtr.write_str(r"\b{start}"),
+                            WordBoundaryEnd => self.wtr.write_str(r"\b{end}"),
+                            WordBoundaryStartAngle => self.wtr.write_str(r"\<"),
+                            WordBoundaryEndAngle => self.wtr.write_str(r"\>"),
+                            WordBoundaryStartHalf => self.wtr.write_str(r"\b{start-half}"),
+                            WordBoundaryEndHalf => self.wtr.write_str(r"\b{end-half}"),
+                        }
+                    }
+
+                    fn fmt_set_flags(&mut self, ast: &ast::SetFlags) -> fmt::Result {
+                        self.wtr.write_str("(?")?;
+                        self.fmt_flags(&ast.flags)?;
+                        self.wtr.write_str(")")?;
+                        Ok(())
+                    }
+
+                    fn fmt_flags(&mut self, ast: &ast::Flags) -> fmt::Result {
+                        use crate::ast::{Flag, FlagsItemKind};
+
+                        for item in &ast.items {
+                            match item.kind {
+                                FlagsItemKind::Negation => self.wtr.write_str("-"),
+                                FlagsItemKind::Flag(ref flag) => match *flag {
+                                    Flag::CaseInsensitive => self.wtr.write_str("i"),
+                                    Flag::MultiLine => self.wtr.write_str("m"),
+                                    Flag::DotMatchesNewLine => self.wtr.write_str("s"),
+                                    Flag::SwapGreed => self.wtr.write_str("U"),
+                                    Flag::Unicode => self.wtr.write_str("u"),
+                                    Flag::CRLF => self.wtr.write_str("R"),
+                                    Flag::IgnoreWhitespace => self.wtr.write_str("x"),
+                                },
+                            }?;
+                        }
+                        Ok(())
+                    }
+
+                    fn fmt_class_bracketed_pre(
+                        &mut self,
+                        ast: &ast::ClassBracketed,
+                    ) -> fmt::Result {
+                        if ast.negated {
+                            self.wtr.write_str("[^")
+                        } else {
+                            self.wtr.write_str("[")
+                        }
+                    }
+
+                    fn fmt_class_bracketed_post(
+                        &mut self,
+                        _ast: &ast::ClassBracketed,
+                    ) -> fmt::Result {
+                        self.wtr.write_str("]")
+                    }
+
+                    fn fmt_class_set_binary_op_kind(
+                        &mut self,
+                        ast: &ast::ClassSetBinaryOpKind,
+                    ) -> fmt::Result {
+                        use crate::ast::ClassSetBinaryOpKind::*;
+                        match *ast {
+                            Intersection => self.wtr.write_str("&&"),
+                            Difference => self.wtr.write_str("--"),
+                            SymmetricDifference => self.wtr.write_str("~~"),
+                        }
+                    }
+
+                    fn fmt_class_perl(&mut self, ast: &ast::ClassPerl) -> fmt::Result {
+                        use crate::ast::ClassPerlKind::*;
+                        match ast.kind {
+                            Digit if ast.negated => self.wtr.write_str(r"\D"),
+                            Digit => self.wtr.write_str(r"\d"),
+                            Space if ast.negated => self.wtr.write_str(r"\S"),
+                            Space => self.wtr.write_str(r"\s"),
+                            Word if ast.negated => self.wtr.write_str(r"\W"),
+                            Word => self.wtr.write_str(r"\w"),
+                        }
+                    }
+
+                    fn fmt_class_ascii(&mut self, ast: &ast::ClassAscii) -> fmt::Result {
+                        use crate::ast::ClassAsciiKind::*;
+                        match ast.kind {
+                            Alnum if ast.negated => self.wtr.write_str("[:^alnum:]"),
+                            Alnum => self.wtr.write_str("[:alnum:]"),
+                            Alpha if ast.negated => self.wtr.write_str("[:^alpha:]"),
+                            Alpha => self.wtr.write_str("[:alpha:]"),
+                            Ascii if ast.negated => self.wtr.write_str("[:^ascii:]"),
+                            Ascii => self.wtr.write_str("[:ascii:]"),
+                            Blank if ast.negated => self.wtr.write_str("[:^blank:]"),
+                            Blank => self.wtr.write_str("[:blank:]"),
+                            Cntrl if ast.negated => self.wtr.write_str("[:^cntrl:]"),
+                            Cntrl => self.wtr.write_str("[:cntrl:]"),
+                            Digit if ast.negated => self.wtr.write_str("[:^digit:]"),
+                            Digit => self.wtr.write_str("[:digit:]"),
+                            Graph if ast.negated => self.wtr.write_str("[:^graph:]"),
+                            Graph => self.wtr.write_str("[:graph:]"),
+                            Lower if ast.negated => self.wtr.write_str("[:^lower:]"),
+                            Lower => self.wtr.write_str("[:lower:]"),
+                            Print if ast.negated => self.wtr.write_str("[:^print:]"),
+                            Print => self.wtr.write_str("[:print:]"),
+                            Punct if ast.negated => self.wtr.write_str("[:^punct:]"),
+                            Punct => self.wtr.write_str("[:punct:]"),
+                            Space if ast.negated => self.wtr.write_str("[:^space:]"),
+                            Space => self.wtr.write_str("[:space:]"),
+                            Upper if ast.negated => self.wtr.write_str("[:^upper:]"),
+                            Upper => self.wtr.write_str("[:upper:]"),
+                            Word if ast.negated => self.wtr.write_str("[:^word:]"),
+                            Word => self.wtr.write_str("[:word:]"),
+                            Xdigit if ast.negated => self.wtr.write_str("[:^xdigit:]"),
+                            Xdigit => self.wtr.write_str("[:xdigit:]"),
+                        }
+                    }
+
+                    fn fmt_class_unicode(&mut self, ast: &ast::ClassUnicode) -> fmt::Result {
+                        use crate::ast::ClassUnicodeKind::*;
+                        use crate::ast::ClassUnicodeOpKind::*;
+
+                        if ast.negated {
+                            self.wtr.write_str(r"\P")?;
+                        } else {
+                            self.wtr.write_str(r"\p")?;
+                        }
+                        match ast.kind {
+                            OneLetter(c) => self.wtr.write_char(c),
+                            Named(ref x) => write!(self.wtr, "{{{}}}", x),
+                            NamedValue { op: Equal, ref name, ref value } => {
+                                write!(self.wtr, "{{{}={}}}", name, value)
+                            }
+                            NamedValue { op: Colon, ref name, ref value } => {
+                                write!(self.wtr, "{{{}:{}}}", name, value)
+                            }
+                            NamedValue { op: NotEqual, ref name, ref value } => {
+                                write!(self.wtr, "{{{}!={}}}", name, value)
+                            }
+                        }
+                    }
+                }
+
+
+            }
+
+            pub mod visitor
+            {
+                /*!
+                */
+                use ::
+                {
+                    *,
+                };
+                use super::{Ast};
+                /*
+                */
+                /// A trait for visiting an abstract syntax tree (AST) in depth first order.
+                pub trait Visitor 
+                {
+                    /// The result of visiting an AST.
+                    type Output;
+                    /// An error that visiting an AST might return.
+                    type Err;
+                    /// All implementors of `Visitor` must provide a `finish` method, which
+                    /// yields the result of visiting the AST or an error.
+                    fn finish(self) -> Result<Self::Output, Self::Err>;
+                    /// This method is called before beginning traversal of the AST.
+                    fn start(&mut self) {}
+                    /// This method is called on an `Ast` before descending into child `Ast` nodes.
+                    fn visit_pre(&mut self, _ast: &Ast) -> Result<(), Self::Err> { Ok(()) }
+                    /// This method is called on an `Ast` after descending all of its child `Ast` nodes.
+                    fn visit_post(&mut self, _ast: &Ast) -> Result<(), Self::Err> { Ok(()) }
+                    /// This method is called between child nodes of an ast::Alternation.
+                    fn visit_alternation_in(&mut self) -> Result<(), Self::Err> { Ok(()) }
+                    /// This method is called between child nodes of a concatenation.
+                    fn visit_concat_in(&mut self) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called on every [`ClassSetItem`](ast::ClassSetItem)
+                    /// before descending into child nodes.
+                    fn visit_class_set_item_pre(
+                        &mut self,
+                        _ast: &ast::ClassSetItem,
+                    ) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called on every [`ClassSetItem`](ast::ClassSetItem)
+                    /// after descending into child nodes.
+                    fn visit_class_set_item_post(
+                        &mut self,
+                        _ast: &ast::ClassSetItem,
+                    ) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called on every
+                    /// [`ClassSetBinaryOp`](ast::ClassSetBinaryOp) before descending into
+                    /// child nodes.
+                    fn visit_class_set_binary_op_pre(
+                        &mut self,
+                        _ast: &ast::ClassSetBinaryOp,
+                    ) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called on every
+                    /// [`ClassSetBinaryOp`](ast::ClassSetBinaryOp) after descending into child
+                    /// nodes.
+                    fn visit_class_set_binary_op_post(
+                        &mut self,
+                        _ast: &ast::ClassSetBinaryOp,
+                    ) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called between the left hand and right hand child nodes
+                    /// of a [`ClassSetBinaryOp`](ast::ClassSetBinaryOp).
+                    fn visit_class_set_binary_op_in(
+                        &mut self,
+                        _ast: &ast::ClassSetBinaryOp,
+                    ) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                }
+                /// Executes an implementation of `Visitor` in constant stack space.
+                ///
+                /// This function will visit every node in the given `Ast` while calling the
+                /// appropriate methods provided by the [`Visitor`] trait.
+                ///
+                /// The primary use case for this method is when one wants to perform case
+                /// analysis over an `Ast` without using a stack size proportional to the depth
+                /// of the `Ast`. Namely, this method will instead use constant stack size, but
+                /// will use heap space proportional to the size of the `Ast`. This may be
+                /// desirable in cases where the size of `Ast` is proportional to end user
+                /// input.
+                ///
+                /// If the visitor returns an error at any point, then visiting is stopped and
+                /// the error is returned.
+                pub fn visit<V: Visitor>(ast: &Ast, visitor: V) -> Result<V::Output, V::Err> {
+                    HeapVisitor::new().visit(ast, visitor)
+                }
+                /// HeapVisitor visits every item in an `Ast` recursively using constant stack
+                /// size and a heap size proportional to the size of the `Ast`.
+                struct HeapVisitor<'a> {
+                    /// A stack of `Ast` nodes. This is roughly analogous to the call stack
+                    /// used in a typical recursive visitor.
+                    stack: Vec<(&'a Ast, Frame<'a>)>,
+                    /// Similar to the `Ast` stack above, but is used only for character
+                    /// classes. In particular, character classes embed their own mini
+                    /// recursive syntax.
+                    stack_class: Vec<(ClassInduct<'a>, ClassFrame<'a>)>,
+                }
+                /// Represents a single stack frame while performing structural induction over
+                /// an `Ast`.
+                enum Frame<'a> {
+                    /// A stack frame allocated just before descending into a repetition
+                    /// operator's child node.
+                    Repetition(&'a ast::Repetition),
+                    /// A stack frame allocated just before descending into a group's child
+                    /// node.
+                    Group(&'a ast::Group),
+                    /// The stack frame used while visiting every child node of a concatenation
+                    /// of expressions.
+                    Concat {
+                        /// The child node we are currently visiting.
+                        head: &'a Ast,
+                        /// The remaining child nodes to visit (which may be empty).
+                        tail: &'a [Ast],
+                    },
+                    /// The stack frame used while visiting every child node of an alternation
+                    /// of expressions.
+                    Alternation {
+                        /// The child node we are currently visiting.
+                        head: &'a Ast,
+                        /// The remaining child nodes to visit (which may be empty).
+                        tail: &'a [Ast],
+                    },
+                }
+                /// Represents a single stack frame while performing structural induction over
+                /// a character class.
+                enum ClassFrame<'a> {
+                    /// The stack frame used while visiting every child node of a union of
+                    /// character class items.
+                    Union {
+                        /// The child node we are currently visiting.
+                        head: &'a ast::ClassSetItem,
+                        /// The remaining child nodes to visit (which may be empty).
+                        tail: &'a [ast::ClassSetItem],
+                    },
+                    /// The stack frame used while a binary class operation.
+                    Binary { op: &'a ast::ClassSetBinaryOp },
+                    /// A stack frame allocated just before descending into a binary operator's
+                    /// left hand child node.
+                    BinaryLHS {
+                        op: &'a ast::ClassSetBinaryOp,
+                        lhs: &'a ast::ClassSet,
+                        rhs: &'a ast::ClassSet,
+                    },
+                    /// A stack frame allocated just before descending into a binary operator's
+                    /// right hand child node.
+                    BinaryRHS { op: &'a ast::ClassSetBinaryOp, rhs: &'a ast::ClassSet },
+                }
+                /// A representation of the inductive step when performing structural induction
+                /// over a character class.
+                ///
+                /// Note that there is no analogous explicit type for the inductive step for
+                /// `Ast` nodes because the inductive step is just an `Ast`. For character
+                /// classes, the inductive step can produce one of two possible child nodes:
+                /// an item or a binary operation. (An item cannot be a binary operation
+                /// because that would imply binary operations can be unioned in the concrete
+                /// syntax, which is not possible.)
+                enum ClassInduct<'a> {
+                    Item(&'a ast::ClassSetItem),
+                    BinaryOp(&'a ast::ClassSetBinaryOp),
+                }
+
+                impl<'a> HeapVisitor<'a> {
+                    fn new() -> HeapVisitor<'a> {
+                        HeapVisitor { stack: vec![], stack_class: vec![] }
+                    }
+
+                    fn visit<V: Visitor>(
+                        &mut self,
+                        mut ast: &'a Ast,
+                        mut visitor: V,
+                    ) -> Result<V::Output, V::Err> {
+                        self.stack.clear();
+                        self.stack_class.clear();
+
+                        visitor.start();
+                        loop {
+                            visitor.visit_pre(ast)?;
+                            if let Some(x) = self.induct(ast, &mut visitor)? {
+                                let child = x.child();
+                                self.stack.push((ast, x));
+                                ast = child;
+                                continue;
+                            }
+                            
+                            visitor.visit_post(ast)?;
+                            
+                            loop {
+                                let (post_ast, frame) = match self.stack.pop() {
+                                    None => return visitor.finish(),
+                                    Some((post_ast, frame)) => (post_ast, frame),
+                                };
+                                
+                                if let Some(x) = self.pop(frame) {
+                                    match x {
+                                        Frame::Alternation { .. } => {
+                                            visitor.visit_alternation_in()?;
+                                        }
+                                        Frame::Concat { .. } => {
+                                            visitor.visit_concat_in()?;
+                                        }
+                                        _ => {}
+                                    }
+                                    ast = x.child();
+                                    self.stack.push((post_ast, x));
+                                    break;
+                                }
+                                
+                                visitor.visit_post(post_ast)?;
+                            }
+                        }
+                    }
+                    /// Build a stack frame for the given AST if one is needed.
+                    fn induct<V: Visitor>(
+                        &mut self,
+                        ast: &'a Ast,
+                        visitor: &mut V,
+                    ) -> Result<Option<Frame<'a>>, V::Err> {
+                        Ok(match *ast {
+                            Ast::ClassBracketed(ref x) => {
+                                self.visit_class(x, visitor)?;
+                                None
+                            }
+                            Ast::Repetition(ref x) => Some(Frame::Repetition(x)),
+                            Ast::Group(ref x) => Some(Frame::Group(x)),
+                            Ast::Concat(ref x) if x.asts.is_empty() => None,
+                            Ast::Concat(ref x) => {
+                                Some(Frame::Concat { head: &x.asts[0], tail: &x.asts[1..] })
+                            }
+                            Ast::Alternation(ref x) if x.asts.is_empty() => None,
+                            Ast::Alternation(ref x) => Some(Frame::Alternation {
+                                head: &x.asts[0],
+                                tail: &x.asts[1..],
+                            }),
+                            _ => None,
+                        })
+                    }
+                    /// Pops the given frame. If the frame has an additional inductive step,
+                    /// then return it, otherwise return `None`.
+                    fn pop(&self, induct: Frame<'a>) -> Option<Frame<'a>> {
+                        match induct {
+                            Frame::Repetition(_) => None,
+                            Frame::Group(_) => None,
+                            Frame::Concat { tail, .. } => {
+                                if tail.is_empty() {
+                                    None
+                                } else {
+                                    Some(Frame::Concat { head: &tail[0], tail: &tail[1..] })
+                                }
+                            }
+                            Frame::Alternation { tail, .. } => {
+                                if tail.is_empty() {
+                                    None
+                                } else {
+                                    Some(Frame::Alternation {
+                                        head: &tail[0],
+                                        tail: &tail[1..],
+                                    })
+                                }
+                            }
+                        }
+                    }
+
+                    fn visit_class<V: Visitor>(
+                        &mut self,
+                        ast: &'a ast::ClassBracketed,
+                        visitor: &mut V,
+                    ) -> Result<(), V::Err> {
+                        let mut ast = ClassInduct::from_bracketed(ast);
+                        loop {
+                            self.visit_class_pre(&ast, visitor)?;
+                            if let Some(x) = self.induct_class(&ast) {
+                                let child = x.child();
+                                self.stack_class.push((ast, x));
+                                ast = child;
+                                continue;
+                            }
+                            self.visit_class_post(&ast, visitor)?;
+                            
+                            loop {
+                                let (post_ast, frame) = match self.stack_class.pop() {
+                                    None => return Ok(()),
+                                    Some((post_ast, frame)) => (post_ast, frame),
+                                };
+                                
+                                if let Some(x) = self.pop_class(frame) {
+                                    if let ClassFrame::BinaryRHS { ref op, .. } = x {
+                                        visitor.visit_class_set_binary_op_in(op)?;
+                                    }
+                                    ast = x.child();
+                                    self.stack_class.push((post_ast, x));
+                                    break;
+                                }
+                                
+                                self.visit_class_post(&post_ast, visitor)?;
+                            }
+                        }
+                    }
+                    /// Call the appropriate `Visitor` methods given an inductive step.
+                    fn visit_class_pre<V: Visitor>(
+                        &self,
+                        ast: &ClassInduct<'a>,
+                        visitor: &mut V,
+                    ) -> Result<(), V::Err> {
+                        match *ast {
+                            ClassInduct::Item(item) => {
+                                visitor.visit_class_set_item_pre(item)?;
+                            }
+                            ClassInduct::BinaryOp(op) => {
+                                visitor.visit_class_set_binary_op_pre(op)?;
+                            }
+                        }
+                        Ok(())
+                    }
+                    /// Call the appropriate `Visitor` methods given an inductive step.
+                    fn visit_class_post<V: Visitor>(
+                        &self,
+                        ast: &ClassInduct<'a>,
+                        visitor: &mut V,
+                    ) -> Result<(), V::Err> {
+                        match *ast {
+                            ClassInduct::Item(item) => {
+                                visitor.visit_class_set_item_post(item)?;
+                            }
+                            ClassInduct::BinaryOp(op) => {
+                                visitor.visit_class_set_binary_op_post(op)?;
+                            }
+                        }
+                        Ok(())
+                    }
+                    /// Build a stack frame for the given class node if one is needed (which
+                    /// occurs if and only if there are child nodes). Otherwise, return None.
+                    fn induct_class(&self, ast: &ClassInduct<'a>) -> Option<ClassFrame<'a>> {
+                        match *ast {
+                            ClassInduct::Item(&ast::ClassSetItem::Bracketed(ref x)) => {
+                                match x.kind {
+                                    ast::ClassSet::Item(ref item) => {
+                                        Some(ClassFrame::Union { head: item, tail: &[] })
+                                    }
+                                    ast::ClassSet::BinaryOp(ref op) => {
+                                        Some(ClassFrame::Binary { op })
+                                    }
+                                }
+                            }
+                            ClassInduct::Item(&ast::ClassSetItem::Union(ref x)) => {
+                                if x.items.is_empty() {
+                                    None
+                                } else {
+                                    Some(ClassFrame::Union {
+                                        head: &x.items[0],
+                                        tail: &x.items[1..],
+                                    })
+                                }
+                            }
+                            ClassInduct::BinaryOp(op) => {
+                                Some(ClassFrame::BinaryLHS { op, lhs: &op.lhs, rhs: &op.rhs })
+                            }
+                            _ => None,
+                        }
+                    }
+                    /// Pops the given frame. If the frame has an additional inductive step,
+                    /// then return it, otherwise return `None`.
+                    fn pop_class(&self, induct: ClassFrame<'a>) -> Option<ClassFrame<'a>> {
+                        match induct {
+                            ClassFrame::Union { tail, .. } => {
+                                if tail.is_empty() {
+                                    None
+                                } else {
+                                    Some(ClassFrame::Union {
+                                        head: &tail[0],
+                                        tail: &tail[1..],
+                                    })
+                                }
+                            }
+                            ClassFrame::Binary { .. } => None,
+                            ClassFrame::BinaryLHS { op, rhs, .. } => {
+                                Some(ClassFrame::BinaryRHS { op, rhs })
+                            }
+                            ClassFrame::BinaryRHS { .. } => None,
+                        }
+                    }
+                }
+
+                impl<'a> Frame<'a> {
+                    /// Perform the next inductive step on this frame and return the next
+                    /// child AST node to visit.
+                    fn child(&self) -> &'a Ast {
+                        match *self {
+                            Frame::Repetition(rep) => &rep.ast,
+                            Frame::Group(group) => &group.ast,
+                            Frame::Concat { head, .. } => head,
+                            Frame::Alternation { head, .. } => head,
+                        }
+                    }
+                }
+
+                impl<'a> ClassFrame<'a> {
+                    /// Perform the next inductive step on this frame and return the next
+                    /// child class node to visit.
+                    fn child(&self) -> ClassInduct<'a> {
+                        match *self {
+                            ClassFrame::Union { head, .. } => ClassInduct::Item(head),
+                            ClassFrame::Binary { op, .. } => ClassInduct::BinaryOp(op),
+                            ClassFrame::BinaryLHS { ref lhs, .. } => {
+                                ClassInduct::from_set(lhs)
+                            }
+                            ClassFrame::BinaryRHS { ref rhs, .. } => {
+                                ClassInduct::from_set(rhs)
+                            }
+                        }
+                    }
+                }
+
+                impl<'a> ClassInduct<'a> {
+                    fn from_bracketed(ast: &'a ast::ClassBracketed) -> ClassInduct<'a> {
+                        ClassInduct::from_set(&ast.kind)
+                    }
+
+                    fn from_set(ast: &'a ast::ClassSet) -> ClassInduct<'a> {
+                        match *ast {
+                            ast::ClassSet::Item(ref item) => ClassInduct::Item(item),
+                            ast::ClassSet::BinaryOp(ref op) => ClassInduct::BinaryOp(op),
+                        }
+                    }
+                }
+
+                impl<'a> core::fmt::Debug for ClassFrame<'a> {
+                    fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                        let x = match *self {
+                            ClassFrame::Union { .. } => "Union",
+                            ClassFrame::Binary { .. } => "Binary",
+                            ClassFrame::BinaryLHS { .. } => "BinaryLHS",
+                            ClassFrame::BinaryRHS { .. } => "BinaryRHS",
+                        };
+                        write!(f, "{x}")
+                    }
+                }
+
+                impl<'a> core::fmt::Debug for ClassInduct<'a> {
+                    fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                        let x = match *self {
+                            ClassInduct::Item(it) => match *it {
+                                ast::ClassSetItem::Empty(_) => "Item(Empty)",
+                                ast::ClassSetItem::Literal(_) => "Item(Literal)",
+                                ast::ClassSetItem::Range(_) => "Item(Range)",
+                                ast::ClassSetItem::Ascii(_) => "Item(Ascii)",
+                                ast::ClassSetItem::Perl(_) => "Item(Perl)",
+                                ast::ClassSetItem::Unicode(_) => "Item(Unicode)",
+                                ast::ClassSetItem::Bracketed(_) => "Item(Bracketed)",
+                                ast::ClassSetItem::Union(_) => "Item(Union)",
+                            },
+                            ClassInduct::BinaryOp(it) => match it.kind {
+                                ast::ClassSetBinaryOpKind::Intersection => {
+                                    "BinaryOp(Intersection)"
+                                }
+                                ast::ClassSetBinaryOpKind::Difference => {
+                                    "BinaryOp(Difference)"
+                                }
+                                ast::ClassSetBinaryOpKind::SymmetricDifference => {
+                                    "BinaryOp(SymmetricDifference)"
+                                }
+                            },
+                        };
+                        write!(f, "{x}")
+                    }
+                }
+            } pub use self::visitor::{ visit, Visitor };
+            /// An error that occurred while parsing a regular expression into an abstract syntax tree.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Error
+            {
+                /// The kind of error.
+                kind: ErrorKind,
+                /// The original pattern that the parser generated the error from.
+                pattern: String,
+                /// The span of this error.
+                span: Span,
+            }
+
+            impl Error 
+            {
+                /// Return the type of this error.
+                pub fn kind(&self) -> &ErrorKind { &self.kind }
+                /// The original pattern string in which this error occurred.
+                pub fn pattern(&self) -> &str { &self.pattern }
+                /// Return the span at which this error occurred.
+                pub fn span(&self) -> &Span { &self.span }
+                /// Return an auxiliary span.
+                pub fn auxiliary_span(&self) -> Option<&Span> 
+                {
+                    use self::ErrorKind::*;
+                    match self.kind 
+                    {
+                        FlagDuplicate { ref original } => Some(original),
+                        FlagRepeatedNegation { ref original, .. } => Some(original),
+                        GroupNameDuplicate { ref original, .. } => Some(original),
+                        _ => None,
+                    }
+                }
+            }
+            /// The type of an error that occurred while building an AST.
+            #[non_exhaustive] #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ErrorKind
+            {
+                /// The capturing group limit was exceeded.
+                ///
+                /// Note that this represents a limit on the total number of capturing
+                /// groups in a regex and not necessarily the number of nested capturing
+                /// groups. That is, the nest limit can be low and it is still possible for
+                /// this error to occur.
+                CaptureLimitExceeded,
+                /// An invalid escape sequence was found in a character class set.
+                ClassEscapeInvalid,
+                /// An invalid character class range was found. An invalid range is any
+                /// range where the start is greater than the end.
+                ClassRangeInvalid,
+                /// An invalid range boundary was found in a character class. Range
+                /// boundaries must be a single literal codepoint, but this error indicates
+                /// that something else was found, such as a nested class.
+                ClassRangeLiteral,
+                /// An opening `[` was found with no corresponding closing `]`.
+                ClassUnclosed,
+                /// Note that this error variant is no longer used. Namely, a decimal
+                /// number can only appear as a repetition quantifier. When the number
+                /// in a repetition quantifier is empty, then it gets its own specialized
+                /// error, `RepetitionCountDecimalEmpty`.
+                DecimalEmpty,
+                /// An invalid decimal number was given where one was expected.
+                DecimalInvalid,
+                /// A bracketed hex literal was empty.
+                EscapeHexEmpty,
+                /// A bracketed hex literal did not correspond to a Unicode scalar value.
+                EscapeHexInvalid,
+                /// An invalid hexadecimal digit was found.
+                EscapeHexInvalidDigit,
+                /// EOF was found before an escape sequence was completed.
+                EscapeUnexpectedEof,
+                /// An unrecognized escape sequence.
+                EscapeUnrecognized,
+                /// A dangling negation was used when setting flags, e.g., `i-`.
+                FlagDanglingNegation,
+                /// A flag was used twice, e.g., `i-i`.
+                FlagDuplicate {
+                    /// The position of the original flag. The error position
+                    /// points to the duplicate flag.
+                    original: Span,
+                },
+                /// The negation operator was used twice, e.g., `-i-s`.
+                FlagRepeatedNegation {
+                    /// The position of the original negation operator. The error position
+                    /// points to the duplicate negation operator.
+                    original: Span,
+                },
+                /// Expected a flag but got EOF, e.g., `(?`.
+                FlagUnexpectedEof,
+                /// Unrecognized flag, e.g., `a`.
+                FlagUnrecognized,
+                /// A duplicate capture name was found.
+                GroupNameDuplicate {
+                    /// The position of the initial occurrence of the capture name. The
+                    /// error position itself points to the duplicate occurrence.
+                    original: Span,
+                },
+                /// A capture group name is empty, e.g., `(?P<>abc)`.
+                GroupNameEmpty,
+                /// An invalid character was seen for a capture group name. This includes
+                /// errors where the first character is a digit (even though subsequent
+                /// characters are allowed to be digits).
+                GroupNameInvalid,
+                /// A closing `>` could not be found for a capture group name.
+                GroupNameUnexpectedEof,
+                /// An unclosed group, e.g., `(ab`.
+                ///
+                /// The span of this error corresponds to the unclosed parenthesis.
+                GroupUnclosed,
+                /// An unopened group, e.g., `ab)`.
+                GroupUnopened,
+                /// The nest limit was exceeded. The limit stored here is the limit
+                /// configured in the parser.
+                NestLimitExceeded(u32),
+                /// The range provided in a counted repetition operator is invalid. The
+                /// range is invalid if the start is greater than the end.
+                RepetitionCountInvalid,
+                /// An opening `{` was not followed by a valid decimal value.
+                /// For example, `x{}` or `x{]}` would fail.
+                RepetitionCountDecimalEmpty,
+                /// An opening `{` was found with no corresponding closing `}`.
+                RepetitionCountUnclosed,
+                /// A repetition operator was applied to a missing sub-expression. This
+                /// occurs, for example, in the regex consisting of just a `*` or even
+                /// `(?i)*`. It is, however, possible to create a repetition operating on
+                /// an empty sub-expression. For example, `()*` is still considered valid.
+                RepetitionMissing,
+                /// The special word boundary syntax, `\b{something}`, was used, but
+                /// either EOF without `}` was seen, or an invalid character in the
+                /// braces was seen.
+                SpecialWordBoundaryUnclosed,
+                /// The special word boundary syntax, `\b{something}`, was used, but
+                /// `something` was not recognized as a valid word boundary kind.
+                SpecialWordBoundaryUnrecognized,
+                /// The syntax `\b{` was observed, but afterwards the end of the pattern
+                /// was observed without being able to tell whether it was meant to be a
+                /// bounded repetition on the `\b` or the beginning of a special word
+                /// boundary assertion.
+                SpecialWordOrRepetitionUnexpectedEof,
+                /// The Unicode class is not valid. This typically occurs when a `\p` is
+                /// followed by something other than a `{`.
+                UnicodeClassInvalid,
+                /// When octal support is disabled, this error is produced when an octal
+                /// escape is used. The octal escape is assumed to be an invocation of
+                /// a backreference, which is the common case.
+                UnsupportedBackreference,
+                /// When syntax similar to PCRE's look-around is used, this error is
+                /// returned. Some example syntaxes that are rejected include, but are
+                /// not necessarily limited to, `(?=re)`, `(?!re)`, `(?<=re)` and
+                /// `(?<!re)`. Note that all of these syntaxes are otherwise invalid; this
+                /// error is used to improve the user experience.
+                UnsupportedLookAround,
+            }
+
+            impl ::error::Error for Error {}
+
+            impl ::fmt::Display for Error 
+            {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+                {
+                    super::error::Formatter::from(self).fmt(f)
+                }
+            }
+
+            impl ::fmt::Display for ErrorKind 
+            {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+                {
+                    use self::ErrorKind::*;
+                    match *self 
+                    {
+                        CaptureLimitExceeded => write!(
+                            f,
+                            "exceeded the maximum number of \
+                            capturing groups ({})",
+                            u32::MAX
+                        ),
+                        ClassEscapeInvalid => {
+                            write!(f, "invalid escape sequence found in character class")
+                        }
+                        ClassRangeInvalid => write!(
+                            f,
+                            "invalid character class range, \
+                            the start must be <= the end"
+                        ),
+                        ClassRangeLiteral => {
+                            write!(f, "invalid range boundary, must be a literal")
+                        }
+                        ClassUnclosed => write!(f, "unclosed character class"),
+                        DecimalEmpty => write!(f, "decimal literal empty"),
+                        DecimalInvalid => write!(f, "decimal literal invalid"),
+                        EscapeHexEmpty => write!(f, "hexadecimal literal empty"),
+                        EscapeHexInvalid => {
+                            write!(f, "hexadecimal literal is not a Unicode scalar value")
+                        }
+                        EscapeHexInvalidDigit => write!(f, "invalid hexadecimal digit"),
+                        EscapeUnexpectedEof => write!(
+                            f,
+                            "incomplete escape sequence, \
+                            reached end of pattern prematurely"
+                        ),
+                        EscapeUnrecognized => write!(f, "unrecognized escape sequence"),
+                        FlagDanglingNegation => {
+                            write!(f, "dangling flag negation operator")
+                        }
+                        FlagDuplicate { .. } => write!(f, "duplicate flag"),
+                        FlagRepeatedNegation { .. } => {
+                            write!(f, "flag negation operator repeated")
+                        }
+                        FlagUnexpectedEof => {
+                            write!(f, "expected flag but got end of regex")
+                        }
+                        FlagUnrecognized => write!(f, "unrecognized flag"),
+                        GroupNameDuplicate { .. } => {
+                            write!(f, "duplicate capture group name")
+                        }
+                        GroupNameEmpty => write!(f, "empty capture group name"),
+                        GroupNameInvalid => write!(f, "invalid capture group character"),
+                        GroupNameUnexpectedEof => write!(f, "unclosed capture group name"),
+                        GroupUnclosed => write!(f, "unclosed group"),
+                        GroupUnopened => write!(f, "unopened group"),
+                        NestLimitExceeded(limit) => write!(
+                            f,
+                            "exceed the maximum number of \
+                            nested parentheses/brackets ({})",
+                            limit
+                        ),
+                        RepetitionCountInvalid => write!(
+                            f,
+                            "invalid repetition count range, \
+                            the start must be <= the end"
+                        ),
+                        RepetitionCountDecimalEmpty => {
+                            write!(f, "repetition quantifier expects a valid decimal")
+                        }
+                        RepetitionCountUnclosed => {
+                            write!(f, "unclosed counted repetition")
+                        }
+                        RepetitionMissing => {
+                            write!(f, "repetition operator missing expression")
+                        }
+                        SpecialWordBoundaryUnclosed => {
+                            write!(
+                                f,
+                                "special word boundary assertion is either \
+                                unclosed or contains an invalid character",
+                            )
+                        }
+                        SpecialWordBoundaryUnrecognized => {
+                            write!(
+                                f,
+                                "unrecognized special word boundary assertion, \
+                                valid choices are: start, end, start-half \
+                                or end-half",
+                            )
+                        }
+                        SpecialWordOrRepetitionUnexpectedEof => {
+                            write!(
+                                f,
+                                "found either the beginning of a special word \
+                                boundary or a bounded repetition on a \\b with \
+                                an opening brace, but no closing brace",
+                            )
+                        }
+                        UnicodeClassInvalid => {
+                            write!(f, "invalid Unicode character class")
+                        }
+                        UnsupportedBackreference => {
+                            write!(f, "backreferences are not supported")
+                        }
+                        UnsupportedLookAround => write!(
+                            f,
+                            "look-around, including look-ahead and look-behind, \
+                            is not supported"
+                        ),
+                    }
+                }
+            }
+            /// Span represents the position information of a single AST item.
+            #[derive(Clone, Copy, Eq, PartialEq)]
+            pub struct Span
+            {
+                /// The start byte offset.
+                pub start: Position,
+                /// The end byte offset.
+                pub end: Position,
+            }
+
+            impl ::fmt::Debug for Span
+            {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result
+                {
+                    write!(f, "Span({:?}, {:?})", self.start, self.end)
+                }
+            }
+
+            impl Ord for Span 
+            {
+                fn cmp( &self, other:&Span ) -> Ordering { (&self.start, &self.end).cmp(&(&other.start, &other.end)) }
+            }
+
+            impl PartialOrd for Span
+            {
+                fn partial_cmp( &self, other:&Span ) -> Option<Ordering> { Some(self.cmp(other)) }
+            }
+            /// A single position in a regular expression.
+            #[derive(Clone, Copy, Eq, PartialEq)]
+            pub struct Position
+            {
+                /// The absolute offset of this position, starting at `0` from the beginning of the pattern string.
+                pub offset: usize,
+                /// The line number, starting at `1`.
+                pub line: usize,
+                /// The approximate column number, starting at `1`.
+                pub column: usize,
+            }
+
+            impl ::fmt::Debug for Position
+            {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result
+                {
+                    write!
+                    (
+                        f,
+                        "Position(o: {:?}, l: {:?}, c: {:?})",
+                        self.offset, self.line, self.column
+                    )
+                }
+            }
+
+            impl Ord for Position
+            {
+                fn cmp(&self, other: &Position) -> Ordering { self.offset.cmp(&other.offset) }
+            }
+
+            impl PartialOrd for Position
+            {
+                fn partial_cmp(&self, other: &Position) -> Option<Ordering> { Some(self.cmp(other)) }
+            }
+
+            impl Span
+            {
+                /// Create a new span with the given positions.
+                pub fn new(start: Position, end: Position) -> Span { Span { start, end } }
+                /// Create a new span using the given position as the start and end.
+                pub fn splat(pos: Position) -> Span { Span::new(pos, pos) }
+                /// Create a new span by replacing the starting the position with the one given.
+                pub fn with_start(self, pos: Position) -> Span { Span { start: pos, ..self } }
+                /// Create a new span by replacing the ending the position with the one given.
+                pub fn with_end(self, pos: Position) -> Span { Span { end: pos, ..self } }
+                /// Returns true if and only if this span occurs on a single line.
+                pub fn is_one_line(&self) -> bool { self.start.line == self.end.line }
+                /// Returns true if and only if this span is empty.
+                pub fn is_empty(&self) -> bool { self.start.offset == self.end.offset }
+            }
+
+            impl Position 
+            {
+                /// Create a new position with the given information.
+                pub fn new( offset:usize, line:usize, column:usize ) -> Position { Position { offset, line, column } }
+            }
+            /// An abstract syntax tree for a singular expression along with comments found.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct WithComments 
+            {
+                /// The actual ast.
+                pub ast: Ast,
+                /// All comments found in the original regular expression.
+                pub comments: Vec<Comment>,
+            }
+            /// A comment from a regular expression with an associated span.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Comment
+            {
+                /// The span of this comment, including the beginning `#` and ending `\n`.
+                pub span: Span,
+                /// The comment text, starting with the first character following the `#`
+                /// and ending with the last character preceding the `\n`.
+                pub comment: String,
+            }
+            /// An abstract syntax tree for a single regular expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum Ast 
+            {
+                /// An empty regex that matches everything.
+                Empty(Box<Span>),
+                /// A set of flags, e.g., `(?is)`.
+                Flags(Box<SetFlags>),
+                /// A single character literal, which includes escape sequences.
+                Literal(Box<Literal>),
+                /// The "any character" class.
+                Dot(Box<Span>),
+                /// A single zero-width assertion.
+                Assertion(Box<Assertion>),
+                /// A single Unicode character class, e.g., `\pL` or `\p{Greek}`.
+                ClassUnicode(Box<ClassUnicode>),
+                /// A single perl character class, e.g., `\d` or `\W`.
+                ClassPerl(Box<ClassPerl>),
+                /// A single bracketed character class set, which may contain zero or more
+                /// character ranges and/or zero or more nested classes.
+                ClassBracketed(Box<ClassBracketed>),
+                /// A repetition operator applied to an arbitrary regular expression.
+                Repetition(Box<Repetition>),
+                /// A grouped regular expression.
+                Group(Box<Group>),
+                /// An alternation of regular expressions.
+                Alternation(Box<Alternation>),
+                /// A concatenation of regular expressions.
+                Concat(Box<Concat>),
+            }
+
+            impl Ast
+            {
+                /// Create an "empty" AST item.
+                pub fn empty(span: Span) -> Ast { Ast::Empty(Box::new(span)) }
+                /// Create a "flags" AST item.
+                pub fn flags(e: SetFlags) -> Ast { Ast::Flags(Box::new(e)) }
+                /// Create a "literal" AST item.
+                pub fn literal(e: Literal) -> Ast { Ast::Literal(Box::new(e)) }
+                /// Create a "dot" AST item.
+                pub fn dot(span: Span) -> Ast { Ast::Dot(Box::new(span)) }
+                /// Create a "assertion" AST item.
+                pub fn assertion(e: Assertion) -> Ast { Ast::Assertion(Box::new(e)) }
+                /// Create a "Unicode class" AST item.
+                pub fn class_unicode(e: ClassUnicode) -> Ast { Ast::ClassUnicode(Box::new(e)) }
+                /// Create a "Perl class" AST item.
+                pub fn class_perl(e: ClassPerl) -> Ast { Ast::ClassPerl(Box::new(e)) }
+                /// Create a "bracketed class" AST item.
+                pub fn class_bracketed(e: ClassBracketed) -> Ast { Ast::ClassBracketed(Box::new(e)) }
+                /// Create a "repetition" AST item.
+                pub fn repetition(e: Repetition) -> Ast { Ast::Repetition(Box::new(e)) }
+                /// Create a "group" AST item.
+                pub fn group(e: Group) -> Ast { Ast::Group(Box::new(e)) }
+                /// Create a "alternation" AST item.
+                pub fn alternation(e: Alternation) -> Ast { Ast::Alternation(Box::new(e)) }
+                /// Create a "concat" AST item.
+                pub fn concat(e: Concat) -> Ast { Ast::Concat(Box::new(e)) }
+                /// Return the span of this abstract syntax tree.
+                pub fn span(&self) -> &Span 
+                {
+                    match *self 
+                    {
+                        Ast::Empty(ref span) => span,
+                        Ast::Flags(ref x) => &x.span,
+                        Ast::Literal(ref x) => &x.span,
+                        Ast::Dot(ref span) => span,
+                        Ast::Assertion(ref x) => &x.span,
+                        Ast::ClassUnicode(ref x) => &x.span,
+                        Ast::ClassPerl(ref x) => &x.span,
+                        Ast::ClassBracketed(ref x) => &x.span,
+                        Ast::Repetition(ref x) => &x.span,
+                        Ast::Group(ref x) => &x.span,
+                        Ast::Alternation(ref x) => &x.span,
+                        Ast::Concat(ref x) => &x.span,
+                    }
+                }
+                /// Return true if and only if this Ast is empty.
+                pub fn is_empty(&self) -> bool 
+                {
+                    match *self 
+                    {
+                        Ast::Empty(_) => true,
+                        _ => false,
+                    }
+                }
+                /// Returns true if and only if this AST has any (including possibly empty) subexpressions.
+                fn has_subexprs(&self) -> bool 
+                {
+                    match *self 
+                    {
+                        Ast::Empty(_)
+                        | Ast::Flags(_)
+                        | Ast::Literal(_)
+                        | Ast::Dot(_)
+                        | Ast::Assertion(_)
+                        | Ast::ClassUnicode(_)
+                        | Ast::ClassPerl(_) => false,
+
+                        Ast::ClassBracketed(_)
+                        | Ast::Repetition(_)
+                        | Ast::Group(_)
+                        | Ast::Alternation(_)
+                        | Ast::Concat(_) => true,
+                    }
+                }
+            }
+            /// Print a display representation of this Ast.
+            impl ::fmt::Display for Ast 
+            {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+                {
+                    use super::ast::print::Printer;
+                    Printer::new().print(self, f)
+                }
+            }
+            /// An alternation of regular expressions.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Alternation 
+            {
+                /// The span of this alternation.
+                pub span: Span,
+                /// The alternate regular expressions.
+                pub asts: Vec<Ast>,
+            }
+
+            impl Alternation 
+            {
+                /// Return this alternation as an AST.
+                pub fn into_ast(mut self) -> Ast 
+                {
+                    match self.asts.len() 
+                    {
+                        0 => Ast::empty(self.span),
+                        1 => self.asts.pop().unwrap(),
+                        _ => Ast::alternation(self),
+                    }
+                }
+            }
+            /// A concatenation of regular expressions.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Concat 
+            {
+                /// The span of this concatenation.
+                pub span: Span,
+                /// The concatenation regular expressions.
+                pub asts: Vec<Ast>,
+            }
+
+            impl Concat 
+            {
+                /// Return this concatenation as an AST.
+                pub fn into_ast(mut self) -> Ast 
+                {
+                    match self.asts.len() 
+                    {
+                        0 => Ast::empty(self.span),
+                        1 => self.asts.pop().unwrap(),
+                        _ => Ast::concat(self),
+                    }
+                }
+            }
+            /// A single literal expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Literal
+            {
+                /// The span of this literal.
+                pub span: Span,
+                /// The kind of this literal.
+                pub kind: LiteralKind,
+                /// The Unicode scalar value corresponding to this literal.
+                pub c: char,
+            }
+
+            impl Literal
+            {
+                pub fn byte(&self) -> Option<u8>
+                {
+                    match self.kind
+                    {
+                        LiteralKind::HexFixed(HexLiteralKind::X) => { u8::try_from(self.c).ok() }
+                        _ => None,
+                    }
+                }
+            }
+            /// The kind of a single literal expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum LiteralKind
+            {
+                /// The literal is written verbatim, e.g., `a` or `☃`.
+                Verbatim,
+                /// The literal is written as an escape because it is otherwise a special regex meta character.
+                Meta,
+                /// The literal is written as an escape despite the fact that the escape is unnecessary.
+                Superfluous,
+                /// The literal is written as an octal escape, e.g., `\141`.
+                Octal,
+                /// The literal is written as hex with a fixed number of digits depending on the type of the escape.
+                HexFixed(HexLiteralKind),
+                /// The literal is written as hex with a bracketed number of digits.
+                HexBrace(HexLiteralKind),
+                /// The literal is written as a specially recognized escape, e.g., `\f` or `\n`.
+                Special(SpecialLiteralKind),
+            }
+            /// The type of a special literal.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum SpecialLiteralKind 
+            {
+                /// Bell, spelled `\a` (`\x07`).
+                Bell,
+                /// Form feed, spelled `\f` (`\x0C`).
+                FormFeed,
+                /// Tab, spelled `\t` (`\x09`).
+                Tab,
+                /// Line feed, spelled `\n` (`\x0A`).
+                LineFeed,
+                /// Carriage return, spelled `\r` (`\x0D`).
+                CarriageReturn,
+                /// Vertical tab, spelled `\v` (`\x0B`).
+                VerticalTab,
+                /// Space, spelled `\ ` (`\x20`).
+                Space,
+            }
+            /// The type of a Unicode hex literal.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum HexLiteralKind 
+            {
+                /// A `\x` prefix.
+                X,
+                /// A `\u` prefix.
+                UnicodeShort,
+                /// A `\U` prefix.
+                UnicodeLong,
+            }
+
+            impl HexLiteralKind 
+            {
+                /// The number of digits that must be used with this literal form when used without brackets.
+                pub fn digits(&self) -> u32 
+                {
+                    match *self {
+                        HexLiteralKind::X => 2,
+                        HexLiteralKind::UnicodeShort => 4,
+                        HexLiteralKind::UnicodeLong => 8,
+                    }
+                }
+            }
+            /// A Perl character class.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassPerl 
+            {
+                /// The span of this class.
+                pub span: Span,
+                /// The kind of Perl class.
+                pub kind: ClassPerlKind,
+                /// Whether the class is negated or not. e.g., `\d` is not negated but `\D` is.
+                pub negated: bool,
+            }
+            /// The available Perl character classes.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ClassPerlKind 
+            {
+                /// Decimal numbers.
+                Digit,
+                /// Whitespace.
+                Space,
+                /// Word characters.
+                Word,
+            }
+            /// An ASCII character class.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassAscii 
+            {
+                /// The span of this class.
+                pub span: Span,
+                /// The kind of ASCII class.
+                pub kind: ClassAsciiKind,
+                /// Whether the class is negated or not.
+                pub negated: bool,
+            }
+            /// The available ASCII character classes.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ClassAsciiKind 
+            {
+                /// `[0-9A-Za-z]`
+                Alnum,
+                /// `[A-Za-z]`
+                Alpha,
+                /// `[\x00-\x7F]`
+                Ascii,
+                /// `[ \t]`
+                Blank,
+                /// `[\x00-\x1F\x7F]`
+                Cntrl,
+                /// `[0-9]`
+                Digit,
+                /// `[!-~]`
+                Graph,
+                /// `[a-z]`
+                Lower,
+                /// `[ -~]`
+                Print,
+                /// ``[!-/:-@\[-`{-~]``
+                Punct,
+                /// `[\t\n\v\f\r ]`
+                Space,
+                /// `[A-Z]`
+                Upper,
+                /// `[0-9A-Za-z_]`
+                Word,
+                /// `[0-9A-Fa-f]`
+                Xdigit,
+            }
+
+            impl ClassAsciiKind 
+            {
+                /// Return the corresponding ClassAsciiKind variant for the given name.
+                pub fn from_name(name: &str) -> Option<ClassAsciiKind> 
+                {
+                    use self::ClassAsciiKind::*;
+                    match name 
+                    {
+                        "alnum" => Some(Alnum),
+                        "alpha" => Some(Alpha),
+                        "ascii" => Some(Ascii),
+                        "blank" => Some(Blank),
+                        "cntrl" => Some(Cntrl),
+                        "digit" => Some(Digit),
+                        "graph" => Some(Graph),
+                        "lower" => Some(Lower),
+                        "print" => Some(Print),
+                        "punct" => Some(Punct),
+                        "space" => Some(Space),
+                        "upper" => Some(Upper),
+                        "word" => Some(Word),
+                        "xdigit" => Some(Xdigit),
+                        _ => None,
+                    }
+                }
+            }
+            /// A Unicode character class.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassUnicode 
+            {
+                /// The span of this class.
+                pub span: Span,
+                /// Whether this class is negated or not.
+                pub negated: bool,
+                /// The kind of Unicode class.
+                pub kind: ClassUnicodeKind,
+            }
+
+            impl ClassUnicode 
+            {
+                /// Returns true if this class has been negated.
+                pub fn is_negated(&self) -> bool 
+                {
+                    match self.kind 
+                    {
+                        ClassUnicodeKind::NamedValue 
+                        {
+                            op: ClassUnicodeOpKind::NotEqual,
+                            ..
+                        } => !self.negated,
+                        _ => self.negated,
+                    }
+                }
+            }
+            /// The available forms of Unicode character classes.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ClassUnicodeKind 
+            {
+                /// A one letter abbreviated class, e.g., `\pN`.
+                OneLetter( char ),
+                /// A binary property, general category or script.
+                Named(String),
+                /// A property name and an associated value.
+                NamedValue 
+                {
+                    /// The type of Unicode op used to associate `name` with `value`.
+                    op: ClassUnicodeOpKind,
+                    /// The property name (which may be empty).
+                    name: String,
+                    /// The property value (which may be empty).
+                    value: String,
+                },
+            }
+            /// The type of op used in a Unicode character class.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ClassUnicodeOpKind 
+            {
+                /// A property set to a specific value, e.g., `\p{scx=Katakana}`.
+                Equal,
+                /// A property set to a specific value using a colon, e.g.,
+                /// `\p{scx:Katakana}`.
+                Colon,
+                /// A property that isn't a particular value, e.g., `\p{scx!=Katakana}`.
+                NotEqual,
+            }
+
+            impl ClassUnicodeOpKind 
+            {
+                /// Whether the op is an equality op or not.
+                pub fn is_equal(&self) -> bool 
+                {
+                    match *self 
+                    {
+                        ClassUnicodeOpKind::Equal | ClassUnicodeOpKind::Colon => true,
+                        _ => false,
+                    }
+                }
+            }
+            /// A bracketed character class, e.g., `[a-z0-9]`.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassBracketed
+            {
+                /// The span of this class.
+                pub span: Span,
+                /// Whether this class is negated or not.
+                pub negated: bool,
+                /// The type of this set.
+                pub kind: ClassSet,
+            }
+            /// A character class set.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ClassSet
+            {
+                /// An item, which can be a single literal, range, nested character class or a union of items.
+                Item(ClassSetItem),
+                /// A single binary operation (i.e., &&, -- or ~~).
+                BinaryOp(ClassSetBinaryOp),
+            }
+
+            impl ClassSet 
+            {
+                /// Build a set from a union.
+                pub fn union(ast: ClassSetUnion) -> ClassSet 
+                {
+                    ClassSet::Item(ClassSetItem::Union(ast))
+                }
+                /// Return the span of this character class set.
+                pub fn span(&self) -> &Span 
+                {
+                    match *self 
+                    {
+                        ClassSet::Item(ref x) => x.span(),
+                        ClassSet::BinaryOp(ref x) => &x.span,
+                    }
+                }
+                /// Return true if and only if this class set is empty.
+                fn is_empty(&self) -> bool 
+                {
+                    match *self 
+                    {
+                        ClassSet::Item(ClassSetItem::Empty(_)) => true,
+                        _ => false,
+                    }
+                }
+            }
+            /// A single component of a character class set.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ClassSetItem 
+            {
+                /// An empty item.
+                Empty(Span),
+                /// A single literal.
+                Literal(Literal),
+                /// A range between two literals.
+                Range(ClassSetRange),
+                /// An ASCII character class, e.g., `[:alnum:]` or `[:punct:]`.
+                Ascii(ClassAscii),
+                /// A Unicode character class, e.g., `\pL` or `\p{Greek}`.
+                Unicode(ClassUnicode),
+                /// A perl character class, e.g., `\d` or `\W`.
+                Perl(ClassPerl),
+                /// A bracketed character class set, which may contain zero or more
+                /// character ranges and/or zero or more nested classes.
+                Bracketed(Box<ClassBracketed>),
+                /// A union of items.
+                Union(ClassSetUnion),
+            }
+
+            impl ClassSetItem 
+            {
+                /// Return the span of this character class set item.
+                pub fn span(&self) -> &Span 
+                {
+                    match *self 
+                    {
+                        ClassSetItem::Empty(ref span) => span,
+                        ClassSetItem::Literal(ref x) => &x.span,
+                        ClassSetItem::Range(ref x) => &x.span,
+                        ClassSetItem::Ascii(ref x) => &x.span,
+                        ClassSetItem::Perl(ref x) => &x.span,
+                        ClassSetItem::Unicode(ref x) => &x.span,
+                        ClassSetItem::Bracketed(ref x) => &x.span,
+                        ClassSetItem::Union(ref x) => &x.span,
+                    }
+                }
+            }
+            /// A single character class range in a set.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassSetRange 
+            {
+                /// The span of this range.
+                pub span: Span,
+                /// The start of this range.
+                pub start: Literal,
+                /// The end of this range.
+                pub end: Literal,
+            }
+
+            impl ClassSetRange
+            {
+                /// Returns true if and only if this character class range is valid.
+                pub fn is_valid(&self) -> bool { self.start.c <= self.end.c }
+            }
+            /// A union of items inside a character class set.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassSetUnion 
+            {
+                /// The span of the items in this operation.
+                pub span: Span,
+                /// The sequence of items that make up this union.
+                pub items: Vec<ClassSetItem>,
+            }
+
+            impl ClassSetUnion 
+            {
+                /// Push a new item in this union.
+                pub fn push(&mut self, item: ClassSetItem)
+                {
+                    if self.items.is_empty() { self.span.start = item.span().start; }
+
+                    self.span.end = item.span().end;
+                    self.items.push(item);
+                }
+                /// Return this union as a character class set item.
+                pub fn into_item(mut self) -> ClassSetItem 
+                {
+                    match self.items.len() 
+                    {
+                        0 => ClassSetItem::Empty(self.span),
+                        1 => self.items.pop().unwrap(),
+                        _ => ClassSetItem::Union(self),
+                    }
+                }
+            }
+            /// A Unicode character class set operation.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassSetBinaryOp 
+            {
+                /// The span of this operation.
+                pub span: Span,
+                /// The type of this set operation.
+                pub kind: ClassSetBinaryOpKind,
+                /// The left hand side of the operation.
+                pub lhs: Box<ClassSet>,
+                /// The right hand side of the operation.
+                pub rhs: Box<ClassSet>,
+            }
+            /// The type of a Unicode character class set operation.
+            #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+            pub enum ClassSetBinaryOpKind 
+            {
+                /// The intersection of two sets, e.g., `\pN&&[a-z]`.
+                Intersection,
+                /// The difference of two sets, e.g., `\pN--[0-9]`.
+                Difference,
+                /// The symmetric difference of two sets.
+                SymmetricDifference,
+            }
+            /// A single zero-width assertion.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Assertion 
+            {
+                /// The span of this assertion.
+                pub span: Span,
+                /// The assertion kind, e.g., `\b` or `^`.
+                pub kind: AssertionKind,
+            }
+            /// An assertion kind.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum AssertionKind 
+            {
+                /// `^`
+                StartLine,
+                /// `$`
+                EndLine,
+                /// `\A`
+                StartText,
+                /// `\z`
+                EndText,
+                /// `\b`
+                WordBoundary,
+                /// `\B`
+                NotWordBoundary,
+                /// `\b{start}`
+                WordBoundaryStart,
+                /// `\b{end}`
+                WordBoundaryEnd,
+                /// `\<` (alias for `\b{start}`)
+                WordBoundaryStartAngle,
+                /// `\>` (alias for `\b{end}`)
+                WordBoundaryEndAngle,
+                /// `\b{start-half}`
+                WordBoundaryStartHalf,
+                /// `\b{end-half}`
+                WordBoundaryEndHalf,
+            }
+            /// A repetition operation applied to a regular expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Repetition
+            {
+                /// The span of this operation.
+                pub span: Span,
+                /// The actual operation.
+                pub op: RepetitionOp,
+                /// Whether this operation was applied greedily or not.
+                pub greedy: bool,
+                /// The regular expression under repetition.
+                pub ast: Box<Ast>,
+            }
+            /// The repetition operator itself.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct RepetitionOp 
+            {
+                /// The span of this operator.
+                pub span: Span,
+                /// The type of operation.
+                pub kind: RepetitionKind,
+            }
+            /// The kind of a repetition operator.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum RepetitionKind
+            {
+                /// `?`
+                ZeroOrOne,
+                /// `*`
+                ZeroOrMore,
+                /// `+`
+                OneOrMore,
+                /// `{m,n}`
+                Range(RepetitionRange),
+            }
+            /// A range repetition operator.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum RepetitionRange
+            {
+                /// `{m}`
+                Exactly(u32),
+                /// `{m,}`
+                AtLeast(u32),
+                /// `{m,n}`
+                Bounded(u32, u32),
+            }
+
+            impl RepetitionRange
+            {
+                /// Returns true if and only if this repetition range is valid.
+                pub fn is_valid(&self) -> bool
+                {
+                    match *self
+                    {
+                        RepetitionRange::Bounded(s, e) if s > e => false,
+                        _ => true,
+                    }
+                }
+            }
+            /// A grouped regular expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Group 
+            {
+                /// The span of this group.
+                pub span: Span,
+                /// The kind of this group.
+                pub kind: GroupKind,
+                /// The regular expression in this group.
+                pub ast: Box<Ast>,
+            }
+
+            impl Group 
+            {
+                /// If this group is non-capturing, then this returns the set of flags.
+                pub fn flags(&self) -> Option<&Flags>
+                {
+                    match self.kind
+                    {
+                        GroupKind::NonCapturing(ref flags) => Some(flags),
+                        _ => None,
+                    }
+                }
+                /// Returns true if and only if this group is capturing.
+                pub fn is_capturing(&self) -> bool 
+                {
+                    match self.kind 
+                    {
+                        GroupKind::CaptureIndex(_) | GroupKind::CaptureName { .. } => true,
+                        GroupKind::NonCapturing(_) => false,
+                    }
+                }
+                /// Returns the capture index of this group, if this is a capturing group.
+                pub fn capture_index(&self) -> Option<u32>
+                {
+                    match self.kind 
+                    {
+                        GroupKind::CaptureIndex(i) => Some(i),
+                        GroupKind::CaptureName { ref name, .. } => Some(name.index),
+                        GroupKind::NonCapturing(_) => None,
+                    }
+                }
+            }
+            /// The kind of a group.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum GroupKind
+            {
+                /// `(a)`
+                CaptureIndex(u32),
+                /// `(?<name>a)` or `(?P<name>a)`
+                CaptureName 
+                {
+                    /// True if the `?P<` syntax is used and false if the `?<` syntax is used.
+                    starts_with_p: bool,
+                    /// The capture name.
+                    name: CaptureName,
+                },
+                /// `(?:a)` and `(?i:a)`
+                NonCapturing(Flags),
+            }
+            /// A capture name.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct CaptureName
+            {
+                /// The span of this capture name.
+                pub span: Span,
+                /// The capture name.
+                pub name: String,
+                /// The capture index.
+                pub index: u32,
+            }            
+            /// A group of flags that is not applied to a particular regular expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct SetFlags
+            {
+                /// The span of these flags, including the grouping parentheses.
+                pub span: Span,
+                /// The actual sequence of flags.
+                pub flags: Flags,
+            }
+            /// A group of flags.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Flags
+            {
+                /// The span of this group of flags.
+                pub span: Span,
+                /// A sequence of flag items.
+                pub items: Vec<FlagsItem>,
+            }
+
+            impl Flags
+            {
+                /// Add the given item to this sequence of flags.
+                pub fn add_item(&mut self, item: FlagsItem) -> Option<usize>
+                {
+                    for (i, x) in self.items.iter().enumerate()
+                    {
+                        if x.kind == item.kind { return Some(i); }
+                    }
+
+                    self.items.push(item);
+                    None
+                }
+                /// Returns the state of the given flag in this set.
+                pub fn flag_state(&self, flag: Flag) -> Option<bool>
+                {
+                    let mut negated = false;
+
+                    for x in &self.items
+                    {
+                        match x.kind
+                        {
+                            FlagsItemKind::Negation => {
+                                negated = true;
+                            }
+                            FlagsItemKind::Flag(ref xflag) if xflag == &flag => {
+                                return Some(!negated);
+                            }
+                            _ => {}
+                        }
+                    }
+
+                    None
+                }
+            }
+            /// A single item in a group of flags.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct FlagsItem
+            {
+                /// The span of this item.
+                pub span: Span,
+                /// The kind of this item.
+                pub kind: FlagsItemKind,
+            }
+            /// The kind of an item in a group of flags.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum FlagsItemKind 
+            {
+                /// A negation operator applied to all subsequent flags in the enclosing group.
+                Negation,
+                /// A single flag in a group.
+                Flag(Flag),
+            }
+
+            impl FlagsItemKind
+            {
+                /// Returns true if and only if this item is a negation operator.
+                pub fn is_negation(&self) -> bool
+                {
+                    match *self
+                    {
+                        FlagsItemKind::Negation => true,
+                        _ => false,
+                    }
+                }
+            }
+            /// A single flag.
+            #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+            pub enum Flag
+            {
+                /// `i`
+                CaseInsensitive,
+                /// `m`
+                MultiLine,
+                /// `s`
+                DotMatchesNewLine,
+                /// `U`
+                SwapGreed,
+                /// `u`
+                Unicode,
+                /// `R`
+                CRLF,
+                /// `x`
+                IgnoreWhitespace,
+            }
+            /// Used for `Ast` such that it uses constant stack space but heap space
+            /// proportional to the depth of the `Ast`.
+            impl Drop for Ast
+            {
+                fn drop(&mut self)
+                {
+
+                    match *self
+                    {
+                        Ast::Empty(_)
+                        | Ast::Flags(_)
+                        | Ast::Literal(_)
+                        | Ast::Dot(_)
+                        | Ast::Assertion(_)
+                        | Ast::ClassUnicode(_)
+                        | Ast::ClassPerl(_)
+                        | Ast::ClassBracketed(_) => return,
+                        Ast::Repetition(ref x) if !x.ast.has_subexprs() => return,
+                        Ast::Group(ref x) if !x.ast.has_subexprs() => return,
+                        Ast::Alternation(ref x) if x.asts.is_empty() => return,
+                        Ast::Concat(ref x) if x.asts.is_empty() => return,
+                        _ => {}
+                    }
+
+                    let empty_span = || Span::splat(Position::new(0, 0, 0));
+                    let empty_ast = || Ast::empty(empty_span());
+                    let mut stack = vec![mem::replace(self, empty_ast())];
+                    
+                    while let Some(mut ast) = stack.pop()
+                    {
+                        match ast 
+                        {
+                            Ast::Empty(_)
+                            | Ast::Flags(_)
+                            | Ast::Literal(_)
+                            | Ast::Dot(_)
+                            | Ast::Assertion(_)
+                            | Ast::ClassUnicode(_)
+                            | Ast::ClassPerl(_)
+                            | Ast::ClassBracketed(_) => {}
+
+                            Ast::Repetition(ref mut x) => { stack.push(mem::replace(&mut x.ast, empty_ast())); }
+
+                            Ast::Group(ref mut x) => { stack.push(mem::replace(&mut x.ast, empty_ast())); }
+                            
+                            Ast::Alternation(ref mut x) => { stack.extend(x.asts.drain(..)); }
+
+                            Ast::Concat(ref mut x) => { stack.extend(x.asts.drain(..)); }
+                        }
+                    }
+                }
+            }
+            /// Used for `ClassSet` such that it uses constant stack space but heap space
+            /// proportional to the depth of the `ClassSet`.
+            impl Drop for ClassSet 
+            {
+                fn drop(&mut self) 
+                {
+
+                    match *self 
+                    {
+                        ClassSet::Item(ref item) => match *item {
+                            ClassSetItem::Empty(_)
+                            | ClassSetItem::Literal(_)
+                            | ClassSetItem::Range(_)
+                            | ClassSetItem::Ascii(_)
+                            | ClassSetItem::Unicode(_)
+                            | ClassSetItem::Perl(_) => return,
+                            ClassSetItem::Bracketed(ref x) => {
+                                if x.kind.is_empty() {
+                                    return;
+                                }
+                            }
+                            ClassSetItem::Union(ref x) => {
+                                if x.items.is_empty() {
+                                    return;
+                                }
+                            }
+                        },
+                        ClassSet::BinaryOp(ref op) => {
+                            if op.lhs.is_empty() && op.rhs.is_empty() {
+                                return;
+                            }
+                        }
+                    }
+
+                    let empty_span = || Span::splat(Position::new(0, 0, 0));
+                    let empty_set = || ClassSet::Item(ClassSetItem::Empty(empty_span()));
+                    let mut stack = vec![mem::replace(self, empty_set())];
+                    
+                    while let Some(mut set) = stack.pop()
+                    {
+                        match set
+                        {
+                            ClassSet::Item(ref mut item) => match *item
+                            {
+                                ClassSetItem::Empty(_)
+                                | ClassSetItem::Literal(_)
+                                | ClassSetItem::Range(_)
+                                | ClassSetItem::Ascii(_)
+                                | ClassSetItem::Unicode(_)
+                                | ClassSetItem::Perl(_) => {}
+
+                                ClassSetItem::Bracketed(ref mut x) =>
+                                { stack.push(mem::replace(&mut x.kind, empty_set())); }
+
+                                ClassSetItem::Union(ref mut x) =>
+                                { stack.extend(x.items.drain(..).map(ClassSet::Item)); }
+                            },
+                            
+                            ClassSet::BinaryOp(ref mut op) =>
+                            {
+                                stack.push(mem::replace(&mut op.lhs, empty_set()));
+                                stack.push(mem::replace(&mut op.rhs, empty_set()));
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    
+        pub mod debug
         {
             /*!
             */
@@ -26273,8 +30347,7728 @@ pub mod regex
             };
             /*
             */
+            /// A type that wraps a single byte with a convenient fmt::Debug impl that escapes the byte.
+            pub(crate) struct Byte(pub(crate) u8);
+
+            impl ::fmt::Debug for Byte {
+                fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                    if self.0 == b' ' {
+                        return write!(f, "' '");
+                    }
+                    let mut bytes = [0u8; 10];
+                    let mut len = 0;
+                    for (i, mut b) in core::ascii::escape_default(self.0).enumerate() {
+                        if i >= 2 && b'a' <= b && b <= b'f' {
+                            b -= 32;
+                        }
+                        bytes[len] = b;
+                        len += 1;
+                    }
+                    write!(f, "{}", core::str::from_utf8(&bytes[..len]).unwrap())
+                }
+            }
+            /// A type that provides a human readable debug impl for arbitrary bytes.
+            pub(crate) struct Bytes<'a>(pub(crate) &'a [u8]);
+
+            impl<'a> core::fmt::Debug for Bytes<'a> {
+                fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                    write!(f, "\"")?;
+                    let mut bytes = self.0;
+                    while let Some(result) = utf8_decode(bytes) {
+                        let ch = match result {
+                            Ok(ch) => ch,
+                            Err(byte) => {
+                                write!(f, r"\x{byte:02x}")?;
+                                bytes = &bytes[1..];
+                                continue;
+                            }
+                        };
+                        bytes = &bytes[ch.len_utf8()..];
+                        match ch {
+                            '\0' => write!(f, "\\0")?,
+                            '\x01'..='\x08'
+                            | '\x0b'
+                            | '\x0c'
+                            | '\x0e'..='\x19'
+                            | '\x7f' => {
+                                write!(f, "\\x{:02x}", u32::from(ch))?;
+                            }
+                            '\n' | '\r' | '\t' | _ => {
+                                write!(f, "{}", ch.escape_debug())?;
+                            }
+                        }
+                    }
+                    write!(f, "\"")?;
+                    Ok(())
+                }
+            }
+            /// Decodes the next UTF-8 encoded codepoint from the given byte slice.
+            pub(crate) fn utf8_decode(bytes: &[u8]) -> Option<Result<char, u8>> {
+                fn len(byte: u8) -> Option<usize> {
+                    if byte <= 0x7F {
+                        return Some(1);
+                    } else if byte & 0b1100_0000 == 0b1000_0000 {
+                        return None;
+                    } else if byte <= 0b1101_1111 {
+                        Some(2)
+                    } else if byte <= 0b1110_1111 {
+                        Some(3)
+                    } else if byte <= 0b1111_0111 {
+                        Some(4)
+                    } else {
+                        None
+                    }
+                }
+
+                if bytes.is_empty() {
+                    return None;
+                }
+                let len = match len(bytes[0]) {
+                    None => return Some(Err(bytes[0])),
+                    Some(len) if len > bytes.len() => return Some(Err(bytes[0])),
+                    Some(1) => return Some(Ok(char::from(bytes[0]))),
+                    Some(len) => len,
+                };
+                match core::str::from_utf8(&bytes[..len]) {
+                    Ok(s) => Some(Ok(s.chars().next().unwrap())),
+                    Err(_) => Some(Err(bytes[0])),
+                }
+            }
+        }
+    
+        pub mod either
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */
+            /// A simple binary sum type.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum Either<Left, Right> 
+            {
+                Left(Left),
+                Right(Right),
+            }
+        }
+    
+        pub mod error
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            use alloc::{
+                format,
+                string::{String, ToString},
+                vec,
+                vec::Vec,
+            };
+
+            use crate::{ast, hir};
+            */
+            /// This error type encompasses any error that can be returned by this crate.
+            ///
+            /// This error type is marked as `non_exhaustive`. This means that adding a
+            /// new variant is not considered a breaking change.
+            #[non_exhaustive] #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum Error {
+                /// An error that occurred while translating concrete syntax into abstract
+                /// syntax (AST).
+                Parse(ast::Error),
+                /// An error that occurred while translating abstract syntax into a high
+                /// level intermediate representation (HIR).
+                Translate(hir::Error),
+            }
+
+            impl From<ast::Error> for Error {
+                fn from(err: ast::Error) -> Error {
+                    Error::Parse(err)
+                }
+            }
+
+            impl From<hir::Error> for Error {
+                fn from(err: hir::Error) -> Error {
+                    Error::Translate(err)
+                }
+            }
+
+            impl ::error::Error for Error {}
+
+            impl ::fmt::Display for Error {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    match *self {
+                        Error::Parse(ref x) => x.fmt(f),
+                        Error::Translate(ref x) => x.fmt(f),
+                    }
+                }
+            }
+            /// A helper type for formatting nice error messages.
+            ///
+            /// This type is responsible for reporting regex parse errors in a nice human
+            /// readable format. Most of its complexity is from interspersing notational
+            /// markers pointing out the position where an error occurred.
+            #[derive(Debug)]
+            pub struct Formatter<'e, E> {
+                /// The original regex pattern in which the error occurred.
+                pattern: &'e str,
+                /// The error kind. It must impl fmt::Display.
+                err: &'e E,
+                /// The primary span of the error.
+                span: &'e ast::Span,
+                /// An auxiliary and optional span, in case the error needs to point to
+                /// two locations (e.g., when reporting a duplicate capture group name).
+                aux_span: Option<&'e ast::Span>,
+            }
+
+            impl<'e> From<&'e ast::Error> for Formatter<'e, ast::ErrorKind> {
+                fn from(err: &'e ast::Error) -> Self {
+                    Formatter {
+                        pattern: err.pattern(),
+                        err: err.kind(),
+                        span: err.span(),
+                        aux_span: err.auxiliary_span(),
+                    }
+                }
+            }
+
+            impl<'e> From<&'e hir::Error> for Formatter<'e, hir::ErrorKind> {
+                fn from(err: &'e hir::Error) -> Self {
+                    Formatter {
+                        pattern: err.pattern(),
+                        err: err.kind(),
+                        span: err.span(),
+                        aux_span: None,
+                    }
+                }
+            }
+
+            impl<'e, E: core::fmt::Display> core::fmt::Display for Formatter<'e, E> {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    let spans = Spans::from_formatter(self);
+                    if self.pattern.contains('\n') {
+                        let divider = repeat_char('~', 79);
+
+                        writeln!(f, "regex parse error:")?;
+                        writeln!(f, "{divider}")?;
+                        let notated = spans.notate();
+                        write!(f, "{notated}")?;
+                        writeln!(f, "{divider}")?;
+                        
+                        if !spans.multi_line.is_empty() {
+                            let mut notes = vec![];
+                            for span in &spans.multi_line {
+                                notes.push(format!(
+                                    "on line {} (column {}) through line {} (column {})",
+                                    span.start.line,
+                                    span.start.column,
+                                    span.end.line,
+                                    span.end.column - 1
+                                ));
+                            }
+                            writeln!(f, "{}", notes.join("\n"))?;
+                        }
+                        write!(f, "error: {}", self.err)?;
+                    } else {
+                        writeln!(f, "regex parse error:")?;
+                        let notated = Spans::from_formatter(self).notate();
+                        write!(f, "{notated}")?;
+                        write!(f, "error: {}", self.err)?;
+                    }
+                    Ok(())
+                }
+            }
+            /// This type represents an arbitrary number of error spans in a way that makes
+            /// it convenient to notate the regex pattern.
+            struct Spans<'p> {
+                /// The original regex pattern string.
+                pattern: &'p str,
+                /// The total width that should be used for line numbers. The width is
+                /// used for left padding the line numbers for alignment.
+                ///
+                /// A value of `0` means line numbers should not be displayed. That is,
+                /// the pattern is itself only one line.
+                line_number_width: usize,
+                /// All error spans that occur on a single line. This sequence always has
+                /// length equivalent to the number of lines in `pattern`, where the index
+                /// of the sequence represents a line number, starting at `0`. The spans
+                /// in each line are sorted in ascending order.
+                by_line: Vec<Vec<ast::Span>>,
+                /// All error spans that occur over one or more lines. That is, the start
+                /// and end position of the span have different line numbers. The spans are
+                /// sorted in ascending order.
+                multi_line: Vec<ast::Span>,
+            }
+
+            impl<'p> Spans<'p> {
+                /// Build a sequence of spans from a formatter.
+                fn from_formatter<'e, E: core::fmt::Display>(
+                    fmter: &'p Formatter<'e, E>,
+                ) -> Spans<'p> {
+                    let mut line_count = fmter.pattern.lines().count();
+                    // If the pattern ends with a `\n` literal, then our line count is
+                    // off by one, since a span can occur immediately after the last `\n`,
+                    // which is consider to be an additional line.
+                    if fmter.pattern.ends_with('\n') {
+                        line_count += 1;
+                    }
+                    let line_number_width =
+                        if line_count <= 1 { 0 } else { line_count.to_string().len() };
+                    let mut spans = Spans {
+                        pattern: &fmter.pattern,
+                        line_number_width,
+                        by_line: vec![vec![]; line_count],
+                        multi_line: vec![],
+                    };
+                    spans.add(fmter.span.clone());
+                    if let Some(span) = fmter.aux_span {
+                        spans.add(span.clone());
+                    }
+                    spans
+                }
+                /// Add the given span to this sequence, putting it in the right place.
+                fn add(&mut self, span: ast::Span) {
+                    // This is grossly inefficient since we sort after each add, but right
+                    // now, we only ever add two spans at most.
+                    if span.is_one_line() {
+                        let i = span.start.line - 1; // because lines are 1-indexed
+                        self.by_line[i].push(span);
+                        self.by_line[i].sort();
+                    } else {
+                        self.multi_line.push(span);
+                        self.multi_line.sort();
+                    }
+                }
+                /// Notate the pattern string with carets (`^`) pointing at each span
+                /// location. This only applies to spans that occur within a single line.
+                fn notate(&self) -> String {
+                    let mut notated = String::new();
+                    for (i, line) in self.pattern.lines().enumerate() {
+                        if self.line_number_width > 0 {
+                            notated.push_str(&self.left_pad_line_number(i + 1));
+                            notated.push_str(": ");
+                        } else {
+                            notated.push_str("    ");
+                        }
+                        notated.push_str(line);
+                        notated.push('\n');
+                        if let Some(notes) = self.notate_line(i) {
+                            notated.push_str(&notes);
+                            notated.push('\n');
+                        }
+                    }
+                    notated
+                }
+                /// Return notes for the line indexed at `i` (zero-based). If there are no
+                /// spans for the given line, then `None` is returned. Otherwise, an
+                /// appropriately space padded string with correctly positioned `^` is
+                /// returned, accounting for line numbers.
+                fn notate_line(&self, i: usize) -> Option<String> {
+                    let spans = &self.by_line[i];
+                    if spans.is_empty() {
+                        return None;
+                    }
+                    let mut notes = String::new();
+                    for _ in 0..self.line_number_padding() {
+                        notes.push(' ');
+                    }
+                    let mut pos = 0;
+                    for span in spans {
+                        for _ in pos..(span.start.column - 1) {
+                            notes.push(' ');
+                            pos += 1;
+                        }
+                        let note_len = span.end.column.saturating_sub(span.start.column);
+                        for _ in 0..core::cmp::max(1, note_len) {
+                            notes.push('^');
+                            pos += 1;
+                        }
+                    }
+                    Some(notes)
+                }
+                /// Left pad the given line number with spaces such that it is aligned with
+                /// other line numbers.
+                fn left_pad_line_number(&self, n: usize) -> String {
+                    let n = n.to_string();
+                    let pad = self.line_number_width.checked_sub(n.len()).unwrap();
+                    let mut result = repeat_char(' ', pad);
+                    result.push_str(&n);
+                    result
+                }
+                /// Return the line number padding beginning at the start of each line of
+                /// the pattern.
+                ///
+                /// If the pattern is only one line, then this returns a fixed padding
+                /// for visual indentation.
+                fn line_number_padding(&self) -> usize {
+                    if self.line_number_width == 0 {
+                        4
+                    } else {
+                        2 + self.line_number_width
+                    }
+                }
+            }
+
+            fn repeat_char(c: char, count: usize) -> String {
+                core::iter::repeat(c).take(count).collect()
+            }
+        } pub use self::error::{ Error };
+    
+        pub mod hir
+        {
+            /*!
+            Defines a high-level intermediate (HIR) representation for regular expressions. */
+            use ::
+            {
+                boxed::{ Box },
+                string::{ String, ToString },
+                vec::{ self, Vec },
+                *,
+            };
+            /*
+            */
+            use super::
+            {
+                ast::Span,
+                hir::
+                {
+                    interval::{Interval, IntervalSet, IntervalSetIter},
+                    visitor::{visit, Visitor},
+                },
+                unicode::{ self, CaseFoldError },
+            };
+            
+            pub mod interval
+            {
+                /*!
+                This module contains an *internal* implementation of interval sets. */
+                use ::
+                {
+                    fmt::{ Debug },
+                    vec::{ Vec },
+                    *,
+                };
+                /*
+                */
+                #[derive( Clone, Debug )]
+                pub struct IntervalSet<I> {
+                    /// A sorted set of non-overlapping ranges.
+                    ranges: Vec<I>,
+                    /// While not required at all for correctness, we keep track of whether an
+                    /// interval set has been case folded or not. This helps us avoid doing
+                    /// redundant work if, for example, a set has already been cased folded.
+                    /// And note that whether a set is folded or not is preserved through
+                    /// all of the pairwise set operations. That is, if both interval sets
+                    /// have been case folded, then any of difference, union, intersection or
+                    /// symmetric difference all produce a case folded set.
+                    /// words, we only set this to true when we know it to be case, but we're
+                    /// okay with it being false if it would otherwise be costly to determine
+                    /// whether it should be true. This means code cannot assume that a false
+                    /// value necessarily indicates that the set is not case folded.
+                    ///
+                    /// Bottom line: this is a performance optimization.
+                    folded: bool,
+                }
+
+                impl<I: Interval> Eq for IntervalSet<I> {}
+
+                // We implement PartialEq manually so that we don't consider the set's internal
+                // 'folded' property to be part of its identity. The 'folded' property is
+                // strictly an optimization.
+                impl<I: Interval> PartialEq for IntervalSet<I> {
+                    fn eq(&self, other: &IntervalSet<I>) -> bool {
+                        self.ranges.eq(&other.ranges)
+                    }
+                }
+
+                impl<I: Interval> IntervalSet<I> {
+                    /// Create a new set from a sequence of intervals. Each interval is
+                    /// specified as a pair of bounds, where both bounds are inclusive.
+                    pub fn new<T: IntoIterator<Item = I>>(intervals: T) -> IntervalSet<I> {
+                        let ranges: Vec<I> = intervals.into_iter().collect();
+                        // An empty set is case folded.
+                        let folded = ranges.is_empty();
+                        let mut set = IntervalSet { ranges, folded };
+                        set.canonicalize();
+                        set
+                    }
+                    /// Add a new interval to this set.
+                    pub fn push(&mut self, interval: I) {
+                        // TODO: This could be faster. e.g., Push the interval such that
+                        // it preserves canonicalization.
+                        self.ranges.push(interval);
+                        self.canonicalize();
+                        // We don't know whether the new interval added here is considered
+                        // case folded, so we conservatively assume that the entire set is
+                        // no longer case folded if it was previously.
+                        self.folded = false;
+                    }
+                    /// Return an iterator over all intervals in this set.
+                    ///
+                    /// The iterator yields intervals in ascending order.
+                    pub fn iter(&self) -> IntervalSetIter<'_, I> {
+                        IntervalSetIter(self.ranges.iter())
+                    }
+                    /// Return an immutable slice of intervals in this set.
+                    ///
+                    /// The sequence returned is in canonical ordering.
+                    pub fn intervals(&self) -> &[I] {
+                        &self.ranges
+                    }
+                    /// Expand this interval set such that it contains all case folded
+                    /// characters. For example, if this class consists of the range `a-z`,
+                    /// then applying case folding will result in the class containing both the
+                    /// ranges `a-z` and `A-Z`.
+                    pub fn case_fold_simple(&mut self) -> Result<(), unicode::CaseFoldError> {
+                        if self.folded {
+                            return Ok(());
+                        }
+                        let len = self.ranges.len();
+                        for i in 0..len {
+                            let range = self.ranges[i];
+                            if let Err(err) = range.case_fold_simple(&mut self.ranges) {
+                                self.canonicalize();
+                                return Err(err);
+                            }
+                        }
+                        self.canonicalize();
+                        self.folded = true;
+                        Ok(())
+                    }
+                    /// Union this set with the given set, in place.
+                    pub fn union(&mut self, other: &IntervalSet<I>) {
+                        if other.ranges.is_empty() || self.ranges == other.ranges {
+                            return;
+                        }
+                        // This could almost certainly be done more efficiently.
+                        self.ranges.extend(&other.ranges);
+                        self.canonicalize();
+                        self.folded = self.folded && other.folded;
+                    }
+                    /// Intersect this set with the given set, in place.
+                    pub fn intersect(&mut self, other: &IntervalSet<I>) {
+                        if self.ranges.is_empty() {
+                            return;
+                        }
+                        if other.ranges.is_empty() {
+                            self.ranges.clear();
+                            // An empty set is case folded.
+                            self.folded = true;
+                            return;
+                        }
+
+                        // There should be a way to do this in-place with constant memory,
+                        // but I couldn't figure out a simple way to do it. So just append
+                        // the intersection to the end of this range, and then drain it before
+                        // we're done.
+                        let drain_end = self.ranges.len();
+
+                        let mut ita = 0..drain_end;
+                        let mut itb = 0..other.ranges.len();
+                        let mut a = ita.next().unwrap();
+                        let mut b = itb.next().unwrap();
+                        loop {
+                            if let Some(ab) = self.ranges[a].intersect(&other.ranges[b]) {
+                                self.ranges.push(ab);
+                            }
+                            let (it, aorb) =
+                                if self.ranges[a].upper() < other.ranges[b].upper() {
+                                    (&mut ita, &mut a)
+                                } else {
+                                    (&mut itb, &mut b)
+                                };
+                            match it.next() {
+                                Some(v) => *aorb = v,
+                                None => break,
+                            }
+                        }
+                        self.ranges.drain(..drain_end);
+                        self.folded = self.folded && other.folded;
+                    }
+                    /// Subtract the given set from this set, in place.
+                    pub fn difference(&mut self, other: &IntervalSet<I>) {
+                        if self.ranges.is_empty() || other.ranges.is_empty() {
+                            return;
+                        }
+
+                        // This algorithm is (to me) surprisingly complex. A search of the
+                        // interwebs indicate that this is a potentially interesting problem.
+                        // Folks seem to suggest interval or segment trees, but I'd like to
+                        // avoid the overhead (both runtime and conceptual) of that.
+                        //
+                        // The following is basically my Shitty First Draft. Therefore, in
+                        // order to grok it, you probably need to read each line carefully.
+                        // Simplifications are most welcome!
+                        //
+                        // Remember, we can assume the canonical format invariant here, which
+                        // says that all ranges are sorted, not overlapping and not adjacent in
+                        // each class.
+                        let drain_end = self.ranges.len();
+                        let (mut a, mut b) = (0, 0);
+                        'LOOP: while a < drain_end && b < other.ranges.len() {
+                            // Basically, the easy cases are when neither range overlaps with
+                            // each other. If the `b` range is less than our current `a`
+                            // range, then we can skip it and move on.
+                            if other.ranges[b].upper() < self.ranges[a].lower() {
+                                b += 1;
+                                continue;
+                            }
+                            // ... similarly for the `a` range. If it's less than the smallest
+                            // `b` range, then we can add it as-is.
+                            if self.ranges[a].upper() < other.ranges[b].lower() {
+                                let range = self.ranges[a];
+                                self.ranges.push(range);
+                                a += 1;
+                                continue;
+                            }
+                            // Otherwise, we have overlapping ranges.
+                            assert!(!self.ranges[a].is_intersection_empty(&other.ranges[b]));
+
+                            // This part is tricky and was non-obvious to me without looking
+                            // at explicit examples (see the tests). The trickiness stems from
+                            // two things: 1) subtracting a range from another range could
+                            // yield two ranges and 2) after subtracting a range, it's possible
+                            // that future ranges can have an impact. The loop below advances
+                            // the `b` ranges until they can't possible impact the current
+                            // range.
+                            //
+                            // For example, if our `a` range is `a-t` and our next three `b`
+                            // ranges are `a-c`, `g-i`, `r-t` and `x-z`, then we need to apply
+                            // subtraction three times before moving on to the next `a` range.
+                            let mut range = self.ranges[a];
+                            while b < other.ranges.len()
+                                && !range.is_intersection_empty(&other.ranges[b])
+                            {
+                                let old_range = range;
+                                range = match range.difference(&other.ranges[b]) {
+                                    (None, None) => {
+                                        // We lost the entire range, so move on to the next
+                                        // without adding this one.
+                                        a += 1;
+                                        continue 'LOOP;
+                                    }
+                                    (Some(range1), None) | (None, Some(range1)) => range1,
+                                    (Some(range1), Some(range2)) => {
+                                        self.ranges.push(range1);
+                                        range2
+                                    }
+                                };
+                                // It's possible that the `b` range has more to contribute
+                                // here. In particular, if it is greater than the original
+                                // range, then it might impact the next `a` range *and* it
+                                // has impacted the current `a` range as much as possible,
+                                // so we can quit. We don't bump `b` so that the next `a`
+                                // range can apply it.
+                                if other.ranges[b].upper() > old_range.upper() {
+                                    break;
+                                }
+                                // Otherwise, the next `b` range might apply to the current
+                                // `a` range.
+                                b += 1;
+                            }
+                            self.ranges.push(range);
+                            a += 1;
+                        }
+                        while a < drain_end {
+                            let range = self.ranges[a];
+                            self.ranges.push(range);
+                            a += 1;
+                        }
+                        self.ranges.drain(..drain_end);
+                        self.folded = self.folded && other.folded;
+                    }
+                    /// Compute the symmetric difference of the two sets, in place.
+                    /// but also adds all elements from the given set that aren't in this
+                    /// set. That is, the set will contain all elements in either set,
+                    /// but will not contain any elements that are in both sets.
+                    pub fn symmetric_difference(&mut self, other: &IntervalSet<I>) {
+                        // TODO(burntsushi): Fix this so that it amortizes allocation.
+                        let mut intersection = self.clone();
+                        intersection.intersect(other);
+                        self.union(other);
+                        self.difference(&intersection);
+                    }
+                    /// Negate this interval set.
+                    pub fn negate(&mut self) {
+                        if self.ranges.is_empty() {
+                            let (min, max) = (I::Bound::min_value(), I::Bound::max_value());
+                            self.ranges.push(I::create(min, max));
+                            // The set containing everything must case folded.
+                            self.folded = true;
+                            return;
+                        }
+
+                        // There should be a way to do this in-place with constant memory,
+                        // but I couldn't figure out a simple way to do it. So just append
+                        // the negation to the end of this range, and then drain it before
+                        // we're done.
+                        let drain_end = self.ranges.len();
+
+                        // We do checked arithmetic below because of the canonical ordering
+                        // invariant.
+                        if self.ranges[0].lower() > I::Bound::min_value() {
+                            let upper = self.ranges[0].lower().decrement();
+                            self.ranges.push(I::create(I::Bound::min_value(), upper));
+                        }
+                        for i in 1..drain_end {
+                            let lower = self.ranges[i - 1].upper().increment();
+                            let upper = self.ranges[i].lower().decrement();
+                            self.ranges.push(I::create(lower, upper));
+                        }
+                        if self.ranges[drain_end - 1].upper() < I::Bound::max_value() {
+                            let lower = self.ranges[drain_end - 1].upper().increment();
+                            self.ranges.push(I::create(lower, I::Bound::max_value()));
+                        }
+                        self.ranges.drain(..drain_end);
+                        // We don't need to update whether this set is folded or not, because
+                        // it is conservatively preserved through negation. Namely, if a set
+                        // is not folded, then it is possible that its negation is folded, for
+                        // example, [^☃]. But we're fine with assuming that the set is not
+                        // folded in that case. (`folded` permits false negatives but not false
+                        // positives.)
+                        //
+                        // But what about when a set is folded, is its negation also
+                        // necessarily folded? Yes. Because if a set is folded, then for every
+                        // character in the set, it necessarily included its equivalence class
+                        // of case folded characters. Negating it in turn means that all
+                        // equivalence classes in the set are negated, and any equivalence
+                        // class that was previously not in the set is now entirely in the set.
+                    }
+                    /// Converts this set into a canonical ordering.
+                    fn canonicalize(&mut self) {
+                        if self.is_canonical() {
+                            return;
+                        }
+                        self.ranges.sort();
+                        assert!(!self.ranges.is_empty());
+
+                        // Is there a way to do this in-place with constant memory? I couldn't
+                        // figure out a way to do it. So just append the canonicalization to
+                        // the end of this range, and then drain it before we're done.
+                        let drain_end = self.ranges.len();
+                        for oldi in 0..drain_end {
+                            // If we've added at least one new range, then check if we can
+                            // merge this range in the previously added range.
+                            if self.ranges.len() > drain_end {
+                                let (last, rest) = self.ranges.split_last_mut().unwrap();
+                                if let Some(union) = last.union(&rest[oldi]) {
+                                    *last = union;
+                                    continue;
+                                }
+                            }
+                            let range = self.ranges[oldi];
+                            self.ranges.push(range);
+                        }
+                        self.ranges.drain(..drain_end);
+                    }
+                    /// Returns true if and only if this class is in a canonical ordering.
+                    fn is_canonical(&self) -> bool {
+                        for pair in self.ranges.windows(2) {
+                            if pair[0] >= pair[1] {
+                                return false;
+                            }
+                            if pair[0].is_contiguous(&pair[1]) {
+                                return false;
+                            }
+                        }
+                        true
+                    }
+                }
+                /// An iterator over intervals.
+                #[derive(Debug)]
+                pub struct IntervalSetIter<'a, I>(slice::Iter<'a, I>);
+
+                impl<'a, I> Iterator for IntervalSetIter<'a, I> {
+                    type Item = &'a I;
+
+                    fn next(&mut self) -> Option<&'a I> {
+                        self.0.next()
+                    }
+                }
+
+                pub trait Interval:
+                    Clone + Copy + Debug + Default + Eq + PartialEq + PartialOrd + Ord
+                {
+                    type Bound: Bound;
+
+                    fn lower(&self) -> Self::Bound;
+                    fn upper(&self) -> Self::Bound;
+                    fn set_lower(&mut self, bound: Self::Bound);
+                    fn set_upper(&mut self, bound: Self::Bound);
+                    fn case_fold_simple(
+                        &self,
+                        intervals: &mut Vec<Self>,
+                    ) -> Result<(), unicode::CaseFoldError>;
+                    /// Create a new interval.
+                    fn create(lower: Self::Bound, upper: Self::Bound) -> Self {
+                        let mut int = Self::default();
+                        if lower <= upper {
+                            int.set_lower(lower);
+                            int.set_upper(upper);
+                        } else {
+                            int.set_lower(upper);
+                            int.set_upper(lower);
+                        }
+                        int
+                    }
+                    /// Union the given overlapping range into this range.
+                    ///
+                    /// If the two ranges aren't contiguous, then this returns `None`.
+                    fn union(&self, other: &Self) -> Option<Self> {
+                        if !self.is_contiguous(other) {
+                            return None;
+                        }
+                        let lower = cmp::min(self.lower(), other.lower());
+                        let upper = cmp::max(self.upper(), other.upper());
+                        Some(Self::create(lower, upper))
+                    }
+                    /// Intersect this range with the given range and return the result.
+                    ///
+                    /// If the intersection is empty, then this returns `None`.
+                    fn intersect(&self, other: &Self) -> Option<Self> {
+                        let lower = cmp::max(self.lower(), other.lower());
+                        let upper = cmp::min(self.upper(), other.upper());
+                        if lower <= upper {
+                            Some(Self::create(lower, upper))
+                        } else {
+                            None
+                        }
+                    }
+                    /// Subtract the given range from this range and return the resulting
+                    /// ranges.
+                    fn difference(&self, other: &Self) -> (Option<Self>, Option<Self>) {
+                        if self.is_subset(other) {
+                            return (None, None);
+                        }
+                        if self.is_intersection_empty(other) {
+                            return (Some(self.clone()), None);
+                        }
+                        let add_lower = other.lower() > self.lower();
+                        let add_upper = other.upper() < self.upper();
+                        // We know this because !self.is_subset(other) and the ranges have
+                        // a non-empty intersection.
+                        assert!(add_lower || add_upper);
+                        let mut ret = (None, None);
+                        if add_lower {
+                            let upper = other.lower().decrement();
+                            ret.0 = Some(Self::create(self.lower(), upper));
+                        }
+                        if add_upper {
+                            let lower = other.upper().increment();
+                            let range = Self::create(lower, self.upper());
+                            if ret.0.is_none() {
+                                ret.0 = Some(range);
+                            } else {
+                                ret.1 = Some(range);
+                            }
+                        }
+                        ret
+                    }
+                    /// Returns true if and only if the two ranges are contiguous. Two ranges
+                    /// are contiguous if and only if the ranges are either overlapping or
+                    /// adjacent.
+                    fn is_contiguous(&self, other: &Self) -> bool {
+                        let lower1 = self.lower().as_u32();
+                        let upper1 = self.upper().as_u32();
+                        let lower2 = other.lower().as_u32();
+                        let upper2 = other.upper().as_u32();
+                        cmp::max(lower1, lower2) <= cmp::min(upper1, upper2).saturating_add(1)
+                    }
+                    /// Returns true if and only if the intersection of this range and the
+                    /// other range is empty.
+                    fn is_intersection_empty(&self, other: &Self) -> bool {
+                        let (lower1, upper1) = (self.lower(), self.upper());
+                        let (lower2, upper2) = (other.lower(), other.upper());
+                        cmp::max(lower1, lower2) > cmp::min(upper1, upper2)
+                    }
+                    /// Returns true if and only if this range is a subset of the other range.
+                    fn is_subset(&self, other: &Self) -> bool {
+                        let (lower1, upper1) = (self.lower(), self.upper());
+                        let (lower2, upper2) = (other.lower(), other.upper());
+                        (lower2 <= lower1 && lower1 <= upper2)
+                            && (lower2 <= upper1 && upper1 <= upper2)
+                    }
+                }
+
+                pub trait Bound:
+                    Copy + Clone + Debug + Eq + PartialEq + PartialOrd + Ord
+                {
+                    fn min_value() -> Self;
+                    fn max_value() -> Self;
+                    fn as_u32(self) -> u32;
+                    fn increment(self) -> Self;
+                    fn decrement(self) -> Self;
+                }
+
+                impl Bound for u8 {
+                    fn min_value() -> Self {
+                        u8::MIN
+                    }
+                    fn max_value() -> Self {
+                        u8::MAX
+                    }
+                    fn as_u32(self) -> u32 {
+                        u32::from(self)
+                    }
+                    fn increment(self) -> Self {
+                        self.checked_add(1).unwrap()
+                    }
+                    fn decrement(self) -> Self {
+                        self.checked_sub(1).unwrap()
+                    }
+                }
+
+                impl Bound for char {
+                    fn min_value() -> Self {
+                        '\x00'
+                    }
+                    fn max_value() -> Self {
+                        '\u{10FFFF}'
+                    }
+                    fn as_u32(self) -> u32 {
+                        u32::from(self)
+                    }
+
+                    fn increment(self) -> Self {
+                        match self {
+                            '\u{D7FF}' => '\u{E000}',
+                            c => char::from_u32(u32::from(c).checked_add(1).unwrap()).unwrap(),
+                        }
+                    }
+
+                    fn decrement(self) -> Self {
+                        match self {
+                            '\u{E000}' => '\u{D7FF}',
+                            c => char::from_u32(u32::from(c).checked_sub(1).unwrap()).unwrap(),
+                        }
+                    }
+                }
+            }
+
+            pub mod literal
+            {
+                /*!
+                Provides literal extraction from `Hir` expressions. */
+                use ::
+                {
+                    num::{ NonZeroUsize },
+                    vec::{ self, Vec },
+                    *,
+                };
+                
+                use super::{ Hir };
+                /*
+                */
+                /// Extracts prefix or suffix literal sequences from [`Hir`] expressions.
+                #[derive( Clone, Debug )]
+                pub struct Extractor {
+                    kind: ExtractKind,
+                    limit_class: usize,
+                    limit_repeat: usize,
+                    limit_literal_len: usize,
+                    limit_total: usize,
+                }
+
+                impl Extractor {
+                    /// Create a new extractor with a default configuration.
+                    pub fn new() -> Extractor {
+                        Extractor {
+                            kind: ExtractKind::Prefix,
+                            limit_class: 10,
+                            limit_repeat: 10,
+                            limit_literal_len: 100,
+                            limit_total: 250,
+                        }
+                    }
+                    /// Execute the extractor and return a sequence of literals.
+                    pub fn extract(&self, hir: &Hir) -> Seq {
+                        use super::HirKind::*;
+
+                        match *hir.kind() {
+                            Empty | Look(_) => Seq::singleton(self::Literal::exact(vec![])),
+                            Literal(hir::Literal(ref bytes)) => {
+                                let mut seq =
+                                    Seq::singleton(self::Literal::exact(bytes.to_vec()));
+                                self.enforce_literal_len(&mut seq);
+                                seq
+                            }
+                            Class(hir::Class::Unicode(ref cls)) => {
+                                self.extract_class_unicode(cls)
+                            }
+                            Class(hir::Class::Bytes(ref cls)) => self.extract_class_bytes(cls),
+                            Repetition(ref rep) => self.extract_repetition(rep),
+                            Capture(hir::Capture { ref sub, .. }) => self.extract(sub),
+                            Concat(ref hirs) => match self.kind {
+                                ExtractKind::Prefix => self.extract_concat(hirs.iter()),
+                                ExtractKind::Suffix => self.extract_concat(hirs.iter().rev()),
+                            },
+                            Alternation(ref hirs) => {
+                                // Unlike concat, we always union starting from the beginning,
+                                // since the beginning corresponds to the highest preference,
+                                // which doesn't change based on forwards vs reverse.
+                                self.extract_alternation(hirs.iter())
+                            }
+                        }
+                    }
+                    /// Set the kind of literal sequence to extract from an [`Hir`] expression.
+                    /// corresponding `Hir` must start with one of the literals in the sequence
+                    /// returned. Moreover, the _order_ of the sequence returned corresponds to
+                    /// the preference order.
+                    /// returned. However, there is no guarantee that the literals are in
+                    /// preference order.
+                    /// prefixes (or suffixes) for the pattern `[A-Z]` will return an infinite
+                    /// sequence. Generally speaking, if the sequence returned is infinite,
+                    /// then it is presumed to be unwise to do prefix (or suffix) optimizations
+                    /// for the pattern.
+                    pub fn kind(&mut self, kind: ExtractKind) -> &mut Extractor {
+                        self.kind = kind;
+                        self
+                    }
+                    /// Configure a limit on the length of the sequence that is permitted for
+                    /// a character class. If a character class exceeds this limit, then the
+                    /// sequence returned for it is infinite.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows how this limit can be lowered to decrease the tolerance
+                    /// for character classes being turned into literal sequences.
+                    ///
+                    /// let hir = parse(r"[0-9]")?;
+                    ///
+                    /// let got = Extractor::new().extract(&hir);
+                    /// let expected = Seq::new([
+                    ///     "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+                    /// ]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// // Now let's shrink the limit and see how that changes things.
+                    /// let got = Extractor::new().limit_class(4).extract(&hir);
+                    /// let expected = Seq::infinite();
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                    /// ```
+                    pub fn limit_class(&mut self, limit: usize) -> &mut Extractor {
+                        self.limit_class = limit;
+                        self
+                    }
+                    /// Configure a limit on the total number of repetitions that is permitted
+                    /// before literal extraction is stopped.
+                    /// repetition from adding too much to a literal sequence.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This shows how to decrease the limit and compares it with the default.
+                    ///
+                    /// let hir = parse(r"(abc){8}")?;
+                    ///
+                    /// let got = Extractor::new().extract(&hir);
+                    /// let expected = Seq::new(["abcabcabcabcabcabcabcabc"]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// // Now let's shrink the limit and see how that changes things.
+                    /// let got = Extractor::new().limit_repeat(4).extract(&hir);
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("abcabcabcabc"),
+                    /// ]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                    /// ```
+                    pub fn limit_repeat(&mut self, limit: usize) -> &mut Extractor {
+                        self.limit_repeat = limit;
+                        self
+                    }
+                    /// Configure a limit on the maximum length of any literal in a sequence.
+                    /// repetitions are applied, one ends up with a literal of length `5^4 =
+                    /// 625`.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This shows how to decrease the limit and compares it with the default.
+                    ///
+                    /// let hir = parse(r"(abc){2}{2}{2}")?;
+                    ///
+                    /// let got = Extractor::new().extract(&hir);
+                    /// let expected = Seq::new(["abcabcabcabcabcabcabcabc"]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// // Now let's shrink the limit and see how that changes things.
+                    /// let got = Extractor::new().limit_literal_len(14).extract(&hir);
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("abcabcabcabcab"),
+                    /// ]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                    /// ```
+                    pub fn limit_literal_len(&mut self, limit: usize) -> &mut Extractor {
+                        self.limit_literal_len = limit;
+                        self
+                    }
+                    /// Configure a limit on the total number of literals that will be
+                    /// returned.
+                    /// handle local creations of large sequences (for example, `[A-Z]` yields
+                    /// an infinite sequence by default), large sequences can be created
+                    /// through non-local means as well.
+                    /// thus represents a "catch all" for avoiding locally small sequences from
+                    /// combining into large sequences.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows how reducing the limit will change the literal
+                    /// sequence returned.
+                    ///
+                    /// let hir = parse(r"[ab]{2}{2}")?;
+                    ///
+                    /// let got = Extractor::new().extract(&hir);
+                    /// let expected = Seq::new([
+                    ///     "aaaa", "aaab", "aaba", "aabb",
+                    ///     "abaa", "abab", "abba", "abbb",
+                    ///     "baaa", "baab", "baba", "babb",
+                    ///     "bbaa", "bbab", "bbba", "bbbb",
+                    /// ]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// // The default limit is not too big, but big enough to extract all
+                    /// // literals from '[ab]{2}{2}'. If we shrink the limit to less than 16,
+                    /// // then we'll get a truncated set. Notice that it returns a sequence of
+                    /// // length 4 even though our limit was 10. This is because the sequence
+                    /// // is difficult to increase without blowing the limit. Notice also
+                    /// // that every literal in the sequence is now inexact because they were
+                    /// // stripped of some suffix.
+                    /// let got = Extractor::new().limit_total(10).extract(&hir);
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("aa"),
+                    ///     Literal::inexact("ab"),
+                    ///     Literal::inexact("ba"),
+                    ///     Literal::inexact("bb"),
+                    /// ]);
+                    /// assert_eq!(expected, got);
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                    /// ```
+                    pub fn limit_total(&mut self, limit: usize) -> &mut Extractor {
+                        self.limit_total = limit;
+                        self
+                    }
+                    /// Extract a sequence from the given concatenation. Sequences from each of
+                    /// the child HIR expressions are combined via cross product.
+                    fn extract_concat<'a, I: Iterator<Item = &'a Hir>>(&self, it: I) -> Seq {
+                        let mut seq = Seq::singleton(self::Literal::exact(vec![]));
+                        for hir in it {
+                            // If every element in the sequence is inexact, then a cross
+                            // product will always be a no-op. Thus, there is nothing else we
+                            // can add to it and can quit early. Note that this also includes
+                            // infinite sequences.
+                            if seq.is_inexact() {
+                                break;
+                            }
+                            // Note that 'cross' also dispatches based on whether we're
+                            // extracting prefixes or suffixes.
+                            seq = self.cross(seq, &mut self.extract(hir));
+                        }
+                        seq
+                    }
+                    /// Extract a sequence from the given alternation.
+                    ///
+                    /// This short circuits once the union turns into an infinite sequence.
+                    fn extract_alternation<'a, I: Iterator<Item = &'a Hir>>(
+                        &self,
+                        it: I,
+                    ) -> Seq {
+                        let mut seq = Seq::empty();
+                        for hir in it {
+                            // Once our 'seq' is infinite, every subsequent union
+                            // operation on it will itself always result in an
+                            // infinite sequence. Thus, it can never change and we can
+                            // short-circuit.
+                            if !seq.is_finite() {
+                                break;
+                            }
+                            seq = self.union(seq, &mut self.extract(hir));
+                        }
+                        seq
+                    }
+                    /// Extract a sequence of literals from the given repetition. We do our
+                    /// best, Some examples:
+                    ///
+                    ///   'a*'    => [inexact(a), exact("")]
+                    ///   'a*?'   => [exact(""), inexact(a)]
+                    ///   'a+'    => [inexact(a)]
+                    ///   'a{3}'  => [exact(aaa)]
+                    ///   'a{3,5} => [inexact(aaa)]
+                    ///
+                    /// The key here really is making sure we get the 'inexact' vs 'exact'
+                    /// attributes correct on each of the literals we add. For example, the
+                    /// fact that 'a*' gives us an inexact 'a' and an exact empty string means
+                    /// that a regex like 'ab*c' will result in [inexact(ab), exact(ac)]
+                    /// literals being extracted, which might actually be a better prefilter
+                    /// than just 'a'.
+                    fn extract_repetition(&self, rep: &hir::Repetition) -> Seq {
+                        let mut subseq = self.extract(&rep.sub);
+                        match *rep {
+                            hir::Repetition { min: 0, max, greedy, .. } => {
+                                // When 'max=1', we can retain exactness, since 'a?' is
+                                // equivalent to 'a|'. Similarly below, 'a??' is equivalent to
+                                // '|a'.
+                                if max != Some(1) {
+                                    subseq.make_inexact();
+                                }
+                                let mut empty = Seq::singleton(Literal::exact(vec![]));
+                                if !greedy {
+                                    mem::swap(&mut subseq, &mut empty);
+                                }
+                                self.union(subseq, &mut empty)
+                            }
+                            hir::Repetition { min, max: Some(max), .. } if min == max => {
+                                assert!(min > 0); // handled above
+                                let limit =
+                                    u32::try_from(self.limit_repeat).unwrap_or(u32::MAX);
+                                let mut seq = Seq::singleton(Literal::exact(vec![]));
+                                for _ in 0..cmp::min(min, limit) {
+                                    if seq.is_inexact() {
+                                        break;
+                                    }
+                                    seq = self.cross(seq, &mut subseq.clone());
+                                }
+                                if usize::try_from(min).is_err() || min > limit {
+                                    seq.make_inexact();
+                                }
+                                seq
+                            }
+                            hir::Repetition { min, .. } => {
+                                assert!(min > 0); // handled above
+                                let limit =
+                                    u32::try_from(self.limit_repeat).unwrap_or(u32::MAX);
+                                let mut seq = Seq::singleton(Literal::exact(vec![]));
+                                for _ in 0..cmp::min(min, limit) {
+                                    if seq.is_inexact() {
+                                        break;
+                                    }
+                                    seq = self.cross(seq, &mut subseq.clone());
+                                }
+                                seq.make_inexact();
+                                seq
+                            }
+                        }
+                    }
+                    /// Convert the given Unicode class into a sequence of literals if the
+                    /// class is small enough. If the class is too big, return an infinite
+                    /// sequence.
+                    fn extract_class_unicode(&self, cls: &hir::ClassUnicode) -> Seq {
+                        if self.class_over_limit_unicode(cls) {
+                            return Seq::infinite();
+                        }
+                        let mut seq = Seq::empty();
+                        for r in cls.iter() {
+                            for ch in r.start()..=r.end() {
+                                seq.push(Literal::from(ch));
+                            }
+                        }
+                        self.enforce_literal_len(&mut seq);
+                        seq
+                    }
+                    /// Convert the given byte class into a sequence of literals if the class
+                    /// is small enough. If the class is too big, return an infinite sequence.
+                    fn extract_class_bytes(&self, cls: &hir::ClassBytes) -> Seq {
+                        if self.class_over_limit_bytes(cls) {
+                            return Seq::infinite();
+                        }
+                        let mut seq = Seq::empty();
+                        for r in cls.iter() {
+                            for b in r.start()..=r.end() {
+                                seq.push(Literal::from(b));
+                            }
+                        }
+                        self.enforce_literal_len(&mut seq);
+                        seq
+                    }
+                    /// Returns true if the given Unicode class exceeds the configured limits
+                    /// on this extractor.
+                    fn class_over_limit_unicode(&self, cls: &hir::ClassUnicode) -> bool {
+                        let mut count = 0;
+                        for r in cls.iter() {
+                            if count > self.limit_class {
+                                return true;
+                            }
+                            count += r.len();
+                        }
+                        count > self.limit_class
+                    }
+                    /// Returns true if the given byte class exceeds the configured limits on
+                    /// this extractor.
+                    fn class_over_limit_bytes(&self, cls: &hir::ClassBytes) -> bool {
+                        let mut count = 0;
+                        for r in cls.iter() {
+                            if count > self.limit_class {
+                                return true;
+                            }
+                            count += r.len();
+                        }
+                        count > self.limit_class
+                    }
+                    /// Compute the cross product of the two sequences if the result would be
+                    /// within configured limits. Otherwise, make `seq2` infinite and cross the
+                    /// infinite sequence with `seq1`.
+                    fn cross(&self, mut seq1: Seq, seq2: &mut Seq) -> Seq {
+                        if seq1.max_cross_len(seq2).map_or(false, |len| len > self.limit_total)
+                        {
+                            seq2.make_infinite();
+                        }
+                        if let ExtractKind::Suffix = self.kind {
+                            seq1.cross_reverse(seq2);
+                        } else {
+                            seq1.cross_forward(seq2);
+                        }
+                        assert!(seq1.len().map_or(true, |x| x <= self.limit_total));
+                        self.enforce_literal_len(&mut seq1);
+                        seq1
+                    }
+                    /// Union the two sequences if the result would be within configured
+                    /// limits. Otherwise, make `seq2` infinite and union the infinite sequence
+                    /// with `seq1`.
+                    fn union(&self, mut seq1: Seq, seq2: &mut Seq) -> Seq {
+                        if seq1.max_union_len(seq2).map_or(false, |len| len > self.limit_total)
+                        {
+                            // We try to trim our literal sequences to see if we can make
+                            // room for more literals. The idea is that we'd rather trim down
+                            // literals already in our sequence if it means we can add a few
+                            // more and retain a finite sequence. Otherwise, we'll union with
+                            // an infinite sequence and that infects everything and effectively
+                            // stops literal extraction in its tracks.
+                            //
+                            // We do we keep 4 bytes here? Well, it's a bit of an abstraction
+                            // leakage. Downstream, the literals may wind up getting fed to
+                            // the Teddy algorithm, which supports searching literals up to
+                            // length 4. So that's why we pick that number here. Arguably this
+                            // should be a tunable parameter, but it seems a little tricky to
+                            // describe. And I'm still unsure if this is the right way to go
+                            // about culling literal sequences.
+                            match self.kind {
+                                ExtractKind::Prefix => {
+                                    seq1.keep_first_bytes(4);
+                                    seq2.keep_first_bytes(4);
+                                }
+                                ExtractKind::Suffix => {
+                                    seq1.keep_last_bytes(4);
+                                    seq2.keep_last_bytes(4);
+                                }
+                            }
+                            seq1.dedup();
+                            seq2.dedup();
+                            if seq1
+                                .max_union_len(seq2)
+                                .map_or(false, |len| len > self.limit_total)
+                            {
+                                seq2.make_infinite();
+                            }
+                        }
+                        seq1.union(seq2);
+                        assert!(seq1.len().map_or(true, |x| x <= self.limit_total));
+                        seq1
+                    }
+                    /// Applies the literal length limit to the given sequence. If none of the
+                    /// literals in the sequence exceed the limit, then this is a no-op.
+                    fn enforce_literal_len(&self, seq: &mut Seq) {
+                        let len = self.limit_literal_len;
+                        match self.kind {
+                            ExtractKind::Prefix => seq.keep_first_bytes(len),
+                            ExtractKind::Suffix => seq.keep_last_bytes(len),
+                        }
+                    }
+                }
+
+                impl Default for Extractor {
+                    fn default() -> Extractor {
+                        Extractor::new()
+                    }
+                }
+                /// The kind of literals to extract from an [`Hir`] expression.
+                ///
+                /// The default extraction kind is `Prefix`.
+                #[non_exhaustive]
+                #[derive( Clone, Debug )]
+                pub enum ExtractKind {
+                    /// Extracts only prefix literals from a regex.
+                    Prefix,
+                    /// Extracts only suffix literals from a regex.
+                    /// semantics.
+                    Suffix,
+                }
+
+                impl ExtractKind {
+                    /// Returns true if this kind is the `Prefix` variant.
+                    pub fn is_prefix(&self) -> bool {
+                        matches!(*self, ExtractKind::Prefix)
+                    }
+                    /// Returns true if this kind is the `Suffix` variant.
+                    pub fn is_suffix(&self) -> bool {
+                        matches!(*self, ExtractKind::Suffix)
+                    }
+                }
+
+                impl Default for ExtractKind {
+                    fn default() -> ExtractKind {
+                        ExtractKind::Prefix
+                    }
+                }
+                /// A sequence of literals.
+                ///
+                /// A `Seq` is very much like a set in that it represents a union of its
+                /// members. That is, it corresponds to a set of literals where at least one
+                /// must match in order for a particular [`Hir`] expression to match. (Whether
+                /// this corresponds to the entire `Hir` expression, a prefix of it or a suffix
+                /// of it depends on how the `Seq` was extracted from the `Hir`.)
+                ///
+                /// It is also unlike a set in that multiple identical literals may appear,
+                /// and that the order of the literals in the `Seq` matters. For example, if
+                /// the sequence is `[sam, samwise]` and leftmost-first matching is used, then
+                /// `samwise` can never match and the sequence is equivalent to `[sam]`.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]States of a sequence
+                ///
+                /// A `Seq` has a few different logical states to consider:
+                ///
+                /// * The sequence can represent "any" literal. When this happens, the set does
+                /// not have a finite size. The purpose of this state is to inhibit callers
+                /// from making assumptions about what literals are required in order to match
+                /// a particular [`Hir`] expression. Generally speaking, when a set is in this
+                /// state, literal optimizations are inhibited. A good example of a regex that
+                /// will cause this sort of set to appear is `[A-Za-z]`. The character class
+                /// is just too big (and also too narrow) to be usefully expanded into 52
+                /// different literals. (Note that the decision for when a seq should become
+                /// infinite is determined by the caller. A seq itself has no hard-coded
+                /// limits.)
+                /// * The sequence can be empty, in which case, it is an affirmative statement
+                /// that there are no literals that can match the corresponding `Hir`.
+                /// Consequently, the `Hir` never matches any input. For example, `[a&&b]`.
+                /// * The sequence can be non-empty, in which case, at least one of the
+                /// literals must match in order for the corresponding `Hir` to match.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This example shows how literal sequences can be simplified by stripping
+                /// suffixes and minimizing while maintaining preference order.
+                ///
+                /// ```
+                /// use regex_syntax::hir::literal::{Literal, Seq};
+                ///
+                /// let mut seq = Seq::new(&[
+                ///     "farm",
+                ///     "appliance",
+                ///     "faraway",
+                ///     "apple",
+                ///     "fare",
+                ///     "gap",
+                ///     "applicant",
+                ///     "applaud",
+                /// ]);
+                /// seq.keep_first_bytes(3);
+                /// seq.minimize_by_preference();
+                /// // Notice that 'far' comes before 'app', which matches the order in the
+                /// // original sequence. This guarantees that leftmost-first semantics are
+                /// // not altered by simplifying the set.
+                /// let expected = Seq::from_iter([
+                ///     Literal::inexact("far"),
+                ///     Literal::inexact("app"),
+                ///     Literal::exact("gap"),
+                /// ]);
+                /// assert_eq!(expected, seq);
+                /// ```
+                #[derive(Clone, Eq, PartialEq)]
+                pub struct Seq {
+                    /// The members of this seq.
+                    /// seq, and forces one to treat it as if any literal might be in the seq.
+                    /// It is distinct from `Some(vec![""])`, which corresponds to the seq
+                    /// containing an empty string, which matches at every position.
+                    literals: Option<Vec<Literal>>,
+                }
+
+                impl Seq {
+                    /// Returns an empty sequence.
+                    #[inline]
+                    pub fn empty() -> Seq {
+                        Seq { literals: Some(vec![]) }
+                    }
+                    /// Returns a sequence of literals without a finite size and may contain
+                    /// any literal.
+                    /// or suffixes, nor are lower or upper bounds on the length of the literals
+                    /// in the set known.
+                    /// When sequences get too big, they lose their discriminating nature and
+                    /// are more likely to produce false positives, which in turn makes them
+                    /// less likely to speed up searches.
+                    /// constraining the size of sets during extraction is a practical trade
+                    /// off to make.
+                    #[inline]
+                    pub fn infinite() -> Seq {
+                        Seq { literals: None }
+                    }
+                    /// Returns a sequence containing a single literal.
+                    #[inline]
+                    pub fn singleton(lit: Literal) -> Seq {
+                        Seq { literals: Some(vec![lit]) }
+                    }
+                    /// Returns a sequence of exact literals from the given byte strings.
+                    #[inline]
+                    pub fn new<I, B>(it: I) -> Seq
+                    where
+                        I: IntoIterator<Item = B>,
+                        B: AsRef<[u8]>,
+                    {
+                        it.into_iter().map(|b| Literal::exact(b.as_ref())).collect()
+                    }
+                    /// If this is a finite sequence, return its members as a slice of
+                    /// literals.
+                    #[inline]
+                    pub fn literals(&self) -> Option<&[Literal]> {
+                        self.literals.as_deref()
+                    }
+                    /// Push a literal to the end of this sequence.
+                    ///
+                    /// If this sequence is not finite, then this is a no-op.
+                    /// a `Seq`'s "set like" behavior, and represents a practical trade off.
+                    /// Namely, there is never any need to have two adjacent and equivalent
+                    /// literals in the same sequence, _and_ it is easy to detect in some
+                    /// cases.
+                    #[inline]
+                    pub fn push(&mut self, lit: Literal) {
+                        let lits = match self.literals {
+                            None => return,
+                            Some(ref mut lits) => lits,
+                        };
+                        if lits.last().map_or(false, |m| m == &lit) {
+                            return;
+                        }
+                        lits.push(lit);
+                    }
+                    /// Make all of the literals in this sequence inexact.
+                    ///
+                    /// This is a no-op if this sequence is not finite.
+                    #[inline]
+                    pub fn make_inexact(&mut self) {
+                        let lits = match self.literals {
+                            None => return,
+                            Some(ref mut lits) => lits,
+                        };
+                        for lit in lits.iter_mut() {
+                            lit.make_inexact();
+                        }
+                    }
+                    /// Converts this sequence to an infinite sequence.
+                    ///
+                    /// This is a no-op if the sequence is already infinite.
+                    #[inline]
+                    pub fn make_infinite(&mut self) {
+                        self.literals = None;
+                    }
+                    /// Modify this sequence to contain the cross product between it and the
+                    /// sequence given.
+                    ///
+                    /// The literals are always drained from `other`, even if none are used.
+                    /// This permits callers to reuse the sequence allocation elsewhere.
+                    /// `other`). If `other` is infinite and this sequence is finite, then this
+                    /// is a no-op, unless this sequence contains a zero-length literal. In
+                    /// which case, the infiniteness of `other` infects this sequence, and this
+                    /// sequence is itself made infinite.
+                    /// literals.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows basic usage and how exact and inexact literals
+                    /// interact.
+                    ///
+                    /// let mut seq1 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// let mut seq2 = Seq::from_iter([
+                    ///     Literal::inexact("quux"),
+                    ///     Literal::exact("baz"),
+                    /// ]);
+                    /// seq1.cross_forward(&mut seq2);
+                    ///
+                    /// // The literals are pulled out of seq2.
+                    /// assert_eq!(Some(0), seq2.len());
+                    ///
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("fooquux"),
+                    ///     Literal::exact("foobaz"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// assert_eq!(expected, seq1);
+                    /// ```
+                    ///
+                    /// This example shows the behavior of when `other` is an infinite
+                    /// sequence.
+                    ///
+                    /// let mut seq1 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// let mut seq2 = Seq::infinite();
+                    /// seq1.cross_forward(&mut seq2);
+                    ///
+                    /// // When seq2 is infinite, cross product doesn't add anything, but
+                    /// // ensures all members of seq1 are inexact.
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// assert_eq!(expected, seq1);
+                    /// ```
+                    ///
+                    /// This example is like the one above, but shows what happens when this
+                    /// sequence contains an empty string. In this case, an infinite `other`
+                    /// sequence infects this sequence (because the empty string means that
+                    /// there are no finite prefixes):
+                    ///
+                    /// ```
+                    /// use regex_syntax::hir::literal::{Literal, Seq};
+                    ///
+                    /// let mut seq1 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::exact(""), // inexact provokes same behavior
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// let mut seq2 = Seq::infinite();
+                    /// seq1.cross_forward(&mut seq2);
+                    ///
+                    /// // seq1 is now infinite!
+                    /// assert!(!seq1.is_finite());
+                    /// ```
+                    ///
+                    /// This example shows the behavior of this sequence is infinite.
+                    ///
+                    /// let mut seq1 = Seq::infinite();
+                    /// let mut seq2 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// seq1.cross_forward(&mut seq2);
+                    ///
+                    /// // seq1 remains unchanged.
+                    /// assert!(!seq1.is_finite());
+                    /// // Even though the literals in seq2 weren't used, it was still drained.
+                    /// assert_eq!(Some(0), seq2.len());
+                    /// ```
+                    #[inline]
+                    pub fn cross_forward(&mut self, other: &mut Seq) {
+                        let (lits1, lits2) = match self.cross_preamble(other) {
+                            None => return,
+                            Some((lits1, lits2)) => (lits1, lits2),
+                        };
+                        let newcap = lits1.len().saturating_mul(lits2.len());
+                        for selflit in mem::replace(lits1, Vec::with_capacity(newcap)) {
+                            if !selflit.is_exact() {
+                                lits1.push(selflit);
+                                continue;
+                            }
+                            for otherlit in lits2.iter() {
+                                let mut newlit = Literal::exact(Vec::with_capacity(
+                                    selflit.len() + otherlit.len(),
+                                ));
+                                newlit.extend(&selflit);
+                                newlit.extend(&otherlit);
+                                if !otherlit.is_exact() {
+                                    newlit.make_inexact();
+                                }
+                                lits1.push(newlit);
+                            }
+                        }
+                        lits2.drain(..);
+                        self.dedup();
+                    }
+                    /// Modify this sequence to contain the cross product between it and
+                    /// the sequence given, where the sequences are treated as suffixes
+                    /// instead of prefixes. Namely, the sequence `other` is *prepended*
+                    /// to `self` (as opposed to `other` being *appended* to `self` in
+                    /// [`Seq::cross_forward`]).
+                    ///
+                    /// The literals are always drained from `other`, even if none are used.
+                    /// This permits callers to reuse the sequence allocation elsewhere.
+                    /// `other`). If `other` is infinite and this sequence is finite, then this
+                    /// is a no-op, unless this sequence contains a zero-length literal. In
+                    /// which case, the infiniteness of `other` infects this sequence, and this
+                    /// sequence is itself made infinite.
+                    /// literals.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows basic usage and how exact and inexact literals
+                    /// interact.
+                    ///
+                    /// let mut seq1 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// let mut seq2 = Seq::from_iter([
+                    ///     Literal::inexact("quux"),
+                    ///     Literal::exact("baz"),
+                    /// ]);
+                    /// seq1.cross_reverse(&mut seq2);
+                    ///
+                    /// // The literals are pulled out of seq2.
+                    /// assert_eq!(Some(0), seq2.len());
+                    ///
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("quuxfoo"),
+                    ///     Literal::inexact("bar"),
+                    ///     Literal::exact("bazfoo"),
+                    /// ]);
+                    /// assert_eq!(expected, seq1);
+                    /// ```
+                    ///
+                    /// This example shows the behavior of when `other` is an infinite
+                    /// sequence.
+                    ///
+                    /// let mut seq1 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// let mut seq2 = Seq::infinite();
+                    /// seq1.cross_reverse(&mut seq2);
+                    ///
+                    /// // When seq2 is infinite, cross product doesn't add anything, but
+                    /// // ensures all members of seq1 are inexact.
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::inexact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// assert_eq!(expected, seq1);
+                    /// ```
+                    ///
+                    /// This example is like the one above, but shows what happens when this
+                    /// sequence contains an empty string. In this case, an infinite `other`
+                    /// sequence infects this sequence (because the empty string means that
+                    /// there are no finite suffixes):
+                    ///
+                    /// ```
+                    /// use regex_syntax::hir::literal::{Literal, Seq};
+                    ///
+                    /// let mut seq1 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::exact(""), // inexact provokes same behavior
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// let mut seq2 = Seq::infinite();
+                    /// seq1.cross_reverse(&mut seq2);
+                    ///
+                    /// // seq1 is now infinite!
+                    /// assert!(!seq1.is_finite());
+                    /// ```
+                    ///
+                    /// This example shows the behavior when this sequence is infinite.
+                    ///
+                    /// let mut seq1 = Seq::infinite();
+                    /// let mut seq2 = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("bar"),
+                    /// ]);
+                    /// seq1.cross_reverse(&mut seq2);
+                    ///
+                    /// // seq1 remains unchanged.
+                    /// assert!(!seq1.is_finite());
+                    /// // Even though the literals in seq2 weren't used, it was still drained.
+                    /// assert_eq!(Some(0), seq2.len());
+                    /// ```
+                    #[inline]
+                    pub fn cross_reverse(&mut self, other: &mut Seq) {
+                        let (lits1, lits2) = match self.cross_preamble(other) {
+                            None => return,
+                            Some((lits1, lits2)) => (lits1, lits2),
+                        };
+                        // We basically proceed as we do in 'cross_forward' at this point,
+                        // except that the outer loop is now 'other' and the inner loop is now
+                        // 'self'. That's because 'self' corresponds to suffixes and 'other'
+                        // corresponds to the sequence we want to *prepend* to the suffixes.
+                        let newcap = lits1.len().saturating_mul(lits2.len());
+                        let selflits = mem::replace(lits1, Vec::with_capacity(newcap));
+                        for (i, otherlit) in lits2.drain(..).enumerate() {
+                            for selflit in selflits.iter() {
+                                if !selflit.is_exact() {
+                                    // If the suffix isn't exact, then we can't prepend
+                                    // anything to it. However, we still want to keep it. But
+                                    // we only want to keep one of them, to avoid duplication.
+                                    // (The duplication is okay from a correctness perspective,
+                                    // but wasteful.)
+                                    if i == 0 {
+                                        lits1.push(selflit.clone());
+                                    }
+                                    continue;
+                                }
+                                let mut newlit = Literal::exact(Vec::with_capacity(
+                                    otherlit.len() + selflit.len(),
+                                ));
+                                newlit.extend(&otherlit);
+                                newlit.extend(&selflit);
+                                if !otherlit.is_exact() {
+                                    newlit.make_inexact();
+                                }
+                                lits1.push(newlit);
+                            }
+                        }
+                        self.dedup();
+                    }
+                    /// A helper function the corresponds to the subtle preamble for both
+                    /// `cross_forward` and `cross_reverse`. In effect, it handles the cases
+                    /// of infinite sequences for both `self` and `other`, as well as ensuring
+                    /// that literals from `other` are drained even if they aren't used.
+                    fn cross_preamble<'a>(
+                        &'a mut self,
+                        other: &'a mut Seq,
+                    ) -> Option<(&'a mut Vec<Literal>, &'a mut Vec<Literal>)> {
+                        let lits2 = match other.literals {
+                            None => {
+                                // If our current seq contains the empty string and the seq
+                                // we're adding matches any literal, then it follows that the
+                                // current seq must now also match any literal.
+                                //
+                                // Otherwise, we just have to make sure everything in this
+                                // sequence is inexact.
+                                if self.min_literal_len() == Some(0) {
+                                    *self = Seq::infinite();
+                                } else {
+                                    self.make_inexact();
+                                }
+                                return None;
+                            }
+                            Some(ref mut lits) => lits,
+                        };
+                        let lits1 = match self.literals {
+                            None => {
+                                // If we aren't going to make it to the end of this routine
+                                // where lits2 is drained, then we need to do it now.
+                                lits2.drain(..);
+                                return None;
+                            }
+                            Some(ref mut lits) => lits,
+                        };
+                        Some((lits1, lits2))
+                    }
+                    /// Unions the `other` sequence into this one.
+                    /// the caller to reuse the `other` sequence in another context.
+                    /// preserved.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows basic usage.
+                    ///
+                    /// let mut seq1 = Seq::new(&["foo", "bar"]);
+                    /// let mut seq2 = Seq::new(&["bar", "quux", "foo"]);
+                    /// seq1.union(&mut seq2);
+                    ///
+                    /// // The literals are pulled out of seq2.
+                    /// assert_eq!(Some(0), seq2.len());
+                    ///
+                    /// // Adjacent literals are deduped, but non-adjacent literals may not be.
+                    /// assert_eq!(Seq::new(&["foo", "bar", "quux", "foo"]), seq1);
+                    /// ```
+                    ///
+                    /// This example shows that literals are drained from `other` even when
+                    /// they aren't necessarily used.
+                    ///
+                    /// let mut seq1 = Seq::infinite();
+                    /// // Infinite sequences have no finite length.
+                    /// assert_eq!(None, seq1.len());
+                    ///
+                    /// let mut seq2 = Seq::new(&["bar", "quux", "foo"]);
+                    /// seq1.union(&mut seq2);
+                    ///
+                    /// // seq1 is still infinite and seq2 has been drained.
+                    /// assert_eq!(None, seq1.len());
+                    /// assert_eq!(Some(0), seq2.len());
+                    /// ```
+                    #[inline]
+                    pub fn union(&mut self, other: &mut Seq) {
+                        let lits2 = match other.literals {
+                            None => {
+                                // Unioning with an infinite sequence always results in an
+                                // infinite sequence.
+                                self.make_infinite();
+                                return;
+                            }
+                            Some(ref mut lits) => lits.drain(..),
+                        };
+                        let lits1 = match self.literals {
+                            None => return,
+                            Some(ref mut lits) => lits,
+                        };
+                        lits1.extend(lits2);
+                        self.dedup();
+                    }
+                    /// Unions the `other` sequence into this one by splice the `other`
+                    /// sequence at the position of the first zero-length literal.
+                    /// correct preference order prefix sequence is `[a, foo, f]`.
+                    /// the caller to reuse the `other` sequence in another context. Note that
+                    /// the literals are drained even if no union is performed as well, i.e.,
+                    /// when this sequence does not contain a zero-length literal.
+                    /// preserved.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows basic usage.
+                    ///
+                    /// let mut seq1 = Seq::new(&["a", "", "f", ""]);
+                    /// let mut seq2 = Seq::new(&["foo"]);
+                    /// seq1.union_into_empty(&mut seq2);
+                    ///
+                    /// // The literals are pulled out of seq2.
+                    /// assert_eq!(Some(0), seq2.len());
+                    /// // 'foo' gets spliced into seq1 where the first empty string occurs.
+                    /// assert_eq!(Seq::new(&["a", "foo", "f"]), seq1);
+                    /// ```
+                    ///
+                    /// This example shows that literals are drained from `other` even when
+                    /// they aren't necessarily used.
+                    ///
+                    /// let mut seq1 = Seq::new(&["foo", "bar"]);
+                    /// let mut seq2 = Seq::new(&["bar", "quux", "foo"]);
+                    /// seq1.union_into_empty(&mut seq2);
+                    ///
+                    /// // seq1 has no zero length literals, so no splicing happens.
+                    /// assert_eq!(Seq::new(&["foo", "bar"]), seq1);
+                    /// // Even though no splicing happens, seq2 is still drained.
+                    /// assert_eq!(Some(0), seq2.len());
+                    /// ```
+                    #[inline]
+                    pub fn union_into_empty(&mut self, other: &mut Seq) {
+                        let lits2 = other.literals.as_mut().map(|lits| lits.drain(..));
+                        let lits1 = match self.literals {
+                            None => return,
+                            Some(ref mut lits) => lits,
+                        };
+                        let first_empty = match lits1.iter().position(|m| m.is_empty()) {
+                            None => return,
+                            Some(i) => i,
+                        };
+                        let lits2 = match lits2 {
+                            None => {
+                                // Note that we are only here if we've found an empty literal,
+                                // which implies that an infinite sequence infects this seq and
+                                // also turns it into an infinite sequence.
+                                self.literals = None;
+                                return;
+                            }
+                            Some(lits) => lits,
+                        };
+                        // Clearing out the empties needs to come before the splice because
+                        // the splice might add more empties that we don't want to get rid
+                        // of. Since we're splicing into the position of the first empty, the
+                        // 'first_empty' position computed above is still correct.
+                        lits1.retain(|m| !m.is_empty());
+                        lits1.splice(first_empty..first_empty, lits2);
+                        self.dedup();
+                    }
+                    /// Deduplicate adjacent equivalent literals in this sequence.
+                    /// removed.
+                    ///
+                    /// Deduping an infinite sequence is a no-op.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows how literals that are duplicate byte strings but
+                    /// are not equivalent with respect to exactness are resolved.
+                    ///
+                    /// let mut seq = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::inexact("foo"),
+                    /// ]);
+                    /// seq.dedup();
+                    ///
+                    /// assert_eq!(Seq::from_iter([Literal::inexact("foo")]), seq);
+                    /// ```
+                    #[inline]
+                    pub fn dedup(&mut self) {
+                        if let Some(ref mut lits) = self.literals {
+                            lits.dedup_by(|lit1, lit2| {
+                                if lit1.as_bytes() != lit2.as_bytes() {
+                                    return false;
+                                }
+                                if lit1.is_exact() != lit2.is_exact() {
+                                    lit1.make_inexact();
+                                    lit2.make_inexact();
+                                }
+                                true
+                            });
+                        }
+                    }
+                    /// Sorts this sequence of literals lexicographically.
+                    /// represent the same preference order match semantics. For example,
+                    /// sorting the sequence `[samwise, sam]` yields the sequence `[sam,
+                    /// samwise]`. Under preference order semantics, the latter sequence will
+                    /// never match `samwise` where as the first sequence can.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows basic usage.
+                    ///
+                    /// let mut seq = Seq::new(&["foo", "quux", "bar"]);
+                    /// seq.sort();
+                    ///
+                    /// assert_eq!(Seq::new(&["bar", "foo", "quux"]), seq);
+                    /// ```
+                    #[inline]
+                    pub fn sort(&mut self) {
+                        if let Some(ref mut lits) = self.literals {
+                            lits.sort();
+                        }
+                    }
+                    /// Reverses all of the literals in this sequence.
+                    ///
+                    /// The order of the sequence itself is preserved.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows basic usage.
+                    ///
+                    /// let mut seq = Seq::new(&["oof", "rab"]);
+                    /// seq.reverse_literals();
+                    /// assert_eq!(Seq::new(&["foo", "bar"]), seq);
+                    /// ```
+                    #[inline]
+                    pub fn reverse_literals(&mut self) {
+                        if let Some(ref mut lits) = self.literals {
+                            for lit in lits.iter_mut() {
+                                lit.reverse();
+                            }
+                        }
+                    }
+                    /// Shrinks this seq to its minimal size while respecting the preference
+                    /// order of its literals.
+                    /// "preference order" search. Similar to [`Seq::dedup`], if a literal is
+                    /// deduped, then the one that remains is made inexact.
+                    ///
+                    /// This is a no-op on seqs that are empty or not finite.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This example shows the difference between `{sam, samwise}` and
+                    /// `{samwise, sam}`.
+                    ///
+                    /// // If 'sam' comes before 'samwise' and a preference order search is
+                    /// // executed, then 'samwise' can never match.
+                    /// let mut seq = Seq::new(&["sam", "samwise"]);
+                    /// seq.minimize_by_preference();
+                    /// assert_eq!(Seq::from_iter([Literal::inexact("sam")]), seq);
+                    ///
+                    /// // But if they are reversed, then it's possible for 'samwise' to match
+                    /// // since it is given higher preference.
+                    /// let mut seq = Seq::new(&["samwise", "sam"]);
+                    /// seq.minimize_by_preference();
+                    /// assert_eq!(Seq::new(&["samwise", "sam"]), seq);
+                    /// ```
+                    ///
+                    /// This example shows that if an empty string is in this seq, then
+                    /// anything that comes after it can never match.
+                    ///
+                    /// // An empty string is a prefix of all strings, so it automatically
+                    /// // inhibits any subsequent strings from matching.
+                    /// let mut seq = Seq::new(&["foo", "bar", "", "quux", "fox"]);
+                    /// seq.minimize_by_preference();
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::exact("foo"),
+                    ///     Literal::exact("bar"),
+                    ///     Literal::inexact(""),
+                    /// ]);
+                    /// assert_eq!(expected, seq);
+                    ///
+                    /// // And of course, if it's at the beginning, then it makes it impossible
+                    /// // for anything else to match.
+                    /// let mut seq = Seq::new(&["", "foo", "quux", "fox"]);
+                    /// seq.minimize_by_preference();
+                    /// assert_eq!(Seq::from_iter([Literal::inexact("")]), seq);
+                    /// ```
+                    #[inline]
+                    pub fn minimize_by_preference(&mut self) {
+                        if let Some(ref mut lits) = self.literals {
+                            PreferenceTrie::minimize(lits, false);
+                        }
+                    }
+                    /// Trims all literals in this seq such that only the first `len` bytes
+                    /// remain. If a literal has less than or equal to `len` bytes, then it
+                    /// remains unchanged. Otherwise, it is trimmed and made inexact.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// ```
+                    /// use regex_syntax::hir::literal::{Literal, Seq};
+                    ///
+                    /// let mut seq = Seq::new(&["a", "foo", "quux"]);
+                    /// seq.keep_first_bytes(2);
+                    ///
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::exact("a"),
+                    ///     Literal::inexact("fo"),
+                    ///     Literal::inexact("qu"),
+                    /// ]);
+                    /// assert_eq!(expected, seq);
+                    /// ```
+                    #[inline]
+                    pub fn keep_first_bytes(&mut self, len: usize) {
+                        if let Some(ref mut lits) = self.literals {
+                            for m in lits.iter_mut() {
+                                m.keep_first_bytes(len);
+                            }
+                        }
+                    }
+                    /// Trims all literals in this seq such that only the last `len` bytes
+                    /// remain. If a literal has less than or equal to `len` bytes, then it
+                    /// remains unchanged. Otherwise, it is trimmed and made inexact.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// ```
+                    /// use regex_syntax::hir::literal::{Literal, Seq};
+                    ///
+                    /// let mut seq = Seq::new(&["a", "foo", "quux"]);
+                    /// seq.keep_last_bytes(2);
+                    ///
+                    /// let expected = Seq::from_iter([
+                    ///     Literal::exact("a"),
+                    ///     Literal::inexact("oo"),
+                    ///     Literal::inexact("ux"),
+                    /// ]);
+                    /// assert_eq!(expected, seq);
+                    /// ```
+                    #[inline]
+                    pub fn keep_last_bytes(&mut self, len: usize) {
+                        if let Some(ref mut lits) = self.literals {
+                            for m in lits.iter_mut() {
+                                m.keep_last_bytes(len);
+                            }
+                        }
+                    }
+                    /// Returns true if this sequence is finite.
+                    #[inline]
+                    pub fn is_finite(&self) -> bool {
+                        self.literals.is_some()
+                    }
+                    /// Returns true if and only if this sequence is finite and empty.
+                    #[inline]
+                    pub fn is_empty(&self) -> bool {
+                        self.len() == Some(0)
+                    }
+                    /// Returns the number of literals in this sequence if the sequence is
+                    /// finite. If the sequence is infinite, then `None` is returned.
+                    #[inline]
+                    pub fn len(&self) -> Option<usize> {
+                        self.literals.as_ref().map(|lits| lits.len())
+                    }
+                    /// Returns true if and only if all literals in this sequence are exact.
+                    ///
+                    /// This returns false if the sequence is infinite.
+                    #[inline]
+                    pub fn is_exact(&self) -> bool {
+                        self.literals().map_or(false, |lits| lits.iter().all(|x| x.is_exact()))
+                    }
+                    /// Returns true if and only if all literals in this sequence are inexact.
+                    ///
+                    /// This returns true if the sequence is infinite.
+                    #[inline]
+                    pub fn is_inexact(&self) -> bool {
+                        self.literals().map_or(true, |lits| lits.iter().all(|x| !x.is_exact()))
+                    }
+                    /// Return the maximum length of the sequence that would result from
+                    /// unioning `self` with `other`. If either set is infinite, then this
+                    /// returns `None`.
+                    #[inline]
+                    pub fn max_union_len(&self, other: &Seq) -> Option<usize> {
+                        let len1 = self.len()?;
+                        let len2 = other.len()?;
+                        Some(len1.saturating_add(len2))
+                    }
+                    /// Return the maximum length of the sequence that would result from the
+                    /// cross product of `self` with `other`. If either set is infinite, then
+                    /// this returns `None`.
+                    #[inline]
+                    pub fn max_cross_len(&self, other: &Seq) -> Option<usize> {
+                        let len1 = self.len()?;
+                        let len2 = other.len()?;
+                        Some(len1.saturating_mul(len2))
+                    }
+                    /// Returns the length of the shortest literal in this sequence.
+                    ///
+                    /// If the sequence is infinite or empty, then this returns `None`.
+                    #[inline]
+                    pub fn min_literal_len(&self) -> Option<usize> {
+                        self.literals.as_ref()?.iter().map(|x| x.len()).min()
+                    }
+                    /// Returns the length of the longest literal in this sequence.
+                    ///
+                    /// If the sequence is infinite or empty, then this returns `None`.
+                    #[inline]
+                    pub fn max_literal_len(&self) -> Option<usize> {
+                        self.literals.as_ref()?.iter().map(|x| x.len()).max()
+                    }
+                    /// Returns the longest common prefix from this seq.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This shows some example seqs and their longest common prefix.
+                    ///
+                    /// let seq = Seq::new(&["foo", "foobar", "fo"]);
+                    /// assert_eq!(Some(&b"fo"[..]), seq.longest_common_prefix());
+                    /// let seq = Seq::new(&["foo", "foo"]);
+                    /// assert_eq!(Some(&b"foo"[..]), seq.longest_common_prefix());
+                    /// let seq = Seq::new(&["foo", "bar"]);
+                    /// assert_eq!(Some(&b""[..]), seq.longest_common_prefix());
+                    /// let seq = Seq::new(&[""]);
+                    /// assert_eq!(Some(&b""[..]), seq.longest_common_prefix());
+                    ///
+                    /// let seq = Seq::infinite();
+                    /// assert_eq!(None, seq.longest_common_prefix());
+                    /// let seq = Seq::empty();
+                    /// assert_eq!(None, seq.longest_common_prefix());
+                    /// ```
+                    #[inline]
+                    pub fn longest_common_prefix(&self) -> Option<&[u8]> {
+                        // If we match everything or match nothing, then there's no meaningful
+                        // longest common prefix.
+                        let lits = match self.literals {
+                            None => return None,
+                            Some(ref lits) => lits,
+                        };
+                        if lits.len() == 0 {
+                            return None;
+                        }
+                        let base = lits[0].as_bytes();
+                        let mut len = base.len();
+                        for m in lits.iter().skip(1) {
+                            len = m
+                                .as_bytes()
+                                .iter()
+                                .zip(base[..len].iter())
+                                .take_while(|&(a, b)| a == b)
+                                .count();
+                            if len == 0 {
+                                return Some(&[]);
+                            }
+                        }
+                        Some(&base[..len])
+                    }
+                    /// Returns the longest common suffix from this seq.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This shows some example seqs and their longest common suffix.
+                    ///
+                    /// let seq = Seq::new(&["oof", "raboof", "of"]);
+                    /// assert_eq!(Some(&b"of"[..]), seq.longest_common_suffix());
+                    /// let seq = Seq::new(&["foo", "foo"]);
+                    /// assert_eq!(Some(&b"foo"[..]), seq.longest_common_suffix());
+                    /// let seq = Seq::new(&["foo", "bar"]);
+                    /// assert_eq!(Some(&b""[..]), seq.longest_common_suffix());
+                    /// let seq = Seq::new(&[""]);
+                    /// assert_eq!(Some(&b""[..]), seq.longest_common_suffix());
+                    ///
+                    /// let seq = Seq::infinite();
+                    /// assert_eq!(None, seq.longest_common_suffix());
+                    /// let seq = Seq::empty();
+                    /// assert_eq!(None, seq.longest_common_suffix());
+                    /// ```
+                    #[inline]
+                    pub fn longest_common_suffix(&self) -> Option<&[u8]> {
+                        // If we match everything or match nothing, then there's no meaningful
+                        // longest common suffix.
+                        let lits = match self.literals {
+                            None => return None,
+                            Some(ref lits) => lits,
+                        };
+                        if lits.len() == 0 {
+                            return None;
+                        }
+                        let base = lits[0].as_bytes();
+                        let mut len = base.len();
+                        for m in lits.iter().skip(1) {
+                            len = m
+                                .as_bytes()
+                                .iter()
+                                .rev()
+                                .zip(base[base.len() - len..].iter().rev())
+                                .take_while(|&(a, b)| a == b)
+                                .count();
+                            if len == 0 {
+                                return Some(&[]);
+                            }
+                        }
+                        Some(&base[base.len() - len..])
+                    }
+                    /// Optimizes this seq while treating its literals as prefixes and
+                    /// respecting the preference order of its literals.
+                    /// that optimization tries to accomplish is to make the literals in this
+                    /// set reflect inputs that will result in a more effective prefilter.
+                    /// Principally by reducing the false positive rate of candidates found by
+                    /// the literals in this sequence. That is, when a match of a literal is
+                    /// found, we would like it to be a strong predictor of the overall match
+                    /// of the regex. If it isn't, then much time will be spent starting and
+                    /// stopping the prefilter search and attempting to confirm the match only
+                    /// to have it fail.
+                    ///
+                    /// Some of those heuristics might be:
+                    ///
+                    /// * Identifying a common prefix from a larger sequence of literals, and
+                    /// shrinking the sequence down to that single common prefix.
+                    /// * Rejecting the sequence entirely if it is believed to result in very
+                    /// high false positive rate. When this happens, the sequence is made
+                    /// infinite.
+                    /// * Shrinking the sequence to a smaller number of literals representing
+                    /// prefixes, but not shrinking it so much as to make literals too short.
+                    /// (A sequence with very short literals, of 1 or 2 bytes, will typically
+                    /// result in a higher false positive rate.)
+                    ///
+                    /// Optimization should only be run once extraction is complete. Namely,
+                    /// optimization may make assumptions that do not compose with other
+                    /// operations in the middle of extraction. For example, optimization will
+                    /// reduce `[E(sam), E(samwise)]` to `[E(sam)]`, but such a transformation
+                    /// is only valid if no other extraction will occur. If other extraction
+                    /// may occur, then the correct transformation would be to `[I(sam)]`.
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                    ///
+                    /// This shows how optimization might transform a sequence. Note that
+                    /// the specific behavior is not a documented guarantee. The heuristics
+                    /// used are an implementation detail and may change over time in semver
+                    /// compatible releases.
+                    ///
+                    /// let mut seq = Seq::new(&[
+                    ///     "samantha",
+                    ///     "sam",
+                    ///     "samwise",
+                    ///     "frodo",
+                    /// ]);
+                    /// seq.optimize_for_prefix_by_preference();
+                    /// assert_eq!(Seq::from_iter([
+                    ///     Literal::exact("samantha"),
+                    ///     // Kept exact even though 'samwise' got pruned
+                    ///     // because optimization assumes literal extraction
+                    ///     // has finished.
+                    ///     Literal::exact("sam"),
+                    ///     Literal::exact("frodo"),
+                    /// ]), seq);
+                    /// ```
+                    ///
+                    /// #[derive( Clone, Debug, Eq, PartialEq )]Example: optimization may make the sequence infinite
+                    ///
+                    /// If the heuristics deem that the sequence could cause a very high false
+                    /// positive rate, then it may make the sequence infinite, effectively
+                    /// disabling its use as a prefilter.
+                    ///
+                    /// let mut seq = Seq::new(&[
+                    ///     "samantha",
+                    ///     // An empty string matches at every position,
+                    ///     // thus rendering the prefilter completely
+                    ///     // ineffective.
+                    ///     "",
+                    ///     "sam",
+                    ///     "samwise",
+                    ///     "frodo",
+                    /// ]);
+                    /// seq.optimize_for_prefix_by_preference();
+                    /// assert!(!seq.is_finite());
+                    /// ```
+                    ///
+                    /// Do note that just because there is a `" "` in the sequence, that
+                    /// doesn't mean the sequence will always be made infinite after it is
+                    /// optimized. Namely, if the sequence is considered exact (any match
+                    /// corresponds to an overall match of the original regex), then any match
+                    /// is an overall match, and so the false positive rate is always `0`.
+                    /// Thus the entire sequence is exact, and it is kept as-is, even though
+                    /// one is an ASCII space:
+                    ///
+                    /// ```
+                    /// use regex_syntax::hir::literal::{Seq, Literal};
+                    ///
+                    /// let mut seq = Seq::new(&[
+                    ///     "samantha",
+                    ///     " ",
+                    ///     "sam",
+                    ///     "frodo",
+                    /// ]);
+                    /// seq.optimize_for_prefix_by_preference();
+                    /// assert!(seq.is_finite());
+                    /// ```
+                    #[inline]
+                    pub fn optimize_for_prefix_by_preference(&mut self) {
+                        self.optimize_by_preference(true);
+                    }
+                    /// Optimizes this seq while treating its literals as suffixes and
+                    /// respecting the preference order of its literals.
+                    ///
+                    /// Optimization should only be run once extraction is complete.
+                    #[inline]
+                    pub fn optimize_for_suffix_by_preference(&mut self) {
+                        self.optimize_by_preference(false);
+                    }
+
+                    fn optimize_by_preference(&mut self, prefix: bool) {
+                        let origlen = match self.len() {
+                            None => return,
+                            Some(len) => len,
+                        };
+                        // Just give up now if our sequence contains an empty string.
+                        if self.min_literal_len().map_or(false, |len| len == 0) {
+                            // We squash the sequence so that nobody else gets any bright
+                            // ideas to try and use it. An empty string implies a match at
+                            // every position. A prefilter cannot help you here.
+                            self.make_infinite();
+                            return;
+                        }
+                        // Make sure we start with the smallest sequence possible. We use a
+                        // special version of preference minimization that retains exactness.
+                        // This is legal because optimization is only expected to occur once
+                        // extraction is complete.
+                        if prefix {
+                            if let Some(ref mut lits) = self.literals {
+                                PreferenceTrie::minimize(lits, true);
+                            }
+                        }
+
+                        // Look for a common prefix (or suffix). If we found one of those and
+                        // it's long enough, then it's a good bet that it will be our fastest
+                        // possible prefilter since single-substring search is so fast.
+                        let fix = if prefix {
+                            self.longest_common_prefix()
+                        } else {
+                            self.longest_common_suffix()
+                        };
+                        if let Some(fix) = fix {
+                            // As a special case, if we have a common prefix and the leading
+                            // byte of that prefix is one that we think probably occurs rarely,
+                            // then strip everything down to just that single byte. This should
+                            // promote the use of memchr.
+                            //
+                            // ... we only do this though if our sequence has more than one
+                            // literal. Otherwise, we'd rather just stick with a single literal
+                            // scan. That is, using memchr is probably better than looking
+                            // for 2 or more literals, but probably not as good as a straight
+                            // memmem search.
+                            //
+                            // ... and also only do this when the prefix is short and probably
+                            // not too discriminatory anyway. If it's longer, then it's
+                            // probably quite discriminatory and thus is likely to have a low
+                            // false positive rate.
+                            if prefix
+                                && origlen > 1
+                                && fix.len() >= 1
+                                && fix.len() <= 3
+                                && rank(fix[0]) < 200
+                            {
+                                self.keep_first_bytes(1);
+                                self.dedup();
+                                return;
+                            }
+                            // We only strip down to the common prefix/suffix if we think
+                            // the existing set of literals isn't great, or if the common
+                            // prefix/suffix is expected to be particularly discriminatory.
+                            let isfast =
+                                self.is_exact() && self.len().map_or(false, |len| len <= 16);
+                            let usefix = fix.len() > 4 || (fix.len() > 1 && !isfast);
+                            if usefix {
+                                // If we keep exactly the number of bytes equal to the length
+                                // of the prefix (or suffix), then by the definition of a
+                                // prefix, every literal in the sequence will be equivalent.
+                                // Thus, 'dedup' will leave us with one literal.
+                                //
+                                // We do it this way to avoid an alloc, but also to make sure
+                                // the exactness of literals is kept (or not).
+                                if prefix {
+                                    self.keep_first_bytes(fix.len());
+                                } else {
+                                    self.keep_last_bytes(fix.len());
+                                }
+                                self.dedup();
+                                assert_eq!(Some(1), self.len());
+                                // We still fall through here. In particular, we want our
+                                // longest common prefix to be subject to the poison check.
+                            }
+                        }
+                        // If we have an exact sequence, we *probably* just want to keep it
+                        // as-is. But there are some cases where we don't. So we save a copy of
+                        // the exact sequence now, and then try to do some more optimizations
+                        // below. If those don't work out, we go back to this exact sequence.
+                        //
+                        // The specific motivation for this is that we sometimes wind up with
+                        // an exact sequence with a hefty number of literals. Say, 100. If we
+                        // stuck with that, it would be too big for Teddy and would result in
+                        // using Aho-Corasick. Which is fine... but the lazy DFA is plenty
+                        // suitable in such cases. The real issue is that we will wind up not
+                        // using a fast prefilter at all. So in cases like this, even though
+                        // we have an exact sequence, it would be better to try and shrink the
+                        // sequence (which we do below) and use it as a prefilter that can
+                        // produce false positive matches.
+                        //
+                        // But if the shrinking below results in a sequence that "sucks," then
+                        // we don't want to use that because we already have an exact sequence
+                        // in hand.
+                        let exact: Option<Seq> =
+                            if self.is_exact() { Some(self.clone()) } else { None };
+                        // Now we attempt to shorten the sequence. The idea here is that we
+                        // don't want to look for too many literals, but we want to shorten
+                        // our sequence enough to improve our odds of using better algorithms
+                        // downstream (such as Teddy).
+                        //
+                        // The pair of numbers in this list corresponds to the maximal prefix
+                        // (in bytes) to keep for all literals and the length of the sequence
+                        // at which to do it.
+                        //
+                        // So for example, the pair (3, 500) would mean, "if we have more than
+                        // 500 literals in our sequence, then truncate all of our literals
+                        // such that they are at most 3 bytes in length and the minimize the
+                        // sequence."
+                        const ATTEMPTS: [(usize, usize); 5] =
+                            [(5, 10), (4, 10), (3, 64), (2, 64), (1, 10)];
+                        for (keep, limit) in ATTEMPTS {
+                            let len = match self.len() {
+                                None => break,
+                                Some(len) => len,
+                            };
+                            if len <= limit {
+                                break;
+                            }
+                            if prefix {
+                                self.keep_first_bytes(keep);
+                            } else {
+                                self.keep_last_bytes(keep);
+                            }
+                            if prefix {
+                                if let Some(ref mut lits) = self.literals {
+                                    PreferenceTrie::minimize(lits, true);
+                                }
+                            }
+                        }
+                        // Check for a poison literal. A poison literal is one that is short
+                        // and is believed to have a very high match count. These poisons
+                        // generally lead to a prefilter with a very high false positive rate,
+                        // and thus overall worse performance.
+                        //
+                        // We do this last because we could have gone from a non-poisonous
+                        // sequence to a poisonous one. Perhaps we should add some code to
+                        // prevent such transitions in the first place, but then again, we
+                        // likely only made the transition in the first place if the sequence
+                        // was itself huge. And huge sequences are themselves poisonous. So...
+                        if let Some(lits) = self.literals() {
+                            if lits.iter().any(|lit| lit.is_poisonous()) {
+                                self.make_infinite();
+                            }
+                        }
+                        // OK, if we had an exact sequence before attempting more optimizations
+                        // above and our post-optimized sequence sucks for some reason or
+                        // another, then we go back to the exact sequence.
+                        if let Some(exact) = exact {
+                            // If optimizing resulted in dropping our literals, then certainly
+                            // backup and use the exact sequence that we had.
+                            if !self.is_finite() {
+                                *self = exact;
+                                return;
+                            }
+                            // If our optimized sequence contains a short literal, then it's
+                            // *probably* not so great. So throw it away and revert to the
+                            // exact sequence.
+                            if self.min_literal_len().map_or(true, |len| len <= 2) {
+                                *self = exact;
+                                return;
+                            }
+                            // Finally, if our optimized sequence is "big" (i.e., can't use
+                            // Teddy), then also don't use it and rely on the exact sequence.
+                            if self.len().map_or(true, |len| len > 64) {
+                                *self = exact;
+                                return;
+                            }
+                        }
+                    }
+                }
+
+                impl ::fmt::Debug for Seq {
+                    fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                        write!(f, "Seq")?;
+                        if let Some(lits) = self.literals() {
+                            f.debug_list().entries(lits.iter()).finish()
+                        } else {
+                            write!(f, "[∞]")
+                        }
+                    }
+                }
+
+                impl FromIterator<Literal> for Seq {
+                    fn from_iter<T: IntoIterator<Item = Literal>>(it: T) -> Seq {
+                        let mut seq = Seq::empty();
+                        for literal in it {
+                            seq.push(literal);
+                        }
+                        seq
+                    }
+                }
+                /// A single literal extracted from an [`Hir`] expression.
+                ///
+                /// A literal is composed of two things:
+                ///
+                /// * A sequence of bytes. No guarantees with respect to UTF-8 are provided.
+                /// In particular, even if the regex a literal is extracted from is UTF-8, the
+                /// literal extracted may not be valid UTF-8. (For example, if an [`Extractor`]
+                /// limit resulted in trimming a literal in a way that splits a codepoint.)
+                /// * Whether the literal is "exact" or not. An "exact" literal means that it
+                /// has not been trimmed, and may continue to be extended. If a literal is
+                /// "exact" after visiting the entire `Hir` expression, then this implies that
+                /// the literal leads to a match state. (Although it doesn't necessarily imply
+                /// all occurrences of the literal correspond to a match of the regex, since
+                /// literal extraction ignores look-around assertions.)
+                #[derive(Clone, Eq, PartialEq, PartialOrd, Ord)]
+                pub struct Literal {
+                    bytes: Vec<u8>,
+                    exact: bool,
+                }
+
+                impl Literal {
+                    /// Returns a new exact literal containing the bytes given.
+                    #[inline]
+                    pub fn exact<B: Into<Vec<u8>>>(bytes: B) -> Literal {
+                        Literal { bytes: bytes.into(), exact: true }
+                    }
+                    /// Returns a new inexact literal containing the bytes given.
+                    #[inline]
+                    pub fn inexact<B: Into<Vec<u8>>>(bytes: B) -> Literal {
+                        Literal { bytes: bytes.into(), exact: false }
+                    }
+                    /// Returns the bytes in this literal.
+                    #[inline]
+                    pub fn as_bytes(&self) -> &[u8] {
+                        &self.bytes
+                    }
+                    /// Yields ownership of the bytes inside this literal.
+                    ///
+                    /// Note that this throws away whether the literal is "exact" or not.
+                    #[inline]
+                    pub fn into_bytes(self) -> Vec<u8> {
+                        self.bytes
+                    }
+                    /// Returns the length of this literal in bytes.
+                    #[inline]
+                    pub fn len(&self) -> usize {
+                        self.as_bytes().len()
+                    }
+                    /// Returns true if and only if this literal has zero bytes.
+                    #[inline]
+                    pub fn is_empty(&self) -> bool {
+                        self.len() == 0
+                    }
+                    /// Returns true if and only if this literal is exact.
+                    #[inline]
+                    pub fn is_exact(&self) -> bool {
+                        self.exact
+                    }
+                    /// Marks this literal as inexact.
+                    #[inline]
+                    pub fn make_inexact(&mut self) {
+                        self.exact = false;
+                    }
+                    /// Reverse the bytes in this literal.
+                    #[inline]
+                    pub fn reverse(&mut self) {
+                        self.bytes.reverse();
+                    }
+                    /// Extend this literal with the literal given.
+                    ///
+                    /// If this literal is inexact, then this is a no-op.
+                    #[inline]
+                    pub fn extend(&mut self, lit: &Literal) {
+                        if !self.is_exact() {
+                            return;
+                        }
+                        self.bytes.extend_from_slice(&lit.bytes);
+                    }
+                    /// Trims this literal such that only the first `len` bytes remain. If
+                    /// this literal has fewer than `len` bytes, then it remains unchanged.
+                    /// Otherwise, the literal is marked as inexact.
+                    #[inline]
+                    pub fn keep_first_bytes(&mut self, len: usize) {
+                        if len >= self.len() {
+                            return;
+                        }
+                        self.make_inexact();
+                        self.bytes.truncate(len);
+                    }
+                    /// Trims this literal such that only the last `len` bytes remain. If this
+                    /// literal has fewer than `len` bytes, then it remains unchanged.
+                    /// Otherwise, the literal is marked as inexact.
+                    #[inline]
+                    pub fn keep_last_bytes(&mut self, len: usize) {
+                        if len >= self.len() {
+                            return;
+                        }
+                        self.make_inexact();
+                        self.bytes.drain(..self.len() - len);
+                    }
+                    /// Returns true if it is believe that this literal is likely to match very
+                    /// frequently, and is thus not a good candidate for a prefilter.
+                    fn is_poisonous(&self) -> bool {
+                        self.is_empty() || (self.len() == 1 && rank(self.as_bytes()[0]) >= 250)
+                    }
+                }
+
+                impl From<u8> for Literal {
+                    fn from(byte: u8) -> Literal {
+                        Literal::exact(vec![byte])
+                    }
+                }
+
+                impl From<char> for Literal {
+                    fn from(ch: char) -> Literal {
+                        use alloc::string::ToString;
+                        Literal::exact(ch.encode_utf8(&mut [0; 4]).to_string())
+                    }
+                }
+
+                impl AsRef<[u8]> for Literal {
+                    fn as_ref(&self) -> &[u8] {
+                        self.as_bytes()
+                    }
+                }
+
+                impl ::fmt::Debug for Literal {
+                    fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                        let tag = if self.exact { "E" } else { "I" };
+                        f.debug_tuple(tag)
+                            .field(&crate::debug::Bytes(self.as_bytes()))
+                            .finish()
+                    }
+                }
+                /// A "preference" trie that rejects literals that will never match when
+                /// executing a leftmost first or "preference" search.
+                ///
+                /// For example, if 'sam' is inserted, then trying to insert 'samwise' will be
+                /// rejected because 'samwise' can never match since 'sam' will always take
+                /// priority. However, if 'samwise' is inserted first, then inserting 'sam'
+                /// after it is accepted. In this case, either 'samwise' or 'sam' can match in
+                /// a "preference" search.
+                ///
+                /// Note that we only use this trie as a "set." That is, given a sequence of
+                /// literals, we insert each one in order. An `insert` will reject a literal
+                /// if a prefix of that literal already exists in the trie. Thus, to rebuild
+                /// the "minimal" sequence, we simply only keep literals that were successfully
+                /// inserted. (Since we don't need traversal, one wonders whether we can make
+                /// some simplifications here, but I haven't given it a ton of thought and I've
+                /// never seen this show up on a profile. Because of the heuristic limits
+                /// imposed on literal extractions, the size of the inputs here is usually
+                /// very small.)
+                #[derive(Debug)]
+                struct PreferenceTrie {
+                    /// The states in this trie. The index of a state in this vector is its ID.
+                    states: Vec<State>,
+                    /// This vec indicates which states are match states. It always has
+                    /// the same length as `states` and is indexed by the same state ID.
+                    /// A state with identifier `sid` is a match state if and only if
+                    /// `matches[sid].is_some()`. The option contains the index of the literal
+                    /// corresponding to the match. The index is offset by 1 so that it fits in
+                    /// a NonZeroUsize.
+                    matches: Vec<Option<NonZeroUsize>>,
+                    /// The index to allocate to the next literal added to this trie. Starts at
+                    /// 1 and increments by 1 for every literal successfully added to the trie.
+                    next_literal_index: usize,
+                }
+                /// A single state in a trie. Uses a sparse representation for its transitions.
+                #[derive(Debug, Default)]
+                struct State {
+                    /// Sparse representation of the transitions out of this state. Transitions
+                    /// are sorted by byte. There is at most one such transition for any
+                    /// particular byte.
+                    trans: Vec<(u8, usize)>,
+                }
+
+                impl PreferenceTrie {
+                    /// Minimizes the given sequence of literals while preserving preference
+                    /// order semantics.
+                    /// only contains exact literals. In that case, we can keep all retained
+                    /// literals as exact because we know we'll never need to match anything
+                    /// after them and because any removed literals are guaranteed to never
+                    /// match.
+                    fn minimize(literals: &mut Vec<Literal>, keep_exact: bool) {
+                        let mut trie = PreferenceTrie {
+                            states: vec![],
+                            matches: vec![],
+                            next_literal_index: 1,
+                        };
+                        let mut make_inexact = vec![];
+                        literals.retain_mut(|lit| match trie.insert(lit.as_bytes()) {
+                            Ok(_) => true,
+                            Err(i) => {
+                                if !keep_exact {
+                                    make_inexact.push(i.checked_sub(1).unwrap());
+                                }
+                                false
+                            }
+                        });
+                        for i in make_inexact {
+                            literals[i].make_inexact();
+                        }
+                    }
+                    /// Returns `Ok` if the given byte string is accepted into this trie and
+                    /// `Err` otherwise. The index for the success case corresponds to the
+                    /// index of the literal added. The index for the error case corresponds to
+                    /// the index of the literal already in the trie that prevented the given
+                    /// byte string from being added. (Which implies it is a prefix of the one
+                    /// given.)
+                    ///
+                    /// In short, the byte string given is accepted into the trie if and only
+                    /// if it is possible for it to match when executing a preference order
+                    /// search.
+                    fn insert(&mut self, bytes: &[u8]) -> Result<usize, usize> {
+                        let mut prev = self.root();
+                        if let Some(idx) = self.matches[prev] {
+                            return Err(idx.get());
+                        }
+                        for &b in bytes.iter() {
+                            match self.states[prev].trans.binary_search_by_key(&b, |t| t.0) {
+                                Ok(i) => {
+                                    prev = self.states[prev].trans[i].1;
+                                    if let Some(idx) = self.matches[prev] {
+                                        return Err(idx.get());
+                                    }
+                                }
+                                Err(i) => {
+                                    let next = self.create_state();
+                                    self.states[prev].trans.insert(i, (b, next));
+                                    prev = next;
+                                }
+                            }
+                        }
+                        let idx = self.next_literal_index;
+                        self.next_literal_index += 1;
+                        self.matches[prev] = NonZeroUsize::new(idx);
+                        Ok(idx)
+                    }
+                    /// Returns the root state ID, and if it doesn't exist, creates it.
+                    fn root(&mut self) -> usize {
+                        if !self.states.is_empty() {
+                            0
+                        } else {
+                            self.create_state()
+                        }
+                    }
+                    /// Creates a new empty state and returns its ID.
+                    fn create_state(&mut self) -> usize {
+                        let id = self.states.len();
+                        self.states.push(State::default());
+                        self.matches.push(None);
+                        id
+                    }
+                }
+                /// Returns the "rank" of the given byte.
+                ///
+                /// The minimum rank value is `0` and the maximum rank value is `255`.
+                ///
+                /// The rank of a byte is derived from a heuristic background distribution of
+                /// relative frequencies of bytes. The heuristic says that lower the rank of a
+                /// byte, the less likely that byte is to appear in any arbitrary haystack.
+                pub fn rank(byte: u8) -> u8 {
+                    crate::rank::BYTE_FREQUENCIES[usize::from(byte)]
+                }
+                
+            }
+
+            pub mod print
+            {
+                /*!
+                This module provides a regular expression printer for `Hir`. */
+                use ::
+                {
+                    *,
+                };
+                
+                use super::{ visitor::{self, Visitor}, Hir, HirKind };
+                /*
+                */
+                /// A builder for constructing a printer.
+                #[derive( Clone, Debug )]
+                struct PrinterBuilder {
+                    _priv: (),
+                }
+
+                impl Default for PrinterBuilder {
+                    fn default() -> PrinterBuilder {
+                        PrinterBuilder::new()
+                    }
+                }
+
+                impl PrinterBuilder {
+                    fn new() -> PrinterBuilder {
+                        PrinterBuilder { _priv: () }
+                    }
+
+                    fn build(&self) -> Printer {
+                        Printer { _priv: () }
+                    }
+                }
+                /// A printer for a regular expression's high-level intermediate representation.
+                #[derive(Debug)]
+                pub struct Printer {
+                    _priv: (),
+                }
+
+                impl Printer {
+                    /// Create a new printer.
+                    pub fn new() -> Printer {
+                        PrinterBuilder::new().build()
+                    }
+                    /// Print the given `Ast` to the given writer.
+                    pub fn print<W: fmt::Write>(&mut self, hir: &Hir, wtr: W) -> fmt::Result {
+                        visitor::visit(hir, Writer { wtr })
+                    }
+                }
+
+                #[derive( Debug )]
+                struct Writer<W> {
+                    wtr: W,
+                }
+
+                impl<W: fmt::Write> Visitor for Writer<W> {
+                    type Output = ();
+                    type Err = fmt::Error;
+
+                    fn finish(self) -> fmt::Result {
+                        Ok(())
+                    }
+
+                    fn visit_pre(&mut self, hir: &Hir) -> fmt::Result {
+                        match *hir.kind() {
+                            HirKind::Empty => {
+                                self.wtr.write_str(r"(?:)")?;
+                            }
+                            
+                            HirKind::Repetition(_) => {}
+                            HirKind::Literal(hir::Literal(ref bytes)) => {
+                                let result = ::str::from_utf8(bytes);
+                                let len = result.map_or(bytes.len(), |s| s.chars().count());
+                                if len > 1 {
+                                    self.wtr.write_str(r"(?:")?;
+                                }
+                                match result {
+                                    Ok(string) => {
+                                        for c in string.chars() {
+                                            self.write_literal_char(c)?;
+                                        }
+                                    }
+                                    Err(_) => {
+                                        for &b in bytes.iter() {
+                                            self.write_literal_byte(b)?;
+                                        }
+                                    }
+                                }
+                                if len > 1 {
+                                    self.wtr.write_str(r")")?;
+                                }
+                            }
+                            HirKind::Class(hir::Class::Unicode(ref cls)) => {
+                                if cls.ranges().is_empty() {
+                                    return self.wtr.write_str("[a&&b]");
+                                }
+                                self.wtr.write_str("[")?;
+                                for range in cls.iter() {
+                                    if range.start() == range.end() {
+                                        self.write_literal_char(range.start())?;
+                                    } else if u32::from(range.start()) + 1
+                                        == u32::from(range.end())
+                                    {
+                                        self.write_literal_char(range.start())?;
+                                        self.write_literal_char(range.end())?;
+                                    } else {
+                                        self.write_literal_char(range.start())?;
+                                        self.wtr.write_str("-")?;
+                                        self.write_literal_char(range.end())?;
+                                    }
+                                }
+                                self.wtr.write_str("]")?;
+                            }
+                            HirKind::Class(hir::Class::Bytes(ref cls)) => {
+                                if cls.ranges().is_empty() {
+                                    return self.wtr.write_str("[a&&b]");
+                                }
+                                self.wtr.write_str("(?-u:[")?;
+                                for range in cls.iter() {
+                                    if range.start() == range.end() {
+                                        self.write_literal_class_byte(range.start())?;
+                                    } else if range.start() + 1 == range.end() {
+                                        self.write_literal_class_byte(range.start())?;
+                                        self.write_literal_class_byte(range.end())?;
+                                    } else {
+                                        self.write_literal_class_byte(range.start())?;
+                                        self.wtr.write_str("-")?;
+                                        self.write_literal_class_byte(range.end())?;
+                                    }
+                                }
+                                self.wtr.write_str("])")?;
+                            }
+                            HirKind::Look(ref look) => match *look {
+                                hir::Look::Start => {
+                                    self.wtr.write_str(r"\A")?;
+                                }
+                                hir::Look::End => {
+                                    self.wtr.write_str(r"\z")?;
+                                }
+                                hir::Look::StartLF => {
+                                    self.wtr.write_str("(?m:^)")?;
+                                }
+                                hir::Look::EndLF => {
+                                    self.wtr.write_str("(?m:$)")?;
+                                }
+                                hir::Look::StartCRLF => {
+                                    self.wtr.write_str("(?mR:^)")?;
+                                }
+                                hir::Look::EndCRLF => {
+                                    self.wtr.write_str("(?mR:$)")?;
+                                }
+                                hir::Look::WordAscii => {
+                                    self.wtr.write_str(r"(?-u:\b)")?;
+                                }
+                                hir::Look::WordAsciiNegate => {
+                                    self.wtr.write_str(r"(?-u:\B)")?;
+                                }
+                                hir::Look::WordUnicode => {
+                                    self.wtr.write_str(r"\b")?;
+                                }
+                                hir::Look::WordUnicodeNegate => {
+                                    self.wtr.write_str(r"\B")?;
+                                }
+                                hir::Look::WordStartAscii => {
+                                    self.wtr.write_str(r"(?-u:\b{start})")?;
+                                }
+                                hir::Look::WordEndAscii => {
+                                    self.wtr.write_str(r"(?-u:\b{end})")?;
+                                }
+                                hir::Look::WordStartUnicode => {
+                                    self.wtr.write_str(r"\b{start}")?;
+                                }
+                                hir::Look::WordEndUnicode => {
+                                    self.wtr.write_str(r"\b{end}")?;
+                                }
+                                hir::Look::WordStartHalfAscii => {
+                                    self.wtr.write_str(r"(?-u:\b{start-half})")?;
+                                }
+                                hir::Look::WordEndHalfAscii => {
+                                    self.wtr.write_str(r"(?-u:\b{end-half})")?;
+                                }
+                                hir::Look::WordStartHalfUnicode => {
+                                    self.wtr.write_str(r"\b{start-half}")?;
+                                }
+                                hir::Look::WordEndHalfUnicode => {
+                                    self.wtr.write_str(r"\b{end-half}")?;
+                                }
+                            },
+                            HirKind::Capture(hir::Capture { ref name, .. }) => {
+                                self.wtr.write_str("(")?;
+                                if let Some(ref name) = *name {
+                                    write!(self.wtr, "?P<{name}>")?;
+                                }
+                            }
+                            // Why do this? Wrapping concats and alts in non-capturing groups
+                            // is not *always* necessary, but is sometimes necessary. For
+                            // example, 'concat(a, alt(b, c))' should be written as 'a(?:b|c)'
+                            // and not 'ab|c'. The former is clearly the intended meaning, but
+                            // the latter is actually 'alt(concat(a, b), c)'.
+                            //
+                            // It would be possible to only group these things in cases where
+                            // it's strictly necessary, but it requires knowing the parent
+                            // expression. And since this technique is simpler and always
+                            // correct, we take this route. More to the point, it is a non-goal
+                            // of an HIR printer to show a nice easy-to-read regex. Indeed,
+                            // its construction forbids it from doing so. Therefore, inserting
+                            // extra groups where they aren't necessary is perfectly okay.
+                            HirKind::Concat(_) | HirKind::Alternation(_) => {
+                                self.wtr.write_str(r"(?:")?;
+                            }
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_post(&mut self, hir: &Hir) -> fmt::Result {
+                        match *hir.kind() {
+                            // Handled during visit_pre
+                            HirKind::Empty
+                            | HirKind::Literal(_)
+                            | HirKind::Class(_)
+                            | HirKind::Look(_) => {}
+                            HirKind::Repetition(ref x) => {
+                                match (x.min, x.max) {
+                                    (0, Some(1)) => {
+                                        self.wtr.write_str("?")?;
+                                    }
+                                    (0, None) => {
+                                        self.wtr.write_str("*")?;
+                                    }
+                                    (1, None) => {
+                                        self.wtr.write_str("+")?;
+                                    }
+                                    (1, Some(1)) => {
+                                        // 'a{1}' and 'a{1}?' are exactly equivalent to 'a'.
+                                        return Ok(());
+                                    }
+                                    (m, None) => {
+                                        write!(self.wtr, "{{{m},}}")?;
+                                    }
+                                    (m, Some(n)) if m == n => {
+                                        write!(self.wtr, "{{{m}}}")?;
+                                        // a{m} and a{m}? are always exactly equivalent.
+                                        return Ok(());
+                                    }
+                                    (m, Some(n)) => {
+                                        write!(self.wtr, "{{{m},{n}}}")?;
+                                    }
+                                }
+                                if !x.greedy {
+                                    self.wtr.write_str("?")?;
+                                }
+                            }
+                            HirKind::Capture(_)
+                            | HirKind::Concat(_)
+                            | HirKind::Alternation(_) => {
+                                self.wtr.write_str(r")")?;
+                            }
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_alternation_in(&mut self) -> fmt::Result {
+                        self.wtr.write_str("|")
+                    }
+                }
+
+                impl<W: fmt::Write> Writer<W> {
+                    fn write_literal_char(&mut self, c: char) -> fmt::Result {
+                        if is_meta_character(c) {
+                            self.wtr.write_str("\\")?;
+                        }
+                        self.wtr.write_char(c)
+                    }
+
+                    fn write_literal_byte(&mut self, b: u8) -> fmt::Result {
+                        if b <= 0x7F && !b.is_ascii_control() && !b.is_ascii_whitespace() {
+                            self.write_literal_char(char::try_from(b).unwrap())
+                        } else {
+                            write!(self.wtr, "(?-u:\\x{b:02X})")
+                        }
+                    }
+
+                    fn write_literal_class_byte(&mut self, b: u8) -> fmt::Result {
+                        if b <= 0x7F && !b.is_ascii_control() && !b.is_ascii_whitespace() {
+                            self.write_literal_char(char::try_from(b).unwrap())
+                        } else {
+                            write!(self.wtr, "\\x{b:02X}")
+                        }
+                    }
+                }
+            }
+
+            pub mod translate
+            {
+                /*!
+                Defines a translator that converts an `Ast` to an `Hir`. */
+                use ::
+                {
+                    boxed::{ Box },
+                    cell::{ Cell, RefCell },
+                    string::{ ToString },
+                    *,
+                };
+                /*
+                use crate::{
+                    ast::{self, Ast, Span, Visitor},
+                    either::Either,
+                    hir::{self, Error, ErrorKind, Hir, HirKind},
+                    unicode::{self, ClassQuery},
+                };
+                */
+                type Result<T> = ::result::Result<T, Error>;
+                /// A builder for constructing an AST->HIR translator.
+                #[derive( Clone, Debug )]
+                pub struct TranslatorBuilder {
+                    utf8: bool,
+                    line_terminator: u8,
+                    flags: Flags,
+                }
+
+                impl Default for TranslatorBuilder {
+                    fn default() -> TranslatorBuilder {
+                        TranslatorBuilder::new()
+                    }
+                }
+
+                impl TranslatorBuilder {
+                    /// Create a new translator builder with a default configuration.
+                    pub fn new() -> TranslatorBuilder {
+                        TranslatorBuilder {
+                            utf8: true,
+                            line_terminator: b'\n',
+                            flags: Flags::default(),
+                        }
+                    }
+                    /// Build a translator using the current configuration.
+                    pub fn build(&self) -> Translator {
+                        Translator {
+                            stack: RefCell::new(vec![]),
+                            flags: Cell::new(self.flags),
+                            utf8: self.utf8,
+                            line_terminator: self.line_terminator,
+                        }
+                    }
+                    /// When disabled, translation will permit the construction of a regular
+                    /// expression that may match invalid UTF-8.
+                    /// that are entirely valid UTF-8 (otherwise, the translator will return an
+                    /// error).
+                    /// syntax) will be allowed even though they can produce matches that split
+                    /// a UTF-8 encoded codepoint. This only applies to zero-width or "empty"
+                    /// matches, and it is expected that the regex engine itself must handle
+                    /// these cases if necessary (perhaps by suppressing any zero-width matches
+                    /// that split a codepoint).
+                    pub fn utf8(&mut self, yes: bool) -> &mut TranslatorBuilder {
+                        self.utf8 = yes;
+                        self
+                    }
+                    /// Sets the line terminator for use with `(?u-s:.)` and `(?-us:.)`.
+                    ///
+                    /// If `.` is used in a context where Unicode mode is enabled and this byte
+                    /// isn't ASCII, then an error will be returned. When Unicode mode is
+                    /// disabled, then any byte is permitted, but will return an error if UTF-8
+                    /// mode is enabled and it is a non-ASCII byte.
+                    /// mode or UTF-8 mode are enabled.
+                    ///
+                    /// Note also that this *doesn't* impact the look-around assertions
+                    /// `(?m:^)` and `(?m:$)`. That's usually controlled by additional
+                    /// configuration in the regex engine itself.
+                    pub fn line_terminator(&mut self, byte: u8) -> &mut TranslatorBuilder {
+                        self.line_terminator = byte;
+                        self
+                    }
+                    /// Enable or disable the case insensitive flag (`i`) by default.
+                    pub fn case_insensitive(&mut self, yes: bool) -> &mut TranslatorBuilder {
+                        self.flags.case_insensitive = if yes { Some(true) } else { None };
+                        self
+                    }
+                    /// Enable or disable the multi-line matching flag (`m`) by default.
+                    pub fn multi_line(&mut self, yes: bool) -> &mut TranslatorBuilder {
+                        self.flags.multi_line = if yes { Some(true) } else { None };
+                        self
+                    }
+                    /// Enable or disable the "dot matches any character" flag (`s`) by
+                    /// default.
+                    pub fn dot_matches_new_line(
+                        &mut self,
+                        yes: bool,
+                    ) -> &mut TranslatorBuilder {
+                        self.flags.dot_matches_new_line = if yes { Some(true) } else { None };
+                        self
+                    }
+                    /// Enable or disable the CRLF mode flag (`R`) by default.
+                    pub fn crlf(&mut self, yes: bool) -> &mut TranslatorBuilder {
+                        self.flags.crlf = if yes { Some(true) } else { None };
+                        self
+                    }
+                    /// Enable or disable the "swap greed" flag (`U`) by default.
+                    pub fn swap_greed(&mut self, yes: bool) -> &mut TranslatorBuilder {
+                        self.flags.swap_greed = if yes { Some(true) } else { None };
+                        self
+                    }
+                    /// Enable or disable the Unicode flag (`u`) by default.
+                    pub fn unicode(&mut self, yes: bool) -> &mut TranslatorBuilder {
+                        self.flags.unicode = if yes { None } else { Some(false) };
+                        self
+                    }
+                }
+                /// A translator maps abstract syntax to a high level intermediate
+                /// representation.
+                ///
+                /// A translator may be benefit from reuse. That is, a translator can translate
+                /// many abstract syntax trees.
+                ///
+                /// A `Translator` can be configured in more detail via a
+                /// [`TranslatorBuilder`].
+                #[derive( Clone, Debug )]
+                pub struct Translator {
+                    /// Our call stack, but on the heap.
+                    stack: RefCell<Vec<HirFrame>>,
+                    /// The current flag settings.
+                    flags: Cell<Flags>,
+                    /// Whether we're allowed to produce HIR that can match arbitrary bytes.
+                    utf8: bool,
+                    /// The line terminator to use for `.`.
+                    line_terminator: u8,
+                }
+
+                impl Translator {
+                    /// Create a new translator using the default configuration.
+                    pub fn new() -> Translator {
+                        TranslatorBuilder::new().build()
+                    }
+                    /// Translate the given abstract syntax tree (AST) into a high level
+                    /// intermediate representation (HIR).
+                    ///
+                    /// The original pattern string used to produce the `Ast` *must* also be
+                    /// provided. The translator does not use the pattern string during any
+                    /// correct translation, but is used for error reporting.
+                    pub fn translate(&mut self, pattern: &str, ast: &Ast) -> Result<Hir> {
+                        ast::visit(ast, TranslatorI::new(self, pattern))
+                    }
+                }
+                /// An HirFrame is a single stack frame, represented explicitly, which is
+                /// created for each item in the Ast that we traverse.
+                ///
+                /// Note that technically, this type doesn't represent our entire stack
+                /// frame. In particular, the Ast visitor represents any state associated with
+                /// traversing the Ast itself.
+                #[derive( Clone, Debug )]
+                enum HirFrame {
+                    /// An arbitrary HIR expression. These get pushed whenever we hit a base
+                    /// case in the Ast. They get popped after an inductive (i.e., recursive)
+                    /// step is complete.
+                    Expr(Hir),
+                    /// A literal that is being constructed, character by character, from the
+                    /// AST. We need this because the AST gives each individual character its
+                    /// own node. So as we see characters, we peek at the top-most HirFrame.
+                    /// If it's a literal, then we add to it. Otherwise, we push a new literal.
+                    /// When it comes time to pop it, we convert it to an Hir via Hir::literal.
+                    Literal(Vec<u8>),
+                    /// A Unicode character class. This frame is mutated as we descend into
+                    /// the Ast of a character class (which is itself its own mini recursive
+                    /// structure).
+                    ClassUnicode(hir::ClassUnicode),
+                    /// A byte-oriented character class. This frame is mutated as we descend
+                    /// into the Ast of a character class (which is itself its own mini
+                    /// recursive structure).
+                    /// permitted to match ASCII text.
+                    ClassBytes(hir::ClassBytes),
+                    /// This is pushed whenever a repetition is observed. After visiting every
+                    /// sub-expression in the repetition, the translator's stack is expected to
+                    /// have this sentinel at the top.
+                    Repetition,
+                    /// This is pushed on to the stack upon first seeing any kind of capture,
+                    /// indicated by parentheses (including non-capturing groups). It is popped
+                    /// upon leaving a group.
+                    Group {
+                        /// The old active flags when this group was opened.
+                        ///
+                        /// If this group sets flags, then the new active flags are set to the
+                        /// result of merging the old flags with the flags introduced by this
+                        /// group. If the group doesn't set any flags, then this is simply
+                        /// equivalent to whatever flags were set when the group was opened.
+                        ///
+                        /// When this group is popped, the active flags should be restored to
+                        /// the flags set here.
+                        ///
+                        /// The "active" flags correspond to whatever flags are set in the
+                        /// Translator.
+                        old_flags: Flags,
+                    },
+                    /// This is pushed whenever a concatenation is observed. After visiting
+                    /// every sub-expression in the concatenation, the translator's stack is
+                    /// popped until it sees a Concat frame.
+                    Concat,
+                    /// This is pushed whenever an alternation is observed. After visiting
+                    /// every sub-expression in the alternation, the translator's stack is
+                    /// popped until it sees an Alternation frame.
+                    Alternation,
+                    /// This is pushed immediately before each sub-expression in an
+                    /// alternation. This separates the branches of an alternation on the
+                    /// stack and prevents literal flattening from reaching across alternation
+                    /// branches.
+                    AlternationBranch,
+                }
+
+                impl HirFrame {
+                    /// Assert that the current stack frame is an Hir expression and return it.
+                    fn unwrap_expr(self) -> Hir {
+                        match self {
+                            HirFrame::Expr(expr) => expr,
+                            HirFrame::Literal(lit) => Hir::literal(lit),
+                            _ => panic!("tried to unwrap expr from HirFrame, got: {self:?}"),
+                        }
+                    }
+                    /// Assert that the current stack frame is a Unicode class expression and
+                    /// return it.
+                    fn unwrap_class_unicode(self) -> hir::ClassUnicode {
+                        match self {
+                            HirFrame::ClassUnicode(cls) => cls,
+                            _ => panic!(
+                                "tried to unwrap Unicode class \
+                                from HirFrame, got: {:?}",
+                                self
+                            ),
+                        }
+                    }
+                    /// Assert that the current stack frame is a byte class expression and
+                    /// return it.
+                    fn unwrap_class_bytes(self) -> hir::ClassBytes {
+                        match self {
+                            HirFrame::ClassBytes(cls) => cls,
+                            _ => panic!(
+                                "tried to unwrap byte class \
+                                from HirFrame, got: {:?}",
+                                self
+                            ),
+                        }
+                    }
+                    /// Assert that the current stack frame is a repetition sentinel. If it
+                    /// isn't, then panic.
+                    fn unwrap_repetition(self) {
+                        match self {
+                            HirFrame::Repetition => {}
+                            _ => {
+                                panic!(
+                                    "tried to unwrap repetition from HirFrame, got: {self:?}"
+                                )
+                            }
+                        }
+                    }
+                    /// Assert that the current stack frame is a group indicator and return
+                    /// its corresponding flags (the flags that were active at the time the
+                    /// group was entered).
+                    fn unwrap_group(self) -> Flags {
+                        match self {
+                            HirFrame::Group { old_flags } => old_flags,
+                            _ => {
+                                panic!("tried to unwrap group from HirFrame, got: {self:?}")
+                            }
+                        }
+                    }
+                    /// Assert that the current stack frame is an alternation pipe sentinel. If
+                    /// it isn't, then panic.
+                    fn unwrap_alternation_pipe(self) {
+                        match self {
+                            HirFrame::AlternationBranch => {}
+                            _ => {
+                                panic!("tried to unwrap alt pipe from HirFrame, got: {self:?}")
+                            }
+                        }
+                    }
+                }
+
+                impl<'t, 'p> Visitor for TranslatorI<'t, 'p> {
+                    type Output = Hir;
+                    type Err = Error;
+
+                    fn finish(self) -> Result<Hir> {
+                        // ... otherwise, we should have exactly one HIR on the stack.
+                        assert_eq!(self.trans().stack.borrow().len(), 1);
+                        Ok(self.pop().unwrap().unwrap_expr())
+                    }
+
+                    fn visit_pre(&mut self, ast: &Ast) -> Result<()> {
+                        match *ast {
+                            Ast::ClassBracketed(_) => {
+                                if self.flags().unicode() {
+                                    let cls = hir::ClassUnicode::empty();
+                                    self.push(HirFrame::ClassUnicode(cls));
+                                } else {
+                                    let cls = hir::ClassBytes::empty();
+                                    self.push(HirFrame::ClassBytes(cls));
+                                }
+                            }
+                            Ast::Repetition(_) => self.push(HirFrame::Repetition),
+                            Ast::Group(ref x) => {
+                                let old_flags = x
+                                    .flags()
+                                    .map(|ast| self.set_flags(ast))
+                                    .unwrap_or_else(|| self.flags());
+                                self.push(HirFrame::Group { old_flags });
+                            }
+                            Ast::Concat(_) => {
+                                self.push(HirFrame::Concat);
+                            }
+                            Ast::Alternation(ref x) => {
+                                self.push(HirFrame::Alternation);
+                                if !x.asts.is_empty() {
+                                    self.push(HirFrame::AlternationBranch);
+                                }
+                            }
+                            _ => {}
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_post(&mut self, ast: &Ast) -> Result<()> {
+                        match *ast {
+                            Ast::Empty(_) => {
+                                self.push(HirFrame::Expr(Hir::empty()));
+                            }
+                            Ast::Flags(ref x) => {
+                                self.set_flags(&x.flags);
+                                // Flags in the AST are generally considered directives and
+                                // not actual sub-expressions. However, they can be used in
+                                // the concrete syntax like `((?i))`, and we need some kind of
+                                // indication of an expression there, and Empty is the correct
+                                // choice.
+                                //
+                                // There can also be things like `(?i)+`, but we rule those out
+                                // in the parser. In the future, we might allow them for
+                                // consistency sake.
+                                self.push(HirFrame::Expr(Hir::empty()));
+                            }
+                            Ast::Literal(ref x) => match self.ast_literal_to_scalar(x)? {
+                                Either::Right(byte) => self.push_byte(byte),
+                                Either::Left(ch) => match self.case_fold_char(x.span, ch)? {
+                                    None => self.push_char(ch),
+                                    Some(expr) => self.push(HirFrame::Expr(expr)),
+                                },
+                            },
+                            Ast::Dot(ref span) => {
+                                self.push(HirFrame::Expr(self.hir_dot(**span)?));
+                            }
+                            Ast::Assertion(ref x) => {
+                                self.push(HirFrame::Expr(self.hir_assertion(x)?));
+                            }
+                            Ast::ClassPerl(ref x) => {
+                                if self.flags().unicode() {
+                                    let cls = self.hir_perl_unicode_class(x)?;
+                                    let hcls = hir::Class::Unicode(cls);
+                                    self.push(HirFrame::Expr(Hir::class(hcls)));
+                                } else {
+                                    let cls = self.hir_perl_byte_class(x)?;
+                                    let hcls = hir::Class::Bytes(cls);
+                                    self.push(HirFrame::Expr(Hir::class(hcls)));
+                                }
+                            }
+                            Ast::ClassUnicode(ref x) => {
+                                let cls = hir::Class::Unicode(self.hir_unicode_class(x)?);
+                                self.push(HirFrame::Expr(Hir::class(cls)));
+                            }
+                            Ast::ClassBracketed(ref ast) => {
+                                if self.flags().unicode() {
+                                    let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                                    self.unicode_fold_and_negate(
+                                        &ast.span,
+                                        ast.negated,
+                                        &mut cls,
+                                    )?;
+                                    let expr = Hir::class(hir::Class::Unicode(cls));
+                                    self.push(HirFrame::Expr(expr));
+                                } else {
+                                    let mut cls = self.pop().unwrap().unwrap_class_bytes();
+                                    self.bytes_fold_and_negate(
+                                        &ast.span,
+                                        ast.negated,
+                                        &mut cls,
+                                    )?;
+                                    let expr = Hir::class(hir::Class::Bytes(cls));
+                                    self.push(HirFrame::Expr(expr));
+                                }
+                            }
+                            Ast::Repetition(ref x) => {
+                                let expr = self.pop().unwrap().unwrap_expr();
+                                self.pop().unwrap().unwrap_repetition();
+                                self.push(HirFrame::Expr(self.hir_repetition(x, expr)));
+                            }
+                            Ast::Group(ref x) => {
+                                let expr = self.pop().unwrap().unwrap_expr();
+                                let old_flags = self.pop().unwrap().unwrap_group();
+                                self.trans().flags.set(old_flags);
+                                self.push(HirFrame::Expr(self.hir_capture(x, expr)));
+                            }
+                            Ast::Concat(_) => {
+                                let mut exprs = vec![];
+                                while let Some(expr) = self.pop_concat_expr() {
+                                    if !matches!(*expr.kind(), HirKind::Empty) {
+                                        exprs.push(expr);
+                                    }
+                                }
+                                exprs.reverse();
+                                self.push(HirFrame::Expr(Hir::concat(exprs)));
+                            }
+                            Ast::Alternation(_) => {
+                                let mut exprs = vec![];
+                                while let Some(expr) = self.pop_alt_expr() {
+                                    self.pop().unwrap().unwrap_alternation_pipe();
+                                    exprs.push(expr);
+                                }
+                                exprs.reverse();
+                                self.push(HirFrame::Expr(Hir::alternation(exprs)));
+                            }
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_alternation_in(&mut self) -> Result<()> {
+                        self.push(HirFrame::AlternationBranch);
+                        Ok(())
+                    }
+
+                    fn visit_class_set_item_pre(
+                        &mut self,
+                        ast: &ast::ClassSetItem,
+                    ) -> Result<()> {
+                        match *ast {
+                            ast::ClassSetItem::Bracketed(_) => {
+                                if self.flags().unicode() {
+                                    let cls = hir::ClassUnicode::empty();
+                                    self.push(HirFrame::ClassUnicode(cls));
+                                } else {
+                                    let cls = hir::ClassBytes::empty();
+                                    self.push(HirFrame::ClassBytes(cls));
+                                }
+                            }
+                            // We needn't handle the Union case here since the visitor will
+                            // do it for us.
+                            _ => {}
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_class_set_item_post(
+                        &mut self,
+                        ast: &ast::ClassSetItem,
+                    ) -> Result<()> {
+                        match *ast {
+                            ast::ClassSetItem::Empty(_) => {}
+                            ast::ClassSetItem::Literal(ref x) => {
+                                if self.flags().unicode() {
+                                    let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                                    cls.push(hir::ClassUnicodeRange::new(x.c, x.c));
+                                    self.push(HirFrame::ClassUnicode(cls));
+                                } else {
+                                    let mut cls = self.pop().unwrap().unwrap_class_bytes();
+                                    let byte = self.class_literal_byte(x)?;
+                                    cls.push(hir::ClassBytesRange::new(byte, byte));
+                                    self.push(HirFrame::ClassBytes(cls));
+                                }
+                            }
+                            ast::ClassSetItem::Range(ref x) => {
+                                if self.flags().unicode() {
+                                    let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                                    cls.push(hir::ClassUnicodeRange::new(x.start.c, x.end.c));
+                                    self.push(HirFrame::ClassUnicode(cls));
+                                } else {
+                                    let mut cls = self.pop().unwrap().unwrap_class_bytes();
+                                    let start = self.class_literal_byte(&x.start)?;
+                                    let end = self.class_literal_byte(&x.end)?;
+                                    cls.push(hir::ClassBytesRange::new(start, end));
+                                    self.push(HirFrame::ClassBytes(cls));
+                                }
+                            }
+                            ast::ClassSetItem::Ascii(ref x) => {
+                                if self.flags().unicode() {
+                                    let xcls = self.hir_ascii_unicode_class(x)?;
+                                    let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                                    cls.union(&xcls);
+                                    self.push(HirFrame::ClassUnicode(cls));
+                                } else {
+                                    let xcls = self.hir_ascii_byte_class(x)?;
+                                    let mut cls = self.pop().unwrap().unwrap_class_bytes();
+                                    cls.union(&xcls);
+                                    self.push(HirFrame::ClassBytes(cls));
+                                }
+                            }
+                            ast::ClassSetItem::Unicode(ref x) => {
+                                let xcls = self.hir_unicode_class(x)?;
+                                let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                                cls.union(&xcls);
+                                self.push(HirFrame::ClassUnicode(cls));
+                            }
+                            ast::ClassSetItem::Perl(ref x) => {
+                                if self.flags().unicode() {
+                                    let xcls = self.hir_perl_unicode_class(x)?;
+                                    let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                                    cls.union(&xcls);
+                                    self.push(HirFrame::ClassUnicode(cls));
+                                } else {
+                                    let xcls = self.hir_perl_byte_class(x)?;
+                                    let mut cls = self.pop().unwrap().unwrap_class_bytes();
+                                    cls.union(&xcls);
+                                    self.push(HirFrame::ClassBytes(cls));
+                                }
+                            }
+                            ast::ClassSetItem::Bracketed(ref ast) => {
+                                if self.flags().unicode() {
+                                    let mut cls1 = self.pop().unwrap().unwrap_class_unicode();
+                                    self.unicode_fold_and_negate(
+                                        &ast.span,
+                                        ast.negated,
+                                        &mut cls1,
+                                    )?;
+
+                                    let mut cls2 = self.pop().unwrap().unwrap_class_unicode();
+                                    cls2.union(&cls1);
+                                    self.push(HirFrame::ClassUnicode(cls2));
+                                } else {
+                                    let mut cls1 = self.pop().unwrap().unwrap_class_bytes();
+                                    self.bytes_fold_and_negate(
+                                        &ast.span,
+                                        ast.negated,
+                                        &mut cls1,
+                                    )?;
+
+                                    let mut cls2 = self.pop().unwrap().unwrap_class_bytes();
+                                    cls2.union(&cls1);
+                                    self.push(HirFrame::ClassBytes(cls2));
+                                }
+                            }
+                            // This is handled automatically by the visitor.
+                            ast::ClassSetItem::Union(_) => {}
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_class_set_binary_op_pre(
+                        &mut self,
+                        _op: &ast::ClassSetBinaryOp,
+                    ) -> Result<()> {
+                        if self.flags().unicode() {
+                            let cls = hir::ClassUnicode::empty();
+                            self.push(HirFrame::ClassUnicode(cls));
+                        } else {
+                            let cls = hir::ClassBytes::empty();
+                            self.push(HirFrame::ClassBytes(cls));
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_class_set_binary_op_in(
+                        &mut self,
+                        _op: &ast::ClassSetBinaryOp,
+                    ) -> Result<()> {
+                        if self.flags().unicode() {
+                            let cls = hir::ClassUnicode::empty();
+                            self.push(HirFrame::ClassUnicode(cls));
+                        } else {
+                            let cls = hir::ClassBytes::empty();
+                            self.push(HirFrame::ClassBytes(cls));
+                        }
+                        Ok(())
+                    }
+
+                    fn visit_class_set_binary_op_post(
+                        &mut self,
+                        op: &ast::ClassSetBinaryOp,
+                    ) -> Result<()> {
+                        use crate::ast::ClassSetBinaryOpKind::*;
+
+                        if self.flags().unicode() {
+                            let mut rhs = self.pop().unwrap().unwrap_class_unicode();
+                            let mut lhs = self.pop().unwrap().unwrap_class_unicode();
+                            let mut cls = self.pop().unwrap().unwrap_class_unicode();
+                            if self.flags().case_insensitive() {
+                                rhs.try_case_fold_simple().map_err(|_| {
+                                    self.error(
+                                        op.rhs.span().clone(),
+                                        ErrorKind::UnicodeCaseUnavailable,
+                                    )
+                                })?;
+                                lhs.try_case_fold_simple().map_err(|_| {
+                                    self.error(
+                                        op.lhs.span().clone(),
+                                        ErrorKind::UnicodeCaseUnavailable,
+                                    )
+                                })?;
+                            }
+                            match op.kind {
+                                Intersection => lhs.intersect(&rhs),
+                                Difference => lhs.difference(&rhs),
+                                SymmetricDifference => lhs.symmetric_difference(&rhs),
+                            }
+                            cls.union(&lhs);
+                            self.push(HirFrame::ClassUnicode(cls));
+                        } else {
+                            let mut rhs = self.pop().unwrap().unwrap_class_bytes();
+                            let mut lhs = self.pop().unwrap().unwrap_class_bytes();
+                            let mut cls = self.pop().unwrap().unwrap_class_bytes();
+                            if self.flags().case_insensitive() {
+                                rhs.case_fold_simple();
+                                lhs.case_fold_simple();
+                            }
+                            match op.kind {
+                                Intersection => lhs.intersect(&rhs),
+                                Difference => lhs.difference(&rhs),
+                                SymmetricDifference => lhs.symmetric_difference(&rhs),
+                            }
+                            cls.union(&lhs);
+                            self.push(HirFrame::ClassBytes(cls));
+                        }
+                        Ok(())
+                    }
+                }
+                /// The internal implementation of a translator.
+                ///
+                /// This type is responsible for carrying around the original pattern string,
+                /// which is not tied to the internal state of a translator.
+                ///
+                /// A TranslatorI exists for the time it takes to translate a single Ast.
+                #[derive( Clone, Debug )]
+                struct TranslatorI<'t, 'p> {
+                    trans: &'t Translator,
+                    pattern: &'p str,
+                }
+
+                impl<'t, 'p> TranslatorI<'t, 'p> {
+                    /// Build a new internal translator.
+                    fn new(trans: &'t Translator, pattern: &'p str) -> TranslatorI<'t, 'p> {
+                        TranslatorI { trans, pattern }
+                    }
+                    /// Return a reference to the underlying translator.
+                    fn trans(&self) -> &Translator {
+                        &self.trans
+                    }
+                    /// Push the given frame on to the call stack.
+                    fn push(&self, frame: HirFrame) {
+                        self.trans().stack.borrow_mut().push(frame);
+                    }
+                    /// Push the given literal char on to the call stack.
+                    /// containing just the given char is pushed to the top of the stack.
+                    fn push_char(&self, ch: char) {
+                        let mut buf = [0; 4];
+                        let bytes = ch.encode_utf8(&mut buf).as_bytes();
+                        let mut stack = self.trans().stack.borrow_mut();
+                        if let Some(HirFrame::Literal(ref mut literal)) = stack.last_mut() {
+                            literal.extend_from_slice(bytes);
+                        } else {
+                            stack.push(HirFrame::Literal(bytes.to_vec()));
+                        }
+                    }
+                    /// Push the given literal byte on to the call stack.
+                    /// containing just the given byte is pushed to the top of the stack.
+                    fn push_byte(&self, byte: u8) {
+                        let mut stack = self.trans().stack.borrow_mut();
+                        if let Some(HirFrame::Literal(ref mut literal)) = stack.last_mut() {
+                            literal.push(byte);
+                        } else {
+                            stack.push(HirFrame::Literal(vec![byte]));
+                        }
+                    }
+                    /// Pop the top of the call stack. If the call stack is empty, return None.
+                    fn pop(&self) -> Option<HirFrame> {
+                        self.trans().stack.borrow_mut().pop()
+                    }
+                    /// Pop an HIR expression from the top of the stack for a concatenation.
+                    fn pop_concat_expr(&self) -> Option<Hir> {
+                        let frame = self.pop()?;
+                        match frame {
+                            HirFrame::Concat => None,
+                            HirFrame::Expr(expr) => Some(expr),
+                            HirFrame::Literal(lit) => Some(Hir::literal(lit)),
+                            HirFrame::ClassUnicode(_) => {
+                                unreachable!("expected expr or concat, got Unicode class")
+                            }
+                            HirFrame::ClassBytes(_) => {
+                                unreachable!("expected expr or concat, got byte class")
+                            }
+                            HirFrame::Repetition => {
+                                unreachable!("expected expr or concat, got repetition")
+                            }
+                            HirFrame::Group { .. } => {
+                                unreachable!("expected expr or concat, got group")
+                            }
+                            HirFrame::Alternation => {
+                                unreachable!("expected expr or concat, got alt marker")
+                            }
+                            HirFrame::AlternationBranch => {
+                                unreachable!("expected expr or concat, got alt branch marker")
+                            }
+                        }
+                    }
+                    /// Pop an HIR expression from the top of the stack for an alternation.
+                    fn pop_alt_expr(&self) -> Option<Hir> {
+                        let frame = self.pop()?;
+                        match frame {
+                            HirFrame::Alternation => None,
+                            HirFrame::Expr(expr) => Some(expr),
+                            HirFrame::Literal(lit) => Some(Hir::literal(lit)),
+                            HirFrame::ClassUnicode(_) => {
+                                unreachable!("expected expr or alt, got Unicode class")
+                            }
+                            HirFrame::ClassBytes(_) => {
+                                unreachable!("expected expr or alt, got byte class")
+                            }
+                            HirFrame::Repetition => {
+                                unreachable!("expected expr or alt, got repetition")
+                            }
+                            HirFrame::Group { .. } => {
+                                unreachable!("expected expr or alt, got group")
+                            }
+                            HirFrame::Concat => {
+                                unreachable!("expected expr or alt, got concat marker")
+                            }
+                            HirFrame::AlternationBranch => {
+                                unreachable!("expected expr or alt, got alt branch marker")
+                            }
+                        }
+                    }
+                    /// Create a new error with the given span and error type.
+                    fn error(&self, span: Span, kind: ErrorKind) -> Error {
+                        Error { kind, pattern: self.pattern.to_string(), span }
+                    }
+                    /// Return a copy of the active flags.
+                    fn flags(&self) -> Flags {
+                        self.trans().flags.get()
+                    }
+                    /// Set the flags of this translator from the flags set in the given AST.
+                    /// Then, return the old flags.
+                    fn set_flags(&self, ast_flags: &ast::Flags) -> Flags {
+                        let old_flags = self.flags();
+                        let mut new_flags = Flags::from_ast(ast_flags);
+                        new_flags.merge(&old_flags);
+                        self.trans().flags.set(new_flags);
+                        old_flags
+                    }
+                    /// Convert an Ast literal to its scalar representation.
+                    ///
+                    /// When Unicode mode is disabled, then a `char` will still be returned
+                    /// whenever possible. A byte is returned only when invalid UTF-8 is
+                    /// allowed and when the byte is not ASCII. Otherwise, a non-ASCII byte
+                    /// will result in an error when invalid UTF-8 is not allowed.
+                    fn ast_literal_to_scalar(
+                        &self,
+                        lit: &ast::Literal,
+                    ) -> Result<Either<char, u8>> {
+                        if self.flags().unicode() {
+                            return Ok(Either::Left(lit.c));
+                        }
+                        let byte = match lit.byte() {
+                            None => return Ok(Either::Left(lit.c)),
+                            Some(byte) => byte,
+                        };
+                        if byte <= 0x7F {
+                            return Ok(Either::Left(char::try_from(byte).unwrap()));
+                        }
+                        if self.trans().utf8 {
+                            return Err(self.error(lit.span, ErrorKind::InvalidUtf8));
+                        }
+                        Ok(Either::Right(byte))
+                    }
+
+                    fn case_fold_char(&self, span: Span, c: char) -> Result<Option<Hir>> {
+                        if !self.flags().case_insensitive() {
+                            return Ok(None);
+                        }
+                        if self.flags().unicode() {
+                            // If case folding won't do anything, then don't bother trying.
+                            let map = unicode::SimpleCaseFolder::new()
+                                .map(|f| f.overlaps(c, c))
+                                .map_err(|_| {
+                                    self.error(span, ErrorKind::UnicodeCaseUnavailable)
+                                })?;
+                            if !map {
+                                return Ok(None);
+                            }
+                            let mut cls =
+                                hir::ClassUnicode::new(vec![hir::ClassUnicodeRange::new(
+                                    c, c,
+                                )]);
+                            cls.try_case_fold_simple().map_err(|_| {
+                                self.error(span, ErrorKind::UnicodeCaseUnavailable)
+                            })?;
+                            Ok(Some(Hir::class(hir::Class::Unicode(cls))))
+                        } else {
+                            if !c.is_ascii() {
+                                return Ok(None);
+                            }
+                            // If case folding won't do anything, then don't bother trying.
+                            match c {
+                                'A'..='Z' | 'a'..='z' => {}
+                                _ => return Ok(None),
+                            }
+                            let mut cls =
+                                hir::ClassBytes::new(vec![hir::ClassBytesRange::new(
+                                    // OK because 'c.len_utf8() == 1' which in turn implies
+                                    // that 'c' is ASCII.
+                                    u8::try_from(c).unwrap(),
+                                    u8::try_from(c).unwrap(),
+                                )]);
+                            cls.case_fold_simple();
+                            Ok(Some(Hir::class(hir::Class::Bytes(cls))))
+                        }
+                    }
+
+                    fn hir_dot(&self, span: Span) -> Result<Hir> {
+                        let (utf8, lineterm, flags) =
+                            (self.trans().utf8, self.trans().line_terminator, self.flags());
+                        if utf8 && (!flags.unicode() || !lineterm.is_ascii()) {
+                            return Err(self.error(span, ErrorKind::InvalidUtf8));
+                        }
+                        let dot = if flags.dot_matches_new_line() {
+                            if flags.unicode() {
+                                hir::Dot::AnyChar
+                            } else {
+                                hir::Dot::AnyByte
+                            }
+                        } else {
+                            if flags.unicode() {
+                                if flags.crlf() {
+                                    hir::Dot::AnyCharExceptCRLF
+                                } else {
+                                    if !lineterm.is_ascii() {
+                                        return Err(
+                                            self.error(span, ErrorKind::InvalidLineTerminator)
+                                        );
+                                    }
+                                    hir::Dot::AnyCharExcept(char::from(lineterm))
+                                }
+                            } else {
+                                if flags.crlf() {
+                                    hir::Dot::AnyByteExceptCRLF
+                                } else {
+                                    hir::Dot::AnyByteExcept(lineterm)
+                                }
+                            }
+                        };
+                        Ok(Hir::dot(dot))
+                    }
+
+                    fn hir_assertion(&self, asst: &ast::Assertion) -> Result<Hir> {
+                        let unicode = self.flags().unicode();
+                        let multi_line = self.flags().multi_line();
+                        let crlf = self.flags().crlf();
+                        Ok(match asst.kind {
+                            ast::AssertionKind::StartLine => Hir::look(if multi_line {
+                                if crlf {
+                                    hir::Look::StartCRLF
+                                } else {
+                                    hir::Look::StartLF
+                                }
+                            } else {
+                                hir::Look::Start
+                            }),
+                            ast::AssertionKind::EndLine => Hir::look(if multi_line {
+                                if crlf {
+                                    hir::Look::EndCRLF
+                                } else {
+                                    hir::Look::EndLF
+                                }
+                            } else {
+                                hir::Look::End
+                            }),
+                            ast::AssertionKind::StartText => Hir::look(hir::Look::Start),
+                            ast::AssertionKind::EndText => Hir::look(hir::Look::End),
+                            ast::AssertionKind::WordBoundary => Hir::look(if unicode {
+                                hir::Look::WordUnicode
+                            } else {
+                                hir::Look::WordAscii
+                            }),
+                            ast::AssertionKind::NotWordBoundary => Hir::look(if unicode {
+                                hir::Look::WordUnicodeNegate
+                            } else {
+                                hir::Look::WordAsciiNegate
+                            }),
+                            ast::AssertionKind::WordBoundaryStart
+                            | ast::AssertionKind::WordBoundaryStartAngle => {
+                                Hir::look(if unicode {
+                                    hir::Look::WordStartUnicode
+                                } else {
+                                    hir::Look::WordStartAscii
+                                })
+                            }
+                            ast::AssertionKind::WordBoundaryEnd
+                            | ast::AssertionKind::WordBoundaryEndAngle => {
+                                Hir::look(if unicode {
+                                    hir::Look::WordEndUnicode
+                                } else {
+                                    hir::Look::WordEndAscii
+                                })
+                            }
+                            ast::AssertionKind::WordBoundaryStartHalf => {
+                                Hir::look(if unicode {
+                                    hir::Look::WordStartHalfUnicode
+                                } else {
+                                    hir::Look::WordStartHalfAscii
+                                })
+                            }
+                            ast::AssertionKind::WordBoundaryEndHalf => Hir::look(if unicode {
+                                hir::Look::WordEndHalfUnicode
+                            } else {
+                                hir::Look::WordEndHalfAscii
+                            }),
+                        })
+                    }
+
+                    fn hir_capture(&self, group: &ast::Group, expr: Hir) -> Hir {
+                        let (index, name) = match group.kind {
+                            ast::GroupKind::CaptureIndex(index) => (index, None),
+                            ast::GroupKind::CaptureName { ref name, .. } => {
+                                (name.index, Some(name.name.clone().into_boxed_str()))
+                            }
+                            // The HIR doesn't need to use non-capturing groups, since the way
+                            // in which the data type is defined handles this automatically.
+                            ast::GroupKind::NonCapturing(_) => return expr,
+                        };
+                        Hir::capture(hir::Capture { index, name, sub: Box::new(expr) })
+                    }
+
+                    fn hir_repetition(&self, rep: &ast::Repetition, expr: Hir) -> Hir {
+                        let (min, max) = match rep.op.kind {
+                            ast::RepetitionKind::ZeroOrOne => (0, Some(1)),
+                            ast::RepetitionKind::ZeroOrMore => (0, None),
+                            ast::RepetitionKind::OneOrMore => (1, None),
+                            ast::RepetitionKind::Range(ast::RepetitionRange::Exactly(m)) => {
+                                (m, Some(m))
+                            }
+                            ast::RepetitionKind::Range(ast::RepetitionRange::AtLeast(m)) => {
+                                (m, None)
+                            }
+                            ast::RepetitionKind::Range(ast::RepetitionRange::Bounded(
+                                m,
+                                n,
+                            )) => (m, Some(n)),
+                        };
+                        let greedy =
+                            if self.flags().swap_greed() { !rep.greedy } else { rep.greedy };
+                        Hir::repetition(hir::Repetition {
+                            min,
+                            max,
+                            greedy,
+                            sub: Box::new(expr),
+                        })
+                    }
+
+                    fn hir_unicode_class(
+                        &self,
+                        ast_class: &ast::ClassUnicode,
+                    ) -> Result<hir::ClassUnicode> {
+                        use crate::ast::ClassUnicodeKind::*;
+
+                        if !self.flags().unicode() {
+                            return Err(
+                                self.error(ast_class.span, ErrorKind::UnicodeNotAllowed)
+                            );
+                        }
+                        let query = match ast_class.kind {
+                            OneLetter(name) => ClassQuery::OneLetter(name),
+                            Named(ref name) => ClassQuery::Binary(name),
+                            NamedValue { ref name, ref value, .. } => ClassQuery::ByValue {
+                                property_name: name,
+                                property_value: value,
+                            },
+                        };
+                        let mut result = self.convert_unicode_class_error(
+                            &ast_class.span,
+                            unicode::class(query),
+                        );
+                        if let Ok(ref mut class) = result {
+                            self.unicode_fold_and_negate(
+                                &ast_class.span,
+                                ast_class.negated,
+                                class,
+                            )?;
+                        }
+                        result
+                    }
+
+                    fn hir_ascii_unicode_class(
+                        &self,
+                        ast: &ast::ClassAscii,
+                    ) -> Result<hir::ClassUnicode> {
+                        let mut cls = hir::ClassUnicode::new(
+                            ascii_class_as_chars(&ast.kind)
+                                .map(|(s, e)| hir::ClassUnicodeRange::new(s, e)),
+                        );
+                        self.unicode_fold_and_negate(&ast.span, ast.negated, &mut cls)?;
+                        Ok(cls)
+                    }
+
+                    fn hir_ascii_byte_class(
+                        &self,
+                        ast: &ast::ClassAscii,
+                    ) -> Result<hir::ClassBytes> {
+                        let mut cls = hir::ClassBytes::new(
+                            ascii_class(&ast.kind)
+                                .map(|(s, e)| hir::ClassBytesRange::new(s, e)),
+                        );
+                        self.bytes_fold_and_negate(&ast.span, ast.negated, &mut cls)?;
+                        Ok(cls)
+                    }
+
+                    fn hir_perl_unicode_class(
+                        &self,
+                        ast_class: &ast::ClassPerl,
+                    ) -> Result<hir::ClassUnicode> {
+                        use crate::ast::ClassPerlKind::*;
+
+                        assert!(self.flags().unicode());
+                        let result = match ast_class.kind {
+                            Digit => unicode::perl_digit(),
+                            Space => unicode::perl_space(),
+                            Word => unicode::perl_word(),
+                        };
+                        let mut class =
+                            self.convert_unicode_class_error(&ast_class.span, result)?;
+                        // We needn't apply case folding here because the Perl Unicode classes
+                        // are already closed under Unicode simple case folding.
+                        if ast_class.negated {
+                            class.negate();
+                        }
+                        Ok(class)
+                    }
+
+                    fn hir_perl_byte_class(
+                        &self,
+                        ast_class: &ast::ClassPerl,
+                    ) -> Result<hir::ClassBytes> {
+                        use crate::ast::ClassPerlKind::*;
+
+                        assert!(!self.flags().unicode());
+                        let mut class = match ast_class.kind {
+                            Digit => hir_ascii_class_bytes(&ast::ClassAsciiKind::Digit),
+                            Space => hir_ascii_class_bytes(&ast::ClassAsciiKind::Space),
+                            Word => hir_ascii_class_bytes(&ast::ClassAsciiKind::Word),
+                        };
+                        // We needn't apply case folding here because the Perl ASCII classes
+                        // are already closed (under ASCII case folding).
+                        if ast_class.negated {
+                            class.negate();
+                        }
+                        // Negating a Perl byte class is likely to cause it to match invalid
+                        // UTF-8. That's only OK if the translator is configured to allow such
+                        // things.
+                        if self.trans().utf8 && !class.is_ascii() {
+                            return Err(self.error(ast_class.span, ErrorKind::InvalidUtf8));
+                        }
+                        Ok(class)
+                    }
+                    /// Converts the given Unicode specific error to an HIR translation error.
+                    fn convert_unicode_class_error(
+                        &self,
+                        span: &Span,
+                        result: core::result::Result<hir::ClassUnicode, unicode::Error>,
+                    ) -> Result<hir::ClassUnicode> {
+                        result.map_err(|err| {
+                            let sp = span.clone();
+                            match err {
+                                unicode::Error::PropertyNotFound => {
+                                    self.error(sp, ErrorKind::UnicodePropertyNotFound)
+                                }
+                                unicode::Error::PropertyValueNotFound => {
+                                    self.error(sp, ErrorKind::UnicodePropertyValueNotFound)
+                                }
+                                unicode::Error::PerlClassNotFound => {
+                                    self.error(sp, ErrorKind::UnicodePerlClassNotFound)
+                                }
+                            }
+                        })
+                    }
+
+                    fn unicode_fold_and_negate(
+                        &self,
+                        span: &Span,
+                        negated: bool,
+                        class: &mut hir::ClassUnicode,
+                    ) -> Result<()> {
+                        // Note that we must apply case folding before negation!
+                        // Consider `(?i)[^x]`. If we applied negation first, then
+                        // the result would be the character class that matched any
+                        // Unicode scalar value.
+                        if self.flags().case_insensitive() {
+                            class.try_case_fold_simple().map_err(|_| {
+                                self.error(span.clone(), ErrorKind::UnicodeCaseUnavailable)
+                            })?;
+                        }
+                        if negated {
+                            class.negate();
+                        }
+                        Ok(())
+                    }
+
+                    fn bytes_fold_and_negate(
+                        &self,
+                        span: &Span,
+                        negated: bool,
+                        class: &mut hir::ClassBytes,
+                    ) -> Result<()> {
+                        // Note that we must apply case folding before negation!
+                        // Consider `(?i)[^x]`. If we applied negation first, then
+                        // the result would be the character class that matched any
+                        // Unicode scalar value.
+                        if self.flags().case_insensitive() {
+                            class.case_fold_simple();
+                        }
+                        if negated {
+                            class.negate();
+                        }
+                        if self.trans().utf8 && !class.is_ascii() {
+                            return Err(self.error(span.clone(), ErrorKind::InvalidUtf8));
+                        }
+                        Ok(())
+                    }
+                    /// Return a scalar byte value suitable for use as a literal in a byte
+                    /// character class.
+                    fn class_literal_byte(&self, ast: &ast::Literal) -> Result<u8> {
+                        match self.ast_literal_to_scalar(ast)? {
+                            Either::Right(byte) => Ok(byte),
+                            Either::Left(ch) => {
+                                if ch.is_ascii() {
+                                    Ok(u8::try_from(ch).unwrap())
+                                } else {
+                                    // We can't feasibly support Unicode in
+                                    // byte oriented classes. Byte classes don't
+                                    // do Unicode case folding.
+                                    Err(self.error(ast.span, ErrorKind::UnicodeNotAllowed))
+                                }
+                            }
+                        }
+                    }
+                }
+                /// A translator's representation of a regular expression's flags at any given
+                /// moment in time.
+                ///
+                /// Each flag can be in one of three states: absent, present but disabled or
+                /// present but enabled.
+                #[derive(Clone, Copy, Debug, Default)]
+                struct Flags {
+                    case_insensitive: Option<bool>,
+                    multi_line: Option<bool>,
+                    dot_matches_new_line: Option<bool>,
+                    swap_greed: Option<bool>,
+                    unicode: Option<bool>,
+                    crlf: Option<bool>,
+                    // Note that `ignore_whitespace` is omitted here because it is handled
+                    // entirely in the parser.
+                }
+
+                impl Flags {
+                    fn from_ast(ast: &ast::Flags) -> Flags {
+                        let mut flags = Flags::default();
+                        let mut enable = true;
+                        for item in &ast.items {
+                            match item.kind {
+                                ast::FlagsItemKind::Negation => {
+                                    enable = false;
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::CaseInsensitive) => {
+                                    flags.case_insensitive = Some(enable);
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::MultiLine) => {
+                                    flags.multi_line = Some(enable);
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::DotMatchesNewLine) => {
+                                    flags.dot_matches_new_line = Some(enable);
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::SwapGreed) => {
+                                    flags.swap_greed = Some(enable);
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::Unicode) => {
+                                    flags.unicode = Some(enable);
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::CRLF) => {
+                                    flags.crlf = Some(enable);
+                                }
+                                ast::FlagsItemKind::Flag(ast::Flag::IgnoreWhitespace) => {}
+                            }
+                        }
+                        flags
+                    }
+
+                    fn merge(&mut self, previous: &Flags) {
+                        if self.case_insensitive.is_none() {
+                            self.case_insensitive = previous.case_insensitive;
+                        }
+                        if self.multi_line.is_none() {
+                            self.multi_line = previous.multi_line;
+                        }
+                        if self.dot_matches_new_line.is_none() {
+                            self.dot_matches_new_line = previous.dot_matches_new_line;
+                        }
+                        if self.swap_greed.is_none() {
+                            self.swap_greed = previous.swap_greed;
+                        }
+                        if self.unicode.is_none() {
+                            self.unicode = previous.unicode;
+                        }
+                        if self.crlf.is_none() {
+                            self.crlf = previous.crlf;
+                        }
+                    }
+
+                    fn case_insensitive(&self) -> bool {
+                        self.case_insensitive.unwrap_or(false)
+                    }
+
+                    fn multi_line(&self) -> bool {
+                        self.multi_line.unwrap_or(false)
+                    }
+
+                    fn dot_matches_new_line(&self) -> bool {
+                        self.dot_matches_new_line.unwrap_or(false)
+                    }
+
+                    fn swap_greed(&self) -> bool {
+                        self.swap_greed.unwrap_or(false)
+                    }
+
+                    fn unicode(&self) -> bool {
+                        self.unicode.unwrap_or(true)
+                    }
+
+                    fn crlf(&self) -> bool {
+                        self.crlf.unwrap_or(false)
+                    }
+                }
+
+                fn hir_ascii_class_bytes(kind: &ast::ClassAsciiKind) -> hir::ClassBytes {
+                    let ranges: Vec<_> = ascii_class(kind)
+                        .map(|(s, e)| hir::ClassBytesRange::new(s, e))
+                        .collect();
+                    hir::ClassBytes::new(ranges)
+                }
+
+                fn ascii_class(kind: &ast::ClassAsciiKind) -> impl Iterator<Item = (u8, u8)> {
+                    use crate::ast::ClassAsciiKind::*;
+
+                    let slice: &'static [(u8, u8)] = match *kind {
+                        Alnum => &[(b'0', b'9'), (b'A', b'Z'), (b'a', b'z')],
+                        Alpha => &[(b'A', b'Z'), (b'a', b'z')],
+                        Ascii => &[(b'\x00', b'\x7F')],
+                        Blank => &[(b'\t', b'\t'), (b' ', b' ')],
+                        Cntrl => &[(b'\x00', b'\x1F'), (b'\x7F', b'\x7F')],
+                        Digit => &[(b'0', b'9')],
+                        Graph => &[(b'!', b'~')],
+                        Lower => &[(b'a', b'z')],
+                        Print => &[(b' ', b'~')],
+                        Punct => &[(b'!', b'/'), (b':', b'@'), (b'[', b'`'), (b'{', b'~')],
+                        Space => &[
+                            (b'\t', b'\t'),
+                            (b'\n', b'\n'),
+                            (b'\x0B', b'\x0B'),
+                            (b'\x0C', b'\x0C'),
+                            (b'\r', b'\r'),
+                            (b' ', b' '),
+                        ],
+                        Upper => &[(b'A', b'Z')],
+                        Word => &[(b'0', b'9'), (b'A', b'Z'), (b'_', b'_'), (b'a', b'z')],
+                        Xdigit => &[(b'0', b'9'), (b'A', b'F'), (b'a', b'f')],
+                    };
+                    slice.iter().copied()
+                }
+
+                fn ascii_class_as_chars(
+                    kind: &ast::ClassAsciiKind,
+                ) -> impl Iterator<Item = (char, char)> {
+                    ascii_class(kind).map(|(s, e)| (char::from(s), char::from(e)))
+                }
+            }
+
+            pub mod visitor
+            {
+                /*!
+                */
+                use ::
+                {
+                    *,
+                };
+
+                use super::{ Hir, HirKind };
+                /*
+                */
+                /// A trait for visiting the high-level IR (HIR) in depth first order.
+                ///
+                /// The principle aim of this trait is to enable callers to perform case
+                /// analysis on a high-level intermediate representation of a regular
+                /// expression without necessarily using recursion. In particular, this permits
+                /// callers to do case analysis with constant stack usage, which can be
+                /// important since the size of an HIR may be proportional to end user input.
+                ///
+                /// Typical usage of this trait involves providing an implementation and then
+                /// running it using the [`visit`] function.
+                pub trait Visitor {
+                    /// The result of visiting an HIR.
+                    type Output;
+                    /// An error that visiting an HIR might return.
+                    type Err;
+                    /// All implementors of `Visitor` must provide a `finish` method, which
+                    /// yields the result of visiting the HIR or an error.
+                    fn finish(self) -> Result<Self::Output, Self::Err>;
+                    /// This method is called before beginning traversal of the HIR.
+                    fn start(&mut self) {}
+                    /// This method is called on an `Hir` before descending into child `Hir`
+                    /// nodes.
+                    fn visit_pre(&mut self, _hir: &Hir) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called on an `Hir` after descending all of its child
+                    /// `Hir` nodes.
+                    fn visit_post(&mut self, _hir: &Hir) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called between child nodes of an alternation.
+                    fn visit_alternation_in(&mut self) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                    /// This method is called between child nodes of a concatenation.
+                    fn visit_concat_in(&mut self) -> Result<(), Self::Err> {
+                        Ok(())
+                    }
+                }
+                /// Executes an implementation of `Visitor` in constant stack space.
+                ///
+                /// This function will visit every node in the given `Hir` while calling
+                /// appropriate methods provided by the [`Visitor`] trait.
+                ///
+                /// The primary use case for this method is when one wants to perform case
+                /// analysis over an `Hir` without using a stack size proportional to the depth
+                /// of the `Hir`. Namely, this method will instead use constant stack space,
+                /// but will use heap space proportional to the size of the `Hir`. This may be
+                /// desirable in cases where the size of `Hir` is proportional to end user
+                /// input.
+                ///
+                /// If the visitor returns an error at any point, then visiting is stopped and
+                /// the error is returned.
+                pub fn visit<V: Visitor>(hir: &Hir, visitor: V) -> Result<V::Output, V::Err> {
+                    HeapVisitor::new().visit(hir, visitor)
+                }
+                /// HeapVisitor visits every item in an `Hir` recursively using constant stack
+                /// size and a heap size proportional to the size of the `Hir`.
+                struct HeapVisitor<'a> {
+                    /// A stack of `Hir` nodes. This is roughly analogous to the call stack
+                    /// used in a typical recursive visitor.
+                    stack: Vec<(&'a Hir, Frame<'a>)>,
+                }
+                /// Represents a single stack frame while performing structural induction over
+                /// an `Hir`.
+                enum Frame<'a> {
+                    /// A stack frame allocated just before descending into a repetition
+                    /// operator's child node.
+                    Repetition(&'a hir::Repetition),
+                    /// A stack frame allocated just before descending into a capture's child
+                    /// node.
+                    Capture(&'a hir::Capture),
+                    /// The stack frame used while visiting every child node of a concatenation
+                    /// of expressions.
+                    Concat {
+                        /// The child node we are currently visiting.
+                        head: &'a Hir,
+                        /// The remaining child nodes to visit (which may be empty).
+                        tail: &'a [Hir],
+                    },
+                    /// The stack frame used while visiting every child node of an alternation
+                    /// of expressions.
+                    Alternation {
+                        /// The child node we are currently visiting.
+                        head: &'a Hir,
+                        /// The remaining child nodes to visit (which may be empty).
+                        tail: &'a [Hir],
+                    },
+                }
+
+                impl<'a> HeapVisitor<'a> {
+                    fn new() -> HeapVisitor<'a> {
+                        HeapVisitor { stack: vec![] }
+                    }
+
+                    fn visit<V: Visitor>(
+                        &mut self,
+                        mut hir: &'a Hir,
+                        mut visitor: V,
+                    ) -> Result<V::Output, V::Err> {
+                        self.stack.clear();
+
+                        visitor.start();
+                        loop {
+                            visitor.visit_pre(hir)?;
+                            if let Some(x) = self.induct(hir) {
+                                let child = x.child();
+                                self.stack.push((hir, x));
+                                hir = child;
+                                continue;
+                            }
+                            // No induction means we have a base case, so we can post visit
+                            // it now.
+                            visitor.visit_post(hir)?;
+
+                            // At this point, we now try to pop our call stack until it is
+                            // either empty or we hit another inductive case.
+                            loop {
+                                let (post_hir, frame) = match self.stack.pop() {
+                                    None => return visitor.finish(),
+                                    Some((post_hir, frame)) => (post_hir, frame),
+                                };
+                                // If this is a concat/alternate, then we might have additional
+                                // inductive steps to process.
+                                if let Some(x) = self.pop(frame) {
+                                    match x {
+                                        Frame::Alternation { .. } => {
+                                            visitor.visit_alternation_in()?;
+                                        }
+                                        Frame::Concat { .. } => {
+                                            visitor.visit_concat_in()?;
+                                        }
+                                        _ => {}
+                                    }
+                                    hir = x.child();
+                                    self.stack.push((post_hir, x));
+                                    break;
+                                }
+                                // Otherwise, we've finished visiting all the child nodes for
+                                // this HIR, so we can post visit it now.
+                                visitor.visit_post(post_hir)?;
+                            }
+                        }
+                    }
+                    /// Build a stack frame for the given HIR if one is needed (which occurs if
+                    /// and only if there are child nodes in the HIR). Otherwise, return None.
+                    fn induct(&mut self, hir: &'a Hir) -> Option<Frame<'a>> {
+                        match *hir.kind() {
+                            HirKind::Repetition(ref x) => Some(Frame::Repetition(x)),
+                            HirKind::Capture(ref x) => Some(Frame::Capture(x)),
+                            HirKind::Concat(ref x) if x.is_empty() => None,
+                            HirKind::Concat(ref x) => {
+                                Some(Frame::Concat { head: &x[0], tail: &x[1..] })
+                            }
+                            HirKind::Alternation(ref x) if x.is_empty() => None,
+                            HirKind::Alternation(ref x) => {
+                                Some(Frame::Alternation { head: &x[0], tail: &x[1..] })
+                            }
+                            _ => None,
+                        }
+                    }
+                    /// Pops the given frame. If the frame has an additional inductive step,
+                    /// then return it, otherwise return `None`.
+                    fn pop(&self, induct: Frame<'a>) -> Option<Frame<'a>> {
+                        match induct {
+                            Frame::Repetition(_) => None,
+                            Frame::Capture(_) => None,
+                            Frame::Concat { tail, .. } => {
+                                if tail.is_empty() {
+                                    None
+                                } else {
+                                    Some(Frame::Concat { head: &tail[0], tail: &tail[1..] })
+                                }
+                            }
+                            Frame::Alternation { tail, .. } => {
+                                if tail.is_empty() {
+                                    None
+                                } else {
+                                    Some(Frame::Alternation {
+                                        head: &tail[0],
+                                        tail: &tail[1..],
+                                    })
+                                }
+                            }
+                        }
+                    }
+                }
+
+                impl<'a> Frame<'a> {
+                    /// Perform the next inductive step on this frame and return the next
+                    /// child HIR node to visit.
+                    fn child(&self) -> &'a Hir {
+                        match *self {
+                            Frame::Repetition(rep) => &rep.sub,
+                            Frame::Capture(capture) => &capture.sub,
+                            Frame::Concat { head, .. } => head,
+                            Frame::Alternation { head, .. } => head,
+                        }
+                    }
+                }
+            }
+            /// An error that can occur while translating an `Ast` to a `Hir`.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Error {
+                /// The kind of error.
+                kind: ErrorKind,
+                /// The original pattern that the translator's Ast was parsed from. Every
+                /// span in an error is a valid range into this string.
+                pattern: String,
+                /// The span of this error, derived from the Ast given to the translator.
+                span: Span,
+            }
+
+            impl Error {
+                /// Return the type of this error.
+                pub fn kind(&self) -> &ErrorKind {
+                    &self.kind
+                }
+                /// The original pattern string in which this error occurred.
+                ///
+                /// Every span reported by this error is reported in terms of this string.
+                pub fn pattern(&self) -> &str {
+                    &self.pattern
+                }
+                /// Return the span at which this error occurred.
+                pub fn span(&self) -> &Span {
+                    &self.span
+                }
+            }
+            /// The type of an error that occurred while building an `Hir`.
+            ///
+            /// This error type is marked as `non_exhaustive`. This means that adding a
+            /// new variant is not considered a breaking change.
+            #[non_exhaustive] #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum ErrorKind {
+                /// This error occurs when a Unicode feature is used when Unicode
+                /// support is disabled. For example `(?-u:\pL)` would trigger this error.
+                UnicodeNotAllowed,
+                /// This error occurs when translating a pattern that could match a byte
+                /// sequence that isn't UTF-8 and `utf8` was enabled.
+                InvalidUtf8,
+                /// This error occurs when one uses a non-ASCII byte for a line terminator,
+                /// but where Unicode mode is enabled and UTF-8 mode is disabled.
+                InvalidLineTerminator,
+                /// This occurs when an unrecognized Unicode property name could not
+                /// be found.
+                UnicodePropertyNotFound,
+                /// This occurs when an unrecognized Unicode property value could not
+                /// be found.
+                UnicodePropertyValueNotFound,
+                /// This occurs when a Unicode-aware Perl character class (`\w`, `\s` or
+                /// `\d`) could not be found. This can occur when the `unicode-perl`
+                /// crate feature is not enabled.
+                UnicodePerlClassNotFound,
+                /// This occurs when the Unicode simple case mapping tables are not
+                /// available, and the regular expression required Unicode aware case
+                /// insensitivity.
+                UnicodeCaseUnavailable,
+            }
+
+            impl ::error::Error for Error {}
+
+            impl ::fmt::Display for Error {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    crate::error::Formatter::from(self).fmt(f)
+                }
+            }
+
+            impl ::fmt::Display for ErrorKind {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    use self::ErrorKind::*;
+
+                    let msg = match *self {
+                        UnicodeNotAllowed => "Unicode not allowed here",
+                        InvalidUtf8 => "pattern can match invalid UTF-8",
+                        InvalidLineTerminator => "invalid line terminator, must be ASCII",
+                        UnicodePropertyNotFound => "Unicode property not found",
+                        UnicodePropertyValueNotFound => "Unicode property value not found",
+                        UnicodePerlClassNotFound => {
+                            "Unicode-aware Perl class not found \
+                            (make sure the unicode-perl feature is enabled)"
+                        }
+                        UnicodeCaseUnavailable => {
+                            "Unicode-aware case insensitivity matching is not available \
+                            (make sure the unicode-case feature is enabled)"
+                        }
+                    };
+                    f.write_str(msg)
+                }
+            }
+            /// A high-level intermediate representation (HIR) for a regular expression.
+            /// it matches UTF-8 or if it matches the empty string.
+            /// HIR. For example, while an AST supports arbitrarily nested character
+            /// classes, the HIR will flatten all nested classes into a single set. The HIR
+            /// will also "compile away" every flag present in the concrete syntax. For
+            /// example, users of HIR expressions never need to worry about case folding;
+            /// it is handled automatically by the translator (e.g., by translating
+            /// `(?i:A)` to `[aA]`).
+            ///
+            /// The specific type of an HIR expression can be accessed via its `kind`
+            /// or `into_kind` methods. This extra level of indirection exists for two
+            /// reasons:
+            ///
+            /// 1. Construction of an HIR expression *must* use the constructor methods on
+            /// this `Hir` type instead of building the `HirKind` values directly. This
+            /// permits construction to enforce invariants like "concatenations always
+            /// consist of two or more sub-expressions."
+            /// 2. Every HIR expression contains attributes that are defined inductively,
+            /// and can be computed cheaply during the construction process. For example,
+            /// one such attribute is whether the expression must match at the beginning of
+            /// the haystack.
+            ///
+            /// #[derive( Clone, Debug, Eq, PartialEq )]UTF-8
+            ///
+            /// If the HIR was produced by a translator with
+            /// [`TranslatorBuilder::utf8`](translate::TranslatorBuilder::utf8) enabled,
+            /// then the HIR is guaranteed to match UTF-8 exclusively for all non-empty
+            /// matches.
+            ///
+            /// For empty matches, those can occur at any position. It is the
+            /// responsibility of the regex engine to determine whether empty matches are
+            /// permitted between the code units of a single codepoint.
+            ///
+            /// #[derive( Clone, Debug, Eq, PartialEq )]Stack space
+            ///
+            /// This type defines its own destructor that uses constant stack space and
+            /// heap space proportional to the size of the HIR.
+            /// look very different. (And potentially not practically readable by a human.)
+            ///
+            /// An `Hir`'s `fmt::Debug` implementation currently does not use constant
+            /// stack space. The implementation will also suppress some details (such as
+            /// the `Properties` inlined into every `Hir` value to make it less noisy).
+            #[derive(Clone, Eq, PartialEq)]
+            pub struct Hir {
+                /// The underlying HIR kind.
+                kind: HirKind,
+                /// Analysis info about this HIR, computed during construction.
+                props: Properties,
+            }
+            /// Methods for accessing the underlying `HirKind` and `Properties`.
+            impl Hir {
+                /// Returns a reference to the underlying HIR kind.
+                pub fn kind(&self) -> &HirKind {
+                    &self.kind
+                }
+                /// Consumes ownership of this HIR expression and returns its underlying
+                /// `HirKind`.
+                pub fn into_kind(mut self) -> HirKind {
+                    core::mem::replace(&mut self.kind, HirKind::Empty)
+                }
+                /// Returns the properties computed for this `Hir`.
+                pub fn properties(&self) -> &Properties {
+                    &self.props
+                }
+                /// Splits this HIR into its constituent parts.
+                ///
+                /// This is useful because `let Hir { kind, props } = hir;` does not work
+                /// because of `Hir`'s custom `Drop` implementation.
+                fn into_parts(mut self) -> (HirKind, Properties) {
+                    (
+                        core::mem::replace(&mut self.kind, HirKind::Empty),
+                        core::mem::replace(&mut self.props, Properties::empty()),
+                    )
+                }
+            }
+            /// Smart constructors for HIR values.
+            /// `Hir::concat(vec![expr])`. Instead of getting a `HirKind::Concat`, you'll
+            /// just get back the original `expr` since it's precisely equivalent.
+            ///
+            /// Smart constructors enable maintaining invariants about the HIR data type
+            /// while also simultaneously keeping the representation as simple as possible.
+            impl Hir {
+                /// Returns an empty HIR expression.
+                ///
+                /// An empty HIR expression always matches, including the empty string.
+                #[inline]
+                pub fn empty() -> Hir {
+                    let props = Properties::empty();
+                    Hir { kind: HirKind::Empty, props }
+                }
+                /// Returns an HIR expression that can never match anything. That is,
+                /// the size of the set of strings in the language described by the HIR
+                /// returned is `0`.
+                ///
+                /// This is distinct from [`Hir::empty`] in that the empty string matches
+                /// the HIR returned by `Hir::empty`. That is, the set of strings in the
+                /// language describe described by `Hir::empty` is non-empty.
+                ///
+                /// Note that currently, the HIR returned uses an empty character class to
+                /// indicate that nothing can match. An equivalent expression that cannot
+                /// match is an empty alternation, but all such "fail" expressions are
+                /// normalized (via smart constructors) to empty character classes. This is
+                /// because empty character classes can be spelled in the concrete syntax
+                /// of a regex (e.g., `\P{any}` or `(?-u:[^\x00-\xFF])` or `[a&&b]`), but
+                /// empty alternations cannot.
+                #[inline]
+                pub fn fail() -> Hir {
+                    let class = Class::Bytes(ClassBytes::empty());
+                    let props = Properties::class(&class);
+                    // We can't just call Hir::class here because it defers to Hir::fail
+                    // in order to canonicalize the Hir value used to represent "cannot
+                    // match."
+                    Hir { kind: HirKind::Class(class), props }
+                }
+                /// Creates a literal HIR expression.
+                ///
+                /// This accepts anything that can be converted into a `Box<[u8]>`.
+                ///
+                /// Note that there is no mechanism for storing a `char` or a `Box<str>`
+                /// in an HIR. Everything is "just bytes." Whether a `Literal` (or
+                /// any HIR node) matches valid UTF-8 exclusively can be queried via
+                /// [`Properties::is_utf8`].
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This example shows that concatenations of `Literal` HIR values will
+                /// automatically get flattened and combined together. So for example, even
+                /// if you concat multiple `Literal` values that are themselves not valid
+                /// UTF-8, they might add up to valid UTF-8. This also demonstrates just
+                /// how "smart" Hir's smart constructors are.
+                ///
+                /// ```
+                /// use regex_syntax::hir::{Hir, HirKind, Literal};
+                ///
+                /// let literals = vec![
+                ///     Hir::literal([0xE2]),
+                ///     Hir::literal([0x98]),
+                ///     Hir::literal([0x83]),
+                /// ];
+                /// // Each literal, on its own, is invalid UTF-8.
+                /// assert!(literals.iter().all(|hir| !hir.properties().is_utf8()));
+                ///
+                /// let concat = Hir::concat(literals);
+                /// // But the concatenation is valid UTF-8!
+                /// assert!(concat.properties().is_utf8());
+                ///
+                /// // And also notice that the literals have been concatenated into a
+                /// // single `Literal`, to the point where there is no explicit `Concat`!
+                /// let expected = HirKind::Literal(Literal(Box::from("☃".as_bytes())));
+                /// assert_eq!(&expected, concat.kind());
+                /// ```
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example: building a literal from a `char`
+                ///
+                /// This example shows how to build a single `Hir` literal from a `char`
+                /// value. Since a [`Literal`] is just bytes, we just need to UTF-8
+                /// encode a `char` value:
+                ///
+                /// ```
+                /// use regex_syntax::hir::{Hir, HirKind, Literal};
+                ///
+                /// let ch = '☃';
+                /// let got = Hir::literal(ch.encode_utf8(&mut [0; 4]).as_bytes());
+                ///
+                /// let expected = HirKind::Literal(Literal(Box::from("☃".as_bytes())));
+                /// assert_eq!(&expected, got.kind());
+                /// ```
+                #[inline]
+                pub fn literal<B: Into<Box<[u8]>>>(lit: B) -> Hir {
+                    let bytes = lit.into();
+                    if bytes.is_empty() {
+                        return Hir::empty();
+                    }
+
+                    let lit = Literal(bytes);
+                    let props = Properties::literal(&lit);
+                    Hir { kind: HirKind::Literal(lit), props }
+                }
+                /// Creates a class HIR expression. The class may either be defined over
+                /// ranges of Unicode codepoints or ranges of raw byte values.
+                ///
+                /// Note that an empty class is permitted. An empty class is equivalent to
+                /// `Hir::fail()`.
+                #[inline]
+                pub fn class(class: Class) -> Hir {
+                    if class.is_empty() {
+                        return Hir::fail();
+                    } else if let Some(bytes) = class.literal() {
+                        return Hir::literal(bytes);
+                    }
+                    let props = Properties::class(&class);
+                    Hir { kind: HirKind::Class(class), props }
+                }
+                /// Creates a look-around assertion HIR expression.
+                #[inline]
+                pub fn look(look: Look) -> Hir {
+                    let props = Properties::look(look);
+                    Hir { kind: HirKind::Look(look), props }
+                }
+                /// Creates a repetition HIR expression.
+                #[inline]
+                pub fn repetition(mut rep: Repetition) -> Hir {
+                    // If the sub-expression of a repetition can only match the empty
+                    // string, then we force its maximum to be at most 1.
+                    if rep.sub.properties().maximum_len() == Some(0) {
+                        rep.min = cmp::min(rep.min, 1);
+                        rep.max = rep.max.map(|n| cmp::min(n, 1)).or(Some(1));
+                    }
+                    // The regex 'a{0}' is always equivalent to the empty regex. This is
+                    // true even when 'a' is an expression that never matches anything
+                    // (like '\P{any}').
+                    //
+                    // Additionally, the regex 'a{1}' is always equivalent to 'a'.
+                    if rep.min == 0 && rep.max == Some(0) {
+                        return Hir::empty();
+                    } else if rep.min == 1 && rep.max == Some(1) {
+                        return *rep.sub;
+                    }
+                    let props = Properties::repetition(&rep);
+                    Hir { kind: HirKind::Repetition(rep), props }
+                }
+                /// Creates a capture HIR expression.
+                ///
+                /// Note that there is no explicit HIR value for a non-capturing group.
+                /// Since a non-capturing group only exists to override precedence in the
+                /// concrete syntax and since an HIR already does its own grouping based on
+                /// what is parsed, there is no need to explicitly represent non-capturing
+                /// groups in the HIR.
+                #[inline]
+                pub fn capture(capture: Capture) -> Hir {
+                    let props = Properties::capture(&capture);
+                    Hir { kind: HirKind::Capture(capture), props }
+                }
+                /// Returns the concatenation of the given expressions.
+                ///
+                /// This attempts to flatten and simplify the concatenation as appropriate.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This shows a simple example of basic flattening of both concatenations
+                /// and literals.
+                ///
+                /// ```
+                /// use regex_syntax::hir::Hir;
+                ///
+                /// let hir = Hir::concat(vec![
+                ///     Hir::concat(vec![
+                ///         Hir::literal([b'a']),
+                ///         Hir::literal([b'b']),
+                ///         Hir::literal([b'c']),
+                ///     ]),
+                ///     Hir::concat(vec![
+                ///         Hir::literal([b'x']),
+                ///         Hir::literal([b'y']),
+                ///         Hir::literal([b'z']),
+                ///     ]),
+                /// ]);
+                /// let expected = Hir::literal("abcxyz".as_bytes());
+                /// assert_eq!(expected, hir);
+                /// ```
+                pub fn concat(subs: Vec<Hir>) -> Hir {
+                    // We rebuild the concatenation by simplifying it. Would be nice to do
+                    // it in place, but that seems a little tricky?
+                    let mut new = vec![];
+                    // This gobbles up any adjacent literals in a concatenation and smushes
+                    // them together. Basically, when we see a literal, we add its bytes
+                    // to 'prior_lit', and whenever we see anything else, we first take
+                    // any bytes in 'prior_lit' and add it to the 'new' concatenation.
+                    let mut prior_lit: Option<Vec<u8>> = None;
+                    for sub in subs {
+                        let (kind, props) = sub.into_parts();
+                        match kind {
+                            HirKind::Literal(Literal(bytes)) => {
+                                if let Some(ref mut prior_bytes) = prior_lit {
+                                    prior_bytes.extend_from_slice(&bytes);
+                                } else {
+                                    prior_lit = Some(bytes.to_vec());
+                                }
+                            }
+                            // We also flatten concats that are direct children of another
+                            // concat. We only need to do this one level deep since
+                            // Hir::concat is the only way to build concatenations, and so
+                            // flattening happens inductively.
+                            HirKind::Concat(subs2) => {
+                                for sub2 in subs2 {
+                                    let (kind2, props2) = sub2.into_parts();
+                                    match kind2 {
+                                        HirKind::Literal(Literal(bytes)) => {
+                                            if let Some(ref mut prior_bytes) = prior_lit {
+                                                prior_bytes.extend_from_slice(&bytes);
+                                            } else {
+                                                prior_lit = Some(bytes.to_vec());
+                                            }
+                                        }
+                                        kind2 => {
+                                            if let Some(prior_bytes) = prior_lit.take() {
+                                                new.push(Hir::literal(prior_bytes));
+                                            }
+                                            new.push(Hir { kind: kind2, props: props2 });
+                                        }
+                                    }
+                                }
+                            }
+                            // We can just skip empty HIRs.
+                            HirKind::Empty => {}
+                            kind => {
+                                if let Some(prior_bytes) = prior_lit.take() {
+                                    new.push(Hir::literal(prior_bytes));
+                                }
+                                new.push(Hir { kind, props });
+                            }
+                        }
+                    }
+                    if let Some(prior_bytes) = prior_lit.take() {
+                        new.push(Hir::literal(prior_bytes));
+                    }
+                    if new.is_empty() {
+                        return Hir::empty();
+                    } else if new.len() == 1 {
+                        return new.pop().unwrap();
+                    }
+                    let props = Properties::concat(&new);
+                    Hir { kind: HirKind::Concat(new), props }
+                }
+                /// Returns the alternation of the given expressions.
+                ///
+                /// This flattens and simplifies the alternation as appropriate. This may
+                /// include factoring out common prefixes or even rewriting the alternation
+                /// as a character class.
+                ///
+                /// Note that an empty alternation is equivalent to `Hir::fail()`. (It
+                /// is not possible for one to write an empty alternation, or even an
+                /// alternation with a single sub-expression, in the concrete syntax of a
+                /// regex.)
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This is a simple example showing how an alternation might get
+                /// simplified.
+                ///
+                /// ```
+                /// use regex_syntax::hir::{Hir, Class, ClassUnicode, ClassUnicodeRange};
+                ///
+                /// let hir = Hir::alternation(vec![
+                ///     Hir::literal([b'a']),
+                ///     Hir::literal([b'b']),
+                ///     Hir::literal([b'c']),
+                ///     Hir::literal([b'd']),
+                ///     Hir::literal([b'e']),
+                ///     Hir::literal([b'f']),
+                /// ]);
+                /// let expected = Hir::class(Class::Unicode(ClassUnicode::new([
+                ///     ClassUnicodeRange::new('a', 'f'),
+                /// ])));
+                /// assert_eq!(expected, hir);
+                /// ```
+                ///
+                /// And another example showing how common prefixes might get factored
+                /// out.
+                ///
+                /// ```
+                /// use regex_syntax::hir::{Hir, Class, ClassUnicode, ClassUnicodeRange};
+                ///
+                /// let hir = Hir::alternation(vec![
+                ///     Hir::concat(vec![
+                ///         Hir::literal("abc".as_bytes()),
+                ///         Hir::class(Class::Unicode(ClassUnicode::new([
+                ///             ClassUnicodeRange::new('A', 'Z'),
+                ///         ]))),
+                ///     ]),
+                ///     Hir::concat(vec![
+                ///         Hir::literal("abc".as_bytes()),
+                ///         Hir::class(Class::Unicode(ClassUnicode::new([
+                ///             ClassUnicodeRange::new('a', 'z'),
+                ///         ]))),
+                ///     ]),
+                /// ]);
+                /// let expected = Hir::concat(vec![
+                ///     Hir::literal("abc".as_bytes()),
+                ///     Hir::alternation(vec![
+                ///         Hir::class(Class::Unicode(ClassUnicode::new([
+                ///             ClassUnicodeRange::new('A', 'Z'),
+                ///         ]))),
+                ///         Hir::class(Class::Unicode(ClassUnicode::new([
+                ///             ClassUnicodeRange::new('a', 'z'),
+                ///         ]))),
+                ///     ]),
+                /// ]);
+                /// assert_eq!(expected, hir);
+                /// ```
+                ///
+                /// Note that these sorts of simplifications are not guaranteed.
+                pub fn alternation(subs: Vec<Hir>) -> Hir {
+                    // We rebuild the alternation by simplifying it. We proceed similarly
+                    // as the concatenation case. But in this case, there's no literal
+                    // simplification happening. We're just flattening alternations.
+                    let mut new = Vec::with_capacity(subs.len());
+                    for sub in subs {
+                        let (kind, props) = sub.into_parts();
+                        match kind {
+                            HirKind::Alternation(subs2) => {
+                                new.extend(subs2);
+                            }
+                            kind => {
+                                new.push(Hir { kind, props });
+                            }
+                        }
+                    }
+                    if new.is_empty() {
+                        return Hir::fail();
+                    } else if new.len() == 1 {
+                        return new.pop().unwrap();
+                    }
+                    // Now that it's completely flattened, look for the special case of
+                    // 'char1|char2|...|charN' and collapse that into a class. Note that
+                    // we look for 'char' first and then bytes. The issue here is that if
+                    // we find both non-ASCII codepoints and non-ASCII singleton bytes,
+                    // then it isn't actually possible to smush them into a single class.
+                    // (Because classes are either "all codepoints" or "all bytes." You
+                    // can have a class that both matches non-ASCII but valid UTF-8 and
+                    // invalid UTF-8.) So we look for all chars and then all bytes, and
+                    // don't handle anything else.
+                    if let Some(singletons) = singleton_chars(&new) {
+                        let it = singletons
+                            .into_iter()
+                            .map(|ch| ClassUnicodeRange { start: ch, end: ch });
+                        return Hir::class(Class::Unicode(ClassUnicode::new(it)));
+                    }
+                    if let Some(singletons) = singleton_bytes(&new) {
+                        let it = singletons
+                            .into_iter()
+                            .map(|b| ClassBytesRange { start: b, end: b });
+                        return Hir::class(Class::Bytes(ClassBytes::new(it)));
+                    }
+                    // Similar to singleton chars, we can also look for alternations of
+                    // classes. Those can be smushed into a single class.
+                    if let Some(cls) = class_chars(&new) {
+                        return Hir::class(cls);
+                    }
+                    if let Some(cls) = class_bytes(&new) {
+                        return Hir::class(cls);
+                    }
+                    // Factor out a common prefix if we can, which might potentially
+                    // simplify the expression and unlock other optimizations downstream.
+                    // It also might generally make NFA matching and DFA construction
+                    // faster by reducing the scope of branching in the regex.
+                    new = match lift_common_prefix(new) {
+                        Ok(hir) => return hir,
+                        Err(unchanged) => unchanged,
+                    };
+                    let props = Properties::alternation(&new);
+                    Hir { kind: HirKind::Alternation(new), props }
+                }
+                /// Returns an HIR expression for `.`.
+                ///
+                /// * [`Dot::AnyChar`] maps to `(?su-R:.)`.
+                /// * [`Dot::AnyByte`] maps to `(?s-Ru:.)`.
+                /// * [`Dot::AnyCharExceptLF`] maps to `(?u-Rs:.)`.
+                /// * [`Dot::AnyCharExceptCRLF`] maps to `(?Ru-s:.)`.
+                /// * [`Dot::AnyByteExceptLF`] maps to `(?-Rsu:.)`.
+                /// * [`Dot::AnyByteExceptCRLF`] maps to `(?R-su:.)`.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// Note that this is a convenience routine for constructing the correct
+                /// character class based on the value of `Dot`. There is no explicit "dot"
+                /// HIR value. It is just an abbreviation for a common character class.
+                ///
+                /// ```
+                /// use regex_syntax::hir::{Hir, Dot, Class, ClassBytes, ClassBytesRange};
+                ///
+                /// let hir = Hir::dot(Dot::AnyByte);
+                /// let expected = Hir::class(Class::Bytes(ClassBytes::new([
+                ///     ClassBytesRange::new(0x00, 0xFF),
+                /// ])));
+                /// assert_eq!(expected, hir);
+                /// ```
+                #[inline]
+                pub fn dot(dot: Dot) -> Hir {
+                    match dot {
+                        Dot::AnyChar => Hir::class(Class::Unicode(ClassUnicode::new([
+                            ClassUnicodeRange::new('\0', '\u{10FFFF}'),
+                        ]))),
+                        Dot::AnyByte => Hir::class(Class::Bytes(ClassBytes::new([
+                            ClassBytesRange::new(b'\0', b'\xFF'),
+                        ]))),
+                        Dot::AnyCharExcept(ch) => {
+                            let mut cls =
+                                ClassUnicode::new([ClassUnicodeRange::new(ch, ch)]);
+                            cls.negate();
+                            Hir::class(Class::Unicode(cls))
+                        }
+                        Dot::AnyCharExceptLF => {
+                            Hir::class(Class::Unicode(ClassUnicode::new([
+                                ClassUnicodeRange::new('\0', '\x09'),
+                                ClassUnicodeRange::new('\x0B', '\u{10FFFF}'),
+                            ])))
+                        }
+                        Dot::AnyCharExceptCRLF => {
+                            Hir::class(Class::Unicode(ClassUnicode::new([
+                                ClassUnicodeRange::new('\0', '\x09'),
+                                ClassUnicodeRange::new('\x0B', '\x0C'),
+                                ClassUnicodeRange::new('\x0E', '\u{10FFFF}'),
+                            ])))
+                        }
+                        Dot::AnyByteExcept(byte) => {
+                            let mut cls =
+                                ClassBytes::new([ClassBytesRange::new(byte, byte)]);
+                            cls.negate();
+                            Hir::class(Class::Bytes(cls))
+                        }
+                        Dot::AnyByteExceptLF => {
+                            Hir::class(Class::Bytes(ClassBytes::new([
+                                ClassBytesRange::new(b'\0', b'\x09'),
+                                ClassBytesRange::new(b'\x0B', b'\xFF'),
+                            ])))
+                        }
+                        Dot::AnyByteExceptCRLF => {
+                            Hir::class(Class::Bytes(ClassBytes::new([
+                                ClassBytesRange::new(b'\0', b'\x09'),
+                                ClassBytesRange::new(b'\x0B', b'\x0C'),
+                                ClassBytesRange::new(b'\x0E', b'\xFF'),
+                            ])))
+                        }
+                    }
+                }
+            }
+            /// The underlying kind of an arbitrary [`Hir`] expression.
+            /// not expose any way of building an `Hir` directly from an `HirKind`.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum HirKind {
+                /// The empty regular expression, which matches everything, including the
+                /// empty string.
+                Empty,
+                /// A literal string that matches exactly these bytes.
+                Literal(Literal),
+                /// A single character class that matches any of the characters in the
+                /// class. A class can either consist of Unicode scalar values as
+                /// characters, or it can use bytes.
+                ///
+                /// A class may be empty. In which case, it matches nothing.
+                Class(Class),
+                /// A look-around assertion. A look-around match always has zero length.
+                Look(Look),
+                /// A repetition operation applied to a sub-expression.
+                Repetition(Repetition),
+                /// A capturing group, which contains a sub-expression.
+                Capture(Capture),
+                /// A concatenation of expressions.
+                ///
+                /// A concatenation matches only if each of its sub-expressions match one
+                /// after the other.
+                ///
+                /// Concatenations are guaranteed by `Hir`'s smart constructors to always
+                /// have at least two sub-expressions.
+                Concat(Vec<Hir>),
+                /// An alternation of expressions.
+                ///
+                /// An alternation matches only if at least one of its sub-expressions
+                /// match. If multiple sub-expressions match, then the leftmost is
+                /// preferred.
+                ///
+                /// Alternations are guaranteed by `Hir`'s smart constructors to always
+                /// have at least two sub-expressions.
+                Alternation(Vec<Hir>),
+            }
+
+            impl HirKind {
+                /// Returns a slice of this kind's sub-expressions, if any.
+                pub fn subs(&self) -> &[Hir] {
+                    use core::slice::from_ref;
+
+                    match *self {
+                        HirKind::Empty
+                        | HirKind::Literal(_)
+                        | HirKind::Class(_)
+                        | HirKind::Look(_) => &[],
+                        HirKind::Repetition(Repetition { ref sub, .. }) => from_ref(sub),
+                        HirKind::Capture(Capture { ref sub, .. }) => from_ref(sub),
+                        HirKind::Concat(ref subs) => subs,
+                        HirKind::Alternation(ref subs) => subs,
+                    }
+                }
+            }
+
+            impl ::fmt::Debug for Hir {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    self.kind.fmt(f)
+                }
+            }
+            /// Print a display representation of this Hir.
+            ///
+            /// The result of this is a valid regular expression pattern string.
+            ///
+            /// This implementation uses constant stack space and heap space proportional
+            /// to the size of the `Hir`.
+            impl ::fmt::Display for Hir {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    crate::hir::print::Printer::new().print(self, f)
+                }
+            }
+            /// The high-level intermediate representation of a literal.
+            ///
+            /// Note that despite a literal being represented by a sequence of bytes, its
+            /// `Debug` implementation will attempt to print it as a normal string. (That
+            /// is, not a sequence of decimal numbers.)
+            #[derive(Clone, Eq, PartialEq)]
+            pub struct Literal(pub Box<[u8]>);
+
+            impl ::fmt::Debug for Literal {
+                fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                    crate::debug::Bytes(&self.0).fmt(f)
+                }
+            }
+            /// The high-level intermediate representation of a character class.
+            ///
+            /// A character class corresponds to a set of characters. A character is either
+            /// defined by a Unicode scalar value or a byte.
+            /// and `(?i-u)k` will not match the same set of strings.
+            #[derive(Clone, Eq, PartialEq)]
+            pub enum Class {
+                /// A set of characters represented by Unicode scalar values.
+                Unicode(ClassUnicode),
+                /// A set of characters represented by arbitrary bytes (one byte per
+                /// character).
+                Bytes(ClassBytes),
+            }
+
+            impl Class {
+                /// Apply Unicode simple case folding to this character class, in place.
+                /// The character class will be expanded to include all simple case folded
+                /// character variants.
+                ///
+                /// If this is a byte oriented character class, then this will be limited
+                /// to the ASCII ranges `A-Z` and `a-z`.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Panics
+                ///
+                /// This routine panics when the case mapping data necessary for this
+                /// routine to complete is unavailable. This occurs when the `unicode-case`
+                /// feature is not enabled and the underlying class is Unicode oriented.
+                ///
+                /// Callers should prefer using `try_case_fold_simple` instead, which will
+                /// return an error instead of panicking.
+                pub fn case_fold_simple(&mut self) {
+                    match *self {
+                        Class::Unicode(ref mut x) => x.case_fold_simple(),
+                        Class::Bytes(ref mut x) => x.case_fold_simple(),
+                    }
+                }
+                /// Apply Unicode simple case folding to this character class, in place.
+                /// The character class will be expanded to include all simple case folded
+                /// character variants.
+                ///
+                /// If this is a byte oriented character class, then this will be limited
+                /// to the ASCII ranges `A-Z` and `a-z`.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Error
+                ///
+                /// This routine returns an error when the case mapping data necessary
+                /// for this routine to complete is unavailable. This occurs when the
+                /// `unicode-case` feature is not enabled and the underlying class is
+                /// Unicode oriented.
+                pub fn try_case_fold_simple(
+                    &mut self,
+                ) -> ::result::Result<(), CaseFoldError> {
+                    match *self {
+                        Class::Unicode(ref mut x) => x.try_case_fold_simple()?,
+                        Class::Bytes(ref mut x) => x.case_fold_simple(),
+                    }
+                    Ok(())
+                }
+                /// Negate this character class in place.
+                ///
+                /// After completion, this character class will contain precisely the
+                /// characters that weren't previously in the class.
+                pub fn negate(&mut self) {
+                    match *self {
+                        Class::Unicode(ref mut x) => x.negate(),
+                        Class::Bytes(ref mut x) => x.negate(),
+                    }
+                }
+                /// Returns true if and only if this character class will only ever match
+                /// valid UTF-8.
+                ///
+                /// A character class can match invalid UTF-8 only when the following
+                /// conditions are met:
+                ///
+                /// 1. The translator was configured to permit generating an expression
+                ///    that can match invalid UTF-8. (By default, this is disabled.)
+                /// 2. Unicode mode (via the `u` flag) was disabled either in the concrete
+                ///    syntax or in the parser builder. By default, Unicode mode is
+                ///    enabled.
+                pub fn is_utf8(&self) -> bool {
+                    match *self {
+                        Class::Unicode(_) => true,
+                        Class::Bytes(ref x) => x.is_ascii(),
+                    }
+                }
+                /// Returns the length, in bytes, of the smallest string matched by this
+                /// character class.
+                ///
+                /// For non-empty byte oriented classes, this always returns `1`. For
+                /// non-empty Unicode oriented classes, this can return `1`, `2`, `3` or
+                /// `4`. For empty classes, `None` is returned. It is impossible for `0` to
+                /// be returned.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This example shows some examples of regexes and their corresponding
+                /// minimum length, if any.
+                ///
+                /// ```
+                /// use regex_syntax::{hir::Properties, parse};
+                ///
+                /// // The empty string has a min length of 0.
+                /// let hir = parse(r"")?;
+                /// assert_eq!(Some(0), hir.properties().minimum_len());
+                /// // As do other types of regexes that only match the empty string.
+                /// let hir = parse(r"^$\b\B")?;
+                /// assert_eq!(Some(0), hir.properties().minimum_len());
+                /// // A regex that can match the empty string but match more is still 0.
+                /// let hir = parse(r"a*")?;
+                /// assert_eq!(Some(0), hir.properties().minimum_len());
+                /// // A regex that matches nothing has no minimum defined.
+                /// let hir = parse(r"[a&&b]")?;
+                /// assert_eq!(None, hir.properties().minimum_len());
+                /// // Character classes usually have a minimum length of 1.
+                /// let hir = parse(r"\w")?;
+                /// assert_eq!(Some(1), hir.properties().minimum_len());
+                /// // But sometimes Unicode classes might be bigger!
+                /// let hir = parse(r"\p{Cyrillic}")?;
+                /// assert_eq!(Some(2), hir.properties().minimum_len());
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                pub fn minimum_len(&self) -> Option<usize> {
+                    match *self {
+                        Class::Unicode(ref x) => x.minimum_len(),
+                        Class::Bytes(ref x) => x.minimum_len(),
+                    }
+                }
+                /// Returns the length, in bytes, of the longest string matched by this
+                /// character class.
+                ///
+                /// For non-empty byte oriented classes, this always returns `1`. For
+                /// non-empty Unicode oriented classes, this can return `1`, `2`, `3` or
+                /// `4`. For empty classes, `None` is returned. It is impossible for `0` to
+                /// be returned.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This example shows some examples of regexes and their corresponding
+                /// maximum length, if any.
+                ///
+                /// ```
+                /// use regex_syntax::{hir::Properties, parse};
+                ///
+                /// // The empty string has a max length of 0.
+                /// let hir = parse(r"")?;
+                /// assert_eq!(Some(0), hir.properties().maximum_len());
+                /// // As do other types of regexes that only match the empty string.
+                /// let hir = parse(r"^$\b\B")?;
+                /// assert_eq!(Some(0), hir.properties().maximum_len());
+                /// // A regex that matches nothing has no maximum defined.
+                /// let hir = parse(r"[a&&b]")?;
+                /// assert_eq!(None, hir.properties().maximum_len());
+                /// // Bounded repeats work as you expect.
+                /// let hir = parse(r"x{2,10}")?;
+                /// assert_eq!(Some(10), hir.properties().maximum_len());
+                /// // An unbounded repeat means there is no maximum.
+                /// let hir = parse(r"x{2,}")?;
+                /// assert_eq!(None, hir.properties().maximum_len());
+                /// // With Unicode enabled, \w can match up to 4 bytes!
+                /// let hir = parse(r"\w")?;
+                /// assert_eq!(Some(4), hir.properties().maximum_len());
+                /// // Without Unicode enabled, \w matches at most 1 byte.
+                /// let hir = parse(r"(?-u)\w")?;
+                /// assert_eq!(Some(1), hir.properties().maximum_len());
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                pub fn maximum_len(&self) -> Option<usize> {
+                    match *self {
+                        Class::Unicode(ref x) => x.maximum_len(),
+                        Class::Bytes(ref x) => x.maximum_len(),
+                    }
+                }
+                /// Returns true if and only if this character class is empty. That is,
+                /// it has no elements.
+                ///
+                /// An empty character can never match anything, including an empty string.
+                pub fn is_empty(&self) -> bool {
+                    match *self {
+                        Class::Unicode(ref x) => x.ranges().is_empty(),
+                        Class::Bytes(ref x) => x.ranges().is_empty(),
+                    }
+                }
+                /// If this class consists of exactly one element (whether a codepoint or a
+                /// byte), then return it as a literal byte string.
+                ///
+                /// If this class is empty or contains more than one element, then `None`
+                /// is returned.
+                pub fn literal(&self) -> Option<Vec<u8>> {
+                    match *self {
+                        Class::Unicode(ref x) => x.literal(),
+                        Class::Bytes(ref x) => x.literal(),
+                    }
+                }
+            }
+
+            impl ::fmt::Debug for Class {
+                fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                    use crate::debug::Byte;
+
+                    let mut fmter = f.debug_set();
+                    match *self {
+                        Class::Unicode(ref cls) => {
+                            for r in cls.ranges().iter() {
+                                fmter.entry(&(r.start..=r.end));
+                            }
+                        }
+                        Class::Bytes(ref cls) => {
+                            for r in cls.ranges().iter() {
+                                fmter.entry(&(Byte(r.start)..=Byte(r.end)));
+                            }
+                        }
+                    }
+                    fmter.finish()
+                }
+            }
+            /// A set of characters represented by Unicode scalar values.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassUnicode {
+                set: IntervalSet<ClassUnicodeRange>,
+            }
+
+            impl ClassUnicode {
+                /// Create a new class from a sequence of ranges.
+                ///
+                /// The given ranges do not need to be in any specific order, and ranges
+                /// may overlap. Ranges will automatically be sorted into a canonical
+                /// non-overlapping order.
+                pub fn new<I>(ranges: I) -> ClassUnicode
+                where
+                    I: IntoIterator<Item = ClassUnicodeRange>,
+                {
+                    ClassUnicode { set: IntervalSet::new(ranges) }
+                }
+                /// Create a new class with no ranges.
+                ///
+                /// An empty class matches nothing. That is, it is equivalent to
+                /// [`Hir::fail`].
+                pub fn empty() -> ClassUnicode {
+                    ClassUnicode::new(vec![])
+                }
+                /// Add a new range to this set.
+                pub fn push(&mut self, range: ClassUnicodeRange) {
+                    self.set.push(range);
+                }
+                /// Return an iterator over all ranges in this class.
+                ///
+                /// The iterator yields ranges in ascending order.
+                pub fn iter(&self) -> ClassUnicodeIter<'_> {
+                    ClassUnicodeIter(self.set.iter())
+                }
+                /// Return the underlying ranges as a slice.
+                pub fn ranges(&self) -> &[ClassUnicodeRange] {
+                    self.set.intervals()
+                }
+                /// Expand this character class such that it contains all case folded
+                /// characters, according to Unicode's "simple" mapping. For example, if
+                /// this class consists of the range `a-z`, then applying case folding will
+                /// result in the class containing both the ranges `a-z` and `A-Z`.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Panics
+                ///
+                /// This routine panics when the case mapping data necessary for this
+                /// routine to complete is unavailable. This occurs when the `unicode-case`
+                /// feature is not enabled.
+                ///
+                /// Callers should prefer using `try_case_fold_simple` instead, which will
+                /// return an error instead of panicking.
+                pub fn case_fold_simple(&mut self) {
+                    self.set
+                        .case_fold_simple()
+                        .expect("unicode-case feature must be enabled");
+                }
+                /// Expand this character class such that it contains all case folded
+                /// characters, according to Unicode's "simple" mapping. For example, if
+                /// this class consists of the range `a-z`, then applying case folding will
+                /// result in the class containing both the ranges `a-z` and `A-Z`.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Error
+                ///
+                /// This routine returns an error when the case mapping data necessary
+                /// for this routine to complete is unavailable. This occurs when the
+                /// `unicode-case` feature is not enabled.
+                pub fn try_case_fold_simple(
+                    &mut self,
+                ) -> ::result::Result<(), CaseFoldError> {
+                    self.set.case_fold_simple()
+                }
+                /// Negate this character class.
+                ///
+                /// For all `c` where `c` is a Unicode scalar value, if `c` was in this
+                /// set, then it will not be in this set after negation.
+                pub fn negate(&mut self) {
+                    self.set.negate();
+                }
+                /// Union this character class with the given character class, in place.
+                pub fn union(&mut self, other: &ClassUnicode) {
+                    self.set.union(&other.set);
+                }
+                /// Intersect this character class with the given character class, in
+                /// place.
+                pub fn intersect(&mut self, other: &ClassUnicode) {
+                    self.set.intersect(&other.set);
+                }
+                /// Subtract the given character class from this character class, in place.
+                pub fn difference(&mut self, other: &ClassUnicode) {
+                    self.set.difference(&other.set);
+                }
+                /// Compute the symmetric difference of the given character classes, in
+                /// place.
+                ///
+                /// This computes the symmetric difference of two character classes. This
+                /// removes all elements in this class that are also in the given class,
+                /// but all adds all elements from the given class that aren't in this
+                /// class. That is, the class will contain all elements in either class,
+                /// but will not contain any elements that are in both classes.
+                pub fn symmetric_difference(&mut self, other: &ClassUnicode) {
+                    self.set.symmetric_difference(&other.set);
+                }
+                /// Returns true if and only if this character class will either match
+                /// nothing or only ASCII bytes. Stated differently, this returns false
+                /// if and only if this class contains a non-ASCII codepoint.
+                pub fn is_ascii(&self) -> bool {
+                    self.set.intervals().last().map_or(true, |r| r.end <= '\x7F')
+                }
+                /// Returns the length, in bytes, of the smallest string matched by this
+                /// character class.
+                ///
+                /// Returns `None` when the class is empty.
+                pub fn minimum_len(&self) -> Option<usize> {
+                    let first = self.ranges().get(0)?;
+                    // Correct because c1 < c2 implies c1.len_utf8() < c2.len_utf8().
+                    Some(first.start.len_utf8())
+                }
+                /// Returns the length, in bytes, of the longest string matched by this
+                /// character class.
+                ///
+                /// Returns `None` when the class is empty.
+                pub fn maximum_len(&self) -> Option<usize> {
+                    let last = self.ranges().last()?;
+                    // Correct because c1 < c2 implies c1.len_utf8() < c2.len_utf8().
+                    Some(last.end.len_utf8())
+                }
+                /// If this class consists of exactly one codepoint, then return it as
+                /// a literal byte string.
+                ///
+                /// If this class is empty or contains more than one codepoint, then `None`
+                /// is returned.
+                pub fn literal(&self) -> Option<Vec<u8>> {
+                    let rs = self.ranges();
+                    if rs.len() == 1 && rs[0].start == rs[0].end {
+                        Some(rs[0].start.encode_utf8(&mut [0; 4]).to_string().into_bytes())
+                    } else {
+                        None
+                    }
+                }
+                /// If this class consists of only ASCII ranges, then return its
+                /// corresponding and equivalent byte class.
+                pub fn to_byte_class(&self) -> Option<ClassBytes> {
+                    if !self.is_ascii() {
+                        return None;
+                    }
+                    Some(ClassBytes::new(self.ranges().iter().map(|r| {
+                        // Since we are guaranteed that our codepoint range is ASCII, the
+                        // 'u8::try_from' calls below are guaranteed to be correct.
+                        ClassBytesRange {
+                            start: u8::try_from(r.start).unwrap(),
+                            end: u8::try_from(r.end).unwrap(),
+                        }
+                    })))
+                }
+            }
+            /// An iterator over all ranges in a Unicode character class.
+            ///
+            /// The lifetime `'a` refers to the lifetime of the underlying class.
+            #[derive(Debug)]
+            pub struct ClassUnicodeIter<'a>(IntervalSetIter<'a, ClassUnicodeRange>);
+
+            impl<'a> Iterator for ClassUnicodeIter<'a> {
+                type Item = &'a ClassUnicodeRange;
+
+                fn next(&mut self) -> Option<&'a ClassUnicodeRange> {
+                    self.0.next()
+                }
+            }
+            /// A single range of characters represented by Unicode scalar values.
+            ///
+            /// The range is closed. That is, the start and end of the range are included
+            /// in the range.
+            #[derive(Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord)]
+            pub struct ClassUnicodeRange {
+                start: char,
+                end: char,
+            }
+
+            impl ::fmt::Debug for ClassUnicodeRange {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    let start = if !self.start.is_whitespace() && !self.start.is_control()
+                    {
+                        self.start.to_string()
+                    } else {
+                        format!("0x{:X}", u32::from(self.start))
+                    };
+                    let end = if !self.end.is_whitespace() && !self.end.is_control() {
+                        self.end.to_string()
+                    } else {
+                        format!("0x{:X}", u32::from(self.end))
+                    };
+                    f.debug_struct("ClassUnicodeRange")
+                        .field("start", &start)
+                        .field("end", &end)
+                        .finish()
+                }
+            }
+
+            impl Interval for ClassUnicodeRange {
+                type Bound = char;
+
+                #[inline]
+                fn lower(&self) -> char {
+                    self.start
+                }
+                #[inline]
+                fn upper(&self) -> char {
+                    self.end
+                }
+                #[inline]
+                fn set_lower(&mut self, bound: char) {
+                    self.start = bound;
+                }
+                #[inline]
+                fn set_upper(&mut self, bound: char) {
+                    self.end = bound;
+                }
+                /// Apply simple case folding to this Unicode scalar value range.
+                ///
+                /// Additional ranges are appended to the given vector. Canonical ordering
+                /// is *not* maintained in the given vector.
+                fn case_fold_simple(
+                    &self,
+                    ranges: &mut Vec<ClassUnicodeRange>,
+                ) -> Result<(), unicode::CaseFoldError> {
+                    let mut folder = unicode::SimpleCaseFolder::new()?;
+                    if !folder.overlaps(self.start, self.end) {
+                        return Ok(());
+                    }
+                    let (start, end) = (u32::from(self.start), u32::from(self.end));
+                    for cp in (start..=end).filter_map(char::from_u32) {
+                        for &cp_folded in folder.mapping(cp) {
+                            ranges.push(ClassUnicodeRange::new(cp_folded, cp_folded));
+                        }
+                    }
+                    Ok(())
+                }
+            }
+
+            impl ClassUnicodeRange {
+                /// Create a new Unicode scalar value range for a character class.
+                ///
+                /// The returned range is always in a canonical form. That is, the range
+                /// returned always satisfies the invariant that `start <= end`.
+                pub fn new(start: char, end: char) -> ClassUnicodeRange {
+                    ClassUnicodeRange::create(start, end)
+                }
+                /// Return the start of this range.
+                ///
+                /// The start of a range is always less than or equal to the end of the
+                /// range.
+                pub fn start(&self) -> char {
+                    self.start
+                }
+                /// Return the end of this range.
+                ///
+                /// The end of a range is always greater than or equal to the start of the
+                /// range.
+                pub fn end(&self) -> char {
+                    self.end
+                }
+                /// Returns the number of codepoints in this range.
+                pub fn len(&self) -> usize {
+                    let diff = 1 + u32::from(self.end) - u32::from(self.start);
+                    // This is likely to panic in 16-bit targets since a usize can only fit
+                    // 2^16. It's not clear what to do here, other than to return an error
+                    // when building a Unicode class that contains a range whose length
+                    // overflows usize. (Which, to be honest, is probably quite common on
+                    // 16-bit targets. For example, this would imply that '.' and '\p{any}'
+                    // would be impossible to build.)
+                    usize::try_from(diff).expect("char class len fits in usize")
+                }
+            }
+            /// A set of characters represented by arbitrary bytes.
+            ///
+            /// Each byte corresponds to one character.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct ClassBytes {
+                set: IntervalSet<ClassBytesRange>,
+            }
+
+            impl ClassBytes {
+                /// Create a new class from a sequence of ranges.
+                ///
+                /// The given ranges do not need to be in any specific order, and ranges
+                /// may overlap. Ranges will automatically be sorted into a canonical
+                /// non-overlapping order.
+                pub fn new<I>(ranges: I) -> ClassBytes
+                where
+                    I: IntoIterator<Item = ClassBytesRange>,
+                {
+                    ClassBytes { set: IntervalSet::new(ranges) }
+                }
+                /// Create a new class with no ranges.
+                ///
+                /// An empty class matches nothing. That is, it is equivalent to
+                /// [`Hir::fail`].
+                pub fn empty() -> ClassBytes {
+                    ClassBytes::new(vec![])
+                }
+                /// Add a new range to this set.
+                pub fn push(&mut self, range: ClassBytesRange) {
+                    self.set.push(range);
+                }
+                /// Return an iterator over all ranges in this class.
+                ///
+                /// The iterator yields ranges in ascending order.
+                pub fn iter(&self) -> ClassBytesIter<'_> {
+                    ClassBytesIter(self.set.iter())
+                }
+                /// Return the underlying ranges as a slice.
+                pub fn ranges(&self) -> &[ClassBytesRange] {
+                    self.set.intervals()
+                }
+                /// Expand this character class such that it contains all case folded
+                /// characters. For example, if this class consists of the range `a-z`,
+                /// then applying case folding will result in the class containing both the
+                /// ranges `a-z` and `A-Z`.
+                ///
+                /// Note that this only applies ASCII case folding, which is limited to the
+                /// characters `a-z` and `A-Z`.
+                pub fn case_fold_simple(&mut self) {
+                    self.set.case_fold_simple().expect("ASCII case folding never fails");
+                }
+                /// Negate this byte class.
+                ///
+                /// For all `b` where `b` is a any byte, if `b` was in this set, then it
+                /// will not be in this set after negation.
+                pub fn negate(&mut self) {
+                    self.set.negate();
+                }
+                /// Union this byte class with the given byte class, in place.
+                pub fn union(&mut self, other: &ClassBytes) {
+                    self.set.union(&other.set);
+                }
+                /// Intersect this byte class with the given byte class, in place.
+                pub fn intersect(&mut self, other: &ClassBytes) {
+                    self.set.intersect(&other.set);
+                }
+                /// Subtract the given byte class from this byte class, in place.
+                pub fn difference(&mut self, other: &ClassBytes) {
+                    self.set.difference(&other.set);
+                }
+                /// Compute the symmetric difference of the given byte classes, in place.
+                ///
+                /// This computes the symmetric difference of two byte classes. This
+                /// removes all elements in this class that are also in the given class,
+                /// but all adds all elements from the given class that aren't in this
+                /// class. That is, the class will contain all elements in either class,
+                /// but will not contain any elements that are in both classes.
+                pub fn symmetric_difference(&mut self, other: &ClassBytes) {
+                    self.set.symmetric_difference(&other.set);
+                }
+                /// Returns true if and only if this character class will either match
+                /// nothing or only ASCII bytes. Stated differently, this returns false
+                /// if and only if this class contains a non-ASCII byte.
+                pub fn is_ascii(&self) -> bool {
+                    self.set.intervals().last().map_or(true, |r| r.end <= 0x7F)
+                }
+                /// Returns the length, in bytes, of the smallest string matched by this
+                /// character class.
+                ///
+                /// Returns `None` when the class is empty.
+                pub fn minimum_len(&self) -> Option<usize> {
+                    if self.ranges().is_empty() {
+                        None
+                    } else {
+                        Some(1)
+                    }
+                }
+                /// Returns the length, in bytes, of the longest string matched by this
+                /// character class.
+                ///
+                /// Returns `None` when the class is empty.
+                pub fn maximum_len(&self) -> Option<usize> {
+                    if self.ranges().is_empty() {
+                        None
+                    } else {
+                        Some(1)
+                    }
+                }
+                /// If this class consists of exactly one byte, then return it as
+                /// a literal byte string.
+                ///
+                /// If this class is empty or contains more than one byte, then `None`
+                /// is returned.
+                pub fn literal(&self) -> Option<Vec<u8>> {
+                    let rs = self.ranges();
+                    if rs.len() == 1 && rs[0].start == rs[0].end {
+                        Some(vec![rs[0].start])
+                    } else {
+                        None
+                    }
+                }
+                /// If this class consists of only ASCII ranges, then return its
+                /// corresponding and equivalent Unicode class.
+                pub fn to_unicode_class(&self) -> Option<ClassUnicode> {
+                    if !self.is_ascii() {
+                        return None;
+                    }
+                    Some(ClassUnicode::new(self.ranges().iter().map(|r| {
+                        // Since we are guaranteed that our byte range is ASCII, the
+                        // 'char::from' calls below are correct and will not erroneously
+                        // convert a raw byte value into its corresponding codepoint.
+                        ClassUnicodeRange {
+                            start: char::from(r.start),
+                            end: char::from(r.end),
+                        }
+                    })))
+                }
+            }
+            /// An iterator over all ranges in a byte character class.
+            ///
+            /// The lifetime `'a` refers to the lifetime of the underlying class.
+            #[derive(Debug)]
+            pub struct ClassBytesIter<'a>(IntervalSetIter<'a, ClassBytesRange>);
+
+            impl<'a> Iterator for ClassBytesIter<'a> {
+                type Item = &'a ClassBytesRange;
+
+                fn next(&mut self) -> Option<&'a ClassBytesRange> {
+                    self.0.next()
+                }
+            }
+            /// A single range of characters represented by arbitrary bytes.
+            ///
+            /// The range is closed. That is, the start and end of the range are included
+            /// in the range.
+            #[derive(Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord)]
+            pub struct ClassBytesRange {
+                start: u8,
+                end: u8,
+            }
+
+            impl Interval for ClassBytesRange {
+                type Bound = u8;
+
+                #[inline]
+                fn lower(&self) -> u8 {
+                    self.start
+                }
+                #[inline]
+                fn upper(&self) -> u8 {
+                    self.end
+                }
+                #[inline]
+                fn set_lower(&mut self, bound: u8) {
+                    self.start = bound;
+                }
+                #[inline]
+                fn set_upper(&mut self, bound: u8) {
+                    self.end = bound;
+                }
+                /// Apply simple case folding to this byte range. Only ASCII case mappings
+                /// (for a-z) are applied.
+                ///
+                /// Additional ranges are appended to the given vector. Canonical ordering
+                /// is *not* maintained in the given vector.
+                fn case_fold_simple(
+                    &self,
+                    ranges: &mut Vec<ClassBytesRange>,
+                ) -> Result<(), unicode::CaseFoldError> {
+                    if !ClassBytesRange::new(b'a', b'z').is_intersection_empty(self) {
+                        let lower = cmp::max(self.start, b'a');
+                        let upper = cmp::min(self.end, b'z');
+                        ranges.push(ClassBytesRange::new(lower - 32, upper - 32));
+                    }
+                    if !ClassBytesRange::new(b'A', b'Z').is_intersection_empty(self) {
+                        let lower = cmp::max(self.start, b'A');
+                        let upper = cmp::min(self.end, b'Z');
+                        ranges.push(ClassBytesRange::new(lower + 32, upper + 32));
+                    }
+                    Ok(())
+                }
+            }
+
+            impl ClassBytesRange {
+                /// Create a new byte range for a character class.
+                ///
+                /// The returned range is always in a canonical form. That is, the range
+                /// returned always satisfies the invariant that `start <= end`.
+                pub fn new(start: u8, end: u8) -> ClassBytesRange {
+                    ClassBytesRange::create(start, end)
+                }
+                /// Return the start of this range.
+                ///
+                /// The start of a range is always less than or equal to the end of the
+                /// range.
+                pub fn start(&self) -> u8 {
+                    self.start
+                }
+                /// Return the end of this range.
+                ///
+                /// The end of a range is always greater than or equal to the start of the
+                /// range.
+                pub fn end(&self) -> u8 {
+                    self.end
+                }
+                /// Returns the number of bytes in this range.
+                pub fn len(&self) -> usize {
+                    usize::from(self.end.checked_sub(self.start).unwrap())
+                        .checked_add(1)
+                        .unwrap()
+                }
+            }
+
+            impl ::fmt::Debug for ClassBytesRange {
+                fn fmt(&self, f:&mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                    f.debug_struct("ClassBytesRange")
+                        .field("start", &crate::debug::Byte(self.start))
+                        .field("end", &crate::debug::Byte(self.end))
+                        .finish()
+                }
+            }
+            /// The high-level intermediate representation for a look-around assertion.
+            ///
+            /// An assertion match is always zero-length. Also called an "empty match."
+            #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+            pub enum Look {
+                /// Match the beginning of text. Specifically, this matches at the starting
+                /// position of the input.
+                Start = 1 << 0,
+                /// Match the end of text. Specifically, this matches at the ending
+                /// position of the input.
+                End = 1 << 1,
+                /// Match the beginning of a line or the beginning of text. Specifically,
+                /// this matches at the starting position of the input, or at the position
+                /// immediately following a `\n` character.
+                StartLF = 1 << 2,
+                /// Match the end of a line or the end of text. Specifically, this matches
+                /// at the end position of the input, or at the position immediately
+                /// preceding a `\n` character.
+                EndLF = 1 << 3,
+                /// Match the beginning of a line or the beginning of text. Specifically,
+                /// this matches at the starting position of the input, or at the position
+                /// immediately following either a `\r` or `\n` character, but never after
+                /// a `\r` when a `\n` follows.
+                StartCRLF = 1 << 4,
+                /// Match the end of a line or the end of text. Specifically, this matches
+                /// at the end position of the input, or at the position immediately
+                /// preceding a `\r` or `\n` character, but never before a `\n` when a `\r`
+                /// precedes it.
+                EndCRLF = 1 << 5,
+                /// Match an ASCII-only word boundary. That is, this matches a position
+                /// where the left adjacent character and right adjacent character
+                /// correspond to a word and non-word or a non-word and word character.
+                WordAscii = 1 << 6,
+                /// Match an ASCII-only negation of a word boundary.
+                WordAsciiNegate = 1 << 7,
+                /// Match a Unicode-aware word boundary. That is, this matches a position
+                /// where the left adjacent character and right adjacent character
+                /// correspond to a word and non-word or a non-word and word character.
+                WordUnicode = 1 << 8,
+                /// Match a Unicode-aware negation of a word boundary.
+                WordUnicodeNegate = 1 << 9,
+                /// Match the start of an ASCII-only word boundary. That is, this matches a
+                /// position at either the beginning of the haystack or where the previous
+                /// character is not a word character and the following character is a word
+                /// character.
+                WordStartAscii = 1 << 10,
+                /// Match the end of an ASCII-only word boundary. That is, this matches
+                /// a position at either the end of the haystack or where the previous
+                /// character is a word character and the following character is not a word
+                /// character.
+                WordEndAscii = 1 << 11,
+                /// Match the start of a Unicode word boundary. That is, this matches a
+                /// position at either the beginning of the haystack or where the previous
+                /// character is not a word character and the following character is a word
+                /// character.
+                WordStartUnicode = 1 << 12,
+                /// Match the end of a Unicode word boundary. That is, this matches a
+                /// position at either the end of the haystack or where the previous
+                /// character is a word character and the following character is not a word
+                /// character.
+                WordEndUnicode = 1 << 13,
+                /// Match the start half of an ASCII-only word boundary. That is, this
+                /// matches a position at either the beginning of the haystack or where the
+                /// previous character is not a word character.
+                WordStartHalfAscii = 1 << 14,
+                /// Match the end half of an ASCII-only word boundary. That is, this
+                /// matches a position at either the end of the haystack or where the
+                /// following character is not a word character.
+                WordEndHalfAscii = 1 << 15,
+                /// Match the start half of a Unicode word boundary. That is, this matches
+                /// a position at either the beginning of the haystack or where the
+                /// previous character is not a word character.
+                WordStartHalfUnicode = 1 << 16,
+                /// Match the end half of a Unicode word boundary. That is, this matches
+                /// a position at either the end of the haystack or where the following
+                /// character is not a word character.
+                WordEndHalfUnicode = 1 << 17,
+            }
+
+            impl Look {
+                /// Flip the look-around assertion to its equivalent for reverse searches.
+                /// For example, `StartLF` gets translated to `EndLF`.
+                ///
+                /// Some assertions, such as `WordUnicode`, remain the same since they
+                /// match the same positions regardless of the direction of the search.
+                #[inline]
+                pub const fn reversed(self) -> Look {
+                    match self {
+                        Look::Start => Look::End,
+                        Look::End => Look::Start,
+                        Look::StartLF => Look::EndLF,
+                        Look::EndLF => Look::StartLF,
+                        Look::StartCRLF => Look::EndCRLF,
+                        Look::EndCRLF => Look::StartCRLF,
+                        Look::WordAscii => Look::WordAscii,
+                        Look::WordAsciiNegate => Look::WordAsciiNegate,
+                        Look::WordUnicode => Look::WordUnicode,
+                        Look::WordUnicodeNegate => Look::WordUnicodeNegate,
+                        Look::WordStartAscii => Look::WordEndAscii,
+                        Look::WordEndAscii => Look::WordStartAscii,
+                        Look::WordStartUnicode => Look::WordEndUnicode,
+                        Look::WordEndUnicode => Look::WordStartUnicode,
+                        Look::WordStartHalfAscii => Look::WordEndHalfAscii,
+                        Look::WordEndHalfAscii => Look::WordStartHalfAscii,
+                        Look::WordStartHalfUnicode => Look::WordEndHalfUnicode,
+                        Look::WordEndHalfUnicode => Look::WordStartHalfUnicode,
+                    }
+                }
+                /// Return the underlying representation of this look-around enumeration
+                /// as an integer. Giving the return value to the [`Look::from_repr`]
+                /// constructor is guaranteed to return the same look-around variant that
+                /// one started with within a semver compatible release of this crate.
+                #[inline]
+                pub const fn as_repr(self) -> u32 {
+                    // AFAIK, 'as' is the only way to zero-cost convert an int enum to an
+                    // actual int.
+                    self as u32
+                }
+                /// Given the underlying representation of a `Look` value, return the
+                /// corresponding `Look` value if the representation is valid. Otherwise
+                /// `None` is returned.
+                #[inline]
+                pub const fn from_repr(repr: u32) -> Option<Look> {
+                    match repr {
+                        0b00_0000_0000_0000_0001 => Some(Look::Start),
+                        0b00_0000_0000_0000_0010 => Some(Look::End),
+                        0b00_0000_0000_0000_0100 => Some(Look::StartLF),
+                        0b00_0000_0000_0000_1000 => Some(Look::EndLF),
+                        0b00_0000_0000_0001_0000 => Some(Look::StartCRLF),
+                        0b00_0000_0000_0010_0000 => Some(Look::EndCRLF),
+                        0b00_0000_0000_0100_0000 => Some(Look::WordAscii),
+                        0b00_0000_0000_1000_0000 => Some(Look::WordAsciiNegate),
+                        0b00_0000_0001_0000_0000 => Some(Look::WordUnicode),
+                        0b00_0000_0010_0000_0000 => Some(Look::WordUnicodeNegate),
+                        0b00_0000_0100_0000_0000 => Some(Look::WordStartAscii),
+                        0b00_0000_1000_0000_0000 => Some(Look::WordEndAscii),
+                        0b00_0001_0000_0000_0000 => Some(Look::WordStartUnicode),
+                        0b00_0010_0000_0000_0000 => Some(Look::WordEndUnicode),
+                        0b00_0100_0000_0000_0000 => Some(Look::WordStartHalfAscii),
+                        0b00_1000_0000_0000_0000 => Some(Look::WordEndHalfAscii),
+                        0b01_0000_0000_0000_0000 => Some(Look::WordStartHalfUnicode),
+                        0b10_0000_0000_0000_0000 => Some(Look::WordEndHalfUnicode),
+                        _ => None,
+                    }
+                }
+                /// Returns a convenient single codepoint representation of this
+                /// look-around assertion. Each assertion is guaranteed to be represented
+                /// by a distinct character.
+                ///
+                /// This is useful for succinctly representing a look-around assertion in
+                /// human friendly but succinct output intended for a programmer working on
+                /// regex internals.
+                #[inline]
+                pub const fn as_char(self) -> char {
+                    match self {
+                        Look::Start => 'A',
+                        Look::End => 'z',
+                        Look::StartLF => '^',
+                        Look::EndLF => '$',
+                        Look::StartCRLF => 'r',
+                        Look::EndCRLF => 'R',
+                        Look::WordAscii => 'b',
+                        Look::WordAsciiNegate => 'B',
+                        Look::WordUnicode => '𝛃',
+                        Look::WordUnicodeNegate => '𝚩',
+                        Look::WordStartAscii => '<',
+                        Look::WordEndAscii => '>',
+                        Look::WordStartUnicode => '〈',
+                        Look::WordEndUnicode => '〉',
+                        Look::WordStartHalfAscii => '◁',
+                        Look::WordEndHalfAscii => '▷',
+                        Look::WordStartHalfUnicode => '◀',
+                        Look::WordEndHalfUnicode => '▶',
+                    }
+                }
+            }
+            /// The high-level intermediate representation for a capturing group.
+            ///
+            /// A capturing group always has an index and a child expression. It may
+            /// also have a name associated with it (e.g., `(?P<foo>\w)`), but it's not
+            /// necessary.
+            ///
+            /// Note that there is no explicit representation of a non-capturing group
+            /// in a `Hir`. Instead, non-capturing grouping is handled automatically by
+            /// the recursive structure of the `Hir` itself.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Capture {
+                /// The capture index of the capture.
+                pub index: u32,
+                /// The name of the capture, if it exists.
+                pub name: Option<Box<str>>,
+                /// The expression inside the capturing group, which may be empty.
+                pub sub: Box<Hir>,
+            }
+            /// The high-level intermediate representation of a repetition operator.
+            ///
+            /// A repetition operator permits the repetition of an arbitrary
+            /// sub-expression.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Repetition {
+                /// The minimum range of the repetition.
+                ///
+                /// Note that special cases like `?`, `+` and `*` all get translated into
+                /// the ranges `{0,1}`, `{1,}` and `{0,}`, respectively.
+                ///
+                /// When `min` is zero, this expression can match the empty string
+                /// regardless of what its sub-expression is.
+                pub min: u32,
+                /// The maximum range of the repetition.
+                ///
+                /// Note that when `max` is `None`, `min` acts as a lower bound but where
+                /// there is no upper bound. For something like `x{5}` where the min and
+                /// max are equivalent, `min` will be set to `5` and `max` will be set to
+                /// `Some(5)`.
+                pub max: Option<u32>,
+                /// Whether this repetition operator is greedy or not. A greedy operator
+                /// will match as much as it can. A non-greedy operator will match as
+                /// little as it can.
+                ///
+                /// Typically, operators are greedy by default and are only non-greedy when
+                /// a `?` suffix is used, e.g., `(expr)*` is greedy while `(expr)*?` is
+                /// not. However, this can be inverted via the `U` "ungreedy" flag.
+                pub greedy: bool,
+                /// The expression being repeated.
+                pub sub: Box<Hir>,
+            }
+
+            impl Repetition {
+                /// Returns a new repetition with the same `min`, `max` and `greedy`
+                /// values, but with its sub-expression replaced with the one given.
+                pub fn with(&self, sub: Hir) -> Repetition {
+                    Repetition {
+                        min: self.min,
+                        max: self.max,
+                        greedy: self.greedy,
+                        sub: Box::new(sub),
+                    }
+                }
+            }
+            /// A type describing the different flavors of `.`.
+            ///
+            /// This type is meant to be used with [`Hir::dot`], which is a convenience
+            /// routine for building HIR values derived from the `.` regex.
+            #[non_exhaustive]
+            #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+            pub enum Dot {
+                /// Matches the UTF-8 encoding of any Unicode scalar value.
+                ///
+                /// This is equivalent to `(?su:.)` and also `\p{any}`.
+                AnyChar,
+                /// Matches any byte value.
+                ///
+                /// This is equivalent to `(?s-u:.)` and also `(?-u:[\x00-\xFF])`.
+                AnyByte,
+                /// Matches the UTF-8 encoding of any Unicode scalar value except for the
+                /// `char` given.
+                ///
+                /// This is equivalent to using `(?u-s:.)` with the line terminator set
+                /// to a particular ASCII byte. (Because of peculiarities in the regex
+                /// engines, a line terminator must be a single byte. It follows that when
+                /// UTF-8 mode is enabled, this single byte must also be a Unicode scalar
+                /// value. That is, ti must be ASCII.)
+                ///
+                /// (This and `AnyCharExceptLF` both exist because of legacy reasons.
+                /// `AnyCharExceptLF` will be dropped in the next breaking change release.)
+                AnyCharExcept( char ),
+                /// Matches the UTF-8 encoding of any Unicode scalar value except for `\n`.
+                ///
+                /// This is equivalent to `(?u-s:.)` and also `[\p{any}--\n]`.
+                AnyCharExceptLF,
+                /// Matches the UTF-8 encoding of any Unicode scalar value except for `\r`
+                /// and `\n`.
+                ///
+                /// This is equivalent to `(?uR-s:.)` and also `[\p{any}--\r\n]`.
+                AnyCharExceptCRLF,
+                /// Matches any byte value except for the `u8` given.
+                ///
+                /// This is equivalent to using `(?-us:.)` with the line terminator set
+                /// to a particular ASCII byte. (Because of peculiarities in the regex
+                /// engines, a line terminator must be a single byte. It follows that when
+                /// UTF-8 mode is enabled, this single byte must also be a Unicode scalar
+                /// value. That is, ti must be ASCII.)
+                ///
+                /// (This and `AnyByteExceptLF` both exist because of legacy reasons.
+                /// `AnyByteExceptLF` will be dropped in the next breaking change release.)
+                AnyByteExcept(u8),
+                /// Matches any byte value except for `\n`.
+                ///
+                /// This is equivalent to `(?-su:.)` and also `(?-u:[[\x00-\xFF]--\n])`.
+                AnyByteExceptLF,
+                /// Matches any byte value except for `\r` and `\n`.
+                ///
+                /// This is equivalent to `(?R-su:.)` and also `(?-u:[[\x00-\xFF]--\r\n])`.
+                AnyByteExceptCRLF,
+            }
+            /// A custom `Drop` impl is used for `HirKind` such that it uses constant stack
+            /// space but heap space proportional to the depth of the total `Hir`.
+            impl Drop for Hir {
+                fn drop(&mut self) {
+                    use core::mem;
+
+                    match *self.kind() {
+                        HirKind::Empty
+                        | HirKind::Literal(_)
+                        | HirKind::Class(_)
+                        | HirKind::Look(_) => return,
+                        HirKind::Capture(ref x) if x.sub.kind.subs().is_empty() => return,
+                        HirKind::Repetition(ref x) if x.sub.kind.subs().is_empty() => {
+                            return
+                        }
+                        HirKind::Concat(ref x) if x.is_empty() => return,
+                        HirKind::Alternation(ref x) if x.is_empty() => return,
+                        _ => {}
+                    }
+
+                    let mut stack = vec![mem::replace(self, Hir::empty())];
+                    while let Some(mut expr) = stack.pop() {
+                        match expr.kind {
+                            HirKind::Empty
+                            | HirKind::Literal(_)
+                            | HirKind::Class(_)
+                            | HirKind::Look(_) => {}
+                            HirKind::Capture(ref mut x) => {
+                                stack.push(mem::replace(&mut x.sub, Hir::empty()));
+                            }
+                            HirKind::Repetition(ref mut x) => {
+                                stack.push(mem::replace(&mut x.sub, Hir::empty()));
+                            }
+                            HirKind::Concat(ref mut x) => {
+                                stack.extend(x.drain(..));
+                            }
+                            HirKind::Alternation(ref mut x) => {
+                                stack.extend(x.drain(..));
+                            }
+                        }
+                    }
+                }
+            }
+            /// A type that collects various properties of an HIR value.
+            ///
+            /// Properties are always scalar values and represent meta data that is
+            /// computed inductively on an HIR value. Properties are defined for all
+            /// HIR values.
+            ///
+            /// All methods on a `Properties` value take constant time and are meant to
+            /// be cheap to call.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Properties(Box<PropertiesI>);
+
+            /// The property definition. It is split out so that we can box it, and
+            /// there by make `Properties` use less stack size. This is kind-of important
+            /// because every HIR value has a `Properties` attached to it.
+            ///
+            /// This does have the unfortunate consequence that creating any HIR value
+            /// always leads to at least one alloc for properties, but this is generally
+            /// true anyway (for pretty much all HirKinds except for look-arounds).
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            struct PropertiesI {
+                minimum_len: Option<usize>,
+                maximum_len: Option<usize>,
+                look_set: LookSet,
+                look_set_prefix: LookSet,
+                look_set_suffix: LookSet,
+                look_set_prefix_any: LookSet,
+                look_set_suffix_any: LookSet,
+                utf8: bool,
+                explicit_captures_len: usize,
+                static_explicit_captures_len: Option<usize>,
+                literal: bool,
+                alternation_literal: bool,
+            }
+
+            impl Properties {
+                /// Returns the length (in bytes) of the smallest string matched by this
+                /// HIR.
+                ///
+                /// A return value of `0` is possible and occurs when the HIR can match an
+                /// empty string.
+                ///
+                /// `None` is returned when there is no minimum length. This occurs in
+                /// precisely the cases where the HIR matches nothing. i.e., The language
+                /// the regex matches is empty. An example of such a regex is `\P{any}`.
+                #[inline]
+                pub fn minimum_len(&self) -> Option<usize> {
+                    self.0.minimum_len
+                }
+                /// Returns the length (in bytes) of the longest string matched by this
+                /// HIR.
+                ///
+                /// A return value of `0` is possible and occurs when nothing longer than
+                /// the empty string is in the language described by this HIR.
+                ///
+                /// `None` is returned when there is no longest matching string. This
+                /// occurs when the HIR matches nothing or when there is no upper bound on
+                /// the length of matching strings. Example of such regexes are `\P{any}`
+                /// (matches nothing) and `a+` (has no upper bound).
+                #[inline]
+                pub fn maximum_len(&self) -> Option<usize> {
+                    self.0.maximum_len
+                }
+                /// Returns a set of all look-around assertions that appear at least once
+                /// in this HIR value.
+                #[inline]
+                pub fn look_set(&self) -> LookSet {
+                    self.0.look_set
+                }
+                /// Returns a set of all look-around assertions that appear as a prefix for
+                /// this HIR value. That is, the set returned corresponds to the set of
+                /// assertions that must be passed before matching any bytes in a haystack.
+                ///
+                /// For example, `hir.look_set_prefix().contains(Look::Start)` returns true
+                /// if and only if the HIR is fully anchored at the start.
+                #[inline]
+                pub fn look_set_prefix(&self) -> LookSet {
+                    self.0.look_set_prefix
+                }
+                /// Returns a set of all look-around assertions that appear as a _possible_
+                /// prefix for this HIR value. That is, the set returned corresponds to the
+                /// set of assertions that _may_ be passed before matching any bytes in a
+                /// haystack.
+                ///
+                /// For example, `hir.look_set_prefix_any().contains(Look::Start)` returns
+                /// true if and only if it's possible for the regex to match through a
+                /// anchored assertion before consuming any input.
+                #[inline]
+                pub fn look_set_prefix_any(&self) -> LookSet {
+                    self.0.look_set_prefix_any
+                }
+                /// Returns a set of all look-around assertions that appear as a suffix for
+                /// this HIR value. That is, the set returned corresponds to the set of
+                /// assertions that must be passed in order to be considered a match after
+                /// all other consuming HIR expressions.
+                ///
+                /// For example, `hir.look_set_suffix().contains(Look::End)` returns true
+                /// if and only if the HIR is fully anchored at the end.
+                #[inline]
+                pub fn look_set_suffix(&self) -> LookSet {
+                    self.0.look_set_suffix
+                }
+                /// Returns a set of all look-around assertions that appear as a _possible_
+                /// suffix for this HIR value. That is, the set returned corresponds to the
+                /// set of assertions that _may_ be passed before matching any bytes in a
+                /// haystack.
+                ///
+                /// For example, `hir.look_set_suffix_any().contains(Look::End)` returns
+                /// true if and only if it's possible for the regex to match through a
+                /// anchored assertion at the end of a match without consuming any input.
+                #[inline]
+                pub fn look_set_suffix_any(&self) -> LookSet {
+                    self.0.look_set_suffix_any
+                }
+                /// Return true if and only if the corresponding HIR will always match
+                /// valid UTF-8.
+                ///
+                /// When this returns false, then it is possible for this HIR expression to
+                /// match invalid UTF-8, including by matching between the code units of
+                /// a single UTF-8 encoded codepoint.
+                ///
+                /// Note that this returns true even when the corresponding HIR can match
+                /// the empty string. Since an empty string can technically appear between
+                /// UTF-8 code units, it is possible for a match to be reported that splits
+                /// a codepoint which could in turn be considered matching invalid UTF-8.
+                /// However, it is generally assumed that such empty matches are handled
+                /// specially by the search routine if it is absolutely required that
+                /// matches not split a codepoint.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This code example shows the UTF-8 property of a variety of patterns.
+                ///
+                /// ```
+                /// use regex_syntax::{ParserBuilder, parse};
+                ///
+                /// // Examples of 'is_utf8() == true'.
+                /// assert!(parse(r"a")?.properties().is_utf8());
+                /// assert!(parse(r"[^a]")?.properties().is_utf8());
+                /// assert!(parse(r".")?.properties().is_utf8());
+                /// assert!(parse(r"\W")?.properties().is_utf8());
+                /// assert!(parse(r"\b")?.properties().is_utf8());
+                /// assert!(parse(r"\B")?.properties().is_utf8());
+                /// assert!(parse(r"(?-u)\b")?.properties().is_utf8());
+                /// assert!(parse(r"(?-u)\B")?.properties().is_utf8());
+                /// // Unicode mode is enabled by default, and in
+                /// // that mode, all \x hex escapes are treated as
+                /// // codepoints. So this actually matches the UTF-8
+                /// // encoding of U+00FF.
+                /// assert!(parse(r"\xFF")?.properties().is_utf8());
+                ///
+                /// // Now we show examples of 'is_utf8() == false'.
+                /// // The only way to do this is to force the parser
+                /// // to permit invalid UTF-8, otherwise all of these
+                /// // would fail to parse!
+                /// let parse = |pattern| {
+                ///     ParserBuilder::new().utf8(false).build().parse(pattern)
+                /// };
+                /// assert!(!parse(r"(?-u)[^a]")?.properties().is_utf8());
+                /// assert!(!parse(r"(?-u).")?.properties().is_utf8());
+                /// assert!(!parse(r"(?-u)\W")?.properties().is_utf8());
+                /// // Conversely to the equivalent example above,
+                /// // when Unicode mode is disabled, \x hex escapes
+                /// // are treated as their raw byte values.
+                /// assert!(!parse(r"(?-u)\xFF")?.properties().is_utf8());
+                /// // Note that just because we disabled UTF-8 in the
+                /// // parser doesn't mean we still can't use Unicode.
+                /// // It is enabled by default, so \xFF is still
+                /// // equivalent to matching the UTF-8 encoding of
+                /// // U+00FF by default.
+                /// assert!(parse(r"\xFF")?.properties().is_utf8());
+                /// // Even though we use raw bytes that individually
+                /// // are not valid UTF-8, when combined together, the
+                /// // overall expression *does* match valid UTF-8!
+                /// assert!(parse(r"(?-u)\xE2\x98\x83")?.properties().is_utf8());
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                #[inline]
+                pub fn is_utf8(&self) -> bool {
+                    self.0.utf8
+                }
+                /// Returns the total number of explicit capturing groups in the
+                /// corresponding HIR.
+                ///
+                /// Note that this does not include the implicit capturing group
+                /// corresponding to the entire match that is typically included by regex
+                /// engines.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This method will return `0` for `a` and `1` for `(a)`:
+                ///
+                /// ```
+                /// use regex_syntax::parse;
+                ///
+                /// assert_eq!(0, parse("a")?.properties().explicit_captures_len());
+                /// assert_eq!(1, parse("(a)")?.properties().explicit_captures_len());
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                #[inline]
+                pub fn explicit_captures_len(&self) -> usize {
+                    self.0.explicit_captures_len
+                }
+                /// Returns the total number of explicit capturing groups that appear in
+                /// every possible match.
+                ///
+                /// If the number of capture groups can vary depending on the match, then
+                /// this returns `None`. That is, a value is only returned when the number
+                /// of matching groups is invariant or "static."
+                ///
+                /// Note that this does not include the implicit capturing group
+                /// corresponding to the entire match.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example
+                ///
+                /// This shows a few cases where a static number of capture groups is
+                /// available and a few cases where it is not.
+                ///
+                /// ```
+                /// use regex_syntax::parse;
+                ///
+                /// let len = |pattern| {
+                ///     parse(pattern).map(|h| {
+                ///         h.properties().static_explicit_captures_len()
+                ///     })
+                /// };
+                ///
+                /// assert_eq!(Some(0), len("a")?);
+                /// assert_eq!(Some(1), len("(a)")?);
+                /// assert_eq!(Some(1), len("(a)|(b)")?);
+                /// assert_eq!(Some(2), len("(a)(b)|(c)(d)")?);
+                /// assert_eq!(None, len("(a)|b")?);
+                /// assert_eq!(None, len("a|(b)")?);
+                /// assert_eq!(None, len("(b)*")?);
+                /// assert_eq!(Some(1), len("(b)+")?);
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                #[inline]
+                pub fn static_explicit_captures_len(&self) -> Option<usize> {
+                    self.0.static_explicit_captures_len
+                }
+                /// Return true if and only if this HIR is a simple literal. This is
+                /// only true when this HIR expression is either itself a `Literal` or a
+                /// concatenation of only `Literal`s.
+                ///
+                /// For example, `f` and `foo` are literals, but `f+`, `(foo)`, `foo()` and
+                /// the empty string are not (even though they contain sub-expressions that
+                /// are literals).
+                #[inline]
+                pub fn is_literal(&self) -> bool {
+                    self.0.literal
+                }
+                /// Return true if and only if this HIR is either a simple literal or an
+                /// alternation of simple literals. This is only
+                /// true when this HIR expression is either itself a `Literal` or a
+                /// concatenation of only `Literal`s or an alternation of only `Literal`s.
+                ///
+                /// For example, `f`, `foo`, `a|b|c`, and `foo|bar|baz` are alternation
+                /// literals, but `f+`, `(foo)`, `foo()`, and the empty pattern are not
+                /// (even though that contain sub-expressions that are literals).
+                #[inline]
+                pub fn is_alternation_literal(&self) -> bool {
+                    self.0.alternation_literal
+                }
+                /// Returns the total amount of heap memory usage, in bytes, used by this
+                /// `Properties` value.
+                #[inline]
+                pub fn memory_usage(&self) -> usize {
+                    core::mem::size_of::<PropertiesI>()
+                }
+                /// Returns a new set of properties that corresponds to the union of the
+                /// iterator of properties given.
+                ///
+                /// This is useful when one has multiple `Hir` expressions and wants
+                /// to combine them into a single alternation without constructing the
+                /// corresponding `Hir`. This routine provides a way of combining the
+                /// properties of each `Hir` expression into one set of properties
+                /// representing the union of those expressions.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Example: union with HIRs that never match
+                ///
+                /// This example shows that unioning properties together with one that
+                /// represents a regex that never matches will "poison" certain attributes,
+                /// like the minimum and maximum lengths.
+                ///
+                /// ```
+                /// use regex_syntax::{hir::Properties, parse};
+                ///
+                /// let hir1 = parse("ab?c?")?;
+                /// assert_eq!(Some(1), hir1.properties().minimum_len());
+                /// assert_eq!(Some(3), hir1.properties().maximum_len());
+                ///
+                /// let hir2 = parse(r"[a&&b]")?;
+                /// assert_eq!(None, hir2.properties().minimum_len());
+                /// assert_eq!(None, hir2.properties().maximum_len());
+                ///
+                /// let hir3 = parse(r"wxy?z?")?;
+                /// assert_eq!(Some(2), hir3.properties().minimum_len());
+                /// assert_eq!(Some(4), hir3.properties().maximum_len());
+                ///
+                /// let unioned = Properties::union([
+                ///		hir1.properties(),
+                ///		hir2.properties(),
+                ///		hir3.properties(),
+                ///	]);
+                /// assert_eq!(None, unioned.minimum_len());
+                /// assert_eq!(None, unioned.maximum_len());
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                ///
+                /// The maximum length can also be "poisoned" by a pattern that has no
+                /// upper bound on the length of a match. The minimum length remains
+                /// unaffected:
+                ///
+                /// ```
+                /// use regex_syntax::{hir::Properties, parse};
+                ///
+                /// let hir1 = parse("ab?c?")?;
+                /// assert_eq!(Some(1), hir1.properties().minimum_len());
+                /// assert_eq!(Some(3), hir1.properties().maximum_len());
+                ///
+                /// let hir2 = parse(r"a+")?;
+                /// assert_eq!(Some(1), hir2.properties().minimum_len());
+                /// assert_eq!(None, hir2.properties().maximum_len());
+                ///
+                /// let hir3 = parse(r"wxy?z?")?;
+                /// assert_eq!(Some(2), hir3.properties().minimum_len());
+                /// assert_eq!(Some(4), hir3.properties().maximum_len());
+                ///
+                /// let unioned = Properties::union([
+                ///		hir1.properties(),
+                ///		hir2.properties(),
+                ///		hir3.properties(),
+                ///	]);
+                /// assert_eq!(Some(1), unioned.minimum_len());
+                /// assert_eq!(None, unioned.maximum_len());
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Ok::<(), Box<dyn std::error::Error>>(())
+                /// ```
+                pub fn union<I, P>(props: I) -> Properties
+                where
+                    I: IntoIterator<Item = P>,
+                    P: core::borrow::Borrow<Properties>,
+                {
+                    let mut it = props.into_iter().peekable();
+                    // While empty alternations aren't possible, we still behave as if they
+                    // are. When we have an empty alternate, then clearly the look-around
+                    // prefix and suffix is empty. Otherwise, it is the intersection of all
+                    // prefixes and suffixes (respectively) of the branches.
+                    let fix = if it.peek().is_none() {
+                        LookSet::empty()
+                    } else {
+                        LookSet::full()
+                    };
+                    // And also, an empty alternate means we have 0 static capture groups,
+                    // but we otherwise start with the number corresponding to the first
+                    // alternate. If any subsequent alternate has a different number of
+                    // static capture groups, then we overall have a variation and not a
+                    // static number of groups.
+                    let static_explicit_captures_len =
+                        it.peek().and_then(|p| p.borrow().static_explicit_captures_len());
+                    // The base case is an empty alternation, which matches nothing.
+                    // Note though that empty alternations aren't possible, because the
+                    // Hir::alternation smart constructor rewrites those as empty character
+                    // classes.
+                    let mut props = PropertiesI {
+                        minimum_len: None,
+                        maximum_len: None,
+                        look_set: LookSet::empty(),
+                        look_set_prefix: fix,
+                        look_set_suffix: fix,
+                        look_set_prefix_any: LookSet::empty(),
+                        look_set_suffix_any: LookSet::empty(),
+                        utf8: true,
+                        explicit_captures_len: 0,
+                        static_explicit_captures_len,
+                        literal: false,
+                        alternation_literal: true,
+                    };
+                    let (mut min_poisoned, mut max_poisoned) = (false, false);
+                    // Handle properties that need to visit every child hir.
+                    for prop in it {
+                        let p = prop.borrow();
+                        props.look_set.set_union(p.look_set());
+                        props.look_set_prefix.set_intersect(p.look_set_prefix());
+                        props.look_set_suffix.set_intersect(p.look_set_suffix());
+                        props.look_set_prefix_any.set_union(p.look_set_prefix_any());
+                        props.look_set_suffix_any.set_union(p.look_set_suffix_any());
+                        props.utf8 = props.utf8 && p.is_utf8();
+                        props.explicit_captures_len = props
+                            .explicit_captures_len
+                            .saturating_add(p.explicit_captures_len());
+                        if props.static_explicit_captures_len
+                            != p.static_explicit_captures_len()
+                        {
+                            props.static_explicit_captures_len = None;
+                        }
+                        props.alternation_literal =
+                            props.alternation_literal && p.is_literal();
+                        if !min_poisoned {
+                            if let Some(xmin) = p.minimum_len() {
+                                if props.minimum_len.map_or(true, |pmin| xmin < pmin) {
+                                    props.minimum_len = Some(xmin);
+                                }
+                            } else {
+                                props.minimum_len = None;
+                                min_poisoned = true;
+                            }
+                        }
+                        if !max_poisoned {
+                            if let Some(xmax) = p.maximum_len() {
+                                if props.maximum_len.map_or(true, |pmax| xmax > pmax) {
+                                    props.maximum_len = Some(xmax);
+                                }
+                            } else {
+                                props.maximum_len = None;
+                                max_poisoned = true;
+                            }
+                        }
+                    }
+                    Properties(Box::new(props))
+                }
+            }
+
+            impl Properties {
+                /// Create a new set of HIR properties for an empty regex.
+                fn empty() -> Properties {
+                    let inner = PropertiesI {
+                        minimum_len: Some(0),
+                        maximum_len: Some(0),
+                        look_set: LookSet::empty(),
+                        look_set_prefix: LookSet::empty(),
+                        look_set_suffix: LookSet::empty(),
+                        look_set_prefix_any: LookSet::empty(),
+                        look_set_suffix_any: LookSet::empty(),
+                        // It is debatable whether an empty regex always matches at valid
+                        // UTF-8 boundaries. Strictly speaking, at a byte oriented view,
+                        // it is clearly false. There are, for example, many empty strings
+                        // between the bytes encoding a '☃'.
+                        //
+                        // However, when Unicode mode is enabled, the fundamental atom
+                        // of matching is really a codepoint. And in that scenario, an
+                        // empty regex is defined to only match at valid UTF-8 boundaries
+                        // and to never split a codepoint. It just so happens that this
+                        // enforcement is somewhat tricky to do for regexes that match
+                        // the empty string inside regex engines themselves. It usually
+                        // requires some layer above the regex engine to filter out such
+                        // matches.
+                        //
+                        // In any case, 'true' is really the only coherent option. If it
+                        // were false, for example, then 'a*' would also need to be false
+                        // since it too can match the empty string.
+                        utf8: true,
+                        explicit_captures_len: 0,
+                        static_explicit_captures_len: Some(0),
+                        literal: false,
+                        alternation_literal: false,
+                    };
+                    Properties(Box::new(inner))
+                }
+                /// Create a new set of HIR properties for a literal regex.
+                fn literal(lit: &Literal) -> Properties {
+                    let inner = PropertiesI {
+                        minimum_len: Some(lit.0.len()),
+                        maximum_len: Some(lit.0.len()),
+                        look_set: LookSet::empty(),
+                        look_set_prefix: LookSet::empty(),
+                        look_set_suffix: LookSet::empty(),
+                        look_set_prefix_any: LookSet::empty(),
+                        look_set_suffix_any: LookSet::empty(),
+                        utf8: core::str::from_utf8(&lit.0).is_ok(),
+                        explicit_captures_len: 0,
+                        static_explicit_captures_len: Some(0),
+                        literal: true,
+                        alternation_literal: true,
+                    };
+                    Properties(Box::new(inner))
+                }
+                /// Create a new set of HIR properties for a character class.
+                fn class(class: &Class) -> Properties {
+                    let inner = PropertiesI {
+                        minimum_len: class.minimum_len(),
+                        maximum_len: class.maximum_len(),
+                        look_set: LookSet::empty(),
+                        look_set_prefix: LookSet::empty(),
+                        look_set_suffix: LookSet::empty(),
+                        look_set_prefix_any: LookSet::empty(),
+                        look_set_suffix_any: LookSet::empty(),
+                        utf8: class.is_utf8(),
+                        explicit_captures_len: 0,
+                        static_explicit_captures_len: Some(0),
+                        literal: false,
+                        alternation_literal: false,
+                    };
+                    Properties(Box::new(inner))
+                }
+                /// Create a new set of HIR properties for a look-around assertion.
+                fn look(look: Look) -> Properties {
+                    let inner = PropertiesI {
+                        minimum_len: Some(0),
+                        maximum_len: Some(0),
+                        look_set: LookSet::singleton(look),
+                        look_set_prefix: LookSet::singleton(look),
+                        look_set_suffix: LookSet::singleton(look),
+                        look_set_prefix_any: LookSet::singleton(look),
+                        look_set_suffix_any: LookSet::singleton(look),
+                        // This requires a little explanation. Basically, we don't consider
+                        // matching an empty string to be equivalent to matching invalid
+                        // UTF-8, even though technically matching every empty string will
+                        // split the UTF-8 encoding of a single codepoint when treating a
+                        // UTF-8 encoded string as a sequence of bytes. Our defense here is
+                        // that in such a case, a codepoint should logically be treated as
+                        // the fundamental atom for matching, and thus the only valid match
+                        // points are between codepoints and not bytes.
+                        //
+                        // More practically, this is true here because it's also true
+                        // for 'Hir::empty()', otherwise something like 'a*' would be
+                        // considered to match invalid UTF-8. That in turn makes this
+                        // property borderline useless.
+                        utf8: true,
+                        explicit_captures_len: 0,
+                        static_explicit_captures_len: Some(0),
+                        literal: false,
+                        alternation_literal: false,
+                    };
+                    Properties(Box::new(inner))
+                }
+                /// Create a new set of HIR properties for a repetition.
+                fn repetition(rep: &Repetition) -> Properties {
+                    let p = rep.sub.properties();
+                    let minimum_len = p.minimum_len().map(|child_min| {
+                        let rep_min = usize::try_from(rep.min).unwrap_or(usize::MAX);
+                        child_min.saturating_mul(rep_min)
+                    });
+                    let maximum_len = rep.max.and_then(|rep_max| {
+                        let rep_max = usize::try_from(rep_max).ok()?;
+                        let child_max = p.maximum_len()?;
+                        child_max.checked_mul(rep_max)
+                    });
+
+                    let mut inner = PropertiesI {
+                        minimum_len,
+                        maximum_len,
+                        look_set: p.look_set(),
+                        look_set_prefix: LookSet::empty(),
+                        look_set_suffix: LookSet::empty(),
+                        look_set_prefix_any: p.look_set_prefix_any(),
+                        look_set_suffix_any: p.look_set_suffix_any(),
+                        utf8: p.is_utf8(),
+                        explicit_captures_len: p.explicit_captures_len(),
+                        static_explicit_captures_len: p.static_explicit_captures_len(),
+                        literal: false,
+                        alternation_literal: false,
+                    };
+                    // If the repetition operator can match the empty string, then its
+                    // lookset prefix and suffixes themselves remain empty since they are
+                    // no longer required to match.
+                    if rep.min > 0 {
+                        inner.look_set_prefix = p.look_set_prefix();
+                        inner.look_set_suffix = p.look_set_suffix();
+                    }
+                    // If the static captures len of the sub-expression is not known or
+                    // is greater than zero, then it automatically propagates to the
+                    // repetition, regardless of the repetition. Otherwise, it might
+                    // change, but only when the repetition can match 0 times.
+                    if rep.min == 0
+                        && inner.static_explicit_captures_len.map_or(false, |len| len > 0)
+                    {
+                        // If we require a match 0 times, then our captures len is
+                        // guaranteed to be zero. Otherwise, if we *can* match the empty
+                        // string, then it's impossible to know how many captures will be
+                        // in the resulting match.
+                        if rep.max == Some(0) {
+                            inner.static_explicit_captures_len = Some(0);
+                        } else {
+                            inner.static_explicit_captures_len = None;
+                        }
+                    }
+                    Properties(Box::new(inner))
+                }
+                /// Create a new set of HIR properties for a capture.
+                fn capture(capture: &Capture) -> Properties {
+                    let p = capture.sub.properties();
+                    Properties(Box::new(PropertiesI {
+                        explicit_captures_len: p.explicit_captures_len().saturating_add(1),
+                        static_explicit_captures_len: p
+                            .static_explicit_captures_len()
+                            .map(|len| len.saturating_add(1)),
+                        literal: false,
+                        alternation_literal: false,
+                        ..*p.0.clone()
+                    }))
+                }
+                /// Create a new set of HIR properties for a concatenation.
+                fn concat(concat: &[Hir]) -> Properties {
+                    // The base case is an empty concatenation, which matches the empty
+                    // string. Note though that empty concatenations aren't possible,
+                    // because the Hir::concat smart constructor rewrites those as
+                    // Hir::empty.
+                    let mut props = PropertiesI {
+                        minimum_len: Some(0),
+                        maximum_len: Some(0),
+                        look_set: LookSet::empty(),
+                        look_set_prefix: LookSet::empty(),
+                        look_set_suffix: LookSet::empty(),
+                        look_set_prefix_any: LookSet::empty(),
+                        look_set_suffix_any: LookSet::empty(),
+                        utf8: true,
+                        explicit_captures_len: 0,
+                        static_explicit_captures_len: Some(0),
+                        literal: true,
+                        alternation_literal: true,
+                    };
+                    // Handle properties that need to visit every child hir.
+                    for x in concat.iter() {
+                        let p = x.properties();
+                        props.look_set.set_union(p.look_set());
+                        props.utf8 = props.utf8 && p.is_utf8();
+                        props.explicit_captures_len = props
+                            .explicit_captures_len
+                            .saturating_add(p.explicit_captures_len());
+                        props.static_explicit_captures_len = p
+                            .static_explicit_captures_len()
+                            .and_then(|len1| {
+                                Some((len1, props.static_explicit_captures_len?))
+                            })
+                            .and_then(|(len1, len2)| Some(len1.saturating_add(len2)));
+                        props.literal = props.literal && p.is_literal();
+                        props.alternation_literal =
+                            props.alternation_literal && p.is_alternation_literal();
+                        if let Some(minimum_len) = props.minimum_len {
+                            match p.minimum_len() {
+                                None => props.minimum_len = None,
+                                Some(len) => {
+                                    // We use saturating arithmetic here because the
+                                    // minimum is just a lower bound. We can't go any
+                                    // higher than what our number types permit.
+                                    props.minimum_len =
+                                        Some(minimum_len.saturating_add(len));
+                                }
+                            }
+                        }
+                        if let Some(maximum_len) = props.maximum_len {
+                            match p.maximum_len() {
+                                None => props.maximum_len = None,
+                                Some(len) => {
+                                    props.maximum_len = maximum_len.checked_add(len)
+                                }
+                            }
+                        }
+                    }
+                    // Handle the prefix properties, which only requires visiting
+                    // child exprs until one matches more than the empty string.
+                    let mut it = concat.iter();
+                    while let Some(x) = it.next() {
+                        props.look_set_prefix.set_union(x.properties().look_set_prefix());
+                        props
+                            .look_set_prefix_any
+                            .set_union(x.properties().look_set_prefix_any());
+                        if x.properties().maximum_len().map_or(true, |x| x > 0) {
+                            break;
+                        }
+                    }
+                    // Same thing for the suffix properties, but in reverse.
+                    let mut it = concat.iter().rev();
+                    while let Some(x) = it.next() {
+                        props.look_set_suffix.set_union(x.properties().look_set_suffix());
+                        props
+                            .look_set_suffix_any
+                            .set_union(x.properties().look_set_suffix_any());
+                        if x.properties().maximum_len().map_or(true, |x| x > 0) {
+                            break;
+                        }
+                    }
+                    Properties(Box::new(props))
+                }
+                /// Create a new set of HIR properties for a concatenation.
+                fn alternation(alts: &[Hir]) -> Properties {
+                    Properties::union(alts.iter().map(|hir| hir.properties()))
+                }
+            }
+            /// A set of look-around assertions.
+            ///
+            /// This is useful for efficiently tracking look-around assertions. For
+            /// example, an [`Hir`] provides properties that return `LookSet`s.
+            #[derive(Clone, Copy, Default, Eq, PartialEq)]
+            pub struct LookSet {
+                /// The underlying representation this set is exposed to make it possible
+                /// to store it somewhere efficiently. The representation is that
+                /// of a bitset, where each assertion occupies bit `i` where `i =
+                /// Look::as_repr()`.
+                ///
+                /// Note that users of this internal representation must permit the full
+                /// range of `u16` values to be represented. For example, even if the
+                /// current implementation only makes use of the 10 least significant bits,
+                /// it may use more bits in a future semver compatible release.
+                pub bits: u32,
+            }
+
+            impl LookSet {
+                /// Create an empty set of look-around assertions.
+                #[inline]
+                pub fn empty() -> LookSet {
+                    LookSet { bits: 0 }
+                }
+                /// Create a full set of look-around assertions.
+                ///
+                /// This set contains all possible look-around assertions.
+                #[inline]
+                pub fn full() -> LookSet {
+                    LookSet { bits: !0 }
+                }
+                /// Create a look-around set containing the look-around assertion given.
+                ///
+                /// This is a convenience routine for creating an empty set and inserting
+                /// one look-around assertions.
+                #[inline]
+                pub fn singleton(look: Look) -> LookSet {
+                    LookSet::empty().insert(look)
+                }
+                /// Returns the total number of look-around assertions in this set.
+                #[inline]
+                pub fn len(self) -> usize {
+                    // OK because max value always fits in a u8, which in turn always
+                    // fits in a usize, regardless of target.
+                    usize::try_from(self.bits.count_ones()).unwrap()
+                }
+                /// Returns true if and only if this set is empty.
+                #[inline]
+                pub fn is_empty(self) -> bool {
+                    self.len() == 0
+                }
+                /// Returns true if and only if the given look-around assertion is in this
+                /// set.
+                #[inline]
+                pub fn contains(self, look: Look) -> bool {
+                    self.bits & look.as_repr() != 0
+                }
+                /// Returns true if and only if this set contains any anchor assertions.
+                /// This includes both "start/end of haystack" and "start/end of line."
+                #[inline]
+                pub fn contains_anchor(&self) -> bool {
+                    self.contains_anchor_haystack() || self.contains_anchor_line()
+                }
+                /// Returns true if and only if this set contains any "start/end of
+                /// haystack" anchors. This doesn't include "start/end of line" anchors.
+                #[inline]
+                pub fn contains_anchor_haystack(&self) -> bool {
+                    self.contains(Look::Start) || self.contains(Look::End)
+                }
+                /// Returns true if and only if this set contains any "start/end of line"
+                /// anchors. This doesn't include "start/end of haystack" anchors. This
+                /// includes both `\n` line anchors and CRLF (`\r\n`) aware line anchors.
+                #[inline]
+                pub fn contains_anchor_line(&self) -> bool {
+                    self.contains(Look::StartLF)
+                        || self.contains(Look::EndLF)
+                        || self.contains(Look::StartCRLF)
+                        || self.contains(Look::EndCRLF)
+                }
+                /// Returns true if and only if this set contains any "start/end of line"
+                /// anchors that only treat `\n` as line terminators. This does not include
+                /// haystack anchors or CRLF aware line anchors.
+                #[inline]
+                pub fn contains_anchor_lf(&self) -> bool {
+                    self.contains(Look::StartLF) || self.contains(Look::EndLF)
+                }
+                /// Returns true if and only if this set contains any "start/end of line"
+                /// anchors that are CRLF-aware. This doesn't include "start/end of
+                /// haystack" or "start/end of line-feed" anchors.
+                #[inline]
+                pub fn contains_anchor_crlf(&self) -> bool {
+                    self.contains(Look::StartCRLF) || self.contains(Look::EndCRLF)
+                }
+                /// Returns true if and only if this set contains any word boundary or
+                /// negated word boundary assertions. This include both Unicode and ASCII
+                /// word boundaries.
+                #[inline]
+                pub fn contains_word(self) -> bool {
+                    self.contains_word_unicode() || self.contains_word_ascii()
+                }
+                /// Returns true if and only if this set contains any Unicode word boundary
+                /// or negated Unicode word boundary assertions.
+                #[inline]
+                pub fn contains_word_unicode(self) -> bool {
+                    self.contains(Look::WordUnicode)
+                        || self.contains(Look::WordUnicodeNegate)
+                        || self.contains(Look::WordStartUnicode)
+                        || self.contains(Look::WordEndUnicode)
+                        || self.contains(Look::WordStartHalfUnicode)
+                        || self.contains(Look::WordEndHalfUnicode)
+                }
+                /// Returns true if and only if this set contains any ASCII word boundary
+                /// or negated ASCII word boundary assertions.
+                #[inline]
+                pub fn contains_word_ascii(self) -> bool {
+                    self.contains(Look::WordAscii)
+                        || self.contains(Look::WordAsciiNegate)
+                        || self.contains(Look::WordStartAscii)
+                        || self.contains(Look::WordEndAscii)
+                        || self.contains(Look::WordStartHalfAscii)
+                        || self.contains(Look::WordEndHalfAscii)
+                }
+                /// Returns an iterator over all of the look-around assertions in this set.
+                #[inline]
+                pub fn iter(self) -> LookSetIter {
+                    LookSetIter { set: self }
+                }
+                /// Return a new set that is equivalent to the original, but with the given
+                /// assertion added to it. If the assertion is already in the set, then the
+                /// returned set is equivalent to the original.
+                #[inline]
+                pub fn insert(self, look: Look) -> LookSet {
+                    LookSet { bits: self.bits | look.as_repr() }
+                }
+                /// Updates this set in place with the result of inserting the given
+                /// assertion into this set.
+                #[inline]
+                pub fn set_insert(&mut self, look: Look) {
+                    *self = self.insert(look);
+                }
+                /// Return a new set that is equivalent to the original, but with the given
+                /// assertion removed from it. If the assertion is not in the set, then the
+                /// returned set is equivalent to the original.
+                #[inline]
+                pub fn remove(self, look: Look) -> LookSet {
+                    LookSet { bits: self.bits & !look.as_repr() }
+                }
+                /// Updates this set in place with the result of removing the given
+                /// assertion from this set.
+                #[inline]
+                pub fn set_remove(&mut self, look: Look) {
+                    *self = self.remove(look);
+                }
+                /// Returns a new set that is the result of subtracting the given set from
+                /// this set.
+                #[inline]
+                pub fn subtract(self, other: LookSet) -> LookSet {
+                    LookSet { bits: self.bits & !other.bits }
+                }
+                /// Updates this set in place with the result of subtracting the given set
+                /// from this set.
+                #[inline]
+                pub fn set_subtract(&mut self, other: LookSet) {
+                    *self = self.subtract(other);
+                }
+                /// Returns a new set that is the union of this and the one given.
+                #[inline]
+                pub fn union(self, other: LookSet) -> LookSet {
+                    LookSet { bits: self.bits | other.bits }
+                }
+                /// Updates this set in place with the result of unioning it with the one
+                /// given.
+                #[inline]
+                pub fn set_union(&mut self, other: LookSet) {
+                    *self = self.union(other);
+                }
+                /// Returns a new set that is the intersection of this and the one given.
+                #[inline]
+                pub fn intersect(self, other: LookSet) -> LookSet {
+                    LookSet { bits: self.bits & other.bits }
+                }
+                /// Updates this set in place with the result of intersecting it with the
+                /// one given.
+                #[inline]
+                pub fn set_intersect(&mut self, other: LookSet) {
+                    *self = self.intersect(other);
+                }
+                /// Return a `LookSet` from the slice given as a native endian 32-bit
+                /// integer.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Panics
+                ///
+                /// This panics if `slice.len() < 4`.
+                #[inline]
+                pub fn read_repr(slice: &[u8]) -> LookSet {
+                    let bits = u32::from_ne_bytes(slice[..4].try_into().unwrap());
+                    LookSet { bits }
+                }
+                /// Write a `LookSet` as a native endian 32-bit integer to the beginning
+                /// of the slice given.
+                ///
+                /// #[derive( Clone, Debug, Eq, PartialEq )]Panics
+                ///
+                /// This panics if `slice.len() < 4`.
+                #[inline]
+                pub fn write_repr(self, slice: &mut [u8]) {
+                    let raw = self.bits.to_ne_bytes();
+                    slice[0] = raw[0];
+                    slice[1] = raw[1];
+                    slice[2] = raw[2];
+                    slice[3] = raw[3];
+                }
+            }
+
+            impl ::fmt::Debug for LookSet {
+                fn fmt(&self, f:&mut ::fmt::Formatter) -> ::fmt::Result {
+                    if self.is_empty() {
+                        return write!(f, "∅");
+                    }
+                    for look in self.iter() {
+                        write!(f, "{}", look.as_char())?;
+                    }
+                    Ok(())
+                }
+            }
+            /// An iterator over all look-around assertions in a [`LookSet`].
+            ///
+            /// This iterator is created by [`LookSet::iter`].
+            #[derive( Clone, Debug )]
+            pub struct LookSetIter {
+                set: LookSet,
+            }
+
+            impl Iterator for LookSetIter {
+                type Item = Look;
+
+                #[inline]
+                fn next(&mut self) -> Option<Look> {
+                    if self.set.is_empty() {
+                        return None;
+                    }
+                    // We'll never have more than u8::MAX distinct look-around assertions,
+                    // so 'bit' will always fit into a u16.
+                    let bit = u16::try_from(self.set.bits.trailing_zeros()).unwrap();
+                    let look = Look::from_repr(1 << bit)?;
+                    self.set = self.set.remove(look);
+                    Some(look)
+                }
+            }
+            /// Given a sequence of HIR values where each value corresponds to a Unicode
+            /// class (or an all-ASCII byte class), return a single Unicode class
+            /// corresponding to the union of the classes found.
+            fn class_chars(hirs: &[Hir]) -> Option<Class> {
+                let mut cls = ClassUnicode::new(vec![]);
+                for hir in hirs.iter() {
+                    match *hir.kind() {
+                        HirKind::Class(Class::Unicode(ref cls2)) => {
+                            cls.union(cls2);
+                        }
+                        HirKind::Class(Class::Bytes(ref cls2)) => {
+                            cls.union(&cls2.to_unicode_class()?);
+                        }
+                        _ => return None,
+                    };
+                }
+                Some(Class::Unicode(cls))
+            }
+            /// Given a sequence of HIR values where each value corresponds to a byte class
+            /// (or an all-ASCII Unicode class), return a single byte class corresponding
+            /// to the union of the classes found.
+            fn class_bytes(hirs: &[Hir]) -> Option<Class> {
+                let mut cls = ClassBytes::new(vec![]);
+                for hir in hirs.iter() {
+                    match *hir.kind() {
+                        HirKind::Class(Class::Unicode(ref cls2)) => {
+                            cls.union(&cls2.to_byte_class()?);
+                        }
+                        HirKind::Class(Class::Bytes(ref cls2)) => {
+                            cls.union(cls2);
+                        }
+                        _ => return None,
+                    };
+                }
+                Some(Class::Bytes(cls))
+            }
+            /// Given a sequence of HIR values where each value corresponds to a literal
+            /// that is a single `char`, return that sequence of `char`s. Otherwise return
+            /// None. No deduplication is done.
+            fn singleton_chars(hirs: &[Hir]) -> Option<Vec<char>> {
+                let mut singletons = vec![];
+                for hir in hirs.iter() {
+                    let literal = match *hir.kind() {
+                        HirKind::Literal(Literal(ref bytes)) => bytes,
+                        _ => return None,
+                    };
+                    let ch = match crate::debug::utf8_decode(literal) {
+                        None => return None,
+                        Some(Err(_)) => return None,
+                        Some(Ok(ch)) => ch,
+                    };
+                    if literal.len() != ch.len_utf8() {
+                        return None;
+                    }
+                    singletons.push(ch);
+                }
+                Some(singletons)
+            }
+            /// Given a sequence of HIR values where each value corresponds to a literal
+            /// that is a single byte, return that sequence of bytes. Otherwise return
+            /// None. No deduplication is done.
+            fn singleton_bytes(hirs: &[Hir]) -> Option<Vec<u8>> {
+                let mut singletons = vec![];
+                for hir in hirs.iter() {
+                    let literal = match *hir.kind() {
+                        HirKind::Literal(Literal(ref bytes)) => bytes,
+                        _ => return None,
+                    };
+                    if literal.len() != 1 {
+                        return None;
+                    }
+                    singletons.push(literal[0]);
+                }
+                Some(singletons)
+            }
+            /// Looks for a common prefix in the list of alternation branches given. If one
+            /// is found, then an equivalent but (hopefully) simplified Hir is returned.
+            /// Otherwise, the original given list of branches is returned unmodified.
+            /// concatenation. (One wonders if perhaps 'Literal' should be a single atom
+            /// instead of a string of bytes because of this. Otherwise, handling the
+            /// current representation in this routine will be pretty gnarly. Sigh.)
+            fn lift_common_prefix(hirs: Vec<Hir>) -> Result<Hir, Vec<Hir>> {
+                if hirs.len() <= 1 {
+                    return Err(hirs);
+                }
+                let mut prefix = match hirs[0].kind() {
+                    HirKind::Concat(ref xs) => &**xs,
+                    _ => return Err(hirs),
+                };
+                if prefix.is_empty() {
+                    return Err(hirs);
+                }
+                for h in hirs.iter().skip(1) {
+                    let concat = match h.kind() {
+                        HirKind::Concat(ref xs) => xs,
+                        _ => return Err(hirs),
+                    };
+                    let common_len = prefix
+                        .iter()
+                        .zip(concat.iter())
+                        .take_while(|(x, y)| x == y)
+                        .count();
+                    prefix = &prefix[..common_len];
+                    if prefix.is_empty() {
+                        return Err(hirs);
+                    }
+                }
+                let len = prefix.len();
+                assert_ne!(0, len);
+                let mut prefix_concat = vec![];
+                let mut suffix_alts = vec![];
+                for h in hirs {
+                    let mut concat = match h.into_kind() {
+                        HirKind::Concat(xs) => xs,
+                        _ => unreachable!(),
+                    };
+                    suffix_alts.push(Hir::concat(concat.split_off(len)));
+                    if prefix_concat.is_empty() {
+                        prefix_concat = concat;
+                    }
+                }
+                let mut concat = prefix_concat;
+                concat.push(Hir::alternation(suffix_alts));
+                Ok(Hir::concat(concat))
+            }
+        }
+    
+        pub mod parser
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            use crate::{ast, hir, Error};
+            */
+            /// A convenience routine for parsing a regex using default options.
+            ///
+            /// This is equivalent to `Parser::new().parse(pattern)`.
+            ///
+            /// If you need to set non-default options, then use a [`ParserBuilder`].
+            pub fn parse(pattern: &str) -> Result<hir::Hir, Error> {
+                Parser::new().parse(pattern)
+            }
+            /// A builder for a regular expression parser.
+            ///
+            /// This builder permits modifying configuration options for the parser.
+            ///
+            /// This type combines the builder options for both the [AST
+            /// `ParserBuilder`](ast::parse::ParserBuilder) and the [HIR
+            /// `TranslatorBuilder`](hir::translate::TranslatorBuilder).
+            #[derive(Clone, Debug, Default)]
+            pub struct ParserBuilder {
+                ast: ast::parse::ParserBuilder,
+                hir: hir::translate::TranslatorBuilder,
+            }
+
+            impl ParserBuilder {
+                /// Create a new parser builder with a default configuration.
+                pub fn new() -> ParserBuilder {
+                    ParserBuilder::default()
+                }
+                /// Build a parser from this configuration with the given pattern.
+                pub fn build(&self) -> Parser {
+                    Parser { ast: self.ast.build(), hir: self.hir.build() }
+                }
+                /// Set the nesting limit for this parser.
+                ///
+                /// The nesting limit controls how deep the abstract syntax tree is allowed
+                /// to be. If the AST exceeds the given limit (e.g., with too many nested
+                /// groups), then an error is returned by the parser.
+                ///
+                /// The purpose of this limit is to act as a heuristic to prevent stack
+                /// overflow for consumers that do structural induction on an `Ast` using
+                /// explicit recursion. While this crate never does this (instead using
+                /// constant stack space and moving the call stack to the heap), other
+                /// crates may.
+                ///
+                /// This limit is not checked until the entire Ast is parsed. Therefore,
+                /// if callers want to put a limit on the amount of heap space used, then
+                /// they should impose a limit on the length, in bytes, of the concrete
+                /// pattern string. In particular, this is viable since this parser
+                /// implementation will limit itself to heap space proportional to the
+                /// length of the pattern string.
+                ///
+                /// Note that a nest limit of `0` will return a nest limit error for most
+                /// patterns but not all. For example, a nest limit of `0` permits `a` but
+                /// not `ab`, since `ab` requires a concatenation, which results in a nest
+                /// depth of `1`. In general, a nest limit is not something that manifests
+                /// in an obvious way in the concrete syntax, therefore, it should not be
+                /// used in a granular way.
+                pub fn nest_limit(&mut self, limit: u32) -> &mut ParserBuilder {
+                    self.ast.nest_limit(limit);
+                    self
+                }
+                /// Whether to support octal syntax or not.
+                ///
+                /// Octal syntax is a little-known way of uttering Unicode codepoints in
+                /// a regular expression. For example, `a`, `\x61`, `\u0061` and
+                /// `\141` are all equivalent regular expressions, where the last example
+                /// shows octal syntax.
+                ///
+                /// While supporting octal syntax isn't in and of itself a problem, it does
+                /// make good error messages harder. That is, in PCRE based regex engines,
+                /// syntax like `\0` invokes a backreference, which is explicitly
+                /// unsupported in Rust's regex engine. However, many users expect it to
+                /// be supported. Therefore, when octal support is disabled, the error
+                /// message will explicitly mention that backreferences aren't supported.
+                ///
+                /// Octal syntax is disabled by default.
+                pub fn octal(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.ast.octal(yes);
+                    self
+                }
+                /// When disabled, translation will permit the construction of a regular
+                /// expression that may match invalid UTF-8.
+                ///
+                /// When enabled (the default), the translator is guaranteed to produce an
+                /// expression that, for non-empty matches, will only ever produce spans
+                /// that are entirely valid UTF-8 (otherwise, the translator will return an
+                /// error).
+                ///
+                /// Perhaps surprisingly, when UTF-8 is enabled, an empty regex or even
+                /// a negated ASCII word boundary (uttered as `(?-u:\B)` in the concrete
+                /// syntax) will be allowed even though they can produce matches that split
+                /// a UTF-8 encoded codepoint. This only applies to zero-width or "empty"
+                /// matches, and it is expected that the regex engine itself must handle
+                /// these cases if necessary (perhaps by suppressing any zero-width matches
+                /// that split a codepoint).
+                pub fn utf8(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.utf8(yes);
+                    self
+                }
+                /// Enable verbose mode in the regular expression.
+                ///
+                /// When enabled, verbose mode permits insignificant whitespace in many
+                /// places in the regular expression, as well as comments. Comments are
+                /// started using `#` and continue until the end of the line.
+                ///
+                /// By default, this is disabled. It may be selectively enabled in the
+                /// regular expression by using the `x` flag regardless of this setting.
+                pub fn ignore_whitespace(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.ast.ignore_whitespace(yes);
+                    self
+                }
+                /// Enable or disable the case insensitive flag by default.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `i` flag.
+                pub fn case_insensitive(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.case_insensitive(yes);
+                    self
+                }
+                /// Enable or disable the multi-line matching flag by default.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `m` flag.
+                pub fn multi_line(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.multi_line(yes);
+                    self
+                }
+                /// Enable or disable the "dot matches any character" flag by default.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `s` flag.
+                pub fn dot_matches_new_line(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.dot_matches_new_line(yes);
+                    self
+                }
+                /// Enable or disable the CRLF mode flag by default.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `R` flag.
+                ///
+                /// When CRLF mode is enabled, the following happens:
+                ///
+                /// * Unless `dot_matches_new_line` is enabled, `.` will match any character
+                /// except for `\r` and `\n`.
+                /// * When `multi_line` mode is enabled, `^` and `$` will treat `\r\n`,
+                /// `\r` and `\n` as line terminators. And in particular, neither will
+                /// match between a `\r` and a `\n`.
+                pub fn crlf(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.crlf(yes);
+                    self
+                }
+                /// Sets the line terminator for use with `(?u-s:.)` and `(?-us:.)`.
+                ///
+                /// Namely, instead of `.` (by default) matching everything except for `\n`,
+                /// this will cause `.` to match everything except for the byte given.
+                ///
+                /// If `.` is used in a context where Unicode mode is enabled and this byte
+                /// isn't ASCII, then an error will be returned. When Unicode mode is
+                /// disabled, then any byte is permitted, but will return an error if UTF-8
+                /// mode is enabled and it is a non-ASCII byte.
+                ///
+                /// In short, any ASCII value for a line terminator is always okay. But a
+                /// non-ASCII byte might result in an error depending on whether Unicode
+                /// mode or UTF-8 mode are enabled.
+                ///
+                /// Note that if `R` mode is enabled then it always takes precedence and
+                /// the line terminator will be treated as `\r` and `\n` simultaneously.
+                ///
+                /// Note also that this *doesn't* impact the look-around assertions
+                /// `(?m:^)` and `(?m:$)`. That's usually controlled by additional
+                /// configuration in the regex engine itself.
+                pub fn line_terminator(&mut self, byte: u8) -> &mut ParserBuilder {
+                    self.hir.line_terminator(byte);
+                    self
+                }
+                /// Enable or disable the "swap greed" flag by default.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `U` flag.
+                pub fn swap_greed(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.swap_greed(yes);
+                    self
+                }
+                /// Enable or disable the Unicode flag (`u`) by default.
+                ///
+                /// By default this is **enabled**. It may alternatively be selectively
+                /// disabled in the regular expression itself via the `u` flag.
+                ///
+                /// Note that unless `utf8` is disabled (it's enabled by default), a
+                /// regular expression will fail to parse if Unicode mode is disabled and a
+                /// sub-expression could possibly match invalid UTF-8.
+                pub fn unicode(&mut self, yes: bool) -> &mut ParserBuilder {
+                    self.hir.unicode(yes);
+                    self
+                }
+            }
+            /// A convenience parser for regular expressions.
+            /// The AST is itself far more complex than the HIR, so this parser serves as a
+            /// convenience for never having to deal with it at all.
+            ///
+            /// If callers have more fine grained use cases that need an AST, then please
+            /// see the [`ast::parse`] module.
+            ///
+            /// A `Parser` can be configured in more detail via a [`ParserBuilder`].
+            #[derive( Clone, Debug )]
+            pub struct Parser {
+                ast: ast::parse::Parser,
+                hir: hir::translate::Translator,
+            }
+
+            impl Parser {
+                /// Create a new parser with a default configuration.
+                ///
+                /// The parser can be run with `parse` method. The parse method returns
+                /// a high level intermediate representation of the given regular
+                /// expression.
+                ///
+                /// To set configuration options on the parser, use [`ParserBuilder`].
+                pub fn new() -> Parser {
+                    ParserBuilder::new().build()
+                }
+                /// Parse the regular expression into a high level intermediate
+                /// representation.
+                pub fn parse(&mut self, pattern: &str) -> Result<hir::Hir, Error> {
+                    let ast = self.ast.parse(pattern)?;
+                    let hir = self.hir.translate(pattern, &ast)?;
+                    Ok(hir)
+                }
+            }
+        } pub use self::parser::{ parse, Parser, ParserBuilder };
+    
+        pub mod rank
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */
+            pub const BYTE_FREQUENCIES: [u8; 256] = 
+            [
+                55, 52, 51, 50, 49, 48, 47, 46, 45, 103,242,66, 67, 229,44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 
+                33, 56, 32, 31, 30, 29, 28, 255,148,164,149,136,160,155,173,221,222,134,122,232,202,215,224,208,220,
+                204,187,183,179,177,168,178,200,226,195,154,184,174,126,120,191,157,194,170,189,162,161,150,193,142,
+                137,171,176,185,167,186,112,175,192,188,156,140,143,123,133,128,147,138,146,114,223,151,249,216,238,
+                236,253,227,218,230,247,135,180,241,233,246,244,231,139,245,243,251,235,201,196,240,214,152,182,205,
+                181,127,27, 212,211,210,213,228,197,169,159,131,172,105,80, 98, 96, 97, 81, 207,145,116,115,144,130,
+                153,121,107,132,109,110,124,111,82, 108,118,141,113,129,119,125,165,117,92, 106,83, 72, 99, 93, 65, 
+                79, 166,237,163,199,190,225,209,203,198,217,219,206,234,248,158,239,255,255,255,255,255,255,255,255,
+                255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+                255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,255,
+                255,255,255,255,255,255, 
+            ];
+        }
+
+        pub mod utf8
+        {
+            /*!
+            */
+            use ::
+            {
+                cmp::{ Ordering },
+                *,
+            };
+            /*
+            */
             /// An error that occurred while parsing a regular expression into an abstract syntax tree.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Error 
             {
                 /// The kind of error.
@@ -26288,19 +38082,23 @@ pub mod regex
             impl Error 
             {
                 /// Return the type of this error.
-                pub fn kind(&self) -> &ErrorKind {
+                pub fn kind(&self) -> &ErrorKind 
+                {
                     &self.kind
                 }
                 /// The original pattern string in which this error occurred.
-                pub fn pattern(&self) -> &str {
+                pub fn pattern(&self) -> &str 
+                {
                     &self.pattern
                 }
                 /// Return the span at which this error occurred.
-                pub fn span(&self) -> &Span {
+                pub fn span(&self) -> &Span 
+                {
                     &self.span
                 }
                 /// Return an auxiliary span.
-                pub fn auxiliary_span(&self) -> Option<&Span> {
+                pub fn auxiliary_span(&self) -> Option<&Span> 
+                {
                     use self::ErrorKind::*;
                     match self.kind {
                         FlagDuplicate { ref original } => Some(original),
@@ -26311,7 +38109,7 @@ pub mod regex
                 }
             }
             /// The type of an error that occurred while building an AST.
-            #[non_exhaustive] #[derive(Clone, Debug, Eq, PartialEq)]
+            #[non_exhaustive] #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ErrorKind 
             {
                 /// The capturing group limit was exceeded.
@@ -26393,20 +38191,19 @@ pub mod regex
                 SpecialWordOrRepetitionUnexpectedEof,
                 /// The Unicode class is not valid.
                 UnicodeClassInvalid,
-                /// When octal support is disabled, this error is produced when an octal
-                /// escape is used.
+                /// When octal support is disabled, this error is produced when an octal escape is used.
                 UnsupportedBackreference,
-                /// When syntax similar to PCRE's look-around is used, this error is
-                /// returned.
+                /// When syntax similar to PCRE's look-around is used, this error is returned.
                 UnsupportedLookAround,
             }
+            
+            impl ::error::Error for Error {}
 
-            #[cfg(feature = "std")]
-            impl std::error::Error for Error {}
-
-            impl ::fmt::Display for Error {
-                fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
-                    crate::error::Formatter::from(self).fmt(f)
+            impl ::fmt::Display for Error 
+            {
+                fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+                {
+                    super::error::Formatter::from(self).fmt(f)
                 }
             }
 
@@ -26538,22 +38335,18 @@ pub mod regex
             }
 
             impl Ord for Span {
-                fn cmp(&self, other: &Span) -> Ordering {
+                fn cmp( &self, other:&Span ) -> Ordering {
                     (&self.start, &self.end).cmp(&(&other.start, &other.end))
                 }
             }
 
             impl PartialOrd for Span {
-                fn partial_cmp(&self, other: &Span) -> Option<Ordering> {
+                fn partial_cmp( &self, other:&Span ) -> Option<Ordering> {
                     Some(self.cmp(other))
                 }
             }
             /// A single position in a regular expression.
-            ///
-            /// A position encodes one half of a span, and include the byte offset, line
-            /// number and column number.
             #[derive(Clone, Copy, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
             pub struct Position {
                 /// The absolute offset of this position, starting at `0` from the
                 /// beginning of the regular expression pattern string.
@@ -26616,27 +38409,15 @@ pub mod regex
                 }
             }
 
-            impl Position {
+            impl Position 
+            {
                 /// Create a new position with the given information.
-                ///
-                /// `offset` is the absolute offset of the position, starting at `0` from
-                /// the beginning of the regular expression pattern string.
-                ///
-                /// `line` is the line number, starting at `1`.
-                ///
-                /// `column` is the approximate column number, starting at `1`.
                 pub fn new(offset: usize, line: usize, column: usize) -> Position {
                     Position { offset, line, column }
                 }
             }
-            /// An abstract syntax tree for a singular expression along with comments
-            /// found.
-            ///
-            /// Comments are not stored in the tree itself to avoid complexity. Each
-            /// comment contains a span of precisely where it occurred in the original
-            /// regular expression.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            /// An abstract syntax tree for a singular expression along with comments found.
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct WithComments {
                 /// The actual ast.
                 pub ast: Ast,
@@ -26644,11 +38425,7 @@ pub mod regex
                 pub comments: Vec<Comment>,
             }
             /// A comment from a regular expression with an associated span.
-            ///
-            /// A regular expression can only contain comments when the `x` flag is
-            /// enabled.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Comment {
                 /// The span of this comment, including the beginning `#` and ending `\n`.
                 pub span: Span,
@@ -26657,14 +38434,7 @@ pub mod regex
                 pub comment: String,
             }
             /// An abstract syntax tree for a single regular expression.
-            ///
-            /// An `Ast`'s `fmt::Display` implementation uses constant stack space and heap
-            /// space proportional to the size of the `Ast`.
-            ///
-            /// This type defines its own destructor that uses constant stack space and
-            /// heap space proportional to the size of the `Ast`.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum Ast {
                 /// An empty regex that matches everything.
                 Empty(Box<Span>),
@@ -26794,7 +38564,7 @@ pub mod regex
                 }
             }
             /// An alternation of regular expressions.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Alternation {
                 /// The span of this alternation.
                 pub span: Span,
@@ -26804,10 +38574,6 @@ pub mod regex
 
             impl Alternation {
                 /// Return this alternation as an AST.
-                ///
-                /// If this alternation contains zero ASTs, then `Ast::empty` is returned.
-                /// If this alternation contains exactly 1 AST, then the corresponding AST
-                /// is returned. Otherwise, `Ast::alternation` is returned.
                 pub fn into_ast(mut self) -> Ast {
                     match self.asts.len() {
                         0 => Ast::empty(self.span),
@@ -26817,7 +38583,7 @@ pub mod regex
                 }
             }
             /// A concatenation of regular expressions.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Concat {
                 /// The span of this concatenation.
                 pub span: Span,
@@ -26836,7 +38602,7 @@ pub mod regex
                 }
             }
             /// A single literal expression.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Literal {
                 /// The span of this literal.
                 pub span: Span,
@@ -26859,7 +38625,7 @@ pub mod regex
                 }
             }
             /// The kind of a single literal expression.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum LiteralKind {
                 /// The literal is written verbatim, e.g., `a` or `☃`.
                 Verbatim,
@@ -26871,11 +38637,11 @@ pub mod regex
                 Superfluous,
                 /// The literal is written as an octal escape, e.g., `\141`.
                 Octal,
-                /// The literal is written as a hex code with a fixed number of digits
+                /// The literal is written as hex with a fixed number of digits
                 /// depending on the type of the escape, e.g., `\x61` or `\u0061` or
                 /// `\U00000061`.
                 HexFixed(HexLiteralKind),
-                /// The literal is written as a hex code with a bracketed number of
+                /// The literal is written as hex with a bracketed number of
                 /// digits. The only restriction is that the bracketed hex code must refer
                 /// to a valid Unicode scalar value.
                 HexBrace(HexLiteralKind),
@@ -26884,10 +38650,7 @@ pub mod regex
                 Special(SpecialLiteralKind),
             }
             /// The type of a special literal.
-            ///
-            /// A special literal is a special escape sequence recognized by the regex
-            /// parser, e.g., `\f` or `\n`.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum SpecialLiteralKind {
                 /// Bell, spelled `\a` (`\x07`).
                 Bell,
@@ -26906,7 +38669,7 @@ pub mod regex
                 Space,
             }
             /// The type of a Unicode hex literal.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum HexLiteralKind {
                 /// A `\x` prefix. When used without brackets, this form is limited to
                 /// two digits.
@@ -26931,7 +38694,7 @@ pub mod regex
                 }
             }
             /// A Perl character class.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassPerl {
                 /// The span of this class.
                 pub span: Span,
@@ -26942,7 +38705,7 @@ pub mod regex
                 pub negated: bool,
             }
             /// The available Perl character classes.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ClassPerlKind {
                 /// Decimal numbers.
                 Digit,
@@ -26952,7 +38715,7 @@ pub mod regex
                 Word,
             }
             /// An ASCII character class.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassAscii {
                 /// The span of this class.
                 pub span: Span,
@@ -26963,7 +38726,7 @@ pub mod regex
                 pub negated: bool,
             }
             /// The available ASCII character classes.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ClassAsciiKind {
                 /// `[0-9A-Za-z]`
                 Alnum,
@@ -27019,7 +38782,7 @@ pub mod regex
                 }
             }
             /// A Unicode character class.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassUnicode {
                 /// The span of this class.
                 pub span: Span,
@@ -27042,10 +38805,10 @@ pub mod regex
                 }
             }
             /// The available forms of Unicode character classes.
-            #[derive(Clone, Debug, Eq, PartialEq)]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ClassUnicodeKind {
                 /// A one letter abbreviated class, e.g., `\pN`.
-                OneLetter(char),
+                OneLetter( char ),
                 /// A binary property, general category or script.
                 Named(String),
                 /// A property name and an associated value.
@@ -27058,156 +38821,8 @@ pub mod regex
                     value: String,
                 },
             }
-
-            #[cfg(feature = "arbitrary")]
-            impl arbitrary::Arbitrary<'_> for ClassUnicodeKind {
-                fn arbitrary(
-                    u: &mut arbitrary::Unstructured,
-                ) -> arbitrary::Result<ClassUnicodeKind> {
-                    #[cfg(any(
-                        feature = "unicode-age",
-                        feature = "unicode-bool",
-                        feature = "unicode-gencat",
-                        feature = "unicode-perl",
-                        feature = "unicode-script",
-                        feature = "unicode-segment",
-                    ))]
-                    {
-                        use alloc::string::ToString;
-
-                        use super::unicode_tables::{
-                            property_names::PROPERTY_NAMES,
-                            property_values::PROPERTY_VALUES,
-                        };
-
-                        match u.choose_index(3)? {
-                            0 => {
-                                let all = PROPERTY_VALUES
-                                    .iter()
-                                    .flat_map(|e| e.1.iter())
-                                    .filter(|(name, _)| name.len() == 1)
-                                    .count();
-                                let idx = u.choose_index(all)?;
-                                let value = PROPERTY_VALUES
-                                    .iter()
-                                    .flat_map(|e| e.1.iter())
-                                    .take(idx + 1)
-                                    .last()
-                                    .unwrap()
-                                    .0
-                                    .chars()
-                                    .next()
-                                    .unwrap();
-                                Ok(ClassUnicodeKind::OneLetter(value))
-                            }
-                            1 => {
-                                let all = PROPERTY_VALUES
-                                    .iter()
-                                    .map(|e| e.1.len())
-                                    .sum::<usize>()
-                                    + PROPERTY_NAMES.len();
-                                let idx = u.choose_index(all)?;
-                                let name = PROPERTY_VALUES
-                                    .iter()
-                                    .flat_map(|e| e.1.iter())
-                                    .chain(PROPERTY_NAMES)
-                                    .map(|(_, e)| e)
-                                    .take(idx + 1)
-                                    .last()
-                                    .unwrap();
-                                Ok(ClassUnicodeKind::Named(name.to_string()))
-                            }
-                            2 => {
-                                let all = PROPERTY_VALUES
-                                    .iter()
-                                    .map(|e| e.1.len())
-                                    .sum::<usize>();
-                                let idx = u.choose_index(all)?;
-                                let (prop, value) = PROPERTY_VALUES
-                                    .iter()
-                                    .flat_map(|e| {
-                                        e.1.iter().map(|(_, value)| (e.0, value))
-                                    })
-                                    .take(idx + 1)
-                                    .last()
-                                    .unwrap();
-                                Ok(ClassUnicodeKind::NamedValue {
-                                    op: u.arbitrary()?,
-                                    name: prop.to_string(),
-                                    value: value.to_string(),
-                                })
-                            }
-                            _ => unreachable!("index chosen is impossible"),
-                        }
-                    }
-                    #[cfg(not(any(
-                        feature = "unicode-age",
-                        feature = "unicode-bool",
-                        feature = "unicode-gencat",
-                        feature = "unicode-perl",
-                        feature = "unicode-script",
-                        feature = "unicode-segment",
-                    )))]
-                    {
-                        match u.choose_index(3)? {
-                            0 => Ok(ClassUnicodeKind::OneLetter(u.arbitrary()?)),
-                            1 => Ok(ClassUnicodeKind::Named(u.arbitrary()?)),
-                            2 => Ok(ClassUnicodeKind::NamedValue {
-                                op: u.arbitrary()?,
-                                name: u.arbitrary()?,
-                                value: u.arbitrary()?,
-                            }),
-                            _ => unreachable!("index chosen is impossible"),
-                        }
-                    }
-                }
-
-                fn size_hint(depth: usize) -> (usize, Option<usize>) {
-                    #[cfg(any(
-                        feature = "unicode-age",
-                        feature = "unicode-bool",
-                        feature = "unicode-gencat",
-                        feature = "unicode-perl",
-                        feature = "unicode-script",
-                        feature = "unicode-segment",
-                    ))]
-                    {
-                        arbitrary::size_hint::and_all(&[
-                            usize::size_hint(depth),
-                            usize::size_hint(depth),
-                            arbitrary::size_hint::or(
-                                (0, Some(0)),
-                                ClassUnicodeOpKind::size_hint(depth),
-                            ),
-                        ])
-                    }
-                    #[cfg(not(any(
-                        feature = "unicode-age",
-                        feature = "unicode-bool",
-                        feature = "unicode-gencat",
-                        feature = "unicode-perl",
-                        feature = "unicode-script",
-                        feature = "unicode-segment",
-                    )))]
-                    {
-                        arbitrary::size_hint::and(
-                            usize::size_hint(depth),
-                            arbitrary::size_hint::or_all(&[
-                                char::size_hint(depth),
-                                String::size_hint(depth),
-                                arbitrary::size_hint::and_all(&[
-                                    String::size_hint(depth),
-                                    String::size_hint(depth),
-                                    ClassUnicodeOpKind::size_hint(depth),
-                                ]),
-                            ]),
-                        )
-                    }
-                }
-            }
             /// The type of op used in a Unicode character class.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ClassUnicodeOpKind {
                 /// A property set to a specific value, e.g., `\p{scx=Katakana}`.
                 Equal,
@@ -27228,8 +38843,7 @@ pub mod regex
                 }
             }
             /// A bracketed character class, e.g., `[a-z0-9]`.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassBracketed {
                 /// The span of this class.
                 pub span: Span,
@@ -27241,13 +38855,7 @@ pub mod regex
                 pub kind: ClassSet,
             }
             /// A character class set.
-            ///
-            /// This type corresponds to the internal structure of a bracketed character
-            /// class. That is, every bracketed character is one of two types: a union of
-            /// items (literals, ranges, other bracketed classes) or a tree of binary set
-            /// operations.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ClassSet {
                 /// An item, which can be a single literal, range, nested character class
                 /// or a union of items.
@@ -27277,14 +38885,9 @@ pub mod regex
                 }
             }
             /// A single component of a character class set.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum ClassSetItem {
                 /// An empty item.
-                ///
-                /// Note that a bracketed character class cannot contain a single empty
-                /// item. Empty items can appear when using one of the binary operators.
-                /// For example, `[&&]` is the intersection of two empty classes.
                 Empty(Span),
                 /// A single literal.
                 Literal(Literal),
@@ -27320,8 +38923,7 @@ pub mod regex
                 }
             }
             /// A single character class range in a set.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassSetRange {
                 /// The span of this range.
                 pub span: Span,
@@ -27333,16 +38935,12 @@ pub mod regex
 
             impl ClassSetRange {
                 /// Returns true if and only if this character class range is valid.
-                ///
-                /// The only case where a range is invalid is if its start is greater than
-                /// its end.
                 pub fn is_valid(&self) -> bool {
                     self.start.c <= self.end.c
                 }
             }
             /// A union of items inside a character class set.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassSetUnion {
                 /// The span of the items in this operation. e.g., the `a-z0-9` in
                 /// `[^a-z0-9]`
@@ -27353,15 +38951,7 @@ pub mod regex
 
             impl ClassSetUnion {
                 /// Push a new item in this union.
-                ///
-                /// The ending position of this union's span is updated to the ending
-                /// position of the span of the item given. If the union is empty, then
-                /// the starting position of this union is set to the starting position
                 /// of this item.
-                ///
-                /// In other words, if you only use this method to add items to a union
-                /// and you set the spans on each item correctly, then you should never
-                /// need to adjust the span of the union directly.
                 pub fn push(&mut self, item: ClassSetItem) {
                     if self.items.is_empty() {
                         self.span.start = item.span().start;
@@ -27370,10 +38960,6 @@ pub mod regex
                     self.items.push(item);
                 }
                 /// Return this union as a character class set item.
-                ///
-                /// If this union contains zero items, then an empty union is
-                /// returned. If this concatenation contains exactly 1 item, then the
-                /// corresponding item is returned. Otherwise, ClassSetItem::Union is
                 /// returned.
                 pub fn into_item(mut self) -> ClassSetItem {
                     match self.items.len() {
@@ -27384,8 +38970,7 @@ pub mod regex
                 }
             }
             /// A Unicode character class set operation.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct ClassSetBinaryOp {
                 /// The span of this operation. e.g., the `a-z--[h-p]` in `[a-z--h-p]`.
                 pub span: Span,
@@ -27397,12 +38982,7 @@ pub mod regex
                 pub rhs: Box<ClassSet>,
             }
             /// The type of a Unicode character class set operation.
-            ///
-            /// Note that this doesn't explicitly represent union since there is no
-            /// explicit union operator. Concatenation inside a character class corresponds
-            /// to the union operation.
-            #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Copy, Debug, Eq, PartialEq )]
             pub enum ClassSetBinaryOpKind {
                 /// The intersection of two sets, e.g., `\pN&&[a-z]`.
                 Intersection,
@@ -27414,8 +38994,7 @@ pub mod regex
                 SymmetricDifference,
             }
             /// A single zero-width assertion.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Assertion {
                 /// The span of this assertion.
                 pub span: Span,
@@ -27423,8 +39002,7 @@ pub mod regex
                 pub kind: AssertionKind,
             }
             /// An assertion kind.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum AssertionKind {
                 /// `^`
                 StartLine,
@@ -27452,8 +39030,7 @@ pub mod regex
                 WordBoundaryEndHalf,
             }
             /// A repetition operation applied to a regular expression.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Repetition {
                 /// The span of this operation.
                 pub span: Span,
@@ -27465,8 +39042,7 @@ pub mod regex
                 pub ast: Box<Ast>,
             }
             /// The repetition operator itself.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct RepetitionOp {
                 /// The span of this operator. This includes things like `+`, `*?` and
                 /// `{m,n}`.
@@ -27475,8 +39051,7 @@ pub mod regex
                 pub kind: RepetitionKind,
             }
             /// The kind of a repetition operator.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum RepetitionKind {
                 /// `?`
                 ZeroOrOne,
@@ -27488,8 +39063,7 @@ pub mod regex
                 Range(RepetitionRange),
             }
             /// A range repetition operator.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub enum RepetitionRange {
                 /// `{m}`
                 Exactly(u32),
@@ -27501,9 +39075,6 @@ pub mod regex
 
             impl RepetitionRange {
                 /// Returns true if and only if this repetition range is valid.
-                ///
-                /// The only case where a repetition range is invalid is if it is bounded
-                /// and its start is greater than its end.
                 pub fn is_valid(&self) -> bool {
                     match *self {
                         RepetitionRange::Bounded(s, e) if s > e => false,
@@ -27512,13 +39083,7 @@ pub mod regex
                 }
             }
             /// A grouped regular expression.
-            ///
-            /// This includes both capturing and non-capturing groups. This does **not**
-            /// include flag-only groups like `(?is)`, but does contain any group that
-            /// contains a sub-expression, e.g., `(a)`, `(?P<name>a)`, `(?:a)` and
-            /// `(?is:a)`.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
+            #[derive( Clone, Debug, Eq, PartialEq )]
             pub struct Group {
                 /// The span of this group.
                 pub span: Span,
@@ -27528,26 +39093,27 @@ pub mod regex
                 pub ast: Box<Ast>,
             }
 
-            impl Group {
-                /// If this group is non-capturing, then this returns the (possibly empty)
-                /// set of flags. Otherwise, `None` is returned.
-                pub fn flags(&self) -> Option<&Flags> {
+            impl Group 
+            {
+                /// If this group is non-capturing, then this returns the (possibly empty) set of flags.
+                pub fn flags(&self) -> Option<&Flags>
+                {
                     match self.kind {
                         GroupKind::NonCapturing(ref flags) => Some(flags),
                         _ => None,
                     }
                 }
                 /// Returns true if and only if this group is capturing.
-                pub fn is_capturing(&self) -> bool {
+                pub fn is_capturing(&self) -> bool
+                {
                     match self.kind {
                         GroupKind::CaptureIndex(_) | GroupKind::CaptureName { .. } => true,
                         GroupKind::NonCapturing(_) => false,
                     }
                 }
                 /// Returns the capture index of this group, if this is a capturing group.
-                ///
-                /// This returns a capture index precisely when `is_capturing` is `true`.
-                pub fn capture_index(&self) -> Option<u32> {
+                pub fn capture_index(&self) -> Option<u32> 
+                {
                     match self.kind {
                         GroupKind::CaptureIndex(i) => Some(i),
                         GroupKind::CaptureName { ref name, .. } => Some(name.index),
@@ -27556,9 +39122,9 @@ pub mod regex
                 }
             }
             /// The kind of a group.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
-            pub enum GroupKind {
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum GroupKind 
+            {
                 /// `(a)`
                 CaptureIndex(u32),
                 /// `(?<name>a)` or `(?P<name>a)`
@@ -27572,76 +39138,40 @@ pub mod regex
                 NonCapturing(Flags),
             }
             /// A capture name.
-            ///
-            /// This corresponds to the name itself between the angle brackets in, e.g.,
-            /// `(?P<foo>expr)`.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            pub struct CaptureName {
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct CaptureName 
+            {
                 /// The span of this capture name.
                 pub span: Span,
                 /// The capture name.
                 pub name: String,
                 /// The capture index.
                 pub index: u32,
-            }
-
-            #[cfg(feature = "arbitrary")]
-            impl arbitrary::Arbitrary<'_> for CaptureName {
-                fn arbitrary(
-                    u: &mut arbitrary::Unstructured,
-                ) -> arbitrary::Result<CaptureName> {
-                    let len = u.arbitrary_len::<char>()?;
-                    if len == 0 {
-                        return Err(arbitrary::Error::NotEnoughData);
-                    }
-                    let mut name: String = String::new();
-                    for _ in 0..len {
-                        let ch: char = u.arbitrary()?;
-                        let cp = u32::from(ch);
-                        let ascii_letter_offset = u8::try_from(cp % 26).unwrap();
-                        let ascii_letter = b'a' + ascii_letter_offset;
-                        name.push(char::from(ascii_letter));
-                    }
-                    Ok(CaptureName { span: u.arbitrary()?, name, index: u.arbitrary()? })
-                }
-
-                fn size_hint(depth: usize) -> (usize, Option<usize>) {
-                    arbitrary::size_hint::and_all(&[
-                        Span::size_hint(depth),
-                        usize::size_hint(depth),
-                        u32::size_hint(depth),
-                    ])
-                }
-            }
+            }            
             /// A group of flags that is not applied to a particular regular expression.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
-            pub struct SetFlags {
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct SetFlags
+            {
                 /// The span of these flags, including the grouping parentheses.
                 pub span: Span,
                 /// The actual sequence of flags.
                 pub flags: Flags,
             }
             /// A group of flags.
-            ///
-            /// This corresponds only to the sequence of flags themselves, e.g., `is-u`.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
-            pub struct Flags {
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct Flags 
+            {
                 /// The span of this group of flags.
                 pub span: Span,
-                /// A sequence of flag items. Each item is either a flag or a negation
-                /// operator.
+                /// A sequence of flag items.
                 pub items: Vec<FlagsItem>,
             }
 
-            impl Flags {
+            impl Flags 
+            {
                 /// Add the given item to this sequence of flags.
-                ///
-                /// If the item was added successfully, then `None` is returned. If the
-                /// given item is a duplicate, then `Some(i)` is returned, where
-                /// `items[i].kind == item.kind`.
-                pub fn add_item(&mut self, item: FlagsItem) -> Option<usize> {
+                pub fn add_item(&mut self, item: FlagsItem) -> Option<usize> 
+                {
                     for (i, x) in self.items.iter().enumerate() {
                         if x.kind == item.kind {
                             return Some(i);
@@ -27651,15 +39181,8 @@ pub mod regex
                     None
                 }
                 /// Returns the state of the given flag in this set.
-                ///
-                /// If the given flag is in the set but is negated, then `Some(false)` is
-                /// returned.
-                ///
-                /// If the given flag is in the set and is not negated, then `Some(true)`
-                /// is returned.
-                ///
-                /// Otherwise, `None` is returned.
-                pub fn flag_state(&self, flag: Flag) -> Option<bool> {
+                pub fn flag_state(&self, flag: Flag) -> Option<bool> 
+                {
                     let mut negated = false;
                     for x in &self.items {
                         match x.kind {
@@ -27676,26 +39199,26 @@ pub mod regex
                 }
             }
             /// A single item in a group of flags.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
-            pub struct FlagsItem {
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub struct FlagsItem 
+            {
                 /// The span of this item.
                 pub span: Span,
                 /// The kind of this item.
                 pub kind: FlagsItemKind,
             }
             /// The kind of an item in a group of flags.
-            #[derive(Clone, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
-            pub enum FlagsItemKind {
-                /// A negation operator applied to all subsequent flags in the enclosing
-                /// group.
+            #[derive( Clone, Debug, Eq, PartialEq )]
+            pub enum FlagsItemKind 
+            {
+                /// A negation operator applied to all subsequent flags in the enclosing group.
                 Negation,
                 /// A single flag in a group.
                 Flag(Flag),
             }
 
-            impl FlagsItemKind {
+            impl FlagsItemKind 
+            {
                 /// Returns true if and only if this item is a negation operator.
                 pub fn is_negation(&self) -> bool {
                     match *self {
@@ -27705,9 +39228,9 @@ pub mod regex
                 }
             }
             /// A single flag.
-            #[derive(Clone, Copy, Debug, Eq, PartialEq)]
-            #[cfg_attr(feature = "arbitrary", derive(arbitrary::Arbitrary))]
-            pub enum Flag {
+            #[derive( Clone, Copy, Debug, Eq, PartialEq )]
+            pub enum Flag
+            {
                 /// `i`
                 CaseInsensitive,
                 /// `m`
@@ -27723,12 +39246,10 @@ pub mod regex
                 /// `x`
                 IgnoreWhitespace,
             }
-            /// A custom `Drop` impl is used for `Ast` such that it uses constant stack
-            /// space but heap space proportional to the depth of the `Ast`.
-            impl Drop for Ast {
-                fn drop(&mut self) {
-                    use core::mem;
-
+            
+            impl Drop for Ast 
+            {
+                fn drop( &mut self ) {
                     match *self {
                         Ast::Empty(_)
                         | Ast::Flags(_)
@@ -27737,7 +39258,6 @@ pub mod regex
                         | Ast::Assertion(_)
                         | Ast::ClassUnicode(_)
                         | Ast::ClassPerl(_)
-                        // Bracketed classes are recursive, they get their own Drop impl.
                         | Ast::ClassBracketed(_) => return,
                         Ast::Repetition(ref x) if !x.ast.has_subexprs() => return,
                         Ast::Group(ref x) if !x.ast.has_subexprs() => return,
@@ -27758,8 +39278,6 @@ pub mod regex
                             | Ast::Assertion(_)
                             | Ast::ClassUnicode(_)
                             | Ast::ClassPerl(_)
-                            // Bracketed classes are recursive, so they get their own Drop
-                            // impl.
                             | Ast::ClassBracketed(_) => {}
                             Ast::Repetition(ref mut x) => {
                                 stack.push(mem::replace(&mut x.ast, empty_ast()));
@@ -27777,12 +39295,10 @@ pub mod regex
                     }
                 }
             }
-            /// A custom `Drop` impl is used for `ClassSet` such that it uses constant
-            /// stack space but heap space proportional to the depth of the `ClassSet`.
-            impl Drop for ClassSet {
-                fn drop(&mut self) {
-                    use core::mem;
-
+            
+            impl Drop for ClassSet 
+            {
+                fn drop( &mut self ) {
                     match *self {
                         ClassSet::Item(ref item) => match *item {
                             ClassSetItem::Empty(_)
@@ -60444,7 +71960,7 @@ pub mod regex
             pub enum ClassQuery<'a>
             {
                 /// Return a class corresponding to a Unicode binary property, named by a single letter.
-                OneLetter(char),
+                OneLetter( char ),
                 /// Return a class corresponding to a Unicode binary property.
                 Binary(&'a str),
                 /// Return a class to all codepoints whose property_name corresponds to the given property_value.
@@ -60581,7 +72097,6 @@ pub mod regex
                         wb(property_value)
                     }
                     _ => {
-                        // What else should we support?
                         Err(Error::PropertyNotFound)
                     }
                 }
@@ -60868,7 +72383,7 @@ pub mod regex
 
                 &mut slice[..next_write]
             }
-        }
+        } pub use self::unicode::{ UnicodeWordError };
         /// Escapes all regular expression meta characters in `text`.
         pub fn escape(text: &str) -> String
         {
@@ -62568,13 +74083,17 @@ pub mod system
 
         cfg_if!
         {
-            if #[cfg( target_pointer_width = "32" )] {
+            if #[cfg( target_pointer_width = "32" )] 
+            {
                 const ULONG_SIZE: usize = 32;
-            } else if #[cfg( target_pointer_width = "64" )] {
-                const ULONG_SIZE: usize = 64;
-            } else {
-                // Unknown target_pointer_width
             }
+            
+            else if #[cfg( target_pointer_width = "64" )]
+            {
+                const ULONG_SIZE: usize = 64;
+            } 
+
+            else {}
         }
 
         #[repr( C )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
@@ -62743,34 +74262,36 @@ pub mod system
         impl TimeVal
         {
             /// Makes a new `TimeVal` with given number of microseconds.
-            #[inline] fn microseconds( microseconds: i64 ) -> TimeVal {
+            #[inline] fn microseconds( microseconds: i64 ) -> TimeVal
+            {
                 let ( secs, micros ) = div_mod_floor_64( microseconds, MICROS_PER_SEC );
-                assert!( 
+                assert!
+                (
                     ( TV_MIN_SECONDS..=TV_MAX_SECONDS ).contains( &secs ),
                     "TimeVal out of bounds"
-                 );
-                #[cfg_attr( 
-                    any( target_env = "musl", target_env = "ohos" ),
-                    allow( deprecated )
-                )]
-                // https://github.com/rust-lang/libc/issues/1848
-                TimeVal( TimeValue {
-                    tv_sec: secs as time_t,
-                    tv_usec: micros as suseconds_t,
-                } )
+                 ); 
+                
+                TimeVal
+                (
+                    TimeValue
+                    {
+                        tv_sec: secs as time_t,
+                        tv_usec: micros as suseconds_t,
+                    }
+                )
             }
 
-            #[inline] pub fn milliseconds( milliseconds: i64 ) -> TimeVal {
+            #[inline] pub fn milliseconds( milliseconds: i64 ) -> TimeVal 
+            {
                 let microseconds = milliseconds
-                    .checked_mul( 1_000 )
-                    .expect( "TimeVal::milliseconds out of bounds" );
+                .checked_mul( 1_000 )
+                .expect( "TimeVal::milliseconds out of bounds" );
 
                 TimeVal::microseconds( microseconds )
             }
         }
         /// Monitors file descriptors for readiness.
-        pub fn selects<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int>
-        where
+        pub fn selects<'a,'fd,N,R,W,E,T>( n:N, r:R, w:W, e:E, t:T ) -> Result<c_int> where
         'fd: 'a,
         N: Into<Option<c_int>>,
         R: Into<Option<&'a mut FdSet<'fd>>>,
@@ -62781,44 +74302,48 @@ pub mod system
             unsafe
             {
                 
-                let mut readfds = readfds.into();
-                let mut writefds = writefds.into();
-                let mut errorfds = errorfds.into();
-                let timeout = timeout.into();
+                let mut r = r.into();
+                let mut w = w.into();
+                let mut e = e.into();
+                let t = t.into();
 
-                let nfds = nfds.into().unwrap_or_else( || {
-                    readfds
-                        .iter_mut()
-                        .chain( writefds.iter_mut() )
-                        .chain( errorfds.iter_mut() )
-                        .map( |set| {
-                            set.highest()
-                                .map( |borrowed_fd| borrowed_fd.as_raw_fd() )
-                                .unwrap_or( -1 )
-                        } )
-                        .max()
+                let n = n.into().unwrap_or_else( ||
+                {
+                    r
+                    .iter_mut()
+                    .chain( w.iter_mut() )
+                    .chain( e.iter_mut() )
+                    .map( | s |
+                    {
+                        s.highest()
+                        .map( | b | b.as_raw_fd() )
                         .unwrap_or( -1 )
-                        + 1
-                } );
+                    } )
+                    .max()
+                    .unwrap_or( -1 )
+                    + 1
+                });
 
-                let readfds = readfds
-                    .map( |set| set as *mut _ as *mut FDSet )
-                    .unwrap_or( null_mut() );
-                let writefds = writefds
-                    .map( |set| set as *mut _ as *mut FDSet )
-                    .unwrap_or( null_mut() );
-                let errorfds = errorfds
-                    .map( |set| set as *mut _ as *mut FDSet )
-                    .unwrap_or( null_mut() );
-                let timeout = timeout
-                    .map( |tv| tv as *mut _ as *mut TimeValue )
-                    .unwrap_or( null_mut() );
+                let r = r
+                .map( | s | s as *mut _ as *mut FDSet )
+                .unwrap_or( null_mut() );
 
-                let res = select( nfds, readfds, writefds, errorfds, timeout  );
+                let w = w
+                .map( | s | s as *mut _ as *mut FDSet )
+                .unwrap_or( null_mut() );
 
-                Errno::result( res )
+                let e = e
+                .map( | s | s as *mut _ as *mut FDSet )
+                .unwrap_or( null_mut() );
+
+                let t = t
+                .map( | v | v as *mut _ as *mut TimeValue )
+                .unwrap_or( null_mut() );
+
+                let c = select( n, r, w, e, t );
+
+                Errno::result( c )
             }
-            
         }
         
         libc_bitflags!
@@ -62934,15 +74459,11 @@ pub mod system
                 OXTABS;
                 #[cfg( bsd )]
                 ONOEOT as tcflag_t;
-
-                // Bitmasks for use with OutputFlags to select specific settings
-                // These should be moved to be a mask once https://github.com/rust-lang-nursery/bitflags/issues/110
-                // is resolved.
-
+                
                 #[cfg( any( linux_android,
                         target_os = "haiku",
                         apple_targets ) )]
-                NLDLY as tcflag_t; // FIXME: Datatype needs to be corrected in libc for mac
+                NLDLY as tcflag_t;
                 #[cfg( any( linux_android,
                         target_os = "haiku",
                         apple_targets ) )]
@@ -63168,14 +74689,6 @@ pub mod system
                     control_flags,
                     local_flags,
                     control_chars,
-                    /*
-                    input_flags: InputFlags::from_bits_truncate( termios.c_iflag ),
-                    output_flags: OutputFlags::from_bits_truncate( termios.c_oflag ),
-                    control_flags: ControlFlags::from_bits_truncate( termios.c_cflag ),
-                    local_flags: LocalFlags::from_bits_truncate( termios.c_lflag ),
-                    control_chars: termios.c_cc,
-                    #[cfg( any( linux_android, target_os = "haiku" ) )]
-                    line_discipline: termios.c_line, */
                 }
             }
         }
@@ -63210,11 +74723,9 @@ pub mod system
         libc_enum! 
         {
             /// Specify when a port configuration change should occur.
-            ///
-            /// Used as an argument to `tcsetattr()`
-            #[repr( i32 )]
-            #[non_exhaustive]
-            pub enum SetArg {
+            #[repr( i32 )] #[non_exhaustive]
+            pub enum SetArg 
+            {
                 /// The change will occur immediately
                 TCSANOW,
                 /// The change occurs after all output has been written
@@ -63266,8 +74777,6 @@ pub mod system
         
         impl TimeSpec
         {
-             
-
             pub fn nanoseconds( nanoseconds: i64 ) -> TimeSpec
             {
                 let ( secs, nanos ) = div_mod_floor_64( nanoseconds, NANOS_PER_SEC );
@@ -63895,7 +75404,7 @@ pub mod system
                 ( TV_MIN_SECONDS..=TV_MAX_SECONDS ).contains( &secs ),
                 "TimeVal out of bounds"
              );
-            // https://github.com/rust-lang/libc/issues/1848
+            
             TimeVal( TimeValue {
                 tv_sec: secs as time_t,
                 tv_usec: micros as suseconds_t,
@@ -64504,77 +76013,77 @@ pub mod system
                 /*
                 Handle Booleans Table */
                 BOOLEANS.push_str( r#"booleans:  {
-                "#  );
+                "#[derive( Clone, Debug, Eq, PartialEq )] );
 
                 for ( index, name ) in BOOLEAN.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#[derive( Clone, Debug, Eq, PartialEq )] index, name  );
                     BOOLEANS.push_str
                     ( 
                         format!( r#"   b{}: "{}"
-                        "#, index, name ).as_str()
+                        "#[derive( Clone, Debug, Eq, PartialEq )] index, name ).as_str()
                      );
                 }
 
-                BOOLEANS.push_str( r#"}"#  );
+                BOOLEANS.push_str( r#"}"#[derive( Clone, Debug, Eq, PartialEq )] );
                 /*
                 Handle Numbers Table */
                 NUMBERS.push_str( r#"numbers:  {
-                "#  );
+                "#[derive( Clone, Debug, Eq, PartialEq )] );
 
                 for ( index, name ) in NUMBER.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#[derive( Clone, Debug, Eq, PartialEq )] index, name  );
                     NUMBERS.push_str
                     ( 
                         format!( r#"   n{}: "{}"
-                    "#, index, name ).as_str()
+                    "#[derive( Clone, Debug, Eq, PartialEq )] index, name ).as_str()
                      );
                 }
 
-                NUMBERS.push_str( r#"}"#  );
+                NUMBERS.push_str( r#"}"#[derive( Clone, Debug, Eq, PartialEq )] );
                 /*
                 Handle Strings Table */
                 STRINGS.push_str( r#"strings:  {
-                "#  );
+                "#[derive( Clone, Debug, Eq, PartialEq )] );
 
                 for ( index, name ) in STRING.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#[derive( Clone, Debug, Eq, PartialEq )] index, name  );
                     STRINGS.push_str
                     ( 
                         format!( r#"   s{}: "{}"
-                    "#, index, name ).as_str()
+                    "#[derive( Clone, Debug, Eq, PartialEq )] index, name ).as_str()
                      );
                 }
 
-                STRINGS.push_str( r#"}"#  );
+                STRINGS.push_str( r#"}"#[derive( Clone, Debug, Eq, PartialEq )] );
                 /*
                 Handle Information & Alias Table */
                 INFORMATION.push_str( r#"information:  {
-                "#  );
+                "#[derive( Clone, Debug, Eq, PartialEq )] );
                 ALIASES.push_str( r#"aliases:  {
-                "#  );
+                "#[derive( Clone, Debug, Eq, PartialEq )] );
 
                 for ( index, pair ) in TERMINFO.iter().enumerate()
                 {
-                    // println!( r#"b{}:{}"#, index, name  );
+                    // println!( r#"b{}:{}"#[derive( Clone, Debug, Eq, PartialEq )] index, name  );
                     INFORMATION.push_str
                     ( 
                         format!( r#"   i{}: ( "{}" "{}" )
-                        "#, index, pair.0, pair.1 ).as_str()
+                        "#[derive( Clone, Debug, Eq, PartialEq )] index, pair.0, pair.1 ).as_str()
                      );
 
                     ALIASES.push_str
                     ( 
                         format!( r#"   {}: "{}"
-                        "#, pair.0, pair.1 ).as_str()
+                        "#[derive( Clone, Debug, Eq, PartialEq )] pair.0, pair.1 ).as_str()
                      );
                 }
 
-                INFORMATION.push_str( r#"}"#  );
+                INFORMATION.push_str( r#"}"#[derive( Clone, Debug, Eq, PartialEq )] );
 
-                ALIASES.push_str( r#"}"#  );
+                ALIASES.push_str( r#"}"#[derive( Clone, Debug, Eq, PartialEq )] );
 
                 DATABASE = format!( r#"
                 {}
@@ -64582,7 +76091,7 @@ pub mod system
                 {}
                 {}
                 {}
-                "#, BOOLEANS, NUMBERS, STRINGS, INFORMATION, ALIASES  );
+                "#[derive( Clone, Debug, Eq, PartialEq )] BOOLEANS, NUMBERS, STRINGS, INFORMATION, ALIASES  );
                 Ok( () )
             }
         }
@@ -75471,7 +86980,7 @@ pub mod uuid
                         ( 
                             f,
                             r#"invalid character:
-                            expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `{}` at {}"#, 
+                            expected an optional prefix of `urn:uuid:` followed by [0-9a-fA-F-], found `{}` at {}"#[derive( Clone, Debug, Eq, PartialEq )] 
                             character,
                             index
                         )
@@ -75702,8 +87211,7 @@ pub mod uuid
             };
 
             *buf = unsafe_transmute!( braced );
-
-            // SAFETY: The encoded buffer is ASCII encoded
+            
             unsafe { str::from_utf8_unchecked_mut( buf ) }
         }
 
@@ -76030,7 +87538,7 @@ pub mod uuid
         };
         /*
         */
-        /// A UUID that is guaranteed not to be the [nil UUID]( https://www.ietf.org/rfc/rfc9562.html#name-nil-uuid ).
+        /// A UUID that is guaranteed not to be the [nil UUID]( https://www.ietf.org/rfc/rfc9562.html#[derive( Clone, Debug, Eq, PartialEq )]ame-nil-uuid ).
         #[repr( transparent )] #[derive( Copy, Clone, PartialEq, Eq, Hash )]
         pub struct NonNilUuid( NonZeroU128 );
 
@@ -77101,7 +88609,7 @@ pub mod values
             }
         }
 
-        get_fn!( r#"Returns the `bool` contained in this `Value`."#, get_bool, bool, Bool  );        
+        get_fn!( r#"Returns the `bool` contained in this `Value`."#[derive( Clone, Debug, Eq, PartialEq )] get_bool, bool, Bool  );        
         get_fn! ( "Returns the `BigInt` contained in this `Value`.", get_int, BigInt, Int  );
         /// Returns the `BigRational` contained in this `Value`.
         pub fn get_frac( &self ) -> OverResult<BigRational>
@@ -77115,7 +88623,7 @@ pub mod values
         }
 
         get_fn!( "Returns the `char` contained in this `Value`.", get_char, char, Char  );        
-        get_fn!( r#"Returns the `String` contained in this `Value`."#, get_str, String, Str  );        
+        get_fn!( r#"Returns the `String` contained in this `Value`."#[derive( Clone, Debug, Eq, PartialEq )] get_str, String, Str  );        
         get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj  );
         /// Returns the `Arr` contained in this `Value`.
         pub fn get_arr( &self ) -> OverResult<arrays::Arr>
@@ -77256,7 +88764,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
         let document = ::parses::load_from_str( ::system::common::DATABASE.as_str() )?;
         println!
         ( 
-            r#"{}"#,
+            r#"{}"#[derive( Clone, Debug, Eq, PartialEq )]
             //::system::common::INFORMATION
             document.read( "aliases" )?,
          );
@@ -77342,7 +88850,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
 
             bill_to: {
                 street:
-                # A multi-line string. Can also be written as "123 Tornado Alley\nSuite16"
+                #[derive( Clone, Debug, Eq, PartialEq )]A multi-line string. Can also be written as "123 Tornado Alley\nSuite16"
             "123 Tornado Alley
             Suite 16"
                 city:  "East Centerville"
@@ -77353,7 +88861,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
 
             specialDelivery:
             "Follow the Yellow Brick Road to the Emerald City. Pay no attention to the man behind the curtain."
-    "# )?;
+    "#[derive( Clone, Debug, Eq, PartialEq )])?;
     
     assert_eq!( document.read( "receipt" )?, "Oz-Ware Purchase Invoice" );
     assert_eq!( document.read( "date"    )?, "2012-08-06"               );
@@ -77419,4 +88927,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 77422 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 88930 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
