@@ -48,7 +48,6 @@ pub mod parse;
 
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
-*/
 #[macro_use] extern crate libc;
 #[macro_use] extern crate rand;
 #[macro_use] extern crate regex as re;
@@ -56,6 +55,7 @@ pub mod parse;
 #[macro_use] extern crate time as temporal;
 #[macro_use] extern crate unicode_normalization;
 #[macro_use] extern crate unicode_width;
+*/
 
 #[macro_use] pub mod macros
 {   
@@ -2052,7 +2052,7 @@ pub mod parse;
             where
                 $res: Add<T, Output = $res>,
             {
-                fn sum<I>( iter: I ) -> Selfwhere I: Iterator<Item = T>,
+                fn sum<I>( iter: I ) -> Self where I: Iterator<Item = T>,
                 {
                     iter.fold( Self::ZERO, <$res>::add )
                 }
@@ -2067,7 +2067,7 @@ pub mod parse;
             where
                 $res: Mul<T, Output = $res>,
             {
-                fn product<I>( iter: I ) -> Selfwhere I: Iterator<Item = T>,
+                fn product<I>( iter: I ) -> Self where I: Iterator<Item = T>,
                 {
                     iter.fold( One::one(), <$res>::mul )
                 }
@@ -5185,7 +5185,7 @@ pub mod bits
             Parse a value from a hex string. */
             pub trait ParseHex
             {
-                fn parse_hex(input: &str) -> Result<Self, super::parser::ParseError> where Self: Sized;
+                fn parse_hex(input: &str) -> Result<Self, super::parser::ParseError>  where Self: Sized;
             }
 
             #[doc(hidden)]
@@ -5384,7 +5384,7 @@ pub mod char
     // #[inline] pub fn char_width( ch:char ) -> Option<usize>
     #[inline] pub fn width( ch:char ) -> Option<usize>
     {
-        use unicode_width::UnicodeWidthChar;
+        use ::unicode::width::UnicodeWidthChar;
         ch.width()
     }
 
@@ -5397,9 +5397,7 @@ pub mod char
     pub const EOF:char = '\x04';
 
     pub const ESCAPE:char = '\x1b';
-
-    ///
-
+    
     #[cfg( unix )]
     pub const DELETE:char = RUBOUT;
 
@@ -7191,7 +7189,7 @@ pub mod is
     // #[inline] pub fn is_combining_mark( ch:char ) -> bool
     #[inline] pub fn combining_mark( ch:char ) -> bool
     {
-        use unicode_normalization::char::is_combining_mark;
+        use unicode::normalization::char::is_combining_mark;
         is_combining_mark( ch )
     }
 
@@ -8690,11 +8688,11 @@ pub mod num
                     pub trait FloatConst {
                         $( #[$doc] fn $constant() -> Self; )+
                         #[doc = "Return the full circle constant `τ`."]
-                        #[inline] fn TAU() -> Self where Self: Sized + Add<Self, Output = Self> { Self::PI() + Self::PI() }
+                        #[inline] fn TAU() -> Self  where Self: Sized + Add<Self, Output = Self> { Self::PI() + Self::PI() }
                         #[doc = "Return `log10( 2.0 )`."]
-                        #[inline] fn LOG10_2() -> Self where Self: Sized + Div<Self, Output = Self> { Self::LN_2() / Self::LN_10() }
+                        #[inline] fn LOG10_2() -> Self  where Self: Sized + Div<Self, Output = Self> { Self::LN_2() / Self::LN_10() }
                         #[doc = "Return `log2( 10.0 )`."]
-                        #[inline] fn LOG2_10() -> Self where Self: Sized + Div<Self, Output = Self> { Self::LN_10() / Self::LN_2() }
+                        #[inline] fn LOG2_10() -> Self  where Self: Sized + Div<Self, Output = Self> { Self::LN_10() / Self::LN_2() }
                     }
                     float_const_impl! { @float f32, $( $constant, )+ }
                     float_const_impl! { @float f64, $( $constant, )+ }
@@ -8873,7 +8871,7 @@ pub mod num
                     *self = One::one();
                 }
 
-                #[inline] fn is_one( &self ) -> boolwhere Self: PartialEq,
+                #[inline] fn is_one( &self ) -> bool where Self: PartialEq,
                 {
                     *self == Self::one()
                 }
@@ -10498,7 +10496,7 @@ pub mod num
             }
             empty_trait_impl!( Unsigned for usize u8 u16 u32 u64 u128 );
 
-            impl<T: Unsigned> Unsigned for Wrapping<T> where Wrapping<T>: Num {}
+            impl<T: Unsigned> Unsigned for Wrapping<T>  where Wrapping<T>: Num {}
         } pub use self::sign::{abs, abs_sub, signum, Signed, Unsigned};
 
         pub trait Num: PartialEq + Zero + One + NumOps
@@ -10526,10 +10524,10 @@ pub mod num
         }
 
         pub trait NumRef: Num + for<'r> NumOps<&'r Self> {}
-        impl<T> NumRef for T where T: Num + for<'r> NumOps<&'r T> {}
+        impl<T> NumRef for T  where T: Num + for<'r> NumOps<&'r T> {}
 
         pub trait RefNum<Base>: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
-        impl<T, Base> RefNum<Base> for T where T: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
+        impl<T, Base> RefNum<Base> for T  where T: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
 
         pub trait NumAssignOps<Rhs = Self>:
         AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
@@ -10542,10 +10540,10 @@ pub mod num
         }
 
         pub trait NumAssign: Num + NumAssignOps {}
-        impl<T> NumAssign for T where T: Num + NumAssignOps {}
+        impl<T> NumAssign for T  where T: Num + NumAssignOps {}
 
         pub trait NumAssignRef: NumAssign + for<'r> NumAssignOps<&'r Self> {}
-        impl<T> NumAssignRef for T where T: NumAssign + for<'r> NumAssignOps<&'r T> {}
+        impl<T> NumAssignRef for T  where T: NumAssign + for<'r> NumAssignOps<&'r T> {}
 
         macro_rules! int_trait_impl
         {
@@ -14751,7 +14749,7 @@ pub mod num
             {
                 type X = BigUint;
 
-                #[inline] fn new<B1, B2>( low_b: B1, high_b: B2 ) -> Selfwhere B1: SampleBorrow<Self::X> + Sized,
+                #[inline] fn new<B1, B2>( low_b: B1, high_b: B2 ) -> Self where B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
                     let low = low_b.borrow();
@@ -14763,7 +14761,7 @@ pub mod num
                     }
                }
                 
-                #[inline] fn new_inclusive<B1, B2>( low_b: B1, high_b: B2 ) -> Selfwhere B1: SampleBorrow<Self::X> + Sized,
+                #[inline] fn new_inclusive<B1, B2>( low_b: B1, high_b: B2 ) -> Self where B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
                     let low = low_b.borrow();
@@ -14776,7 +14774,7 @@ pub mod num
                     &self.base + rng.gen_biguint_below( &self.len )
                }
                 
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>( low: B1, high: B2, rng:&mut R ) -> Self::Xwhere B1: SampleBorrow<Self::X> + Sized,
+                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>( low: B1, high: B2, rng:&mut R ) -> Self::X where B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
                     rng.gen_biguint_range( low.borrow(), high.borrow() )
@@ -15808,17 +15806,13 @@ pub mod num
                         if let Some( nz ) = b.iter().position( |&d| d != 0 ) {
                             b = &b[nz..];
                             acc = &mut acc[nz..];
-                        } else {
-                            return;
-                        }
+                        } else { return; }
                     }
                     if let Some( &0 ) = c.first() {
                         if let Some( nz ) = c.iter().position( |&d| d != 0 ) {
                             c = &c[nz..];
                             acc = &mut acc[nz..];
-                        } else {
-                            return;
-                        }
+                        } else { return; }
                     }
                     let acc = acc;
                     let ( x, y ) = if b.len() < c.len() { ( b, c ) } else { ( c, b ) };
@@ -19638,7 +19632,7 @@ pub mod num
 
             impl<T: Integer + Clone> Sum for Ratio<T>
             {
-                fn sum<I>( iter: I ) -> Selfwhere I: Iterator<Item = Ratio<T>>,
+                fn sum<I>( iter: I ) -> Self where I: Iterator<Item = Ratio<T>>,
                 {
                     iter.fold( Self::zero(), |sum, num| sum + num )
                 }
@@ -19646,7 +19640,7 @@ pub mod num
             
             impl<'a, T: Integer + Clone> Sum<&'a Ratio<T>> for Ratio<T>
             {
-                fn sum<I>( iter: I ) -> Selfwhere I: Iterator<Item = &'a Ratio<T>>,
+                fn sum<I>( iter: I ) -> Self where I: Iterator<Item = &'a Ratio<T>>,
                 {
                     iter.fold( Self::zero(), |sum, num| sum + num )
                 }
@@ -19654,7 +19648,7 @@ pub mod num
             
             impl<T: Integer + Clone> Product for Ratio<T>
             {
-                fn product<I>( iter: I ) -> Selfwhere I: Iterator<Item = Ratio<T>>,
+                fn product<I>( iter: I ) -> Self where I: Iterator<Item = Ratio<T>>,
                 {
                     iter.fold( Self::one(), |prod, num| prod * num )
                 }
@@ -19662,7 +19656,7 @@ pub mod num
             
             impl<'a, T: Integer + Clone> Product<&'a Ratio<T>> for Ratio<T>
             {
-                fn product<I>( iter: I ) -> Selfwhere I: Iterator<Item = &'a Ratio<T>>,
+                fn product<I>( iter: I ) -> Self where I: Iterator<Item = &'a Ratio<T>>,
                 {
                     iter.fold( Self::one(), |prod, num| prod * num )
                 }
@@ -20613,7 +20607,7 @@ pub mod map
     use crate::terminal::{Terminal, TerminalReadGuard};
     use crate::util::char_width;
     */
-    pub fn map_lock_result<F, T, U>( res: LockResult<T>, f: F ) -> LockResult<U> where 
+    pub fn map_lock_result<F, T, U>( res: LockResult<T>, f: F ) -> LockResult<U>  where 
     F:FnOnce( T ) -> U
     {
         match res 
@@ -21560,7 +21554,7 @@ pub mod now
 pub mod objects
 {
     /*!
-    Object | A hashmap of keys to values, where values can be any type, including other objects. */
+    Object | A hashmap of keys to values,  where values can be any type, including other objects. */
     use ::
     {
         arrays::{ Arr },
@@ -25129,6 +25123,95 @@ pub mod ptr
     pub use std::ptr::{ * };
 }
 
+pub mod rand
+{
+    /*!
+    */
+    use ::
+    {
+        *,
+    };
+    /*
+    */
+    pub mod rngs
+    {
+        pub mod small
+        {
+            #[cfg(any(target_pointer_width = "32", target_pointer_width = "16"))]
+            pub type Rng = super::xoshiro128plusplus::Xoshiro128PlusPlus;
+            #[cfg(target_pointer_width = "64")]
+            pub type Rng = super::xoshiro256plusplus::Xoshiro256PlusPlus;        
+        } pub use self::small::{ * };
+    } pub use self::rngs::{ * };
+    
+    pub mod distributions
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+        pub mod uniform
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */
+            pub trait SampleBorrow<Borrowed>
+            {
+                fn borrow(&self) -> &Borrowed;
+            }
+
+            pub trait SampleUniform: Sized
+            {
+                type Sampler: UniformSampler<X = Self>;
+            }
+            
+            pub trait UniformSampler: Sized 
+            {
+                type X;
+                fn new<B1, B2>(low: B1, high: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized;
+                
+                fn new_inclusive<B1, B2>(low: B1, high: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized;
+                
+                fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X;
+
+                fn sample_single<R: Rng + ?Sized, B1, B2>( low: B1, high: B2, rng: &mut R ) -> Result<Self::X, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let uniform: Self = UniformSampler::new(low, high)?;
+                    Ok(uniform.sample(rng))
+                }
+                
+                fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>
+                (
+                    low: B1,
+                    high: B2,
+                    rng: &mut R,
+                ) -> Result<Self::X, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let uniform: Self = UniformSampler::new_inclusive(low, high)?;
+                    Ok(uniform.sample(rng))
+                }
+            }
+        }
+    }
+}
+
 pub mod rc
 {
     pub use std::rc::{ * };
@@ -25645,8 +25728,10 @@ pub mod regex
 
                 impl<T: AsRef<[u32]>> DFA<T>
                 {
-                    pub fn as_ref( &self ) -> DFA<&'_ [u32]> {
-                        DFA {
+                    pub fn as_ref( &self ) -> DFA<&'_ [u32]> 
+                    {
+                        DFA 
+                        {
                             tt: self.tt.as_ref(),
                             st: self.st.as_ref(),
                             ms: self.ms.as_ref(),
@@ -25658,8 +25743,10 @@ pub mod regex
                         }
                     }
 
-                    pub fn to_owned( &self ) -> OwnedDFA {
-                        DFA {
+                    pub fn to_owned( &self ) -> OwnedDFA 
+                    {
+                        DFA 
+                        {
                             tt: self.tt.to_owned(),
                             st: self.st.to_owned(),
                             ms: self.ms.to_owned(),
@@ -25719,15 +25806,12 @@ pub mod regex
                         &self,
                         dst: &mut [u8],
                     ) -> Result<usize, SerializeError> { self.as_ref().write_to::<wire::NE>(dst) }
-                    ///
-                    ///
-
-                    ///
+                    
                     pub fn write_to_len( &self ) -> usize {
                         wire::write_label_len(LABEL)
                         + wire::write_endianness_check_len()
                         + wire::write_version_len()
-                        + size_of::<u32>() // unused, intended for future flexibility
+                        + size_of::<u32>()
                         + self.flags.write_to_len()
                         + self.tt.write_to_len()
                         + self.st.write_to_len()
@@ -25739,25 +25823,10 @@ pub mod regex
                 }
 
                 impl<'a> DFA<&'a [u32]> {
-                    ///
-
-                    ///
-                    ///
-                    ///
-
-                    ///
-                    ///
-                    ///
-                    ///
                     pub fn from_bytes(
                         slice: &'a [u8],
                     ) -> Result<(DFA<&'a [u32]>, usize), DeserializeError> {
-                        // then we return an error.
                         let (dfa, nread) = unsafe { DFA::from_bytes_unchecked(slice)? };
-                        //
-                        // * `StartTable::validate` needs a valid transition table.
-                        //
-                        // So... validate the match states first.
                         dfa.accels.validate()?;
                         dfa.ms.validate(&dfa)?;
                         dfa.tt.validate(&dfa)?;
@@ -25837,7 +25906,6 @@ pub mod regex
                         nw += wire::write_endianness_check::<E>(&mut dst[nw..])?;
                         nw += wire::write_version::<E>(VERSION, &mut dst[nw..])?;
                         nw += {
-                            // Currently unused, intended for future flexibility
                             E::write_u32(0, &mut dst[nw..]);
                             size_of::<u32>()
                         };
@@ -25858,7 +25926,7 @@ pub mod regex
                         self.pre = prefilter
                     }
                 }
-                // are exclusively used during construction of the DFA.
+                
                 impl OwnedDFA
                 {
                     pub fn set_start_state(
@@ -25920,21 +25988,12 @@ pub mod regex
                     }
                     
                     pub fn accelerate(&mut self) {
-                        // dead and quit states can never be accelerated.
-                        if self.state_len() <= 2 {
-                            return;
-                        }
-
-                        // Go through every state and record their accelerator, if possible.
+                        if self.state_len() <= 2 { return; }
+                        
                         let mut accels = BTreeMap::new();
                         let (mut cmatch, mut cstart, mut cnormal) = (0, 0, 0);
                         for state in self.states() {
                             if let Some(accel) = state.accelerate( self.byte_classes()) {
-                                debug!(
-                                    "accelerating full DFA state {}: {:?}",
-                                    state.id().as_usize(),
-                                    accel,
-                                );
                                 accels.insert(state.id(), accel);
                                 if self.is_match_state(state.id()) {
                                     cmatch += 1;
@@ -25961,7 +26020,6 @@ pub mod regex
                                 special.max_accel = cmp::max(special.max_accel, accel_id);
                             };
                         if cmatch > 0 && self.special.matches() {
-                            // of match states may change.
                             let mut next_id = self.special.max_match;
                             let mut cur_id = next_id;
                             while cur_id >= self.special.min_match {
@@ -25982,7 +26040,6 @@ pub mod regex
                         }
                         
                         if cnormal > 0 {
-                            // our next available starting and normal states for swapping.
                             let mut next_start_id = self.special.min_start;
                             let mut cur_id = self.to_state_id( self.state_len() - 1);
                             let mut next_norm_id =
@@ -26013,7 +26070,6 @@ pub mod regex
                             }
                         }
                         if cstart > 0 {
-                            // the ordering of start states may change.
                             let mut next_id = self.special.min_start;
                             let mut cur_id = next_id;
                             while cur_id <= self.special.max_start {
@@ -26026,8 +26082,7 @@ pub mod regex
                                 cur_id = self.tt.next_state_id(cur_id);
                             }
                         }
-
-                        // Remap all transitions in our DFA and assert some things.
+                        
                         remapper.remap(self);
                         self.set_pattern_map(&new_matches).unwrap();
                         self.special.set_max();
@@ -26039,7 +26094,6 @@ pub mod regex
                             );
                         assert_eq!(
                             self.special.accel_len( self.stride()),
-                            // expected there to be.
                             original_accels_len,
                             "mismatch with expected number of accelerated states",
                         );
@@ -26055,16 +26109,13 @@ pub mod regex
                         &mut self,
                         mut matches: BTreeMap<StateID, Vec<PatternID>>,
                     ) -> Result<(), BuildError> {
-                        // The determinizer always adds a quit state and it is always second.
                         self.special.quit_id = self.to_state_id(1);
                         if self.state_len() <= 2 {
                             self.special.set_max();
                             return Ok( () );
                         }
-                        // states from being match states.
                         let mut is_start: BTreeSet<StateID> = BTreeSet::new();
                         for (start_id, _, _) in self.starts() {
-                            // state with ID=0. So we can just leave it be.
                             if start_id == DEAD {
                                 continue;
                             }
@@ -26075,14 +26126,14 @@ pub mod regex
                             );
                             is_start.insert(start_id);
                         }
-                        // book-keeping for us.
+                        
                         let mut remapper = Remapper::new(self);
                         
                         if matches.is_empty() {
                             self.special.min_match = DEAD;
                             self.special.max_match = DEAD;
                         } else {
-                            // come right after quit.
+                            
                             let mut next_id = self.to_state_id(2);
                             let mut new_matches = BTreeMap::new();
                             self.special.min_match = next_id;
@@ -26101,8 +26152,7 @@ pub mod regex
                                 self.tt.prev_state_id(next_id),
                             );
                         }
-
-                        // Shuffle starting states.
+                        
                         {
                             let mut next_id = self.to_state_id(2);
                             if self.special.matches() {
@@ -26118,8 +26168,7 @@ pub mod regex
                                 self.tt.prev_state_id(next_id),
                             );
                         }
-
-                        // Finally remap all transitions in our DFA.
+                        
                         remapper.remap(self);
                         self.set_pattern_map(&matches)?;
                         self.special.set_max();
@@ -26165,8 +26214,7 @@ pub mod regex
                         }
                     }
                 }
-
-                // A variety of generic internal methods for accessing DFA internals.
+                
                 impl<T: AsRef<[u32]>> DFA<T>
                 {
                     pub fn special( &self ) -> &Special { &self.special }
@@ -26282,8 +26330,7 @@ pub mod regex
                         Ok( () )
                     }
                 }
-
-                // SAFETY: We assert that our implementation of each method is correct.
+                
                 unsafe impl<T: AsRef<[u32]>> Automaton for DFA<T> {
                     #[inline( always )] fn is_special_state(&self, id: StateID) -> bool {
                         self.special.is_special_state(id)
@@ -26340,7 +26387,6 @@ pub mod regex
                     }
 
                     #[inline( always )] fn match_pattern(&self, id: StateID, match_index: usize) -> PatternID {
-                        // matter when matches are frequent.
                         if self.ms.pattern_len == 1 {
                             return PatternID::ZERO;
                         }
@@ -26424,7 +26470,7 @@ pub mod regex
                                 "dense DFA has invalid stride2 (too small)",
                             ));
                         }
-                        // This is OK since 1 <= stride2 <= 9.
+                        
                         let stride =
                             1usize.checked_shl(u32::try_from(stride2).unwrap()).unwrap();
                         if classes.alphabet_len() > stride {
@@ -26444,8 +26490,7 @@ pub mod regex
                         wire::check_alignment::<StateID>(slice)?;
                         let table_bytes = &slice[..table_bytes_len];
                         slice = &slice[table_bytes_len..];
-                        //
-                        // N.B. This is the only not-safe code in this function.
+                        
                         let table = ::slice::from_raw_parts(
                             table_bytes.as_ptr().cast::<u32>(),
                             trans_len,
@@ -26464,8 +26509,8 @@ pub mod regex
                             classes,
                             stride2: classes.stride2(),
                         };
-                        tt.add_empty_state().unwrap(); // dead state
-                        tt.add_empty_state().unwrap(); // quit state
+                        tt.add_empty_state().unwrap(); 
+                        tt.add_empty_state().unwrap(); 
                         tt
                     }
                     fn set( &mut self, from: StateID, unit: alphabet::Unit, to: StateID) {
@@ -26475,15 +26520,6 @@ pub mod regex
                             to.as_u32();
                     }
                     fn add_empty_state(&mut self) -> Result<StateID, BuildError> {
-                        // instruction for state lookup at search time.
-                        //
-                        //
-                        //
-                        // it can instead look like this:
-                        //
-                        //
-                        // between state IDs and state indices.)
-                        //
                         let next = self.table.len();
                         let id =
                             StateID::new(next).map_err(|_| BuildError::too_many_states())?;
@@ -27672,9 +27708,6 @@ pub mod regex
                     }
 
                     pub fn build_from_nfa(&self, nfa: NFA) -> Result<DFA, BuildError> {
-                        //
-                        //
-                        // "because borrow checker."
                         InternalBuilder::new( self.config.clone(), &nfa).build()
                     }
 
@@ -27708,8 +27741,6 @@ pub mod regex
                     matched: bool,
                     config: Config,
                     nfa: &'a NFA,
-                    ///
-
                     classes: ByteClasses,
                 }
 
@@ -27718,7 +27749,6 @@ pub mod regex
                     fn new(config: Config, nfa: &'a NFA) -> InternalBuilder<'a>
                     {
                         let classes = if !config.get_byte_classes() {
-                            // much easier to grok as a human.
                             ByteClasses::singletons()
                         } else {
                             nfa.byte_classes().clone()
@@ -27730,13 +27760,11 @@ pub mod regex
                             nfa: nfa.clone(),
                             table: vec![],
                             starts: vec![],
-                            // min_match_id will keep this sentinel value.
                             min_match_id: StateID::MAX,
                             classes: classes.clone(),
                             alphabet_len,
                             stride2,
                             pateps_offset: alphabet_len,
-                            // OK because PatternID::MAX*2 is guaranteed not to overflow.
                             explicit_slot_start: nfa.pattern_len().checked_mul(2).unwrap(),
                         };
                         InternalBuilder {
@@ -27754,7 +27782,6 @@ pub mod regex
                     fn build(mut self) -> Result<DFA, BuildError> {
                         self.nfa.look_set_any().available().map_err(BuildError::word)?;
                         for look in self.nfa.look_set_any().iter() {
-                            // new assertions.
                             if look.as_repr() > Look::WordUnicodeNegate.as_repr() {
                                 return Err(BuildError::unsupported_look(look));
                             }
@@ -27816,7 +27843,6 @@ pub mod regex
                                     thompson::State::Capture { next, slot, .. } => {
                                         let slot = slot.as_usize();
                                         let epsilons = if slot < explicit_slot_start {
-                                            // pattern.
                                             epsilons
                                         } else {
                                             let offset = slot - explicit_slot_start;
@@ -27826,7 +27852,6 @@ pub mod regex
                                     }
                                     thompson::State::Fail => { continue; }
                                     thompson::State::Match { pattern_id } => {
-                                        // Thus, it's not one-pass.
                                         if self.matched {
                                             return Err(BuildError::not_one_pass(
                                                 "multiple epsilon transitions to match state",
@@ -28873,21 +28898,13 @@ pub mod regex
                             forward: A,
                             reverse: A,
                         }
-
-                        #[cfg(not(feature = "alloc"))]
-                        $(#[$doc])*
-                        pub struct Regex<A> {
-                            forward: A,
-                            reverse: A,
-                        }
                     };
                 }
 
                 define_regex_type!(
                     #[derive( Clone, Debug )]
                 );
-
-                #[cfg(all(feature = "syntax", feature = "dfa-build"))]
+                
                 impl Regex
                 {
                     pub fn new(pattern: &str) -> Result<Regex, BuildError> { Builder::new().build(pattern) }
@@ -28896,8 +28913,7 @@ pub mod regex
                         patterns: &[P],
                     ) -> Result<Regex, BuildError> { Builder::new().build_many(patterns) }
                 }
-
-                #[cfg(all(feature = "syntax", feature = "dfa-build"))]
+                
                 impl Regex<sparse::DFA<Vec<u8>>>
                 {
                     pub fn new_sparse(
@@ -29002,8 +29018,7 @@ pub mod regex
                 impl<'r, 'h, A: Automaton> Iterator for FindMatches<'r, 'h, A> {
                     type Item = Match;
 
-                    #[inline]
-                    fn next(&mut self) -> Option<Match>
+                    #[inline] fn next(&mut self) -> Option<Match>
                     {
                         let FindMatches { re, ref mut it } = *self;
                         it.advance(|input| re.try_search(input))
@@ -29022,15 +29037,13 @@ pub mod regex
                                         dfa: dense::Builder::new(),
                         }
                     }
-                    #[cfg(all(feature = "syntax", feature = "dfa-build"))]
                     pub fn build(&self, pattern: &str) -> Result<Regex, BuildError> { self.build_many(&[pattern]) }
-                    #[cfg(all(feature = "syntax", feature = "dfa-build"))]
+                    
                     pub fn build_sparse(
                         &self,
                         pattern: &str,
                     ) -> Result<Regex<sparse::DFA<Vec<u8>>>, BuildError> { self.build_many_sparse(&[pattern]) }
 
-                    #[cfg(all(feature = "syntax", feature = "dfa-build"))]
                     pub fn build_many<P: AsRef<str>>(
                         &self,
                         patterns: &[P],
@@ -29051,8 +29064,7 @@ pub mod regex
                             .build_many(patterns)?;
                         Ok( self.build_from_dfas(forward, reverse))
                     }
-
-                    #[cfg(all(feature = "syntax", feature = "dfa-build"))]
+                    
                     pub fn build_many_sparse<P: AsRef<str>>(
                         &self,
                         patterns: &[P],
@@ -29069,7 +29081,7 @@ pub mod regex
                         forward: A,
                         reverse: A,
                     ) -> Regex<A> { Regex { forward, reverse } }
-                    #[cfg(all(feature = "syntax", feature = "dfa-build"))]
+                    
                     pub fn syntax(
                         &mut self,
                         config: crate::util::syntax::Config,
@@ -29077,7 +29089,7 @@ pub mod regex
                         self.dfa.syntax(config);
                         self
                     }
-                    #[cfg(all(feature = "syntax", feature = "dfa-build"))]
+                    
                     pub fn thompson(
                         &mut self,
                         config: crate::nfa::thompson::Config,
@@ -29164,10 +29176,6 @@ pub mod regex
                 }
                 
                 impl DFA<Vec<u8>> {
-
-                    ///
-
-                    ///
                     pub fn always_match() -> Result<DFA<Vec<u8>>, BuildError> { dense::DFA::always_match()?.to_sparse() }
                     
                     pub fn never_match() -> Result<DFA<Vec<u8>>, BuildError> { dense::DFA::never_match()?.to_sparse() }
@@ -29175,10 +29183,6 @@ pub mod regex
                     pub fn from_dense<T: AsRef<[u32]>>(
                         dfa: &dense::DFA<T>,
                     ) -> Result<DFA<Vec<u8>>, BuildError> {
-                        // of the transition table happens in two passes.
-                        //
-                        // index of the dense DFA to the state identifier in this sparse DFA.
-                        //
                         let mut sparse = Vec::with_capacity(StateID::SIZE * dfa.state_len());
                         
                         let mut remap: Vec<StateID> = vec![DEAD; dfa.state_len()];
@@ -29202,9 +29206,7 @@ pub mod regex
                                     (Some(_), None) | (None, Some(_)) => { unreachable!() }
                                 }
                             }
-                            // the 'next' states.
-                            //
-                            // transition. There are probably other/better ways to do this.
+                            
                             transition_len += 1;
                             sparse.push(0);
                             sparse.push(0);
@@ -29237,7 +29239,6 @@ pub mod regex
                                     .unwrap();
                                 sparse.extend(iter::repeat(0).take(zeros));
                                 wire::NE::write_u32(
-                                    // u32.
                                     plen.try_into().expect("pattern ID length fits in u32"),
                                     &mut sparse[pos..],
                                 );
@@ -29249,7 +29250,7 @@ pub mod regex
                                     );
                                 }
                             }
-                            // to leave this state.
+                            
                             let accel = dfa.accelerator(state.id());
                             sparse.push(accel.len().try_into().unwrap());
                             sparse.extend_from_slice(accel);
@@ -29279,11 +29280,6 @@ pub mod regex
                         }
                         new.tt.sparse.shrink_to_fit();
                         new.st.table.shrink_to_fit();
-                        debug!(
-                            "created sparse DFA, memory usage: {} (dense memory usage: {})",
-                            new.memory_usage(),
-                            dfa.memory_usage(),
-                        );
                         Ok(new)
                     }
                 }
@@ -29355,7 +29351,6 @@ pub mod regex
                         nw += wire::write_endianness_check::<E>(&mut dst[nw..])?;
                         nw += wire::write_version::<E>(VERSION, &mut dst[nw..])?;
                         nw += {
-                            // Currently unused, intended for future flexibility
                             E::write_u32(0, &mut dst[nw..]);
                             size_of::<u32>()
                         };
@@ -29366,12 +29361,12 @@ pub mod regex
                         nw += self.quitset.write_to::<E>(&mut dst[nw..])?;
                         Ok(nw)
                     }
-                    ///
+                    
                     pub fn write_to_len( &self ) -> usize {
                         wire::write_label_len(LABEL)
                         + wire::write_endianness_check_len()
                         + wire::write_version_len()
-                        + size_of::<u32>() // unused, intended for future flexibility
+                        + size_of::<u32>()
                         + self.flags.write_to_len()
                         + self.tt.write_to_len()
                         + self.st.write_to_len()
@@ -29381,12 +29376,9 @@ pub mod regex
                 }
 
                 impl<'a> DFA<&'a [u8]> {
-                    ///
-                    ///
                     pub fn from_bytes(
                         slice: &'a [u8],
                     ) -> Result<(DFA<&'a [u8]>, usize), DeserializeError> {
-                        // either validation fails, then we return an error.
                         let (dfa, nread) = unsafe { DFA::from_bytes_unchecked(slice)? };
                         let seen = dfa.tt.validate(&dfa.special)?;
                         dfa.st.validate(&dfa.special, &seen)?;
@@ -29470,36 +29462,29 @@ pub mod regex
                         Ok( () )
                     }
                 }
-
-                // SAFETY: We assert that our implementation of each method is correct.
+                
                 unsafe impl<T: AsRef<[u8]>> Automaton for DFA<T> {
-                    #[inline]
-                    fn is_special_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_special_state(&self, id: StateID) -> bool {
                         self.special.is_special_state(id)
                     }
 
-                    #[inline]
-                    fn is_dead_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_dead_state(&self, id: StateID) -> bool {
                         self.special.is_dead_state(id)
                     }
 
-                    #[inline]
-                    fn is_quit_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_quit_state(&self, id: StateID) -> bool {
                         self.special.is_quit_state(id)
                     }
 
-                    #[inline]
-                    fn is_match_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_match_state(&self, id: StateID) -> bool {
                         self.special.is_match_state(id)
                     }
 
-                    #[inline]
-                    fn is_start_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_start_state(&self, id: StateID) -> bool {
                         self.special.is_start_state(id)
                     }
 
-                    #[inline]
-                    fn is_accel_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_accel_state(&self, id: StateID) -> bool {
                         self.special.is_accel_state(id)
                     }
                     #[inline( always )] fn next_state(&self, current: StateID, input: u8) -> StateID {
@@ -29507,8 +29492,7 @@ pub mod regex
                         self.tt.state(current).next(input)
                     }
 
-                    #[inline]
-                    unsafe fn next_state_unchecked(
+                    #[inline] unsafe fn next_state_unchecked(
                         &self,
                         current: StateID,
                         input: u8,
@@ -29516,39 +29500,30 @@ pub mod regex
                         self.next_state(current, input)
                     }
 
-                    #[inline]
-                    fn next_eoi_state(&self, current: StateID) -> StateID {
+                    #[inline] fn next_eoi_state(&self, current: StateID) -> StateID {
                         self.tt.state(current).next_eoi()
                     }
 
-                    #[inline]
-                    fn pattern_len( &self ) -> usize { self.tt.pattern_len }
+                    #[inline] fn pattern_len( &self ) -> usize { self.tt.pattern_len }
 
-                    #[inline]
-                    fn match_len(&self, id: StateID) -> usize {
+                    #[inline] fn match_len(&self, id: StateID) -> usize {
                         self.tt.state(id).pattern_len()
                     }
 
-                    #[inline]
-                    fn match_pattern(&self, id: StateID, match_index: usize) -> PatternID {
-                        // matter when matches are frequent.
+                    #[inline] fn match_pattern(&self, id: StateID, match_index: usize) -> PatternID {
                         if self.tt.pattern_len == 1 {
                             return PatternID::ZERO;
                         }
                         self.tt.state(id).pattern_id(match_index)
                     }
 
-                    #[inline]
-                    fn has_empty( &self ) -> bool { self.flags.has_empty }
+                    #[inline] fn has_empty( &self ) -> bool { self.flags.has_empty }
 
-                    #[inline]
-                    fn is_utf8( &self ) -> bool { self.flags.is_utf8 }
+                    #[inline] fn is_utf8( &self ) -> bool { self.flags.is_utf8 }
 
-                    #[inline]
-                    fn is_always_start_anchored( &self ) -> bool { self.flags.is_always_start_anchored }
+                    #[inline] fn is_always_start_anchored( &self ) -> bool { self.flags.is_always_start_anchored }
 
-                    #[inline]
-                    fn start_state(
+                    #[inline] fn start_state(
                         &self,
                         config: &start::Config,
                     ) -> Result<StateID, StartError>
@@ -29566,8 +29541,7 @@ pub mod regex
                         self.st.start(anchored, start)
                     }
 
-                    #[inline]
-                    fn universal_start_state(&self, mode: Anchored) -> Option<StateID> {
+                    #[inline] fn universal_start_state(&self, mode: Anchored) -> Option<StateID> {
                         match mode {
                             Anchored::No => self.st.universal_start_unanchored,
                             Anchored::Yes => self.st.universal_start_anchored,
@@ -29575,18 +29549,15 @@ pub mod regex
                         }
                     }
 
-                    #[inline]
-                    fn accelerator(&self, id: StateID) -> &[u8] {
+                    #[inline] fn accelerator(&self, id: StateID) -> &[u8] {
                         self.tt.state(id).accelerator()
                     }
 
-                    #[inline]
-                    fn get_prefilter( &self ) -> Option<&Prefilter> { self.pre.as_ref() }
+                    #[inline] fn get_prefilter( &self ) -> Option<&Prefilter> { self.pre.as_ref() }
                 }
 
                 #[derive( Clone )]
                 struct Transitions<T> {
-
                     sparse: T,
                     classes: ByteClasses,
                     state_len: usize,
@@ -29658,10 +29629,10 @@ pub mod regex
                         Ok(nwrite)
                     }
                     fn write_to_len( &self ) -> usize {
-                        size_of::<u32>()   // state length
-                        + size_of::<u32>() // pattern length
+                        size_of::<u32>()  
+                        + size_of::<u32>() 
                         + self.classes.write_to_len()
-                        + size_of::<u32>() // sparse transitions length
+                        + size_of::<u32>()
                         + self.sparse().len()
                     }
                     fn validate(&self, sp: &Special) -> Result<Seen, DeserializeError>
@@ -29671,7 +29642,6 @@ pub mod regex
                         let mut len = 0;
                         let mut id = DEAD;
                         while id.as_usize() < self.sparse().len() {
-                            // actually be a quit, dead, accel, match or start state.
                             if sp.is_special_state(id) {
                                 let is_actually_special = sp.is_dead_state(id)
                                     || sp.is_quit_state(id)
@@ -29679,7 +29649,6 @@ pub mod regex
                                     || sp.is_start_state(id)
                                     || sp.is_accel_state(id);
                                 if !is_actually_special {
-                                    // This is kind of a cryptic error message...
                                     return Err(DeserializeError::generic(
                                         "found sparse state tagged as special but \
                                         wasn't actually special",
@@ -29698,25 +29667,16 @@ pub mod regex
                             })?;
                             len += 1;
                         }
-                        // information we need to check that all transitions are correct too.
-                        //
-                        // decoded and traversed correctly.
+                        
                         for state in self.states() {
-                            // Check that all transitions in this state are correct.
                             for i in 0..state.ntrans {
                                 let to = state.next_at(i);
-                                #[cfg(not(feature = "alloc"))]
-                                {
-                                    let _ = self.try_state(sp, to)?;
-                                }
-                                            {
-                                    if !verified.contains(&to) {
+                                if !verified.contains(&to) {
                                         return Err(DeserializeError::generic(
                                             "found transition that points to a \
                                             non-existent state",
                                         ));
                                     }
-                                }
                             }
                         }
                         if len != self.state_len {
@@ -30967,8 +30927,7 @@ pub mod regex
                             StartError::UnsupportedAnchored { mode } => { MatchError::unsupported_anchored(mode) }
                         })
                     }
-                    #[inline]
-                    fn universal_start_state(&self, _mode: Anchored) -> Option<StateID> { None }
+                    #[inline] fn universal_start_state(&self, _mode: Anchored) -> Option<StateID> { None }
                     fn is_special_state(&self, id: StateID) -> bool;
                     fn is_dead_state(&self, id: StateID) -> bool;
                     fn is_quit_state(&self, id: StateID) -> bool;
@@ -30995,14 +30954,11 @@ pub mod regex
                     ///
                     fn is_utf8( &self ) -> bool;
                     fn is_always_start_anchored( &self ) -> bool;
-                    #[inline]
-                    fn accelerator(&self, _id: StateID) -> &[u8] {
+                    #[inline] fn accelerator(&self, _id: StateID) -> &[u8] {
                         &[]
                     }
-                    #[inline]
-                    fn get_prefilter( &self ) -> Option<&Prefilter> { None }
-                    #[inline]
-                    fn try_search_fwd(
+                    #[inline] fn get_prefilter( &self ) -> Option<&Prefilter> { None }
+                    #[inline] fn try_search_fwd(
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, MatchError>
@@ -31019,8 +30975,7 @@ pub mod regex
                             Ok(got.map(|hm| (hm, hm.offset())))
                         })
                     }
-                    #[inline]
-                    fn try_search_rev(
+                    #[inline] fn try_search_rev(
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, MatchError>
@@ -31036,8 +30991,7 @@ pub mod regex
                             Ok(got.map(|hm| (hm, hm.offset())))
                         })
                     }
-                    #[inline]
-                    fn try_search_overlapping_fwd(
+                    #[inline] fn try_search_overlapping_fwd(
                         &self,
                         input: &Input<'_>,
                         state: &mut OverlappingState,
@@ -31058,8 +31012,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline]
-                    fn try_search_overlapping_rev(
+                    #[inline] fn try_search_overlapping_rev(
                         &self,
                         input: &Input<'_>,
                         state: &mut OverlappingState,
@@ -31079,8 +31032,7 @@ pub mod regex
                             ),
                         }
                     }
-                    #[inline]
-                    fn try_which_overlapping_matches(
+                    #[inline] fn try_which_overlapping_matches(
                         &self,
                         input: &Input<'_>,
                         patset: &mut PatternSet,
@@ -31101,8 +31053,7 @@ pub mod regex
                 }
 
                 unsafe impl<'a, A: Automaton + ?Sized> Automaton for &'a A {
-                    #[inline]
-                    fn next_state(&self, current: StateID, input: u8) -> StateID {
+                    #[inline] fn next_state(&self, current: StateID, input: u8) -> StateID {
                         (**self).next_state(current, input)
                     }
 
@@ -31115,120 +31066,96 @@ pub mod regex
                         (**self).next_state_unchecked(current, input)
                     }
 
-                    #[inline]
-                    fn next_eoi_state(&self, current: StateID) -> StateID {
+                    #[inline] fn next_eoi_state(&self, current: StateID) -> StateID {
                         (**self).next_eoi_state(current)
                     }
 
-                    #[inline]
-                    fn start_state(
+                    #[inline] fn start_state(
                         &self,
                         config: &start::Config,
                     ) -> Result<StateID, StartError> { (**self).start_state(config) }
 
-                    #[inline]
-                    fn start_state_forward(
+                    #[inline] fn start_state_forward(
                         &self,
                         input: &Input<'_>,
                     ) -> Result<StateID, MatchError> { (**self).start_state_forward(input) }
 
-                    #[inline]
-                    fn start_state_reverse(
+                    #[inline] fn start_state_reverse(
                         &self,
                         input: &Input<'_>,
                     ) -> Result<StateID, MatchError> { (**self).start_state_reverse(input) }
 
-                    #[inline]
-                    fn universal_start_state(&self, mode: Anchored) -> Option<StateID> { (**self).universal_start_state(mode) }
+                    #[inline] fn universal_start_state(&self, mode: Anchored) -> Option<StateID> { (**self).universal_start_state(mode) }
 
-                    #[inline]
-                    fn is_special_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_special_state(&self, id: StateID) -> bool {
                         (**self).is_special_state(id)
                     }
 
-                    #[inline]
-                    fn is_dead_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_dead_state(&self, id: StateID) -> bool {
                         (**self).is_dead_state(id)
                     }
 
-                    #[inline]
-                    fn is_quit_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_quit_state(&self, id: StateID) -> bool {
                         (**self).is_quit_state(id)
                     }
 
-                    #[inline]
-                    fn is_match_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_match_state(&self, id: StateID) -> bool {
                         (**self).is_match_state(id)
                     }
 
-                    #[inline]
-                    fn is_start_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_start_state(&self, id: StateID) -> bool {
                         (**self).is_start_state(id)
                     }
 
-                    #[inline]
-                    fn is_accel_state(&self, id: StateID) -> bool {
+                    #[inline] fn is_accel_state(&self, id: StateID) -> bool {
                         (**self).is_accel_state(id)
                     }
 
-                    #[inline]
-                    fn pattern_len( &self ) -> usize { (**self).pattern_len() }
+                    #[inline] fn pattern_len( &self ) -> usize { (**self).pattern_len() }
 
-                    #[inline]
-                    fn match_len(&self, id: StateID) -> usize {
+                    #[inline] fn match_len(&self, id: StateID) -> usize {
                         (**self).match_len(id)
                     }
 
-                    #[inline]
-                    fn match_pattern(&self, id: StateID, index: usize) -> PatternID {
+                    #[inline] fn match_pattern(&self, id: StateID, index: usize) -> PatternID {
                         (**self).match_pattern(id, index)
                     }
 
-                    #[inline]
-                    fn has_empty( &self ) -> bool { (**self).has_empty() }
+                    #[inline] fn has_empty( &self ) -> bool { (**self).has_empty() }
 
-                    #[inline]
-                    fn is_utf8( &self ) -> bool { (**self).is_utf8() }
+                    #[inline] fn is_utf8( &self ) -> bool { (**self).is_utf8() }
 
-                    #[inline]
-                    fn is_always_start_anchored( &self ) -> bool { (**self).is_always_start_anchored() }
+                    #[inline] fn is_always_start_anchored( &self ) -> bool { (**self).is_always_start_anchored() }
 
-                    #[inline]
-                    fn accelerator(&self, id: StateID) -> &[u8] {
+                    #[inline] fn accelerator(&self, id: StateID) -> &[u8] {
                         (**self).accelerator(id)
                     }
 
-                    #[inline]
-                    fn get_prefilter( &self ) -> Option<&Prefilter> { (**self).get_prefilter() }
+                    #[inline] fn get_prefilter( &self ) -> Option<&Prefilter> { (**self).get_prefilter() }
 
-                    #[inline]
-                    fn try_search_fwd(
+                    #[inline] fn try_search_fwd(
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, MatchError> { (**self).try_search_fwd(input) }
 
-                    #[inline]
-                    fn try_search_rev(
+                    #[inline] fn try_search_rev(
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, MatchError> { (**self).try_search_rev(input) }
 
-                    #[inline]
-                    fn try_search_overlapping_fwd(
+                    #[inline] fn try_search_overlapping_fwd(
                         &self,
                         input: &Input<'_>,
                         state: &mut OverlappingState,
                     ) -> Result<(), MatchError> { (**self).try_search_overlapping_fwd(input, state) }
 
-                    #[inline]
-                    fn try_search_overlapping_rev(
+                    #[inline] fn try_search_overlapping_rev(
                         &self,
                         input: &Input<'_>,
                         state: &mut OverlappingState,
                     ) -> Result<(), MatchError> { (**self).try_search_overlapping_rev(input, state) }
 
-                    #[inline]
-                    fn try_which_overlapping_matches(
+                    #[inline] fn try_which_overlapping_matches(
                         &self,
                         input: &Input<'_>,
                         patset: &mut PatternSet,
@@ -31453,11 +31380,11 @@ pub mod regex
                             config: self.clone(),
                             nfa,
                             dfa,
-                            builder_states: alloc::vec![dead, quit],
+                            builder_states:vec![dead, quit],
                             cache,
                             memory_usage_state: 0,
                             sparses: SparseSets::new(nfa.states().len()),
-                            stack: alloc::vec![],
+                            stack:vec![],
                             scratch_state_builder: StateBuilderEmpty::new(),
                         };
                         runner.run()
@@ -31512,7 +31439,7 @@ pub mod regex
                         { return Err(BuildError::unsupported_dfa_word_boundary_unicode()); }
                         
                         let representatives: Vec<alphabet::Unit> = self.dfa.byte_classes().representatives(..).collect();
-                        let mut uncompiled = alloc::vec![];
+                        let mut uncompiled = vec![];
                         self.add_all_starts(&mut uncompiled)?;
                         while let Some(dfa_id) = uncompiled.pop() 
                         {
@@ -32167,9 +32094,7 @@ pub mod regex
                         id1: StateID,
                         id2: StateID,
                     ) {
-                        if id1 == id2 {
-                            return;
-                        }
+                        if id1 == id2 { return; }
                         r.swap_states(id1, id2);
                         self.map.swap( self.idxmap.to_index(id1), self.idxmap.to_index(id2));
                     }
@@ -32195,24 +32120,20 @@ pub mod regex
                 }
                 
                 #[derive( Debug )]
-                struct IndexMapper {
+                struct IndexMapper 
+                {
                     stride2: usize,
                 }
 
-                impl IndexMapper {
-
-                    fn to_index(&self, id: StateID) -> usize {
-                        id.as_usize() >> self.stride2
-                    }
-
-                    fn to_state_id(&self, index: usize) -> StateID {
-                        // wind up with panics or silent logic errors at some other point.
-                        StateID::new_unchecked(index << self.stride2)
-                    }
+                impl IndexMapper
+                {
+                    fn to_index(&self, id: StateID) -> usize { id.as_usize() >> self.stride2 }
+                    fn to_state_id(&self, index: usize) -> StateID { StateID::new_unchecked(index << self.stride2) }
                 }
                 
-                mod dense {
-                    use crate::{dfa::dense::OwnedDFA, util::primitives::StateID};
+                mod dense 
+                {
+                    use regex::automata::{dfa::dense::OwnedDFA, primitives::StateID};
 
                     use super::Remappable;
 
@@ -32231,8 +32152,9 @@ pub mod regex
                     }
                 }
                 
-                mod onepass {
-                    use crate::{dfa::onepass::DFA, util::primitives::StateID};
+                mod onepass 
+                {
+                    use regex::automata::{dfa::onepass::DFA, primitives::StateID};
 
                     use super::Remappable;
 
@@ -32240,7 +32162,6 @@ pub mod regex
                         fn state_len( &self ) -> usize { DFA::state_len(self) }
 
                         fn stride2( &self ) -> usize {
-                            // equivalent.
                             0
                         }
 
@@ -33027,7 +32948,7 @@ pub mod regex
                         &self,
                         dst: &mut [u8],
                     ) -> Result<usize, SerializeError> {
-                        use crate::util::wire::write_state_id as write;
+                        use regex::automata::wire::write_state_id as write;
 
                         if dst.len() < self.write_to_len() {
                             return Err(SerializeError::buffer_too_small("special state ids"));
@@ -33555,12 +33476,12 @@ pub mod regex
                 {
                     pub fn new(dfa: &DFA) -> Cache {
                         let mut cache = Cache {
-                            trans: alloc::vec![],
-                            starts: alloc::vec![],
-                            states: alloc::vec![],
+                            trans:vec![],
+                            starts:vec![],
+                            states:vec![],
                             states_to_id: StateMap::new(),
                             sparses: SparseSets::new(dfa.get_nfa().states().len()),
-                            stack: alloc::vec![],
+                            stack:vec![],
                             scratch_state_builder: StateBuilderEmpty::new(),
                             state_saver: StateSaver::none(),
                             memory_usage_state: 0,
@@ -33568,9 +33489,7 @@ pub mod regex
                             bytes_searched: 0,
                             progress: None,
                         };
-                        debug!("pre-init lazy DFA cache size: {}", cache.memory_usage());
                         Lazy { dfa, cache: &mut cache }.init_cache();
-                        debug!("post-init lazy DFA cache size: {}", cache.memory_usage());
                         cache
                     }
                     
@@ -33631,10 +33550,9 @@ pub mod regex
                         }
                     }
                 }
-
-                        type StateMap = std::collections::HashMap<State, LazyStateID>;
-                #[cfg(not(feature = "std"))]
-                type StateMap = alloc::collections::BTreeMap<State, LazyStateID>;
+                
+                type StateMap = ::collections::HashMap<State, LazyStateID>;
+                
                 #[derive( Debug )]
                 struct Lazy<'i, 'c> {
                     dfa: &'i DFA,
@@ -34941,8 +34859,7 @@ pub mod regex
                 impl<'r, 'c, 'h> Iterator for FindMatches<'r, 'c, 'h> {
                     type Item = Match;
 
-                    #[inline]
-                    fn next(&mut self) -> Option<Match>
+                    #[inline] fn next(&mut self) -> Option<Match>
                     {
                         let FindMatches { re, ref mut cache, ref mut it } = *self;
                         it.advance(|input| re.try_search(cache, input))
@@ -36328,10 +36245,8 @@ pub mod regex
                         }
                         lits.push(lit);
                     }
-                    //
-                    // Aho-Corasick, where even the contiguous NFA is likely to do much better.
+                    
                     if lits.len() < 3000 {
-                        debug!("skipping Aho-Corasick because there are too few literals");
                         return None;
                     }
                     Some(lits)
@@ -36571,9 +36486,7 @@ pub mod regex
                         input: &Input<'_>,
                         patset: &mut PatternSet,
                     ) {
-                        if self.imp.info.is_impossible(input) {
-                            return;
-                        }
+                        if self.imp.info.is_impossible(input) { return; }
                         let mut guard = self.pool.get();
                         let result = self
                             .imp
@@ -36643,9 +36556,7 @@ pub mod regex
                         input: &Input<'_>,
                         patset: &mut PatternSet,
                     ) {
-                        if self.imp.info.is_impossible(input) {
-                            return;
-                        }
+                        if self.imp.info.is_impossible(input) { return; }
                         self.imp.strat.which_overlapping_matches(cache, input, patset)
                     }
                 }
@@ -36812,15 +36723,13 @@ pub mod regex
                 impl<'r, 'h> Iterator for FindMatches<'r, 'h> {
                     type Item = Match;
 
-                    #[inline]
-                    fn next(&mut self) -> Option<Match>
+                    #[inline] fn next(&mut self) -> Option<Match>
                     {
                         let FindMatches { re, ref mut cache, ref mut it } = *self;
                         it.advance(|input| Ok(re.search_with(cache, input)))
                     }
 
-                    #[inline]
-                    fn count(self) -> usize {
+                    #[inline] fn count(self) -> usize {
                         let FindMatches { re, mut cache, it } = self;
                         
                         let cache = &mut *cache;
@@ -36851,8 +36760,7 @@ pub mod regex
                 impl<'r, 'h> Iterator for CapturesMatches<'r, 'h> {
                     type Item = Captures;
 
-                    #[inline]
-                    fn next(&mut self) -> Option<Captures> {
+                    #[inline] fn next(&mut self) -> Option<Captures> {
                         // Splitting 'self' apart seems necessary to appease borrowck.
                         let CapturesMatches { re, ref mut cache, ref mut caps, ref mut it } =
                             *self;
@@ -36867,8 +36775,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline]
-                    fn count(self) -> usize {
+                    #[inline] fn count(self) -> usize {
                         let CapturesMatches { re, mut cache, it, .. } = self;
                         
                         let cache = &mut *cache;
@@ -37204,9 +37111,8 @@ pub mod regex
                         &self,
                         patterns: &[P],
                     ) -> Result<Regex, BuildError> {
-                        use crate::util::primitives::IteratorIndexExt;
+                        use regex::automata::primitives::IteratorIndexExt;
                         log! {
-                            debug!("building meta regex with {} patterns:", patterns.len());
                             for (pid, p) in patterns.iter().with_pattern_ids() {
                                 let p = p.as_ref();
                                 let maxoff = p
@@ -37216,9 +37122,7 @@ pub mod regex
                                     .last()
                                     .unwrap_or(0);
                                 if maxoff < p.len() {
-                                    debug!("{pid:?}: {}[... snip ...]", &p[..maxoff]);
                                 } else {
-                                    debug!("{pid:?}: {p}");
                                 }
                             }
                         }
@@ -37296,20 +37200,11 @@ pub mod regex
 
                 pub fn extract(hirs: &[&Hir]) -> Option<(Hir, Prefilter)> {
                     if hirs.len() != 1 {
-                        debug!(
-                            "skipping reverse inner optimization since it only \
-                            supports 1 pattern, {} were given",
-                            hirs.len(),
-                        );
                         return None;
                     }
                     let mut concat = match top_concat(hirs[0]) {
                         Some(concat) => concat,
                         None => {
-                            debug!(
-                                "skipping reverse inner optimization because a top-level \
-                                concatenation could not found",
-                            );
                             return None;
                         }
                     };
@@ -37321,10 +37216,6 @@ pub mod regex
                         };
                         
                         if !pre.is_fast() {
-                            debug!(
-                                "skipping extracted inner prefilter because \
-                                it probably isn't fast"
-                            );
                             continue;
                         }
                         let concat_suffix = Hir::concat(concat.split_off(i));
@@ -37342,10 +37233,6 @@ pub mod regex
                         };
                         return Some((concat_prefix, pre2));
                     }
-                    debug!(
-                        "skipping reverse inner optimization because a top-level \
-                        sub-expression with a fast prefilter could not be found"
-                    );
                     None
                 }
 
@@ -37353,19 +37240,9 @@ pub mod regex
                     let mut extractor = literal::Extractor::new();
                     extractor.kind(literal::ExtractKind::Prefix);
                     let mut prefixes = extractor.extract(hir);
-                    debug!(
-                        "inner prefixes (len={:?}) extracted before optimization: {:?}",
-                        prefixes.len(),
-                        prefixes
-                    );
                     
                     prefixes.make_inexact();
                     prefixes.optimize_for_prefix_by_preference();
-                    debug!(
-                        "inner prefixes (len={:?}) extracted after optimization: {:?}",
-                        prefixes.len(),
-                        prefixes
-                    );
                     prefixes
                         .literals()
                         .and_then(|lits| Prefilter::new(MatchKind::LeftmostFirst, lits))
@@ -37641,74 +37518,44 @@ pub mod regex
                     info: &RegexInfo,
                     hirs: &[&Hir],
                 ) -> Result<Arc<dyn Strategy>, BuildError> {
-                    // regex engines.
                     let pre = if info.is_always_anchored_start() {
-                        // quickly.
-                        //
-                        //
-                        debug!("skipping literal extraction since regex is anchored");
                         None
                     } else if let Some(pre) = info.config().get_prefilter() {
-                        debug!(
-                            "skipping literal extraction since the caller provided a prefilter"
-                        );
                         Some(pre.clone())
                     } else if info.config().get_auto_prefilter() {
                         let kind = info.config().get_match_kind();
                         let prefixes = crate::util::prefilter::prefixes(kind, hirs);
                         if let Some(pre) = Pre::from_prefixes(info, &prefixes) {
-                            debug!(
-                                "found that the regex can be broken down to a literal \
-                                search, avoiding the regex engine entirely",
-                            );
                             return Ok(pre);
                         }
-                        // Aho-Corasick for that and avoid the regex engine entirely.
-                        //
-                        // will specifically handle patterns with very large alternations.
-                        //
                         if let Some(pre) = Pre::from_alternation_literals(info, hirs) {
-                            debug!(
-                                "found plain alternation of literals, \
-                                avoiding regex engine entirely and using Aho-Corasick"
-                            );
                             return Ok(pre);
                         }
                         prefixes.literals().and_then(|strings| {
-                            debug!(
-                                "creating prefilter from {} literals: {:?}",
-                                strings.len(),
-                                strings,
-                            );
                             Prefilter::new(kind, strings)
                         })
                     } else {
-                        debug!("skipping literal extraction since prefilters were disabled");
                         None
                     };
                     let mut core = ::new(info.clone(), pre.clone(), hirs)?;
                     core = match ReverseAnchored::new(core) {
                         Err(core) => core,
                         Ok(ra) => {
-                            debug!("using reverse anchored strategy");
                             return Ok(Arc::new(ra));
                         }
                     };
                     core = match ReverseSuffix::new(core, hirs) {
                         Err(core) => core,
                         Ok(rs) => {
-                            debug!("using reverse suffix strategy");
                             return Ok(Arc::new(rs));
                         }
                     };
                     core = match ReverseInner::new(core, hirs) {
                         Err(core) => core,
                         Ok(ri) => {
-                            debug!("using reverse inner strategy");
                             return Ok(Arc::new(ri));
                         }
                     };
-                    debug!("using core strategy");
                     Ok(Arc::new(core))
                 }
 
@@ -37753,23 +37600,12 @@ pub mod regex
                         if kind != MatchKind::LeftmostFirst {
                             return None;
                         }
-                        // the above criteria, for example.
-                        //
-
-                        // OK because we know the set is exact and thus finite.
+                        
                         let prefixes = prefixes.literals().unwrap();
-                        debug!(
-                            "trying to bypass regex engine by creating \
-                            prefilter from {} literals: {:?}",
-                            prefixes.len(),
-                            prefixes,
-                        );
+                        
                         let choice = match prefilter::Choice::new(kind, prefixes) {
                             Some(choice) => choice,
                             None => {
-                                debug!(
-                                    "regex bypass failed because no prefilter could be built"
-                                );
                                 return None;
                             }
                         };
@@ -37796,16 +37632,7 @@ pub mod regex
                         Some(Pre::new(ac))
                     }
                 }
-
-                // This implements Strategy for anything that implements PrefilterI.
-                //
-                //
-                // following restrictions:
-                //
-                // caller might expect them to be resolved. e.g., 'foo(bar)'.
-                //
-                //
-                // case, literal extraction gives up and will return an infinite set.)
+                
                 impl<P: PrefilterI> Strategy for Pre<P> {
                     #[inline( always )] fn group_info( &self ) -> &GroupInfo { &self.group_info }
 
@@ -37922,7 +37749,6 @@ pub mod regex
                                 (None, wrappers::Hybrid::none(), wrappers::DFA::none())
                             } else {
                                 let nfarev = thompson::Compiler::new()
-                                    // the lazy DFA ignores capturing groups in all cases.
                                     .configure(
                                         thompson_config
                                             .clone()
@@ -37939,7 +37765,6 @@ pub mod regex
                                 let hybrid = if !info.config().get_hybrid() {
                                     wrappers::Hybrid::none()
                                 } else if dfa.is_some() {
-                                    debug!("skipping lazy DFA because we have a full DFA");
                                     wrappers::Hybrid::none()
                                 } else {
                                     wrappers::Hybrid::new(&info, pre.clone(), &nfa, &nfarev)
@@ -38275,25 +38100,13 @@ pub mod regex
                 {
                     fn new(core: Core) -> Result<ReverseAnchored, Core> {
                         if !core.info.is_always_anchored_end() {
-                            debug!(
-                                "skipping reverse anchored optimization because \
-                                the regex is not always anchored at the end"
-                            );
                             return Err(core);
                         }
                         if core.info.is_always_anchored_start() {
-                            debug!(
-                                "skipping reverse anchored optimization because \
-                                the regex is also anchored at the start"
-                            );
                             return Err(core);
                         }
 
                         if !core.hybrid.is_some() && !core.dfa.is_some() {
-                            debug!(
-                                "skipping reverse anchored optimization because \
-                                we don't have a lazy DFA or a full DFA"
-                            );
                             return Err(core);
                         }
                         Ok(ReverseAnchored { core })
@@ -38438,50 +38251,31 @@ pub mod regex
                 {
                     fn new(core: Core, hirs: &[&Hir]) -> Result<ReverseSuffix, Core> {
                         if !core.info.config().get_auto_prefilter() {
-                            debug!(
-                                "skipping reverse suffix optimization because \
-                                automatic prefilters are disabled"
-                            );
+                            
                             return Err(core);
                         }
                         //
                         if core.info.is_always_anchored_start() {
-                            debug!(
-                                "skipping reverse suffix optimization because \
-                                the regex is always anchored at the start",
-                            );
                             return Err(core);
                         }
 
                         if !core.hybrid.is_some() && !core.dfa.is_some() {
-                            debug!(
-                                "skipping reverse suffix optimization because \
-                                we don't have a lazy DFA or a full DFA"
-                            );
+                            
                             return Err(core);
                         }
                         if core.pre.as_ref().map_or(false, |p| p.is_fast()) {
-                            debug!(
-                                "skipping reverse suffix optimization because \
-                                we already have a prefilter that we think is fast"
-                            );
+                            
                             return Err(core);
                         }
                         let kind = core.info.config().get_match_kind();
                         let suffixes = crate::util::prefilter::suffixes(kind, hirs);
                         let lcs = match suffixes.longest_common_suffix() {
                             None => {
-                                debug!(
-                                    "skipping reverse suffix optimization because \
-                                    a longest common suffix could not be found",
-                                );
+                                
                                 return Err(core);
                             }
                             Some(lcs) if lcs.is_empty() => {
-                                debug!(
-                                    "skipping reverse suffix optimization because \
-                                    the longest common suffix is the empty string",
-                                );
+                                
                                 return Err(core);
                             }
                             Some(lcs) => lcs,
@@ -38489,20 +38283,11 @@ pub mod regex
                         let pre = match Prefilter::new(kind, &[lcs]) {
                             Some(pre) => pre,
                             None => {
-                                debug!(
-                                    "skipping reverse suffix optimization because \
-                                    a prefilter could not be constructed from the \
-                                    longest common suffix",
-                                );
+                                
                                 return Err(core);
                             }
                         };
                         if !pre.is_fast() {
-                            debug!(
-                                "skipping reverse suffix optimization because \
-                                while we have a suffix prefilter, it is not \
-                                believed to be 'fast'"
-                            );
                             return Err(core);
                         }
                         Ok(ReverseSuffix { core, pre })
@@ -38778,54 +38563,32 @@ pub mod regex
                 {
                     fn new(core: Core, hirs: &[&Hir]) -> Result<ReverseInner, Core> {
                         if !core.info.config().get_auto_prefilter() {
-                            debug!(
-                                "skipping reverse inner optimization because \
-                                automatic prefilters are disabled"
-                            );
+                            
                             return Err(core);
                         }
                         if core.info.config().get_match_kind() != MatchKind::LeftmostFirst {
-                            debug!(
-                                "skipping reverse inner optimization because \
-                                match kind is {:?} but this only supports leftmost-first",
-                                core.info.config().get_match_kind(),
-                            );
                             return Err(core);
                         }
                         //
                         if core.info.is_always_anchored_start() {
-                            debug!(
-                                "skipping reverse inner optimization because \
-                                the regex is always anchored at the start",
-                            );
+                            
                             return Err(core);
                         }
 
                         if !core.hybrid.is_some() && !core.dfa.is_some() {
-                            debug!(
-                                "skipping reverse inner optimization because \
-                                we don't have a lazy DFA or a full DFA"
-                            );
+                            
                             return Err(core);
                         }
                         if core.pre.as_ref().map_or(false, |p| p.is_fast()) {
-                            debug!(
-                                "skipping reverse inner optimization because \
-                                we already have a prefilter that we think is fast"
-                            );
+                            
                             return Err(core);
                         } else if core.pre.is_some() {
-                            debug!(
-                                "core engine has a prefix prefilter, but it is \
-                                probably not fast, so continuing with attempt to \
-                                use reverse inner prefilter"
-                            );
                         }
                         let (concat_prefix, preinner) = match reverse_inner::extract(hirs) {
                             Some(x) => x,
                             None => return Err(core),
                         };
-                        debug!("building reverse NFA for prefix before inner literal");
+                        
                         let mut lookm = LookMatcher::new();
                         lookm.set_line_terminator(core.info.config().get_line_terminator());
                         let thompson_config = thompson::Config::new()
@@ -38841,15 +38604,10 @@ pub mod regex
                         let nfarev = match result {
                             Ok(nfarev) => nfarev,
                             Err(_err) => {
-                                debug!(
-                                    "skipping reverse inner optimization because the \
-                                    reverse NFA failed to build: {}",
-                                    _err,
-                                );
                                 return Err(core);
                             }
                         };
-                        debug!("building reverse DFA for prefix before inner literal");
+                        
                         let dfa = if !core.info.config().get_dfa() {
                             wrappers::ReverseDFA::none()
                         } else {
@@ -38858,10 +38616,7 @@ pub mod regex
                         let hybrid = if !core.info.config().get_hybrid() {
                             wrappers::ReverseHybrid::none()
                         } else if dfa.is_some() {
-                            debug!(
-                                "skipping lazy DFA for reverse inner optimization \
-                                because we have a full DFA"
-                            );
+                            
                             wrappers::ReverseHybrid::none()
                         } else {
                             wrappers::ReverseHybrid::new(&core.info, &nfarev)
@@ -38884,14 +38639,9 @@ pub mod regex
                                 Some(span) => span,
                             };
                             if litmatch.start < min_pre_start {
-                                trace!(
-                                    "found inner prefilter match at {litmatch:?}, which starts \
-                                    before the end of the last forward scan at {min_pre_start}, \
-                                    quitting to avoid quadratic behavior",
-                                );
                                 return Err(RetryError::Quadratic(RetryQuadraticError::new()));
                             }
-                            trace!("reverse inner scan found inner match at {litmatch:?}");
+                            
                             let revinput = input
                                 .clone()
                                 .anchored(Anchored::Yes)
@@ -38938,16 +38688,8 @@ pub mod regex
                         input: &Input<'_>,
                     ) -> Result<Result<HalfMatch, usize>, RetryFailError> {
                         if let Some(e) = self.core.dfa.get(&input) {
-                            trace!(
-                                "using full DFA for forward reverse inner search at {:?}",
-                                input.get_span()
-                            );
                             e.try_search_half_fwd_stopat(&input)
                         } else if let Some(e) = self.core.hybrid.get(&input) {
-                            trace!(
-                                "using lazy DFA for forward reverse inner search at {:?}",
-                                input.get_span()
-                            );
                             e.try_search_half_fwd_stopat(&mut cache.hybrid, &input)
                         } else {
                             unreachable!("ReverseInner always has a DFA")
@@ -38961,20 +38703,8 @@ pub mod regex
                         min_start: usize,
                     ) -> Result<Option<HalfMatch>, RetryError> {
                         if let Some(e) = self.dfa.get(&input) {
-                            trace!(
-                                "using full DFA for reverse inner search at {:?}, \
-                                but will be stopped at {} to avoid quadratic behavior",
-                                input.get_span(),
-                                min_start,
-                            );
                             e.try_search_half_rev_limited(&input, min_start)
                         } else if let Some(e) = self.hybrid.get(&input) {
-                            trace!(
-                                "using lazy DFA for reverse inner search at {:?}, \
-                                but will be stopped at {} to avoid quadratic behavior",
-                                input.get_span(),
-                                min_start,
-                            );
                             e.try_search_half_rev_limited(
                                 &mut cache.revhybrid,
                                 &input,
@@ -39015,11 +38745,9 @@ pub mod regex
                         }
                         match self.try_search_full(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse inner optimization failed: {_err}");
                                 self.core.search(cache, input)
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!("reverse inner fast search failed: {_err}");
                                 self.core.search_nofail(cache, input)
                             }
                             Ok(matornot) => matornot,
@@ -39036,11 +38764,9 @@ pub mod regex
                         }
                         match self.try_search_full(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse inner half optimization failed: {_err}");
                                 self.core.search_half(cache, input)
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!("reverse inner fast half search failed: {_err}");
                                 self.core.search_half_nofail(cache, input)
                             }
                             Ok( None ) => None,
@@ -39054,11 +38780,9 @@ pub mod regex
                         }
                         match self.try_search_full(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse inner half optimization failed: {_err}");
                                 self.core.is_match_nofail(cache, input)
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!("reverse inner fast half search failed: {_err}");
                                 self.core.is_match_nofail(cache, input)
                             }
                             Ok( None ) => false,
@@ -39076,29 +38800,21 @@ pub mod regex
                             return self.core.search_slots(cache, input, slots);
                         }
                         if !self.core.is_capture_search_needed(slots.len()) {
-                            trace!("asked for slots unnecessarily, trying fast path");
                             let m = self.search(cache, input)?;
                             copy_match_to_slots(m, slots);
                             return Some(m.pattern());
                         }
                         let m = match self.try_search_full(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse inner captures optimization failed: {_err}");
                                 return self.core.search_slots(cache, input, slots);
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!("reverse inner fast captures search failed: {_err}");
                                 return self.core.search_slots_nofail(cache, input, slots);
                             }
                             Ok( None ) => return None,
                             Ok(Some(m)) => m,
                         };
-                        trace!(
-                            "match found at {}..{} in capture search, \
-                            using another engine to find captures",
-                            m.start(),
-                            m.end(),
-                        );
+                        
                         let input = input
                             .clone()
                             .span(m.start()..m.end())
@@ -39192,7 +38908,6 @@ pub mod regex
                             .configure(pikevm_config)
                             .build_from_nfa(nfa.clone())
                             .map_err(BuildError::nfa)?;
-                        debug!("PikeVM built");
                         Ok(PikeVMEngine(engine))
                     }
 
@@ -39297,10 +39012,6 @@ pub mod regex
                             .configure(backtrack_config)
                             .build_from_nfa(nfa.clone())
                             .map_err(BuildError::nfa)?;
-                        debug!(
-                            "BoundedBacktracker built (max haystack length: {:?})",
-                            engine.max_haystack_len()
-                        );
                         Ok(Some(BoundedBacktrackerEngine(engine)))
                     }
 
@@ -39388,16 +39099,14 @@ pub mod regex
                         if !info.config().get_onepass() {
                                 return None;
                             }
-                            // implementation limits.
+                            
                             if info.props_union().explicit_captures_len() == 0
                                 && !info.props_union().look_set().contains_word_unicode()
                             {
-                                debug!("not building OnePass because it isn't worth it");
                                 return None;
                             }
                             let onepass_config = onepass::Config::new()
                                 .match_kind(info.config().get_match_kind())
-                                // flexible.
                                 .starts_for_each_pattern(true)
                                 .byte_classes(info.config().get_byte_classes())
                                 .size_limit(info.config().get_onepass_size_limit());
@@ -39407,11 +39116,10 @@ pub mod regex
                             let engine = match result {
                                 Ok(engine) => engine,
                                 Err(_err) => {
-                                    debug!("OnePass failed to build: {_err}");
                                     return None;
                                 }
                             };
-                            debug!("OnePass built, {} bytes", engine.memory_usage());
+                            
                             Some(OnePassEngine(engine))
                     }
 
@@ -39498,62 +39206,49 @@ pub mod regex
                         pre:Option<Prefilter>,
                         nfa: &NFA,
                         nfarev: &NFA,
-                    ) -> Option<HybridEngine> {
-                                {
-                            if !info.config().get_hybrid() {
+                    ) -> Option<HybridEngine> 
+                    {
+                        if !info.config().get_hybrid() {
+                            return None;
+                        }
+                        let dfa_config = hybrid::dfa::Config::new()
+                            .match_kind(info.config().get_match_kind())
+                            .prefilter(pre.clone())
+                            .starts_for_each_pattern(true)
+                            .byte_classes(info.config().get_byte_classes())
+                            .unicode_word_boundary(true)
+                            .specialize_start_states(pre.is_some())
+                            .cache_capacity(info.config().get_hybrid_cache_capacity())
+                            .skip_cache_capacity_check( false )
+                            .minimum_cache_clear_count(Some(3))
+                            .minimum_bytes_per_state(Some(10));
+                        let result = hybrid::dfa::Builder::new()
+                            .configure(dfa_config.clone())
+                            .build_from_nfa(nfa.clone());
+                        let fwd = match result {
+                            Ok(fwd) => fwd,
+                            Err(_err) => {
                                 return None;
                             }
-                            let dfa_config = hybrid::dfa::Config::new()
-                                .match_kind(info.config().get_match_kind())
-                                .prefilter(pre.clone())
-                                .starts_for_each_pattern(true)
-                                .byte_classes(info.config().get_byte_classes())
-                                .unicode_word_boundary(true)
-                                .specialize_start_states(pre.is_some())
-                                .cache_capacity(info.config().get_hybrid_cache_capacity())
-                                // DFA will refuse to build.
-                                //
-                                // provided capacity amount.
-                                //
-                                // and return None.
-                                .skip_cache_capacity_check( false )
-                                .minimum_cache_clear_count(Some(3))
-                                .minimum_bytes_per_state(Some(10));
-                            let result = hybrid::dfa::Builder::new()
-                                .configure(dfa_config.clone())
-                                .build_from_nfa(nfa.clone());
-                            let fwd = match result {
-                                Ok(fwd) => fwd,
-                                Err(_err) => {
-                                    debug!("forward lazy DFA failed to build: {_err}");
-                                    return None;
-                                }
-                            };
-                            let result = hybrid::dfa::Builder::new()
-                                .configure(
-                                    dfa_config
-                                        .clone()
-                                        .match_kind(MatchKind::All)
-                                        .prefilter( None )
-                                        .specialize_start_states( false ),
-                                )
-                                .build_from_nfa(nfarev.clone());
-                            let rev = match result {
-                                Ok(rev) => rev,
-                                Err(_err) => {
-                                    debug!("reverse lazy DFA failed to build: {_err}");
-                                    return None;
-                                }
-                            };
-                            let engine =
-                                hybrid::regex::Builder::new().build_from_dfas(fwd, rev);
-                            debug!("lazy DFA built");
-                            Some(HybridEngine(engine))
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            None
-                        }
+                        };
+                        let result = hybrid::dfa::Builder::new()
+                            .configure(
+                                dfa_config
+                                    .clone()
+                                    .match_kind(MatchKind::All)
+                                    .prefilter( None )
+                                    .specialize_start_states( false ),
+                            )
+                            .build_from_nfa(nfarev.clone());
+                        let rev = match result {
+                            Ok(rev) => rev,
+                            Err(_err) => {
+                                return None;
+                            }
+                        };
+                        let engine =
+                            hybrid::regex::Builder::new().build_from_dfas(fwd, rev);
+                        Some(HybridEngine(engine))
                     }
 
                     #[inline( always )]
@@ -39562,14 +39257,8 @@ pub mod regex
                         cache: &mut HybridCache,
                         input: &Input<'_>,
                     ) -> Result<Option<Match>, RetryFailError> {
-                                {
-                            let cache = cache.0.as_mut().unwrap();
-                            self.0.try_search(cache, input).map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
+                        let cache = cache.0.as_mut().unwrap();
+                        self.0.try_search(cache, input).map_err(|e| e.into())
                     }
 
                     #[inline( always )]
@@ -39577,16 +39266,11 @@ pub mod regex
                         &self,
                         cache: &mut HybridCache,
                         input: &Input<'_>,
-                    ) -> Result<Option<HalfMatch>, RetryFailError> {
-                                {
-                            let fwd = self.0.forward();
-                            let mut fwdcache = cache.0.as_mut().unwrap().as_parts_mut().0;
-                            fwd.try_search_fwd(&mut fwdcache, input).map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
+                    ) -> Result<Option<HalfMatch>, RetryFailError> 
+                    {
+                        let fwd = self.0.forward();
+                        let mut fwdcache = cache.0.as_mut().unwrap().as_parts_mut().0;
+                        fwd.try_search_fwd(&mut fwdcache, input).map_err(|e| e.into())
                     }
 
                     #[inline( always )]
@@ -39595,17 +39279,11 @@ pub mod regex
                         cache: &mut HybridCache,
                         input: &Input<'_>,
                     ) -> Result<Result<HalfMatch, usize>, RetryFailError> {
-                                {
-                            let dfa = self.0.forward();
-                            let mut cache = cache.0.as_mut().unwrap().as_parts_mut().0;
-                            crate::meta::stopat::hybrid_try_search_half_fwd(
-                                dfa, &mut cache, input,
-                            )
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
+                        let dfa = self.0.forward();
+                        let mut cache = cache.0.as_mut().unwrap().as_parts_mut().0;
+                        regex::automata::meta::stopat::hybrid_try_search_half_fwd(
+                        dfa, &mut cache, input,
+                        )
                     }
 
                     #[inline( always )]
@@ -39614,15 +39292,9 @@ pub mod regex
                         cache: &mut HybridCache,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, RetryFailError> {
-                                {
-                            let rev = self.0.reverse();
+                                let rev = self.0.reverse();
                             let mut revcache = cache.0.as_mut().unwrap().as_parts_mut().1;
                             rev.try_search_rev(&mut revcache, input).map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
                     }
 
                     #[inline( always )]
@@ -39632,17 +39304,11 @@ pub mod regex
                         input: &Input<'_>,
                         min_start: usize,
                     ) -> Result<Option<HalfMatch>, RetryError> {
-                                {
-                            let dfa = self.0.reverse();
+                                let dfa = self.0.reverse();
                             let mut cache = cache.0.as_mut().unwrap().as_parts_mut().1;
                             crate::meta::limited::hybrid_try_search_half_rev(
                                 dfa, &mut cache, input, min_start,
                             )
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
                     }
                     #[inline] pub fn try_which_overlapping_matches(
                         &self,
@@ -39650,16 +39316,10 @@ pub mod regex
                         input: &Input<'_>,
                         patset: &mut PatternSet,
                     ) -> Result<(), RetryFailError> {
-                                {
                             let fwd = self.0.forward();
-                            let mut fwdcache = cache.0.as_mut().unwrap().as_parts_mut().0;
-                            fwd.try_which_overlapping_matches(&mut fwdcache, input, patset)
-                                .map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
+                        let mut fwdcache = cache.0.as_mut().unwrap().as_parts_mut().0;
+                        fwd.try_which_overlapping_matches(&mut fwdcache, input, patset)
+                            .map_err(|e| e.into())
                     }
                 }
 
@@ -39670,24 +39330,11 @@ pub mod regex
 
                 impl HybridCache
                 {
-                    pub fn none() -> HybridCache {
-                                {
-                            HybridCache( None )
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            HybridCache( () )
-                        }
+                    pub fn none() -> HybridCache { HybridCache( None )
                     }
 
                     pub fn new(builder: &Hybrid) -> HybridCache {
-                                {
                             HybridCache(builder.0.as_ref().map(|e| e.0.create_cache()))
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            HybridCache( () )
-                        }
                     }
 
                     pub fn reset( &mut self, builder: &Hybrid) {
@@ -39697,13 +39344,7 @@ pub mod regex
                     }
 
                     pub fn memory_usage( &self ) -> usize {
-                                {
                             self.0.as_ref().map_or(0, |c| c.memory_usage())
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            0
-                        }
                     }
                 }
 
@@ -39749,29 +39390,23 @@ pub mod regex
                         pre:Option<Prefilter>,
                         nfa: &NFA,
                         nfarev: &NFA,
-                    ) -> Option<DFAEngine> {
-                                {
-                            if !info.config().get_dfa() {
+                    ) -> Option<DFAEngine>
+                    {
+                        if !info.config().get_dfa() {
                                 return None;
                             }
-                            // If our NFA is anything but small, don't even bother with a DFA.
+                            
                             if let Some(state_limit) = info.config().get_dfa_state_limit() {
                                 if nfa.states().len() > state_limit {
-                                    debug!(
-                                        "skipping full DFA because NFA has {} states, \
-                                        which exceeds the heuristic limit of {}",
-                                        nfa.states().len(),
-                                        state_limit,
-                                    );
                                     return None;
                                 }
                             }
-                            // of forward and reverse DFAs.
+                            
                             let size_limit = info.config().get_dfa_size_limit().map(|n| n / 4);
                             let dfa_config = dfa::dense::Config::new()
                                 .match_kind(info.config().get_match_kind())
                                 .prefilter(pre.clone())
-                                // probably going to blow the limit anyway.
+                                
                                 .starts_for_each_pattern(true)
                                 .byte_classes(info.config().get_byte_classes())
                                 .unicode_word_boundary(true)
@@ -39784,7 +39419,6 @@ pub mod regex
                             let fwd = match result {
                                 Ok(fwd) => fwd,
                                 Err(_err) => {
-                                    debug!("forward full DFA failed to build: {_err}");
                                     return None;
                                 }
                             };
@@ -39792,7 +39426,6 @@ pub mod regex
                                 .configure(
                                     dfa_config
                                         .clone()
-                                        // don't.)
                                         .start_kind(dfa::StartKind::Anchored)
                                         .match_kind(MatchKind::All)
                                         .prefilter( None )
@@ -39802,36 +39435,19 @@ pub mod regex
                             let rev = match result {
                                 Ok(rev) => rev,
                                 Err(_err) => {
-                                    debug!("reverse full DFA failed to build: {_err}");
                                     return None;
                                 }
                             };
                             let engine = dfa::regex::Builder::new().build_from_dfas(fwd, rev);
-                            debug!(
-                                "fully compiled forward and reverse DFAs built, {} bytes",
-                                engine.forward().memory_usage()
-                                    + engine.reverse().memory_usage(),
-                            );
                             Some(DFAEngine(engine))
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            None
-                        }
+                        
                     }
 
                     #[inline( always )]
                     pub fn try_search(
                         &self,
                         input: &Input<'_>,
-                    ) -> Result<Option<Match>, RetryFailError> {
-                                {
-                            self.0.try_search(input).map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
+                    ) -> Result<Option<Match>, RetryFailError> {  self.0.try_search(input).map_err(|e| e.into())
                     }
 
                     #[inline( always )]
@@ -39839,14 +39455,8 @@ pub mod regex
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, RetryFailError> {
-                                {
-                            use crate::dfa::Automaton;
+                        use crate::dfa::Automaton;
                             self.0.forward().try_search_fwd(input).map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
                     }
 
                     #[inline( always )]
@@ -39854,14 +39464,8 @@ pub mod regex
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Result<HalfMatch, usize>, RetryFailError> {
-                                {
                             let dfa = self.0.forward();
                             crate::meta::stopat::dfa_try_search_half_fwd(dfa, input)
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
                     }
 
                     #[inline( always )]
@@ -39869,14 +39473,8 @@ pub mod regex
                         &self,
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, RetryFailError> {
-                                {
-                            use crate::dfa::Automaton;
+                                use crate::dfa::Automaton;
                             self.0.reverse().try_search_rev(&input).map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
                     }
 
                     #[inline( always )]
@@ -39885,43 +39483,25 @@ pub mod regex
                         input: &Input<'_>,
                         min_start: usize,
                     ) -> Result<Option<HalfMatch>, RetryError> {
-                                {
-                            let dfa = self.0.reverse();
+                                let dfa = self.0.reverse();
                             crate::meta::limited::dfa_try_search_half_rev(
                                 dfa, input, min_start,
                             )
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
                     }
                     #[inline] pub fn try_which_overlapping_matches(
                         &self,
                         input: &Input<'_>,
                         patset: &mut PatternSet,
                     ) -> Result<(), RetryFailError> {
-                                {
-                            use crate::dfa::Automaton;
+                                use crate::dfa::Automaton;
                             self.0
                                 .forward()
                                 .try_which_overlapping_matches(input, patset)
                                 .map_err(|e| e.into())
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
                     }
 
                     pub fn memory_usage( &self ) -> usize {
-                                {
-                            self.0.forward().memory_usage() + self.0.reverse().memory_usage()
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
+                               self.0.forward().memory_usage() + self.0.reverse().memory_usage()
                     }
                 }
 
@@ -39962,11 +39542,10 @@ pub mod regex
                         info: &RegexInfo,
                         nfarev: &NFA,
                     ) -> Option<ReverseHybridEngine> {
-                                {
-                            if !info.config().get_hybrid() {
+                                if !info.config().get_hybrid() {
                                 return None;
                             }
-                            // for each pattern and so on.
+                            
                             let dfa_config = hybrid::dfa::Config::new()
                                 .match_kind(MatchKind::All)
                                 .prefilter( None )
@@ -39984,17 +39563,10 @@ pub mod regex
                             let rev = match result {
                                 Ok(rev) => rev,
                                 Err(_err) => {
-                                    debug!("lazy reverse DFA failed to build: {_err}");
                                     return None;
                                 }
                             };
-                            debug!("lazy reverse DFA built");
                             Some(ReverseHybridEngine(rev))
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            None
-                        }
                     }
 
                     #[inline( always )]
@@ -40004,17 +39576,11 @@ pub mod regex
                         input: &Input<'_>,
                         min_start: usize,
                     ) -> Result<Option<HalfMatch>, RetryError> {
-                                {
-                            let dfa = &self.0;
+                                let dfa = &self.0;
                             let mut cache = cache.0.as_mut().unwrap();
                             crate::meta::limited::hybrid_try_search_half_rev(
                                 dfa, &mut cache, input, min_start,
                             )
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            unreachable!()
-                        }
                     }
                 }
 
@@ -40025,25 +39591,9 @@ pub mod regex
 
                 impl ReverseHybridCache
                 {
-                    pub fn none() -> ReverseHybridCache {
-                                {
-                            ReverseHybridCache( None )
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            ReverseHybridCache( () )
-                        }
-                    }
+                    pub fn none() -> ReverseHybridCache { ReverseHybridCache( None ) }
 
-                    pub fn new(builder: &ReverseHybrid) -> ReverseHybridCache {
-                                {
-                            ReverseHybridCache(builder.0.as_ref().map(|e| e.0.create_cache()))
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            ReverseHybridCache( () )
-                        }
-                    }
+                    pub fn new(builder: &ReverseHybrid) -> ReverseHybridCache { ReverseHybridCache(builder.0.as_ref().map(|e| e.0.create_cache())) }
 
                     pub fn reset( &mut self, builder: &ReverseHybrid) {
                                 if let Some(ref e) = builder.0 {
@@ -40052,13 +39602,7 @@ pub mod regex
                     }
 
                     pub fn memory_usage( &self ) -> usize {
-                                {
-                            self.0.as_ref().map_or(0, |c| c.memory_usage())
-                        }
-                        #[cfg(not(feature = "hybrid"))]
-                        {
-                            0
-                        }
+                                self.0.as_ref().map_or(0, |c| c.memory_usage())
                     }
                 }
 
@@ -40098,19 +39642,12 @@ pub mod regex
                         info: &RegexInfo,
                         nfarev: &NFA,
                     ) -> Option<ReverseDFAEngine> {
-                                {
-                            if !info.config().get_dfa() {
+                                if !info.config().get_dfa() {
                                 return None;
                             }
-                            // If our NFA is anything but small, don't even bother with a DFA.
+                            
                             if let Some(state_limit) = info.config().get_dfa_state_limit() {
                                 if nfarev.states().len() > state_limit {
-                                    debug!(
-                                        "skipping full reverse DFA because NFA has {} states, \
-                                        which exceeds the heuristic limit of {}",
-                                        nfarev.states().len(),
-                                        state_limit,
-                                    );
                                     return None;
                                 }
                             }
@@ -40132,20 +39669,10 @@ pub mod regex
                             let rev = match result {
                                 Ok(rev) => rev,
                                 Err(_err) => {
-                                    debug!("full reverse DFA failed to build: {_err}");
                                     return None;
                                 }
                             };
-                            debug!(
-                                "fully compiled reverse DFA built, {} bytes",
-                                rev.memory_usage()
-                            );
                             Some(ReverseDFAEngine(rev))
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            None
-                        }
                     }
 
                     #[inline( always )]
@@ -40154,27 +39681,13 @@ pub mod regex
                         input: &Input<'_>,
                         min_start: usize,
                     ) -> Result<Option<HalfMatch>, RetryError> {
-                                {
-                            let dfa = &self.0;
+                                 let dfa = &self.0;
                             crate::meta::limited::dfa_try_search_half_rev(
                                 dfa, input, min_start,
                             )
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
                     }
 
-                    pub fn memory_usage( &self ) -> usize {
-                                {
-                            self.0.memory_usage()
-                        }
-                        #[cfg(not(feature = "dfa-build"))]
-                        {
-                            unreachable!()
-                        }
-                    }
+                    pub fn memory_usage( &self ) -> usize {self.0.memory_usage()}
                 }
             }
         }
@@ -41830,12 +41343,12 @@ pub mod regex
             index_type_impls!(PatternID, PatternIDError, PatternIDIter, WithPatternIDIter);
             index_type_impls!(StateID, StateIDError, StateIDIter, WithStateIDIter);
             pub trait IteratorIndexExt: Iterator {
-                fn with_pattern_ids(self) -> WithPatternIDIter<Self>where Self: Sized + ExactSizeIterator,
+                fn with_pattern_ids(self) -> WithPatternIDIter<Self> where Self: Sized + ExactSizeIterator,
                 {
                     WithPatternIDIter::new(self)
                 }
 
-                fn with_state_ids(self) -> WithStateIDIter<Self>where Self: Sized + ExactSizeIterator,
+                fn with_state_ids(self) -> WithStateIDIter<Self> where Self: Sized + ExactSizeIterator,
                 {
                     WithStateIDIter::new(self)
                 }
@@ -42229,7 +41742,7 @@ pub mod regex
                     );
                     PatternSet {
                         len: 0,
-                        which: alloc::vec![false; capacity].into_boxed_slice(),
+                        which:vec![false; capacity].into_boxed_slice(),
                     }
                 }
 
@@ -42784,7 +42297,7 @@ pub mod regex
             }
 
             impl RegexSetBuilder {
-                pub fn new<I, S>(patterns: I) -> RegexSetBuilderwhere I: IntoIterator<Item = S>,
+                pub fn new<I, S>(patterns: I) -> RegexSetBuilder where I: IntoIterator<Item = S>,
                     S: AsRef<str>,
                 {
                     RegexSetBuilder { builder: Builder::new(patterns) }
@@ -42955,7 +42468,7 @@ pub mod regex
             }
 
             impl RegexSetBuilder {
-                pub fn new<I, S>(patterns: I) -> RegexSetBuilderwhere I: IntoIterator<Item = S>,
+                pub fn new<I, S>(patterns: I) -> RegexSetBuilder where I: IntoIterator<Item = S>,
                     S: AsRef<str>,
                 {
                     RegexSetBuilder { builder: Builder::new(patterns) }
@@ -45352,7 +44865,7 @@ pub mod regex
                         }));
                     }
 
-                    #[inline( never )] fnpush_group(&self, mut concat: ast::Concat) -> Result<ast::Concat> {
+                    #[inline( never )] fn push_group(&self, mut concat: ast::Concat) -> Result<ast::Concat> {
                         assert_eq!( self.char(), '(');
                         match self.parse_group()? {
                             Either::Left(set) => {
@@ -45383,7 +44896,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnpop_group(&self, mut group_concat: ast::Concat) -> Result<ast::Concat> {
+                    #[inline( never )] fn pop_group(&self, mut group_concat: ast::Concat) -> Result<ast::Concat> {
                         use self::GroupState::*;
 
                         assert_eq!( self.char(), ')');
@@ -45422,7 +44935,7 @@ pub mod regex
                         Ok(prior_concat)
                     }
 
-                    #[inline( never )] fnpop_group_end(&self, mut concat: ast::Concat) -> Result<Ast> {
+                    #[inline( never )] fn pop_group_end(&self, mut concat: ast::Concat) -> Result<Ast> {
                         concat.span.end = self.pos();
                         let mut stack = self.parser().stack_group.borrow_mut();
                         let ast = match stack.pop() {
@@ -45445,7 +44958,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnpush_class_open(
+                    #[inline( never )] fn push_class_open(
                         &self,
                         parent_union: ast::ClassSetUnion,
                     ) -> Result<ast::ClassSetUnion> {
@@ -45459,7 +44972,7 @@ pub mod regex
                         Ok(nested_union)
                     }
 
-                    #[inline( never )] fnpop_class(
+                    #[inline( never )] fn pop_class(
                         &self,
                         nested_union: ast::ClassSetUnion,
                     ) -> Result<Either<ast::ClassSetUnion, ast::ClassBracketed>> {
@@ -45489,7 +45002,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnunclosed_class_error( &self ) -> ast::Error {
+                    #[inline( never )] fn unclosed_class_error( &self ) -> ast::Error {
                         for state in self.parser().stack_class.borrow().iter().rev() {
                             if let ClassState::Open { ref set, .. } = *state {
                                 return self.error(set.span, ast::ErrorKind::ClassUnclosed);
@@ -45498,7 +45011,7 @@ pub mod regex
                         panic!("no open character class found")
                     }
 
-                    #[inline( never )] fnpush_class_op(
+                    #[inline( never )] fn push_class_op(
                         &self,
                         next_kind: ast::ClassSetBinaryOpKind,
                         next_union: ast::ClassSetUnion,
@@ -45512,7 +45025,7 @@ pub mod regex
                         ast::ClassSetUnion { span: self.span(), items: vec![] }
                     }
 
-                    #[inline( never )] fnpop_class_op(&self, rhs: ast::ClassSet) -> ast::ClassSet {
+                    #[inline( never )] fn pop_class_op(&self, rhs: ast::ClassSet) -> ast::ClassSet {
                         let mut stack = self.parser().stack_class.borrow_mut();
                         let (kind, lhs) = match stack.pop() {
                             Some(ClassState::Op { kind, lhs }) => (kind, lhs),
@@ -45584,7 +45097,7 @@ pub mod regex
                         })
                     }
 
-                    #[inline( never )] fnparse_uncounted_repetition(
+                    #[inline( never )] fn parse_uncounted_repetition(
                         &self,
                         mut concat: ast::Concat,
                         kind: ast::RepetitionKind,
@@ -45626,7 +45139,7 @@ pub mod regex
                         Ok(concat)
                     }
 
-                    #[inline( never )] fnparse_counted_repetition(
+                    #[inline( never )] fn parse_counted_repetition(
                         &self,
                         mut concat: ast::Concat,
                     ) -> Result<ast::Concat> {
@@ -45731,7 +45244,7 @@ pub mod regex
                         Ok(concat)
                     }
 
-                    #[inline( never )] fnparse_group( &self ) -> Result<Either<ast::SetFlags, ast::Group>> {
+                    #[inline( never )] fn parse_group( &self ) -> Result<Either<ast::SetFlags, ast::Group>> {
                         assert_eq!( self.char(), '(');
                         let open_span = self.span_char();
                         self.bump();
@@ -45793,7 +45306,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_capture_name(
+                    #[inline( never )] fn parse_capture_name(
                         &self,
                         capture_index: u32,
                     ) -> Result<ast::CaptureName> {
@@ -45839,7 +45352,7 @@ pub mod regex
                         Ok(capname)
                     }
 
-                    #[inline( never )] fnparse_flags( &self ) -> Result<ast::Flags>
+                    #[inline( never )] fn parse_flags( &self ) -> Result<ast::Flags>
                     {
                         let mut flags = ast::Flags { span: self.span(), items: vec![] };
                         let mut last_was_negation = None;
@@ -46105,7 +45618,7 @@ pub mod regex
                         Ok(Some(kind))
                     }
 
-                    #[inline( never )] fnparse_octal( &self ) -> ast::Literal {
+                    #[inline( never )] fn parse_octal( &self ) -> ast::Literal {
                         assert!( self.parser().octal);
                         assert!('0' <= self.char() && self.char() <= '7');
                         let start = self.pos();
@@ -46126,7 +45639,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_hex( &self ) -> Result<ast::Literal> {
+                    #[inline( never )] fn parse_hex( &self ) -> Result<ast::Literal> {
                         assert!(
                             self.char() == 'x' || self.char() == 'u' || self.char() == 'U'
                         );
@@ -46148,7 +45661,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_hex_digits(
+                    #[inline( never )] fn parse_hex_digits(
                         &self,
                         kind: ast::HexLiteralKind,
                     ) -> Result<ast::Literal>
@@ -46186,7 +45699,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_hex_brace(
+                    #[inline( never )] fn parse_hex_brace(
                         &self,
                         kind: ast::HexLiteralKind,
                     ) -> Result<ast::Literal>
@@ -46261,7 +45774,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_set_class( &self ) -> Result<ast::ClassBracketed> {
+                    #[inline( never )] fn parse_set_class( &self ) -> Result<ast::ClassBracketed> {
                         assert_eq!( self.char(), '[');
 
                         let mut union =
@@ -46311,7 +45824,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_set_class_range( &self ) -> Result<ast::ClassSetItem>
+                    #[inline( never )] fn parse_set_class_range( &self ) -> Result<ast::ClassSetItem>
                     {
                         let prim1 = self.parse_set_class_item()?;
                         self.bump_space();
@@ -46342,7 +45855,7 @@ pub mod regex
                         Ok(ast::ClassSetItem::Range(range))
                     }
 
-                    #[inline( never )] fnparse_set_class_item( &self ) -> Result<Primitive> {
+                    #[inline( never )] fn parse_set_class_item( &self ) -> Result<Primitive> {
                         if self.char() == '\\' {
                             self.parse_escape()
                         } else {
@@ -46356,7 +45869,7 @@ pub mod regex
                         }
                     }
 
-                    #[inline( never )] fnparse_set_class_open(
+                    #[inline( never )] fn parse_set_class_open(
                         &self,
                     ) -> Result<(ast::ClassBracketed, ast::ClassSetUnion)> {
                         assert_eq!( self.char(), '[');
@@ -46419,7 +45932,7 @@ pub mod regex
                         Ok((set, union))
                     }
 
-                    #[inline( never )] fnmaybe_parse_ascii_class( &self ) -> Option<ast::ClassAscii> 
+                    #[inline( never )] fn maybe_parse_ascii_class( &self ) -> Option<ast::ClassAscii> 
                     {
                         assert_eq!( self.char(), '[');
                         
@@ -46542,7 +46055,7 @@ pub mod regex
                         })
                     }
 
-                    #[inline( never )] fnparse_perl_class( &self ) -> ast::ClassPerl {
+                    #[inline( never )] fn parse_perl_class( &self ) -> ast::ClassPerl {
                         let c = self.char();
                         let span = self.span_char();
                         self.bump();
@@ -48871,9 +48384,7 @@ pub mod regex
                     }
 
                     pub fn union( &mut self, other: &IntervalSet<I>) {
-                        if other.ranges.is_empty() || self.ranges == other.ranges {
-                            return;
-                        }
+                        if other.ranges.is_empty() || self.ranges == other.ranges { return; }
                         // This could almost certainly be done more efficiently.
                         self.ranges.extend(&other.ranges);
                         self.canonicalize();
@@ -49503,9 +49014,7 @@ pub mod regex
                             None => return,
                             Some(ref mut lits) => lits,
                         };
-                        if lits.last().map_or(false, |m| m == &lit) {
-                            return;
-                        }
+                        if lits.last().map_or(false, |m| m == &lit) { return; }
                         lits.push(lit);
                     }
                     #[inline] pub fn make_inexact(&mut self) {
@@ -51928,7 +51437,7 @@ pub mod regex
             }
 
             impl ClassUnicode {
-                pub fn new<I>(ranges: I) -> ClassUnicodewhere I: IntoIterator<Item = ClassUnicodeRange>,
+                pub fn new<I>(ranges: I) -> ClassUnicode where I: IntoIterator<Item = ClassUnicodeRange>,
                 {
                     ClassUnicode { set: IntervalSet::new(ranges) }
                 }
@@ -52101,7 +51610,7 @@ pub mod regex
             }
 
             impl ClassBytes {
-                pub fn new<I>(ranges: I) -> ClassByteswhere I: IntoIterator<Item = ClassBytesRange>,
+                pub fn new<I>(ranges: I) -> ClassBytes where I: IntoIterator<Item = ClassBytesRange>,
                 {
                     ClassBytes { set: IntervalSet::new(ranges) }
                 }
@@ -52475,7 +51984,7 @@ pub mod regex
                 
                 #[inline] pub fn memory_usage( &self ) -> usize { ::mem::size_of::<PropertiesI>() }
                 
-                pub fn union<I, P>(props: I) -> Propertieswhere I: IntoIterator<Item = P>,
+                pub fn union<I, P>(props: I) -> Properties where I: IntoIterator<Item = P>,
                     P: ::borrow::Borrow<Properties>,
                 {
                     let mut it = props.into_iter().peekable();
@@ -54792,7 +54301,7 @@ pub mod system
         impl Extend<Signal> for SigSet 
         {
             fn extend<T>( &mut self, iter: T )
-            where T: IntoIterator<Item = Signal> {
+             where T: IntoIterator<Item = Signal> {
                 for signal in iter {
                     self.add( signal );
                 }
@@ -54811,7 +54320,7 @@ pub mod system
 
         impl FromIterator<Signal> for SigSet 
         {
-            fn from_iter<T>( iter: T ) -> Self where T: IntoIterator<Item = Signal>
+            fn from_iter<T>( iter: T ) -> Self  where T: IntoIterator<Item = Signal>
             {
                 let mut sigset = SigSet::empty();
                 sigset.extend( iter );
@@ -54865,9 +54374,9 @@ pub mod system
 
             SigDfl,
             SigIgn,
-            Handler( extern "C" fn( c_int ) ),
+            Handler( extern "C" fn ( c_int ) ),
             #[cfg( not( target_os = "redox" ) )]
-            SigAction( extern "C" fn( c_int, *mut SignalInformation, *mut c_void ) )
+            SigAction( extern "C" fn ( c_int, *mut SignalInformation, *mut c_void ) )
         }
         
         #[repr( C )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
@@ -54878,7 +54387,7 @@ pub mod system
             #[cfg( target_arch = "sparc64" )]
             __reserved0: c_int,
             pub sa_flags: c_int,
-            pub sa_restorer:Option<extern "C" fn()>,
+            pub sa_restorer:Option<extern "C" fn ()>,
         }
 
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
@@ -54900,8 +54409,8 @@ pub mod system
                         {
                             SigHandler::SigDfl => libc::SIG_DFL,
                             SigHandler::SigIgn => libc::SIG_IGN,
-                            SigHandler::Handler( f )   => f as *const extern "C" fn( c_int ) as usize,
-                            SigHandler::SigAction( f ) => f as *const extern "C" fn( c_int, *mut SignalAction, *mut c_void ) as usize,
+                            SigHandler::Handler( f )   => f as *const extern "C" fn ( c_int ) as usize,
+                            SigHandler::SigAction( f ) => f as *const extern "C" fn ( c_int, *mut SignalAction, *mut c_void ) as usize,
                         };
                     }
                 }
@@ -57339,7 +56848,7 @@ pub mod system
                 pub fn refresh( &self ) -> io::Result<()> { self.0.refresh() }
 
                 pub fn write_at<C>( &self, position: C, text:&str )
-                        where C: Into<Cursor> { self.0.write_at( position.into(), text ); }
+                         where C: Into<Cursor> { self.0.write_at( position.into(), text ); }
 
                 pub fn write_styled<F, B, S>( &self, fg: F, bg: B, style: S, text:&str ) where
                         F: Into<Option<Color>>,
@@ -57432,7 +56941,7 @@ pub mod system
 
                 pub fn refresh( &mut self ) -> io::Result<()> { self.0.refresh() }
 
-                pub fn write_at<C>( &mut self, position: C, text:&str ) where 
+                pub fn write_at<C>( &mut self, position: C, text:&str )  where 
                 C: Into<Cursor>
                 { self.0.write_at( position.into(), text ) }
 
@@ -58098,7 +57607,7 @@ pub mod system
                 pub fn remove_style( &self, style: Style ) -> io::Result<()>
                 { self.0.remove_style( style ) }
 
-                pub fn set_style<S>( &self, style: S ) -> io::Result<()> where 
+                pub fn set_style<S>( &self, style: S ) -> io::Result<()>  where 
                 S:Into<Option<Style>>
                 { self.0.set_style( style.into().unwrap_or_default() ) }
 
@@ -58209,7 +57718,7 @@ pub mod system
                 pub fn remove_style( &mut self, style: Style ) -> io::Result<()>
                 { self.0.remove_style( style ) }
 
-                pub fn set_style<S>( &mut self, style: S ) -> io::Result<()> where 
+                pub fn set_style<S>( &mut self, style: S ) -> io::Result<()>  where 
                 S:Into<Option<Style>>
                 { self.0.set_style( style.into().unwrap_or_default() ) }
 
@@ -60144,12 +59653,12 @@ pub mod system
         */
         macro_rules! define_commands
         {
-            ( $( #[$meta:meta] $name:ident => $str:expr , )+ ) => 
+            ( $($name:ident => $str:expr,)+ ) => 
             {
 
                 #[derive( Clone, Debug, Eq, PartialEq )]
                 pub enum Command {
-                    $( #[$meta] $name , )+
+                    $($name, )+
 
                     Custom( Cow<'static, str> ),
                     Macro( Cow<'static, str> ),
@@ -60177,7 +59686,7 @@ pub mod system
                     }
 
                     pub fn from_string<T>( name: T ) -> Command
-                            where T: AsRef<str> + Into<String> {
+                             where T: AsRef<str> + Into<String> {
                         Command::opt_from_str( name.as_ref() )
                             .unwrap_or_else( || Command::Custom( Owned( name.into() ) ) )
                     }
@@ -60194,7 +59703,6 @@ pub mod system
 
         define_commands!
         {
-
             Abort => "abort",
             AcceptLine => "accept-line",
             Complete => "complete",
@@ -63470,7 +62978,7 @@ pub mod system
             pub fn application( &self ) -> &str { &self.lock.application }
 
             pub fn set_application<T>( &mut self, application: T )
-                    where T: Into<Cow<'static, str>> { self.lock.application = application.into(); }
+                     where T: Into<Cow<'static, str>> { self.lock.application = application.into(); }
 
             pub fn completer( &self ) -> &Arc<dyn Completer<Term>> { &self.lock.completer }
 
@@ -63566,17 +63074,17 @@ pub mod system
             pub fn string_chars( &self ) -> &str { &self.lock.string_chars }
 
             pub fn set_string_chars<T>( &mut self, chars: T )
-                    where T: Into<Cow<'static, str>> { self.lock.string_chars = chars.into(); }
+                     where T: Into<Cow<'static, str>> { self.lock.string_chars = chars.into(); }
 
             pub fn word_break_chars( &self ) -> &str { &self.lock.word_break }
 
             pub fn set_word_break_chars<T>( &mut self, chars: T )
-                    where T: Into<Cow<'static, str>> { self.lock.word_break = chars.into(); }
+                     where T: Into<Cow<'static, str>> { self.lock.word_break = chars.into(); }
 
             /* pub fn bindings( &self ) -> BindingIter { self.lock.bindings() } */
 
             pub fn bind_sequence<T>( &mut self, seq: T, cmd: Command ) -> Option<Command>
-                    where T: Into<Cow<'static, str>> { self.lock.bind_sequence( seq, cmd ) }
+                     where T: Into<Cow<'static, str>> { self.lock.bind_sequence( seq, cmd ) }
             pub fn bind_sequence_if_unbound<T>( &mut self, seq: T, cmd: Command ) -> bool where
             T:Into<Cow<'static, str>>
             { self.lock.bind_sequence_if_unbound( seq, cmd ) }
@@ -63584,7 +63092,7 @@ pub mod system
             pub fn unbind_sequence( &mut self, seq:&str ) -> Option<Command> { self.lock.unbind_sequence( seq ) }
 
             pub fn define_function<T>( &mut self, name: T, cmd: Arc<dyn Function<Term>> )
-                    -> Option<Arc<dyn Function<Term>>> where T: Into<Cow<'static, str>> { self.lock.define_function( name, cmd ) }
+                    -> Option<Arc<dyn Function<Term>>>  where T: Into<Cow<'static, str>> { self.lock.define_function( name, cmd ) }
 
             pub fn remove_function( &mut self, name:&str ) -> Option<Arc<dyn Function<Term>>> { self.lock.remove_function( name ) }
 
@@ -63683,7 +63191,7 @@ pub mod system
             fn deref_mut( &mut self ) -> &mut Read<Term> { &mut self.data }
         }
 
-        impl<Term: Terminal> Deref for Read<Term
+        impl<Term: Terminal> Deref for Read<Term>
         {
             type Target = Variables;
             fn deref( &self ) -> &Variables { &self.variables }
@@ -63771,7 +63279,7 @@ pub mod system
             }
 
             pub fn bind_sequence<T>( &mut self, seq: T, cmd: Command ) -> Option<Command>
-            where T: Into<Cow<'static, str>>
+             where T: Into<Cow<'static, str>>
             { 
                 None
                 /*self.bindings.insert( seq.into(), cmd ) */
@@ -63801,7 +63309,7 @@ pub mod system
 
             pub fn define_function<T>( &mut self, name: T, cmd: Arc<dyn Function<Term>> ) 
             -> Option<Arc<dyn Function<Term>>> 
-            where 
+             where 
             T: Into<Cow<'static, str>>
             { self.functions.insert( name.into(), cmd ) }
 
@@ -64037,7 +63545,7 @@ pub mod system
             fn num_cols( &self ) -> usize { self.sizes.map_or( 1, |sz| sz.len() ) }
         }
 
-        impl<'a, S: 'a + AsRef<str>> Iterator for Table<'a, S
+        impl<'a, S: 'a + AsRef<str>> Iterator for Table<'a, S>
         {
             type Item = Line<'a, S>;
             fn next( &mut self ) -> Option<Line<'a, S>> {
@@ -64153,7 +63661,7 @@ pub mod system
             None
         }
 
-        fn min_max<I>( iter: I ) -> ( usize, usize ) where I: Iterator<Item=usize> {
+        fn min_max<I>( iter: I ) -> ( usize, usize )  where I: Iterator<Item=usize> {
             let mut min = usize::max_value();
             let mut max = 0;
 
@@ -68109,6 +67617,83 @@ pub mod unicode
 
         &mut s[..next_write]
     }
+
+    pub mod normalization
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+        pub mod normalize
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */
+        }
+
+        pub mod lookups
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */ 
+            /// Return whether the given character is a combining mark (`General_Category=Mark`)
+            pub fn is_combining_mark(c:char) -> bool { mph_lookup(c.into(),COMBINING_MARK_SALT,COMBINING_MARK_KV,bool_lookup_fk,bool_lookup_fv,false) }
+        }
+
+        pub mod char
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+            /*
+            */
+            pub use super::normalize::{
+                compose, decompose_canonical, decompose_cjk_compat_variants, decompose_compatible,
+            };
+
+            pub use super::lookups::{canonical_combining_class, is_combining_mark};
+
+            /// Return whether the given character is assigned (`General_Category` != `Unassigned`)
+            /// and not Private-Use (`General_Category` != `Private_Use`), in the supported version
+            /// of Unicode.
+            pub use ::unicode::tables::is_public_assigned;
+        }
+    }
+    
+    pub mod width
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+        pub trait UnicodeWidthChar
+        {
+            fn width(self) -> Option<usize>;        
+            fn width_cjk(self) -> Option<usize>;
+        }
+    }
+
 }
 
 pub mod usize
@@ -69911,8 +69496,7 @@ pub mod uuid
             {$( 
                 impl<$( $a ),*> fmt::Display for $T<$( $a ),*> 
                 {
-                    #[inline]
-                    fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result {
+                    #[inline] fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result {
                         fmt::LowerHex::fmt( self, f )
                     }
                 }
@@ -69942,27 +69526,23 @@ pub mod uuid
             ( $T:ident<> ) =>
             {
                 impl From<Uuid> for $T {
-                    #[inline]
-                    fn from( f: Uuid ) -> Self {
+                    #[inline] fn from( f: Uuid ) -> Self {
                         $T( f )
                     }
                 }
 
                 impl From<$T> for Uuid {
-                    #[inline]
-                    fn from( f: $T ) -> Self {
+                    #[inline] fn from( f: $T ) -> Self {
                         f.into_uuid()
                     }
                 }
 
                 impl AsRef<Uuid> for $T {
-                    #[inline]
-                    fn as_ref( &self ) -> &Uuid { &self.0 }
+                    #[inline] fn as_ref( &self ) -> &Uuid { &self.0 }
                 }
 
                 impl Borrow<Uuid> for $T {
-                    #[inline]
-                    fn borrow( &self ) -> &Uuid { &self.0 }
+                    #[inline] fn borrow( &self ) -> &Uuid { &self.0 }
                 }
             };
 
@@ -69970,30 +69550,26 @@ pub mod uuid
             {
                 impl<$a> From<&$a Uuid> for $T<$a> 
                 {
-                    #[inline]
-                    fn from( f:&$a Uuid ) -> Self {
+                    #[inline] fn from( f:&$a Uuid ) -> Self {
                         $T::from_uuid_ref( f )
                     }
                 }
 
                 impl<$a> From<$T<$a>> for &$a Uuid 
                 {
-                    #[inline]
-                    fn from( f: $T<$a> ) -> &$a Uuid {
+                    #[inline] fn from( f: $T<$a> ) -> &$a Uuid {
                         f.0
                     }
                 }
 
                 impl<$a> AsRef<Uuid> for $T<$a> 
                 {
-                    #[inline]
-                    fn as_ref( &self ) -> &Uuid { self.0 }
+                    #[inline] fn as_ref( &self ) -> &Uuid { self.0 }
                 }
 
                 impl<$a> Borrow<Uuid> for $T<$a> 
                 {
-                    #[inline]
-                    fn borrow( &self ) -> &Uuid { self.0 }
+                    #[inline] fn borrow( &self ) -> &Uuid { self.0 }
                 }
             };
         }
@@ -71368,4 +70944,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 71371 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 70947 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
