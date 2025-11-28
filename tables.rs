@@ -26089,7 +26089,7 @@ pub mod regex
                     Some((pid, group_index, name))
                 }
             }
-        }
+        } pub use self::captures::{*};
 
         pub mod dfa
         {
@@ -33912,7 +33912,7 @@ pub mod regex
                     pub fn has_anchored( &self ) -> bool { matches!(*self, StartKind::Both | StartKind::Anchored) }
                 }
             } pub use self::start::{ StartKind };
-        }
+        } pub use self::dfa::{*};
         
         pub mod empty
         {
@@ -33990,7 +33990,7 @@ pub mod regex
 
                 Ok( Some( value ) )
             }
-        }
+        } pub use self::empty::{*};
         
         pub mod escape
         {
@@ -34061,7 +34061,7 @@ pub mod regex
                     Ok(())
                 }
             }
-        }
+        } pub use self::escape::{*};
         
         pub mod hybrid
         {
@@ -36532,7 +36532,7 @@ pub mod regex
                     MatchError::gave_up(offset)
                 }
             }
-        }
+        } pub use self::hybrid::{*};
 
         pub mod integers
         {
@@ -36735,7 +36735,7 @@ pub mod regex
                     self as usize
                 }
             }
-        }
+        } pub use self::integers::{*};
         
         pub mod interpolate
         {
@@ -36912,7 +36912,7 @@ pub mod regex
             fn is_valid_cap_letter(b: u8) -> bool {
                 matches!(b, b'0'..=b'9' | b'a'..=b'z' | b'A'..=b'Z' | b'_')
             }
-        }
+        } pub use self::interpolate::{*};
         
         pub mod meta
         {
@@ -40613,7 +40613,7 @@ pub mod regex
                     pub fn memory_usage( &self ) -> usize {self.0.memory_usage()}
                 }
             }
-        }
+        } pub use self::meta::{*};
         
         pub mod nfa
         {
