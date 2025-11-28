@@ -34708,55 +34708,12 @@ pub mod regex
                                     let min_bytes =
                                         min_bytes_per.saturating_mul( self.cache.states.len());
                                     if len == 0 {
-                                        trace!(
-                                            "number of bytes searched is 0, but \
-                                            a minimum bytes per state searched ({}) is \
-                                            enabled, maybe Cache::search_update \
-                                            is not being used?",
-                                            min_bytes_per,
-                                        );
                                     }
                                     if len < min_bytes {
-                                        trace!(
-                                            "lazy DFA cache has been cleared {} times, \
-                                            which exceeds the limit of {}, \
-                                            AND its bytes searched per state is less \
-                                            than the configured minimum of {}, \
-                                            therefore lazy DFA is giving up \
-                                            (bytes searched since cache clear = {}, \
-                                            number of states = {})",
-                                            self.cache.clear_count,
-                                            min_count,
-                                            min_bytes_per,
-                                            len,
-                                            self.cache.states.len(),
-                                        );
                                         return Err(CacheError::bad_efficiency());
                                     } else {
-                                        trace!(
-                                            "lazy DFA cache has been cleared {} times, \
-                                            which exceeds the limit of {}, \
-                                            AND its bytes searched per state is greater \
-                                            than the configured minimum of {}, \
-                                            therefore lazy DFA is continuing! \
-                                            (bytes searched since cache clear = {}, \
-                                            number of states = {})",
-                                            self.cache.clear_count,
-                                            min_count,
-                                            min_bytes_per,
-                                            len,
-                                            self.cache.states.len(),
-                                        );
                                     }
                                 } else {
-                                    trace!(
-                                        "lazy DFA cache has been cleared {} times, \
-                                        which exceeds the limit of {}, \
-                                        since there is no configured bytes per state \
-                                        minimum, lazy DFA is giving up",
-                                        self.cache.clear_count,
-                                        min_count,
-                                    );
                                     return Err(CacheError::too_many_cache_clears());
                                 }
                             }
@@ -34784,10 +34741,7 @@ pub mod regex
                         if let Some(ref mut progress) = self.cache.progress {
                             progress.start = progress.at;
                         }
-                        trace!(
-                            "lazy DFA cache has been cleared (count: {})",
-                            self.cache.clear_count
-                        );
+                        
                         self.init_cache();
                         if let Some((old_id, state)) = self.cache.state_saver.take_to_save() {
 
@@ -34959,22 +34913,14 @@ pub mod regex
                     fn state_fits_in_cache(&self, state: &State) -> bool {
                         let needed = self.cache.memory_usage()
                             + self.memory_usage_for_one_more_state(state.memory_usage());
-                        trace!(
-                            "lazy DFA cache capacity state check: {:?} ?<=? {:?}",
-                            needed,
-                            self.dfa.cache_capacity
-                        );
+                            
                         needed <= self.dfa.cache_capacity
                     }
                     
                     fn state_builder_fits_in_cache(&self, state: &StateBuilderNFA) -> bool {
                         let needed = self.cache.memory_usage()
                             + self.memory_usage_for_one_more_state(state.as_bytes().len());
-                        trace!(
-                            "lazy DFA cache capacity state builder check: {:?} ?<=? {:?}",
-                            needed,
-                            self.dfa.cache_capacity
-                        );
+                            
                         needed <= self.dfa.cache_capacity
                     }
                     
@@ -37223,10 +37169,7 @@ pub mod regex
                         }
                         at -= 1;
                         if at < min_start {
-                            trace!(
-                                "reached position {at} which is before the previous literal \
-                                match, quitting to avoid quadratic behavior",
-                            );
+                            
                             return Err(RetryError::Quadratic(RetryQuadraticError::new()));
                         }
                     }
@@ -37244,10 +37187,7 @@ pub mod regex
                         && mat.map_or(false, |m| m.offset() > input.start())
                         && !was_dead
                     {
-                        trace!(
-                            "reached beginning of search at offset {at} without hitting \
-                            a dead state, quitting to avoid potential false positive match",
-                        );
+                        
                         return Err(RetryError::Quadratic(RetryQuadraticError::new()));
                     }
                     Ok(mat)
@@ -37285,10 +37225,7 @@ pub mod regex
                         }
                         at -= 1;
                         if at < min_start {
-                            trace!(
-                                "reached position {at} which is before the previous literal \
-                                match, quitting to avoid quadratic behavior",
-                            );
+                            
                             return Err(RetryError::Quadratic(RetryQuadraticError::new()));
                         }
                     }
@@ -37298,10 +37235,7 @@ pub mod regex
                         && mat.map_or(false, |m| m.offset() > input.start())
                         && !was_dead
                     {
-                        trace!(
-                            "reached beginning of search at offset {at} without hitting \
-                            a dead state, quitting to avoid potential false positive match",
-                        );
+                        
                         return Err(RetryError::Quadratic(RetryQuadraticError::new()));
                     }
                     Ok(mat)
@@ -38891,10 +38825,10 @@ pub mod regex
                         input: &Input<'_>,
                     ) -> Option<Result<Option<Match>, RetryFailError>> {
                         if let Some(e) = self.dfa.get(input) {
-                            trace!("using full DFA for search at {:?}", input.get_span());
+                            
                             Some(e.try_search(input))
                         } else if let Some(e) = self.hybrid.get(input) {
-                            trace!("using lazy DFA for search at {:?}", input.get_span());
+                            
                             Some(e.try_search(&mut cache.hybrid, input))
                         } else {
                             None
@@ -38910,16 +38844,13 @@ pub mod regex
                         let caps = &mut cache.capmatches;
                         caps.set_pattern( None );
                         let pid = if let Some(ref e) = self.onepass.get(input) {
-                            trace!("using OnePass for search at {:?}", input.get_span());
+                            
                             e.search_slots(&mut cache.onepass, input, caps.slots_mut())
                         } else if let Some(ref e) = self.backtrack.get(input) {
-                            trace!(
-                                "using BoundedBacktracker for search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.search_slots(&mut cache.backtrack, input, caps.slots_mut())
                         } else {
-                            trace!("using PikeVM for search at {:?}", input.get_span());
+                            
                             let e = self.pikevm.get();
                             e.search_slots(&mut cache.pikevm, input, caps.slots_mut())
                         };
@@ -38944,22 +38875,13 @@ pub mod regex
                         slots: &mut [Option<NonMaxUsize>],
                     ) -> Option<PatternID> {
                         if let Some(ref e) = self.onepass.get(input) {
-                            trace!(
-                                "using OnePass for capture search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.search_slots(&mut cache.onepass, input, slots)
                         } else if let Some(ref e) = self.backtrack.get(input) {
-                            trace!(
-                                "using BoundedBacktracker for capture search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.search_slots(&mut cache.backtrack, input, slots)
                         } else {
-                            trace!(
-                                "using PikeVM for capture search at {:?}",
-                                input.get_span()
-                            );
+                            
                             let e = self.pikevm.get();
                             e.search_slots(&mut cache.pikevm, input, slots)
                         }
@@ -38967,22 +38889,13 @@ pub mod regex
 
                     fn is_match_nofail(&self, cache: &mut Cache, input: &Input<'_>) -> bool {
                         if let Some(ref e) = self.onepass.get(input) {
-                            trace!(
-                                "using OnePass for is-match search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.search_slots(&mut cache.onepass, input, &mut []).is_some()
                         } else if let Some(ref e) = self.backtrack.get(input) {
-                            trace!(
-                                "using BoundedBacktracker for is-match search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.is_match(&mut cache.backtrack, input)
                         } else {
-                            trace!(
-                                "using PikeVM for is-match search at {:?}",
-                                input.get_span()
-                            );
+                            
                             let e = self.pikevm.get();
                             e.is_match(&mut cache.pikevm, input)
                         }
@@ -39027,20 +38940,20 @@ pub mod regex
 
                     #[inline( always )] fn search(&self, cache: &mut Cache, input: &Input<'_>) -> Option<Match> {
                         return if let Some(e) = self.dfa.get(input) {
-                            trace!("using full DFA for full search at {:?}", input.get_span());
+                            
                             match e.try_search(input) {
                                 Ok(x) => x,
                                 Err(_err) => {
-                                    trace!("full DFA search failed: {_err}");
+                                    
                                     self.search_nofail(cache, input)
                                 }
                             }
                         } else if let Some(e) = self.hybrid.get(input) {
-                            trace!("using lazy DFA for full search at {:?}", input.get_span());
+                            
                             match e.try_search(&mut cache.hybrid, input) {
                                 Ok(x) => x,
                                 Err(_err) => {
-                                    trace!("lazy DFA search failed: {_err}");
+                                    
                                     self.search_nofail(cache, input)
                                 }
                             }
@@ -39056,20 +38969,20 @@ pub mod regex
                     ) -> Option<HalfMatch> {
 
                         if let Some(e) = self.dfa.get(input) {
-                            trace!("using full DFA for half search at {:?}", input.get_span());
+                            
                             match e.try_search_half_fwd(input) {
                                 Ok(x) => x,
                                 Err(_err) => {
-                                    trace!("full DFA half search failed: {_err}");
+                                    
                                     self.search_half_nofail(cache, input)
                                 }
                             }
                         } else if let Some(e) = self.hybrid.get(input) {
-                            trace!("using lazy DFA for half search at {:?}", input.get_span());
+                            
                             match e.try_search_half_fwd(&mut cache.hybrid, input) {
                                 Ok(x) => x,
                                 Err(_err) => {
-                                    trace!("lazy DFA half search failed: {_err}");
+                                    
                                     self.search_half_nofail(cache, input)
                                 }
                             }
@@ -39080,26 +38993,20 @@ pub mod regex
 
                     #[inline( always )] fn is_match(&self, cache: &mut Cache, input: &Input<'_>) -> bool {
                         if let Some(e) = self.dfa.get(input) {
-                            trace!(
-                                "using full DFA for is-match search at {:?}",
-                                input.get_span()
-                            );
+                            
                             match e.try_search_half_fwd(input) {
                                 Ok(x) => x.is_some(),
                                 Err(_err) => {
-                                    trace!("full DFA half search failed: {_err}");
+                                    
                                     self.is_match_nofail(cache, input)
                                 }
                             }
                         } else if let Some(e) = self.hybrid.get(input) {
-                            trace!(
-                                "using lazy DFA for is-match search at {:?}",
-                                input.get_span()
-                            );
+                            
                             match e.try_search_half_fwd(&mut cache.hybrid, input) {
                                 Ok(x) => x.is_some(),
                                 Err(_err) => {
-                                    trace!("lazy DFA half search failed: {_err}");
+                                    
                                     self.is_match_nofail(cache, input)
                                 }
                             }
@@ -39116,7 +39023,7 @@ pub mod regex
                     ) -> Option<PatternID> {
 
                         if !self.is_capture_search_needed(slots.len()) {
-                            trace!("asked for slots unnecessarily, trying fast path");
+                            
                             let m = self.search(cache, input)?;
                             copy_match_to_slots(m, slots);
                             return Some(m.pattern());
@@ -39131,17 +39038,12 @@ pub mod regex
                             Some(Ok(Some(m))) => m,
                             Some(Ok( None )) => return None,
                             Some(Err(_err)) => {
-                                trace!("fast capture search failed: {_err}");
+                                
                                 return self.search_slots_nofail(cache, input, slots);
                             }
                             None => { return self.search_slots_nofail(cache, input, slots); }
                         };
-                        trace!(
-                            "match found at {}..{} in capture search, \
-                            using another engine to find captures",
-                            m.start(),
-                            m.end(),
-                        );
+                        
                         let input = input
                             .clone()
                             .span(m.start()..m.end())
@@ -39159,20 +39061,14 @@ pub mod regex
                         patset: &mut PatternSet,
                     ) {
                         if let Some(e) = self.dfa.get(input) {
-                            trace!(
-                                "using full DFA for overlapping search at {:?}",
-                                input.get_span()
-                            );
+                            
                             let _err = match e.try_which_overlapping_matches(input, patset) {
                                 Ok( () ) => return,
                                 Err(err) => err,
                             };
-                            trace!("fast overlapping search failed: {_err}");
+                            
                         } else if let Some(e) = self.hybrid.get(input) {
-                            trace!(
-                                "using lazy DFA for overlapping search at {:?}",
-                                input.get_span()
-                            );
+                            
                             let _err = match e.try_which_overlapping_matches(
                                 &mut cache.hybrid,
                                 input,
@@ -39181,12 +39077,9 @@ pub mod regex
                                 Ok( () ) => { return; }
                                 Err(err) => err,
                             };
-                            trace!("fast overlapping search failed: {_err}");
+                            
                         }
-                        trace!(
-                            "using PikeVM for overlapping search at {:?}",
-                            input.get_span()
-                        );
+                        
                         let e = self.pikevm.get();
                         e.which_overlapping_matches(&mut cache.pikevm, input, patset)
                     }
@@ -39221,16 +39114,10 @@ pub mod regex
                     {
                         let input = input.clone().anchored(Anchored::Yes);
                         if let Some(e) = self.core.dfa.get(&input) {
-                            trace!(
-                                "using full DFA for reverse anchored search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.try_search_half_rev(&input)
                         } else if let Some(e) = self.core.hybrid.get(&input) {
-                            trace!(
-                                "using lazy DFA for reverse anchored search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.try_search_half_rev(&mut cache.hybrid, &input)
                         } else {
                             unreachable!("ReverseAnchored always has a DFA")
@@ -39260,7 +39147,7 @@ pub mod regex
                         }
                         match self.try_search_half_anchored_rev(cache, input) {
                             Err(_err) => {
-                                trace!("fast reverse anchored search failed: {_err}");
+                                
                                 self.core.search_nofail(cache, input)
                             }
                             Ok( None ) => None,
@@ -39278,7 +39165,7 @@ pub mod regex
                         }
                         match self.try_search_half_anchored_rev(cache, input) {
                             Err(_err) => {
-                                trace!("fast reverse anchored search failed: {_err}");
+                                
                                 self.core.search_half_nofail(cache, input)
                             }
                             Ok( None ) => None,
@@ -39292,7 +39179,7 @@ pub mod regex
                         }
                         match self.try_search_half_anchored_rev(cache, input) {
                             Err(_err) => {
-                                trace!("fast reverse anchored search failed: {_err}");
+                                
                                 self.core.is_match_nofail(cache, input)
                             }
                             Ok( None ) => false,
@@ -39311,13 +39198,13 @@ pub mod regex
                         }
                         match self.try_search_half_anchored_rev(cache, input) {
                             Err(_err) => {
-                                trace!("fast reverse anchored search failed: {_err}");
+                                
                                 self.core.search_slots_nofail(cache, input, slots)
                             }
                             Ok( None ) => None,
                             Ok(Some(hm)) => {
                                 if !self.core.is_capture_search_needed(slots.len()) {
-                                    trace!("asked for slots unnecessarily, skipping captures");
+                                    
                                     let m = Match::new(hm.pattern(), hm.offset()..input.end());
                                     copy_match_to_slots(m, slots);
                                     return Some(m.pattern());
@@ -39409,7 +39296,7 @@ pub mod regex
                                 None => return Ok( None ),
                                 Some(span) => span,
                             };
-                            trace!("reverse suffix scan found suffix match at {litmatch:?}");
+                            
                             let revinput = input
                                 .clone()
                                 .anchored(Anchored::Yes)
@@ -39436,16 +39323,10 @@ pub mod regex
                         input: &Input<'_>,
                     ) -> Result<Option<HalfMatch>, RetryFailError> {
                         if let Some(e) = self.core.dfa.get(&input) {
-                            trace!(
-                                "using full DFA for forward reverse suffix search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.try_search_half_fwd(&input)
                         } else if let Some(e) = self.core.hybrid.get(&input) {
-                            trace!(
-                                "using lazy DFA for forward reverse suffix search at {:?}",
-                                input.get_span()
-                            );
+                            
                             e.try_search_half_fwd(&mut cache.hybrid, &input)
                         } else {
                             unreachable!("ReverseSuffix always has a DFA")
@@ -39459,20 +39340,10 @@ pub mod regex
                         min_start: usize,
                     ) -> Result<Option<HalfMatch>, RetryError> {
                         if let Some(e) = self.core.dfa.get(&input) {
-                            trace!(
-                                "using full DFA for reverse suffix search at {:?}, \
-                                but will be stopped at {} to avoid quadratic behavior",
-                                input.get_span(),
-                                min_start,
-                            );
+                            
                             e.try_search_half_rev_limited(&input, min_start)
                         } else if let Some(e) = self.core.hybrid.get(&input) {
-                            trace!(
-                                "using lazy DFA for reverse suffix search at {:?}, \
-                                but will be stopped at {} to avoid quadratic behavior",
-                                input.get_span(),
-                                min_start,
-                            );
+                            
                             e.try_search_half_rev_limited(&mut cache.hybrid, &input, min_start)
                         } else {
                             unreachable!("ReverseSuffix always has a DFA")
@@ -39499,11 +39370,11 @@ pub mod regex
                         }
                         match self.try_search_half_start(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse suffix optimization failed: {_err}");
+                                
                                 self.core.search(cache, input)
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!("reverse suffix reverse fast search failed: {_err}");
+                                
                                 self.core.search_nofail(cache, input)
                             }
                             Ok( None ) => None,
@@ -39514,9 +39385,7 @@ pub mod regex
                                     .span(hm_start.offset()..input.end());
                                 match self.try_search_half_fwd(cache, &fwdinput) {
                                     Err(_err) => {
-                                        trace!(
-                                            "reverse suffix forward fast search failed: {_err}"
-                                        );
+                                        
                                         self.core.search_nofail(cache, input)
                                     }
                                     Ok( None ) => {
@@ -39544,13 +39413,11 @@ pub mod regex
                         }
                         match self.try_search_half_start(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse suffix half optimization failed: {_err}");
+                                
                                 self.core.search_half(cache, input)
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!(
-                                    "reverse suffix reverse fast half search failed: {_err}"
-                                );
+                                
                                 self.core.search_half_nofail(cache, input)
                             }
                             Ok( None ) => None,
@@ -39562,9 +39429,7 @@ pub mod regex
                                     .span(hm_start.offset()..input.end());
                                 match self.try_search_half_fwd(cache, &fwdinput) {
                                     Err(_err) => {
-                                        trace!(
-                                            "reverse suffix forward fast search failed: {_err}"
-                                        );
+                                        
                                         self.core.search_half_nofail(cache, input)
                                     }
                                     Ok( None ) => {
@@ -39585,13 +39450,11 @@ pub mod regex
                         }
                         match self.try_search_half_start(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse suffix half optimization failed: {_err}");
+                                
                                 self.core.is_match_nofail(cache, input)
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!(
-                                    "reverse suffix reverse fast half search failed: {_err}"
-                                );
+                                
                                 self.core.is_match_nofail(cache, input)
                             }
                             Ok( None ) => false,
@@ -39609,32 +39472,24 @@ pub mod regex
                             return self.core.search_slots(cache, input, slots);
                         }
                         if !self.core.is_capture_search_needed(slots.len()) {
-                            trace!("asked for slots unnecessarily, trying fast path");
+                            
                             let m = self.search(cache, input)?;
                             copy_match_to_slots(m, slots);
                             return Some(m.pattern());
                         }
                         let hm_start = match self.try_search_half_start(cache, input) {
                             Err(RetryError::Quadratic(_err)) => {
-                                trace!("reverse suffix captures optimization failed: {_err}");
+                                
                                 return self.core.search_slots(cache, input, slots);
                             }
                             Err(RetryError::Fail(_err)) => {
-                                trace!(
-                                    "reverse suffix reverse fast captures search failed: \
-                                        {_err}"
-                                );
+                                
                                 return self.core.search_slots_nofail(cache, input, slots);
                             }
                             Ok( None ) => return None,
                             Ok(Some(hm_start)) => hm_start,
                         };
-                        trace!(
-                            "match found at {}..{} in capture search, \
-                            using another engine to find captures",
-                            hm_start.offset(),
-                            input.end(),
-                        );
+                        
                         let start = hm_start.offset();
                         let input = input
                             .clone()
@@ -42067,7 +41922,6 @@ pub mod regex
                                         .parse(p.as_ref())
                                         .map_err(BuildError::syntax)?,
                                 );
-                                debug!("parsed: {:?}", p.as_ref());
                             }
                             self.build_many_from_hir(&hirs)
                         }
@@ -42142,8 +41996,7 @@ pub mod regex
                                 .builder
                                 .borrow_mut()
                                 .build(compiled.start, unanchored_prefix.start)?;
-
-                            debug!("HIR-to-NFA compilation complete, config: {:?}", self.config);
+                                
                             Ok(nfa)
                         }
                         fn c(&self, expr: &Hir) -> Result<ThompsonRef, BuildError> {
@@ -74402,4 +74255,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 74405 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 74258 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
