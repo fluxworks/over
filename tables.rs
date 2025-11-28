@@ -49436,6 +49436,14 @@ pub mod regex
                 Provides a regular expression printer for `Ast`.*/
                 use ::
                 {
+                    regex::
+                    {
+                        ast::
+                        {
+                            ClassUnicodeKind::{ self, * },
+                            ClassUnicodeOpKind::{ self, * },
+                        },
+                    },
                     *,
                 };
                 /*
@@ -49731,9 +49739,11 @@ pub mod regex
                         }
                     }
 
-                    fn fmt_class_ascii( &mut self, ast: &ast::ClassAscii) -> fmt::Result {
+                    fn fmt_class_ascii( &mut self, ast: &ast::ClassAscii) -> fmt::Result
+                    {
                         use regex::ast::ClassAsciiKind::*;
-                        match ast.kind {
+                        match ast.kind
+                        {
                             Alnum if ast.negated => self.wtr.write_str("[:^alnum:]"),
                             Alnum => self.wtr.write_str("[:alnum:]"),
                             Alpha if ast.negated => self.wtr.write_str("[:^alpha:]"),
@@ -49765,7 +49775,8 @@ pub mod regex
                         }
                     }
 
-                    fn fmt_class_unicode( &mut self, ast: &ast::ClassUnicode) -> fmt::Result {
+                    fn fmt_class_unicode( &mut self, ast: &ast::ClassUnicode) -> fmt::Result
+                    {
                         use regex::ast::ClassUnicodeKind::*;
                         use regex::ast::ClassUnicodeOpKind::*;
 
@@ -74316,4 +74327,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 74319 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 74330 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
