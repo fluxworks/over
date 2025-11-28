@@ -41309,7 +41309,7 @@ pub mod regex
                         if l % r == 0 { l / r }
                         else { (l / r) + 1 }
                     }
-                }
+                } pub use self::backtrack::{ * };
 
                 pub mod builder
                 {
@@ -41742,8 +41742,7 @@ pub mod regex
                             Ok( () )
                         }
                     }
-
-                }
+                } pub use self::builder::{ * };
 
                 pub mod compiler
                 {
@@ -42641,7 +42640,7 @@ pub mod regex
                     }
 
 
-                } pub use self::compiler::{Compiler, Config, WhichCaptures};
+                } pub use self::compiler::{*};
 
                 pub mod error
                 {
@@ -42653,7 +42652,7 @@ pub mod regex
                     };
                     /*
                     */
-                }
+                } pub use self::error::{*};
 
                 pub mod literal_trie
                 {
@@ -42665,7 +42664,7 @@ pub mod regex
                     };
                     /*
                     */
-                }
+                } pub use self::error::{*};
 
                 pub mod map
                 {
@@ -42677,7 +42676,7 @@ pub mod regex
                     };
                     /*
                     */
-                }
+                } pub use self::error::{*};
 
                 pub mod nfa
                 {
@@ -43322,7 +43321,7 @@ pub mod regex
                             self.it.next()
                         }
                     }
-                } pub use self::nfa::{ DenseTransitions, PatternIter, SparseTransitions, State, Transition, NFA };
+                } pub use self::nfa::{ * };
 
                 pub mod pikevm
                 {
@@ -43334,7 +43333,7 @@ pub mod regex
                     };
                     /*
                     */
-                }
+                } pub use self::pikevm::{ * };
 
                 pub mod range_trie
                 {
@@ -43346,9 +43345,9 @@ pub mod regex
                     };
                     /*
                     */
-                }
-            }
-        }
+                } pub use self::range_trie::{ * };
+            } pub use self::thompson::{*};
+        } pub use self::nfa::{*};
         
         pub mod prefilter
         {
@@ -44061,7 +44060,7 @@ pub mod regex
                 suffixes
             }
 
-        }
+        } pub use self::prefilter::{*};
 
         pub mod primitives
         {
@@ -44526,7 +44525,7 @@ pub mod regex
             }
 
             impl<I: Iterator> IteratorIndexExt for I {}
-        }
+        } pub use self::primitives::{*};
 
         pub mod search
         {
@@ -45151,7 +45150,7 @@ pub mod regex
                 }
             }
 
-        }
+        } pub use self::search::{*};
         
         pub mod wire
         {
@@ -45163,7 +45162,7 @@ pub mod regex
             };
             /*
             */
-        }
+        } pub use self::wire::{*};
     }
 
     pub mod builders
@@ -45345,7 +45344,12 @@ pub mod regex
 
         pub mod string 
         {
-            use crate::{error::Error, Regex, RegexSet};
+            //use crate::{error::Error, Regex, RegexSet};
+            use ::
+            {
+                regex::automata::{ * },
+                *
+            };
 
             use super::Builder;
 
@@ -45514,9 +45518,15 @@ pub mod regex
 
         pub mod bytes 
         {
+            /*
             use crate::{
                 bytes::{Regex, RegexSet},
                 error::Error,
+            }; */
+
+            use ::regex::automata::
+            {
+                *,
             };
 
             use super::Builder;
@@ -45683,7 +45693,7 @@ pub mod regex
                 }
             }
         }
-    } pub use self::builders::string::{ * };
+    } pub use self::builders::{string::{ * }};
 
     pub mod error
     {
@@ -45695,7 +45705,7 @@ pub mod regex
         };
         /*
         use alloc::string::{String, ToString};
-        use regex_automata::meta;
+        use regex::automata::meta;
         */
 
         #[non_exhaustive]
@@ -45758,7 +45768,7 @@ pub mod regex
                 }
             }
         }
-    } pub use self::error::{ Error };
+    } pub use self::error::{ * };
 
     pub mod bytes
     {
@@ -45769,7 +45779,7 @@ pub mod regex
             *,
         };
 
-        pub use super::{builders::bytes::*, regex::bytes::*, expression::set::bytes::*};
+        pub use super::{builders::bytes::*, expression::bytes::*, expression::set::bytes::*};
         /*
         */
         pub mod search
@@ -45794,8 +45804,7 @@ pub mod regex
                 imp(needle, haystack)
             }
         }
-
-    }
+    } pub use self::bytes::{ * };
 
     pub mod pattern
     {
@@ -45868,7 +45877,7 @@ pub mod regex
                 }
             }
         }
-    }
+    } pub use self::pattern::{ * };
 
     pub mod expression
     {
@@ -45891,7 +45900,7 @@ pub mod regex
             /*
             use alloc::{borrow::Cow, string::String, sync::Arc, vec::Vec};
 
-            use regex_automata::{meta, util::captures, Input, PatternID};
+            use regex::automata::{meta, util::captures, Input, PatternID};
 
             use crate::{bytes::RegexBuilder, error::Error};
             */
@@ -46100,14 +46109,16 @@ pub mod regex
                 #[inline] pub fn locations( &self ) -> CaptureLocations { self.capture_locations() }
             }
 
-            #[derive(Copy, Clone, Eq, PartialEq )]
-            pub struct Match<'h> {
+            #[derive( Copy, Clone, Eq, PartialEq )]
+            pub struct Match<'h>
+            {
                 haystack: &'h [u8],
                 start: usize,
                 end: usize,
             }
 
-            impl<'h> Match<'h> {
+            impl<'h> Match<'h>
+            {
 
                 #[inline] pub fn start( &self ) -> usize { self.start }
 
@@ -46126,19 +46137,19 @@ pub mod regex
 
             impl<'h> ::fmt::Debug for Match<'h>
             {
-                fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-                    use regex_automata::util::escape::DebugHaystack;
-
+                fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result
+                {
+                    use regex::automata::escape::DebugHaystack;
                     let mut fmt = f.debug_struct("Match");
                     fmt.field("start", &self.start)
-                        .field("end", &self.end)
-                        .field("bytes", &DebugHaystack(&self.as_bytes()));
-
+                    .field("end", &self.end)
+                    .field("bytes", &DebugHaystack(&self.as_bytes()));
                     fmt.finish()
                 }
             }
 
-            impl<'h> From<Match<'h>> for &'h [u8] {
+            impl<'h> From<Match<'h>> for &'h [u8] 
+            {
                 fn from(m: Match<'h>) -> &'h [u8] {
                     m.as_bytes()
                 }
@@ -46148,13 +46159,15 @@ pub mod regex
                 fn from(m: Match<'h>) -> ::ops::Range<usize> { m.range() }
             }
 
-            pub struct Captures<'h> {
+            pub struct Captures<'h> 
+            {
                 haystack: &'h [u8],
                 caps: captures::Captures,
                 static_captures_len:Option<usize>,
             }
 
-            impl<'h> Captures<'h> {
+            impl<'h> Captures<'h> 
+            {
 
                 #[inline] pub fn get(&self, i: usize) -> Option<Match<'h>> {
                     self.caps
@@ -46227,7 +46240,7 @@ pub mod regex
 
                     impl<'a> ::fmt::Debug for Value<'a> {
                         fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-                            use regex_automata::util::escape::DebugHaystack;
+                            use regex::automata::util::escape::DebugHaystack;
 
                             write!(
                                 f,
@@ -46271,7 +46284,8 @@ pub mod regex
             #[doc(hidden)]
             pub type Locations = CaptureLocations;
 
-            impl CaptureLocations {
+            impl CaptureLocations 
+            {
                 #[inline] pub fn get(&self, i: usize) -> Option<(usize, usize)> { self.0.get_group(i).map(|sp| (sp.start, sp.end)) }
 
                 #[inline] pub fn len( &self ) -> usize { self.0.group_info().group_len(PatternID::ZERO) }
@@ -46281,7 +46295,8 @@ pub mod regex
             }
 
             #[derive( Debug )]
-            pub struct Matches<'r, 'h> {
+            pub struct Matches<'r, 'h> 
+            {
                 haystack: &'h [u8],
                 it: meta::FindMatches<'r, 'h>,
             }
@@ -46304,7 +46319,8 @@ pub mod regex
             impl<'r, 'h> ::iter::FusedIterator for Matches<'r, 'h> {}
 
             #[derive( Debug )]
-            pub struct CaptureMatches<'r, 'h> {
+            pub struct CaptureMatches<'r, 'h> 
+            {
                 haystack: &'h [u8],
                 it: meta::CapturesMatches<'r, 'h>,
             }
@@ -46330,7 +46346,8 @@ pub mod regex
             impl<'r, 'h> ::iter::FusedIterator for CaptureMatches<'r, 'h> {}
 
             #[derive( Debug )]
-            pub struct Split<'r, 'h> {
+            pub struct Split<'r, 'h> 
+            {
                 haystack: &'h [u8],
                 it: meta::Split<'r, 'h>,
             }
@@ -46345,7 +46362,8 @@ pub mod regex
             impl<'r, 'h> ::iter::FusedIterator for Split<'r, 'h> {}
 
             #[derive( Debug )]
-            pub struct SplitN<'r, 'h> {
+            pub struct SplitN<'r, 'h> 
+            {
                 haystack: &'h [u8],
                 it: meta::SplitN<'r, 'h>,
             }
@@ -46382,7 +46400,8 @@ pub mod regex
             impl<'r> ::iter::FusedIterator for CaptureNames<'r> {}
             
             #[derive( Clone, Debug )]
-            pub struct SubCaptureMatches<'c, 'h> {
+            pub struct SubCaptureMatches<'c, 'h> 
+            {
                 haystack: &'h [u8],
                 it: captures::CapturesPatternIter<'c>,
             }
@@ -46408,13 +46427,15 @@ pub mod regex
 
             impl<'c, 'h> ::iter::FusedIterator for SubCaptureMatches<'c, 'h> {}
 
-            pub trait Replacer {
+            pub trait Replacer 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>);
                 fn no_expansion<'r>(&'r mut self) -> Option<Cow<'r, [u8]>> { None }
                 fn by_ref<'r>(&'r mut self) -> ReplacerRef<'r, Self> { ReplacerRef(self) }
             }
 
-            impl<'a, const N: usize> Replacer for &'a [u8; N] {
+            impl<'a, const N: usize> Replacer for &'a [u8; N] 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand(&**self, dst);
                 }
@@ -46422,7 +46443,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl<const N: usize> Replacer for [u8; N] {
+            impl<const N: usize> Replacer for [u8; N] 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand(&*self, dst);
                 }
@@ -46430,7 +46452,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for &'a [u8] {
+            impl<'a> Replacer for &'a [u8] 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand(*self, dst);
                 }
@@ -46438,7 +46461,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for &'a Vec<u8> {
+            impl<'a> Replacer for &'a Vec<u8> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand(*self, dst);
                 }
@@ -46446,7 +46470,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl Replacer for Vec<u8> {
+            impl Replacer for Vec<u8> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand(self, dst);
                 }
@@ -46454,7 +46479,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for Cow<'a, [u8]> {
+            impl<'a> Replacer for Cow<'a, [u8]> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand( self.as_ref(), dst);
                 }
@@ -46462,7 +46488,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for &'a Cow<'a, [u8]> {
+            impl<'a> Replacer for &'a Cow<'a, [u8]> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     caps.expand( self.as_ref(), dst);
                 }
@@ -46470,10 +46497,9 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { no_expansion(self) }
             }
 
-            impl<F, T> Replacer for F
-            where
-                F: FnMut(&Captures<'_>) -> T,
-                T: AsRef<[u8]>,
+            impl<F, T> Replacer for F where
+            F: FnMut(&Captures<'_>) -> T,
+            T: AsRef<[u8]>
             {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     dst.extend_from_slice((*self)(caps).as_ref());
@@ -46494,7 +46520,8 @@ pub mod regex
             #[derive( Clone, Debug )]
             pub struct NoExpand<'s>(pub &'s [u8]);
 
-            impl<'s> Replacer for NoExpand<'s> {
+            impl<'s> Replacer for NoExpand<'s> 
+            {
                 fn replace_append( &mut self, _: &Captures<'_>, dst: &mut Vec<u8>) {
                     dst.extend_from_slice( self.0);
                 }
@@ -46523,13 +46550,14 @@ pub mod regex
             /*
             use alloc::{borrow::Cow, string::String, sync::Arc};
 
-            use regex_automata::{meta, util::captures, Input, PatternID};
+            use regex::automata::{meta, util::captures, Input, PatternID};
 
             use crate::{error::Error, RegexBuilder};
             */
 
             #[derive( Clone )]
-            pub struct Regex {
+            pub struct Regex 
+            {
                 pub meta: meta::Regex,
                 pub pattern: Arc<str>,
             }
@@ -46548,17 +46576,20 @@ pub mod regex
                 }
             }
 
-            impl ::str::FromStr for Regex {
+            impl ::str::FromStr for Regex 
+            {
                 type Err = Error;
                 fn from_str(s: &str) -> Result<Regex, Error> { Regex::new(s) }
             }
 
-            impl TryFrom<&str> for Regex {
+            impl TryFrom<&str> for Regex 
+            {
                 type Error = Error;
                 fn try_from(s: &str) -> Result<Regex, Error> { Regex::new(s) }
             }
 
-            impl TryFrom<String> for Regex {
+            impl TryFrom<String> for Regex 
+            {
                 type Error = Error;
                 fn try_from(s: String) -> Result<Regex, Error> { Regex::new(&s) }
             }
@@ -46648,7 +46679,8 @@ pub mod regex
                 }
             }
 
-            impl Regex {
+            impl Regex
+            {
 
                 #[inline] pub fn shortest_match(&self, haystack: &str) -> Option<usize> { self.shortest_match_at(haystack, 0)}
                 
@@ -46720,7 +46752,8 @@ pub mod regex
                 ) -> Option<Match<'h>> { self.captures_read_at(locs, haystack, start) }
             }
 
-            impl Regex {
+            impl Regex 
+            {
 
                 #[inline] pub fn as_str( &self ) -> &str { &self.pattern }
 
@@ -46741,14 +46774,16 @@ pub mod regex
                 #[inline] pub fn locations( &self ) -> CaptureLocations { self.capture_locations() }
             }
             
-            #[derive(Copy, Clone, Eq, PartialEq )]
-            pub struct Match<'h> {
+            #[derive( Copy, Clone, Eq, PartialEq )]
+            pub struct Match<'h> 
+            {
                 haystack: &'h str,
                 start: usize,
                 end: usize,
             }
 
-            impl<'h> Match<'h> {
+            impl<'h> Match<'h> 
+            {
                 #[inline] pub fn start( &self ) -> usize { self.start }
                 
                 #[inline] pub fn end( &self ) -> usize { self.end }
@@ -46775,7 +46810,8 @@ pub mod regex
                 }
             }
 
-            impl<'h> From<Match<'h>> for &'h str {
+            impl<'h> From<Match<'h>> for &'h str 
+            {
                 fn from(m: Match<'h>) -> &'h str {
                     m.as_str()
                 }
@@ -46785,13 +46821,15 @@ pub mod regex
                 fn from(m: Match<'h>) -> ::ops::Range<usize> { m.range() }
             }
             
-            pub struct Captures<'h> {
+            pub struct Captures<'h> 
+            {
                 haystack: &'h str,
                 caps: captures::Captures,
                 static_captures_len:Option<usize>,
             }
 
-            impl<'h> Captures<'h> {
+            impl<'h> Captures<'h> 
+            {
                 
                 
                 #[inline] pub fn get(&self, i: usize) -> Option<Match<'h>> {
@@ -46914,7 +46952,8 @@ pub mod regex
             }
             
             #[derive( Debug )]
-            pub struct Matches<'r, 'h> {
+            pub struct Matches<'r, 'h> 
+            {
                 haystack: &'h str,
                 it: meta::FindMatches<'r, 'h>,
             }
@@ -46936,7 +46975,8 @@ pub mod regex
             impl<'r, 'h> ::iter::FusedIterator for Matches<'r, 'h> {}
             
             #[derive( Debug )]
-            pub struct CaptureMatches<'r, 'h> {
+            pub struct CaptureMatches<'r, 'h> 
+            {
                 haystack: &'h str,
                 it: meta::CapturesMatches<'r, 'h>,
             }
@@ -46960,7 +47000,8 @@ pub mod regex
             impl<'r, 'h> ::iter::FusedIterator for CaptureMatches<'r, 'h> {}
             
             #[derive( Debug )]
-            pub struct Split<'r, 'h> {
+            pub struct Split<'r, 'h> 
+            {
                 haystack: &'h str,
                 it: meta::Split<'r, 'h>,
             }
@@ -46975,7 +47016,8 @@ pub mod regex
             impl<'r, 'h> ::iter::FusedIterator for Split<'r, 'h> {}
             
             #[derive( Debug )]
-            pub struct SplitN<'r, 'h> {
+            pub struct SplitN<'r, 'h> 
+            {
                 haystack: &'h str,
                 it: meta::SplitN<'r, 'h>,
             }
@@ -47012,7 +47054,8 @@ pub mod regex
             impl<'r> ::iter::FusedIterator for CaptureNames<'r> {}
             
             #[derive( Clone, Debug )]
-            pub struct SubCaptureMatches<'c, 'h> {
+            pub struct SubCaptureMatches<'c, 'h> 
+            {
                 haystack: &'h str,
                 it: captures::CapturesPatternIter<'c>,
             }
@@ -47038,14 +47081,16 @@ pub mod regex
 
             impl<'c, 'h> ::iter::FusedIterator for SubCaptureMatches<'c, 'h> {}
             
-            pub trait Replacer {
+            pub trait Replacer 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String);
                 fn no_expansion<'r>(&'r mut self) -> Option<Cow<'r, str>> { None }
                 
                 fn by_ref<'r>(&'r mut self) -> ReplacerRef<'r, Self> { ReplacerRef(self) }
             }
 
-            impl<'a> Replacer for &'a str {
+            impl<'a> Replacer for &'a str 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     caps.expand(*self, dst);
                 }
@@ -47053,7 +47098,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, str>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for &'a String {
+            impl<'a> Replacer for &'a String 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     self.as_str().replace_append(caps, dst)
                 }
@@ -47061,7 +47107,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, str>> { no_expansion(self) }
             }
 
-            impl Replacer for String {
+            impl Replacer for String 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     self.as_str().replace_append(caps, dst)
                 }
@@ -47069,7 +47116,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, str>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for Cow<'a, str> {
+            impl<'a> Replacer for Cow<'a, str> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     self.as_ref().replace_append(caps, dst)
                 }
@@ -47077,7 +47125,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, str>> { no_expansion(self) }
             }
 
-            impl<'a> Replacer for &'a Cow<'a, str> {
+            impl<'a> Replacer for &'a Cow<'a, str> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     self.as_ref().replace_append(caps, dst)
                 }
@@ -47085,10 +47134,9 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, str>> { no_expansion(self) }
             }
 
-            impl<F, T> Replacer for F
-            where
-                F: FnMut(&Captures<'_>) -> T,
-                T: AsRef<str>,
+            impl<F, T> Replacer for F where
+            F: FnMut(&Captures<'_>) -> T,
+            T: AsRef<str>
             {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     dst.push_str((*self)(caps).as_ref());
@@ -47098,7 +47146,8 @@ pub mod regex
             #[derive( Debug )]
             pub struct ReplacerRef<'a, R: ?Sized>(&'a mut R);
 
-            impl<'a, R: Replacer + ?Sized + 'a> Replacer for ReplacerRef<'a, R> {
+            impl<'a, R: Replacer + ?Sized + 'a> Replacer for ReplacerRef<'a, R> 
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut String) {
                     self.0.replace_append(caps, dst)
                 }
@@ -47109,7 +47158,8 @@ pub mod regex
             #[derive( Clone, Debug )]
             pub struct NoExpand<'s>(pub &'s str);
 
-            impl<'s> Replacer for NoExpand<'s> {
+            impl<'s> Replacer for NoExpand<'s> 
+            {
                 fn replace_append( &mut self, _: &Captures<'_>, dst: &mut String) {
                     dst.push_str( self.0);
                 }
@@ -47117,7 +47167,8 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, str>> { Some(Cow::Borrowed( self.0)) }
             }
             
-            fn no_expansion<T: AsRef<str>>(replacement: &T) -> Option<Cow<'_, str>> {
+            fn no_expansion<T: AsRef<str>>(replacement: &T) -> Option<Cow<'_, str>> 
+            {
                 let replacement = replacement.as_ref();
                 match crate::find_byte::find_byte(b'$', replacement.as_bytes()) {
                     Some(_) => None,
@@ -47146,7 +47197,7 @@ pub mod regex
                 };
                 /*
                 use alloc::string::String;
-                use regex_automata::{meta, Input, PatternID, PatternSet, PatternSetIter};
+                use regex::automata::{meta, Input, PatternID, PatternSet, PatternSetIter};
                 use crate::{bytes::RegexSetBuilder, Error};
                 */
 
@@ -47349,7 +47400,7 @@ pub mod regex
                 /*
                 use alloc::string::String;
 
-                use regex_automata::{meta, Input, PatternID, PatternSet, PatternSetIter};
+                use regex::automata::{meta, Input, PatternID, PatternSet, PatternSetIter};
 
                 use crate::{Error, RegexSetBuilder};
                 */
@@ -47570,7 +47621,7 @@ pub mod regex
             /*
             use ::cmp::Ordering;
             use alloc::{boxed::Box, string::String, vec, vec::Vec};
-            pub use crate::ast::visitor::{visit, Visitor};
+            pub use regex::ast::visitor::{visit, Visitor};
             */
             pub mod parse
             {
@@ -47638,7 +47689,7 @@ pub mod regex
                         p: &ParserI<'_, P>,
                     ) -> Result<ast::ClassSetItem> {
                         use self::Primitive::*;
-                        use crate::ast::ClassSetItem;
+                        use regex::ast::ClassSetItem;
 
                         match self {
                             Literal(lit) => Ok(ClassSetItem::Literal(lit)),
@@ -49390,7 +49441,7 @@ pub mod regex
                 /*
                 use ::fmt;
 
-                use crate::ast::{
+                use regex::ast::{
                     self,
                     visitor::{self, Visitor},
                     Ast,
@@ -49488,7 +49539,7 @@ pub mod regex
                         &mut self,
                         ast: &ast::ClassSetItem,
                     ) -> Result<(), Self::Err> {
-                        use crate::ast::ClassSetItem::*;
+                        use regex::ast::ClassSetItem::*;
 
                         match *ast {
                             Empty(_) => Ok( () ),
@@ -49516,7 +49567,7 @@ pub mod regex
                 impl<W: fmt::Write> Writer<W>
                 {
                     fn fmt_group_pre( &mut self, ast: &ast::Group) -> fmt::Result {
-                        use crate::ast::GroupKind::*;
+                        use regex::ast::GroupKind::*;
                         match ast.kind {
                             CaptureIndex(_) => self.wtr.write_str("("),
                             CaptureName { ref name, starts_with_p } => {
@@ -49540,7 +49591,7 @@ pub mod regex
                     }
 
                     fn fmt_repetition( &mut self, ast: &ast::Repetition) -> fmt::Result {
-                        use crate::ast::RepetitionKind::*;
+                        use regex::ast::RepetitionKind::*;
                         match ast.op.kind {
                             ZeroOrOne if ast.greedy => self.wtr.write_str("?"),
                             ZeroOrOne => self.wtr.write_str("??"),
@@ -49562,7 +49613,7 @@ pub mod regex
                         &mut self,
                         ast: &ast::RepetitionRange,
                     ) -> fmt::Result {
-                        use crate::ast::RepetitionRange::*;
+                        use regex::ast::RepetitionRange::*;
                         match *ast {
                             Exactly(x) => write!( self.wtr, "{{{x}}}"),
                             AtLeast(x) => write!( self.wtr, "{{{x},}}"),
@@ -49571,7 +49622,7 @@ pub mod regex
                     }
 
                     fn fmt_literal( &mut self, ast: &ast::Literal) -> fmt::Result {
-                        use crate::ast::LiteralKind::*;
+                        use regex::ast::LiteralKind::*;
 
                         match ast.kind {
                             Verbatim => self.wtr.write_char(ast.c),
@@ -49594,7 +49645,7 @@ pub mod regex
                     }
 
                     fn fmt_assertion( &mut self, ast: &ast::Assertion) -> fmt::Result {
-                        use crate::ast::AssertionKind::*;
+                        use regex::ast::AssertionKind::*;
                         match ast.kind {
                             StartLine => self.wtr.write_str("^"),
                             EndLine => self.wtr.write_str("$"),
@@ -49619,7 +49670,7 @@ pub mod regex
                     }
 
                     fn fmt_flags( &mut self, ast: &ast::Flags) -> fmt::Result {
-                        use crate::ast::{Flag, FlagsItemKind};
+                        use regex::ast::{Flag, FlagsItemKind};
 
                         for item in &ast.items {
                             match item.kind {
@@ -49660,7 +49711,7 @@ pub mod regex
                         &mut self,
                         ast: &ast::ClassSetBinaryOpKind,
                     ) -> fmt::Result {
-                        use crate::ast::ClassSetBinaryOpKind::*;
+                        use regex::ast::ClassSetBinaryOpKind::*;
                         match *ast {
                             Intersection => self.wtr.write_str("&&"),
                             Difference => self.wtr.write_str("--"),
@@ -49669,7 +49720,7 @@ pub mod regex
                     }
 
                     fn fmt_class_perl( &mut self, ast: &ast::ClassPerl) -> fmt::Result {
-                        use crate::ast::ClassPerlKind::*;
+                        use regex::ast::ClassPerlKind::*;
                         match ast.kind {
                             Digit if ast.negated => self.wtr.write_str(r"\D"),
                             Digit => self.wtr.write_str(r"\d"),
@@ -49681,7 +49732,7 @@ pub mod regex
                     }
 
                     fn fmt_class_ascii( &mut self, ast: &ast::ClassAscii) -> fmt::Result {
-                        use crate::ast::ClassAsciiKind::*;
+                        use regex::ast::ClassAsciiKind::*;
                         match ast.kind {
                             Alnum if ast.negated => self.wtr.write_str("[:^alnum:]"),
                             Alnum => self.wtr.write_str("[:alnum:]"),
@@ -49715,8 +49766,8 @@ pub mod regex
                     }
 
                     fn fmt_class_unicode( &mut self, ast: &ast::ClassUnicode) -> fmt::Result {
-                        use crate::ast::ClassUnicodeKind::*;
-                        use crate::ast::ClassUnicodeOpKind::*;
+                        use regex::ast::ClassUnicodeKind::*;
+                        use regex::ast::ClassUnicodeOpKind::*;
 
                         if ast.negated {
                             self.wtr.write_str(r"\P")?;
@@ -49744,7 +49795,7 @@ pub mod regex
                 };
                 /*
                 use alloc::{vec, vec::Vec};
-                use crate::ast::{self, Ast};
+                use regex::ast::{self, Ast};
                 */
                 pub trait Visitor {
 
@@ -50488,7 +50539,7 @@ pub mod regex
             impl ::fmt::Display for Ast
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
-                    use crate::ast::print::Printer;
+                    use regex::ast::print::Printer;
                     Printer::new().print(self, f)
                 }
             }
@@ -51945,7 +51996,7 @@ pub mod regex
 
                 use alloc::{vec, vec::Vec};
 
-                use crate::hir::{self, Hir};
+                use regex::hir::{self, Hir};
                 */
 
                 #[derive( Clone, Debug )]
@@ -51970,7 +52021,7 @@ pub mod regex
                     }
 
                     pub fn extract(&self, hir: &Hir) -> Seq {
-                        use crate::hir::HirKind::*;
+                        use regex::hir::HirKind::*;
 
                         match *hir.kind() {
                             Empty | Look(_) => Seq::singleton(self::Literal::exact(vec![])),
@@ -52697,7 +52748,7 @@ pub mod regex
                 impl From<char> for Literal
                 {
                     fn from(ch: char) -> Literal {
-                        use alloc::string::ToString;
+                        use ::string::ToString;
                         Literal::exact(ch.encode_utf8(&mut [0; 4]).to_string())
                     }
                 }
@@ -53504,7 +53555,7 @@ pub mod regex
                         &mut self,
                         op: &ast::ClassSetBinaryOp,
                     ) -> Result<()> {
-                        use crate::ast::ClassSetBinaryOpKind::*;
+                        use regex::ast::ClassSetBinaryOpKind::*;
 
                         if self.flags().unicode() {
                             let mut rhs = self.pop().unwrap().unwrap_class_unicode();
@@ -53834,7 +53885,7 @@ pub mod regex
                         &self,
                         ast_class: &ast::ClassUnicode,
                     ) -> Result<hir::ClassUnicode> {
-                        use crate::ast::ClassUnicodeKind::*;
+                        use regex::ast::ClassUnicodeKind::*;
 
                         if !self.flags().unicode() {
                             return Err(
@@ -53893,7 +53944,7 @@ pub mod regex
                         &self,
                         ast_class: &ast::ClassPerl,
                     ) -> Result<hir::ClassUnicode> {
-                        use crate::ast::ClassPerlKind::*;
+                        use regex::ast::ClassPerlKind::*;
 
                         assert!( self.flags().unicode());
                         let result = match ast_class.kind {
@@ -53913,7 +53964,7 @@ pub mod regex
                         &self,
                         ast_class: &ast::ClassPerl,
                     ) -> Result<hir::ClassBytes> {
-                        use crate::ast::ClassPerlKind::*;
+                        use regex::ast::ClassPerlKind::*;
 
                         assert!(!self.flags().unicode());
                         let mut class = match ast_class.kind {
@@ -54068,7 +54119,7 @@ pub mod regex
                 }
 
                 fn ascii_class(kind: &ast::ClassAsciiKind) -> impl Iterator<Item = (u8, u8)> {
-                    use crate::ast::ClassAsciiKind::*;
+                    use regex::ast::ClassAsciiKind::*;
 
                     let slice:&'static [(u8, u8)] = match *kind {
                         Alnum => &[(b'0', b'9'), (b'A', b'Z'), (b'a', b'z')],
@@ -54111,7 +54162,7 @@ pub mod regex
                 };
                 /*
                 use alloc::{vec, vec::Vec};
-                use crate::hir::{self, Hir, HirKind};
+                use regex::hir::{self, Hir, HirKind};
                 */
 
                 pub trait Visitor {
@@ -54675,7 +54726,7 @@ pub mod regex
             impl ::fmt::Debug for Class
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-                    use crate::debug::Byte;
+                    use regex::debug::Byte;
 
                     let mut fmter = f.debug_set();
                     match *self {
@@ -54695,7 +54746,8 @@ pub mod regex
             }
 
             #[derive( Clone, Debug, Eq, PartialEq )]
-            pub struct ClassUnicode {
+            pub struct ClassUnicode 
+            {
                 set: IntervalSet<ClassUnicodeRange>,
             }
 
@@ -54792,7 +54844,8 @@ pub mod regex
             }
 
             #[derive( Clone, Copy, Default, Eq, PartialEq, PartialOrd, Ord)]
-            pub struct ClassUnicodeRange {
+            pub struct ClassUnicodeRange 
+            {
                 start: char,
                 end: char,
             }
@@ -55551,7 +55604,8 @@ pub mod regex
                 pub bits: u32,
             }
 
-            impl LookSet {
+            impl LookSet 
+            {
 
                 #[inline] pub fn empty() -> LookSet {
                     LookSet { bits: 0 }
@@ -55687,11 +55741,13 @@ pub mod regex
             }
 
             #[derive( Clone, Debug )]
-            pub struct LookSetIter {
+            pub struct LookSetIter 
+            {
                 set: LookSet,
             }
 
-            impl Iterator for LookSetIter {
+            impl Iterator for LookSetIter 
+            {
                 type Item = Look;
 
                 #[inline] fn next(&mut self) -> Option<Look> {
@@ -55705,7 +55761,8 @@ pub mod regex
                 }
             }
             
-            fn class_chars(hirs: &[Hir]) -> Option<Class> {
+            fn class_chars(hirs: &[Hir]) -> Option<Class> 
+            {
                 let mut cls = ClassUnicode::new(vec![]);
                 for hir in hirs.iter() {
                     match *hir.kind() {
@@ -55717,7 +55774,8 @@ pub mod regex
                 Some(Class::Unicode(cls))
             }
             
-            fn class_bytes(hirs: &[Hir]) -> Option<Class> {
+            fn class_bytes(hirs: &[Hir]) -> Option<Class> 
+            {
                 let mut cls = ClassBytes::new(vec![]);
                 for hir in hirs.iter() {
                     match *hir.kind() {
@@ -55729,7 +55787,8 @@ pub mod regex
                 Some(Class::Bytes(cls))
             }
             
-            fn singleton_chars(hirs: &[Hir]) -> Option<Vec<char>> {
+            fn singleton_chars(hirs: &[Hir]) -> Option<Vec<char>> 
+            {
                 let mut singletons = vec![];
                 for hir in hirs.iter() {
                     let literal = match *hir.kind() {
@@ -55749,7 +55808,8 @@ pub mod regex
                 Some(singletons)
             }
             
-            fn singleton_bytes(hirs: &[Hir]) -> Option<Vec<u8>> {
+            fn singleton_bytes(hirs: &[Hir]) -> Option<Vec<u8>> 
+            {
                 let mut singletons = vec![];
                 for hir in hirs.iter() {
                     let literal = match *hir.kind() {
@@ -55764,7 +55824,8 @@ pub mod regex
                 Some(singletons)
             }
             
-            fn lift_common_prefix(hirs: Vec<Hir>) -> Result<Hir, Vec<Hir>> {
+            fn lift_common_prefix(hirs: Vec<Hir>) -> Result<Hir, Vec<Hir>> 
+            {
                 if hirs.len() <= 1 {
                     return Err(hirs);
                 }
@@ -56206,7 +56267,7 @@ pub mod regex
                 buf.push(c);
             }
         }
-    }
+    } pub use self::syntax::{ * };
 
     pub fn escape( pattern:&str ) -> String
     {
@@ -70596,19 +70657,19 @@ pub mod unicode
 
     pub fn perl_word() -> Result<hir::ClassUnicode, Error> 
     {
-        use tables::perl::word::PERL_WORD;
+        use unicode::tables::perl::word::PERL_WORD;
         Ok(hir_class(PERL_WORD))
     }
 
     pub fn perl_space() -> Result<hir::ClassUnicode, Error> 
     {
-        use tables::property::booleans::WHITE_SPACE;
+        use unicode::tables::property::booleans::WHITE_SPACE;
         Ok(hir_class(WHITE_SPACE))
     }
 
     pub fn perl_digit() -> Result<hir::ClassUnicode, Error> 
     {
-        use tables::categories::DECIMAL_NUMBER;
+        use unicode::tables::categories::DECIMAL_NUMBER;
         Ok(hir_class(DECIMAL_NUMBER))
     }
 
@@ -70665,7 +70726,7 @@ pub mod unicode
 
     fn canonical_prop( normalized_name: &str ) -> Result<Option<&'static str>, Error>
     {
-        use tables::property::names::PROPERTY_NAMES;
+        use unicode::tables::property::names::PROPERTY_NAMES;
         Ok
         (
             PROPERTY_NAMES
@@ -70684,7 +70745,7 @@ pub mod unicode
 
     fn property_values( canonical_property_name:&'static str ) -> Result<Option<PropertyValues>, Error>
     {
-        use tables::property::values::PROPERTY_VALUES;
+        use unicode::tables::property::values::PROPERTY_VALUES;
         Ok
         (
             PROPERTY_VALUES
@@ -70704,7 +70765,7 @@ pub mod unicode
 
     fn ages(canonical_age: &str) -> Result<impl Iterator<Item = Range>, Error>
     {   
-        use tables::age;
+        use unicode::tables::age;
 
         const AGES: &[(&str, Range)] = 
         &[
@@ -70752,7 +70813,7 @@ pub mod unicode
             "Decimal_Number" => perl_digit(),
             name => 
             {
-                use tables::categories::BY_NAME;
+                use unicode::tables::categories::BY_NAME;
                 match name {
                     "ASCII" => Ok(hir_class(&[('\0','\x7F')])),
                     "Any" => Ok(hir_class(&[('\0','\u{10FFFF}')])),
@@ -70772,7 +70833,7 @@ pub mod unicode
 
     fn script(canonical_name:&'static str) -> Result<hir::ClassUnicode, Error>
     {
-        use tables::script::BY_NAME;
+        use unicode::tables::script::BY_NAME;
         property_set(BY_NAME, canonical_name)
         .map(hir_class)
         .ok_or(Error::PropertyValueNotFound)   
@@ -70780,7 +70841,7 @@ pub mod unicode
 
     fn script_extension( canonical_name:&'static str ) -> Result<hir::ClassUnicode, Error>
     {
-        use tables::script::extension::BY_NAME;
+        use unicode::tables::script::extension::BY_NAME;
         property_set(BY_NAME, canonical_name)
         .map(hir_class)
         .ok_or(Error::PropertyValueNotFound)
@@ -70794,7 +70855,7 @@ pub mod unicode
             "White_Space" => perl_space(),
             name =>
             {
-                use tables::property::booleans::BY_NAME;
+                use unicode::tables::property::booleans::BY_NAME;
                 property_set(BY_NAME, name)
                 .map(hir_class)
                 .ok_or(Error::PropertyNotFound)
@@ -70804,7 +70865,7 @@ pub mod unicode
 
     fn gcb(canonical_name:&'static str) -> Result<hir::ClassUnicode, Error>
     {
-        use tables::graphemes::BY_NAME;
+        use unicode::tables::graphemes::BY_NAME;
         property_set(BY_NAME, canonical_name)
         .map(hir_class)
         .ok_or(Error::PropertyValueNotFound)
@@ -70812,7 +70873,7 @@ pub mod unicode
 
     fn wb(canonical_name:&'static str) -> Result<hir::ClassUnicode, Error>
     {
-        use tables::word::BY_NAME;
+        use unicode::tables::word::BY_NAME;
         property_set(BY_NAME, canonical_name)
         .map(hir_class)
         .ok_or(Error::PropertyValueNotFound)
@@ -70820,7 +70881,7 @@ pub mod unicode
 
     fn sb(canonical_name:&'static str) -> Result<hir::ClassUnicode, Error>
     {
-        use tables::sentence::BY_NAME;
+        use unicode::tables::sentence::BY_NAME;
         property_set(BY_NAME, canonical_name)
         .map(hir_class)
         .ok_or(Error::PropertyValueNotFound)
@@ -71356,7 +71417,7 @@ pub mod utf8
     impl ::fmt::Display for Ast 
     {
         fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
-            use crate::ast::print::Printer;
+            use regex::ast::print::Printer;
             Printer::new().print(self, f)
         }
     }
@@ -74255,4 +74316,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 74258 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 74319 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
