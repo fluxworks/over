@@ -56,7 +56,6 @@ pub mod parse;
 #[macro_use] extern crate unicode_normalization;
 #[macro_use] extern crate unicode_width;
 */
-
 #[macro_use] pub mod macros
 {   
     /*!
@@ -6270,8 +6269,6 @@ pub mod expand
     };
     /*
     */
-    
-
     pub fn home( text:&str ) -> String
     {
         let mut s: String = text.to_string();
@@ -6347,7 +6344,7 @@ pub mod expand
                                     is_empty = false;
                                 }
 
-                                Err( e ) => { /*log!( "glob error: {:?}", e );*/ }
+                                Err( e ) => { }
                             }
                         }
 
@@ -6457,7 +6454,7 @@ pub mod get
         match env::var( "USER" )
         {
             Ok( x ) => { return x; }
-            Err( e ) => { /* log!( ":: env USER error: {}", e ); */ }
+            Err( e ) => { }
         }
 
         let cmd_result = now::run( "whoami" );
@@ -20744,7 +20741,6 @@ pub mod now
         {
             Ok(_ ) =>
             {
-                /*log!( "run non tty command: {}", &buffer ); */
                 run_command_line( sh, &buffer, false, false );
             }
             
@@ -21040,18 +21036,10 @@ pub mod now
             println_stderr!( ":: cannot capture output of background cmd" );
             return ( term_given, CommandResult::error() );
         }
-        /*
-        if let Some( cr ) = try_run_calculator( &cl.line, capture ) {
-            return ( term_given, cr );
-        } */
         
         if let Some( cr ) = try_run_func( sh, cl, capture, log_cmd ) {
             return ( term_given, cr );
         }
-        /*
-        if log_cmd {
-            log!( "run: {}", cl.line );
-        } */
 
         let length = cl.commands.len();
         if length == 0 {
@@ -21196,9 +21184,7 @@ pub mod now
                 *cmd_result = cr;
                 return unsafe { getpid() };
             }
-            /*
-            println_stderr!( ":: error when run singler builtin" );
-            log!( "error when run singler builtin: {:?}", cl); */
+
             return 1;
         }
 
@@ -21575,10 +21561,6 @@ pub mod now
             {
                 args.push( token.1.to_string() );
             }
-            /*
-            if log_cmd {
-                log!( "run func: {:?}", &args );
-            }*/
 
             let cr_list = scripts::run_lines( sh, &func_body, &args, capture );
             let mut stdout = String::new();
@@ -23566,7 +23548,6 @@ pub mod path
                     if e.kind() == ErrorKind::NotFound {
                         continue;
                     }
-                    log!( ":: fs read_dir error: {}: {}", p.display(), e );
                 }
             }
         }
@@ -25035,7 +25016,6 @@ pub mod prompts
                 Some( x ) => x,
                 None =>
                 {
-                    //log!( ":: PROMPT: token last error" );
                     return;
                 }
             };
@@ -25069,7 +25049,6 @@ pub mod prompts
                         Some( x ) => x,
                         None =>
                         {
-                            //log!( "prompt token last error" );
                             return;
                         }
                     };
@@ -25164,7 +25143,6 @@ pub mod prompts
                 prompt.push_str( "\n$ " );
             }
         } else {
-            log!( "ERROR: Failed to get term size" );
         }
         prompt
     }
@@ -38146,20 +38124,6 @@ pub mod regex
                         patterns: &[P],
                     ) -> Result<Regex, BuildError> {
                         use regex::automata::primitives::IteratorIndexExt;
-                        log! {
-                            for (pid, p) in patterns.iter().with_pattern_ids() {
-                                let p = p.as_ref();
-                                let maxoff = p
-                                    .char_indices()
-                                    .map(|(i, ch)| i + ch.len_utf8())
-                                    .take(1000)
-                                    .last()
-                                    .unwrap_or(0);
-                                if maxoff < p.len() {
-                                } else {
-                                }
-                            }
-                        }
                         let (mut asts, mut hirs) = (vec![], vec![]);
                         for (pid, p) in patterns.iter().with_pattern_ids() {
                             let ast = self
@@ -67268,7 +67232,7 @@ pub mod system
             
             if rcode != 0
             {
-                //log!("failed to call pthread_sigmask");
+                
             }
             
             let rcode = tcsetpgrp(1, gid);
@@ -67279,7 +67243,6 @@ pub mod system
                 given = false;
                 let e = error::no::errno();
                 let code = e.0;
-                //log!("error in give_terminal_to() {}: {}", code, e);
             }            
             else { given = true; }
             
@@ -67287,7 +67250,7 @@ pub mod system
             
             if rcode != 0
             {
-                //log!("failed to call pthread_sigmask");
+                
             }
 
             given
@@ -74191,7 +74154,6 @@ pub fn main() -> Result<(), error::parse::ParseError>
         
         if is::script( &args )
         {
-            //log!( "run script: {:?} ", &args );
             let status = scripts::run( &mut sh, &args );
             ::process::exit( status );
         }
@@ -74327,4 +74289,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 74330 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 74292 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
