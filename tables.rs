@@ -48,7 +48,6 @@ pub mod parse;
 
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
-#[macro_use] extern crate libc;
 #[macro_use] extern crate rand;
 #[macro_use] extern crate regex as re;
 #[macro_use] extern crate smallvec;
@@ -56,6 +55,8 @@ pub mod parse;
 #[macro_use] extern crate unicode_normalization;
 #[macro_use] extern crate unicode_width;
 */
+#[macro_use] extern crate libc;
+
 #[macro_use] pub mod macros
 {   
     /*!
@@ -7329,7 +7330,7 @@ pub mod is
         system::api::isatty( fd )
     }
 
-    pub fn meta_character(c: char) -> bool
+    pub fn meta_character( c:char ) -> bool
     {
         match c
         {
@@ -7338,7 +7339,7 @@ pub mod is
         }
     }
 
-    pub fn escapeable_character(c: char) -> bool
+    pub fn escapeable_character( c:char ) -> bool
     {
         if meta_character(c) { return true; }
         
@@ -7352,7 +7353,7 @@ pub mod is
         }
     }
 
-    pub fn word_character(c: char) -> bool
+    pub fn word_character( c:char ) -> bool
     {
         try_word_character(c).expect("unicode-perl feature must be enabled")
     }
@@ -7367,6 +7368,17 @@ pub mod is
             _ => false,
         }
     }
+    // #[inline] pub fn is_public_assigned( c:char ) -> bool
+    #[inline] pub fn public_assigned( c:char ) -> bool
+    {
+        match c
+        {
+            '\u{0000}'..='\u{0377}'|'\u{037A}'..='\u{037F}'|'\u{0384}'..='\u{038A}'|'\u{038C}'|'\u{038E}'..='\u{03A1}'|'\u{03A3}'..='\u{052F}'|'\u{0531}'..='\u{0556}'|'\u{0559}'..='\u{058A}'|'\u{058D}'..='\u{058F}'|'\u{0591}'..='\u{05C7}'|'\u{05D0}'..='\u{05EA}'|'\u{05EF}'..='\u{05F4}'|'\u{0600}'..='\u{061C}'|'\u{061E}'..='\u{070D}'|'\u{070F}'..='\u{074A}'|'\u{074D}'..='\u{07B1}'|'\u{07C0}'..='\u{07FA}'|'\u{07FD}'..='\u{082D}'|'\u{0830}'..='\u{083E}'|'\u{0840}'..='\u{085B}'|'\u{085E}'|'\u{0860}'..='\u{086A}'|'\u{08A0}'..='\u{08B4}'|'\u{08B6}'..='\u{08C7}'|'\u{08D3}'..='\u{0983}'|'\u{0985}'..='\u{098C}'|'\u{098F}'..='\u{0990}'|'\u{0993}'..='\u{09A8}'|'\u{09AA}'..='\u{09B0}'|'\u{09B2}'|'\u{09B6}'..='\u{09B9}'|'\u{09BC}'..='\u{09C4}'|'\u{09C7}'..='\u{09C8}'|'\u{09CB}'..='\u{09CE}'|'\u{09D7}'|'\u{09DC}'..='\u{09DD}'|'\u{09DF}'..='\u{09E3}'|'\u{09E6}'..='\u{09FE}'|'\u{0A01}'..='\u{0A03}'|'\u{0A05}'..='\u{0A0A}'|'\u{0A0F}'..='\u{0A10}'|'\u{0A13}'..='\u{0A28}'|'\u{0A2A}'..='\u{0A30}'|'\u{0A32}'..='\u{0A33}'|'\u{0A35}'..='\u{0A36}'|'\u{0A38}'..='\u{0A39}'|'\u{0A3C}'|'\u{0A3E}'..='\u{0A42}'|'\u{0A47}'..='\u{0A48}'|'\u{0A4B}'..='\u{0A4D}'|'\u{0A51}'|'\u{0A59}'..='\u{0A5C}'|'\u{0A5E}'|'\u{0A66}'..='\u{0A76}'|'\u{0A81}'..='\u{0A83}'|'\u{0A85}'..='\u{0A8D}'|'\u{0A8F}'..='\u{0A91}'|'\u{0A93}'..='\u{0AA8}'|'\u{0AAA}'..='\u{0AB0}'|'\u{0AB2}'..='\u{0AB3}'|'\u{0AB5}'..='\u{0AB9}'|'\u{0ABC}'..='\u{0AC5}'|'\u{0AC7}'..='\u{0AC9}'|'\u{0ACB}'..='\u{0ACD}'|'\u{0AD0}'|'\u{0AE0}'..='\u{0AE3}'|'\u{0AE6}'..='\u{0AF1}'|'\u{0AF9}'..='\u{0AFF}'|'\u{0B01}'..='\u{0B03}'|'\u{0B05}'..='\u{0B0C}'|'\u{0B0F}'..='\u{0B10}'|'\u{0B13}'..='\u{0B28}'|'\u{0B2A}'..='\u{0B30}'|'\u{0B32}'..='\u{0B33}'|'\u{0B35}'..='\u{0B39}'|'\u{0B3C}'..='\u{0B44}'|'\u{0B47}'..='\u{0B48}'|'\u{0B4B}'..='\u{0B4D}'|'\u{0B55}'..='\u{0B57}'|'\u{0B5C}'..='\u{0B5D}'|'\u{0B5F}'..='\u{0B63}'|'\u{0B66}'..='\u{0B77}'|'\u{0B82}'..='\u{0B83}'|'\u{0B85}'..='\u{0B8A}'|'\u{0B8E}'..='\u{0B90}'|'\u{0B92}'..='\u{0B95}'|'\u{0B99}'..='\u{0B9A}'|'\u{0B9C}'|'\u{0B9E}'..='\u{0B9F}'|'\u{0BA3}'..='\u{0BA4}'|'\u{0BA8}'..='\u{0BAA}'|'\u{0BAE}'..='\u{0BB9}'|'\u{0BBE}'..='\u{0BC2}'|'\u{0BC6}'..='\u{0BC8}'|'\u{0BCA}'..='\u{0BCD}'|'\u{0BD0}'|'\u{0BD7}'|'\u{0BE6}'..='\u{0BFA}'|'\u{0C00}'..='\u{0C0C}'|'\u{0C0E}'..='\u{0C10}'|'\u{0C12}'..='\u{0C28}'|'\u{0C2A}'..='\u{0C39}'|'\u{0C3D}'..='\u{0C44}'|'\u{0C46}'..='\u{0C48}'|'\u{0C4A}'..='\u{0C4D}'|'\u{0C55}'..='\u{0C56}'|'\u{0C58}'..='\u{0C5A}'|'\u{0C60}'..='\u{0C63}'|'\u{0C66}'..='\u{0C6F}'|'\u{0C77}'..='\u{0C8C}'|'\u{0C8E}'..='\u{0C90}'|'\u{0C92}'..='\u{0CA8}'|'\u{0CAA}'..='\u{0CB3}'|'\u{0CB5}'..='\u{0CB9}'|'\u{0CBC}'..='\u{0CC4}'|'\u{0CC6}'..='\u{0CC8}'|'\u{0CCA}'..='\u{0CCD}'|'\u{0CD5}'..='\u{0CD6}'|'\u{0CDE}'|'\u{0CE0}'..='\u{0CE3}'|'\u{0CE6}'..='\u{0CEF}'|'\u{0CF1}'..='\u{0CF2}'|'\u{0D00}'..='\u{0D0C}'|'\u{0D0E}'..='\u{0D10}'|'\u{0D12}'..='\u{0D44}'|'\u{0D46}'..='\u{0D48}'|'\u{0D4A}'..='\u{0D4F}'|'\u{0D54}'..='\u{0D63}'|'\u{0D66}'..='\u{0D7F}'|'\u{0D81}'..='\u{0D83}'|'\u{0D85}'..='\u{0D96}'|'\u{0D9A}'..='\u{0DB1}'|'\u{0DB3}'..='\u{0DBB}'|'\u{0DBD}'|'\u{0DC0}'..='\u{0DC6}'|'\u{0DCA}'|'\u{0DCF}'..='\u{0DD4}'|'\u{0DD6}'|'\u{0DD8}'..='\u{0DDF}'|'\u{0DE6}'..='\u{0DEF}'|'\u{0DF2}'..='\u{0DF4}'|'\u{0E01}'..='\u{0E3A}'|'\u{0E3F}'..='\u{0E5B}'|'\u{0E81}'..='\u{0E82}'|'\u{0E84}'|'\u{0E86}'..='\u{0E8A}'|'\u{0E8C}'..='\u{0EA3}'|'\u{0EA5}'|'\u{0EA7}'..='\u{0EBD}'|'\u{0EC0}'..='\u{0EC4}'|'\u{0EC6}'|'\u{0EC8}'..='\u{0ECD}'|'\u{0ED0}'..='\u{0ED9}'|'\u{0EDC}'..='\u{0EDF}'|'\u{0F00}'..='\u{0F47}'|'\u{0F49}'..='\u{0F6C}'|'\u{0F71}'..='\u{0F97}'|'\u{0F99}'..='\u{0FBC}'|'\u{0FBE}'..='\u{0FCC}'|'\u{0FCE}'..='\u{0FDA}'|'\u{1000}'..='\u{10C5}'|'\u{10C7}'|'\u{10CD}'|'\u{10D0}'..='\u{1248}'|'\u{124A}'..='\u{124D}'|'\u{1250}'..='\u{1256}'|'\u{1258}'|'\u{125A}'..='\u{125D}'|'\u{1260}'..='\u{1288}'|'\u{128A}'..='\u{128D}'|'\u{1290}'..='\u{12B0}'|'\u{12B2}'..='\u{12B5}'|'\u{12B8}'..='\u{12BE}'|'\u{12C0}'|'\u{12C2}'..='\u{12C5}'|'\u{12C8}'..='\u{12D6}'|'\u{12D8}'..='\u{1310}'|'\u{1312}'..='\u{1315}'|'\u{1318}'..='\u{135A}'|'\u{135D}'..='\u{137C}'|'\u{1380}'..='\u{1399}'|'\u{13A0}'..='\u{13F5}'|'\u{13F8}'..='\u{13FD}'|'\u{1400}'..='\u{169C}'|'\u{16A0}'..='\u{16F8}'|'\u{1700}'..='\u{170C}'|'\u{170E}'..='\u{1714}'|'\u{1720}'..='\u{1736}'|'\u{1740}'..='\u{1753}'|'\u{1760}'..='\u{176C}'|'\u{176E}'..='\u{1770}'|'\u{1772}'..='\u{1773}'|'\u{1780}'..='\u{17DD}'|'\u{17E0}'..='\u{17E9}'|'\u{17F0}'..='\u{17F9}'|'\u{1800}'..='\u{180E}'|'\u{1810}'..='\u{1819}'|'\u{1820}'..='\u{1878}'|'\u{1880}'..='\u{18AA}'|'\u{18B0}'..='\u{18F5}'|'\u{1900}'..='\u{191E}'|'\u{1920}'..='\u{192B}'|'\u{1930}'..='\u{193B}'|'\u{1940}'|'\u{1944}'..='\u{196D}'|'\u{1970}'..='\u{1974}'|'\u{1980}'..='\u{19AB}'|'\u{19B0}'..='\u{19C9}'|'\u{19D0}'..='\u{19DA}'|'\u{19DE}'..='\u{1A1B}'|'\u{1A1E}'..='\u{1A5E}'|'\u{1A60}'..='\u{1A7C}'|'\u{1A7F}'..='\u{1A89}'|'\u{1A90}'..='\u{1A99}'|'\u{1AA0}'..='\u{1AAD}'|'\u{1AB0}'..='\u{1AC0}'|'\u{1B00}'..='\u{1B4B}'|'\u{1B50}'..='\u{1B7C}'|'\u{1B80}'..='\u{1BF3}'|'\u{1BFC}'..='\u{1C37}'|'\u{1C3B}'..='\u{1C49}'|'\u{1C4D}'..='\u{1C88}'|'\u{1C90}'..='\u{1CBA}'|'\u{1CBD}'..='\u{1CC7}'|'\u{1CD0}'..='\u{1CFA}'|'\u{1D00}'..='\u{1DF9}'|'\u{1DFB}'..='\u{1F15}'|'\u{1F18}'..='\u{1F1D}'|'\u{1F20}'..='\u{1F45}'|'\u{1F48}'..='\u{1F4D}'|'\u{1F50}'..='\u{1F57}'|'\u{1F59}'|'\u{1F5B}'|'\u{1F5D}'|'\u{1F5F}'..='\u{1F7D}'|'\u{1F80}'..='\u{1FB4}'|'\u{1FB6}'..='\u{1FC4}'|'\u{1FC6}'..='\u{1FD3}'|'\u{1FD6}'..='\u{1FDB}'|'\u{1FDD}'..='\u{1FEF}'|'\u{1FF2}'..='\u{1FF4}'|'\u{1FF6}'..='\u{1FFE}'|'\u{2000}'..='\u{2064}'|'\u{2066}'..='\u{2071}'|'\u{2074}'..='\u{208E}'|'\u{2090}'..='\u{209C}'|'\u{20A0}'..='\u{20BF}'|'\u{20D0}'..='\u{20F0}'|'\u{2100}'..='\u{218B}'|'\u{2190}'..='\u{2426}'|'\u{2440}'..='\u{244A}'|'\u{2460}'..='\u{2B73}'|'\u{2B76}'..='\u{2B95}'|'\u{2B97}'..='\u{2C2E}'|'\u{2C30}'..='\u{2C5E}'|'\u{2C60}'..='\u{2CF3}'|'\u{2CF9}'..='\u{2D25}'|'\u{2D27}'|'\u{2D2D}'|'\u{2D30}'..='\u{2D67}'|'\u{2D6F}'..='\u{2D70}'|'\u{2D7F}'..='\u{2D96}'|'\u{2DA0}'..='\u{2DA6}'|'\u{2DA8}'..='\u{2DAE}'|'\u{2DB0}'..='\u{2DB6}'|'\u{2DB8}'..='\u{2DBE}'|'\u{2DC0}'..='\u{2DC6}'|'\u{2DC8}'..='\u{2DCE}'|'\u{2DD0}'..='\u{2DD6}'|'\u{2DD8}'..='\u{2DDE}'|'\u{2DE0}'..='\u{2E52}'|'\u{2E80}'..='\u{2E99}'|'\u{2E9B}'..='\u{2EF3}'|'\u{2F00}'..='\u{2FD5}'|'\u{2FF0}'..='\u{2FFB}'|'\u{3000}'..='\u{303F}'|'\u{3041}'..='\u{3096}'|'\u{3099}'..='\u{30FF}'|'\u{3105}'..='\u{312F}'|'\u{3131}'..='\u{318E}'|'\u{3190}'..='\u{31E3}'|'\u{31F0}'..='\u{321E}'|'\u{3220}'..='\u{9FFC}'|'\u{A000}'..='\u{A48C}'|'\u{A490}'..='\u{A4C6}'|'\u{A4D0}'..='\u{A62B}'|'\u{A640}'..='\u{A6F7}'|'\u{A700}'..='\u{A7BF}'|'\u{A7C2}'..='\u{A7CA}'|'\u{A7F5}'..='\u{A82C}'|'\u{A830}'..='\u{A839}'|'\u{A840}'..='\u{A877}'|'\u{A880}'..='\u{A8C5}'|'\u{A8CE}'..='\u{A8D9}'|'\u{A8E0}'..='\u{A953}'|'\u{A95F}'..='\u{A97C}'|'\u{A980}'..='\u{A9CD}'|'\u{A9CF}'..='\u{A9D9}'|'\u{A9DE}'..='\u{A9FE}'|'\u{AA00}'..='\u{AA36}'|'\u{AA40}'..='\u{AA4D}'|'\u{AA50}'..='\u{AA59}'|'\u{AA5C}'..='\u{AAC2}'|'\u{AADB}'..='\u{AAF6}'|'\u{AB01}'..='\u{AB06}'|'\u{AB09}'..='\u{AB0E}'|'\u{AB11}'..='\u{AB16}'|'\u{AB20}'..='\u{AB26}'|'\u{AB28}'..='\u{AB2E}'|'\u{AB30}'..='\u{AB6B}'|'\u{AB70}'..='\u{ABED}'|'\u{ABF0}'..='\u{ABF9}'|'\u{AC00}'..='\u{D7A3}'|'\u{D7B0}'..='\u{D7C6}'|'\u{D7CB}'..='\u{D7FB}'|'\u{F900}'..='\u{FA6D}'|'\u{FA70}'..='\u{FAD9}'|'\u{FB00}'..='\u{FB06}'|'\u{FB13}'..='\u{FB17}'|'\u{FB1D}'..='\u{FB36}'|'\u{FB38}'..='\u{FB3C}'|'\u{FB3E}'|'\u{FB40}'..='\u{FB41}'|'\u{FB43}'..='\u{FB44}'|'\u{FB46}'..='\u{FBC1}'|'\u{FBD3}'..='\u{FD3F}'|'\u{FD50}'..='\u{FD8F}'|'\u{FD92}'..='\u{FDC7}'|'\u{FDF0}'..='\u{FDFD}'|'\u{FE00}'..='\u{FE19}'|'\u{FE20}'..='\u{FE52}'|'\u{FE54}'..='\u{FE66}'|'\u{FE68}'..='\u{FE6B}'|'\u{FE70}'..='\u{FE74}'|'\u{FE76}'..='\u{FEFC}'|'\u{FEFF}'|'\u{FF01}'..='\u{FFBE}'|'\u{FFC2}'..='\u{FFC7}'|'\u{FFCA}'..='\u{FFCF}'|'\u{FFD2}'..='\u{FFD7}'|'\u{FFDA}'..='\u{FFDC}'|'\u{FFE0}'..='\u{FFE6}'|'\u{FFE8}'..='\u{FFEE}'|'\u{FFF9}'..='\u{FFFD}'|'\u{10000}'..='\u{1000B}'|'\u{1000D}'..='\u{10026}'|'\u{10028}'..='\u{1003A}'|'\u{1003C}'..='\u{1003D}'|'\u{1003F}'..='\u{1004D}'|'\u{10050}'..='\u{1005D}'|'\u{10080}'..='\u{100FA}'|'\u{10100}'..='\u{10102}'|'\u{10107}'..='\u{10133}'|'\u{10137}'..='\u{1018E}'|'\u{10190}'..='\u{1019C}'|'\u{101A0}'|'\u{101D0}'..='\u{101FD}'|'\u{10280}'..='\u{1029C}'|'\u{102A0}'..='\u{102D0}'|'\u{102E0}'..='\u{102FB}'|'\u{10300}'..='\u{10323}'|'\u{1032D}'..='\u{1034A}'|'\u{10350}'..='\u{1037A}'|'\u{10380}'..='\u{1039D}'|'\u{1039F}'..='\u{103C3}'|'\u{103C8}'..='\u{103D5}'|'\u{10400}'..='\u{1049D}'|'\u{104A0}'..='\u{104A9}'|'\u{104B0}'..='\u{104D3}'|'\u{104D8}'..='\u{104FB}'|'\u{10500}'..='\u{10527}'|'\u{10530}'..='\u{10563}'|'\u{1056F}'|'\u{10600}'..='\u{10736}'|'\u{10740}'..='\u{10755}'|'\u{10760}'..='\u{10767}'|'\u{10800}'..='\u{10805}'|'\u{10808}'|'\u{1080A}'..='\u{10835}'|'\u{10837}'..='\u{10838}'|'\u{1083C}'|'\u{1083F}'..='\u{10855}'|'\u{10857}'..='\u{1089E}'|'\u{108A7}'..='\u{108AF}'|'\u{108E0}'..='\u{108F2}'|'\u{108F4}'..='\u{108F5}'|'\u{108FB}'..='\u{1091B}'|'\u{1091F}'..='\u{10939}'|'\u{1093F}'|'\u{10980}'..='\u{109B7}'|'\u{109BC}'..='\u{109CF}'|'\u{109D2}'..='\u{10A03}'|'\u{10A05}'..='\u{10A06}'|'\u{10A0C}'..='\u{10A13}'|'\u{10A15}'..='\u{10A17}'|'\u{10A19}'..='\u{10A35}'|'\u{10A38}'..='\u{10A3A}'|'\u{10A3F}'..='\u{10A48}'|'\u{10A50}'..='\u{10A58}'|'\u{10A60}'..='\u{10A9F}'|'\u{10AC0}'..='\u{10AE6}'|'\u{10AEB}'..='\u{10AF6}'|'\u{10B00}'..='\u{10B35}'|'\u{10B39}'..='\u{10B55}'|'\u{10B58}'..='\u{10B72}'|'\u{10B78}'..='\u{10B91}'|'\u{10B99}'..='\u{10B9C}'|'\u{10BA9}'..='\u{10BAF}'|'\u{10C00}'..='\u{10C48}'|'\u{10C80}'..='\u{10CB2}'|'\u{10CC0}'..='\u{10CF2}'|'\u{10CFA}'..='\u{10D27}'|'\u{10D30}'..='\u{10D39}'|'\u{10E60}'..='\u{10E7E}'|'\u{10E80}'..='\u{10EA9}'|'\u{10EAB}'..='\u{10EAD}'|'\u{10EB0}'..='\u{10EB1}'|'\u{10F00}'..='\u{10F27}'|'\u{10F30}'..='\u{10F59}'|'\u{10FB0}'..='\u{10FCB}'|'\u{10FE0}'..='\u{10FF6}'|'\u{11000}'..='\u{1104D}'|'\u{11052}'..='\u{1106F}'|'\u{1107F}'..='\u{110C1}'|'\u{110CD}'|'\u{110D0}'..='\u{110E8}'|'\u{110F0}'..='\u{110F9}'|'\u{11100}'..='\u{11134}'|'\u{11136}'..='\u{11147}'|'\u{11150}'..='\u{11176}'|'\u{11180}'..='\u{111DF}'|'\u{111E1}'..='\u{111F4}'|'\u{11200}'..='\u{11211}'|'\u{11213}'..='\u{1123E}'|'\u{11280}'..='\u{11286}'|'\u{11288}'|'\u{1128A}'..='\u{1128D}'|'\u{1128F}'..='\u{1129D}'|'\u{1129F}'..='\u{112A9}'|'\u{112B0}'..='\u{112EA}'|'\u{112F0}'..='\u{112F9}'|'\u{11300}'..='\u{11303}'|'\u{11305}'..='\u{1130C}'|'\u{1130F}'..='\u{11310}'|'\u{11313}'..='\u{11328}'|'\u{1132A}'..='\u{11330}'|'\u{11332}'..='\u{11333}'|'\u{11335}'..='\u{11339}'|'\u{1133B}'..='\u{11344}'|'\u{11347}'..='\u{11348}'|'\u{1134B}'..='\u{1134D}'|'\u{11350}'|'\u{11357}'|'\u{1135D}'..='\u{11363}'|'\u{11366}'..='\u{1136C}'|'\u{11370}'..='\u{11374}'|'\u{11400}'..='\u{1145B}'|'\u{1145D}'..='\u{11461}'|'\u{11480}'..='\u{114C7}'|'\u{114D0}'..='\u{114D9}'|'\u{11580}'..='\u{115B5}'|'\u{115B8}'..='\u{115DD}'|'\u{11600}'..='\u{11644}'|'\u{11650}'..='\u{11659}'|'\u{11660}'..='\u{1166C}'|'\u{11680}'..='\u{116B8}'|'\u{116C0}'..='\u{116C9}'|'\u{11700}'..='\u{1171A}'|'\u{1171D}'..='\u{1172B}'|'\u{11730}'..='\u{1173F}'|'\u{11800}'..='\u{1183B}'|'\u{118A0}'..='\u{118F2}'|'\u{118FF}'..='\u{11906}'|'\u{11909}'|'\u{1190C}'..='\u{11913}'|'\u{11915}'..='\u{11916}'|'\u{11918}'..='\u{11935}'|'\u{11937}'..='\u{11938}'|'\u{1193B}'..='\u{11946}'|'\u{11950}'..='\u{11959}'|'\u{119A0}'..='\u{119A7}'|'\u{119AA}'..='\u{119D7}'|'\u{119DA}'..='\u{119E4}'|'\u{11A00}'..='\u{11A47}'|'\u{11A50}'..='\u{11AA2}'|'\u{11AC0}'..='\u{11AF8}'|'\u{11C00}'..='\u{11C08}'|'\u{11C0A}'..='\u{11C36}'|'\u{11C38}'..='\u{11C45}'|'\u{11C50}'..='\u{11C6C}'|'\u{11C70}'..='\u{11C8F}'|'\u{11C92}'..='\u{11CA7}'|'\u{11CA9}'..='\u{11CB6}'|'\u{11D00}'..='\u{11D06}'|'\u{11D08}'..='\u{11D09}'|'\u{11D0B}'..='\u{11D36}'|'\u{11D3A}'|'\u{11D3C}'..='\u{11D3D}'|'\u{11D3F}'..='\u{11D47}'|'\u{11D50}'..='\u{11D59}'|'\u{11D60}'..='\u{11D65}'|'\u{11D67}'..='\u{11D68}'|'\u{11D6A}'..='\u{11D8E}'|'\u{11D90}'..='\u{11D91}'|'\u{11D93}'..='\u{11D98}'|'\u{11DA0}'..='\u{11DA9}'|'\u{11EE0}'..='\u{11EF8}'|'\u{11FB0}'|'\u{11FC0}'..='\u{11FF1}'|'\u{11FFF}'..='\u{12399}'|'\u{12400}'..='\u{1246E}'|'\u{12470}'..='\u{12474}'|'\u{12480}'..='\u{12543}'|'\u{13000}'..='\u{1342E}'|'\u{13430}'..='\u{13438}'|'\u{14400}'..='\u{14646}'|'\u{16800}'..='\u{16A38}'|'\u{16A40}'..='\u{16A5E}'|'\u{16A60}'..='\u{16A69}'|'\u{16A6E}'..='\u{16A6F}'|'\u{16AD0}'..='\u{16AED}'|'\u{16AF0}'..='\u{16AF5}'|'\u{16B00}'..='\u{16B45}'|'\u{16B50}'..='\u{16B59}'|'\u{16B5B}'..='\u{16B61}'|'\u{16B63}'..='\u{16B77}'|'\u{16B7D}'..='\u{16B8F}'|'\u{16E40}'..='\u{16E9A}'|'\u{16F00}'..='\u{16F4A}'|'\u{16F4F}'..='\u{16F87}'|'\u{16F8F}'..='\u{16F9F}'|'\u{16FE0}'..='\u{16FE4}'|'\u{16FF0}'..='\u{16FF1}'|'\u{17000}'..='\u{187F7}'|'\u{18800}'..='\u{18CD5}'|'\u{18D00}'..='\u{18D08}'|'\u{1B000}'..='\u{1B11E}'|'\u{1B150}'..='\u{1B152}'|'\u{1B164}'..='\u{1B167}'|'\u{1B170}'..='\u{1B2FB}'|'\u{1BC00}'..='\u{1BC6A}'|'\u{1BC70}'..='\u{1BC7C}'|'\u{1BC80}'..='\u{1BC88}'|'\u{1BC90}'..='\u{1BC99}'|'\u{1BC9C}'..='\u{1BCA3}'|'\u{1D000}'..='\u{1D0F5}'|'\u{1D100}'..='\u{1D126}'|'\u{1D129}'..='\u{1D1E8}'|'\u{1D200}'..='\u{1D245}'|'\u{1D2E0}'..='\u{1D2F3}'|'\u{1D300}'..='\u{1D356}'|'\u{1D360}'..='\u{1D378}'|'\u{1D400}'..='\u{1D454}'|'\u{1D456}'..='\u{1D49C}'|'\u{1D49E}'..='\u{1D49F}'|'\u{1D4A2}'|'\u{1D4A5}'..='\u{1D4A6}'|'\u{1D4A9}'..='\u{1D4AC}'|'\u{1D4AE}'..='\u{1D4B9}'|'\u{1D4BB}'|'\u{1D4BD}'..='\u{1D4C3}'|'\u{1D4C5}'..='\u{1D505}'|'\u{1D507}'..='\u{1D50A}'|'\u{1D50D}'..='\u{1D514}'|'\u{1D516}'..='\u{1D51C}'|'\u{1D51E}'..='\u{1D539}'|'\u{1D53B}'..='\u{1D53E}'|'\u{1D540}'..='\u{1D544}'|'\u{1D546}'|'\u{1D54A}'..='\u{1D550}'|'\u{1D552}'..='\u{1D6A5}'|'\u{1D6A8}'..='\u{1D7CB}'|'\u{1D7CE}'..='\u{1DA8B}'|'\u{1DA9B}'..='\u{1DA9F}'|'\u{1DAA1}'..='\u{1DAAF}'|'\u{1E000}'..='\u{1E006}'|'\u{1E008}'..='\u{1E018}'|'\u{1E01B}'..='\u{1E021}'|'\u{1E023}'..='\u{1E024}'|'\u{1E026}'..='\u{1E02A}'|'\u{1E100}'..='\u{1E12C}'|'\u{1E130}'..='\u{1E13D}'|'\u{1E140}'..='\u{1E149}'|'\u{1E14E}'..='\u{1E14F}'|'\u{1E2C0}'..='\u{1E2F9}'|'\u{1E2FF}'|'\u{1E800}'..='\u{1E8C4}'|'\u{1E8C7}'..='\u{1E8D6}'|'\u{1E900}'..='\u{1E94B}'|'\u{1E950}'..='\u{1E959}'|'\u{1E95E}'..='\u{1E95F}'|'\u{1EC71}'..='\u{1ECB4}'|'\u{1ED01}'..='\u{1ED3D}'|'\u{1EE00}'..='\u{1EE03}'|'\u{1EE05}'..='\u{1EE1F}'|'\u{1EE21}'..='\u{1EE22}'|'\u{1EE24}'|'\u{1EE27}'|'\u{1EE29}'..='\u{1EE32}'|'\u{1EE34}'..='\u{1EE37}'|'\u{1EE39}'|'\u{1EE3B}'|'\u{1EE42}'|'\u{1EE47}'|'\u{1EE49}'|'\u{1EE4B}'|'\u{1EE4D}'..='\u{1EE4F}'|'\u{1EE51}'..='\u{1EE52}'|'\u{1EE54}'|'\u{1EE57}'|'\u{1EE59}'|'\u{1EE5B}'|'\u{1EE5D}'|'\u{1EE5F}'|'\u{1EE61}'..='\u{1EE62}'|'\u{1EE64}'|'\u{1EE67}'..='\u{1EE6A}'|'\u{1EE6C}'..='\u{1EE72}'|'\u{1EE74}'..='\u{1EE77}'|'\u{1EE79}'..='\u{1EE7C}'|'\u{1EE7E}'|'\u{1EE80}'..='\u{1EE89}'|'\u{1EE8B}'..='\u{1EE9B}'|'\u{1EEA1}'..='\u{1EEA3}'|'\u{1EEA5}'..='\u{1EEA9}'|'\u{1EEAB}'..='\u{1EEBB}'|'\u{1EEF0}'..='\u{1EEF1}'|'\u{1F000}'..='\u{1F02B}'|'\u{1F030}'..='\u{1F093}'|'\u{1F0A0}'..='\u{1F0AE}'|'\u{1F0B1}'..='\u{1F0BF}'|'\u{1F0C1}'..='\u{1F0CF}'|'\u{1F0D1}'..='\u{1F0F5}'|'\u{1F100}'..='\u{1F1AD}'|'\u{1F1E6}'..='\u{1F202}'|'\u{1F210}'..='\u{1F23B}'|'\u{1F240}'..='\u{1F248}'|'\u{1F250}'..='\u{1F251}'|'\u{1F260}'..='\u{1F265}'|'\u{1F300}'..='\u{1F6D7}'|'\u{1F6E0}'..='\u{1F6EC}'|'\u{1F6F0}'..='\u{1F6FC}'|'\u{1F700}'..='\u{1F773}'|'\u{1F780}'..='\u{1F7D8}'|'\u{1F7E0}'..='\u{1F7EB}'|'\u{1F800}'..='\u{1F80B}'|'\u{1F810}'..='\u{1F847}'|'\u{1F850}'..='\u{1F859}'|'\u{1F860}'..='\u{1F887}'|'\u{1F890}'..='\u{1F8AD}'|'\u{1F8B0}'..='\u{1F8B1}'|'\u{1F900}'..='\u{1F978}'|'\u{1F97A}'..='\u{1F9CB}'|'\u{1F9CD}'..='\u{1FA53}'|'\u{1FA60}'..='\u{1FA6D}'|'\u{1FA70}'..='\u{1FA74}'|'\u{1FA78}'..='\u{1FA7A}'|'\u{1FA80}'..='\u{1FA86}'|'\u{1FA90}'..='\u{1FAA8}'|'\u{1FAB0}'..='\u{1FAB6}'|'\u{1FAC0}'..='\u{1FAC2}'|'\u{1FAD0}'..='\u{1FAD6}'|'\u{1FB00}'..='\u{1FB92}'|'\u{1FB94}'..='\u{1FBCA}'|'\u{1FBF0}'..='\u{1FBF9}'|'\u{20000}'..='\u{2A6DD}'|'\u{2A700}'..='\u{2B734}'|'\u{2B740}'..='\u{2B81D}'|'\u{2B820}'..='\u{2CEA1}'|'\u{2CEB0}'..='\u{2EBE0}'|'\u{2F800}'..='\u{2FA1D}'|'\u{30000}'..='\u{3134A}'|'\u{E0001}'|'\u{E0020}'..='\u{E007F}'|'\u{E0100}'..='\u{E01EF}'
+              => true,
+            _ => false,
+        }
+    }
+
 }
 
 pub mod isize
@@ -11166,8 +11178,7 @@ pub mod num
                 }
             }
 
-            #[inline] fn extended_gcd_lcm( &self, other:&Self ) -> ( ExtendedGcd<Self>, Self )
-            where
+            #[inline] fn extended_gcd_lcm( &self, other:&Self ) -> ( ExtendedGcd<Self>, Self ) where
                 Self: Clone + Signed,
             {
                 ( self.extended_gcd( other ), self.lcm( other ) )
@@ -11206,15 +11217,13 @@ pub mod num
                 self.clone() - self.mod_floor( other )
             }
             
-            fn dec( &mut self )
-            where
+            fn dec( &mut self ) where
                 Self: Clone,
             {
                 *self = self.clone() - Self::one()
             }
             
-            fn inc( &mut self )
-            where
+            fn inc( &mut self ) where
                 Self: Clone,
             {
                 *self = self.clone() + Self::one()
@@ -14643,9 +14652,12 @@ pub mod num
                 },
                 rand::
                 {
+                    distributions::
+                    {
+                        uniform::{ SampleBorrow, SampleUniform, UniformSampler },
+                        distribution::{ Distribution },
+                    },
                     Rng,
-                    distributions::uniform::{SampleBorrow, SampleUniform, UniformSampler},
-                    prelude::Distribution,
                 },
                 *,
             };
@@ -25236,6 +25248,50 @@ pub mod rand
                 {
                     let uniform: Self = UniformSampler::new_inclusive(low, high)?;
                     Ok(uniform.sample(rng))
+                }
+            }
+        }
+
+        pub mod distribution
+        {
+            /*!
+            */
+            use ::
+            {
+                rand::{ Rng },
+                *,
+            };
+            /*
+            use crate::Rng;
+            use core::iter;
+            #[cfg(feature = "alloc")]
+            use alloc::string::String;
+            */
+            pub trait Distribution<T>
+            {
+                fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T;
+                fn sample_iter<R>(self, rng: R) -> DistIter<Self, R, T> where
+                R: Rng,
+                Self: Sized
+                {
+                    DistIter
+                    {
+                        distr: self,
+                        rng,
+                        phantom: ::marker::PhantomData,
+                    }
+                }
+                
+                fn map<F, S>(self, func: F) -> DistMap<Self, F, T, S> where
+                F: Fn(T) -> S,
+                Self: Sized
+                {
+                    DistMap
+                    {
+                        distr: self,
+                        func,
+                        phantom: ::marker::PhantomData,
+                    }
                 }
             }
         }
@@ -40663,7 +40719,7 @@ pub mod regex
                             {   
                                 captures::Captures,
                                 empty, iter,
-                                nfa::thompson::{self, BuildError, State, NFA},
+                                nfa::thompson::{self, State, NFA},
                                 prefilter::Prefilter,
                                 primitives::{NonMaxUsize, PatternID, SmallIndex, StateID},
                                 search::{Anchored, HalfMatch, Input, Match, MatchError, Span},
@@ -41825,7 +41881,7 @@ pub mod regex
                             }
                         }
                     }
-                    #[derive(Clone, Copy, Debug)]
+                    #[derive( Clone, Copy, Debug )]
                     pub enum WhichCaptures {
                         All,
                         Implicit,
@@ -42444,7 +42500,7 @@ pub mod regex
                             self.config.get_reverse()
                         }
                     }
-                    #[derive(Clone, Copy, Debug)]
+                    #[derive( Clone, Copy, Debug )]
                     pub struct ThompsonRef {
                         pub start: StateID,
                         pub end: StateID,
@@ -43464,7 +43520,7 @@ pub mod regex
                         }
                     }
                 }
-            }
+            } pub use self::aho_corasick::{ * };
 
             pub mod byteset
             {
@@ -43534,7 +43590,7 @@ pub mod regex
                         false
                     }
                 }
-            }
+            } pub use self::byteset::{ * };
 
             pub mod memchr
             {
@@ -43693,7 +43749,7 @@ pub mod regex
                         true
                     }
                 }
-            }
+            } pub use self::memchr::{ * };
 
             pub mod memmem
             {
@@ -43705,7 +43761,7 @@ pub mod regex
                 };
                 /*
                 */
-            }
+            } pub use self::memmem::{ * };
 
             pub mod teddy
             {
@@ -43766,10 +43822,11 @@ pub mod regex
                         true
                     }
                 }
-            }
+            } pub use self::teddy::{ * };
             
             #[derive( Clone, Debug )]
-            pub struct Prefilter {
+            pub struct Prefilter 
+            {
                 #[cfg(not(feature = "alloc"))]
                 _unused: (),
                     pre: Arc<dyn PrefilterI>,
@@ -43777,8 +43834,7 @@ pub mod regex
                     max_needle_len: usize,
             }
 
-            impl Prefilter 
-           
+            impl Prefilter
             {
                 pub fn new<B: AsRef<[u8]>>(
                     kind: MatchKind,
@@ -43883,8 +43939,7 @@ pub mod regex
                 }
             }
 
-            pub trait PrefilterI:
-                Debug + Send + Sync + RefUnwindSafe + UnwindSafe + 'static
+            pub trait PrefilterI:Debug + Send + Sync + RefUnwindSafe + UnwindSafe + 'static
             {
 
                 fn find(&self, haystack: &[u8], span: Span) -> Option<Span>;
@@ -43896,7 +43951,8 @@ pub mod regex
                 fn is_fast(&self) -> bool;
             }
 
-            impl<P: PrefilterI + ?Sized> PrefilterI for Arc<P> {
+            impl<P: PrefilterI + ?Sized> PrefilterI for Arc<P>
+            {
                 #[cfg_attr(feature = "perf-inline", inline(always))]
                 fn find(&self, haystack: &[u8], span: Span) -> Option<Span> {
                     (**self).find(haystack, span)
@@ -43919,7 +43975,8 @@ pub mod regex
             }
 
             #[derive( Clone, Debug )]
-            pub enum Choice {
+            pub enum Choice
+            {
                 Memchr(Memchr),
                 Memchr2(Memchr2),
                 Memchr3(Memchr3),
@@ -43929,7 +43986,8 @@ pub mod regex
                 AhoCorasick(AhoCorasick),
             }
 
-            impl Choice {
+            impl Choice
+            {
 
                 pub fn new<B: AsRef<[u8]>>(
                     kind: MatchKind,
@@ -44023,8 +44081,7 @@ pub mod regex
                 
                 suffixes
             }
-
-        } pub use self::prefilter::{*};
+        } pub use self::prefilter::{ * };
 
         pub mod primitives
         {
@@ -45116,6 +45173,391 @@ pub mod regex
 
         } pub use self::search::{*};
         
+        pub mod syntax
+        {
+            /*!
+            Utilities for dealing with the syntax of a regular expression.*/
+            use ::
+            {
+                regex::
+                {
+                    syntax::
+                    {
+                        ast,
+                        hir::{ self, Hir },
+                        Error, ParserBuilder,
+                    },
+                },
+                *,
+            };
+            /*
+            */
+            pub fn parse(pattern: &str) -> Result<Hir, Error> { parse_with(pattern, &Config::default()) }
+            pub fn parse_many<P: AsRef<str>>(patterns: &[P]) -> Result<Vec<Hir>, Error> { parse_many_with(patterns, &Config::default()) }
+            pub fn parse_with(pattern: &str, config: &Config) -> Result<Hir, Error>
+            {
+                let mut builder = ParserBuilder::new();
+                config.apply(&mut builder);
+                builder.build().parse(pattern)
+            }
+            
+            pub fn parse_many_with<P: AsRef<str>>
+            (
+                patterns: &[P],
+                config: &Config,
+            ) -> Result<Vec<Hir>, Error> 
+            {
+                let mut builder = ParserBuilder::new();
+                config.apply(&mut builder);
+                let mut hirs = vec![];
+                for p in patterns.iter() {
+                    hirs.push(builder.build().parse(p.as_ref())?);
+                }
+                Ok(hirs)
+            }
+            
+            #[derive( Clone, Copy, Debug )]
+            pub struct Config 
+            {
+                case_insensitive: bool,
+                multi_line: bool,
+                dot_matches_new_line: bool,
+                crlf: bool,
+                line_terminator: u8,
+                swap_greed: bool,
+                ignore_whitespace: bool,
+                unicode: bool,
+                utf8: bool,
+                nest_limit: u32,
+                octal: bool,
+            }
+
+            impl Config
+            {
+                pub fn new() -> Config
+                {
+                    Config
+                    {
+                        case_insensitive: false,
+                        multi_line: false,
+                        dot_matches_new_line: false,
+                        crlf: false,
+                        line_terminator: b'\n',
+                        swap_greed: false,
+                        ignore_whitespace: false,
+                        unicode: true,
+                        utf8: true,
+                        nest_limit: 250,
+                        octal: false,
+                    }
+                }
+
+                /// Enable or disable the case insensitive flag by default.
+                ///
+                /// When Unicode mode is enabled, case insensitivity is Unicode-aware.
+                /// Specifically, it will apply the "simple" case folding rules as
+                /// specified by Unicode.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `i` flag.
+                pub fn case_insensitive(mut self, yes: bool) -> Config {
+                    self.case_insensitive = yes;
+                    self
+                }
+
+                /// Enable or disable the multi-line matching flag by default.
+                ///
+                /// When this is enabled, the `^` and `$` look-around assertions will
+                /// match immediately after and immediately before a new line character,
+                /// respectively. Note that the `\A` and `\z` look-around assertions are
+                /// unaffected by this setting and always correspond to matching at the
+                /// beginning and end of the input.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `m` flag.
+                pub fn multi_line(mut self, yes: bool) -> Config {
+                    self.multi_line = yes;
+                    self
+                }
+
+                /// Enable or disable the "dot matches any character" flag by default.
+                ///
+                /// When this is enabled, `.` will match any character. When it's disabled,
+                /// then `.` will match any character except for a new line character.
+                ///
+                /// Note that `.` is impacted by whether the "unicode" setting is enabled
+                /// or not. When Unicode is enabled (the default), `.` will match any UTF-8
+                /// encoding of any Unicode scalar value (sans a new line, depending on
+                /// whether this "dot matches new line" option is enabled). When Unicode
+                /// mode is disabled, `.` will match any byte instead. Because of this,
+                /// when Unicode mode is disabled, `.` can only be used when the "allow
+                /// invalid UTF-8" option is enabled, since `.` could otherwise match
+                /// invalid UTF-8.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `s` flag.
+                pub fn dot_matches_new_line(mut self, yes: bool) -> Config {
+                    self.dot_matches_new_line = yes;
+                    self
+                }
+
+                /// Enable or disable the "CRLF mode" flag by default.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `R` flag.
+                ///
+                /// When CRLF mode is enabled, the following happens:
+                ///
+                /// * Unless `dot_matches_new_line` is enabled, `.` will match any character
+                /// except for `\r` and `\n`.
+                /// * When `multi_line` mode is enabled, `^` and `$` will treat `\r\n`,
+                /// `\r` and `\n` as line terminators. And in particular, neither will
+                /// match between a `\r` and a `\n`.
+                pub fn crlf(mut self, yes: bool) -> Config {
+                    self.crlf = yes;
+                    self
+                }
+
+                /// Sets the line terminator for use with `(?u-s:.)` and `(?-us:.)`.
+                ///
+                /// Namely, instead of `.` (by default) matching everything except for `\n`,
+                /// this will cause `.` to match everything except for the byte given.
+                ///
+                /// If `.` is used in a context where Unicode mode is enabled and this byte
+                /// isn't ASCII, then an error will be returned. When Unicode mode is
+                /// disabled, then any byte is permitted, but will return an error if UTF-8
+                /// mode is enabled and it is a non-ASCII byte.
+                ///
+                /// In short, any ASCII value for a line terminator is always okay. But a
+                /// non-ASCII byte might result in an error depending on whether Unicode
+                /// mode or UTF-8 mode are enabled.
+                ///
+                /// Note that if `R` mode is enabled then it always takes precedence and
+                /// the line terminator will be treated as `\r` and `\n` simultaneously.
+                ///
+                /// Note also that this *doesn't* impact the look-around assertions
+                /// `(?m:^)` and `(?m:$)`. That's usually controlled by additional
+                /// configuration in the regex engine itself.
+                pub fn line_terminator(mut self, byte: u8) -> Config {
+                    self.line_terminator = byte;
+                    self
+                }
+
+                /// Enable or disable the "swap greed" flag by default.
+                ///
+                /// When this is enabled, `.*` (for example) will become ungreedy and `.*?`
+                /// will become greedy.
+                ///
+                /// By default this is disabled. It may alternatively be selectively
+                /// enabled in the regular expression itself via the `U` flag.
+                pub fn swap_greed(mut self, yes: bool) -> Config {
+                    self.swap_greed = yes;
+                    self
+                }
+
+                /// Enable verbose mode in the regular expression.
+                ///
+                /// When enabled, verbose mode permits insignificant whitespace in many
+                /// places in the regular expression, as well as comments. Comments are
+                /// started using `#` and continue until the end of the line.
+                ///
+                /// By default, this is disabled. It may be selectively enabled in the
+                /// regular expression by using the `x` flag regardless of this setting.
+                pub fn ignore_whitespace(mut self, yes: bool) -> Config {
+                    self.ignore_whitespace = yes;
+                    self
+                }
+
+                /// Enable or disable the Unicode flag (`u`) by default.
+                ///
+                /// By default this is **enabled**. It may alternatively be selectively
+                /// disabled in the regular expression itself via the `u` flag.
+                ///
+                /// Note that unless "allow invalid UTF-8" is enabled (it's disabled by
+                /// default), a regular expression will fail to parse if Unicode mode is
+                /// disabled and a sub-expression could possibly match invalid UTF-8.
+                ///
+                /// **WARNING**: Unicode mode can greatly increase the size of the compiled
+                /// DFA, which can noticeably impact both memory usage and compilation
+                /// time. This is especially noticeable if your regex contains character
+                /// classes like `\w` that are impacted by whether Unicode is enabled or
+                /// not. If Unicode is not necessary, you are encouraged to disable it.
+                pub fn unicode(mut self, yes: bool) -> Config {
+                    self.unicode = yes;
+                    self
+                }
+
+                /// When disabled, the builder will permit the construction of a regular
+                /// expression that may match invalid UTF-8.
+                ///
+                /// For example, when [`Config::unicode`] is disabled, then
+                /// expressions like `[^a]` may match invalid UTF-8 since they can match
+                /// any single byte that is not `a`. By default, these sub-expressions
+                /// are disallowed to avoid returning offsets that split a UTF-8
+                /// encoded codepoint. However, in cases where matching at arbitrary
+                /// locations is desired, this option can be disabled to permit all such
+                /// sub-expressions.
+                ///
+                /// When enabled (the default), the builder is guaranteed to produce a
+                /// regex that will only ever match valid UTF-8 (otherwise, the builder
+                /// will return an error).
+                pub fn utf8(mut self, yes: bool) -> Config {
+                    self.utf8 = yes;
+                    self
+                }
+
+                /// Set the nesting limit used for the regular expression parser.
+                ///
+                /// The nesting limit controls how deep the abstract syntax tree is allowed
+                /// to be. If the AST exceeds the given limit (e.g., with too many nested
+                /// groups), then an error is returned by the parser.
+                ///
+                /// The purpose of this limit is to act as a heuristic to prevent stack
+                /// overflow when building a finite automaton from a regular expression's
+                /// abstract syntax tree. In particular, construction currently uses
+                /// recursion. In the future, the implementation may stop using recursion
+                /// and this option will no longer be necessary.
+                ///
+                /// This limit is not checked until the entire AST is parsed. Therefore,
+                /// if callers want to put a limit on the amount of heap space used, then
+                /// they should impose a limit on the length, in bytes, of the concrete
+                /// pattern string. In particular, this is viable since the parser will
+                /// limit itself to heap space proportional to the length of the pattern
+                /// string.
+                ///
+                /// Note that a nest limit of `0` will return a nest limit error for most
+                /// patterns but not all. For example, a nest limit of `0` permits `a` but
+                /// not `ab`, since `ab` requires a concatenation AST item, which results
+                /// in a nest depth of `1`. In general, a nest limit is not something that
+                /// manifests in an obvious way in the concrete syntax, therefore, it
+                /// should not be used in a granular way.
+                pub fn nest_limit(mut self, limit: u32) -> Config {
+                    self.nest_limit = limit;
+                    self
+                }
+
+                /// Whether to support octal syntax or not.
+                ///
+                /// Octal syntax is a little-known way of uttering Unicode codepoints in
+                /// a regular expression. For example, `a`, `\x61`, `\u0061` and
+                /// `\141` are all equivalent regular expressions, where the last example
+                /// shows octal syntax.
+                ///
+                /// While supporting octal syntax isn't in and of itself a problem, it does
+                /// make good error messages harder. That is, in PCRE based regex engines,
+                /// syntax like `\1` invokes a backreference, which is explicitly
+                /// unsupported in Rust's regex engine. However, many users expect it to
+                /// be supported. Therefore, when octal support is disabled, the error
+                /// message will explicitly mention that backreferences aren't supported.
+                ///
+                /// Octal syntax is disabled by default.
+                pub fn octal(mut self, yes: bool) -> Config {
+                    self.octal = yes;
+                    self
+                }
+
+                /// Returns whether "unicode" mode is enabled.
+                pub fn get_unicode(&self) -> bool {
+                    self.unicode
+                }
+
+                /// Returns whether "case insensitive" mode is enabled.
+                pub fn get_case_insensitive(&self) -> bool {
+                    self.case_insensitive
+                }
+
+                /// Returns whether "multi line" mode is enabled.
+                pub fn get_multi_line(&self) -> bool {
+                    self.multi_line
+                }
+
+                /// Returns whether "dot matches new line" mode is enabled.
+                pub fn get_dot_matches_new_line(&self) -> bool {
+                    self.dot_matches_new_line
+                }
+
+                /// Returns whether "CRLF" mode is enabled.
+                pub fn get_crlf(&self) -> bool {
+                    self.crlf
+                }
+
+                /// Returns the line terminator in this syntax configuration.
+                pub fn get_line_terminator(&self) -> u8 {
+                    self.line_terminator
+                }
+
+                /// Returns whether "swap greed" mode is enabled.
+                pub fn get_swap_greed(&self) -> bool {
+                    self.swap_greed
+                }
+
+                /// Returns whether "ignore whitespace" mode is enabled.
+                pub fn get_ignore_whitespace(&self) -> bool {
+                    self.ignore_whitespace
+                }
+
+                /// Returns whether UTF-8 mode is enabled.
+                pub fn get_utf8(&self) -> bool {
+                    self.utf8
+                }
+
+                /// Returns the "nest limit" setting.
+                pub fn get_nest_limit(&self) -> u32 {
+                    self.nest_limit
+                }
+
+                /// Returns whether "octal" mode is enabled.
+                pub fn get_octal(&self) -> bool {
+                    self.octal
+                }
+
+                /// Applies this configuration to the given parser.
+                pub fn apply(&self, builder: &mut ParserBuilder) {
+                    builder
+                        .unicode(self.unicode)
+                        .case_insensitive(self.case_insensitive)
+                        .multi_line(self.multi_line)
+                        .dot_matches_new_line(self.dot_matches_new_line)
+                        .crlf(self.crlf)
+                        .line_terminator(self.line_terminator)
+                        .swap_greed(self.swap_greed)
+                        .ignore_whitespace(self.ignore_whitespace)
+                        .utf8(self.utf8)
+                        .nest_limit(self.nest_limit)
+                        .octal(self.octal);
+                }
+
+                /// Applies this configuration to the given AST parser.
+                pub fn apply_ast(&self, builder: &mut ast::parse::ParserBuilder) {
+                    builder
+                        .ignore_whitespace(self.ignore_whitespace)
+                        .nest_limit(self.nest_limit)
+                        .octal(self.octal);
+                }
+
+                /// Applies this configuration to the given AST-to-HIR translator.
+                pub fn apply_hir(
+                    &self,
+                    builder: &mut hir::translate::TranslatorBuilder,
+                ) {
+                    builder
+                        .unicode(self.unicode)
+                        .case_insensitive(self.case_insensitive)
+                        .multi_line(self.multi_line)
+                        .crlf(self.crlf)
+                        .dot_matches_new_line(self.dot_matches_new_line)
+                        .line_terminator(self.line_terminator)
+                        .swap_greed(self.swap_greed)
+                        .utf8(self.utf8);
+                }
+            }
+
+            impl Default for Config
+            {
+                fn default() -> Config { Config::new() }
+            }
+        }
+        
         pub mod wire
         {
             /*!
@@ -45138,7 +45580,7 @@ pub mod regex
         {
             regex::
             {
-                automata::{ meta, nfa::thompson::WhichCaptures, util::syntax, MatchKind, },
+                automata::{ meta, nfa::thompson::WhichCaptures, syntax, MatchKind, },
                 error::{ Error },
             },
             string::{ String, ToString },
@@ -45147,16 +45589,16 @@ pub mod regex
         };
         /*
         */
-
-        ///
         #[derive( Clone, Debug )]
-        struct Builder {
+        pub struct Builder
+        {
             pats: Vec<String>,
             metac: meta::Config,
             syntaxc: syntax::Config,
         }
 
-        impl Default for Builder {
+        impl Default for Builder 
+        {
             fn default() -> Builder {
                 let metac = meta::Config::new()
                     .nfa_size_limit(Some(10 * (1 << 20)))
@@ -45165,7 +45607,8 @@ pub mod regex
             }
         }
 
-        impl Builder {
+        impl Builder 
+        {
             fn new<I, S>(patterns: I) -> Builder
             where
                 S: AsRef<str>,
@@ -45805,11 +46248,9 @@ pub mod regex
         }
 
         unsafe impl<'r, 't> Searcher<'t> for RegexSearcher<'r, 't> {
-            #[inline]
-            fn haystack( &self ) -> &'t str { self.haystack }
+            #[inline] fn haystack( &self ) -> &'t str { self.haystack }
 
-            #[inline]
-            fn next(&mut self) -> SearchStep {
+            #[inline] fn next(&mut self) -> SearchStep {
                 if let Some((s, e)) = self.next_match {
                     self.next_match = None;
                     self.last_step_end = e;
@@ -45859,18 +46300,21 @@ pub mod regex
             */
             use ::
             {
+                borrow::{ Cow },
+                sync::{ Arc },
+                regex::
+                {
+                    automata::{ meta, captures, Input, PatternID },
+                    bytes::{ RegexBuilder },
+                    error::{ Error }
+                },
                 *,
             };
             /*
-            use alloc::{borrow::Cow, string::String, sync::Arc, vec::Vec};
-
-            use regex::automata::{meta, util::captures, Input, PatternID};
-
-            use crate::{bytes::RegexBuilder, error::Error};
             */
-
             #[derive( Clone )]
-            pub struct Regex {
+            pub struct Regex
+            {
                 pub meta: meta::Regex,
                 pub pattern: Arc<str>,
             }
@@ -45889,17 +46333,20 @@ pub mod regex
                 }
             }
 
-            impl ::str::FromStr for Regex {
+            impl ::str::FromStr for Regex 
+            {
                 type Err = Error;
                 fn from_str(s: &str) -> Result<Regex, Error> { Regex::new(s) }
             }
 
-            impl TryFrom<&str> for Regex {
+            impl TryFrom<&str> for Regex 
+            {
                 type Error = Error;
                 fn try_from(s: &str) -> Result<Regex, Error> { Regex::new(s) }
             }
 
-            impl TryFrom<String> for Regex {
+            impl TryFrom<String> for Regex 
+            {
                 type Error = Error;
                 fn try_from(s: String) -> Result<Regex, Error> { Regex::new(&s) }
             }
@@ -45989,7 +46436,8 @@ pub mod regex
                 }
             }
 
-            impl Regex {
+            impl Regex 
+            {
 
                 #[inline] pub fn shortest_match(&self, haystack: &[u8]) -> Option<usize> { self.shortest_match_at(haystack, 0)}
                 
@@ -46057,7 +46505,8 @@ pub mod regex
                 ) -> Option<Match<'h>> { self.captures_read_at(locs, haystack, start) }
             }
 
-            impl Regex {
+            impl Regex 
+            {
 
                 #[inline] pub fn as_str( &self ) -> &str { &self.pattern }
 
@@ -46119,7 +46568,8 @@ pub mod regex
                 }
             }
 
-            impl<'h> From<Match<'h>> for ::ops::Range<usize> {
+            impl<'h> From<Match<'h>> for ::ops::Range<usize> 
+            {
                 fn from(m: Match<'h>) -> ::ops::Range<usize> { m.range() }
             }
 
@@ -46169,11 +46619,14 @@ pub mod regex
 
             impl<'h> ::fmt::Debug for Captures<'h>
             {
-                fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+                fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+                {
                     struct CapturesDebugMap<'a> { caps: &'a Captures<'a>, }
 
-                    impl<'a> ::fmt::Debug for CapturesDebugMap<'a> {
-                        fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+                    impl<'a> ::fmt::Debug for CapturesDebugMap<'a> 
+                    {
+                        fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result 
+                        {
                             let mut map = f.debug_map();
                             let names =
                                 self.caps.caps.group_info().pattern_names(PatternID::ZERO);
@@ -46190,8 +46643,10 @@ pub mod regex
 
                     struct Key<'a>(usize, Option<&'a str>);
 
-                    impl<'a> ::fmt::Debug for Key<'a> {
-                        fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+                    impl<'a> ::fmt::Debug for Key<'a> 
+                    {
+                        fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result 
+                        {
                             write!(f, "{}", self.0)?;
                             if let Some(name) = self.1 {
                                 write!(f, "/{name:?}")?;
@@ -46202,11 +46657,13 @@ pub mod regex
 
                     struct Value<'a>(Match<'a>);
 
-                    impl<'a> ::fmt::Debug for Value<'a> {
-                        fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-                            use regex::automata::util::escape::DebugHaystack;
-
-                            write!(
+                    impl<'a> ::fmt::Debug for Value<'a> 
+                    {
+                        fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result 
+                        {
+                            use regex::automata::escape::DebugHaystack;
+                            write!
+                            (
                                 f,
                                 "{}..{}/{:?}",
                                 self.0.start(),
@@ -46217,8 +46674,8 @@ pub mod regex
                     }
 
                     f.debug_tuple("Captures")
-                        .field(&CapturesDebugMap { caps: self })
-                        .finish()
+                    .field(&CapturesDebugMap { caps: self })
+                    .finish()
                 }
             }
 
@@ -46473,7 +46930,8 @@ pub mod regex
             #[derive( Debug )]
             pub struct ReplacerRef<'a, R: ?Sized>(&'a mut R);
 
-            impl<'a, R: Replacer + ?Sized + 'a> Replacer for ReplacerRef<'a, R> {
+            impl<'a, R: Replacer + ?Sized + 'a> Replacer for ReplacerRef<'a, R>
+            {
                 fn replace_append( &mut self, caps: &Captures<'_>, dst: &mut Vec<u8>) {
                     self.0.replace_append(caps, dst)
                 }
@@ -46493,14 +46951,14 @@ pub mod regex
                 fn no_expansion(&mut self) -> Option<Cow<'_, [u8]>> { Some(Cow::Borrowed( self.0)) }
             }
             
-            fn no_expansion<T: AsRef<[u8]>>(replacement: &T) -> Option<Cow<'_, [u8]>> {
+            fn no_expansion<T: AsRef<[u8]>>(replacement: &T) -> Option<Cow<'_, [u8]>>
+            {
                 let replacement = replacement.as_ref();
                 match crate::find_byte::find_byte(b'$', replacement) {
                     Some(_) => None,
                     None => Some(Cow::Borrowed(replacement)),
                 }
             }
-
         }
 
         pub mod string
@@ -47676,7 +48134,7 @@ pub mod regex
                     }
                 }
 
-                fn is_hex(c: char) -> bool {
+                fn is_hex( c:char ) -> bool {
                     ('0' <= c && c <= '9') || ('a' <= c && c <= 'f') || ('A' <= c && c <= 'F')
                 }
 
@@ -51185,7 +51643,7 @@ pub mod regex
                 }
             }
 
-        }
+        } pub use self::ast::{ * };
     
         pub mod debug
         {
@@ -51286,7 +51744,7 @@ pub mod regex
                     Err(_) => Some(Err(bytes[0])),
                 }
             }
-        }
+        } pub use self::debug::{ * };
     
         pub mod either
         {
@@ -51304,7 +51762,7 @@ pub mod regex
                 Left(Left),
                 Right(Right),
             }
-        }
+        } pub use self::either::{ * };
     
         pub mod error
         {
@@ -51524,7 +51982,7 @@ pub mod regex
                 ::iter::repeat(c).take(count).collect()
             }
 
-        }
+        } pub use self::error::{ * };
     
         pub mod hir
         {
@@ -55845,7 +56303,7 @@ pub mod regex
                 concat.push(Hir::alternation(suffix_alts));
                 Ok(Hir::concat(concat))
             }
-        }
+        } pub use self::hir::{ * };
     
         pub mod parser
         {
@@ -55951,7 +56409,7 @@ pub mod regex
                     Ok(hir)
                 }
             }
-        }
+        } pub use self::parser::{ * };
         
         pub mod rank
         {
@@ -56222,16 +56680,16 @@ pub mod regex
                 255,
                 255,
             ];
-        }
+        } pub use self::rank::{ * };
 
-        pub fn escape(text: &str) -> String
+        pub fn escape( text:&str ) -> String
         {
             let mut quoted = String::new();
             escape_into(text, &mut quoted);
             quoted
         }
 
-        pub fn escape_into(text: &str, buf: &mut String)
+        pub fn escape_into( text:&str, buf:&mut String )
         {
             buf.reserve(text.len());
 
@@ -70656,7 +71114,7 @@ pub mod unicode
         hir::ClassUnicode::new(hir_ranges)
     }
 
-    pub fn is_word_character(c: char) -> Result<bool, UnicodeWordError>
+    pub fn is_word_character( c:char ) -> Result<bool, UnicodeWordError>
     {
         if u8::try_from(c).map_or(false, is::word_byte) { return Ok(true); }
 
@@ -70923,27 +71381,280 @@ pub mod unicode
         pub mod normalize
         {
             /*!
-            */
+            Functions for computing canonical and compatible decompositions for Unicode characters. */
             use ::
             {
                 *,
             };
             /*
+            use crate::lookups::{
+                canonical_fully_decomposed, cjk_compat_variants_fully_decomposed,
+                compatibility_fully_decomposed, composition_table,
+            };
+
+            use core::char;
             */
+            #[inline] pub fn decompose_canonical<F>(c: char, emit_char: F) where
+            F: FnMut(char)
+            {
+                decompose(c, canonical_fully_decomposed, emit_char)
+            }
+
+            #[inline] pub fn decompose_compatible<F: FnMut(char)>(c: char, emit_char: F)
+            {
+                let decompose_char = | c | compatibility_fully_decomposed(c).or_else(|| canonical_fully_decomposed(c));
+                decompose(c, decompose_char, emit_char)
+            }
+            
+            #[inline] pub fn decompose_cjk_compat_variants<F>(c: char, mut emit_char: F) where
+            F: FnMut(char)
+            {
+                if c <= '\x7f' {
+                    emit_char(c);
+                    return;
+                }
+                
+                if let Some(decomposed) = cjk_compat_variants_fully_decomposed(c)
+                {
+                    for &d in decomposed
+                    { 
+                        emit_char(d);
+                    }
+
+                    return;
+                }
+                
+                emit_char(c);
+            }
+
+            #[inline] fn decompose<D, F>(c: char, decompose_char: D, mut emit_char: F) where
+            D: Fn(char) -> Option<&'static [char]>,
+            F: FnMut(char)
+            {
+                if c <= '\x7f' {
+                    emit_char(c);
+                    return;
+                }
+                
+                if is_hangul_syllable(c) {
+                    unsafe {
+                        decompose_hangul(c, emit_char);
+                    }
+                    return;
+                }
+
+                if let Some(decomposed) = decompose_char(c) {
+                    for &d in decomposed {
+                        emit_char(d);
+                    }
+                    return;
+                }
+                
+                emit_char(c);
+            }
+            
+            pub fn compose(a: char, b: char) -> Option<char>
+            {
+                compose_hangul(a, b).or_else(|| composition_table(a, b))
+            }
+            
+            const S_BASE: u32 = 0xAC00;
+            const L_BASE: u32 = 0x1100;
+            const V_BASE: u32 = 0x1161;
+            const T_BASE: u32 = 0x11A7;
+            const L_COUNT: u32 = 19;
+            const V_COUNT: u32 = 21;
+            const T_COUNT: u32 = 28;
+            const N_COUNT: u32 = V_COUNT * T_COUNT;
+            const S_COUNT: u32 = L_COUNT * N_COUNT;
+            const S_LAST: u32 = S_BASE + S_COUNT - 1;
+            const L_LAST: u32 = L_BASE + L_COUNT - 1;
+            const V_LAST: u32 = V_BASE + V_COUNT - 1;
+            const T_LAST: u32 = T_BASE + T_COUNT - 1;            
+            const T_FIRST: u32 = T_BASE + 1;
+            
+            pub fn is_hangul_syllable( c:char ) -> bool 
+            {
+                (c as u32) >= S_BASE && (c as u32) < (S_BASE + S_COUNT)
+            }
+            
+            #[inline( always )] unsafe fn decompose_hangul<F>(s: char, mut emit_char: F) where
+            F: FnMut(char),
+            {
+                unsafe
+                {    
+                    let s_index = s as u32 - S_BASE;
+                    let l_index = s_index / N_COUNT;
+                    emit_char(char::from_u32_unchecked(L_BASE + l_index));                    
+                    let v_index = (s_index % N_COUNT) / T_COUNT;                    
+                    emit_char(char::from_u32_unchecked(V_BASE + v_index));                    
+                    let t_index = s_index % T_COUNT;
+
+                    if t_index > 0 { emit_char(char::from_u32_unchecked(T_BASE + t_index)); }
+                }
+            }
+
+            #[inline] pub fn hangul_decomposition_length(s: char) -> usize 
+            {
+                let si = s as u32 - S_BASE;
+                let ti = si % T_COUNT;
+                if ti > 0 {
+                    3
+                } else {
+                    2
+                }
+            }
+            
+            #[inline(always)] fn compose_hangul(a: char, b: char) -> Option<char>
+            {
+                let (a, b) = (a as u32, b as u32);
+                match (a, b) {
+                    (L_BASE..=L_LAST, V_BASE..=V_LAST) => {
+                        let l_index = a - L_BASE;
+                        let v_index = b - V_BASE;
+                        let lv_index = l_index * N_COUNT + v_index * T_COUNT;
+                        let s = S_BASE + lv_index;
+                        Some(unsafe { char::from_u32_unchecked(s) })
+                    }
+                    
+                    (S_BASE..=S_LAST, T_FIRST..=T_LAST) if (a - S_BASE) % T_COUNT == 0 => {
+                        Some(unsafe { char::from_u32_unchecked(a + (b - T_BASE)) })
+                    }
+                    _ => None,
+                }
+            }
         }
 
         pub mod lookups
         {
             /*!
-            */
+            Lookups of unicode properties using minimal perfect hashing. */
             use ::
             {
                 *,
             };
             /*
-            */ 
+            use crate::perfect_hash::mph_lookup;
+            use crate::tables::*;
+            */
+            pub fn canonical_combining_class(c: char) -> u8
+            {
+                mph_lookup
+                (
+                    c.into(),
+                    CANONICAL_COMBINING_CLASS_SALT,
+                    CANONICAL_COMBINING_CLASS_KV,
+                    u8_lookup_fk,
+                    u8_lookup_fv,
+                    0,
+                )
+            }
 
-            pub fn is_combining_mark(c:char) -> bool { mph_lookup(c.into(),COMBINING_MARK_SALT,COMBINING_MARK_KV,bool_lookup_fk,bool_lookup_fv,false) }
+            pub(crate) fn composition_table(c1: char, c2: char) -> Option<char>
+            {
+                if c1 < '\u{10000}' && c2 < '\u{10000}' {
+                    mph_lookup(
+                        (c1 as u32) << 16 | (c2 as u32),
+                        COMPOSITION_TABLE_SALT,
+                        COMPOSITION_TABLE_KV,
+                        pair_lookup_fk,
+                        pair_lookup_fv_opt,
+                        None,
+                    )
+                } else {
+                    composition_table_astral(c1, c2)
+                }
+            }
+
+            pub(crate) fn canonical_fully_decomposed(c: char) -> Option<&'static [char]>
+            {
+                mph_lookup
+                (
+                    c.into(),
+                    CANONICAL_DECOMPOSED_SALT,
+                    CANONICAL_DECOMPOSED_KV,
+                    pair_lookup_fk,
+                    pair_lookup_fv_opt,
+                    None,
+                )
+                .map(|(start, len)| &CANONICAL_DECOMPOSED_CHARS[start as usize..][..len as usize])
+            }
+
+            pub(crate) fn compatibility_fully_decomposed(c: char) -> Option<&'static [char]>
+            {
+                mph_lookup
+                (
+                    c.into(),
+                    COMPATIBILITY_DECOMPOSED_SALT,
+                    COMPATIBILITY_DECOMPOSED_KV,
+                    pair_lookup_fk,
+                    pair_lookup_fv_opt,
+                    None,
+                )
+                .map(|(start, len)| &COMPATIBILITY_DECOMPOSED_CHARS[start as usize..][..len as usize])
+            }
+
+            pub(crate) fn cjk_compat_variants_fully_decomposed(c: char) -> Option<&'static [char]>
+            {
+                mph_lookup(
+                    c.into(),
+                    CJK_COMPAT_VARIANTS_DECOMPOSED_SALT,
+                    CJK_COMPAT_VARIANTS_DECOMPOSED_KV,
+                    pair_lookup_fk,
+                    pair_lookup_fv_opt,
+                    None,
+                )
+                .map(|(start, len)| &CJK_COMPAT_VARIANTS_DECOMPOSED_CHARS[start as usize..][..len as usize])
+            }
+            
+            pub fn is_combining_mark(c: char) -> bool
+            {
+                mph_lookup
+                (
+                    c.into(),
+                    COMBINING_MARK_SALT,
+                    COMBINING_MARK_KV,
+                    bool_lookup_fk,
+                    bool_lookup_fv,
+                    false,
+                )
+            }
+
+            pub fn stream_safe_trailing_nonstarters(c: char) -> usize
+            {
+                mph_lookup(
+                    c.into(),
+                    TRAILING_NONSTARTERS_SALT,
+                    TRAILING_NONSTARTERS_KV,
+                    u8_lookup_fk,
+                    u8_lookup_fv,
+                    0,
+                ) as usize
+            }
+            
+            #[inline] fn u8_lookup_fk(kv: u32) -> u32 {
+                kv >> 8
+            }
+            
+            #[inline] fn u8_lookup_fv(kv: u32) -> u8 {
+                (kv & 0xff) as u8
+            }
+            
+            #[inline] fn bool_lookup_fk(kv: u32) -> u32 {
+                kv
+            }
+            
+             #[inline] fn bool_lookup_fv(_kv: u32) -> bool {
+                true
+            }
+            
+            #[inline] fn pair_lookup_fk<T>(kv: (u32, T)) -> u32 {
+                kv.0
+            }
+            
+            #[inline] fn pair_lookup_fv_opt<T>(kv: (u32, T)) -> Option<T> {
+                Some(kv.1)
+            }
         }
 
         pub mod char
@@ -70956,13 +71667,12 @@ pub mod unicode
             };
             /*
             */
-            pub use super::normalize::{
+            pub use super::normalize::
+            {
                 compose, decompose_canonical, decompose_cjk_compat_variants, decompose_compatible,
             };
 
             pub use super::lookups::{canonical_combining_class, is_combining_mark};
-
-            pub use ::unicode::tables::is_public_assigned;
         }
     }
     
@@ -74289,4 +74999,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 74292 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 75002 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
