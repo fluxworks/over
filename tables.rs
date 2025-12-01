@@ -84,119 +84,126 @@ pub mod parse;
             ::__private::TokenStream::new()
         };
        
-        ( $tt:tt ) => 
+        ( $a:tt ) => 
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::quote_token!{$tt _s}
+            ::quote_token!{$a _s}
             _s
         }};
        
         
-        ( # $var:ident ) => 
+        ( # $v:ident ) => 
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::ToTokens::to_tokens( &$var, &mut _s );
+            ::ToTokens::to_tokens( &$v, &mut _s );
             _s
         }};
         
-        ( $tt1:tt $tt2:tt ) =>
+        ( $t1:tt $t2:tt ) =>
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::quote_token!{$tt1 _s}
-            ::quote_token!{$tt2 _s}
+            ::quote_token!{$t1 _s}
+            ::quote_token!{$t2 _s}
             _s
         }};
        
-        ( $( $tt:tt )* ) => {{
+        ( $( $a:tt )* ) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            ::quote_each_token!{_s $( $tt )*}
+            ::quote_each_token!{_s $( $a )*}
             _s
         }};
     }
 
     #[macro_export] macro_rules! quote_spanned
     {
-        ( $span:expr=> ) => {{
-            let _: ::__private::Span = ::__private::get_span( $span ).__into_span();
+        ( $s:expr=> ) => 
+        {{
+            let _: ::__private::Span = ::__private::get_span( $s ).__into_span();
             ::__private::TokenStream::new()
         }};
        
-        ( $span:expr=> $tt:tt ) => {{
+        ( $s:expr=> $a:tt ) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _span: ::__private::Span = ::__private::get_span( $span ).__into_span();
-            ::quote_token_spanned!{$tt _s _span}
+            let _p: ::__private::Span = ::__private::get_span( $s ).__into_span();
+            ::quote_token_spanned!{$a _s _p}
             _s
         }};
        
-        ( $span:expr=> # $var:ident ) => {{
+        ( $s:expr=> # $v:ident ) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _: ::__private::Span = ::__private::get_span( $span ).__into_span();
-            ::ToTokens::to_tokens( &$var, &mut _s );
+            let _: ::__private::Span = ::__private::get_span( $s ).__into_span();
+            ::ToTokens::to_tokens( &$v, &mut _s );
             _s
         }};
-        ( $span:expr=> $tt1:tt $tt2:tt ) => {{
+
+        ( $s:expr=> $t1:tt $t2:tt ) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _span: ::__private::Span = ::__private::get_span( $span ).__into_span();
-            ::quote_token_spanned!{$tt1 _s _span}
-            ::quote_token_spanned!{$tt2 _s _span}
+            let _p: ::__private::Span = ::__private::get_span( $s ).__into_span();
+            ::quote_token_spanned!{$t1 _s _p}
+            ::quote_token_spanned!{$t2 _s _p}
             _s
         }};
        
-        ( $span:expr=> $( $tt:tt )* ) => {{
+        ( $s:expr=> $( $a:tt )* ) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _span: ::__private::Span = ::__private::get_span( $span ).__into_span();
-            ::quote_each_token_spanned!{_s _span $( $tt )*}
+            let _p: ::__private::Span = ::__private::get_span( $s ).__into_span();
+            ::quote_each_token_spanned!{_s _p $( $a )*}
             _s
         }};
     }
    
     #[macro_export] macro_rules! pounded_var_names
     {
-        ( $call:ident! $extra:tt $( $tts:tt )* ) => {
-            ::pounded_var_names_with_context!{$call! $extra
-                ( @ $( $tts )* )
-                ( $( $tts )* @ )
+        ( $c:ident! $e:tt $( $f:tt )* ) => {
+            ::pounded_var_names_with_context!{$c! $e
+                ( @ $( $f )* )
+                ( $( $f )* @ )
             }
         };
     }
 
     #[macro_export] macro_rules! pounded_var_names_with_context
     {
-        ( $call:ident! $extra:tt ( $( $b1:tt )* ) ( $( $curr:tt )* ) ) => {
+        ( $c:ident! $e:tt ( $( $b1:tt )* ) ( $( $r:tt )* ) ) => {
             $( 
-                ::pounded_var_with_context!{$call! $extra $b1 $curr}
+                ::pounded_var_with_context!{$c! $e $b1 $r}
             )*
         };
     }
 
     #[macro_export] macro_rules! pounded_var_with_context
     {
-        ( $call:ident! $extra:tt $b1:tt ( $( $inner:tt )* ) ) => { ::pounded_var_names!{$call! $extra $( $inner )*} };
+        ( $c:ident! $e:tt $b1:tt ( $( $in:tt )* ) ) => { ::pounded_var_names!{$c! $e $( $in )*} };
 
-        ( $call:ident! $extra:tt $b1:tt [ $( $inner:tt )* ] ) => { ::pounded_var_names!{$call! $extra $( $inner )*} };
+        ( $c:ident! $e:tt $b1:tt [ $( $in:tt )* ] ) => { ::pounded_var_names!{$c! $e $( $in )*} };
 
-        ( $call:ident! $extra:tt $b1:tt { $( $inner:tt )* } ) => { ::pounded_var_names!{$call! $extra $( $inner )*} };
+        ( $c:ident! $e:tt $b1:tt { $( $in:tt )* } ) => { ::pounded_var_names!{$c! $e $( $in )*} };
 
-        ( $call:ident!( $( $extra:tt )* ) # $var:ident ) => { ::$call!( $( $extra )* $var ); };
+        ( $c:ident!( $( $e:tt )* ) # $v:ident ) => { ::$c!( $( $e )* $v ); };
 
-        ( $call:ident! $extra:tt $b1:tt $curr:tt ) => {};
+        ( $c:ident! $e:tt $b1:tt $r:tt ) => {};
     }
 
     #[macro_export] macro_rules! quote_bind_into_iter 
     {
-        ( $has_iter:ident $var:ident ) => {
+        ( $h:ident $v:ident ) => {
            
             #[allow( unused_mut )]
-            let ( mut $var, i ) = $var.quote_into_iter();
-            let $has_iter = $has_iter | i;
+            let ( mut $v, i ) = $v.quote_into_iter();
+            let $h = $h | i;
         };
     }
 
     #[macro_export] macro_rules! quote_bind_next_or_break 
     {
-        ( $var:ident ) =>
+        ( $v:ident ) =>
         {
-            let $var = match $var.next() {
+            let $v = match $v.next() {
                 Some( _x ) => ::__private::RepInterp( _x ),
                 None => break,
             };
@@ -205,757 +212,752 @@ pub mod parse;
     
     #[macro_export] macro_rules! quote_each_token 
     {
-        ( $tokens:ident $( $tts:tt )* ) => {
-            ::quote_tokens_with_context!{$tokens
-                ( @ @ @ @ @ @ $( $tts )* )
-                ( @ @ @ @ @ $( $tts )* @ )
-                ( @ @ @ @ $( $tts )* @ @ )
-                ( @ @ @ $( ( $tts ) )* @ @ @ )
-                ( @ @ $( $tts )* @ @ @ @ )
-                ( @ $( $tts )* @ @ @ @ @ )
-                ( $( $tts )* @ @ @ @ @ @ )
+        ( $k:ident $( $f:tt )* ) => {
+            ::quote_tokens_with_context!{$k
+                ( @ @ @ @ @ @ $( $f )* )
+                ( @ @ @ @ @ $( $f )* @ )
+                ( @ @ @ @ $( $f )* @ @ )
+                ( @ @ @ $( ( $f ) )* @ @ @ )
+                ( @ @ $( $f )* @ @ @ @ )
+                ( @ $( $f )* @ @ @ @ @ )
+                ( $( $f )* @ @ @ @ @ @ )
             }
         };
     }
 
     #[macro_export] macro_rules! quote_each_token_spanned 
     {
-        ( $tokens:ident $span:ident $( $tts:tt )* ) => {
-            ::quote_tokens_with_context_spanned!{$tokens $span
-                ( @ @ @ @ @ @ $( $tts )* )
-                ( @ @ @ @ @ $( $tts )* @ )
-                ( @ @ @ @ $( $tts )* @ @ )
-                ( @ @ @ $( ( $tts ) )* @ @ @ )
-                ( @ @ $( $tts )* @ @ @ @ )
-                ( @ $( $tts )* @ @ @ @ @ )
-                ( $( $tts )* @ @ @ @ @ @ )
+        ( $k:ident $s:ident $( $f:tt )* ) => {
+            ::quote_tokens_with_context_spanned!{$k $s
+                ( @ @ @ @ @ @ $( $f )* )
+                ( @ @ @ @ @ $( $f )* @ )
+                ( @ @ @ @ $( $f )* @ @ )
+                ( @ @ @ $( ( $f ) )* @ @ @ )
+                ( @ @ $( $f )* @ @ @ @ )
+                ( @ $( $f )* @ @ @ @ @ )
+                ( $( $f )* @ @ @ @ @ @ )
             }
         };
     }
 
     #[macro_export] macro_rules! quote_tokens_with_context
     {
-        ( $tokens:ident
+        ( $k:ident
             ( $( $b3:tt )* ) ( $( $b2:tt )* ) ( $( $b1:tt )* )
-            ( $( $curr:tt )* )
+            ( $( $r:tt )* )
             ( $( $a1:tt )* ) ( $( $a2:tt )* ) ( $( $a3:tt )* )
         ) => {
             $( 
-                ::quote_token_with_context!{$tokens $b3 $b2 $b1 $curr $a1 $a2 $a3}
+                ::quote_token_with_context!{$k $b3 $b2 $b1 $r $a1 $a2 $a3}
             )*
         };
     }
 
     #[macro_export] macro_rules! quote_tokens_with_context_spanned
     {
-        ( $tokens:ident $span:ident
+        ( $k:ident $s:ident
             ( $( $b3:tt )* ) ( $( $b2:tt )* ) ( $( $b1:tt )* )
-            ( $( $curr:tt )* )
+            ( $( $r:tt )* )
             ( $( $a1:tt )* ) ( $( $a2:tt )* ) ( $( $a3:tt )* )
         ) => {
             $( 
-                ::quote_token_with_context_spanned!{$tokens $span $b3 $b2 $b1 $curr $a1 $a2 $a3}
+                ::quote_token_with_context_spanned!{$k $s $b3 $b2 $b1 $r $a1 $a2 $a3}
             )*
         };
     }
 
     #[macro_export] macro_rules! quote_token_with_context
     {  
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) * $a3:tt ) => 
+        ( $k:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $in:tt )* ) * $a3:tt ) => 
         {{
             use ::__private::ext::*;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $inner )*}
+            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $in )*}
             let _: ::__private::HasIterator = has_iter;
             
             while true 
             {
-                ::pounded_var_names!{quote_bind_next_or_break!() () $( $inner )*}
-                ::quote_each_token!{$tokens $( $inner )*}
+                ::pounded_var_names!{quote_bind_next_or_break!() () $( $in )*}
+                ::quote_each_token!{$k $( $in )*}
             }
         }};
        
-        ( $tokens:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) * $a2:tt $a3:tt ) => {};
+        ( $k:ident $b3:tt $b2:tt # ( ( $( $in:tt )* ) ) * $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt # ( $( $inner:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $b3:tt # ( $( $in:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) $sep:tt * ) => 
+        ( $k:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $in:tt )* ) $s:tt * ) => 
         {{
             use ::__private::ext::*;
             let mut _i = 0usize;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $inner )*}
+            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $in )*}
             let _: ::__private::HasIterator = has_iter;
             while true {
-                ::pounded_var_names!{quote_bind_next_or_break!() () $( $inner )*}
+                ::pounded_var_names!{quote_bind_next_or_break!() () $( $in )*}
                 if _i > 0 {
-                    ::quote_token!{$sep $tokens}
+                    ::quote_token!{$s $k}
                 }
                 _i += 1;
-                ::quote_each_token!{$tokens $( $inner )*}
+                ::quote_each_token!{$k $( $in )*}
             }
         }};
        
-        ( $tokens:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) $sep:tt * $a3:tt ) => {};
+        ( $k:ident $b3:tt $b2:tt # ( ( $( $in:tt )* ) ) $s:tt * $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt # ( $( $inner:tt )* ) ( $sep:tt ) * $a2:tt $a3:tt ) => {};
+        ( $k:ident $b3:tt # ( $( $in:tt )* ) ( $s:tt ) * $a2:tt $a3:tt ) => {};
        
        
-        ( $tokens:ident # ( $( $inner:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token!{* $tokens} };
+        ( $k:ident # ( $( $in:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token!{* $k} };
        
-        ( $tokens:ident # ( $( $inner:tt )* ) $sep:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident # ( $( $in:tt )* ) $s:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( # ) $var:ident $a2:tt $a3:tt ) => { ::ToTokens::to_tokens( &$var, &mut $tokens ); };
+        ( $k:ident $b3:tt $b2:tt $b1:tt ( # ) $v:ident $a2:tt $a3:tt ) => { ::ToTokens::to_tokens( &$v, &mut $k ); };
        
-        ( $tokens:ident $b3:tt $b2:tt # ( $var:ident ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $b3:tt $b2:tt # ( $v:ident ) $a1:tt $a2:tt $a3:tt ) => {};
        
-        ( $tokens:ident $b3:tt $b2:tt $b1:tt ( $curr:tt ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token!{$curr $tokens} };
+        ( $k:ident $b3:tt $b2:tt $b1:tt ( $r:tt ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token!{$r $k} };
     }
     
     #[macro_export] macro_rules! quote_token_with_context_spanned 
     {
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $s:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt ) => {};
 
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) * $a3:tt ) => {{
+        ( $k:ident $s:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $in:tt )* ) * $a3:tt ) => {{
             use ::__private::ext::*;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $inner )*}
+            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $in )*}
             let _: ::__private::HasIterator = has_iter;
             while true {
-                ::pounded_var_names!{quote_bind_next_or_break!() () $( $inner )*}
-                ::quote_each_token_spanned!{$tokens $span $( $inner )*}
+                ::pounded_var_names!{quote_bind_next_or_break!() () $( $in )*}
+                ::quote_each_token_spanned!{$k $s $( $in )*}
             }
         }};
-        ( $tokens:ident $span:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) * $a2:tt $a3:tt ) => {};
-        ( $tokens:ident $span:ident $b3:tt # ( $( $inner:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $s:ident $b3:tt $b2:tt # ( ( $( $in:tt )* ) ) * $a2:tt $a3:tt ) => {};
+        ( $k:ident $s:ident $b3:tt # ( $( $in:tt )* ) ( * ) $a1:tt $a2:tt $a3:tt ) => {};
 
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $inner:tt )* ) $sep:tt * ) => {{
+        ( $k:ident $s:ident $b3:tt $b2:tt $b1:tt ( # ) ( $( $in:tt )* ) $t:tt * ) => {{
             use ::__private::ext::*;
             let mut _i = 0usize;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $inner )*}
+            ::pounded_var_names!{quote_bind_into_iter!( has_iter ) () $( $in )*}
             let _: ::__private::HasIterator = has_iter;
             while true {
-                ::pounded_var_names!{quote_bind_next_or_break!() () $( $inner )*}
+                ::pounded_var_names!{quote_bind_next_or_break!() () $( $in )*}
                 if _i > 0 {
-                    ::quote_token_spanned!{$sep $tokens $span}
+                    ::quote_token_spanned!{$s $k $t}
                 }
                 _i += 1;
-                ::quote_each_token_spanned!{$tokens $span $( $inner )*}
+                ::quote_each_token_spanned!{$k $s $( $in )*}
             }
         }};
-        ( $tokens:ident $span:ident $b3:tt $b2:tt # ( ( $( $inner:tt )* ) ) $sep:tt * $a3:tt ) => {};
-        ( $tokens:ident $span:ident $b3:tt # ( $( $inner:tt )* ) ( $sep:tt ) * $a2:tt $a3:tt ) => {};
-        ( $tokens:ident $span:ident # ( $( $inner:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token_spanned!{* $tokens $span} };
-        ( $tokens:ident $span:ident # ( $( $inner:tt )* ) $sep:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
-
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( # ) $var:ident $a2:tt $a3:tt ) => { ::ToTokens::to_tokens( &$var, &mut $tokens ); };
-        ( $tokens:ident $span:ident $b3:tt $b2:tt # ( $var:ident ) $a1:tt $a2:tt $a3:tt ) => {};
-
-        ( $tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ( $curr:tt ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token_spanned!{$curr $tokens $span} };
+        ( $k:ident $s:ident $b3:tt $b2:tt # ( ( $( $in:tt )* ) ) $t:tt * $a3:tt ) => {};
+        ( $k:ident $s:ident $b3:tt # ( $( $in:tt )* ) ( $t:tt ) * $a2:tt $a3:tt ) => {};
+        ( $k:ident $s:ident # ( $( $in:tt )* ) * ( * ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token_spanned!{* $k $s} };
+        ( $k:ident $s:ident # ( $( $in:tt )* ) $t:tt ( * ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $s:ident $b3:tt $b2:tt $b1:tt ( # ) $v:ident $a2:tt $a3:tt ) => { ::ToTokens::to_tokens( &$v, &mut $k ); };
+        ( $k:ident $s:ident $b3:tt $b2:tt # ( $v:ident ) $a1:tt $a2:tt $a3:tt ) => {};
+        ( $k:ident $s:ident $b3:tt $b2:tt $b1:tt ( $r:tt ) $a1:tt $a2:tt $a3:tt ) => { ::quote_token_spanned!{$r $k $s} };
     }
     
     #[macro_export] macro_rules! quote_token
     {
-        ( $ident:ident $tokens:ident ) =>
+        ( $id:ident $k:ident ) =>
         {
-            ::__private::push_ident( &mut $tokens, stringify!( $ident ) );
+            ::__private::push_ident( &mut $k, stringify!( $id ) );
         };
 
-        ( :: $tokens:ident ) =>
+        ( :: $k:ident ) =>
         {
-            ::__private::push_colon2( &mut $tokens );
+            ::__private::push_colon2( &mut $k );
         };
 
-        ( ( $( $inner:tt )* ) $tokens:ident ) =>
+        ( ( $( $in:tt )* ) $k:ident ) =>
         {
             ::__private::push_group
             ( 
-                &mut $tokens,
+                &mut $k,
                 ::__private::Delimiter::Parenthesis,
-                ::quote!( $( $inner )* ),
+                ::quote!( $( $in )* ),
              );
         };
 
-        ( [ $( $inner:tt )* ] $tokens:ident ) =>
+        ( [ $( $in:tt )* ] $k:ident ) =>
         {
             ::__private::push_group
             ( 
-                &mut $tokens,
+                &mut $k,
                 ::__private::Delimiter::Bracket,
-                ::quote!( $( $inner )* ),
+                ::quote!( $( $in )* ),
              );
         };
 
-        ( { $( $inner:tt )* } $tokens:ident ) =>
+        ( { $( $in:tt )* } $k:ident ) =>
         {
             ::__private::push_group
             ( 
-                &mut $tokens,
+                &mut $k,
                 ::__private::Delimiter::Brace,
-                ::quote!( $( $inner )* ),
+                ::quote!( $( $in )* ),
              );
         };
 
-        ( # $tokens:ident ) =>
+        ( # $k:ident ) =>
         {
-            ::__private::push_pound( &mut $tokens );
+            ::__private::push_pound( &mut $k );
         };
 
-        ( , $tokens:ident ) =>
+        ( , $k:ident ) =>
         {
-            ::__private::push_comma( &mut $tokens );
+            ::__private::push_comma( &mut $k );
         };
 
-        ( . $tokens:ident ) =>
+        ( . $k:ident ) =>
         {
-            ::__private::push_dot( &mut $tokens );
+            ::__private::push_dot( &mut $k );
         };
 
-        ( ; $tokens:ident ) =>
+        ( ; $k:ident ) =>
         {
-            ::__private::push_semi( &mut $tokens );
+            ::__private::push_semi( &mut $k );
         };
 
-        ( : $tokens:ident ) =>
+        ( : $k:ident ) =>
         {
-            ::__private::push_colon( &mut $tokens );
+            ::__private::push_colon( &mut $k );
         };
 
-        ( + $tokens:ident ) =>
+        ( + $k:ident ) =>
         {
-            ::__private::push_add( &mut $tokens );
+            ::__private::push_add( &mut $k );
         };
 
-        ( += $tokens:ident ) =>
+        ( += $k:ident ) =>
         {
-            ::__private::push_add_eq( &mut $tokens );
+            ::__private::push_add_eq( &mut $k );
         };
 
-        ( & $tokens:ident ) =>
+        ( & $k:ident ) =>
         {
-            ::__private::push_and( &mut $tokens );
+            ::__private::push_and( &mut $k );
         };
 
-        ( && $tokens:ident ) =>
+        ( && $k:ident ) =>
         {
-            ::__private::push_and_and( &mut $tokens );
+            ::__private::push_and_and( &mut $k );
         };
 
-        ( &= $tokens:ident ) =>
+        ( &= $k:ident ) =>
         {
-            ::__private::push_and_eq( &mut $tokens );
+            ::__private::push_and_eq( &mut $k );
         };
 
-        ( @ $tokens:ident ) =>
+        ( @ $k:ident ) =>
         {
-            ::__private::push_at( &mut $tokens );
+            ::__private::push_at( &mut $k );
         };
 
-        ( ! $tokens:ident ) =>
+        ( ! $k:ident ) =>
         {
-            ::__private::push_bang( &mut $tokens );
+            ::__private::push_bang( &mut $k );
         };
 
-        ( ^ $tokens:ident ) =>
+        ( ^ $k:ident ) =>
         {
-            ::__private::push_caret( &mut $tokens );
+            ::__private::push_caret( &mut $k );
         };
 
-        ( ^= $tokens:ident ) =>
+        ( ^= $k:ident ) =>
         {
-            ::__private::push_caret_eq( &mut $tokens );
+            ::__private::push_caret_eq( &mut $k );
         };
 
-        ( / $tokens:ident ) =>
+        ( / $k:ident ) =>
         {
-            ::__private::push_div( &mut $tokens );
+            ::__private::push_div( &mut $k );
         };
 
-        ( /= $tokens:ident ) =>
+        ( /= $k:ident ) =>
         {
-            ::__private::push_div_eq( &mut $tokens );
+            ::__private::push_div_eq( &mut $k );
         };
 
-        ( .. $tokens:ident ) =>
+        ( .. $k:ident ) =>
         {
-            ::__private::push_dot2( &mut $tokens );
+            ::__private::push_dot2( &mut $k );
         };
 
-        ( ... $tokens:ident ) =>
+        ( ... $k:ident ) =>
         {
-            ::__private::push_dot3( &mut $tokens );
+            ::__private::push_dot3( &mut $k );
         };
 
-        ( ..= $tokens:ident ) =>
+        ( ..= $k:ident ) =>
         {
-            ::__private::push_dot_dot_eq( &mut $tokens );
+            ::__private::push_dot_dot_eq( &mut $k );
         };
 
-        ( = $tokens:ident ) =>
+        ( = $k:ident ) =>
         {
-            ::__private::push_eq( &mut $tokens );
+            ::__private::push_eq( &mut $k );
         };
 
-        ( == $tokens:ident ) =>
+        ( == $k:ident ) =>
         {
-            ::__private::push_eq_eq( &mut $tokens );
+            ::__private::push_eq_eq( &mut $k );
         };
 
-        ( >= $tokens:ident ) =>
+        ( >= $k:ident ) =>
         {
-            ::__private::push_ge( &mut $tokens );
+            ::__private::push_ge( &mut $k );
         };
 
-        ( > $tokens:ident ) =>
+        ( > $k:ident ) =>
         {
-            ::__private::push_gt( &mut $tokens );
+            ::__private::push_gt( &mut $k );
         };
 
-        ( <= $tokens:ident ) =>
+        ( <= $k:ident ) =>
         {
-            ::__private::push_le( &mut $tokens );
+            ::__private::push_le( &mut $k );
         };
 
-        ( < $tokens:ident ) =>
+        ( < $k:ident ) =>
         {
-            ::__private::push_lt( &mut $tokens );
+            ::__private::push_lt( &mut $k );
         };
 
-        ( *= $tokens:ident ) =>
+        ( *= $k:ident ) =>
         {
-            ::__private::push_mul_eq( &mut $tokens );
+            ::__private::push_mul_eq( &mut $k );
         };
 
-        ( != $tokens:ident ) =>
+        ( != $k:ident ) =>
         {
-            ::__private::push_ne( &mut $tokens );
+            ::__private::push_ne( &mut $k );
         };
 
-        ( | $tokens:ident ) =>
+        ( | $k:ident ) =>
         {
-            ::__private::push_or( &mut $tokens );
+            ::__private::push_or( &mut $k );
         };
 
-        ( |= $tokens:ident ) =>
+        ( |= $k:ident ) =>
         {
-            ::__private::push_or_eq( &mut $tokens );
+            ::__private::push_or_eq( &mut $k );
         };
 
-        ( || $tokens:ident ) =>
+        ( || $k:ident ) =>
         {
-            ::__private::push_or_or( &mut $tokens );
+            ::__private::push_or_or( &mut $k );
         };
 
-        ( ? $tokens:ident ) =>
+        ( ? $k:ident ) =>
         {
-            ::__private::push_question( &mut $tokens );
+            ::__private::push_question( &mut $k );
         };
 
-        ( -> $tokens:ident ) =>
+        ( -> $k:ident ) =>
         {
-            ::__private::push_rarrow( &mut $tokens );
+            ::__private::push_rarrow( &mut $k );
         };
 
-        ( <- $tokens:ident ) =>
+        ( <- $k:ident ) =>
         {
-            ::__private::push_larrow( &mut $tokens );
+            ::__private::push_larrow( &mut $k );
         };
 
-        ( % $tokens:ident ) =>
+        ( % $k:ident ) =>
         {
-            ::__private::push_rem( &mut $tokens );
+            ::__private::push_rem( &mut $k );
         };
 
-        ( %= $tokens:ident ) =>
+        ( %= $k:ident ) =>
         {
-            ::__private::push_rem_eq( &mut $tokens );
+            ::__private::push_rem_eq( &mut $k );
         };
 
-        ( => $tokens:ident ) =>
+        ( => $k:ident ) =>
         {
-            ::__private::push_fat_arrow( &mut $tokens );
+            ::__private::push_fat_arrow( &mut $k );
         };
 
-        ( << $tokens:ident ) =>
+        ( << $k:ident ) =>
         {
-            ::__private::push_shl( &mut $tokens );
+            ::__private::push_shl( &mut $k );
         };
 
-        ( <<= $tokens:ident ) =>
+        ( <<= $k:ident ) =>
         {
-            ::__private::push_shl_eq( &mut $tokens );
+            ::__private::push_shl_eq( &mut $k );
         };
 
-        ( >> $tokens:ident ) =>
+        ( >> $k:ident ) =>
         {
-            ::__private::push_shr( &mut $tokens );
+            ::__private::push_shr( &mut $k );
         };
 
-        ( >>= $tokens:ident ) =>
+        ( >>= $k:ident ) =>
         {
-            ::__private::push_shr_eq( &mut $tokens );
+            ::__private::push_shr_eq( &mut $k );
         };
 
-        ( * $tokens:ident ) =>
+        ( * $k:ident ) =>
         {
-            ::__private::push_star( &mut $tokens );
+            ::__private::push_star( &mut $k );
         };
 
-        ( - $tokens:ident ) =>
+        ( - $k:ident ) =>
         {
-            ::__private::push_sub( &mut $tokens );
+            ::__private::push_sub( &mut $k );
         };
 
-        ( -= $tokens:ident ) =>
+        ( -= $k:ident ) =>
         {
-            ::__private::push_sub_eq( &mut $tokens );
+            ::__private::push_sub_eq( &mut $k );
         };
 
-        ( $lifetime:lifetime $tokens:ident ) =>
+        ( $l:lifetime $k:ident ) =>
         {
-            ::__private::push_lifetime( &mut $tokens, stringify!( $lifetime ) );
+            ::__private::push_lifetime( &mut $k, stringify!( $l ) );
         };
 
-        ( _ $tokens:ident ) =>
+        ( _ $k:ident ) =>
         {
-            ::__private::push_underscore( &mut $tokens );
+            ::__private::push_underscore( &mut $k );
         };
 
-        ( $other:tt $tokens:ident ) =>
+        ( $o:tt $k:ident ) =>
         {
-            ::__private::parse( &mut $tokens, stringify!( $other ) );
+            ::__private::parse( &mut $k, stringify!( $o ) );
         };
     }
 
     #[macro_export] macro_rules! quote_token_spanned
     {
-        ( $ident:ident $tokens:ident $span:ident ) =>
+        ( $id:ident $k:ident $s:ident ) =>
         {
-            ::__private::push_ident_spanned( &mut $tokens, $span, stringify!( $ident ) );
+            ::__private::push_ident_spanned( &mut $k, $s, stringify!( $id ) );
         };
 
-        ( :: $tokens:ident $span:ident ) =>
+        ( :: $k:ident $s:ident ) =>
         {
-            ::__private::push_colon2_spanned( &mut $tokens, $span );
+            ::__private::push_colon2_spanned( &mut $k, $s );
         };
 
-        ( ( $( $inner:tt )* ) $tokens:ident $span:ident ) =>
+        ( ( $( $in:tt )* ) $k:ident $s:ident ) =>
         {
             ::__private::push_group_spanned            
             ( 
-                &mut $tokens,
-                $span,
+                &mut $k,
+                $s,
                 ::__private::Delimiter::Parenthesis,
-                ::quote_spanned!( $span=> $( $inner )* ),
+                ::quote_spanned!( $s=> $( $in )* ),
              );
         };
 
-        ( [ $( $inner:tt )* ] $tokens:ident $span:ident ) =>
+        ( [ $( $in:tt )* ] $k:ident $s:ident ) =>
         {
             ::__private::push_group_spanned
             ( 
-                &mut $tokens,
-                $span,
+                &mut $k,
+                $s,
                 ::__private::Delimiter::Bracket,
-                ::quote_spanned!( $span=> $( $inner )* ),
+                ::quote_spanned!( $s=> $( $in )* ),
              );
         };
 
-        ( { $( $inner:tt )* } $tokens:ident $span:ident ) =>
+        ( { $( $in:tt )* } $k:ident $s:ident ) =>
         {
             ::__private::push_group_spanned
             
             ( 
-                &mut $tokens,
-                $span,
+                &mut $k,
+                $s,
                 ::__private::Delimiter::Brace,
-                ::quote_spanned!( $span=> $( $inner )* ),
+                ::quote_spanned!( $s=> $( $in )* ),
              );
         };
 
-        ( # $tokens:ident $span:ident ) =>
+        ( # $k:ident $s:ident ) =>
         {
-            ::__private::push_pound_spanned( &mut $tokens, $span );
+            ::__private::push_pound_spanned( &mut $k, $s );
         };
 
-        ( , $tokens:ident $span:ident ) =>
+        ( , $k:ident $s:ident ) =>
         {
-            ::__private::push_comma_spanned( &mut $tokens, $span );
+            ::__private::push_comma_spanned( &mut $k, $s );
         };
 
-        ( . $tokens:ident $span:ident ) =>
+        ( . $k:ident $s:ident ) =>
         {
-            ::__private::push_dot_spanned( &mut $tokens, $span );
+            ::__private::push_dot_spanned( &mut $k, $s );
         };
 
-        ( ; $tokens:ident $span:ident ) =>
+        ( ; $k:ident $s:ident ) =>
         {
-            ::__private::push_semi_spanned( &mut $tokens, $span );
+            ::__private::push_semi_spanned( &mut $k, $s );
         };
 
-        ( : $tokens:ident $span:ident ) =>
+        ( : $k:ident $s:ident ) =>
         {
-            ::__private::push_colon_spanned( &mut $tokens, $span );
+            ::__private::push_colon_spanned( &mut $k, $s );
         };
 
-        ( + $tokens:ident $span:ident ) =>
+        ( + $k:ident $s:ident ) =>
         {
-            ::__private::push_add_spanned( &mut $tokens, $span );
+            ::__private::push_add_spanned( &mut $k, $s );
         };
 
-        ( += $tokens:ident $span:ident ) =>
+        ( += $k:ident $s:ident ) =>
         {
-            ::__private::push_add_eq_spanned( &mut $tokens, $span );
+            ::__private::push_add_eq_spanned( &mut $k, $s );
         };
 
-        ( & $tokens:ident $span:ident ) =>
+        ( & $k:ident $s:ident ) =>
         {
-            ::__private::push_and_spanned( &mut $tokens, $span );
+            ::__private::push_and_spanned( &mut $k, $s );
         };
 
-        ( && $tokens:ident $span:ident ) =>
+        ( && $k:ident $s:ident ) =>
         {
-            ::__private::push_and_and_spanned( &mut $tokens, $span );
+            ::__private::push_and_and_spanned( &mut $k, $s );
         };
 
-        ( &= $tokens:ident $span:ident ) =>
+        ( &= $k:ident $s:ident ) =>
         {
-            ::__private::push_and_eq_spanned( &mut $tokens, $span );
+            ::__private::push_and_eq_spanned( &mut $k, $s );
         };
 
-        ( @ $tokens:ident $span:ident ) =>
+        ( @ $k:ident $s:ident ) =>
         {
-            ::__private::push_at_spanned( &mut $tokens, $span );
+            ::__private::push_at_spanned( &mut $k, $s );
         };
 
-        ( ! $tokens:ident $span:ident ) =>
+        ( ! $k:ident $s:ident ) =>
         {
-            ::__private::push_bang_spanned( &mut $tokens, $span );
+            ::__private::push_bang_spanned( &mut $k, $s );
         };
 
-        ( ^ $tokens:ident $span:ident ) =>
+        ( ^ $k:ident $s:ident ) =>
         {
-            ::__private::push_caret_spanned( &mut $tokens, $span );
+            ::__private::push_caret_spanned( &mut $k, $s );
         };
 
-        ( ^= $tokens:ident $span:ident ) =>
+        ( ^= $k:ident $s:ident ) =>
         {
-            ::__private::push_caret_eq_spanned( &mut $tokens, $span );
+            ::__private::push_caret_eq_spanned( &mut $k, $s );
         };
 
-        ( / $tokens:ident $span:ident ) =>
+        ( / $k:ident $s:ident ) =>
         {
-            ::__private::push_div_spanned( &mut $tokens, $span );
+            ::__private::push_div_spanned( &mut $k, $s );
         };
 
-        ( /= $tokens:ident $span:ident ) =>
+        ( /= $k:ident $s:ident ) =>
         {
-            ::__private::push_div_eq_spanned( &mut $tokens, $span );
+            ::__private::push_div_eq_spanned( &mut $k, $s );
         };
 
-        ( .. $tokens:ident $span:ident ) =>
+        ( .. $k:ident $s:ident ) =>
         {
-            ::__private::push_dot2_spanned( &mut $tokens, $span );
+            ::__private::push_dot2_spanned( &mut $k, $s );
         };
 
-        ( ... $tokens:ident $span:ident ) =>
+        ( ... $k:ident $s:ident ) =>
         {
-            ::__private::push_dot3_spanned( &mut $tokens, $span );
+            ::__private::push_dot3_spanned( &mut $k, $s );
         };
 
-        ( ..= $tokens:ident $span:ident ) =>
+        ( ..= $k:ident $s:ident ) =>
         {
-            ::__private::push_dot_dot_eq_spanned( &mut $tokens, $span );
+            ::__private::push_dot_dot_eq_spanned( &mut $k, $s );
         };
 
-        ( = $tokens:ident $span:ident ) =>
+        ( = $k:ident $s:ident ) =>
         {
-            ::__private::push_eq_spanned( &mut $tokens, $span );
+            ::__private::push_eq_spanned( &mut $k, $s );
         };
 
-        ( == $tokens:ident $span:ident ) =>
+        ( == $k:ident $s:ident ) =>
         {
-            ::__private::push_eq_eq_spanned( &mut $tokens, $span );
+            ::__private::push_eq_eq_spanned( &mut $k, $s );
         };
 
-        ( >= $tokens:ident $span:ident ) =>
+        ( >= $k:ident $s:ident ) =>
         {
-            ::__private::push_ge_spanned( &mut $tokens, $span );
+            ::__private::push_ge_spanned( &mut $k, $s );
         };
 
-        ( > $tokens:ident $span:ident ) =>
+        ( > $k:ident $s:ident ) =>
         {
-            ::__private::push_gt_spanned( &mut $tokens, $span );
+            ::__private::push_gt_spanned( &mut $k, $s );
         };
 
-        ( <= $tokens:ident $span:ident ) =>
+        ( <= $k:ident $s:ident ) =>
         {
-            ::__private::push_le_spanned( &mut $tokens, $span );
+            ::__private::push_le_spanned( &mut $k, $s );
         };
 
-        ( < $tokens:ident $span:ident ) =>
+        ( < $k:ident $s:ident ) =>
         {
-            ::__private::push_lt_spanned( &mut $tokens, $span );
+            ::__private::push_lt_spanned( &mut $k, $s );
         };
 
-        ( *= $tokens:ident $span:ident ) =>
+        ( *= $k:ident $s:ident ) =>
         {
-            ::__private::push_mul_eq_spanned( &mut $tokens, $span );
+            ::__private::push_mul_eq_spanned( &mut $k, $s );
         };
 
-        ( != $tokens:ident $span:ident ) =>
+        ( != $k:ident $s:ident ) =>
         {
-            ::__private::push_ne_spanned( &mut $tokens, $span );
+            ::__private::push_ne_spanned( &mut $k, $s );
         };
 
-        ( | $tokens:ident $span:ident ) =>
+        ( | $k:ident $s:ident ) =>
         {
-            ::__private::push_or_spanned( &mut $tokens, $span );
+            ::__private::push_or_spanned( &mut $k, $s );
         };
 
-        ( |= $tokens:ident $span:ident ) =>
+        ( |= $k:ident $s:ident ) =>
         {
-            ::__private::push_or_eq_spanned( &mut $tokens, $span );
+            ::__private::push_or_eq_spanned( &mut $k, $s );
         };
 
-        ( || $tokens:ident $span:ident ) =>
+        ( || $k:ident $s:ident ) =>
         {
-            ::__private::push_or_or_spanned( &mut $tokens, $span );
+            ::__private::push_or_or_spanned( &mut $k, $s );
         };
 
-        ( ? $tokens:ident $span:ident ) =>
+        ( ? $k:ident $s:ident ) =>
         {
-            ::__private::push_question_spanned( &mut $tokens, $span );
+            ::__private::push_question_spanned( &mut $k, $s );
         };
 
-        ( -> $tokens:ident $span:ident ) =>
+        ( -> $k:ident $s:ident ) =>
         {
-            ::__private::push_rarrow_spanned( &mut $tokens, $span );
+            ::__private::push_rarrow_spanned( &mut $k, $s );
         };
 
-        ( <- $tokens:ident $span:ident ) =>
+        ( <- $k:ident $s:ident ) =>
         {
-            ::__private::push_larrow_spanned( &mut $tokens, $span );
+            ::__private::push_larrow_spanned( &mut $k, $s );
         };
 
-        ( % $tokens:ident $span:ident ) =>
+        ( % $k:ident $s:ident ) =>
         {
-            ::__private::push_rem_spanned( &mut $tokens, $span );
+            ::__private::push_rem_spanned( &mut $k, $s );
         };
 
-        ( %= $tokens:ident $span:ident ) =>
+        ( %= $k:ident $s:ident ) =>
         {
-            ::__private::push_rem_eq_spanned( &mut $tokens, $span );
+            ::__private::push_rem_eq_spanned( &mut $k, $s );
         };
 
-        ( => $tokens:ident $span:ident ) =>
+        ( => $k:ident $s:ident ) =>
         {
-            ::__private::push_fat_arrow_spanned( &mut $tokens, $span );
+            ::__private::push_fat_arrow_spanned( &mut $k, $s );
         };
 
-        ( << $tokens:ident $span:ident ) =>
+        ( << $k:ident $s:ident ) =>
         {
-            ::__private::push_shl_spanned( &mut $tokens, $span );
+            ::__private::push_shl_spanned( &mut $k, $s );
         };
 
-        ( <<= $tokens:ident $span:ident ) =>
+        ( <<= $k:ident $s:ident ) =>
         {
-            ::__private::push_shl_eq_spanned( &mut $tokens, $span );
+            ::__private::push_shl_eq_spanned( &mut $k, $s );
         };
 
-        ( >> $tokens:ident $span:ident ) =>
+        ( >> $k:ident $s:ident ) =>
         {
-            ::__private::push_shr_spanned( &mut $tokens, $span );
+            ::__private::push_shr_spanned( &mut $k, $s );
         };
 
-        ( >>= $tokens:ident $span:ident ) =>
+        ( >>= $k:ident $s:ident ) =>
         {
-            ::__private::push_shr_eq_spanned( &mut $tokens, $span );
+            ::__private::push_shr_eq_spanned( &mut $k, $s );
         };
 
-        ( * $tokens:ident $span:ident ) =>
+        ( * $k:ident $s:ident ) =>
         {
-            ::__private::push_star_spanned( &mut $tokens, $span );
+            ::__private::push_star_spanned( &mut $k, $s );
         };
 
-        ( - $tokens:ident $span:ident ) =>
+        ( - $k:ident $s:ident ) =>
         {
-            ::__private::push_sub_spanned( &mut $tokens, $span );
+            ::__private::push_sub_spanned( &mut $k, $s );
         };
 
-        ( -= $tokens:ident $span:ident ) =>
+        ( -= $k:ident $s:ident ) =>
         {
-            ::__private::push_sub_eq_spanned( &mut $tokens, $span );
+            ::__private::push_sub_eq_spanned( &mut $k, $s );
         };
 
-        ( $lifetime:lifetime $tokens:ident $span:ident ) =>
+        ( $l:lifetime $k:ident $s:ident ) =>
         {
-            ::__private::push_lifetime_spanned( &mut $tokens, $span, stringify!( $lifetime ) );
+            ::__private::push_lifetime_spanned( &mut $k, $s, stringify!( $l ) );
         };
 
-        ( _ $tokens:ident $span:ident ) =>
+        ( _ $k:ident $s:ident ) =>
         {
-            ::__private::push_underscore_spanned( &mut $tokens, $span );
+            ::__private::push_underscore_spanned( &mut $k, $s );
         };
 
-        ( $other:tt $tokens:ident $span:ident ) =>
+        ( $o:tt $k:ident $s:ident ) =>
         {
-            ::__private::parse_spanned( &mut $tokens, $span, stringify!( $other ) );
+            ::__private::parse_spanned( &mut $k, $s, stringify!( $o ) );
         };
     }
 
     #[macro_export] macro_rules! format_ident
     {
-        ( $fmt:expr ) => {
+        ( $f:expr ) => {
             format_ident_impl!( [
                 ::quote::__private::Option::None,
-                $fmt
+                $f
             ] )
         };
 
-        ( $fmt:expr, $( $rest:tt )* ) => {
-            format_ident_impl!( [
-                ::quote::__private::Option::None,
-                $fmt
-            ] $( $rest )* )
+        ( $f:expr, $( $r:tt )* ) => {
+            format_ident_impl!( [ None, $f ] $( $r )* )
         };
     }
 
     #[macro_export] macro_rules! format_ident_impl
     {
        
-        ( [$span:expr, $( $fmt:tt )*] ) => {
+        ( [$s:expr, $( $f:tt )*] ) => {
             ::quote::__private::mk_ident( 
-                &::quote::__private::format!( $( $fmt )* ),
-                $span,
+                &::quote::__private::format!( $( $f )* ),
+                $s,
             )
         };
 
        
-        ( [$old:expr, $( $fmt:tt )*] span = $span:expr ) => { format_ident_impl!( [$old, $( $fmt )*] span = $span, ) };
-        ( [$old:expr, $( $fmt:tt )*] span = $span:expr, $( $rest:tt )* ) => {
+        ( [$o:expr, $( $f:tt )*] span = $s:expr ) => { format_ident_impl!( [$o, $( $f )*] span = $s, ) };
+        ( [$o:expr, $( $f:tt )*] span = $s:expr, $( $r:tt )* ) => {
             format_ident_impl!( [
-                ::quote::__private::Option::Some::<::quote::__private::Span>( $span ),
-                $( $fmt )*
-            ] $( $rest )* )
+                ::quote::__private::Option::Some::<::quote::__private::Span>( $s ),
+                $( $f )*
+            ] $( $r )* )
         };
 
        
-        ( [$span:expr, $( $fmt:tt )*] $name:ident = $arg:expr ) => { format_ident_impl!( [$span, $( $fmt )*] $name = $arg, ) };
-        ( [$span:expr, $( $fmt:tt )*] $name:ident = $arg:expr, $( $rest:tt )* ) => {
-            match ::quote::__private::IdentFragmentAdapter( &$arg ) {
-                arg => format_ident_impl!( [$span.or( arg.span() ), $( $fmt )*, $name = arg] $( $rest )* ),
+        ( [$s:expr, $( $f:tt )*] $n:ident = $a:expr ) => { format_ident_impl!( [$s, $( $f )*] $n = $a, ) };
+        ( [$s:expr, $( $f:tt )*] $n:ident = $a:expr, $( $r:tt )* ) => {
+            match ::quote::__private::IdentFragmentAdapter( &$a ) {
+                arg => format_ident_impl!( [$s.or( arg.span() ), $( $f )*, $n = arg] $( $r )* ),
             }
         };
 
        
-        ( [$span:expr, $( $fmt:tt )*] $arg:expr ) => { format_ident_impl!( [$span, $( $fmt )*] $arg, ) };
-        ( [$span:expr, $( $fmt:tt )*] $arg:expr, $( $rest:tt )* ) => {
-            match ::quote::__private::IdentFragmentAdapter( &$arg ) {
-                arg => format_ident_impl!( [$span.or( arg.span() ), $( $fmt )*, arg] $( $rest )* ),
+        ( [$s:expr, $( $f:tt )*] $a:expr ) => { format_ident_impl!( [$s, $( $f )*] $a, ) };
+        ( [$s:expr, $( $f:tt )*] $a:expr, $( $r:tt )* ) => {
+            match ::quote::__private::IdentFragmentAdapter( &$a ) {
+                arg => format_ident_impl!( [$s.or( arg.span() ), $( $f )*, arg] $( $r )* ),
             }
         };
     }
@@ -963,83 +965,82 @@ pub mod parse;
     #[macro_export] macro_rules! ast_struct 
     {
         ( 
-            $( #[$attr:meta] )*
-            $pub:ident $struct:ident $name:ident #full $body:tt
+            $( #[$a:meta] )*
+            $p:ident $s:ident $n:ident #full $b:tt
         ) =>
         {
-            check_keyword_matches!( pub $pub );
-            check_keyword_matches!( struct $struct );
-            $( #[$attr] )* $pub $struct $name $body
+            check_keyword_matches!( pub $p );
+            check_keyword_matches!( struct $s );
+            $( #[$a] )* $p $s $n $b
         };
 
         ( 
-            $( #[$attr:meta] )*
-            $pub:ident $struct:ident $name:ident $body:tt
+            $( #[$a:meta] )*
+            $p:ident $s:ident $n:ident $b:tt
         ) => {
-            check_keyword_matches!( pub $pub );
-            check_keyword_matches!( struct $struct );
+            check_keyword_matches!( pub $p );
+            check_keyword_matches!( struct $s );
 
-            $( #[$attr] )* $pub $struct $name $body
+            $( #[$a] )* $p $s $n $b
         };
     }
     
     #[macro_export] macro_rules! ast_enum
     {
         ( 
-            $( #[$enum_attr:meta] )*
-            $pub:ident $enum:ident $name:ident $body:tt
+            $( #[$e:meta] )*
+            $p:ident $en:ident $n:ident $b:tt
         ) => {
-            check_keyword_matches!( pub $pub );
-            check_keyword_matches!( enum $enum );
+            check_keyword_matches!( pub $p );
+            check_keyword_matches!( enum $en );
 
-            $( #[$enum_attr] )* $pub $enum $name $body
+            $( #[$e] )* $p $en $n $b
         };
     }
 
     #[macro_export] macro_rules! ast_enum_of_structs
     {
         ( 
-            $( #[$enum_attr:meta] )*
-            $pub:ident $enum:ident $name:ident $body:tt
+            $( #[$e:meta] )*
+            $p:ident $en:ident $n:ident $b:tt
         ) => {
-            check_keyword_matches!( pub $pub );
-            check_keyword_matches!( enum $enum );
+            check_keyword_matches!( pub $p );
+            check_keyword_matches!( enum $en );
 
-            $( #[$enum_attr] )* $pub $enum $name $body
+            $( #[$e] )* $p $en $n $b
 
-            ast_enum_of_structs_impl!( $name $body );
-
-                generate_to_tokens!( () tokens $name $body );
+            ast_enum_of_structs_impl!( $n $b );
+            generate_to_tokens!( () tokens $n $b );
         };
     }
 
     #[macro_export] macro_rules! ast_enum_of_structs_impl
     {
         ( 
-            $name:ident {
+            $n:ident {
                 $( 
-                    $( #[cfg $cfg_attr:tt] )*
-                    $( #[doc $( $doc_attr:tt )*] )*
-                    $variant:ident $( ( $member:ident ) )*,
+                    $( #[cfg $c:tt] )*
+                    $( #[doc $( $d:tt )*] )*
+                    $v:ident $( ( $m:ident ) )*,
                 )*
             }
         ) => {
             $( $( 
-                ast_enum_from_struct!( $name::$variant, $member );
+                ast_enum_from_struct!( $n::$v, $m );
             )* )*
         };
     }
 
     #[macro_export] macro_rules! ast_enum_from_struct
     {
-        ( $name:ident::Verbatim, $member:ident ) => {};
+        ( $n:ident::Verbatim, $m:ident ) => {};
 
-        ( $name:ident::$variant:ident, $member:ident ) =>
+        ( $n:ident::$v:ident, $m:ident ) =>
         {
-            impl From<$member> for $name
+            impl From<$m> for $n
             {
-                fn from( e: $member ) -> $name {
-                    $name::$variant( e )
+                fn from( e: $m ) -> $n {
+                    $n::$v( e )
                 }
             }
         };
@@ -1048,39 +1049,39 @@ pub mod parse;
     #[macro_export] macro_rules! generate_to_tokens
     {
         ( 
-            ( $( $arms:tt )* ) $tokens:ident $name:ident {
-                $( #[cfg $cfg_attr:tt] )*
-                $( #[doc $( $doc_attr:tt )*] )*
-                $variant:ident,
+            ( $( $a:tt )* ) $k:ident $n:ident {
+                $( #[cfg $c:tt] )*
+                $( #[doc $( $d:tt )*] )*
+                $v:ident,
                 $( $next:tt )*
             }
         ) => {
             generate_to_tokens!( 
-                ( $( $arms )* $( #[cfg $cfg_attr] )* $name::$variant => {} )
-                $tokens $name { $( $next )* }
+                ( $( $a )* $( #[cfg $c] )* $n::$v => {} )
+                $k $n { $( $next )* }
              );
         };
 
         ( 
-            ( $( $arms:tt )* ) $tokens:ident $name:ident {
-                $( #[cfg $cfg_attr:tt] )*
-                $( #[doc $( $doc_attr:tt )*] )*
-                $variant:ident( $member:ident ),
+            ( $( $a:tt )* ) $k:ident $n:ident {
+                $( #[cfg $c:tt] )*
+                $( #[doc $( $d:tt )*] )*
+                $v:ident( $m:ident ),
                 $( $next:tt )*
             }
         ) => {
             generate_to_tokens!( 
-                ( $( $arms )* $( #[cfg $cfg_attr] )* $name::$variant( _e ) => _e.to_tokens( $tokens ), )
-                $tokens $name { $( $next )* }
+                ( $( $a )* $( #[cfg $c] )* $n::$v( _e ) => _e.to_tokens( $k ), )
+                $k $n { $( $next )* }
              );
         };
 
-        ( ( $( $arms:tt )* ) $tokens:ident $name:ident {} ) => {
-            impl ::quote::ToTokens for $name {
-                fn to_tokens( &self, $tokens:&mut ::process::macros::TokenStream )
+        ( ( $( $a:tt )* ) $k:ident $n:ident {} ) => {
+            impl ::quote::ToTokens for $n {
+                fn to_tokens( &self, $k:&mut ::process::macros::TokenStream )
                 {
                     match self {
-                        $( $arms )*
+                        $( $a )*
                     }
                 }
             }
@@ -1089,11 +1090,11 @@ pub mod parse;
     
     #[macro_export] macro_rules! pub_if_not_doc
     {
-        ( $( #[$m:meta] )* $pub:ident $( $item:tt )* ) => {
-            check_keyword_matches!( pub $pub );
+        ( $( #[$m:meta] )* $p:ident $( $i:tt )* ) => {
+            check_keyword_matches!( pub $p );
 
             $( #[$m] )*
-            $pub $( $item )*
+            $p $( $i )*
         };
     }
 
@@ -1107,25 +1108,25 @@ pub mod parse;
     #[macro_export] macro_rules! return_impl_trait
     {
         ( 
-            $( #[$attr:meta] )*
-            $vis:vis fn $name:ident $args:tt -> $impl_trait:ty [$concrete:ty] $body:block
+            $( #[$a:meta] )*
+            $v:vis fn $n:ident $as:tt -> $i:ty [$c:ty] $b:block
         ) => {
             #[cfg( not( docsrs ) )]
-            $( #[$attr] )*
-            $vis fn $name $args -> $concrete $body
+            $( #[$a] )*
+            $v fn $n $as -> $c $b
 
             #[cfg( docsrs )]
-            $( #[$attr] )*
-            $vis fn $name $args -> $impl_trait $body
+            $( #[$a] )*
+            $v fn $n $as -> $i $b
         };
     }
 
     #[macro_export] macro_rules! parenthesized
     {
-        ( $content:ident in $cursor:expr ) => {
-            match ::syntax::__private::parse_parens( &$cursor ) {
+        ( $c:ident in $h:expr ) => {
+            match ::syntax::__private::parse_parens( &$h ) {
                 ::syntax::__private::Ok( parens ) => {
-                    $content = parens.content;
+                    $c = parens.content;
                     parens.token
                 }
                 ::syntax::__private::Err( error ) => { return ::syntax::__private::Err( error ); }
@@ -1135,11 +1136,11 @@ pub mod parse;
 
     #[macro_export] macro_rules! braced
     {
-        ( $content:ident in $cursor:expr ) => 
+        ( $c:ident in $h:expr ) => 
         {
-            match ::syntax::__private::parse_braces( &$cursor ) {
+            match ::syntax::__private::parse_braces( &$h ) {
                 ::syntax::__private::Ok( braces ) => {
-                    $content = braces.content;
+                    $c = braces.content;
                     braces.token
                 }
                 ::syntax::__private::Err( error ) => { return ::syntax::__private::Err( error ); }
@@ -1149,12 +1150,12 @@ pub mod parse;
 
     #[macro_export] macro_rules! bracketed
     {
-        ( $content:ident in $cursor:expr ) =>
+        ( $c:ident in $h:expr ) =>
         {
-            match ::syntax::__private::parse_brackets( &$cursor )
+            match ::syntax::__private::parse_brackets( &$h )
             {
                 ::syntax::__private::Ok( brackets ) => {
-                    $content = brackets.content;
+                    $c = brackets.content;
                     brackets.token
                 }
                 ::syntax::__private::Err( error ) => { return ::syntax::__private::Err( error ); }
@@ -1164,87 +1165,87 @@ pub mod parse;
 
     #[macro_export] macro_rules! parse_quote
     {
-        ( $( $tt:tt )* ) =>
+        ( $( $a:tt )* ) =>
         {
-            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote!( $( $tt )* ) )
+            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote!( $( $a )* ) )
         };
     }
 
     #[macro_export] macro_rules! parse_quote_spanned
     {
-        ( $span:expr=> $( $tt:tt )* ) =>
+        ( $s:expr=> $( $a:tt )* ) =>
         {
-            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote_spanned!( $span=> $( $tt )* ) )
+            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote_spanned!( $s=> $( $a )* ) )
         };
     }
     
     #[macro_export] macro_rules! parse_macro_input
     {
-        ( $tokenstream:ident as $ty:ty ) => {
-            match ::syntax::parse::<$ty>( $tokenstream ) {
+        ( $ts:ident as $ty:ty ) => {
+            match ::syntax::parse::<$ty>( $ts ) {
                 ::syntax::__private::Ok( data ) => data,
                 ::syntax::__private::Err( err ) => { return ::syntax::__private::TokenStream::from( err.to_compile_error() ); }
             }
         };
-        ( $tokenstream:ident with $parser:path ) => {
-            match ::syntax::parse::Parser::parse( $parser, $tokenstream ) {
+        ( $ts:ident with $p:path ) => {
+            match ::syntax::parse::Parser::parse( $p, $ts ) {
                 ::syntax::__private::Ok( data ) => data,
                 ::syntax::__private::Err( err ) => { return ::syntax::__private::TokenStream::from( err.to_compile_error() ); }
             }
         };
-        ( $tokenstream:ident ) => { ::syntax::parse_macro_input!( $tokenstream as _ ) };
+        ( $ts:ident ) => { ::syntax::parse_macro_input!( $ts as _ ) };
     }
 
     #[macro_export] macro_rules! custom_punctuation
     {
-        ( $ident:ident, $( $tt:tt )+ ) =>
+        ( $id:ident, $( $a:tt )+ ) =>
         {
-            pub struct $ident {
+            pub struct $id {
                 #[allow( dead_code )]
-                pub spans: ::syntax::custom_punctuation_repr!( $( $tt )+ ),
+                pub spans: ::syntax::custom_punctuation_repr!( $( $a )+ ),
             }
                 #[allow( dead_code, non_snake_case )]
-            pub fn $ident<__S: ::syntax::__private::IntoSpans<::syntax::custom_punctuation_repr!( $( $tt )+ )>>( 
+            pub fn $id<__S: ::syntax::__private::IntoSpans<::syntax::custom_punctuation_repr!( $( $a )+ )>>( 
                 spans: __S,
-            ) -> $ident {
-                let _validate_len = 0 $( + ::syntax::custom_punctuation_len!( strict, $tt ) )*;
-                $ident {
+            ) -> $id {
+                let _validate_len = 0 $( + ::syntax::custom_punctuation_len!( strict, $a ) )*;
+                $id {
                     spans: ::syntax::__private::IntoSpans::into_spans( spans )
                 }
             }
             const _: () = {
-                impl ::syntax::__private::Default for $ident
+                impl ::syntax::__private::Default for $id
                 {
                     fn default() -> Self {
-                        $ident( ::syntax::__private::Span::call_site() )
+                        $id( ::syntax::__private::Span::call_site() )
                     }
                 }
-                ::syntax::impl_parse_for_custom_punctuation!( $ident, $( $tt )+ );
-                ::syntax::impl_to_tokens_for_custom_punctuation!( $ident, $( $tt )+ );
-                ::syntax::impl_clone_for_custom_punctuation!( $ident, $( $tt )+ );
-                ::syntax::impl_extra_traits_for_custom_punctuation!( $ident, $( $tt )+ );
+                ::syntax::impl_parse_for_custom_punctuation!( $id, $( $a )+ );
+                ::syntax::impl_to_tokens_for_custom_punctuation!( $id, $( $a )+ );
+                ::syntax::impl_clone_for_custom_punctuation!( $id, $( $a )+ );
+                ::syntax::impl_extra_traits_for_custom_punctuation!( $id, $( $a )+ );
             };
         };
     }
     
     #[macro_export] macro_rules! impl_parse_for_custom_punctuation
     {
-        ( $ident:ident, $( $tt:tt )+ ) => {
-            impl ::syntax::__private::CustomToken for $ident {
+        ( $id:ident, $( $a:tt )+ ) => {
+            impl ::syntax::__private::CustomToken for $id {
                 fn peek( cursor: ::syntax::buffer::Cursor ) -> ::syntax::__private::bool {
-                    ::syntax::__private::peek_punct( cursor, ::syntax::stringify_punct!( $( $tt )+ ) )
+                    ::syntax::__private::peek_punct( cursor, ::syntax::stringify_punct!( $( $a )+ ) )
                 }
                 fn display() -> &'static ::syntax::__private::str {
-                    ::syntax::__private::concat!( "`", ::syntax::stringify_punct!( $( $tt )+ ), "`" )
+                    ::syntax::__private::concat!( "`", ::syntax::stringify_punct!( $( $a )+ ), "`" )
                 }
             }
             
-            impl ::syntax::parse::Parse for $ident
+            impl ::syntax::parse::Parse for $id
             {
-                fn parse( input: ::syntax::parse::ParseStream ) -> ::syntax::parse::Result<$ident> {
-                    let spans: ::syntax::custom_punctuation_repr!( $( $tt )+ ) =
-                        ::syntax::__private::parse_punct( input, ::syntax::stringify_punct!( $( $tt )+ ) )?;
-                    Ok( $ident( spans ) )
+                fn parse( input: ::syntax::parse::ParseStream ) -> ::syntax::parse::Result<$id> {
+                    let spans: ::syntax::custom_punctuation_repr!( $( $a )+ ) =
+                        ::syntax::__private::parse_punct( input, ::syntax::stringify_punct!( $( $a )+ ) )?;
+                    Ok( $id( spans ) )
                 }
             }
         };
@@ -1252,10 +1253,10 @@ pub mod parse;
     
     #[macro_export] macro_rules! impl_to_tokens_for_custom_punctuation
     {
-        ( $ident:ident, $( $tt:tt )+ ) => {
-            impl ::syntax::__private::ToTokens for $ident {
+        ( $id:ident, $( $a:tt )+ ) => {
+            impl ::syntax::__private::ToTokens for $id {
                 fn to_tokens( &self, tokens:&mut ::syntax::__private::TokenStream2 ) {
-                    ::syntax::__private::print_punct( ::syntax::stringify_punct!( $( $tt )+ ), &self.spans, tokens )
+                    ::syntax::__private::print_punct( ::syntax::stringify_punct!( $( $a )+ ), &self.spans, tokens )
                 }
             }
         };
@@ -1263,10 +1264,10 @@ pub mod parse;
         
     #[macro_export] macro_rules! impl_clone_for_custom_punctuation
     {
-        ( $ident:ident, $( $tt:tt )+ ) => {
-            impl ::syntax::__private::Copy for $ident {}
+        ( $id:ident, $( $a:tt )+ ) => {
+            impl ::syntax::__private::Copy for $id {}
             #[allow( clippy::expl_impl_clone_on_copy )]
-            impl ::syntax::__private::Clone for $ident {
+            impl ::syntax::__private::Clone for $id {
                 fn clone( &self ) -> Self { *self }
             }
         };
@@ -1274,23 +1275,23 @@ pub mod parse;
     
     #[macro_export] macro_rules! impl_extra_traits_for_custom_punctuation
     {
-        ( $ident:ident, $( $tt:tt )+ ) => {
-            impl ::syntax::__private::Debug for $ident
+        ( $id:ident, $( $a:tt )+ ) => {
+            impl ::syntax::__private::Debug for $id
             {
                 fn fmt( &self, f:&mut ::syntax::__private::Formatter ) -> ::syntax::__private::FmtResult {
-                    ::syntax::__private::Formatter::write_str( f, ::syntax::__private::stringify!( $ident ) )
+                    ::syntax::__private::Formatter::write_str( f, ::syntax::__private::stringify!( $id ) )
                 }
             }
             
-            impl ::syntax::__private::Eq for $ident {}
+            impl ::syntax::__private::Eq for $id {}
             
-            impl ::syntax::__private::PartialEq for $ident {
+            impl ::syntax::__private::PartialEq for $id {
                 fn eq( &self, _other:&Self ) -> ::syntax::__private::bool {
                     true
                 }
             }
             
-            impl ::syntax::__private::Hash for $ident {
+            impl ::syntax::__private::Hash for $id {
                 fn hash<__H: ::syntax::__private::Hasher>( &self, _state:&mut __H ) {}
             }
         };
@@ -1298,59 +1299,59 @@ pub mod parse;
         
     #[macro_export] macro_rules! custom_punctuation_repr
     {
-        ( $( $tt:tt )+ ) => { [::syntax::__private::Span; 0 $( + ::syntax::custom_punctuation_len!( lenient, $tt ) )+] };
+        ( $( $a:tt )+ ) => { [::syntax::__private::Span; 0 $( + ::syntax::custom_punctuation_len!( lenient, $a ) )+] };
     }
     
     #[macro_export] macro_rules! custom_punctuation_len
     {
-        ( $mode:ident, & )     => { 1 };
-        ( $mode:ident, && )    => { 2 };
-        ( $mode:ident, &= )    => { 2 };
-        ( $mode:ident, @ )     => { 1 };
-        ( $mode:ident, ^ )     => { 1 };
-        ( $mode:ident, ^= )    => { 2 };
-        ( $mode:ident, : )     => { 1 };
-        ( $mode:ident, , )     => { 1 };
-        ( $mode:ident, $ )     => { 1 };
-        ( $mode:ident, . )     => { 1 };
-        ( $mode:ident, .. )    => { 2 };
-        ( $mode:ident, ... )   => { 3 };
-        ( $mode:ident, ..= )   => { 3 };
-        ( $mode:ident, = )     => { 1 };
-        ( $mode:ident, == )    => { 2 };
-        ( $mode:ident, => )    => { 2 };
-        ( $mode:ident, >= )    => { 2 };
-        ( $mode:ident, > )     => { 1 };
-        ( $mode:ident, <- )    => { 2 };
-        ( $mode:ident, <= )    => { 2 };
-        ( $mode:ident, < )     => { 1 };
-        ( $mode:ident, - )     => { 1 };
-        ( $mode:ident, -= )    => { 2 };
-        ( $mode:ident, != )    => { 2 };
-        ( $mode:ident, ! )     => { 1 };
-        ( $mode:ident, | )     => { 1 };
-        ( $mode:ident, |= )    => { 2 };
-        ( $mode:ident, || )    => { 2 };
-        ( $mode:ident, :: )    => { 2 };
-        ( $mode:ident, % )     => { 1 };
-        ( $mode:ident, %= )    => { 2 };
-        ( $mode:ident, + )     => { 1 };
-        ( $mode:ident, += )    => { 2 };
-        ( $mode:ident, # )     => { 1 };
-        ( $mode:ident, ? )     => { 1 };
-        ( $mode:ident, -> )    => { 2 };
-        ( $mode:ident, ; )     => { 1 };
-        ( $mode:ident, << )    => { 2 };
-        ( $mode:ident, <<= )   => { 3 };
-        ( $mode:ident, >> )    => { 2 };
-        ( $mode:ident, >>= )   => { 3 };
-        ( $mode:ident, / )     => { 1 };
-        ( $mode:ident, /= )    => { 2 };
-        ( $mode:ident, * )     => { 1 };
-        ( $mode:ident, *= )    => { 2 };
-        ( $mode:ident, ~ )     => { 1 };
-        ( lenient, $tt:tt )    => { 0 };
-        ( strict, $tt:tt )     => {{ ::syntax::custom_punctuation_unexpected!( $tt ); 0 }};
+        ( $m:ident, & )     => { 1 };
+        ( $m:ident, && )    => { 2 };
+        ( $m:ident, &= )    => { 2 };
+        ( $m:ident, @ )     => { 1 };
+        ( $m:ident, ^ )     => { 1 };
+        ( $m:ident, ^= )    => { 2 };
+        ( $m:ident, : )     => { 1 };
+        ( $m:ident, , )     => { 1 };
+        ( $m:ident, $ )     => { 1 };
+        ( $m:ident, . )     => { 1 };
+        ( $m:ident, .. )    => { 2 };
+        ( $m:ident, ... )   => { 3 };
+        ( $m:ident, ..= )   => { 3 };
+        ( $m:ident, = )     => { 1 };
+        ( $m:ident, == )    => { 2 };
+        ( $m:ident, => )    => { 2 };
+        ( $m:ident, >= )    => { 2 };
+        ( $m:ident, > )     => { 1 };
+        ( $m:ident, <- )    => { 2 };
+        ( $m:ident, <= )    => { 2 };
+        ( $m:ident, < )     => { 1 };
+        ( $m:ident, - )     => { 1 };
+        ( $m:ident, -= )    => { 2 };
+        ( $m:ident, != )    => { 2 };
+        ( $m:ident, ! )     => { 1 };
+        ( $m:ident, | )     => { 1 };
+        ( $m:ident, |= )    => { 2 };
+        ( $m:ident, || )    => { 2 };
+        ( $m:ident, :: )    => { 2 };
+        ( $m:ident, % )     => { 1 };
+        ( $m:ident, %= )    => { 2 };
+        ( $m:ident, + )     => { 1 };
+        ( $m:ident, += )    => { 2 };
+        ( $m:ident, # )     => { 1 };
+        ( $m:ident, ? )     => { 1 };
+        ( $m:ident, -> )    => { 2 };
+        ( $m:ident, ; )     => { 1 };
+        ( $m:ident, << )    => { 2 };
+        ( $m:ident, <<= )   => { 3 };
+        ( $m:ident, >> )    => { 2 };
+        ( $m:ident, >>= )   => { 3 };
+        ( $m:ident, / )     => { 1 };
+        ( $m:ident, /= )    => { 2 };
+        ( $m:ident, * )     => { 1 };
+        ( $m:ident, *= )    => { 2 };
+        ( $m:ident, ~ )     => { 1 };
+        ( lenient, $a:tt )    => { 0 };
+        ( strict, $a:tt )     => {{ ::syntax::custom_punctuation_unexpected!( $a ); 0 }};
     }
     
     #[macro_export] macro_rules! custom_punctuation_unexpected
@@ -1360,71 +1361,71 @@ pub mod parse;
     
     #[macro_export] macro_rules! stringify_punct
     {
-        ( $( $tt:tt )+ ) => { ::syntax::__private::concat!( $( ::syntax::__private::stringify!( $tt ) ),+ ) };
+        ( $( $a:tt )+ ) => { ::syntax::__private::concat!( $( ::syntax::__private::stringify!( $a ) ),+ ) };
     }
 
     #[macro_export] macro_rules! custom_keyword
     {
-        ( $ident:ident ) => {
+        ( $id:ident ) => {
             #[allow( non_camel_case_types )]
-            pub struct $ident {
+            pub struct $id {
                 #[allow( dead_code )]
                 pub span: ::syntax::__private::Span,
             }
                 #[allow( dead_code, non_snake_case )]
-            pub fn $ident<__S: ::syntax::__private::IntoSpans<::syntax::__private::Span>>( 
+            pub fn $id<__S: ::syntax::__private::IntoSpans<::syntax::__private::Span>>( 
                 span: __S,
-            ) -> $ident {
-                $ident {
+            ) -> $id {
+                $id {
                     span: ::syntax::__private::IntoSpans::into_spans( span ),
                 }
             }
             const _: () = {
-                impl ::syntax::__private::Default for $ident
+                impl ::syntax::__private::Default for $id
                 {
                     fn default() -> Self {
-                        $ident {
+                        $id {
                             span: ::syntax::__private::Span::call_site(),
                         }
                     }
                 }
-                ::syntax::impl_parse_for_custom_keyword!( $ident );
-                ::syntax::impl_to_tokens_for_custom_keyword!( $ident );
-                ::syntax::impl_clone_for_custom_keyword!( $ident );
-                ::syntax::impl_extra_traits_for_custom_keyword!( $ident );
+                ::syntax::impl_parse_for_custom_keyword!( $id );
+                ::syntax::impl_to_tokens_for_custom_keyword!( $id );
+                ::syntax::impl_clone_for_custom_keyword!( $id );
+                ::syntax::impl_extra_traits_for_custom_keyword!( $id );
             };
         };
     }
     
     #[macro_export] macro_rules! impl_parse_for_custom_keyword
     {
-        ( $ident:ident ) => {
+        ( $id:ident ) => {
            
-            impl ::syntax::__private::CustomToken for $ident {
+            impl ::syntax::__private::CustomToken for $id {
                 fn peek( cursor: ::syntax::buffer::Cursor ) -> ::syntax::__private::bool {
                     if let ::syntax::__private::Some( ( ident, _rest ) ) = cursor.ident() {
-                        ident == ::syntax::__private::stringify!( $ident )
+                        ident == ::syntax::__private::stringify!( $id )
                     } else {
                         false
                     }
                 }
                 fn display() -> &'static ::syntax::__private::str {
-                    ::syntax::__private::concat!( "`", ::syntax::__private::stringify!( $ident ), "`" )
+                    ::syntax::__private::concat!( "`", ::syntax::__private::stringify!( $id ), "`" )
                 }
             }
             
-            impl ::syntax::parse::Parse for $ident
+            impl ::syntax::parse::Parse for $id
             {
-                fn parse( input: ::syntax::parse::ParseStream ) -> ::syntax::parse::Result<$ident> {
+                fn parse( input: ::syntax::parse::ParseStream ) -> ::syntax::parse::Result<$id> {
                     input.step( |cursor| {
                         if let ::syntax::__private::Some( ( ident, rest ) ) = cursor.ident() {
-                            if ident == ::syntax::__private::stringify!( $ident ) {
-                                return ::syntax::__private::Ok( ( $ident { span: ident.span() }, rest ) );
+                            if ident == ::syntax::__private::stringify!( $id ) {
+                                return ::syntax::__private::Ok( ( $id { span: ident.span() }, rest ) );
                             }
                         }
                         ::syntax::__private::Err( cursor.error( ::syntax::__private::concat!( 
                             "expected `",
-                            ::syntax::__private::stringify!( $ident ),
+                            ::syntax::__private::stringify!( $id ),
                             "`",
                         ) ) )
                     } )
@@ -1435,10 +1436,10 @@ pub mod parse;
     
     #[macro_export] macro_rules! impl_to_tokens_for_custom_keyword
     {
-        ( $ident:ident ) => {
-            impl ::syntax::__private::ToTokens for $ident {
+        ( $id:ident ) => {
+            impl ::syntax::__private::ToTokens for $id {
                 fn to_tokens( &self, tokens:&mut ::syntax::__private::TokenStream2 ) {
-                    let ident = ::syntax::Ident::new( ::syntax::__private::stringify!( $ident ), self.span );
+                    let ident = ::syntax::Ident::new( ::syntax::__private::stringify!( $id ), self.span );
                     ::syntax::__private::TokenStreamExt::append( tokens, ident );
                 }
             }
@@ -1447,10 +1448,10 @@ pub mod parse;
     
     #[macro_export] macro_rules! impl_clone_for_custom_keyword
     {
-        ( $ident:ident ) => {
-            impl ::syntax::__private::Copy for $ident {}
+        ( $id:ident ) => {
+            impl ::syntax::__private::Copy for $id {}
             #[allow( clippy::expl_impl_clone_on_copy )]
-            impl ::syntax::__private::Clone for $ident {
+            impl ::syntax::__private::Clone for $id {
                 fn clone( &self ) -> Self { *self }
             }
         };
@@ -1458,30 +1459,30 @@ pub mod parse;
     
     #[macro_export] macro_rules! impl_extra_traits_for_custom_keyword 
     {
-        ( $ident:ident ) => {
-            impl ::syntax::__private::Debug for $ident
+        ( $id:ident ) => {
+            impl ::syntax::__private::Debug for $id
             {
                 fn fmt( &self, f:&mut ::syntax::__private::Formatter ) -> ::syntax::__private::FmtResult {
                     ::syntax::__private::Formatter::write_str( 
                         f,
                         ::syntax::__private::concat!( 
                             "Keyword [",
-                            ::syntax::__private::stringify!( $ident ),
+                            ::syntax::__private::stringify!( $id ),
                             "]",
                         ),
                     )
                 }
             }
             
-            impl ::syntax::__private::Eq for $ident {}
+            impl ::syntax::__private::Eq for $id {}
             
-            impl ::syntax::__private::PartialEq for $ident {
+            impl ::syntax::__private::PartialEq for $id {
                 fn eq( &self, _other:&Self ) -> ::syntax::__private::bool {
                     true
                 }
             }
             
-            impl ::syntax::__private::Hash for $ident {
+            impl ::syntax::__private::Hash for $id {
                 fn hash<__H: ::syntax::__private::Hasher>( &self, _state:&mut __H ) {}
             }
         };
@@ -1489,72 +1490,72 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward
     {
-        ( $( Self :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )* )
+        ( $( Self :: $m:ident ( self $( , $a:ident : $ty:ty )* ) -> $r:ty ; )* )
             => {$( 
-                #[inline] fn $method( self $( , $arg : $ty )* ) -> $ret {
-                    Self::$method( self $( , $arg )* )
+                #[inline] fn $m( self $( , $a : $ty )* ) -> $r {
+                    Self::$m( self $( , $a )* )
                 }
             )*};
-        ( $( $base:ident :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )* )
+        ( $( $b:ident :: $m:ident ( self $( , $a:ident : $ty:ty )* ) -> $r:ty ; )* )
             => {$( 
-                #[inline] fn $method( self $( , $arg : $ty )* ) -> $ret {
-                    <Self as $base>::$method( self $( , $arg )* )
+                #[inline] fn $m( self $( , $a : $ty )* ) -> $r {
+                    <Self as $b>::$m( self $( , $a )* )
                 }
             )*};
-        ( $( $base:ident :: $method:ident ( $( $arg:ident : $ty:ty ),* ) -> $ret:ty ; )* )
+        ( $( $b:ident :: $m:ident ( $( $a:ident : $ty:ty ),* ) -> $r:ty ; )* )
             => {$( 
-                #[inline] fn $method( $( $arg : $ty ),* ) -> $ret {
-                    <Self as $base>::$method( $( $arg ),* )
+                #[inline] fn $m( $( $a : $ty ),* ) -> $r {
+                    <Self as $b>::$m( $( $a ),* )
                 }
             )*};
-        ( $( $imp:path as $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )* )
+        ( $( $i:path as $m:ident ( self $( , $a:ident : $ty:ty )* ) -> $r:ty ; )* )
             => {$( 
-                #[inline] fn $method( self $( , $arg : $ty )* ) -> $ret {
-                    $imp( self $( , $arg )* )
+                #[inline] fn $m( self $( , $a : $ty )* ) -> $r {
+                    $i( self $( , $a )* )
                 }
             )*};
     }
 
     #[macro_export] macro_rules! constant
     {
-        ( $( $method:ident () -> $ret:expr ; )* )
+        ( $( $m:ident () -> $r:expr ; )* )
             => {$( 
-                #[inline] fn $method() -> Self {
-                    $ret
+                #[inline] fn $m() -> Self {
+                    $r
                 }
             )*};
     }
     
     #[macro_export] macro_rules! forward_ref_ref_binop
     {
-        ( impl $imp:ident, $method:ident ) =>
+        ( impl $i:ident, $m:ident ) =>
         {
-            impl<'a, 'b, T: Clone + Integer> $imp<&'b Ratio<T>> for &'a Ratio<T>
+            impl<'a, 'b, T: Clone + Integer> $i<&'b Ratio<T>> for &'a Ratio<T>
             {
                 type Output = Ratio<T>;
 
-                #[inline] fn $method( self, other:&'b Ratio<T> ) -> Ratio<T> { self.clone().$method( other.clone() ) }
+                #[inline] fn $m( self, other:&'b Ratio<T> ) -> Ratio<T> { self.clone().$m( other.clone() ) }
             }
             
-            impl<'a, 'b, T: Clone + Integer> $imp<&'b T> for &'a Ratio<T>
+            impl<'a, 'b, T: Clone + Integer> $i<&'b T> for &'a Ratio<T>
             {
                 type Output = Ratio<T>;
 
-                #[inline] fn $method( self, other:&'b T ) -> Ratio<T> { self.clone().$method( other.clone() ) }
+                #[inline] fn $m( self, other:&'b T ) -> Ratio<T> { self.clone().$m( other.clone() ) }
             }
         };
     }
 
     #[macro_export] macro_rules! forward_ref_ref_binop_big
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) =>
+        ( impl $i:ident for $r:ty, $m:ident ) =>
         {
-            impl $imp<&$res> for &$res
+            impl $i<&$r> for &$r
             {
-                type Output = $res;
-                #[inline] fn $method( self, other:&$res ) -> $res
+                type Output = $r;
+                #[inline] fn $m( self, other:&$r ) -> $r
                 {
-                    $imp::$method( self.clone(), other )
+                    $i::$m( self.clone(), other )
                 }
             }
         };
@@ -1562,33 +1563,33 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_ref_val_binop
     {
-        ( impl $imp:ident, $method:ident ) =>
+        ( impl $i:ident, $m:ident ) =>
         {
-            impl<'a, T> $imp<Ratio<T>> for &'a Ratio<T> where
+            impl<'a, T> $i<Ratio<T>> for &'a Ratio<T> where
             T: Clone + Integer
             {
                 type Output = Ratio<T>;
-                #[inline] fn $method( self, other: Ratio<T> ) -> Ratio<T> { self.clone().$method( other ) }
+                #[inline] fn $m( self, other: Ratio<T> ) -> Ratio<T> { self.clone().$m( other ) }
             }
             
-            impl<'a, T> $imp<T> for &'a Ratio<T> where
+            impl<'a, T> $i<T> for &'a Ratio<T> where
             T: Clone + Integer,
             {
                 type Output = Ratio<T>;
-                #[inline] fn $method( self, other: T ) -> Ratio<T> { self.clone().$method( other ) }
+                #[inline] fn $m( self, other: T ) -> Ratio<T> { self.clone().$m( other ) }
             }
         };
     }
 
     #[macro_export] macro_rules! forward_ref_val_binop_big
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<$res> for &$res {
-                type Output = $res;
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<$r> for &$r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
+                #[inline] fn $m( self, other: $r ) -> $r {
                    
-                    $imp::$method( self, &other )
+                    $i::$m( self, &other )
                 }
             }
         };
@@ -1596,35 +1597,34 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_val_ref_binop
     {
-        ( impl $imp:ident, $method:ident ) => {
-            impl<'a, T> $imp<&'a Ratio<T>> for Ratio<T> where
+        ( impl $i:ident, $m:ident ) => {
+            impl<'a, T> $i<&'a Ratio<T>> for Ratio<T> where
                 T: Clone + Integer,
             {
                 type Output = Ratio<T>;
 
-                #[inline] fn $method( self, other:&Ratio<T> ) -> Ratio<T> { self.$method( other.clone() ) }
+                #[inline] fn $m( self, other:&Ratio<T> ) -> Ratio<T> { self.$m( other.clone() ) }
             }
             
-            impl<'a, T> $imp<&'a T> for Ratio<T> where
+            impl<'a, T> $i<&'a T> for Ratio<T> where
                 T: Clone + Integer,
             {
                 type Output = Ratio<T>;
 
-                #[inline] fn $method( self, other:&T ) -> Ratio<T> { self.$method( other.clone() ) }
+                #[inline] fn $m( self, other:&T ) -> Ratio<T> { self.$m( other.clone() ) }
             }
         };
     }
-
     
     #[macro_export] macro_rules! forward_val_ref_binop_big
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<&$res> for $res {
-                type Output = $res;
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<&$r> for $r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$res ) -> $res {
+                #[inline] fn $m( self, other:&$r ) -> $r {
                    
-                    $imp::$method( &self, other )
+                    $i::$m( &self, other )
                 }
             }
         };
@@ -1632,54 +1632,54 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_all_binop
     {
-        ( impl $imp:ident, $method:ident ) =>
+        ( impl $i:ident, $m:ident ) =>
         {
-            forward_ref_ref_binop!( impl $imp, $method );
-            forward_ref_val_binop!( impl $imp, $method );
-            forward_val_ref_binop!( impl $imp, $method );
+            forward_ref_ref_binop!( impl $i, $m );
+            forward_ref_val_binop!( impl $i, $m );
+            forward_val_ref_binop!( impl $i, $m );
         };
     }
 
     #[macro_export] macro_rules! cfg_32
     {
-        ( $( $any:tt )+ ) => { #[cfg( not( target_pointer_width = "64" ) )] $( $any )+ }
+        ( $( $a:tt )+ ) => { #[cfg( not( target_pointer_width = "64" ) )] $( $a )+ }
     }
 
     #[macro_export] macro_rules! cfg_32_or_test 
     {
-        ( $( $any:tt )+ ) => { #[cfg( any( not( target_pointer_width = "64" ), test ) )] $( $any )+ }
+        ( $( $a:tt )+ ) => { #[cfg( any( not( target_pointer_width = "64" ), test ) )] $( $a )+ }
     }
 
     #[macro_export] macro_rules! cfg_64
     {
-        ( $( $any:tt )+ ) => { #[cfg( target_pointer_width = "64" )] $( $any )+ }
+        ( $( $a:tt )+ ) => { #[cfg( target_pointer_width = "64" )] $( $a )+ }
     }
 
     #[macro_export] macro_rules! cfg_digit
     {
-        ( $item32:item $item64:item ) => {
-            cfg_32!( $item32 );
-            cfg_64!( $item64 );
+        ( $i32:item $i64:item ) => {
+            cfg_32!( $i32 );
+            cfg_64!( $i64 );
         };
     }
 
     #[macro_export] macro_rules! cfg_digit_expr
     {
-        ( $expr32:expr, $expr64:expr ) => {
-            cfg_32!( $expr32 );
-            cfg_64!( $expr64 );
+        ( $e32:expr, $e64:expr ) => {
+            cfg_32!( $e32 );
+            cfg_64!( $e64 );
         };
     }
 
     #[macro_export] macro_rules! forward_val_val_binop
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<$res> for $res {
-                type Output = $res;
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<$r> for $r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
+                #[inline] fn $m( self, other: $r ) -> $r {
                    
-                    $imp::$method( self, &other )
+                    $i::$m( self, &other )
                 }
             }
         };
@@ -1687,16 +1687,16 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_val_val_binop_commutative
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<$res> for $res {
-                type Output = $res;
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<$r> for $r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
+                #[inline] fn $m( self, other: $r ) -> $r {
                    
                     if self.capacity() >= other.capacity() {
-                        $imp::$method( self, &other )
+                        $i::$m( self, &other )
                     } else {
-                        $imp::$method( other, &self )
+                        $i::$m( other, &self )
                     }
                 }
             }
@@ -1707,13 +1707,13 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_ref_val_binop_commutative
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<$res> for &$res {
-                type Output = $res;
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<$r> for &$r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
+                #[inline] fn $m( self, other: $r ) -> $r {
                    
-                    $imp::$method( other, self )
+                    $i::$m( other, self )
                 }
             }
         };
@@ -1724,16 +1724,16 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_ref_ref_binop_commutative
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<&$res> for &$res {
-                type Output = $res;
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<&$r> for &$r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$res ) -> $res {
+                #[inline] fn $m( self, other:&$r ) -> $r {
                    
                     if self.len() >= other.len() {
-                        $imp::$method( self.clone(), other )
+                        $i::$m( self.clone(), other )
                     } else {
-                        $imp::$method( other.clone(), self )
+                        $i::$m( other.clone(), self )
                     }
                 }
             }
@@ -1742,10 +1742,10 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_val_assign
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            impl $imp<$res> for $res {
-                #[inline] fn $method( &mut self, other: $res ) {
-                    self.$method( &other );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            impl $i<$r> for $r {
+                #[inline] fn $m( &mut self, other: $r ) {
+                    self.$m( &other );
                 }
             }
         };
@@ -1753,10 +1753,10 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_val_assign_scalar
     {
-        ( impl $imp:ident for $res:ty, $scalar:ty, $method:ident ) => {
-            impl $imp<$res> for $scalar {
-                #[inline] fn $method( &mut self, other: $res ) {
-                    self.$method( &other );
+        ( impl $i:ident for $r:ty, $s:ty, $m:ident ) => {
+            impl $i<$r> for $s {
+                #[inline] fn $m( &mut self, other: $r ) {
+                    self.$m( &other );
                 }
             }
         };
@@ -1764,12 +1764,12 @@ pub mod parse;
     
     #[macro_export] macro_rules! forward_scalar_val_val_binop_commutative
     {
-        ( impl $imp:ident < $scalar:ty > for $res:ty, $method:ident ) => {
-            impl $imp<$res> for $scalar {
-                type Output = $res;
+        ( impl $i:ident < $s:ty > for $r:ty, $m:ident ) => {
+            impl $i<$r> for $s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
-                    $imp::$method( other, self )
+                #[inline] fn $m( self, other: $r ) -> $r {
+                    $i::$m( other, self )
                 }
             }
         };
@@ -1777,20 +1777,20 @@ pub mod parse;
     
     #[macro_export] macro_rules! forward_scalar_val_val_binop_to_ref_val
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            impl $imp<$scalar> for $res {
-                type Output = $res;
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            impl $i<$s> for $r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $scalar ) -> $res {
-                    $imp::$method( &self, other )
+                #[inline] fn $m( self, other: $s ) -> $r {
+                    $i::$m( &self, other )
                 }
             }
             
-            impl $imp<$res> for $scalar {
-                type Output = $res;
+            impl $i<$r> for $s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
-                    $imp::$method( self, &other )
+                #[inline] fn $m( self, other: $r ) -> $r {
+                    $i::$m( self, &other )
                 }
             }
         };
@@ -1798,20 +1798,20 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_scalar_ref_ref_binop_to_ref_val
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            impl $imp<&$scalar> for &$res {
-                type Output = $res;
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            impl $i<&$s> for &$r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$scalar ) -> $res {
-                    $imp::$method( self, *other )
+                #[inline] fn $m( self, other:&$s ) -> $r {
+                    $i::$m( self, *other )
                 }
             }
             
-            impl $imp<&$res> for &$scalar {
-                type Output = $res;
+            impl $i<&$r> for &$s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$res ) -> $res {
-                    $imp::$method( *self, other )
+                #[inline] fn $m( self, other:&$r ) -> $r {
+                    $i::$m( *self, other )
                 }
             }
         };
@@ -1819,20 +1819,20 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_scalar_val_ref_binop_to_ref_val 
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            impl $imp<&$scalar> for $res {
-                type Output = $res;
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            impl $i<&$s> for $r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$scalar ) -> $res {
-                    $imp::$method( &self, *other )
+                #[inline] fn $m( self, other:&$s ) -> $r {
+                    $i::$m( &self, *other )
                 }
             }
             
-            impl $imp<$res> for &$scalar {
-                type Output = $res;
+            impl $i<$r> for &$s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
-                    $imp::$method( *self, &other )
+                #[inline] fn $m( self, other: $r ) -> $r {
+                    $i::$m( *self, &other )
                 }
             }
         };
@@ -1840,20 +1840,20 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_scalar_val_ref_binop_to_val_val 
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            impl $imp<&$scalar> for $res {
-                type Output = $res;
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            impl $i<&$s> for $r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$scalar ) -> $res {
-                    $imp::$method( self, *other )
+                #[inline] fn $m( self, other:&$s ) -> $r {
+                    $i::$m( self, *other )
                 }
             }
             
-            impl $imp<$res> for &$scalar {
-                type Output = $res;
+            impl $i<$r> for &$s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $res ) -> $res {
-                    $imp::$method( *self, other )
+                #[inline] fn $m( self, other: $r ) -> $r {
+                    $i::$m( *self, other )
                 }
             }
         };
@@ -1861,20 +1861,20 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_scalar_ref_val_binop_to_val_val 
     {
-        ( impl $imp:ident < $scalar:ty > for $res:ty, $method:ident ) => {
-            impl $imp<$scalar> for &$res {
-                type Output = $res;
+        ( impl $i:ident < $s:ty > for $r:ty, $m:ident ) => {
+            impl $i<$s> for &$r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other: $scalar ) -> $res {
-                    $imp::$method( self.clone(), other )
+                #[inline] fn $m( self, other: $s ) -> $r {
+                    $i::$m( self.clone(), other )
                 }
             }
             
-            impl $imp<&$res> for $scalar {
-                type Output = $res;
+            impl $i<&$r> for $s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$res ) -> $res {
-                    $imp::$method( self, other.clone() )
+                #[inline] fn $m( self, other:&$r ) -> $r {
+                    $i::$m( self, other.clone() )
                 }
             }
         };
@@ -1882,20 +1882,20 @@ pub mod parse;
 
     #[macro_export] macro_rules! forward_scalar_ref_ref_binop_to_val_val 
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            impl $imp<&$scalar> for &$res {
-                type Output = $res;
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            impl $i<&$s> for &$r {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$scalar ) -> $res {
-                    $imp::$method( self.clone(), *other )
+                #[inline] fn $m( self, other:&$s ) -> $r {
+                    $i::$m( self.clone(), *other )
                 }
             }
             
-            impl $imp<&$res> for &$scalar {
-                type Output = $res;
+            impl $i<&$r> for &$s {
+                type Output = $r;
 
-                #[inline] fn $method( self, other:&$res ) -> $res {
-                    $imp::$method( *self, other.clone() )
+                #[inline] fn $m( self, other:&$r ) -> $r {
+                    $i::$m( *self, other.clone() )
                 }
             }
         };
@@ -1903,24 +1903,22 @@ pub mod parse;
 
     #[macro_export] macro_rules! promote_scalars 
     {
-        ( impl $imp:ident<$promo:ty> for $res:ty, $method:ident, $( $scalar:ty ),* ) => {
+        ( impl $i:ident<$p:ty> for $r:ty, $m:ident, $( $s:ty ),* ) => {
             $( 
-                forward_all_scalar_binop_to_val_val!( impl $imp<$scalar> for $res, $method );
+                forward_all_scalar_binop_to_val_val!( impl $i<$s> for $r, $m );
 
-                impl $imp<$scalar> for $res {
-                    type Output = $res;
-
-                    #[allow( clippy::cast_lossless )]
-                    #[inline] fn $method( self, other: $scalar ) -> $res {
-                        $imp::$method( self, other as $promo )
+                impl $i<$s> for $r {
+                    type Output = $r;
+                    
+                    #[inline] fn $m( self, other: $s ) -> $r {
+                        $i::$m( self, other as $p )
                     }
                 }
-                impl $imp<$res> for $scalar {
-                    type Output = $res;
 
-                    #[allow( clippy::cast_lossless )]
-                    #[inline] fn $method( self, other: $res ) -> $res {
-                        $imp::$method( self as $promo, other )
+                impl $i<$r> for $s {
+                    type Output = $r;
+                    #[inline] fn $m( self, other: $r ) -> $r {
+                        $i::$m( self as $p, other )
                     }
                 }
             )*
@@ -1929,12 +1927,12 @@ pub mod parse;
 
     #[macro_export] macro_rules! promote_scalars_assign 
     {
-        ( impl $imp:ident<$promo:ty> for $res:ty, $method:ident, $( $scalar:ty ),* ) => {
+        ( impl $i:ident<$p:ty> for $r:ty, $m:ident, $( $s:ty ),* ) => {
             $( 
-                impl $imp<$scalar> for $res {
+                impl $i<$s> for $r {
                     #[allow( clippy::cast_lossless )]
-                    #[inline] fn $method( &mut self, other: $scalar ) {
-                        self.$method( other as $promo );
+                    #[inline] fn $m( &mut self, other: $s ) {
+                        self.$m( other as $p );
                     }
                 }
             )*
@@ -1943,118 +1941,118 @@ pub mod parse;
 
     #[macro_export] macro_rules! promote_unsigned_scalars 
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            promote_scalars!( impl $imp<u32> for $res, $method, u8, u16 );
-            promote_scalars!( impl $imp<::num::big::UsizePromotion> for $res, $method, usize );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            promote_scalars!( impl $i<u32> for $r, $m, u8, u16 );
+            promote_scalars!( impl $i<::num::big::UsizePromotion> for $r, $m, usize );
         }
     }
 
     #[macro_export] macro_rules! promote_unsigned_scalars_assign 
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            promote_scalars_assign!( impl $imp<u32> for $res, $method, u8, u16 );
-            promote_scalars_assign!( impl $imp<::num::big::UsizePromotion> for $res, $method, usize );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            promote_scalars_assign!( impl $i<u32> for $r, $m, u8, u16 );
+            promote_scalars_assign!( impl $i<::num::big::UsizePromotion> for $r, $m, usize );
         }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars 
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            promote_scalars!( impl $imp<i32> for $res, $method, i8, i16 );
-            promote_scalars!( impl $imp<::num::big::IsizePromotion> for $res, $method, isize );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            promote_scalars!( impl $i<i32> for $r, $m, i8, i16 );
+            promote_scalars!( impl $i<::num::big::IsizePromotion> for $r, $m, isize );
         }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars_assign 
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) =>
+        ( impl $i:ident for $r:ty, $m:ident ) =>
         {
-            promote_scalars_assign!( impl $imp<i32> for $res, $method, i8, i16 );
-            promote_scalars_assign!( impl $imp<::num::big::IsizePromotion> for $res, $method, isize );
+            promote_scalars_assign!( impl $i<i32> for $r, $m, i8, i16 );
+            promote_scalars_assign!( impl $i<::num::big::IsizePromotion> for $r, $m, isize );
         }
     }
 
     #[macro_export] macro_rules! forward_all_binop_to_ref_ref
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) =>
+        ( impl $i:ident for $r:ty, $m:ident ) =>
         {
-            forward_val_val_binop!( impl $imp for $res, $method );
-            forward_val_ref_binop_big!( impl $imp for $res, $method );
-            forward_ref_val_binop_big!( impl $imp for $res, $method );
+            forward_val_val_binop!( impl $i for $r, $m );
+            forward_val_ref_binop_big!( impl $i for $r, $m );
+            forward_ref_val_binop_big!( impl $i for $r, $m );
         };
     }
     
     #[macro_export] macro_rules! forward_all_binop_to_val_ref
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) =>
+        ( impl $i:ident for $r:ty, $m:ident ) =>
         {
-            forward_val_val_binop!( impl $imp for $res, $method );
-            forward_ref_val_binop!( impl $imp for $res, $method );
-            forward_ref_ref_binop!( impl $imp for $res, $method );
+            forward_val_val_binop!( impl $i for $r, $m );
+            forward_ref_val_binop!( impl $i for $r, $m );
+            forward_ref_ref_binop!( impl $i for $r, $m );
         };
     }
     
     #[macro_export] macro_rules! forward_all_binop_to_val_ref_commutative
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            forward_val_val_binop_commutative!( impl $imp for $res, $method );
-            forward_ref_val_binop_commutative!( impl $imp for $res, $method );
-            forward_ref_ref_binop_commutative!( impl $imp for $res, $method );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            forward_val_val_binop_commutative!( impl $i for $r, $m );
+            forward_ref_val_binop_commutative!( impl $i for $r, $m );
+            forward_ref_ref_binop_commutative!( impl $i for $r, $m );
         };
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_ref_val
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            forward_scalar_val_val_binop_to_ref_val!( impl $imp<$scalar> for $res, $method );
-            forward_scalar_val_ref_binop_to_ref_val!( impl $imp<$scalar> for $res, $method );
-            forward_scalar_ref_ref_binop_to_ref_val!( impl $imp<$scalar> for $res, $method );
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            forward_scalar_val_val_binop_to_ref_val!( impl $i<$s> for $r, $m );
+            forward_scalar_val_ref_binop_to_ref_val!( impl $i<$s> for $r, $m );
+            forward_scalar_ref_ref_binop_to_ref_val!( impl $i<$s> for $r, $m );
         }
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_val_val
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            forward_scalar_val_ref_binop_to_val_val!( impl $imp<$scalar> for $res, $method );
-            forward_scalar_ref_val_binop_to_val_val!( impl $imp<$scalar> for $res, $method );
-            forward_scalar_ref_ref_binop_to_val_val!( impl $imp<$scalar> for $res, $method );
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            forward_scalar_val_ref_binop_to_val_val!( impl $i<$s> for $r, $m );
+            forward_scalar_ref_val_binop_to_val_val!( impl $i<$s> for $r, $m );
+            forward_scalar_ref_ref_binop_to_val_val!( impl $i<$s> for $r, $m );
         }
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_val_val_commutative
     {
-        ( impl $imp:ident<$scalar:ty> for $res:ty, $method:ident ) => {
-            forward_scalar_val_val_binop_commutative!( impl $imp<$scalar> for $res, $method );
-            forward_all_scalar_binop_to_val_val!( impl $imp<$scalar> for $res, $method );
+        ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
+            forward_scalar_val_val_binop_commutative!( impl $i<$s> for $r, $m );
+            forward_all_scalar_binop_to_val_val!( impl $i<$s> for $r, $m );
         }
     }
 
     #[macro_export] macro_rules! promote_all_scalars
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            promote_unsigned_scalars!( impl $imp for $res, $method );
-            promote_signed_scalars!( impl $imp for $res, $method );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            promote_unsigned_scalars!( impl $i for $r, $m );
+            promote_signed_scalars!( impl $i for $r, $m );
         }
     }
 
     #[macro_export] macro_rules! promote_all_scalars_assign
     {
-        ( impl $imp:ident for $res:ty, $method:ident ) => {
-            promote_unsigned_scalars_assign!( impl $imp for $res, $method );
-            promote_signed_scalars_assign!( impl $imp for $res, $method );
+        ( impl $i:ident for $r:ty, $m:ident ) => {
+            promote_unsigned_scalars_assign!( impl $i for $r, $m );
+            promote_signed_scalars_assign!( impl $i for $r, $m );
         }
     }
 
     #[macro_export] macro_rules! impl_sum_iter_type
     {
-        ( $res:ty ) => {
-            impl<T> Sum<T> for $res
+        ( $r:ty ) => {
+            impl<T> Sum<T> for $r
             where
-                $res: Add<T, Output = $res>,
+                $r: Add<T, Output = $r>,
             {
                 fn sum<I>( iter: I ) -> Self where I: Iterator<Item = T>,
                 {
-                    iter.fold( Self::ZERO, <$res>::add )
+                    iter.fold( Self::ZERO, <$r>::add )
                 }
             }
         };
@@ -2062,14 +2060,14 @@ pub mod parse;
 
     #[macro_export] macro_rules! impl_product_iter_type
     {
-        ( $res:ty ) => {
-            impl<T> Product<T> for $res
+        ( $r:ty ) => {
+            impl<T> Product<T> for $r
             where
-                $res: Mul<T, Output = $res>,
+                $r: Mul<T, Output = $r>,
             {
                 fn product<I>( iter: I ) -> Self where I: Iterator<Item = T>,
                 {
-                    iter.fold( One::one(), <$res>::mul )
+                    iter.fold( One::one(), <$r>::mul )
                 }
             }
         };
@@ -2078,18 +2076,18 @@ pub mod parse;
     #[macro_export] macro_rules! map
     {
         { } => { ::collections::HashMap::new() };
-        { $( $key:expr => $value:expr ),+ , } =>
+        { $( $k:expr => $v:expr ),+ , } =>
         {
            
-            map!{ $( $key => $value ),+ }
+            map!{ $( $k => $v ),+ }
         };
-        { $( $key:expr => $value:expr ),* } =>
+        { $( $k:expr => $v:expr ),* } =>
         {
             {
                 let mut _map = ::collections::HashMap::new();
 
                 $( 
-                    let _ = _map.insert( $key, $value );
+                    let _ = _map.insert( $k, $v );
                 )*
 
                 _map
@@ -2099,18 +2097,18 @@ pub mod parse;
 
     #[macro_export] macro_rules! int 
     {
-        ( $int:expr ) => {{
+        ( $i:expr ) => {{
             use num_bigint::BigInt;
 
-            let _b: BigInt = $int.into();
+            let _b: BigInt = $i.into();
             _b
         }};
     }
 
     #[macro_export] macro_rules! frac 
     {
-        ( $int1:expr, $int2:expr ) => {{
-            ::num::rational::BigRational::new( $int1.into(), $int2.into() )
+        ( $i1:expr, $i2:expr ) => {{
+            ::num::rational::BigRational::new( $i1.into(), $i2.into() )
         }};
     }
 
@@ -2121,38 +2119,38 @@ pub mod parse;
             $crate::arrays::Arr::from_vec( vec![] ).unwrap()
         };
 
-        [ $( $elem:expr ),+ , ] => 
+        [ $( $e:expr ),+ , ] => 
         {
            
-            try_arr![ $( $elem ),+ ].unwrap()
+            try_arr![ $( $e ),+ ].unwrap()
         };
 
-        [ $( $elem:expr ),+ ] => 
+        [ $( $e:expr ),+ ] => 
         {
-            try_arr![ $( $elem ),+ ].unwrap()
+            try_arr![ $( $e ),+ ].unwrap()
         };
     }
 
     #[macro_export] macro_rules! try_arr 
     {
-        [ $( $elem:expr ),+ , ] => 
+        [ $( $e:expr ),+ , ] => 
         {
            
-            try_arr![ $( $elem ),+ ]
+            try_arr![ $( $e ),+ ]
         };
 
-        [ $( $elem:expr ),+ ] => 
+        [ $( $e:expr ),+ ] => 
         {{
-                $crate::arrays::Arr::from_vec( vec![ $( $elem.into() ),+ ] )
+                $crate::arrays::Arr::from_vec( vec![ $( $e.into() ),+ ] )
         }};
     }
 
     #[macro_export] macro_rules! tup 
     {
-        ( $( $elem:expr ),* , ) => { tup!( $( $elem ),* ) };
-        ( $( $elem:expr ),* ) => {
+        ( $( $e:expr ),* , ) => { tup!( $( $e ),* ) };
+        ( $( $e:expr ),* ) => {
             {
-                $crate::tup::Tup::from_vec( vec![ $( $elem.into() ),+ ] )
+                $crate::tup::Tup::from_vec( vec![ $( $e.into() ),+ ] )
             }
         };
     }
@@ -2160,33 +2158,33 @@ pub mod parse;
     #[macro_export] macro_rules! obj 
     {
         {} => { $crate::obj::Obj::from_map_unchecked( ::::collections::HashMap::new() ) };
-        { $( $field:expr => $inner:expr ),+ , } => { try_obj!{ $( $field => $inner ),+ }.unwrap() };
-        { $( $field:expr => $inner:expr ),+ } => { try_obj!{ $( $field => $inner ),+ }.unwrap() };
+        { $( $f:expr => $in:expr ),+ , } => { try_obj!{ $( $f => $in ),+ }.unwrap() };
+        { $( $f:expr => $in:expr ),+ } => { try_obj!{ $( $f => $in ),+ }.unwrap() };
     }
 
     #[macro_export] macro_rules! try_obj
     {
-        { $( $field:expr => $inner:expr ),+ , } =>
+        { $( $f:expr => $in:expr ),+ , } =>
         {
            
-            try_obj!{ $( $field => $inner ),* };
+            try_obj!{ $( $f => $in ),* };
         };
         
-        { $( $field:expr => $inner:expr ),+ } =>
+        { $( $f:expr => $in:expr ),+ } =>
         {{
             use ::objects::Obj;
             let mut _map = ::collections::HashMap::new();
             let mut _parent:Option<::values::Value> = None;
 
             $( 
-                if $field == "^" 
+                if $f == "^" 
                 {
-                    _parent = Some( $inner.into() );
+                    _parent = Some( $in.into() );
                 } 
                 
                 else 
                 {
-                    _map.insert( $field.into(), $inner.into() );
+                    _map.insert( $f.into(), $in.into() );
                 }
             )*
 
@@ -2203,96 +2201,96 @@ pub mod parse;
     
     #[macro_export] macro_rules! forward_screen_buffer_methods
     {
-        ( |$slf:ident| $field:expr ) =>
+        ( |$s:ident| $f:expr ) =>
         {
             pub fn size( &self ) -> ::system::common::terminal::Size 
             {
-                let $slf = self;
-                $field.size()
+                let $s = self;
+                $f.size()
             }
 
             pub fn cursor( &self ) -> ::system::common::terminal::Cursor 
             {
-                let $slf = self;
-                $field.cursor()
+                let $s = self;
+                $f.cursor()
             }
 
             pub fn set_cursor( &self, pos: ::system::common::terminal::Cursor ) 
             {
-                let $slf = self;
-                $field.set_cursor( pos );
+                let $s = self;
+                $f.set_cursor( pos );
             }
 
             pub fn next_line( &self, column: usize ) 
             {
-                let $slf = self;
-                $field.next_line( column );
+                let $s = self;
+                $f.next_line( column );
             }
 
             pub fn clear_screen( &self ) 
             {
-                let $slf = self;
-                $field.clear_screen();
+                let $s = self;
+                $f.clear_screen();
             }
 
             pub fn clear_attributes( &self ) 
             {
-                let $slf = self;
-                $field.clear_attributes();
+                let $s = self;
+                $f.clear_attributes();
             }
 
             pub fn add_style( &self, style: ::system::common::terminal::Style ) 
             {
-                let $slf = self;
-                $field.add_style( style );
+                let $s = self;
+                $f.add_style( style );
             }
 
             pub fn remove_style( &self, style: ::system::common::terminal::Style ) 
             {
-                let $slf = self;
-                $field.remove_style( style );
+                let $s = self;
+                $f.remove_style( style );
             }
 
             pub fn set_style( &self, style: ::system::common::terminal::Style ) 
             {
-                let $slf = self;
-                $field.set_style( style );
+                let $s = self;
+                $f.set_style( style );
             }
 
             pub fn set_fg( &self, fg:Option<::system::common::terminal::Color> ) 
             {
-                let $slf = self;
-                $field.set_fg( fg );
+                let $s = self;
+                $f.set_fg( fg );
             }
 
             pub fn set_bg( &self, bg:Option<::system::common::terminal::Color> ) 
             {
-                let $slf = self;
-                $field.set_bg( bg );
+                let $s = self;
+                $f.set_bg( bg );
             }
 
             pub fn set_theme( &self, theme: ::system::common::terminal::Theme ) 
             {
-                let $slf = self;
-                $field.set_theme( theme )
+                let $s = self;
+                $f.set_theme( theme )
             }
 
             pub fn write_char( &self, ch:char ) 
             {
-                let $slf = self;
-                let _ = $field.write_char( ch );
+                let $s = self;
+                let _ = $f.write_char( ch );
             }
 
             pub fn write_str( &self, s:&str ) 
             {
-                let $slf = self;
-                let _ = $field.write_str( s  );
+                let $s = self;
+                let _ = $f.write_str( s  );
             }
 
             pub fn write_at( &self, pos: ::system::common::terminal::Cursor, text:&str ) 
             {
-                let $slf = self;
-                let _ = $field.write_at( pos, text );
+                let $s = self;
+                let _ = $f.write_at( pos, text );
             }
 
             pub fn write_styled
@@ -2304,99 +2302,99 @@ pub mod parse;
                 text:&str
             )
             {
-                let $slf = self;
-                let _ = $field.write_styled( fg, bg, style, text );
+                let $s = self;
+                let _ = $f.write_styled( fg, bg, style, text );
             }
 
             pub fn write_styled_at( &self, pos: ::system::common::terminal::Cursor,
                     fg:Option<::system::common::terminal::Color>, bg:Option<::system::common::terminal::Color>,
                     style: ::system::common::terminal::Style, text:&str ) {
-                let $slf = self;
-                let _ = $field.write_styled_at( pos, fg, bg, style, text );
+                let $s = self;
+                let _ = $f.write_styled_at( pos, fg, bg, style, text );
             }
         }
     }
     
     #[macro_export] macro_rules! forward_screen_buffer_mut_methods 
     {
-        ( |$slf:ident| $field:expr ) => {
+        ( |$s:ident| $f:expr ) => {
             pub fn size( &self ) -> ::system::common::terminal::Size {
-                let $slf = self;
-                $field.size()
+                let $s = self;
+                $f.size()
             }
 
             pub fn cursor( &self ) -> ::system::common::terminal::Cursor {
-                let $slf = self;
-                $field.cursor()
+                let $s = self;
+                $f.cursor()
             }
 
             pub fn set_cursor( &mut self, pos: ::system::common::terminal::Cursor ) {
-                let $slf = self;
-                $field.set_cursor( pos );
+                let $s = self;
+                $f.set_cursor( pos );
             }
 
             pub fn next_line( &mut self, column: usize ) {
-                let $slf = self;
-                $field.next_line( column );
+                let $s = self;
+                $f.next_line( column );
             }
 
             pub fn clear_screen( &mut self ) {
-                let $slf = self;
-                $field.clear_screen();
+                let $s = self;
+                $f.clear_screen();
             }
 
             pub fn clear_attributes( &mut self ) {
-                let $slf = self;
-                $field.clear_attributes();
+                let $s = self;
+                $f.clear_attributes();
             }
 
             pub fn add_style( &mut self, style: ::system::common::terminal::Style ) {
-                let $slf = self;
-                $field.add_style( style );
+                let $s = self;
+                $f.add_style( style );
             }
 
             pub fn remove_style( &mut self, style: ::system::common::terminal::Style ) {
-                let $slf = self;
-                $field.remove_style( style );
+                let $s = self;
+                $f.remove_style( style );
             }
 
             pub fn set_style( &mut self, style: ::system::common::terminal::Style ) {
-                let $slf = self;
-                $field.set_style( style );
+                let $s = self;
+                $f.set_style( style );
             }
 
             pub fn set_fg( &mut self, fg:Option<::system::common::terminal::Color> ) {
-                let $slf = self;
-                $field.set_fg( fg );
+                let $s = self;
+                $f.set_fg( fg );
             }
 
             pub fn set_bg( &mut self, bg:Option<::system::common::terminal::Color> ) {
-                let $slf = self;
-                $field.set_bg( bg );
+                let $s = self;
+                $f.set_bg( bg );
             }
 
             pub fn set_theme( &mut self, theme: ::system::common::terminal::Theme )
             {
-                let $slf = self;
-                $field.set_theme( theme );
+                let $s = self;
+                $f.set_theme( theme );
             }
 
             pub fn write_char( &mut self, ch:char )
             {
-                let $slf = self;
-                let _ = $field.write_char( ch );
+                let $s = self;
+                let _ = $f.write_char( ch );
             }
 
             pub fn write_str( &mut self, s:&str ) 
             {
-                let $slf = self;
-                let _ = $field.write_str( s  );
+                let $s = self;
+                let _ = $f.write_str( s  );
             }
 
             pub fn write_at( &mut self, pos: ::system::common::terminal::Cursor, text:&str )
             {
-                let $slf = self;
-                let _ = $field.write_at( pos, text );
+                let $s = self;
+                let _ = $f.write_at( pos, text );
             }
 
             pub fn write_styled
@@ -2408,16 +2406,16 @@ pub mod parse;
                 text:&str
             ) 
             {
-                let $slf = self;
-                let _ = $field.write_styled( fg, bg, style, text );
+                let $s = self;
+                let _ = $f.write_styled( fg, bg, style, text );
             }
 
             pub fn write_styled_at( &mut self, pos: ::system::common::terminal::Cursor,
                     fg:Option<::system::common::terminal::Color>, 
                     bg:Option<::system::common::terminal::Color>,
                     style: ::system::common::terminal::Style, text:&str ) {
-                let $slf = self;
-                let _ = $field.write_styled_at( pos, fg, bg, style, text );
+                let $s = self;
+                let _ = $f.write_styled_at( pos, fg, bg, style, text );
             }
         }
     }
@@ -2425,11 +2423,11 @@ pub mod parse;
     #[macro_export] macro_rules! libc_bitflags
     {
         ( 
-            $( #[$outer:meta] )*
-            pub struct $BitFlags:ident: $T:ty {
+            $( #[$o:meta] )*
+            pub struct $b:ident: $T:ty {
                 $( 
-                    $( #[$inner:ident $( $args:tt )*] )*
-                    $Flag:ident $( as $cast:ty )*;
+                    $( #[$in:ident $( $as:tt )*] )*
+                    $F:ident $( as $cast:ty )*;
                 )+
             }
         ) =>
@@ -2437,12 +2435,12 @@ pub mod parse;
             bitflags!
             {
                 #[derive( Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
-                #[repr( transparent )]
-                $( #[$outer] )*
-                pub struct $BitFlags: $T {
+                #[repr( transparent )] $( #[$o] )*
+                pub struct $b: $T
+                {
                     $( 
-                        $( #[$inner $( $args )*] )*
-                        const $Flag = $Flag $( as $cast )*;
+                        $( #[$in $( $as )*] )*
+                        const $F = $F $( as $cast )*;
                     )+
                 }
             }
@@ -2452,194 +2450,194 @@ pub mod parse;
     #[macro_export] macro_rules! libc_enum
     {
         ( @make_enum
-            name: $BitFlags:ident,
+            name: $b:ident,
             {
                 $v:vis
-                attrs: [$( $attrs:tt )*],
-                entries: [$( $entries:tt )*],
+                attrs: [$( $as:tt )*],
+                entries: [$( $es:tt )*],
             }
         ) =>
         {
-            $( $attrs )*
+            $( $as )*
             #[derive( Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
-            $v enum $BitFlags
+            $v enum $b
             {
-                $( $entries )*
+                $( $es )*
             }
         };
         
         ( @make_enum
-            name: $BitFlags:ident,
+            name: $b:ident,
             {
                 $v:vis
-                attrs: [$( $attrs:tt )*],
-                entries: [$( $entries:tt )*],
-                from_type: $repr:path,
-                try_froms: [$( $try_froms:tt )*]
+                attrs: [$( $as:tt )*],
+                entries: [$( $es:tt )*],
+                from_type: $r:path,
+                try_froms: [$( $t:tt )*]
             }
         ) =>
         {
-            $( $attrs )*
+            $( $as )*
             #[derive( Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
-            $v enum $BitFlags
+            $v enum $b
             {
-                $( $entries )*
+                $( $es )*
             }
 
-            impl ::convert::TryFrom<$repr> for $BitFlags
+            impl ::convert::TryFrom<$r> for $b
             {
                 type Error = ::system::api::Error;
-                fn try_from( x: $repr ) -> ::system::api::Result<Self>
+                fn try_from( x: $r ) -> ::system::api::Result<Self>
                 {
                     match x
                     {
-                        $( $try_froms )*
+                        $( $t )*
                         _ => Err( ::system::api::Error::EINVAL )
                     }
                 }
             }
         };
         ( @accumulate_entries
-            name: $BitFlags:ident,
+            name: $b:ident,
             {
                 $v:vis
-                attrs: $attrs:tt,
+                attrs: $as:tt,
             },
-            $entries:tt,
-            $try_froms:tt;
+            $es:tt,
+            $t:tt;
         ) => {
             libc_enum! {
                 @make_enum
-                name: $BitFlags,
+                name: $b,
                 {
                     $v
-                    attrs: $attrs,
-                    entries: $entries,
+                    attrs: $as,
+                    entries: $es,
                 }
             }
         };
         ( @accumulate_entries
-            name: $BitFlags:ident,
+            name: $b:ident,
             {
                 $v:vis
-                attrs: $attrs:tt,
-                from_type: $repr:path,
+                attrs: $as:tt,
+                from_type: $r:path,
             },
-            $entries:tt,
-            $try_froms:tt;
+            $es:tt,
+            $t:tt;
         ) => {
             libc_enum! {
                 @make_enum
-                name: $BitFlags,
+                name: $b,
                 {
                     $v
-                    attrs: $attrs,
-                    entries: $entries,
-                    from_type: $repr,
-                    try_froms: $try_froms
+                    attrs: $as,
+                    entries: $es,
+                    from_type: $r,
+                    try_froms: $t
                 }
             }
         };
         ( @accumulate_entries
-            name: $BitFlags:ident,
-            $prefix:tt,
-            [$( $entries:tt )*],
-            [$( $try_froms:tt )*];
-            #[$attr:meta] $( $tail:tt )*
+            name: $b:ident,
+            $p:tt,
+            [$( $es:tt )*],
+            [$( $t:tt )*];
+            #[$a:meta] $( $z:tt )*
         ) => {
             libc_enum! {
                 @accumulate_entries
-                name: $BitFlags,
-                $prefix,
+                name: $b,
+                $p,
                 [
-                    $( $entries )*
-                    #[$attr]
+                    $( $es )*
+                    #[$a]
                 ],
                 [
-                    $( $try_froms )*
+                    $( $t )*
                 ];
-                $( $tail )*
+                $( $z )*
             }
         };
         ( @accumulate_entries
-            name: $BitFlags:ident,
-            $prefix:tt,
-            [$( $entries:tt )*],
-            [$( $try_froms:tt )*];
-            $entry:ident
+            name: $b:ident,
+            $p:tt,
+            [$( $es:tt )*],
+            [$( $t:tt )*];
+            $e:ident
         ) => {
             libc_enum! {
                 @accumulate_entries
-                name: $BitFlags,
-                $prefix,
+                name: $b,
+                $p,
                 [
-                    $( $entries )*
-                    $entry = $entry,
+                    $( $es )*
+                    $e = $e,
                 ],
                 [
-                    $( $try_froms )*
-                    $entry => Ok( $BitFlags::$entry ),
+                    $( $t )*
+                    $e => Ok( $b::$e ),
                 ];
             }
         };
         ( @accumulate_entries
-            name: $BitFlags:ident,
-            $prefix:tt,
-            [$( $entries:tt )*],
-            [$( $try_froms:tt )*];
-            $entry:ident,
-            $( $tail:tt )*
+            name: $b:ident,
+            $p:tt,
+            [$( $es:tt )*],
+            [$( $t:tt )*];
+            $e:ident,
+            $( $z:tt )*
         ) => {
             libc_enum! {
                 @accumulate_entries
-                name: $BitFlags,
-                $prefix,
+                name: $b,
+                $p,
                 [
-                    $( $entries )*
-                    $entry = $entry,
+                    $( $es )*
+                    $e = $e,
                 ],
                 [
-                    $( $try_froms )*
-                    $entry => Ok( $BitFlags::$entry ),
+                    $( $t )*
+                    $e => Ok( $b::$e ),
                 ];
-                $( $tail )*
+                $( $z )*
             }
         };
         ( @accumulate_entries
-            name: $BitFlags:ident,
-            $prefix:tt,
-            [$( $entries:tt )*],
-            [$( $try_froms:tt )*];
-            $entry:ident as $ty:ty,
-            $( $tail:tt )*
+            name: $b:ident,
+            $p:tt,
+            [$( $es:tt )*],
+            [$( $t:tt )*];
+            $e:ident as $ty:ty,
+            $( $z:tt )*
         ) => {
             libc_enum! {
                 @accumulate_entries
-                name: $BitFlags,
-                $prefix,
+                name: $b,
+                $p,
                 [
-                    $( $entries )*
-                    $entry = $entry as $ty,
+                    $( $es )*
+                    $e = $e as $ty,
                 ],
                 [
-                    $( $try_froms )*
-                    $entry as $ty => Ok( $BitFlags::$entry ),
+                    $( $t )*
+                    $e as $ty => Ok( $b::$e ),
                 ];
-                $( $tail )*
+                $( $z )*
             }
         };
         ( 
-            $( #[$attr:meta] )*
-            $v:vis enum $BitFlags:ident {
+            $( #[$a:meta] )*
+            $v:vis enum $b:ident {
                 $( $vals:tt )*
             }
         ) => {
             libc_enum! {
                 @accumulate_entries
-                name: $BitFlags,
+                name: $b,
                 {
                     $v
-                    attrs: [$( #[$attr] )*],
+                    attrs: [$( #[$a] )*],
                 },
                 [],
                 [];
@@ -2647,20 +2645,20 @@ pub mod parse;
             }
         };
         ( 
-            $( #[$attr:meta] )*
-            $v:vis enum $BitFlags:ident {
+            $( #[$a:meta] )*
+            $v:vis enum $b:ident {
                 $( $vals:tt )*
             }
             
-            impl TryFrom<$repr:path>
+            impl TryFrom<$r:path>
         ) => {
             libc_enum! {
                 @accumulate_entries
-                name: $BitFlags,
+                name: $b,
                 {
                     $v
-                    attrs: [$( #[$attr] )*],
-                    from_type: $repr,
+                    attrs: [$( #[$a] )*],
+                    from_type: $r,
                 },
                 [],
                 [];
@@ -2672,7 +2670,7 @@ pub mod parse;
     #[macro_export] macro_rules! cfg_if
     {
         ( $( 
-            if #[cfg( $( $meta:meta ),* )] { $( $it:item )* }
+            if #[cfg( $( $m:meta ),* )] { $( $it:item )* }
         ) else * else {
             $( $it2:item )*
         } ) =>
@@ -2681,7 +2679,7 @@ pub mod parse;
             {
                 @__items
                 () ;
-                $( ( ( $( $meta ),* ) ( $( $it )* ) ), )*
+                $( ( ( $( $m ),* ) ( $( $it )* ) ), )*
                 ( () ( $( $it2 )* ) ),
             }
         };
@@ -2703,11 +2701,11 @@ pub mod parse;
             }
         };
         
-        ( @__items ( $( $not:meta, )* ) ; ) => {};
-        ( @__items ( $( $not:meta, )* ) ; ( ( $( $m:meta ),* ) ( $( $it:item )* ) ), $( $rest:tt )* ) =>
+        ( @__items ( $( $n:meta, )* ) ; ) => {};
+        ( @__items ( $( $n:meta, )* ) ; ( ( $( $m:meta ),* ) ( $( $it:item )* ) ), $( $r:tt )* ) =>
         {
-            cfg_if! { @__apply cfg( all( $( $m, )* not( any( $( $not ),* ) ) ) ), $( $it )* }            
-            cfg_if! { @__items ( $( $not, )* $( $m, )* ) ; $( $rest )* }
+            cfg_if! { @__apply cfg( all( $( $m, )* not( any( $( $n ),* ) ) ) ), $( $it )* }            
+            cfg_if! { @__items ( $( $n, )* $( $m, )* ) ; $( $r )* }
         };
         
         ( @__apply $m:meta, $( $it:item )* ) => { $( #[$m] $it )* };
@@ -2715,19 +2713,19 @@ pub mod parse;
 
     #[macro_export] macro_rules! println_stderr
     {
-        ( $fmt:expr ) => 
+        ( $f:expr ) => 
         ( 
             use io::Write;
-            match writeln!( &mut ::io::stderr(), $fmt )
+            match writeln!( &mut ::io::stderr(), $f )
             {
                 Ok( _ ) => {}
                 Err( e ) => println!( "write to stderr failed: {:?}", e )
             }
          );
 
-        ( $fmt:expr, $( $arg:tt )* ) =>
+        ( $f:expr, $( $a:tt )* ) =>
         ( 
-            match writeln!( &mut ::io::stderr(), $fmt, $( $arg )* )
+            match writeln!( &mut ::io::stderr(), $f, $( $a )* )
             {
                 Ok( _ ) => {}
                 Err( e ) => println!( "write to stderr failed: {:?}", e )
@@ -2737,7 +2735,7 @@ pub mod parse;
 
     #[macro_export] macro_rules! define_uuid_macro
     {
-        {$(#[$doc:meta] )*} =>
+        {$(#[$d:meta] )*} =>
         {
             #[macro_export] macro_rules! uuid
             {
@@ -2798,9 +2796,9 @@ pub mod parse;
 
     #[macro_export( local_inner_macros )] macro_rules! __lazy_static_internal
     {
-        ( $(#[$attr:meta])* ( $( $vis:tt )*) static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
+        ( $(#[$a:meta])* ( $( $v:tt )*) static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!(@MAKE TY, $(#[$attr])*, ( $( $vis )*), $N);
+            __lazy_static_internal!(@MAKE TY, $(#[$a])*, ( $( $v )*), $N);
             __lazy_static_internal!(@TAIL, $N : $T = $e );
             lazy_static!( $( $t )*);
         };
@@ -2829,11 +2827,11 @@ pub mod parse;
             }
         };
         
-        (@MAKE TY, $(#[$attr:meta])*, ( $( $vis:tt )*), $N:ident ) =>
+        (@MAKE TY, $(#[$a:meta])*, ( $( $v:tt )*), $N:ident ) =>
         {
-            $(#[$attr])*
-            $( $vis )* struct $N {__private_field: ()}
-            $( $vis )* static $N: $N = $N {__private_field: ()};
+            $(#[$a])*
+            $( $v )* struct $N {__private_field: ()}
+            $( $v )* static $N: $N = $N {__private_field: ()};
         };
         () => ()
     }
@@ -2841,19 +2839,19 @@ pub mod parse;
     #[macro_export(local_inner_macros )]
     macro_rules! lazy_static
     {
-        ( $(#[$attr:meta])* static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
+        ( $(#[$a:meta])* static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!( $(#[$attr])* () static ref $N : $T = $e; $( $t )*);
+            __lazy_static_internal!( $(#[$a])* () static ref $N : $T = $e; $( $t )*);
         };
 
-        ( $(#[$attr:meta])* pub static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
+        ( $(#[$a:meta])* pub static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!( $(#[$attr])* ( pub) static ref $N : $T = $e; $( $t )*);
+            __lazy_static_internal!( $(#[$a])* ( pub) static ref $N : $T = $e; $( $t )*);
         };
 
-        ( $(#[$attr:meta])* pub ( $( $vis:tt )+) static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
+        ( $(#[$a:meta])* pub ( $( $v:tt )+) static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!( $(#[$attr])* ( pub ( $( $vis )+ ) ) static ref $N : $T = $e; $( $t )*);
+            __lazy_static_internal!( $(#[$a])* ( pub ( $( $v )+ ) ) static ref $N : $T = $e; $( $t )*);
         };
 
         () => ()
@@ -2866,18 +2864,18 @@ pub mod parse;
 
     pub fn initialize<T: LazyStatic>( lazy: &T )
     {
-        LazyStatic::initialize(lazy);
+        LazyStatic::initialize( lazy );
     }
     
     #[macro_export] macro_rules! bitflags
     {
         (
-            $(#[$outer:meta])*
-            $vis:vis struct $BitFlags:ident: $T:ty
+            $(#[$o:meta])*
+            $v:vis struct $b:ident: $T:ty
             {
                 $(
-                    $(#[$inner:ident $( $args:tt )*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$in:ident $( $as:tt )*])*
+                    const $F:tt = $vv:expr;
                 )*
             }
 
@@ -2886,53 +2884,53 @@ pub mod parse;
         {
             ::__declare_public_bitflags!
             {
-                $(#[$outer])*
-                $vis struct $BitFlags
+                $(#[$o])*
+                $v struct $b
             }
             
             ::__impl_public_bitflags_consts!
             {
-                $BitFlags: $T
+                $b: $T
                 {
                     $(
-                        $(#[$inner $( $args )*])*
-                        const $Flag = $value;
+                        $(#[$in $( $as )*])*
+                        const $F = $vv;
                     )*
                 }
             }
             
             const _: () = 
             {
-                ::__declare_internal_bitflags! { $vis struct InternalBitFlags: $T }
+                ::__declare_internal_bitflags! { $v struct InternalBitFlags: $T }
 
                 ::__impl_internal_bitflags!
                 {
-                    InternalBitFlags: $T, $BitFlags 
+                    InternalBitFlags: $T, $b 
                     {
                         $(
-                            $(#[$inner $( $args )*])*
-                            const $Flag = $value;
+                            $(#[$in $( $as )*])*
+                            const $F = $vv;
                         )*
                     }
                 }
 
-                ::__impl_public_bitflags_forward! { $BitFlags: $T, InternalBitFlags }
+                ::__impl_public_bitflags_forward! { $b: $T, InternalBitFlags }
 
-                ::__impl_public_bitflags_ops! { $BitFlags }
+                ::__impl_public_bitflags_ops! { $b }
 
-                ::__impl_public_bitflags_iter! { $BitFlags: $T, $BitFlags }
+                ::__impl_public_bitflags_iter! { $b: $T, $b }
             };
 
             ::bitflags! { $( $t )* }
         };
 
         (
-            $(#[$outer:meta])*
-            impl $BitFlags:ident: $T:ty
+            $(#[$o:meta])*
+            impl $b:ident: $T:ty
             {
                 $(
-                    $(#[$inner:ident $( $args:tt )*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$in:ident $( $as:tt )*])*
+                    const $F:tt = $v:expr;
                 )*
             }
 
@@ -2941,11 +2939,11 @@ pub mod parse;
         {
             ::__impl_public_bitflags_consts!
             {
-                $BitFlags: $T
+                $b: $T
                 {
                     $(
-                        $(#[$inner $( $args )*])*
-                        const $Flag = $value;
+                        $(#[$in $( $as )*])*
+                        const $F = $v;
                     )*
                 }
             }
@@ -2954,19 +2952,19 @@ pub mod parse;
             {
                 ::__impl_public_bitflags!
                 {
-                    $(#[$outer])*
-                    $BitFlags: $T, $BitFlags
+                    $(#[$o])*
+                    $b: $T, $b
                     {
                         $(
-                            $(#[$inner $( $args )*])*
-                            const $Flag = $value;
+                            $(#[$in $( $as )*])*
+                            const $F = $v;
                         )*
                     }
                 }
 
-                ::__impl_public_bitflags_ops! { $BitFlags }
+                ::__impl_public_bitflags_ops! { $b }
 
-                ::__impl_public_bitflags_iter! { $BitFlags: $T, $BitFlags }
+                ::__impl_public_bitflags_iter! { $b: $T, $b }
             };
 
             ::bitflags! { $( $t )* }
@@ -2978,157 +2976,143 @@ pub mod parse;
     #[macro_export] macro_rules! __impl_bitflags
     {
         (
-            params: $self:ident, $bits:ident, $name:ident, $other:ident, $value:ident;
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident: $T:ty 
+            params: $self:ident, $bs:ident, $n:ident, $o:ident, $v:ident;
+            $(#[$m:meta])*
+            $P:ident: $T:ty 
             {
-                fn empty() $empty_body:block
-                fn all() $all_body:block
-                fn bits( &self ) $bits_body:block
-                fn from_bits( bits ) $from_bits_body:block
-                fn from_bits_truncate( bits ) $from_bits_truncate_body:block
-                fn from_bits_retain( bits ) $from_bits_retain_body:block
-                fn from_name(name) $from_name_body:block
-                fn is_empty( &self ) $is_empty_body:block
-                fn is_all( &self ) $is_all_body:block
-                fn intersects(&self, other) $intersects_body:block
-                fn contains(&self, other) $contains_body:block
-                fn insert( &mut self, other) $insert_body:block
-                fn remove( &mut self, other) $remove_body:block
-                fn toggle( &mut self, other) $toggle_body:block
-                fn set( &mut self, other, value) $set_body:block
-                fn intersection(self, other) $intersection_body:block
-                fn union(self, other) $union_body:block
-                fn difference(self, other) $difference_body:block
-                fn symmetric_difference(self, other) $symmetric_difference_body:block
-                fn complement(self) $complement_body:block
+                fn empty() $eb:block
+                fn all() $ab:block
+                fn bits( &self ) $bb:block
+                fn from_bits( bits ) $fb:block
+                fn from_bits_truncate( bits ) $tb:block
+                fn from_bits_retain( bits ) $fbr:block
+                fn from_name(name) $fnb:block
+                fn is_empty( &self ) $ie:block
+                fn is_all( &self ) $iab:block
+                fn intersects(&self, other) $itb:block
+                fn contains(&self, other) $cb:block
+                fn insert( &mut self, other) $ib:block
+                fn remove( &mut self, other) $rb:block
+                fn toggle( &mut self, other) $gb:block
+                fn set( &mut self, other, value) $sb:block
+                fn intersection(self, other) $xb:block
+                fn union(self, other) $ub:block
+                fn difference(self, other) $db:block
+                fn symmetric_difference(self, other) $sdb:block
+                fn complement(self) $mb:block
             }
         ) => 
         {
             #[allow(dead_code, deprecated, unused_attributes )]
-            $(#[$outer])*
-            impl $PublicBitFlags 
+            //$(#[$o])*
+            impl $P 
             {
 
                 #[inline] pub const fn empty() -> Self
-                    $empty_body
+                    $eb
 
                 #[inline] pub const fn all() -> Self
-                    $all_body
-
-                ///
-
+                    $ab
+                    
                 #[inline] pub const fn bits(&$self) -> $T
-                    $bits_body
+                    $bb
+                    
+                #[inline] pub const fn from_bits( $bs: $T ) -> ::option::Option<Self>
+                    $fb
 
-                ///
+                #[inline] pub const fn from_bits_truncate( $bs: $T ) -> Self
+                    $tb
 
-                #[inline] pub const fn from_bits( $bits: $T ) -> ::option::Option<Self>
-                    $from_bits_body
+                #[inline] pub const fn from_bits_retain( $bs: $T ) -> Self
+                    $fbr
 
-                #[inline] pub const fn from_bits_truncate( $bits: $T ) -> Self
-                    $from_bits_truncate_body
-
-                #[inline] pub const fn from_bits_retain( $bits: $T ) -> Self
-                    $from_bits_retain_body
-
-                #[inline] pub fn from_name( $name: &str) -> ::option::Option<Self>
-                    $from_name_body
+                #[inline] pub fn from_name( $n: &str) -> ::option::Option<Self>
+                    $fnb
 
                 #[inline] pub const fn is_empty(&$self) -> bool
-                    $is_empty_body
+                    $ie
 
                 #[inline] pub const fn is_all(&$self) -> bool
-                    $is_all_body
+                    $iab
 
-                #[inline] pub const fn intersects(&$self, $other: Self) -> bool
-                    $intersects_body
+                #[inline] pub const fn intersects(&$self, $o: Self) -> bool
+                    $itb
 
-                #[inline] pub const fn contains(&$self, $other: Self) -> bool
-                    $contains_body
+                #[inline] pub const fn contains(&$self, $o: Self) -> bool
+                    $cb
 
-                #[inline] pub fn insert(&mut $self, $other: Self)
-                    $insert_body
-                #[inline] pub fn remove(&mut $self, $other: Self)
-                    $remove_body
+                #[inline] pub fn insert(&mut $self, $o: Self)
+                    $ib
+                #[inline] pub fn remove(&mut $self, $o: Self)
+                    $rb
 
-                #[inline] pub fn toggle(&mut $self, $other: Self)
-                    $toggle_body
+                #[inline] pub fn toggle(&mut $self, $o: Self)
+                    $gb
 
-                #[inline] pub fn set(&mut $self, $other: Self, $value:bool )
-                    $set_body
+                #[inline] pub fn set(&mut $self, $o: Self, $v:bool )
+                    $sb
 
-                #[inline]
-                #[must_use]
-                pub const fn intersection( $self, $other: Self) -> Self
-                    $intersection_body
+                #[inline] #[must_use] pub const fn intersection( $self, $o: Self) -> Self
+                    $xb
 
-                #[inline]
-                #[must_use]
-                pub const fn union( $self, $other: Self) -> Self
-                    $union_body
-                #[inline]
-                #[must_use]
-                pub const fn difference( $self, $other: Self) -> Self
-                    $difference_body
+                #[inline] #[must_use] pub const fn union( $self, $o: Self) -> Self
+                    $ub
+                #[inline] #[must_use] pub const fn difference( $self, $o: Self) -> Self
+                    $db
 
-                #[inline]
-                #[must_use]
-                pub const fn symmetric_difference( $self, $other: Self) -> Self
-                    $symmetric_difference_body
+                #[inline] #[must_use] pub const fn symmetric_difference( $self, $o: Self) -> Self
+                    $sdb
 
-                #[inline]
-                #[must_use]
-                pub const fn complement( $self) -> Self
-                    $complement_body
+                #[inline] #[must_use] pub const fn complement( $self) -> Self
+                    $mb
             }
         };
     }
 
     #[macro_export] macro_rules! bitflags_match 
     {
-        ( $operation:expr, { $( $t:tt )* }) =>
+        ( $o:expr, { $( $t:tt )* }) =>
         {
-            (|| { ::__bitflags_match!( $operation, { $( $t )* }) })()
+            (|| { ::__bitflags_match!( $o, { $( $t )* }) })()
         };
     }
 
     #[macro_export] macro_rules! __bitflags_match
     {
-        ( $operation:expr, { $pattern:expr => { $( $body:tt )* } , $( $t:tt )+ }) =>
-        { ::__bitflags_match!( $operation, { $pattern => { $( $body)* } $( $t )+ }) };
+        ( $o:expr, { $p:expr => { $( $b:tt )* } , $( $t:tt )+ }) =>
+        { ::__bitflags_match!( $o, { $p => { $( $b)* } $( $t )+ }) };
         
-        ( $operation:expr, { $pattern:expr => { $( $body:tt )* } $( $t:tt )+ }) => 
+        ( $o:expr, { $p:expr => { $( $b:tt )* } $( $t:tt )+ }) => 
         {
             {
-                if $operation == $pattern
+                if $o == $p
                 {
                     return
                     {
-                        $( $body)*
+                        $( $b)*
                     }; 
                 }
 
-                ::__bitflags_match!( $operation, { $( $t )+ })
+                ::__bitflags_match!( $o, { $( $t )+ })
             }
         };
         
-        ( $operation:expr, { $pattern:expr => $body:expr , $( $t:tt )+ }) =>
+        ( $o:expr, { $p:expr => $b:expr , $( $t:tt )+ }) =>
         {
             {
-                if $operation == $pattern { return $body; }
+                if $o == $p { return $b; }
 
-                ::__bitflags_match!( $operation, { $( $t )+ })
+                ::__bitflags_match!( $o, { $( $t )+ })
             }
         };
         
-        ( $operation:expr, { _ => $default:expr $(,)? }) => { $default }
+        ( $o:expr, { _ => $default:expr $(,)? }) => { $default }
     }
 
     #[macro_export] macro_rules! __bitflags_expr_safe_attrs 
     {
         (
-            $(#[$inner:ident $( $args:tt )*])*
+            $(#[$in:ident $( $as:tt )*])*
             { $e:expr }
         ) => 
         {
@@ -3137,7 +3121,7 @@ pub mod parse;
                 expr: { $e },
                 attrs: 
                 {
-                    unprocessed: [$(#[$inner $( $args )*])*],
+                    unprocessed: [$(#[$in $( $as )*])*],
                     processed: [],
                 },
             }
@@ -3149,10 +3133,10 @@ pub mod parse;
             {
                 unprocessed:
                 [
-                    #[cfg $( $args:tt )*]
-                    $( $attrs_rest:tt )*
+                    #[cfg $( $as:tt )*]
+                    $( $ar:tt )*
                 ],
-                processed: [$( $expr:tt )*],
+                processed: [$( $x:tt )*],
             },
         ) =>
         {
@@ -3163,12 +3147,12 @@ pub mod parse;
                 {
                     unprocessed:
                     [
-                        $( $attrs_rest )*
+                        $( $ar )*
                     ],
                     processed:
                     [
-                        $( $expr)*
-                        #[cfg $( $args )*]
+                        $( $x)*
+                        #[cfg $( $as )*]
                     ],
                 },
             }
@@ -3180,10 +3164,10 @@ pub mod parse;
             {
                 unprocessed:
                 [
-                    #[$other:ident $( $args:tt )*]
-                    $( $attrs_rest:tt )*
+                    #[$o:ident $( $as:tt )*]
+                    $( $ar:tt )*
                 ],
-                processed: [$( $expr:tt )*],
+                processed: [$( $x:tt )*],
             },
         ) =>
         {
@@ -3194,11 +3178,11 @@ pub mod parse;
                 {
                     unprocessed:
                     [
-                        $( $attrs_rest )*
+                        $( $ar )*
                     ],
                     processed:
                     [
-                        $( $expr)*
+                        $( $x)*
                     ],
                 },
             }
@@ -3209,11 +3193,11 @@ pub mod parse;
             attrs:
             {
                 unprocessed: [],
-                processed: [$(#[$expr:ident $( $exprargs:tt )*])*],
+                processed: [$(#[$x:ident $( $xa:tt )*])*],
             },
         ) =>
         {
-            $(#[$expr $( $exprargs )*])*
+            $(#[$x $( $xa )*])*
             { $e }
         }
     }
@@ -3224,16 +3208,16 @@ pub mod parse;
             {
                 name: _,
                 named: { $( $named:tt )* },
-                unnamed: { $( $unnamed:tt )* },
+                unnamed: { $( $u:tt )* },
             }
         ) =>
-        { $( $unnamed)* };
+        { $( $u)* };
 
         (
             {
-                name: $Flag:ident,
+                name: $F:ident,
                 named: { $( $named:tt )* },
-                unnamed: { $( $unnamed:tt )* },
+                unnamed: { $( $u:tt )* },
             }
         ) => { $( $named)* };
     }
@@ -3241,50 +3225,50 @@ pub mod parse;
     #[macro_export] macro_rules! __declare_public_bitflags
     {
         (
-            $(#[$outer:meta])*
-            $vis:vis struct $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $v:vis struct $P:ident
         ) => {
-            $(#[$outer])*
-            $vis struct $PublicBitFlags(<$PublicBitFlags as ::bits::flags::PublicFlags>::Internal);
+            $(#[$o])*
+            $v struct $P(<$P as ::bits::flags::PublicFlags>::Internal);
         };
     }
 
     #[macro_export] macro_rules! __impl_public_bitflags_forward 
     {
         (
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident: $T:ty, $InternalBitFlags:ident
+            $(#[$o:meta])*
+            $P:ident: $T:ty, $I:ident
         ) => 
         {
             __impl_bitflags! 
             {
                 params: self, bits, name, other, value;
-                $(#[$outer])*
-                $PublicBitFlags: $T
+                $(#[$o])*
+                $P: $T
                
                 {
-                    fn empty() { Self( $InternalBitFlags::empty()) }
+                    fn empty() { Self( $I::empty()) }
                     
-                    fn all() { Self( $InternalBitFlags::all()) }
+                    fn all() { Self( $I::all()) }
                     
                     fn bits( &self ) { self.0.bits() }
                     
                     fn from_bits( bits )
                     {
-                        match $InternalBitFlags::from_bits( bits )
+                        match $I::from_bits( bits )
                         {
                             Some( bits ) => Some(Self( bits )),
                             None => None,
                         }
                     }
                     
-                    fn from_bits_truncate( bits ) { Self( $InternalBitFlags::from_bits_truncate( bits )) }
+                    fn from_bits_truncate( bits ) { Self( $I::from_bits_truncate( bits )) }
                     
-                    fn from_bits_retain( bits ) { Self( $InternalBitFlags::from_bits_retain( bits )) }
+                    fn from_bits_retain( bits ) { Self( $I::from_bits_retain( bits )) }
                     
                     fn from_name(name)
                     {
-                        match $InternalBitFlags::from_name(name)
+                        match $I::from_name(name)
                         {
                             Some( bits ) => Some(Self( bits )),
                             None =>None,
@@ -3324,12 +3308,12 @@ pub mod parse;
     #[macro_export] macro_rules! __impl_public_bitflags 
     {
         (
-            $(#[$outer:meta])*
-            $BitFlags:ident: $T:ty, $PublicBitFlags:ident 
+            $(#[$o:meta])*
+            $b:ident: $T:ty, $P:ident 
             {
                 $(
-                    $(#[$inner:ident $( $args:tt )*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$in:ident $( $as:tt )*])*
+                    const $F:tt = $v:expr;
                 )*
             }
         ) => 
@@ -3337,8 +3321,8 @@ pub mod parse;
             __impl_bitflags! 
             {
                 params: self, bits, name, other, value;
-                $(#[$outer])*
-                $BitFlags: $T 
+                $(#[$o])*
+                $b: $T 
                
                 {
                     fn empty() { Self(<$T as ::bits::flags::Bits>::EMPTY) }
@@ -3351,9 +3335,9 @@ pub mod parse;
                         $(
                             __bitflags_expr_safe_attrs!
                             (
-                                $(#[$inner $( $args )*])*
+                                $(#[$in $( $as )*])*
                                 {{
-                                    let flag = <$PublicBitFlags as ::bits::flags::Flags>::FLAGS[i].value().bits();
+                                    let flag = <$P as ::bits::flags::Flags>::FLAGS[i].value().bits();
                                     truncated = truncated | flag;
                                     i += 1;
                                 }}
@@ -3381,15 +3365,15 @@ pub mod parse;
                         $(
                             __bitflags_flag!
                             ({
-                                name: $Flag,
+                                name: $F,
                                 named: 
                                 {
                                     __bitflags_expr_safe_attrs!
                                     (
-                                        $(#[$inner $( $args )*])*
+                                        $(#[$in $( $as )*])*
                                         {
-                                            if name == stringify!( $Flag) 
-                                            { return Some(Self( $PublicBitFlags::$Flag.bits())); }
+                                            if name == stringify!( $F) 
+                                            { return Some(Self( $P::$F.bits())); }
                                         }
                                     );
                                 },
@@ -3438,40 +3422,40 @@ pub mod parse;
     #[macro_export] macro_rules! __impl_public_bitflags_iter
     {
         (
-            $(#[$outer:meta])*
-            $BitFlags:ident: $T:ty, $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $b:ident: $T:ty, $P:ident
         ) =>
         {
-            $(#[$outer])*
-            impl $BitFlags
+            $(#[$o])*
+            impl $b
             {
 
-                #[inline] pub const fn iter( &self ) -> ::bits::flags::iter::Iter<$PublicBitFlags>
+                #[inline] pub const fn iter( &self ) -> ::bits::flags::iter::Iter<$P>
                 {
                     ::bits::flags::iter::Iter::__private_const_new
                     (
-                        <$PublicBitFlags as ::bits::flags::Flags>::FLAGS,
-                        $PublicBitFlags::from_bits_retain( self.bits()),
-                        $PublicBitFlags::from_bits_retain( self.bits()),
+                        <$P as ::bits::flags::Flags>::FLAGS,
+                        $P::from_bits_retain( self.bits()),
+                        $P::from_bits_retain( self.bits()),
                     )
                 }
 
-                #[inline] pub const fn iter_names( &self ) -> ::bits::flags::iter::IterNames<$PublicBitFlags>
+                #[inline] pub const fn iter_names( &self ) -> ::bits::flags::iter::IterNames<$P>
                 {
                     ::bits::flags::iter::IterNames::__private_const_new
                     (
-                        <$PublicBitFlags as ::bits::flags::Flags>::FLAGS,
-                        $PublicBitFlags::from_bits_retain( self.bits()),
-                        $PublicBitFlags::from_bits_retain( self.bits()),
+                        <$P as ::bits::flags::Flags>::FLAGS,
+                        $P::from_bits_retain( self.bits()),
+                        $P::from_bits_retain( self.bits()),
                     )
                 }
             }
 
-            $(#[$outer:meta])*
-            impl ::iter::IntoIterator for $BitFlags
+            $(#[$o:meta])*
+            impl ::iter::IntoIterator for $b
             {
-                type Item = $PublicBitFlags;
-                type IntoIter = ::bits::flags::iter::Iter<$PublicBitFlags>;
+                type Item = $P;
+                type IntoIter = ::bits::flags::iter::Iter<$P>;
                 fn into_iter(self) -> Self::IntoIter { self.iter() }
             }
         };
@@ -3480,12 +3464,12 @@ pub mod parse;
     #[macro_export] macro_rules! __impl_public_bitflags_ops
     {
         (
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $P:ident
         ) =>
         {
-            $(#[$outer])*
-            impl ::fmt::Binary for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::Binary for $P
             {
                 fn fmt
                 (
@@ -3498,8 +3482,8 @@ pub mod parse;
                 }
             }
 
-            $(#[$outer])*
-            impl ::fmt::Octal for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::Octal for $P
             {
                 fn fmt
                 (
@@ -3512,8 +3496,8 @@ pub mod parse;
                 }
             }
 
-            $(#[$outer])*
-            impl ::fmt::LowerHex for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::LowerHex for $P
             {
                 fn fmt
                 (
@@ -3526,8 +3510,8 @@ pub mod parse;
                 }
             }
 
-            $(#[$outer])*
-            impl ::fmt::UpperHex for $PublicBitFlags 
+            $(#[$o])*
+            impl ::fmt::UpperHex for $P 
            
             {
                 fn fmt( &self, f: &mut ::fmt::Formatter ) -> ::fmt::Result
@@ -3537,77 +3521,77 @@ pub mod parse;
                 }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitOr for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitOr for $P
             {
                 type Output = Self;
 
-                #[inline] fn bitor(self, other: $PublicBitFlags ) -> Self { self.union( other ) }
+                #[inline] fn bitor(self, other: $P ) -> Self { self.union( other ) }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitOrAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitOrAssign for $P
             {
 
                 #[inline] fn bitor_assign( &mut self, other: Self) { self.insert( other ); }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitXor for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitXor for $P
             {
                 type Output = Self;
 
                 #[inline] fn bitxor(self, other: Self) -> Self { self.symmetric_difference( other ) }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitXorAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitXorAssign for $P
             {
 
                 #[inline] fn bitxor_assign( &mut self, other: Self) { self.toggle( other ); }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitAnd for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitAnd for $P
             {
                 type Output = Self;
 
                 #[inline] fn bitand(self, other: Self) -> Self { self.intersection( other ) }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitAndAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitAndAssign for $P
             {
 
                 #[inline] fn bitand_assign( &mut self, other: Self)
                 { *self = Self::from_bits_retain( self.bits()).intersection( other ); }
             }
 
-            $(#[$outer])*
-            impl ::ops::Sub for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::Sub for $P
             {
                 type Output = Self;
 
                 #[inline] fn sub(self, other: Self) -> Self { self.difference( other ) }
             }
 
-            $(#[$outer])*
-            impl ::ops::SubAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::SubAssign for $P
             {
 
                 #[inline] fn sub_assign( &mut self, other: Self) { self.remove( other ); }
             }
 
-            $(#[$outer])*
-            impl ::ops::Not for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::Not for $P
             {
                 type Output = Self;
 
                 #[inline] fn not(self) -> Self { self.complement() }
             }
 
-            $(#[$outer])*
-            impl ::iter::Extend<$PublicBitFlags> for $PublicBitFlags 
+            $(#[$o])*
+            impl ::iter::Extend<$P> for $P 
             {
                 fn extend<T: ::iter::IntoIterator<Item = Self>>
                 (
@@ -3622,8 +3606,8 @@ pub mod parse;
                 }
             }
 
-            $(#[$outer])*
-            impl ::iter::FromIterator<$PublicBitFlags> for $PublicBitFlags 
+            $(#[$o])*
+            impl ::iter::FromIterator<$P> for $P 
             {
                 fn from_iter<T: ::iter::IntoIterator<Item = Self>>( iterator: T ) -> Self 
                 {
@@ -3640,49 +3624,49 @@ pub mod parse;
     #[macro_export] macro_rules! __impl_public_bitflags_consts 
     {
         (
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident: $T:ty 
+            $(#[$o:meta])*
+            $P:ident: $T:ty 
             {
                 $(
-                    $(#[$inner:ident $( $args:tt )*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$in:ident $( $as:tt )*])*
+                    const $F:tt = $v:expr;
                 )*
             }
         ) => 
         {
-            $(#[$outer])*
-            impl $PublicBitFlags 
+            $(#[$o])*
+            impl $P 
             {
                 $(
                     __bitflags_flag!
                     ({
-                        name: $Flag,
+                        name: $F,
                         named: 
                         {
-                            $(#[$inner $( $args )*])*
-                            pub const $Flag: Self = Self::from_bits_retain( $value);
+                            $(#[$in $( $as )*])*
+                            pub const $F: Self = Self::from_bits_retain( $v);
                         },
                         unnamed: {},
                     });
                 )*
             }
 
-            $(#[$outer])*
-            impl ::bits::flags::Flags for $PublicBitFlags
+            $(#[$o])*
+            impl ::bits::flags::Flags for $P
             {
-                const FLAGS:&'static [::bits::flags::Flag<$PublicBitFlags>] = 
+                const FLAGS:&'static [::bits::flags::Flag<$P>] = 
                 &[
                     $(
                         __bitflags_flag!
                         ({
-                            name: $Flag,
+                            name: $F,
                             named:
                             {
                                 __bitflags_expr_safe_attrs!
                                 (
-                                    $(#[$inner $( $args )*])*
+                                    $(#[$in $( $as )*])*
                                     {
-                                        ::bits::flags::Flag::new( stringify!( $Flag), $PublicBitFlags::$Flag )
+                                        ::bits::flags::Flag::new( stringify!( $F), $P::$F )
                                     }
                                 )
                             },
@@ -3690,9 +3674,9 @@ pub mod parse;
                             {
                                 ::bits::flags::__bitflags_expr_safe_attrs!
                                 (
-                                    $(#[$inner $( $args )*])*
+                                    $(#[$in $( $as )*])*
                                     {
-                                        ::bits::flags::Flag::new("", $PublicBitFlags::from_bits_retain( $value))
+                                        ::bits::flags::Flag::new("", $P::from_bits_retain( $v))
                                     }
                                 )
                             },
@@ -3701,8 +3685,8 @@ pub mod parse;
                 ];
 
                 type Bits = $T;
-                fn bits( &self ) -> $T { $PublicBitFlags::bits(self) }
-                fn from_bits_retain( bits:$T ) -> $PublicBitFlags { $PublicBitFlags::from_bits_retain( bits ) }
+                fn bits( &self ) -> $T { $P::bits(self) }
+                fn from_bits_retain( bits:$T ) -> $P { $P::from_bits_retain( bits ) }
             }
         };
     }
@@ -3710,38 +3694,38 @@ pub mod parse;
     #[macro_export] macro_rules! __declare_internal_bitflags
     {
         (
-            $vis:vis struct $InternalBitFlags:ident: $T:ty
+            $v:vis struct $I:ident: $T:ty
         ) =>
         {
             #[repr( transparent )] #[derive( Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash )]            
-            $vis struct $InternalBitFlags( $T );
+            $v struct $I( $T );
         };
     }
 
     #[macro_export] macro_rules! __impl_internal_bitflags
     {
         (
-            $InternalBitFlags:ident: $T:ty, $PublicBitFlags:ident
+            $I:ident: $T:ty, $P:ident
             {
                 $(
-                    $(#[$inner:ident $( $args:tt )*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$in:ident $( $as:tt )*])*
+                    const $F:tt = $v:expr;
                 )*
             }
         ) =>
         {
-            impl ::bits::flags::PublicFlags for $PublicBitFlags
+            impl ::bits::flags::PublicFlags for $P
             {
                 type Primitive = $T;
-                type Internal = $InternalBitFlags;
+                type Internal = $I;
             }
 
-            impl ::default::Default for $InternalBitFlags
+            impl ::default::Default for $I
             {
-                #[inline] fn default() -> Self { $InternalBitFlags::empty() }
+                #[inline] fn default() -> Self { $I::empty() }
             }
 
-            impl ::fmt::Debug for $InternalBitFlags
+            impl ::fmt::Debug for $I
            
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
@@ -3751,46 +3735,46 @@ pub mod parse;
                 }
             }
 
-            impl ::fmt::Display for $InternalBitFlags
+            impl ::fmt::Display for $I
            
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
-                { ::bits::flags::parser::to_writer(&$PublicBitFlags(*self), f) }
+                { ::bits::flags::parser::to_writer(&$P(*self), f) }
             }
 
-            impl ::str::FromStr for $InternalBitFlags
+            impl ::str::FromStr for $I
             {
                 type Err = ::bits::flags::parser::ParseError;
                 fn from_str(s: &str) -> ::result::Result<Self, Self::Err>
-                { ::bits::flags::parser::from_str::<$PublicBitFlags>(s ).map(|flags| flags.0) }
+                { ::bits::flags::parser::from_str::<$P>(s ).map(|flags| flags.0) }
             }
 
-            impl ::convert::AsRef<$T> for $InternalBitFlags
+            impl ::convert::AsRef<$T> for $I
             {
                 fn as_ref( &self ) -> &$T { &self.0 }
             }
 
-            impl ::convert::From<$T> for $InternalBitFlags
+            impl ::convert::From<$T> for $I
             {
                 fn from( bits: $T ) -> Self { Self::from_bits_retain( bits ) }
             }
             
             __impl_public_bitflags!
             {
-                $InternalBitFlags: $T, $PublicBitFlags
+                $I: $T, $P
                 {
                     $(
-                        $(#[$inner $( $args )*])*
-                        const $Flag = $value;
+                        $(#[$in $( $as )*])*
+                        const $F = $v;
                     )*
                 }
             }
 
-            __impl_public_bitflags_ops! { $InternalBitFlags }
+            __impl_public_bitflags_ops! { $I }
 
-            __impl_public_bitflags_iter! { $InternalBitFlags: $T, $PublicBitFlags }
+            __impl_public_bitflags_iter! { $I: $T, $P }
 
-            impl $InternalBitFlags
+            impl $I
             {
 
                 #[inline] pub fn bits_mut(&mut self) -> &mut $T { &mut self.0 }
@@ -3930,65 +3914,65 @@ pub mod parse;
         (@ordinal ordinal) => {};
         (@y y) => {};
         
-        ($from:ident in $n:literal.. $m:expr => $t:tt) => {
+        ($f:ident in $n:literal.. $m:expr => $t:tt) => {
             #[allow(unused_comparisons, unused_assignments)]
             let n = $n;
             let m = $m;
-            if ::hint::unlikely($from >= m) {
-                $from -= m - n;
+            if ::hint::unlikely($f >= m) {
+                $f -= m - n;
                 $t += 1;
-            } else if ::hint::unlikely($from < n) {
-                $from += m - n;
+            } else if ::hint::unlikely($f < n) {
+                $f += m - n;
                 $t -= 1;
             }
         };
         
-        ($ordinal:ident => $y:ident) => {
-            cascade!(@ordinal $ordinal);
+        ($o:ident => $y:ident) => {
+            cascade!(@ordinal $o);
             cascade!(@y $y);
 
             let days_in_year = ::util::days_in_year($y) as i16;
             #[allow(unused_assignments)]
-            if ::hint::unlikely($ordinal > days_in_year) {
-                $ordinal -= days_in_year;
+            if ::hint::unlikely($o > days_in_year) {
+                $o -= days_in_year;
                 $y += 1;
-            } else if ::hint::unlikely($ordinal < 1) {
+            } else if ::hint::unlikely($o < 1) {
                 $y -= 1;
-                $ordinal += ::time::days_in_year($y) as i16;
+                $o += ::time::days_in_year($y) as i16;
             }
         };
     }
     
     #[macro_export] macro_rules! ensure_ranged {
-        ($type:ty : $value:ident) => {
-            match <$type>::new($value) {
+        ($t:ty : $v:ident) => {
+            match <$t>::new($v) {
                 Some(val) => val,
                 None => {
                     ::hint::cold_path();
                     #[allow(trivial_numeric_casts)]
                     return Err(::error::ComponentRange {
-                        name: stringify!($value),
-                        minimum: <$type>::MIN.get() as i64,
-                        maximum: <$type>::MAX.get() as i64,
-                        value: $value as i64,
+                        name: stringify!($v),
+                        minimum: <$t>::MIN.get() as i64,
+                        maximum: <$t>::MAX.get() as i64,
+                        value: $v as i64,
                         conditional_message: None,
                     });
                 }
             }
         };
 
-        ($type:ty : $value:ident $(as $as_type:ident)? * $factor:expr) => {
-            match ($value $(as $as_type)?).checked_mul($factor) {
-                Some(val) => match <$type>::new(val) {
+        ($t:ty : $v:ident $(as $at:ident)? * $f:expr) => {
+            match ($v $(as $at)?).checked_mul($f) {
+                Some(val) => match <$t>::new(val) {
                     Some(val) => val,
                     None => {
                         ::hint::cold_path();
                         #[allow(trivial_numeric_casts)]
                         return Err(::error::ComponentRange {
-                            name: stringify!($value),
-                            minimum: <$type>::MIN.get() as i64 / $factor as i64,
-                            maximum: <$type>::MAX.get() as i64 / $factor as i64,
-                            value: $value as i64,
+                            name: stringify!($v),
+                            minimum: <$t>::MIN.get() as i64 / $f as i64,
+                            maximum: <$t>::MAX.get() as i64 / $f as i64,
+                            value: $v as i64,
                             conditional_message: None,
                         });
                     }
@@ -3996,10 +3980,10 @@ pub mod parse;
                 None => {
                     ::hint::cold_path();
                     return Err(::error::ComponentRange {
-                        name: stringify!($value),
-                        minimum: <$type>::MIN.get() as i64 / $factor as i64,
-                        maximum: <$type>::MAX.get() as i64 / $factor as i64,
-                        value: $value as i64,
+                        name: stringify!($v),
+                        minimum: <$t>::MIN.get() as i64 / $f as i64,
+                        maximum: <$t>::MAX.get() as i64 / $f as i64,
+                        value: $v as i64,
                         conditional_message: None,
                     });
                 }
@@ -4029,16 +4013,1231 @@ pub mod parse;
         () => {
             compile_error!("provide an error message to help fix a possible bug")
         };
-        ($descr:literal) => {
-            ::panic::panics(concat!("internal error: ", $descr))
+        ($d:literal) => {
+            ::panic::panics(concat!("internal error: ", $d))
         };
     }
     
     pub use bug;
-    pub use {
+    pub use 
+    {
         __impl_assign, carry, cascade, const_try, const_try_opt, div_floor, ensure_ranged,
         impl_add_assign, impl_div_assign, impl_mul_assign, impl_sub_assign,
     };
+}
+
+pub mod api
+{
+    /*!
+    */
+    use ::
+    {
+        io::{ self, Error, Write },
+        os::fd::{ AsRawFd },
+        path::{ Path },
+        *,
+    };
+    /*
+    use regex::Regex;
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::shell;
+    use crate::tools;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::jobc;
+    use crate::libc;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::parsers;
+    use crate::shell;
+    use crate::tools;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::history;
+    use crate::libs;
+    use crate::rcfile;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::parsers;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::libs;
+    use crate::parsers;
+    use crate::tools;
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::ctime;
+    use crate::history;
+    use crate::parsers;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use std::io::Write;
+    use std::os::fd::AsRawFd;
+
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::libs::re::re_contains;
+    use crate::shell::Shell;
+    use crate::tools;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::parsers;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::parsers;
+    use crate::scripting;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::builtins::utils::print_stdout_with_capture;
+    use crate::parsers;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    use crate::builtins::utils::print_stderr_with_capture;
+    
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+
+    use crate::builtins::utils::print_stderr_with_capture;
+    use crate::shell::Shell;
+    use crate::types::{Command, CommandLine, CommandResult};
+    */
+    pub fn run_alias( s:&mut shell::Shell, c:&CommandLine, x:&Command, t:bool ) -> CommandResult
+    {
+        let mut r = CommandResult::new();
+        let ts = cmd.tokens.clone();
+
+        if ts.len() == 1 { return show_alias_list(s,x,c,t); }
+
+        if ts.len() > 2
+        {
+            let i = "alias syntax error: usage: alias foo='echo foo'";
+            print_stderr_with_capture( i,&mut r,c,x,t);
+            return r;
+        }
+
+        let i = &ts[1].1;
+        let a = Regex::new(r"^[a-zA-Z0-9_\.-]+$").unwrap();
+        
+        if a.is_match(i) { return show_single_alias(s,i,x,c,t); }
+
+        let b = Regex::new(r"^([a-zA-Z0-9_\.-]+)=(.*)$").unwrap();
+
+        for cap in b.captures_iter(i)
+        {
+            let n = tools::unquote(&cap[1]);
+            let v = if cap[2].starts_with('"') || cap[2].starts_with('\'') { tools::unquote(&cap[2]) }
+            else { cap[2].to_string() };
+            sh.add_alias(n.as_str(), v.as_str());
+        }
+
+        CommandResult::new()
+    }
+    
+    pub fn run_bg( s:&mut Shell, c:&CommandLine, x:&Command, t:bool ) -> CommandResult
+    {
+        let ts = x.tokens.clone();
+        let mut r = CommandResult::new();
+
+        if s.jobs.is_empty() 
+        {
+            let i = ":: bg: no job found";
+            print_stderr_with_capture(i, &mut r, c, x, t);
+            return r;
+        }
+
+        let mut j = -1;
+        if ts.len() == 1 {
+            if let Some((g, _)) = s.jobs.iter().next() {
+                j = *g;
+            }
+        }
+
+        if ts.len() >= 2
+        {
+            let mut a = ts[1].1.clone();
+
+            if a.starts_with("%") { a = a.trim_start_matches('%').to_string(); }
+
+            match a.parse::<i32>() {
+                Ok(n) => j = n,
+                Err(_) => {
+                    let i = ":: bg: invalid job id";
+                    print_stderr_with_capture(i, &mut r, c, x, t);
+                    return r;
+                }
+            }
+        }
+
+        if j == -1 
+        {
+            let i = ":: bg: not such job";
+            print_stderr_with_capture(i, &mut r, c, x, t);
+            return r;
+        }
+
+        let g: i32;
+
+        {
+            let mut z = s.get_job_by_id(j);
+            
+            if z.is_none() { z = s.get_job_by_gid(j); }
+
+            match z {
+                Some(j) => {
+                    unsafe {
+                        libc::killpg(j.gid, libc::SIGCONT);
+                        g = j.gid;
+                        if j.status == "Running" {
+                            let i = format!(":: bg: job {} already in background", j.id);
+                            print_stderr_with_capture(&i, &mut r, cl, x, t);
+                            return r;
+                        }
+                    }
+
+                    let info_cmd = format!("[{}]  {} &", j.id, j.cmd);
+                    print_stderr_with_capture(&info_cmd, &mut r, c, x, t);
+                    r.status = 0;
+                }
+                None => {
+                    let i = ":: bg: not such job";
+                    print_stderr_with_capture(i, &mut r, c, x, t);
+                    return r;
+                }
+            }
+        }
+
+        jobc::mark_job_as_running(s, g, true);
+        r
+    }
+
+    pub fn run_cd
+    (
+        sh: &mut shell::Shell,
+        cl: &CommandLine,
+        cmd: &Command,
+        capture: bool,
+    ) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+        let args = parses::lines::tokens_to_args(&tokens);
+
+        if args.len() > 2 {
+            let info = ":: cd: too many argument";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let str_current_dir = tools::get_current_dir();
+
+        let mut dir_to = if args.len() == 1 {
+            let home = get::user_home();
+            home.to_string()
+        } else {
+            args[1..].join("")
+        };
+
+        if dir_to == "-" {
+            if sh.previous_dir.is_empty() {
+                let info = "no previous dir";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+            dir_to = sh.previous_dir.clone();
+        } else if !dir_to.starts_with('/') {
+            dir_to = format!("{}/{}", str_current_dir, dir_to);
+        }
+
+        if !Path::new(&dir_to).exists() {
+            let info = format!(":: cd: {}: No such file or directory", &args[1]);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        match Path::new(&dir_to).canonicalize() {
+            Ok(p) => {
+                dir_to = p.as_path().to_string_lossy().to_string();
+            }
+            Err(e) => {
+                let info = format!(":: cd: error: {}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        match env::set_current_dir(&dir_to) {
+            Ok(_) => {
+                sh.current_dir = dir_to.clone();
+                if str_current_dir != dir_to {
+                    sh.previous_dir = str_current_dir.clone();
+                    env::set_var("PWD", &sh.current_dir);
+                };
+                cr.status = 0;
+                cr
+            }
+            Err(e) => {
+                let info = format!(":: cd: {}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                cr
+            }
+        }
+    }
+
+    pub fn run_info(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut info = vec![];
+        //const VERSION: &str = env!("CARGO_PKG_VERSION");
+        const VERSION: &str = "0.0.0";
+        info.push(("version", VERSION));
+
+        //let os_name = libs::os_type::get_os_name();
+        let os_name = get::os_name();
+        info.push(("os-name", &os_name));
+
+        let hfile = history::get_history_file();
+        info.push(("history-file", &hfile));
+
+        let rcf = rcfile::get_rc_file();
+        info.push(("rc-file", &rcf));
+
+        //let git_hash = env!("GIT_HASH");
+        let git_hash = "#";
+        /*
+        if !git_hash.is_empty() {
+            info.push(("git-commit", env!("GIT_HASH")));
+        }*/
+
+        let git_branch = "main";
+        let mut branch = String::new();
+        if !git_branch.is_empty() {
+            branch.push_str(git_branch);
+            //let git_status = env!("GIT_STATUS");
+            let git_status = "ok";
+            if git_status != "0" {
+                branch.push_str(" (dirty)");
+            }
+            info.push(("git-branch", &branch));
+        }
+
+        info.push(("built-with", "0.0.0"));
+        info.push(("built-at", "25.12.1"));
+
+        let mut lines = Vec::new();
+        for (k, v) in &info {
+            lines.push(format!("{: >12}: {}", k, v));
+        }
+        let buffer = lines.join("\n");
+        let mut cr = CommandResult::new();
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_exec(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        let args = parses::lines::tokens_to_args(&tokens);
+        let len = args.len();
+        if len == 1 {
+            print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut _cmd = exec::Command::new(&args[1]);
+        let err = _cmd.args(&args[2..len]).exec();
+        let info = format!(":: exec: {}", err);
+        print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_exit(sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        if tokens.len() > 2 {
+            let info = ":: exit: too many arguments";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        if tokens.len() == 2 {
+            let _code = &tokens[1].1;
+            match _code.parse::<i32>() {
+                Ok(x) => {
+                    process::exit(x);
+                }
+                Err(_) => {
+                    let info = format!(":: exit: {}: numeric argument required", _code);
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    process::exit(255);
+                }
+            }
+        }
+
+        for (_i, job) in sh.jobs.iter() {
+            if !job.cmd.starts_with("nohup ") {
+                let mut info = String::new();
+                info.push_str("There are background jobs.");
+                info.push_str("Run `jobs` to see details; `exit 1` to force quit.");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        process::exit(0);
+        cr
+    }
+
+    pub fn run_export(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        let re_name_ptn = Regex::new(r"^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$").unwrap();
+        for (_, text) in tokens.iter() {
+            if text == "export" {
+                continue;
+            }
+
+            if !tools::is_env(text) {
+                let mut info = String::new();
+                info.push_str("export: invalid command\n");
+                info.push_str("usage: export XXX=YYY");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            if !re_name_ptn.is_match(text) {
+                let mut info = String::new();
+                info.push_str("export: invalid command\n");
+                info.push_str("usage: export XXX=YYY ZZ=123");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            for cap in re_name_ptn.captures_iter(text) {
+                let name = cap[1].to_string();
+                let token = parses::lines::unquote(&cap[2]);
+                let value = expand::home(&token);
+                env::set_var(name, &value);
+            }
+        }
+        cr
+    }
+
+    pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if sh.jobs.is_empty() {
+            let info = ":: fg: no job found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut job_id = -1;
+        if tokens.len() == 1 {
+            if let Some((gid, _)) = sh.jobs.iter().next() {
+                job_id = *gid;
+            }
+        }
+
+        if tokens.len() >= 2 {
+            let mut job_str = tokens[1].1.clone();
+            if job_str.starts_with("%") {
+                job_str = job_str.trim_start_matches('%').to_string();
+            }
+
+            match job_str.parse::<i32>() {
+                Ok(n) => job_id = n,
+                Err(_) => {
+                    let info = ":: fg: invalid job id";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        if job_id == -1 {
+            let info = ":: not job id found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let gid: i32;
+        let pid_list: Vec<i32>;
+
+        {
+            let mut result = sh.get_job_by_id(job_id);
+            // fall back to find job by using prcess group id
+            if result.is_none() {
+                result = sh.get_job_by_gid(job_id);
+            }
+
+            match result {
+                Some(job) => {
+                    print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+
+                    unsafe {
+                        if !shell::give_terminal_to(job.gid) {
+                            return CommandResult::error();
+                        }
+
+                        libc::killpg(job.gid, libc::SIGCONT);
+                        pid_list = job.pids.clone();
+                        gid = job.gid;
+                    }
+                }
+                None => {
+                    let info = ":: fg: no such job";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        unsafe 
+        {
+            jobc::mark_job_as_running(sh, gid, false);
+            let cr = jobc::wait_fg_job(sh, gid, &pid_list);
+            let gid_shell = libc::getpgid(0);
+            /*if !shell::give_terminal_to(gid_shell) {
+                log!("failed to give term to back to shell : {}", gid_shell);
+            }*/
+            cr
+        }
+    }
+
+    pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let hfile = history::get_history_file();
+        let path = Path::new(hfile.as_str());
+        if !path.exists() {
+            let info = "no history file";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        let conn = match Conn::open(&hfile) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: sqlite error: {:?}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        };
+
+        let tokens = cmd.tokens.clone();
+        let args = parses::lines::tokens_to_args(&tokens);
+
+        let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+        let opt = OptMain::from_iter_safe(args);
+        match opt {
+            Ok(opt) => match opt.cmd {
+                Some(SubCommand::Delete { rowid: rowids }) => {
+                    let mut _count = 0;
+                    for rowid in rowids {
+                        let _deleted = delete_history_item(&conn, rowid);
+                        if _deleted {
+                            _count += 1;
+                        }
+                    }
+                    if _count > 0 {
+                        let info = format!("deleted {} items", _count);
+                        print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    }
+                    cr
+                }
+                Some(SubCommand::Add {
+                    timestamp: ts,
+                    input,
+                }) => {
+                    let ts = ts.unwrap_or(0 as f64);
+                    add_history(sh, ts, &input);
+                    cr
+                }
+                None => {
+                    let (str_out, str_err) = list_current_history(sh, &conn, &opt);
+                    if !str_out.is_empty() {
+                        print_stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
+                    }
+                    if !str_err.is_empty() {
+                        print_stderr_with_capture(&str_err, &mut cr, cl, cmd, capture);
+                    }
+                    cr
+                }
+            },
+            Err(e) => {
+                let info = format!("{}", e);
+                if show_usage {
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                } else {
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 1;
+                }
+                cr
+            }
+        }
+    }
+
+    pub fn run_jobs(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        if sh.jobs.is_empty() {
+            return cr;
+        }
+        
+        jobc::try_wait_bg_jobs(sh, false, false);
+
+        let mut lines = Vec::new();
+        let jobs = sh.jobs.clone();
+        let no_trim = cmd.tokens.len() >= 2 && cmd.tokens[1].1 == "-f";
+        for (_i, job) in jobs.iter() {
+            let line = jobc::get_job_line(job, !no_trim);
+            lines.push(line);
+        }
+        let buffer = lines.join("\n");
+
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_minfd(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+
+        let fd = nix::fcntl::open(
+            "/dev/null",
+            nix::fcntl::OFlag::empty(),
+            nix::sys::stat::Mode::empty(),
+        );
+
+        match fd {
+            Ok(fd) => {
+                let info = format!("{}", fd.as_raw_fd());
+                print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+            }
+            Err(e) => {
+                println_stderr!(":: minfd: error: {}", e);
+            }
+        }
+
+        cr
+    }
+
+    pub fn run_read(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        let name_list: Vec<String>;
+        if tokens.len() <= 1 {
+            name_list = vec!["REPLY".to_string()];
+        } else {
+            name_list = tokens[1..].iter().map(|x| x.1.clone()).collect();
+            if let Some(id_) = _find_invalid_identifier(&name_list) {
+                let info = format!(":: read: `{}': not a valid identifier", id_);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        let mut buffer = String::new();
+
+        if cmd.has_here_string() {
+            if let Some(redirect_from) = &cmd.redirect_from {
+                buffer.push_str(&redirect_from.1);
+                buffer.push('\n');
+            }
+        } else {
+            match io::stdin().read_line(&mut buffer) {
+                Ok(_) => {}
+                Err(e) => {
+                    let info = format!(":: read: error in reading stdin: {:?}", e);
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        let envs = cl.envs.clone();
+        let value_list = tools::split_into_fields(sh, buffer.trim(), &envs);
+
+        let idx_2rd_last = name_list.len() - 1;
+        for i in 0..idx_2rd_last {
+            let name = name_list.get(i);
+            if name.is_none() {
+                let info = ":: read: name index error";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+            let name = name.unwrap();
+
+            let value = value_list.get(i).unwrap_or(&String::new()).clone();
+            sh.set_env(name, &value);
+        }
+
+        let name_last = &name_list[idx_2rd_last];
+        let value_left: String = if value_list.len() > idx_2rd_last {
+            value_list[idx_2rd_last..].join(" ")
+        } else {
+            String::new()
+        };
+        sh.set_env(name_last, &value_left);
+        cr
+    }
+
+    pub fn run_set(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parses::lines::tokens_to_args(tokens);
+        let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+
+        let opt = OptMain::from_iter_safe(args);
+        match opt {
+            Ok(opt) => {
+                if opt.exit_on_error {
+                    sh.exit_on_error = true;
+                    cr
+                } else {
+                    let info = ":: set: option not implemented";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    cr
+                }
+            }
+            Err(e) => {
+                let info = format!("{}", e);
+                if show_usage {
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                } else {
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 1;
+                }
+                cr
+            }
+        }
+    }
+
+    pub fn run_source(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parses::lines::tokens_to_args(tokens);
+
+        if args.len() < 2 {
+            let info = ":: source: no file specified";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let status = scripting::run_script(sh, &args);
+        cr.status = status;
+        cr
+    }
+    
+    pub fn run_ulimit(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parses::lines::tokens_to_args(tokens);
+
+        if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
+            App::command().print_help().unwrap();
+            println!();
+            return cr;
+        }
+
+        let app = App::parse_from(args);
+
+        if app.H && app.S {
+            println!(":: ulimit: Cannot both hard and soft.");
+            cr.status = 1;
+            return cr;
+        }
+
+        let mut all_stdout = String::new();
+        let mut all_stderr = String::new();
+
+        if app.a {
+            report_all(&app, &mut all_stdout, &mut all_stderr);
+        } else if handle_limit(app.n, "open_files", app.H, &mut all_stdout, &mut all_stderr)
+            || handle_limit(
+                app.c,
+                "core_file_size",
+                app.H,
+                &mut all_stdout,
+                &mut all_stderr,
+            )
+        {
+        } else {
+            report_all(&app, &mut all_stdout, &mut all_stderr);
+        }
+
+        if !all_stdout.is_empty() {
+            print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
+        }
+        if !all_stderr.is_empty() {
+            print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
+        }
+
+        cr
+    }
+
+    pub fn run_unalias(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = ":: unalias: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        if !sh.remove_alias(input) {
+            let info = format!(":: unalias: {}: not found", input);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        cr
+    }
+
+    pub fn run_unpath(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = ":: unpath: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        sh.remove_path(input);
+        cr
+    }
+
+    pub fn run_unset(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = ":: unset: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        if !sh.remove_env(input) {
+            let info = format!(":: unset: invalid varname: {:?}", input);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        cr
+    }
+
+    pub fn run_vox(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        let args = parses::lines::tokens_to_args(&tokens);
+        let len = args.len();
+        let subcmd = if len > 1 { &args[1] } else { "" };
+
+        if len == 1 || (len == 2 && subcmd == "ls") {
+            match get_all_venvs() {
+                Ok(venvs) => {
+                    let info = venvs.join("\n");
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+                Err(reason) => {
+                    print_stderr_with_capture(&reason, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        if len == 3 && subcmd == "create" {
+            let pybin = match env::var("VIRTUALENV_PYBIN") {
+                Ok(x) => x,
+                Err(_) => "python3".to_string(),
+            };
+            let dir_venv = get_envs_home();
+            let venv_name = args[2].to_string();
+            let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
+            print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
+            let cr_list = execute::run_command_line(sh, &line, false, false);
+            return cr_list[0].clone();
+        }
+
+        if len == 3 && subcmd == "enter" {
+            let _err = enter_env(sh, args[2].as_str());
+            if !_err.is_empty() {
+                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+            }
+            cr
+        } else if len == 2 && subcmd == "exit" {
+            let _err = exit_env(sh);
+            if !_err.is_empty() {
+                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+            }
+            cr
+        } else {
+            let info = ":: vox: invalid option";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            cr
+        }
+    }
+
+    fn add_history(sh: &Shell, ts: f64, input: &str) 
+    {
+        let (tsb, tse) = (ts, ts + 1.0);
+        history::add_raw(sh, input, 0, tsb, tse);
+    }
+
+    fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
+    {
+        let mut result_stderr = String::new();
+        let result_stdout = String::new();
+
+        let history_table = history::get_history_table();
+        let mut sql = format!(
+            "SELECT ROWID, inp, tsb FROM {} WHERE ROWID > 0",
+            history_table
+        );
+        if !opt.pattern.is_empty() {
+            sql = format!("{} AND inp LIKE '%{}%'", sql, opt.pattern)
+        }
+        if opt.session {
+            sql = format!("{} AND sessionid = '{}'", sql, sh.session_id)
+        }
+        if opt.pwd {
+            sql = format!("{} AND info like '%dir:{}|%'", sql, sh.current_dir)
+        }
+
+        if opt.asc {
+            sql = format!("{} ORDER BY tsb", sql);
+        } else {
+            sql = format!("{} order by tsb desc", sql);
+        };
+        sql = format!("{} limit {} ", sql, opt.limit);
+
+        let mut stmt = match conn.prepare(&sql) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: prepare select error: {:?}", e);
+                result_stderr.push_str(&info);
+                return (result_stdout, result_stderr);
+            }
+        };
+
+        let mut rows = match stmt.query([]) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: query error: {:?}", e);
+                result_stderr.push_str(&info);
+                return (result_stdout, result_stderr);
+            }
+        };
+
+        let mut lines = Vec::new();
+        loop {
+            match rows.next() {
+                Ok(_rows) => {
+                    if let Some(row) = _rows {
+                        let row_id: i32 = match row.get(0) {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let info = format!("history: error: {:?}", e);
+                                result_stderr.push_str(&info);
+                                return (result_stdout, result_stderr);
+                            }
+                        };
+                        let inp: String = match row.get(1) {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let info = format!("history: error: {:?}", e);
+                                result_stderr.push_str(&info);
+                                return (result_stdout, result_stderr);
+                            }
+                        };
+
+                        if opt.no_id {
+                            lines.push(inp.to_string());
+                        } else if opt.only_id {
+                            lines.push(row_id.to_string());
+                        } else if opt.show_date {
+                            let tsb: f64 = match row.get(2) {
+                                Ok(x) => x,
+                                Err(e) => {
+                                    let info = format!("history: error: {:?}", e);
+                                    result_stderr.push_str(&info);
+                                    return (result_stdout, result_stderr);
+                                }
+                            };
+                            let dt = time::DateTime::from_timestamp(tsb);
+                            lines.push(format!("{}: {}: {}", row_id, dt, inp));
+                        } else {
+                            lines.push(format!("{}: {}", row_id, inp));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    let info = format!("history: rows next error: {:?}", e);
+                    result_stderr.push_str(&info);
+                    return (result_stdout, result_stderr);
+                }
+            }
+        }
+
+        if !opt.asc {
+            lines.reverse();
+        }
+
+        let buffer = lines.join("\n");
+
+        (buffer, result_stderr)
+    }
+
+    fn delete_history_item(conn: &Conn, rowid: usize) -> bool 
+    {
+        let history_table = history::get_history_table();
+        let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
+        match conn.execute(&sql, []) {
+            Ok(_) => true,
+            Err(e) => {
+                false
+            }
+        }
+    }
+    
+    fn show_alias_list
+    (
+        sh: &shell::Shell,
+        cmd: &Command,
+        cl: &CommandLine,
+        capture: bool,
+    ) -> CommandResult 
+    {
+        let mut lines = Vec::new();
+        for (name, value) in sh.get_alias_list() {
+            let line = format!("alias {}='{}'", name, value);
+            lines.push(line);
+        }
+        let buffer = lines.join("\n");
+        let mut cr = CommandResult::new();
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    fn show_single_alias
+    (
+        sh: &shell::Shell,
+        name_to_find: &str,
+        cmd: &Command,
+        cl: &CommandLine,
+        capture: bool,
+    ) -> CommandResult 
+    {
+        let mut cr = CommandResult::new();
+        if let Some(content) = sh.get_alias_content(name_to_find) {
+            let info = format!("alias {}='{}'", name_to_find, content);
+            print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+        } else {
+            let info = format!(":: alias: {}: not found", name_to_find);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        }
+        cr
+    }
+
+    fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
+    {
+        for id_ in name_list {
+            if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
+                return Some(id_.to_string());
+            }
+        }
+        None
+    }
+
+    fn set_limit(limit_name: &str, value: u64, for_hard: bool) -> String
+    {
+        let limit_id = match limit_name {
+            "open_files" => libc::RLIMIT_NOFILE,
+            "core_file_size" => libc::RLIMIT_CORE,
+            _ => return String::from("invalid limit name"),
+        };
+
+        let mut rlp = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+
+        unsafe {
+            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+                return format!(
+                    ":: ulimit: error getting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+        }
+
+        // to support armv7-linux-gnueabihf & 32-bit musl systems
+        if for_hard {
+            #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+            {
+                rlp.rlim_max = value as u32;
+            }
+            #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+            {
+                rlp.rlim_max = value;
+            }
+        } else {
+            #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+            {
+                rlp.rlim_cur = value as u32;
+            }
+            #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+            {
+                rlp.rlim_cur = value;
+            }
+        }
+
+        unsafe {
+            if libc::setrlimit(limit_id, &rlp) != 0 {
+                return format!(
+                    ":: ulimit: error setting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+        }
+
+        String::new()
+    }
+
+    fn get_limit(limit_name: &str, single_print: bool, for_hard: bool) -> (String, String)
+    {
+        let (desc, limit_id) = match limit_name {
+            "open_files" => ("open files", libc::RLIMIT_NOFILE),
+            "core_file_size" => ("core file size", libc::RLIMIT_CORE),
+            _ => {
+                return (
+                    String::new(),
+                    String::from("ulimit: error: invalid limit name"),
+                )
+            }
+        };
+
+        let mut rlp = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+
+        let mut result_stdout = String::new();
+        let mut result_stderr = String::new();
+
+        unsafe {
+            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+                result_stderr.push_str(&format!("error getting limit: {}", Error::last_os_error()));
+                return (result_stdout, result_stderr);
+            }
+
+            let to_print = if for_hard { rlp.rlim_max } else { rlp.rlim_cur };
+
+            let info = if to_print == libc::RLIM_INFINITY {
+                if single_print {
+                    "unlimited\n".to_string()
+                } else {
+                    format!("{}\t\tunlimited\n", desc)
+                }
+            } else if single_print {
+                format!("{}\n", to_print)
+            } else {
+                format!("{}\t\t{}\n", desc, to_print)
+            };
+
+            result_stdout.push_str(&info);
+        }
+
+        (result_stdout, result_stderr)
+    }
+
+    fn report_all(app: &App, all_stdout: &mut String, all_stderr: &mut String)
+    {
+        for limit_name in &["open_files", "core_file_size"] {
+            let (out, err) = get_limit(limit_name, false, app.H);
+            all_stdout.push_str(&out);
+            all_stderr.push_str(&err);
+        }
+    }
+
+    fn handle_limit
+    (
+        limit_option: Option<Option<u64>>,
+        limit_name: &str,
+        for_hard: bool,
+        all_stdout: &mut String,
+        all_stderr: &mut String,
+    ) -> bool
+    {
+        match limit_option
+        {
+            None => false,
+            Some(None) => {
+                let (out, err) = get_limit(limit_name, true, for_hard);
+                all_stdout.push_str(&out);
+                all_stderr.push_str(&err);
+                true
+            }
+            Some(Some(value)) => {
+                let err = set_limit(limit_name, value, for_hard);
+                if !err.is_empty() {
+                    all_stderr.push_str(&err);
+                }
+                true
+            }
+        }
+    }
 }
 
 pub mod arch
@@ -6532,7 +7731,7 @@ pub mod expand
 
             let home = get::user_home();
             let ss = s.clone();
-            let to = format!( "$head{}$tail", home );
+            let to = format!( "$head{}$z", home );
             let result = re.replace_all( ss.as_str(), to.as_str() );
             s = result.to_string();
         }
@@ -7861,14 +9060,14 @@ pub mod num
             }
             macro_rules! bounded_tuple 
             {
-                ( $( $name:ident )* ) => ( 
-                    impl<$( $name: Bounded, )*> Bounded for ( $( $name, )* ) {
+                ( $( $n:ident )* ) => ( 
+                    impl<$( $n: Bounded, )*> Bounded for ( $( $n, )* ) {
                         #[inline] fn min_value() -> Self {
-                            ( $( $name::min_value(), )* )
+                            ( $( $n::min_value(), )* )
                         }
 
                         #[inline] fn max_value() -> Self {
-                            ( $( $name::max_value(), )* )
+                            ( $( $n::max_value(), )* )
                         }
                     }
                  );
@@ -7930,8 +9129,8 @@ pub mod num
             }
             macro_rules! impl_to_primitive_int_to_int 
             {
-                ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$DstT>
+                ( $SrcT:ident : $( fn $m:ident -> $DstT:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$DstT>
                     {
                         let min = $DstT::MIN as $SrcT;
                         let m = $DstT::MAX as $SrcT;
@@ -7945,8 +9144,8 @@ pub mod num
             }
             macro_rules! impl_to_primitive_int_to_uint 
             {
-                ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$DstT>
+                ( $SrcT:ident : $( fn $m:ident -> $DstT:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$DstT>
                     {
                         let m = $DstT::MAX as $SrcT;
                         if 0 <= *self && ( size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= m ) {
@@ -7993,8 +9192,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_uint_to_int 
             {
-                ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$DstT>
+                ( $SrcT:ident : $( fn $m:ident -> $DstT:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$DstT>
                     {
                         let m = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() < size_of::<$DstT>() || *self <= m {
@@ -8007,8 +9206,8 @@ pub mod num
             }
             macro_rules! impl_to_primitive_uint_to_uint 
             {
-                ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$DstT>
+                ( $SrcT:ident : $( fn $m:ident -> $DstT:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$DstT>
                     {
                         let m = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= m {
@@ -8055,8 +9254,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_nonzero_to_method 
             {
-                ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$DstT> { self.get().$method() }
+                ( $SrcT:ident : $( fn $m:ident -> $DstT:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$DstT> { self.get().$m() }
                 )*}
             }
             macro_rules! impl_to_primitive_nonzero 
@@ -8100,20 +9299,20 @@ pub mod num
 
             macro_rules! impl_to_primitive_float_to_float 
             {
-                ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$DstT> { Some( *self as $DstT ) }
+                ( $SrcT:ident : $( fn $m:ident -> $DstT:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$DstT> { Some( *self as $DstT ) }
                 )*}
             }
             macro_rules! float_to_int_unchecked 
             {
                
                
-                ( $float:expr => $int:ty ) => { unsafe { $float.to_int_unchecked::<$int>() } };
+                ( $float:expr => $i:ty ) => { unsafe { $float.to_int_unchecked::<$i>() } };
             }
             macro_rules! impl_to_primitive_float_to_signed_int 
             {
-                ( $f:ident : $( fn $method:ident -> $i:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$i> {
+                ( $f:ident : $( fn $m:ident -> $i:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$i> {
                        
                        
                         if size_of::<$f>() > size_of::<$i>() {
@@ -8140,8 +9339,8 @@ pub mod num
             }
             macro_rules! impl_to_primitive_float_to_unsigned_int 
             {
-                ( $f:ident : $( fn $method:ident -> $u:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$u> {
+                ( $f:ident : $( fn $m:ident -> $u:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$u> {
                        
                        
                         if size_of::<$f>() > size_of::<$u>() {
@@ -8322,8 +9521,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_wrapping 
             {
-                ( $( fn $method:ident -> $i:ident ; )* ) => {$( 
-                    #[inline] fn $method( &self ) -> Option<$i> { ( self.0 ).$method() }
+                ( $( fn $m:ident -> $i:ident ; )* ) => {$( 
+                    #[inline] fn $m( &self ) -> Option<$i> { ( self.0 ).$m() }
                 )*}
             }
             
@@ -8351,8 +9550,8 @@ pub mod num
             }
             macro_rules! impl_from_primitive_wrapping 
             {
-                ( $( fn $method:ident ( $i:ident  ); )* ) => {$( 
-                    #[inline] fn $method( n: $i ) -> Option<Self> { T::$method( n ).map( Wrapping ) }
+                ( $( fn $m:ident ( $i:ident  ); )* ) => {$( 
+                    #[inline] fn $m( n: $i ) -> Option<Self> { T::$m( n ).map( Wrapping ) }
                 )*}
             }
             
@@ -8971,10 +10170,10 @@ pub mod num
             
             macro_rules! float_const_impl
             {
-                ( $( #[$doc:meta] $constant:ident, )+ ) => ( 
+                ( $( #[$d:meta] $c:ident, )+ ) => ( 
                     #[allow( non_snake_case )]
                     pub trait FloatConst {
-                        $( #[$doc] fn $constant() -> Self; )+
+                        $( #[$d] fn $c() -> Self; )+
                         #[doc = "Return the full circle constant `τ`."]
                         #[inline] fn TAU() -> Self  where Self: Sized + Add<Self, Output = Self> { Self::PI() + Self::PI() }
                         #[doc = "Return `log10( 2.0 )`."]
@@ -8982,13 +10181,13 @@ pub mod num
                         #[doc = "Return `log2( 10.0 )`."]
                         #[inline] fn LOG2_10() -> Self  where Self: Sized + Div<Self, Output = Self> { Self::LN_10() / Self::LN_2() }
                     }
-                    float_const_impl! { @float f32, $( $constant, )+ }
-                    float_const_impl! { @float f64, $( $constant, )+ }
+                    float_const_impl! { @float f32, $( $c, )+ }
+                    float_const_impl! { @float f64, $( $c, )+ }
                  );
-                ( @float $T:ident, $( $constant:ident, )+ ) => ( 
+                ( @float $T:ident, $( $c:ident, )+ ) => ( 
                     impl FloatConst for $T {
                         constant! {
-                            $( $constant() -> $T::consts::$constant; )+
+                            $( $c() -> $T::consts::$c; )+
                             TAU() -> 6.28318530717958647692528676655900577;
                             LOG10_2() -> 0.301029995663981195213738894724493027;
                             LOG2_10() -> 3.32192809488736234787031942948939018;
@@ -9038,7 +10237,7 @@ pub mod num
             }
             macro_rules! totalorder_impl
             {
-                ( $T:ident, $I:ident, $U:ident, $bits:expr ) => {
+                ( $T:ident, $I:ident, $U:ident, $bs:expr ) => {
                     impl TotalOrder for $T {
                         #[inline]
                         #[cfg( has_total_cmp )]
@@ -9053,8 +10252,8 @@ pub mod num
                             let mut left = self.to_bits() as $I;
                             let mut right = other.to_bits() as $I;
 
-                            left ^= (( ( left >> ( $bits - 1 ) ) as $U ) >> 1 ) as $I;
-                            right ^= (( ( right >> ( $bits - 1 ) ) as $U ) >> 1 ) as $I;
+                            left ^= (( ( left >> ( $bs - 1 ) ) as $U ) >> 1 ) as $I;
+                            right ^= (( ( right >> ( $bs - 1 ) ) as $U ) >> 1 ) as $I;
 
                             left.cmp( &right )
                         }
@@ -9622,10 +10821,10 @@ pub mod num
                     fn checked_add( &self, v:&Self ) -> Option<Self>;
                 }
                 macro_rules! checked_impl {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self, v:&$t ) -> Option<$t> { <$t>::$method( *self, *v ) }
+                            fn $m( &self, v:&$t ) -> Option<$t> { <$t>::$m( *self, *v ) }
                         }
                     };
                 }
@@ -9712,10 +10911,10 @@ pub mod num
                 checked_impl!( CheckedRem, checked_rem, i128 );
 
                 macro_rules! checked_impl_unary {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self ) -> Option<$t> { <$t>::$method( *self ) }
+                            fn $m( &self ) -> Option<$t> { <$t>::$m( *self ) }
                         }
                     };
                 }
@@ -9743,10 +10942,10 @@ pub mod num
                     fn checked_shl( &self, rhs: u32 ) -> Option<Self>;
                 }
                 macro_rules! checked_shift_impl {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self, rhs: u32 ) -> Option<$t> { <$t>::$method( *self, rhs ) }
+                            fn $m( &self, rhs: u32 ) -> Option<$t> { <$t>::$m( *self, rhs ) }
                         }
                     };
                 }
@@ -9984,11 +11183,11 @@ pub mod num
                 /*
                 */
                 macro_rules! overflowing_impl {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self, v:&Self ) -> ( Self, bool ) {
-                                <$t>::$method( *self, *v )
+                            fn $m( &self, v:&Self ) -> ( Self, bool ) {
+                                <$t>::$m( *self, *v )
                             }
                         }
                     };
@@ -10087,11 +11286,11 @@ pub mod num
 
                 macro_rules! saturating_impl
                 {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self, v:&Self ) -> Self {
-                                <$t>::$method( *self, *v )
+                            fn $m( &self, v:&Self ) -> Self {
+                                <$t>::$m( *self, *v )
                             }
                         }
                     };
@@ -10168,19 +11367,19 @@ pub mod num
                 */
                 macro_rules! wrapping_impl
                 {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self, v:&Self ) -> Self {
-                                <$t>::$method( *self, *v )
+                            fn $m( &self, v:&Self ) -> Self {
+                                <$t>::$m( *self, *v )
                             }
                         }
                     };
-                    ( $trait_name:ident, $method:ident, $t:ty, $rhs:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty, $rhs:ty ) => {
                         impl $trait_name<$rhs> for $t {
                             #[inline]
-                            fn $method( &self, v:&$rhs ) -> Self {
-                                <$t>::$method( *self, *v )
+                            fn $m( &self, v:&$rhs ) -> Self {
+                                <$t>::$m( *self, *v )
                             }
                         }
                     };
@@ -10242,10 +11441,10 @@ pub mod num
 
                 macro_rules! wrapping_unary_impl 
                 {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self ) -> $t { <$t>::$method( *self ) }
+                            fn $m( &self ) -> $t { <$t>::$m( *self ) }
                         }
                     };
                 }
@@ -10270,11 +11469,11 @@ pub mod num
 
                 macro_rules! wrapping_shift_impl 
                 {
-                    ( $trait_name:ident, $method:ident, $t:ty ) => {
+                    ( $trait_name:ident, $m:ident, $t:ty ) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method( &self, rhs: u32 ) -> $t {
-                                <$t>::$method( *self, rhs )
+                            fn $m( &self, rhs: u32 ) -> $t {
+                                <$t>::$m( *self, rhs )
                             }
                         }
                     };
@@ -10404,29 +11603,29 @@ pub mod num
                     pow_impl!( $t, usize );
                 };
                 ( $t:ty, $rhs:ty ) => { pow_impl!( $t, $rhs, usize, pow ); };
-                ( $t:ty, $rhs:ty, $desired_rhs:ty, $method:expr ) => {
+                ( $t:ty, $rhs:ty, $desired_rhs:ty, $m:expr ) => {
                     impl Pow<$rhs> for $t {
                         type Output = $t;
                         #[inline] fn pow( self, rhs: $rhs ) -> $t {
-                            ( $method )( self, <$desired_rhs>::from( rhs ) )
+                            ( $m )( self, <$desired_rhs>::from( rhs ) )
                         }
                     }
                     impl<'a> Pow<&'a $rhs> for $t {
                         type Output = $t;
                         #[inline] fn pow( self, rhs:&'a $rhs ) -> $t {
-                            ( $method )( self, <$desired_rhs>::from( *rhs ) )
+                            ( $m )( self, <$desired_rhs>::from( *rhs ) )
                         }
                     }
                     impl<'a> Pow<$rhs> for &'a $t {
                         type Output = $t;
                         #[inline] fn pow( self, rhs: $rhs ) -> $t {
-                            ( $method )( *self, <$desired_rhs>::from( rhs ) )
+                            ( $m )( *self, <$desired_rhs>::from( rhs ) )
                         }
                     }
                     impl<'a, 'b> Pow<&'a $rhs> for &'b $t {
                         type Output = $t;
                         #[inline] fn pow( self, rhs:&'a $rhs ) -> $t {
-                            ( $method )( *self, <$desired_rhs>::from( *rhs ) )
+                            ( $m )( *self, <$desired_rhs>::from( *rhs ) )
                         }
                     }
                 };
@@ -10777,8 +11976,8 @@ pub mod num
             pub trait Unsigned: Num {}
             macro_rules! empty_trait_impl
             {
-                ( $name:ident for $( $t:ty )* ) => ( $( 
-                    impl $name for $t {}
+                ( $n:ident for $( $t:ty )* ) => ( $( 
+                    impl $n for $t {}
                 )* )
             }
             empty_trait_impl!( Unsigned for usize u8 u16 u32 u64 u128 );
@@ -10834,8 +12033,8 @@ pub mod num
 
         macro_rules! int_trait_impl
         {
-            ( $name:ident for $( $t:ty )* ) => ( $( 
-                impl $name for $t {
+            ( $n:ident for $( $t:ty )* ) => ( $( 
+                impl $n for $t {
                     type FromStrRadixErr = ::num::ParseIntError;
                     #[inline] fn from_str_radix( s:&str, radix: u32 )
                                     -> Result<Self, ::num::ParseIntError>
@@ -10892,8 +12091,8 @@ pub mod num
         
         macro_rules! float_trait_impl
         {
-            ( $name:ident for $( $t:ident )* ) => ( $( 
-                impl $name for $t {
+            ( $n:ident for $( $t:ident )* ) => ( $( 
+                impl $n for $t {
                     type FromStrRadixErr = ParseFloatError;
 
                     fn from_str_radix( src:&str, radix: u32 )
@@ -15919,9 +17118,9 @@ pub mod num
                     }
                 }
                 macro_rules! impl_rem_assign_scalar {
-                    ( $scalar:ty, $to_scalar:ident ) => {
-                        forward_val_assign_scalar!( impl RemAssign for BigUint, $scalar, rem_assign );
-                        impl RemAssign<&BigUint> for $scalar {
+                    ( $s:ty, $to_scalar:ident ) => {
+                        forward_val_assign_scalar!( impl RemAssign for BigUint, $s, rem_assign );
+                        impl RemAssign<&BigUint> for $s {
                             #[inline]
                             fn rem_assign( &mut self, other:&BigUint ) {
                                 *self = match other.$to_scalar() {
@@ -20110,15 +21309,15 @@ pub mod num
                 }
             }
             macro_rules! forward_op_assign {
-                ( impl $imp:ident, $method:ident ) => {
-                    impl<'a, T: Clone + Integer + NumAssign> $imp<&'a Ratio<T>> for Ratio<T> {
-                        #[inline] fn $method( &mut self, other:&Ratio<T> ) {
-                            self.$method( other.clone() )
+                ( impl $i:ident, $m:ident ) => {
+                    impl<'a, T: Clone + Integer + NumAssign> $i<&'a Ratio<T>> for Ratio<T> {
+                        #[inline] fn $m( &mut self, other:&Ratio<T> ) {
+                            self.$m( other.clone() )
                         }
                     }
-                    impl<'a, T: Clone + Integer + NumAssign> $imp<&'a T> for Ratio<T> {
-                        #[inline] fn $method( &mut self, other:&T ) {
-                            self.$method( other.clone() )
+                    impl<'a, T: Clone + Integer + NumAssign> $i<&'a T> for Ratio<T> {
+                        #[inline] fn $m( &mut self, other:&T ) {
+                            self.$m( other.clone() )
                         }
                     }
                 };
@@ -20186,25 +21385,25 @@ pub mod num
 
         macro_rules! arith_impl
         {
-            ( impl $imp:ident, $method:ident ) => {
-                forward_all_binop!( impl $imp, $method );
+            ( impl $i:ident, $m:ident ) => {
+                forward_all_binop!( impl $i, $m );
                
-                impl<T: Clone + Integer> $imp<Ratio<T>> for Ratio<T> {
+                impl<T: Clone + Integer> $i<Ratio<T>> for Ratio<T> {
                     type Output = Ratio<T>;
-                    #[inline] fn $method( self, rhs: Ratio<T> ) -> Ratio<T> {
+                    #[inline] fn $m( self, rhs: Ratio<T> ) -> Ratio<T> {
                         if self.denom == rhs.denom {
-                            return Ratio::new( self.numer.$method( rhs.numer ), rhs.denom );
+                            return Ratio::new( self.numer.$m( rhs.numer ), rhs.denom );
                         }
                         let lcm = self.denom.lcm( &rhs.denom );
                         let lhs_numer = self.numer * ( lcm.clone() / self.denom );
                         let rhs_numer = rhs.numer * ( lcm.clone() / rhs.denom );
-                        Ratio::new( lhs_numer.$method( rhs_numer ), lcm )
+                        Ratio::new( lhs_numer.$m( rhs_numer ), lcm )
                     }
                 }
                
-                impl<T: Clone + Integer> $imp<T> for Ratio<T> {
+                impl<T: Clone + Integer> $i<T> for Ratio<T> {
                     type Output = Ratio<T>;
-                    #[inline] fn $method( self, rhs: T ) -> Ratio<T> { Ratio::new( self.numer.$method( self.denom.clone() * rhs ), self.denom ) }
+                    #[inline] fn $m( self, rhs: T ) -> Ratio<T> { Ratio::new( self.numer.$m( self.denom.clone() * rhs ), self.denom ) }
                 }
             };
         }
@@ -20274,15 +21473,15 @@ pub mod num
         
         macro_rules! checked_arith_impl
         {
-            ( impl $imp:ident, $method:ident ) => {
-                impl<T: Clone + Integer + CheckedMul + $imp> $imp for Ratio<T> {
-                    #[inline] fn $method( &self, rhs:&Ratio<T> ) -> Option<Ratio<T>>
+            ( impl $i:ident, $m:ident ) => {
+                impl<T: Clone + Integer + CheckedMul + $i> $i for Ratio<T> {
+                    #[inline] fn $m( &self, rhs:&Ratio<T> ) -> Option<Ratio<T>>
                     {
                         let gcd = self.denom.clone().gcd( &rhs.denom );
                         let lcm = ( self.denom.clone() / gcd.clone() ).checked_mul( &rhs.denom )?;
                         let lhs_numer = ( lcm.clone() / self.denom.clone() ).checked_mul( &self.numer )?;
                         let rhs_numer = ( lcm.clone() / rhs.denom.clone() ).checked_mul( &rhs.numer )?;
-                        Some( Ratio::new( lhs_numer.$method( &rhs_numer )?, lcm ) )
+                        Some( Ratio::new( lhs_numer.$m( &rhs_numer )?, lcm ) )
                     }
                 }
             };
@@ -20429,7 +21628,7 @@ pub mod num
         
         macro_rules! impl_formatting
         {
-            ( $fmt_trait:ident, $prefix:expr, $fmt_str:expr, $fmt_alt:expr ) => {
+            ( $fmt_trait:ident, $p:expr, $fmt_str:expr, $fmt_alt:expr ) => {
                 impl<T: $fmt_trait + Clone + Integer> $fmt_trait for Ratio<T> {
                             fn fmt( &self, f:&mut Formatter<'_> ) -> fmt::Result
                 {        let pre_pad = if self.denom.is_one() {
@@ -20442,9 +21641,9 @@ pub mod num
                             }
                         };
                         if let Some( pre_pad ) = pre_pad.strip_prefix( "-" ) {
-                            f.pad_integral( false, $prefix, pre_pad )
+                            f.pad_integral( false, $p, pre_pad )
                         } else {
-                            f.pad_integral( true, $prefix, &pre_pad )
+                            f.pad_integral( true, $p, &pre_pad )
                         }
                     }
                 }
@@ -21026,7 +22225,7 @@ pub mod now
         let mut status = 0;
         let mut sep = String::new();
 
-        for token in parsers::parser_line::line_to_cmds(line )
+        for token in parses::lines::line_to_cmds(line )
         {
             if token == ";" || token == "&&" || token == "||"
             {
@@ -21687,7 +22886,7 @@ pub mod now
                 let path = if program.contains('/') {
                     program.clone()
                 } else {
-                    libs::path::find_file_in_path( program, true )
+                    path::find_file( program, true )
                 };
                 if path.is_empty() {
                     println_stderr!( ":: {}: command not found", program);
@@ -21736,7 +22935,7 @@ pub mod now
                 }
 
                 if options.isatty && !options.capture_output {
-                    let _cmd = parsers::parser_line::tokens_to_line( &cmd.tokens );
+                    let _cmd = parses::lines::tokens_to_line( &cmd.tokens );
                     sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background );
                 }
 
@@ -21908,12 +23107,12 @@ pub mod objects
 
     macro_rules! get_fn 
     {
-        ( $doc:expr, $name:tt, $type:ty ) => {
-            #[doc=$doc]
-            pub fn $name( &self, field:&str ) -> OverResult<$type> {
+        ( $d:expr, $n:tt, $t:ty ) => {
+            #[doc=$d]
+            pub fn $n( &self, field:&str ) -> OverResult<$t> {
                 match self.get( field ) {
                     Some( value ) => {
-                        match value.$name() {
+                        match value.$n() {
                             Ok( result ) => Ok( result ),
                             e @ Err( _ ) => e,
                         }
@@ -25697,7 +26896,7 @@ pub mod range
         }};
     }
     
-    #[inline] pub const unsafe fn assume(b: bool)
+    #[inline] pub const unsafe fn assume( b:bool )
     {
         debug_assert!(b);
         if !b { unsafe { ::hint::unreachable_unchecked() } }
@@ -25706,30 +26905,30 @@ pub mod range
     macro_rules! impl_ranged 
     {
         ($(
-            $type:ident 
+            $t:ident 
             {
-                mod_name: $mod_name:ident
+                mod_name: $mn:ident
                 internal: $in:ident
-                signed: $is_signed:ident
-                unsigned: $unsigned_type:ident
-                optional: $optional_type:ident
+                signed: $is:ident
+                unsigned: $us:ident
+                optional: $ot:ident
             }
         )*) =>
         {$(
             #[repr( transparent )] #[derive( Clone, Copy, Eq, Ord, Hash )]
-            pub struct $type<const MIN: $in, const MAX: $in>( Unsafe<$in> );
+            pub struct $t<const MIN: $in, const MAX: $in>( Unsafe<$in> );
             
-            #[derive( Clone, Copy, Eq, Hash )] pub struct $optional_type<const MIN: $in, const MAX: $in>( $in );
+            #[derive( Clone, Copy, Eq, Hash )] pub struct $ot<const MIN: $in, const MAX: $in>( $in );
 
-            impl $type<0, 0> 
+            impl $t<0, 0> 
             {
-                #[inline( always )] pub const fn exact<const VALUE: $in>() -> $type<VALUE, VALUE> {
+                #[inline( always )] pub const fn exact<const VALUE: $in>() -> $t<VALUE, VALUE> {
 
-                    unsafe { $type::new_unchecked(VALUE) }
+                    unsafe { $t::new_unchecked(VALUE) }
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> $type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> $t<MIN, MAX> 
             {
                 pub const MIN: Self = Self::new_static::<MIN>();
                 pub const MAX: Self = Self::new_static::<MAX>();
@@ -25765,7 +26964,7 @@ pub mod range
                 }
                 
                 #[inline( always )] pub const fn new_static<const VALUE: $in>() -> Self {
-                    <($type<MIN, VALUE>, $type<VALUE, MAX>) as $crate::traits::StaticIsValid>::ASSERT;
+                    <($t<MIN, VALUE>, $t<VALUE, MAX>) as ::range::traits::StaticIsValid>::ASSERT;
 
                     unsafe { Self::new_unchecked(VALUE) }
                 }
@@ -25784,24 +26983,24 @@ pub mod range
                 
                 pub const fn expand<const NEW_MIN: $in, const NEW_MAX: $in>(
                     self,
-                ) -> $type<NEW_MIN, NEW_MAX> {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
-                    <$type<NEW_MIN, NEW_MAX> as ::range::traits::RangeIsValid>::ASSERT;
-                    <($type<MIN, MAX>, $type<NEW_MIN, NEW_MAX>) as $crate::traits::ExpandIsValid>
+                ) -> $t<NEW_MIN, NEW_MAX> {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<NEW_MIN, NEW_MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <($t<MIN, MAX>, $t<NEW_MIN, NEW_MAX>) as ::range::traits::ExpandIsValid>
                         ::ASSERT;
 
-                    unsafe { $type::new_unchecked(self.get()) }
+                    unsafe { $t::new_unchecked(self.get()) }
                 }
 
                 pub const fn narrow<
                     const NEW_MIN: $in,
                     const NEW_MAX: $in,
-                >(self) -> Option<$type<NEW_MIN, NEW_MAX>> {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
-                    <$type<NEW_MIN, NEW_MAX> as ::range::traits::RangeIsValid>::ASSERT;
-                    <($type<MIN, MAX>, $type<NEW_MIN, NEW_MAX>) as $crate::traits::NarrowIsValid>
+                >(self) -> Option<$t<NEW_MIN, NEW_MAX>> {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<NEW_MIN, NEW_MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <($t<MIN, MAX>, $t<NEW_MIN, NEW_MAX>) as ::range::traits::NarrowIsValid>
                         ::ASSERT;
-                    $type::<NEW_MIN, NEW_MAX>::new(self.get())
+                    $t::<NEW_MIN, NEW_MAX>::new(self.get())
                 }
                 
                 #[inline] pub fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
@@ -25894,14 +27093,14 @@ pub mod range
                     }
                 }
 
-                if_unsigned!($is_signed
+                if_unsigned!($is
                 #[must_use = "this returns the result of the operation, without modifying the original"]
                 #[inline] pub const fn rem<const RHS_VALUE: $in>(
                     self,
-                    rhs: $type<RHS_VALUE, RHS_VALUE>,
-                ) -> $type<0, RHS_VALUE> {
+                    rhs: $t<RHS_VALUE, RHS_VALUE>,
+                ) -> $t<0, RHS_VALUE> {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
-                    unsafe { $type::new_unchecked(self.get() % rhs.get()) }
+                    unsafe { $t::new_unchecked(self.get() % rhs.get()) }
                 });
 
                 #[must_use = "this returns the result of the operation, without modifying the original"]
@@ -25950,7 +27149,7 @@ pub mod range
                 #[must_use = "this returns the result of the operation, without modifying the original"]
                 #[inline( always )] pub const fn neg(self) -> Self {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
-                    <Self as $crate::traits::NegIsSafe>::ASSERT;
+                    <Self as ::range::traits::NegIsSafe>::ASSERT;
 
                     unsafe { self.unchecked_neg() }
                 }
@@ -25985,7 +27184,7 @@ pub mod range
                     }
                 }
 
-                if_signed!($is_signed
+                if_signed!($is
                 #[must_use = "this returns the result of the operation, without modifying the original"]
                 #[inline] pub const fn checked_abs(self) -> Option<Self> {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
@@ -26002,7 +27201,7 @@ pub mod range
                 #[must_use = "this returns the result of the operation, without modifying the original"]
                 #[inline( always )] pub const fn abs(self) -> Self {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
-                    <Self as $crate::traits::AbsIsSafe>::ASSERT;
+                    <Self as ::range::traits::AbsIsSafe>::ASSERT;
 
                     unsafe { self.unchecked_abs() }
                 });
@@ -26036,7 +27235,7 @@ pub mod range
                     Self::new_saturating(self.get().saturating_sub(rhs))
                 }
 
-                if_signed!($is_signed
+                if_signed!($is
 
 
                 #[must_use = "this returns the result of the operation, without modifying the original"]
@@ -26045,7 +27244,7 @@ pub mod range
                     Self::new_saturating(self.get().saturating_neg())
                 });
 
-                if_signed!($is_signed
+                if_signed!($is
 
                 #[must_use = "this returns the result of the operation, without modifying the original"]
                 #[inline] pub const fn saturating_abs(self) -> Self {
@@ -26070,14 +27269,14 @@ pub mod range
                 #[must_use = "this returns the result of the operation, without modifying the original"]
                 #[inline] const fn rem_euclid_unsigned(
                     rhs: $in,
-                    range_len: $unsigned_type
-                ) -> $unsigned_type {
+                    range_len: $us
+                ) -> $us {
                     #[allow(unused_comparisons)]
                     if rhs >= 0 {
-                        (rhs as $unsigned_type) % range_len
+                        (rhs as $us) % range_len
                     } else {
-                        let rhs_abs = ($in::wrapping_sub(0, rhs)) as $unsigned_type;
-                        ((($unsigned_type::MAX / range_len) * range_len) - (rhs_abs)) % range_len
+                        let rhs_abs = ($in::wrapping_sub(0, rhs)) as $us;
+                        ((($us::MAX / range_len) * range_len) - (rhs_abs)) % range_len
                     }
                 }
                 
@@ -26096,13 +27295,13 @@ pub mod range
                     let greater_vals = MAX.abs_diff(inner);
                     if offset <= greater_vals {
                         unsafe { Self::new_unchecked(
-                            ((inner as $unsigned_type).wrapping_add(offset)) as $in
+                            ((inner as $us).wrapping_add(offset)) as $in
                         ) }
                     }
                     
                     else {
                         unsafe { Self::new_unchecked(
-                            ((MIN as $unsigned_type).wrapping_add(
+                            ((MIN as $us).wrapping_add(
                                 offset - (greater_vals + 1)
                             )) as $in
                         ) }
@@ -26124,13 +27323,13 @@ pub mod range
                     let lesser_vals = MIN.abs_diff(inner);
                     if offset <= lesser_vals {
                         unsafe { Self::new_unchecked(
-                            ((inner as $unsigned_type).wrapping_sub(offset)) as $in
+                            ((inner as $us).wrapping_sub(offset)) as $in
                         ) }
                     }
                     
                     else {
                         unsafe { Self::new_unchecked(
-                            ((MAX as $unsigned_type).wrapping_sub(
+                            ((MAX as $us).wrapping_sub(
                                 offset - (lesser_vals + 1)
                             )) as $in
                         ) }
@@ -26138,7 +27337,7 @@ pub mod range
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> $optional_type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> $ot<MIN, MAX> 
             {
                 const NICHE: $in = match (MIN, MAX) {
                     ($in::MIN, $in::MAX) => panic!("type has no niche"),
@@ -26148,50 +27347,50 @@ pub mod range
                 
                 pub const None: Self = Self(Self::NICHE);
                 
-                #[inline( always )] pub const fn Some(value: $type<MIN, MAX>) -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                #[inline( always )] pub const fn Some(value: $t<MIN, MAX>) -> Self {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     Self(value.get())
                 }
                 
-                #[inline( always )] pub const fn get(self) -> Option<$type<MIN, MAX>> {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                #[inline( always )] pub const fn get(self) -> Option<$t<MIN, MAX>> {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     if self.0 == Self::NICHE {
                         None
                     } else {
 
-                        Some(unsafe { $type::new_unchecked(self.0) })
+                        Some(unsafe { $t::new_unchecked(self.0) })
                     }
                 }
                 
                 #[inline( always )] pub const unsafe fn some_unchecked(value: $in) -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
 
                     unsafe { $crate::assume(MIN <= value && value <= MAX) };
                     Self(value)
                 }
                 
                 #[inline( always )] pub const fn inner(self) -> $in {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     self.0
                 }
 
                 #[inline( always )] pub const fn get_primitive(self) -> Option<$in> {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     Some(const_try_opt!(self.get()).get())
                 }
                 
                 #[inline( always )] pub const fn is_none(self) -> bool {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().is_none()
                 }
                 
                 #[inline( always )] pub const fn is_some(self) -> bool {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().is_some()
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::Debug for $type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> fmt::Debug for $t<MIN, MAX> 
             {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
@@ -26199,15 +27398,15 @@ pub mod range
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::Debug for $optional_type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> fmt::Debug for $ot<MIN, MAX> 
             {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::Display for $type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> fmt::Display for $t<MIN, MAX> 
             {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
@@ -26215,15 +27414,15 @@ pub mod range
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> Default for $optional_type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> Default for $ot<MIN, MAX> 
             {
                 #[inline( always )] fn default() -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     Self::None
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> AsRef<$in> for $type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> AsRef<$in> for $t<MIN, MAX> 
             {
                 #[inline( always )] fn as_ref(&self) -> &$in {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
@@ -26231,7 +27430,7 @@ pub mod range
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> Borrow<$in> for $type<MIN, MAX> 
+            impl<const MIN: $in, const MAX: $in> Borrow<$in> for $t<MIN, MAX> 
             {
                 #[inline( always )] fn borrow(&self) -> &$in {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
@@ -26244,11 +27443,11 @@ pub mod range
                 const MAX_A: $in,
                 const MIN_B: $in,
                 const MAX_B: $in,
-            > PartialEq<$type<MIN_B, MAX_B>> for $type<MIN_A, MAX_A> 
+            > PartialEq<$t<MIN_B, MAX_B>> for $t<MIN_A, MAX_A> 
             {
-                #[inline( always )] fn eq(&self, other: &$type<MIN_B, MAX_B>) -> bool {
+                #[inline( always )] fn eq(&self, other: &$t<MIN_B, MAX_B>) -> bool {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
-                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get() == other.get()
                 }
             }
@@ -26258,10 +27457,10 @@ pub mod range
                 const MAX_A: $in,
                 const MIN_B: $in,
                 const MAX_B: $in,
-            > PartialEq<$optional_type<MIN_B, MAX_B>> for $optional_type<MIN_A, MAX_A> {
-                #[inline( always )] fn eq(&self, other: &$optional_type<MIN_B, MAX_B>) -> bool {
-                    <$type<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
-                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+            > PartialEq<$ot<MIN_B, MAX_B>> for $ot<MIN_A, MAX_A> {
+                #[inline( always )] fn eq(&self, other: &$ot<MIN_B, MAX_B>) -> bool {
+                    <$t<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     self.inner() == other.inner()
                 }
             }
@@ -26271,10 +27470,10 @@ pub mod range
                 const MAX_A: $in,
                 const MIN_B: $in,
                 const MAX_B: $in,
-            > PartialOrd<$type<MIN_B, MAX_B>> for $type<MIN_A, MAX_A> {
-                #[inline( always )] fn partial_cmp(&self, other: &$type<MIN_B, MAX_B>) -> Option<Ordering> {
+            > PartialOrd<$t<MIN_B, MAX_B>> for $t<MIN_A, MAX_A> {
+                #[inline( always )] fn partial_cmp(&self, other: &$t<MIN_B, MAX_B>) -> Option<Ordering> {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
-                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().partial_cmp(&other.get())
                 }
             }
@@ -26284,11 +27483,11 @@ pub mod range
                 const MAX_A: $in,
                 const MIN_B: $in,
                 const MAX_B: $in,
-            > PartialOrd<$optional_type<MIN_B, MAX_B>> for $optional_type<MIN_A, MAX_A> {
+            > PartialOrd<$ot<MIN_B, MAX_B>> for $ot<MIN_A, MAX_A> {
                 #[inline]
-                fn partial_cmp(&self, other: &$optional_type<MIN_B, MAX_B>) -> Option<Ordering> {
-                    <$type<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
-                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                fn partial_cmp(&self, other: &$ot<MIN_B, MAX_B>) -> Option<Ordering> {
+                    <$t<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     if self.is_none() && other.is_none() {
                         Some(Ordering::Equal)
                     } else if self.is_none() {
@@ -26304,10 +27503,10 @@ pub mod range
             impl<
                 const MIN: $in,
                 const MAX: $in,
-            > Ord for $optional_type<MIN, MAX> {
+            > Ord for $ot<MIN, MAX> {
                 #[inline]
                 fn cmp(&self, other: &Self) -> Ordering {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     if self.is_none() && other.is_none() {
                         Ordering::Equal
                     } else if self.is_none() {
@@ -26320,51 +27519,51 @@ pub mod range
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::Binary for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> fmt::Binary for $t<MIN, MAX> {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::LowerHex for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> fmt::LowerHex for $t<MIN, MAX> {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::UpperHex for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> fmt::UpperHex for $t<MIN, MAX> {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::LowerExp for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> fmt::LowerExp for $t<MIN, MAX> {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::UpperExp for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> fmt::UpperExp for $t<MIN, MAX> {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> fmt::Octal for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> fmt::Octal for $t<MIN, MAX> {
                 #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().fmt(f)
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> From<$type<MIN, MAX>> for $in {
-                #[inline( always )] fn from(value: $type<MIN, MAX>) -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+            impl<const MIN: $in, const MAX: $in> From<$t<MIN, MAX>> for $in {
+                #[inline( always )] fn from(value: $t<MIN, MAX>) -> Self {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     value.get()
                 }
             }
@@ -26372,9 +27571,9 @@ pub mod range
             impl<
                 const MIN: $in,
                 const MAX: $in,
-            > From<$type<MIN, MAX>> for $optional_type<MIN, MAX> {
-                #[inline( always )] fn from(value: $type<MIN, MAX>) -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+            > From<$t<MIN, MAX>> for $ot<MIN, MAX> {
+                #[inline( always )] fn from(value: $t<MIN, MAX>) -> Self {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     Self::Some(value)
                 }
             }
@@ -26382,9 +27581,9 @@ pub mod range
             impl<
                 const MIN: $in,
                 const MAX: $in,
-            > From<Option<$type<MIN, MAX>>> for $optional_type<MIN, MAX> {
-                #[inline( always )] fn from(value: Option<$type<MIN, MAX>>) -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+            > From<Option<$t<MIN, MAX>>> for $ot<MIN, MAX> {
+                #[inline( always )] fn from(value: Option<$t<MIN, MAX>>) -> Self {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     match value {
                         Some(value) => Self::Some(value),
                         None => Self::None,
@@ -26395,14 +27594,14 @@ pub mod range
             impl<
                 const MIN: $in,
                 const MAX: $in,
-            > From<$optional_type<MIN, MAX>> for Option<$type<MIN, MAX>> {
-                #[inline( always )] fn from(value: $optional_type<MIN, MAX>) -> Self {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+            > From<$ot<MIN, MAX>> for Option<$t<MIN, MAX>> {
+                #[inline( always )] fn from(value: $ot<MIN, MAX>) -> Self {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     value.get()
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> TryFrom<$in> for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> TryFrom<$in> for $t<MIN, MAX> {
                 type Error = TryFromIntError;
 
                 #[inline]
@@ -26412,7 +27611,7 @@ pub mod range
                 }
             }
 
-            impl<const MIN: $in, const MAX: $in> FromStr for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> FromStr for $t<MIN, MAX> {
                 type Err = ParseIntError;
 
                 #[inline]
@@ -26435,27 +27634,27 @@ pub mod range
             impl<
                 const MIN: $in,
                 const MAX: $in,
-            > rand::distributions::Distribution<$type<MIN, MAX>> for rand::distributions::Standard {
+            > rand::distributions::Distribution<$t<MIN, MAX>> for rand::distributions::Standard {
                 #[inline]
-                fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> $type<MIN, MAX> {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
-                    $type::new(rng.gen_range(MIN..=MAX)).expect("rand failed to generate a valid value")
+                fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> $t<MIN, MAX> {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    $t::new(rng.gen_range(MIN..=MAX)).expect("rand failed to generate a valid value")
                 }
             }
             
             impl<
                 const MIN: $in,
                 const MAX: $in,
-            > rand::distributions::Distribution<$optional_type<MIN, MAX>>
+            > rand::distributions::Distribution<$ot<MIN, MAX>>
             for rand::distributions::Standard {
                 #[inline]
-                fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> $optional_type<MIN, MAX> {
-                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
-                    rng.gen::<Option<$type<MIN, MAX>>>().into()
+                fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> $ot<MIN, MAX> {
+                    <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    rng.gen::<Option<$t<MIN, MAX>>>().into()
                 }
             }
             
-            impl<const MIN: $in, const MAX: $in> num_traits::Bounded for $type<MIN, MAX> {
+            impl<const MIN: $in, const MAX: $in> num_traits::Bounded for $t<MIN, MAX> {
                 #[inline( always )] fn min_value() -> Self {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     Self::MIN
@@ -26471,84 +27670,107 @@ pub mod range
     
     impl_ranged! 
     {
-        RangedU8 {
+        RangedU8 
+        {
             mod_name: ranged_u8
             internal: u8
             signed: false
             unsigned: u8
             optional: OptionRangedU8
         }
-        RangedU16 {
+
+        RangedU16 
+        {
             mod_name: ranged_u16
             internal: u16
             signed: false
             unsigned: u16
             optional: OptionRangedU16
         }
-        RangedU32 {
+
+        RangedU32 
+        {
             mod_name: ranged_u32
             internal: u32
             signed: false
             unsigned: u32
             optional: OptionRangedU32
         }
-        RangedU64 {
+
+        RangedU64 
+        {
             mod_name: ranged_u64
             internal: u64
             signed: false
             unsigned: u64
             optional: OptionRangedU64
         }
-        RangedU128 {
+
+        RangedU128 
+        {
             mod_name: ranged_u128
             internal: u128
             signed: false
             unsigned: u128
             optional: OptionRangedU128
         }
-        RangedUsize {
+
+        RangedUsize 
+        {
             mod_name: ranged_usize
             internal: usize
             signed: false
             unsigned: usize
             optional: OptionRangedUsize
         }
-        RangedI8 {
+
+        RangedI8 
+        {
             mod_name: ranged_i8
             internal: i8
             signed: true
             unsigned: u8
             optional: OptionRangedI8
         }
-        RangedI16 {
+
+        RangedI16 
+        {
             mod_name: ranged_i16
             internal: i16
             signed: true
             unsigned: u16
             optional: OptionRangedI16
         }
-        RangedI32 {
+
+        RangedI32 
+        {
             mod_name: ranged_i32
             internal: i32
             signed: true
             unsigned: u32
             optional: OptionRangedI32
         }
-        RangedI64 {
+
+        RangedI64 
+        {
             mod_name: ranged_i64
             internal: i64
             signed: true
             unsigned: u64
             optional: OptionRangedI64
         }
-        RangedI128 {
+
+        RangedI128 
+        {
             mod_name: ranged_i128
             internal: i128
             signed: true
             unsigned: u128
             optional: OptionRangedI128
         }
-        RangedIsize {
+
+        RangedIsize 
+        {
             mod_name: ranged_isize
             internal: isize
             signed: true
@@ -26575,13 +27797,13 @@ pub mod rc
         */
         pub fn read() -> String
         {
-            let dir_config = tools::get_config_dir();
-            let rc_file = format!( "{}/cicadarc", dir_config);
+            let d = get::config_dir();
+            let rc_file = format!( "{}/cicadarc", d);
             if Path::new( &rc_file ).exists() {
                 return rc_file;
             }
 
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let rc_file_home = format!( "{}/{}", home, ".cicadarc" );
             if Path::new( &rc_file_home ).exists() {
                 return rc_file_home;
@@ -31008,8 +32230,8 @@ pub mod regex
                 //
 
                 macro_rules! define_regex_type {
-                    ($(#[$doc:meta])*) => {
-                            $(#[$doc])*
+                    ($(#[$d:meta])*) => {
+                            $(#[$d])*
                         pub struct Regex<A = dense::OwnedDFA> {
                             forward: A,
                             reverse: A,
@@ -45537,27 +46759,27 @@ pub mod regex
             }
 
             macro_rules! index_type_impls {
-                ($name:ident, $err:ident, $iter:ident, $withiter:ident) => {
-                    impl $name {
+                ($n:ident, $err:ident, $iter:ident, $withiter:ident) => {
+                    impl $n {
 
-                        pub const MAX: $name = $name(SmallIndex::MAX);
+                        pub const MAX: $n = $n(SmallIndex::MAX);
 
                         pub const LIMIT: usize = SmallIndex::LIMIT;
 
-                        pub const ZERO: $name = $name(SmallIndex::ZERO);
+                        pub const ZERO: $n = $n(SmallIndex::ZERO);
 
                         pub const SIZE: usize = SmallIndex::SIZE;
                         
-                        #[inline] pub fn new(value: usize) -> Result<$name, $err> { SmallIndex::new(value).map($name).map_err($err) }
+                        #[inline] pub fn new(value: usize) -> Result<$n, $err> { SmallIndex::new(value).map($n).map_err($err) }
                         
-                        #[inline] pub const fn new_unchecked(value: usize) -> $name {
-                            $name(SmallIndex::new_unchecked(value))
+                        #[inline] pub const fn new_unchecked(value: usize) -> $n {
+                            $n(SmallIndex::new_unchecked(value))
                         }
 
-                        #[inline] pub fn must(value: usize) -> $name {
-                            $name::new(value).expect(concat!(
+                        #[inline] pub fn must(value: usize) -> $n {
+                            $n::new(value).expect(concat!(
                                 "invalid ",
-                                stringify!($name),
+                                stringify!($n),
                                 " value"
                             ))
                         }
@@ -45582,10 +46804,10 @@ pub mod regex
                             self.0.one_more()
                         }
 
-                        #[inline] pub fn from_ne_bytes(bytes: [u8; 4]) -> Result<$name, $err> { SmallIndex::from_ne_bytes(bytes).map($name).map_err($err) }
+                        #[inline] pub fn from_ne_bytes(bytes: [u8; 4]) -> Result<$n, $err> { SmallIndex::from_ne_bytes(bytes).map($n).map_err($err) }
 
-                        #[inline] pub fn from_ne_bytes_unchecked(bytes: [u8; 4]) -> $name {
-                            $name(SmallIndex::from_ne_bytes_unchecked(bytes))
+                        #[inline] pub fn from_ne_bytes_unchecked(bytes: [u8; 4]) -> $n {
+                            $n(SmallIndex::from_ne_bytes_unchecked(bytes))
                         }
 
                         #[inline] pub fn to_ne_bytes(&self) -> [u8; 4] {
@@ -45597,72 +46819,72 @@ pub mod regex
                         }
                     }
                     
-                    impl ::fmt::Debug for $name {
+                    impl ::fmt::Debug for $n {
                         fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-                            f.debug_tuple(stringify!($name)).field(&self.as_u32()).finish()
+                            f.debug_tuple(stringify!($n)).field(&self.as_u32()).finish()
                         }
                     }
 
-                    impl<T> ::ops::Index<$name> for [T] {
+                    impl<T> ::ops::Index<$n> for [T] {
                         type Output = T;
 
                         #[inline]
-                        fn index(&self, index: $name) -> &T {
+                        fn index(&self, index: $n) -> &T {
                             &self[index.as_usize()]
                         }
                     }
 
-                    impl<T> ::ops::IndexMut<$name> for [T] {
+                    impl<T> ::ops::IndexMut<$n> for [T] {
                         #[inline]
-                        fn index_mut(&mut self, index: $name) -> &mut T {
+                        fn index_mut(&mut self, index: $n) -> &mut T {
                             &mut self[index.as_usize()]
                         }
                     }
 
-                        impl<T> ::ops::Index<$name> for Vec<T> {
+                        impl<T> ::ops::Index<$n> for Vec<T> {
                         type Output = T;
 
                         #[inline]
-                        fn index(&self, index: $name) -> &T {
+                        fn index(&self, index: $n) -> &T {
                             &self[index.as_usize()]
                         }
                     }
 
-                        impl<T> ::ops::IndexMut<$name> for Vec<T> {
+                        impl<T> ::ops::IndexMut<$n> for Vec<T> {
                         #[inline]
-                        fn index_mut(&mut self, index: $name) -> &mut T {
+                        fn index_mut(&mut self, index: $n) -> &mut T {
                             &mut self[index.as_usize()]
                         }
                     }
 
-                    impl From<u8> for $name {
-                        fn from(value: u8) -> $name {
-                            $name(SmallIndex::from(value))
+                    impl From<u8> for $n {
+                        fn from(value: u8) -> $n {
+                            $n(SmallIndex::from(value))
                         }
                     }
 
-                    impl TryFrom<u16> for $name {
+                    impl TryFrom<u16> for $n {
                         type Error = $err;
 
-                        fn try_from(value: u16) -> Result<$name, $err> { SmallIndex::try_from(value).map($name).map_err($err) }
+                        fn try_from(value: u16) -> Result<$n, $err> { SmallIndex::try_from(value).map($n).map_err($err) }
                     }
 
-                    impl TryFrom<u32> for $name {
+                    impl TryFrom<u32> for $n {
                         type Error = $err;
 
-                        fn try_from(value: u32) -> Result<$name, $err> { SmallIndex::try_from(value).map($name).map_err($err) }
+                        fn try_from(value: u32) -> Result<$n, $err> { SmallIndex::try_from(value).map($n).map_err($err) }
                     }
 
-                    impl TryFrom<u64> for $name {
+                    impl TryFrom<u64> for $n {
                         type Error = $err;
 
-                        fn try_from(value: u64) -> Result<$name, $err> { SmallIndex::try_from(value).map($name).map_err($err) }
+                        fn try_from(value: u64) -> Result<$n, $err> { SmallIndex::try_from(value).map($n).map_err($err) }
                     }
 
-                    impl TryFrom<usize> for $name {
+                    impl TryFrom<usize> for $n {
                         type Error = $err;
 
-                        fn try_from(value: usize) -> Result<$name, $err> { SmallIndex::try_from(value).map($name).map_err($err) }
+                        fn try_from(value: usize) -> Result<$n, $err> { SmallIndex::try_from(value).map($n).map_err($err) }
                     }
                     
                     #[derive( Clone, Debug, Eq, PartialEq )]
@@ -45682,9 +46904,9 @@ pub mod regex
                             write!(
                                 f,
                                 "failed to create {} from {:?}, which exceeds {:?}",
-                                stringify!($name),
+                                stringify!($n),
                                 self.attempted(),
-                                $name::MAX,
+                                $n::MAX,
                             )
                         }
                     }
@@ -45695,20 +46917,20 @@ pub mod regex
                     impl $iter {
                         fn new(len: usize) -> $iter {
                             assert!(
-                                len <= $name::LIMIT,
+                                len <= $n::LIMIT,
                                 "cannot create iterator for {} when number of \
                                 elements exceed {:?}",
-                                stringify!($name),
-                                $name::LIMIT,
+                                stringify!($n),
+                                $n::LIMIT,
                             );
                             $iter(SmallIndexIter { rng: 0..len })
                         }
                     }
 
                     impl Iterator for $iter {
-                        type Item = $name;
+                        type Item = $n;
 
-                        fn next(&mut self) -> Option<$name> { self.0.next().map($name) }
+                        fn next(&mut self) -> Option<$n> { self.0.next().map($n) }
                     }
                     
                     #[derive(  Clone, Debug )]
@@ -45719,15 +46941,15 @@ pub mod regex
 
                     impl<I: Iterator + ExactSizeIterator> $withiter<I> {
                         fn new(it: I) -> $withiter<I> {
-                            let ids = $name::iter(it.len());
+                            let ids = $n::iter(it.len());
                             $withiter { it, ids }
                         }
                     }
 
                     impl<I: Iterator + ExactSizeIterator> Iterator for $withiter<I> {
-                        type Item = ($name, I::Item);
+                        type Item = ($n, I::Item);
 
-                        fn next(&mut self) -> Option<($name, I::Item)> {
+                        fn next(&mut self) -> Option<($n, I::Item)> {
                             let item = self.it.next()?;
                             let id = self.ids.next().unwrap();
                             Some((id, item))
@@ -61053,7 +62275,7 @@ pub mod system
             //define!( string SetCursorColor => "Cs"; color: String );
             ( "SetCursorColor","Cs","color","white" )
         ];
-        //string builder direct $ident:ident; $index:expr, $name:ident : $ty:ty
+        //string builder direct $id:ident; $index:expr, $n:ident : $ty:ty
 
         pub static mut DATABASE:String = String::new();
 
@@ -61834,35 +63056,35 @@ pub mod system
             
             macro_rules! impl_op
             {
-                ( $tr:ident , $tr_meth:ident , $method:ident ) =>
+                ( $tr:ident , $tr_meth:ident , $m:ident ) =>
                 {
                     impl ops::$tr for SignalSet
                     {
                         type Output = SignalSet;
-                        fn $tr_meth( self, rhs: SignalSet ) -> SignalSet { self.$method( rhs ) }
+                        fn $tr_meth( self, rhs: SignalSet ) -> SignalSet { self.$m( rhs ) }
                     }
                 }
             }
 
             macro_rules! impl_mut_op
             {
-                ( $tr:ident , $tr_meth:ident , $method:ident ) =>
+                ( $tr:ident , $tr_meth:ident , $m:ident ) =>
                 {
                     impl ops::$tr for SignalSet
                     {
-                        fn $tr_meth( &mut self, rhs: SignalSet ) { *self = self.$method( rhs ); }
+                        fn $tr_meth( &mut self, rhs: SignalSet ) { *self = self.$m( rhs ); }
                     }
                 }
             }
 
             macro_rules! impl_unary_op
             {
-                ( $tr:ident , $tr_meth:ident , $method:ident ) =>
+                ( $tr:ident , $tr_meth:ident , $m:ident ) =>
                 {
                     impl ops::$tr for SignalSet
                     {
                         type Output = SignalSet;
-                        fn $tr_meth( self ) -> SignalSet { self.$method() }
+                        fn $tr_meth( self ) -> SignalSet { self.$m() }
                     }
                 }
             }
@@ -62989,20 +64211,20 @@ pub mod system
 
                 macro_rules! expand_opt
                 {
-                    ( $slf:expr , $cap:path ) => 
+                    ( $s:expr , $cap:path ) => 
                     { {
-                        if let Some( cap ) = $slf.term.info.get::<$cap>() {
-                            $slf.expand( cap.expand() )
+                        if let Some( cap ) = $s.term.info.get::<$cap>() {
+                            $s.expand( cap.expand() )
                         } else {
                             Ok( () )
                         }
                     } };
 
-                    ( $slf:expr , $cap:path , |$ex:ident| $expansion:expr ) => 
+                    ( $s:expr , $cap:path , |$ex:ident| $expansion:expr ) => 
                     { {
-                        if let Some( cap ) = $slf.term.info.get::<$cap>() {
+                        if let Some( cap ) = $s.term.info.get::<$cap>() {
                             let $ex = cap.expand();
-                            $slf.expand( $expansion )
+                            $s.expand( $expansion )
                         } else {
                             Ok( () )
                         }
@@ -63011,19 +64233,19 @@ pub mod system
 
                 macro_rules! expand_req 
                 {
-                    ( $slf:expr , $cap:path , $name:expr ) => 
+                    ( $s:expr , $cap:path , $n:expr ) => 
                     { {
-                        $slf.term.info.get::<$cap>()
-                            .ok_or_else( || not_supported( $name ) )
-                            .and_then( |cap| $slf.expand( cap.expand() ) )
+                        $s.term.info.get::<$cap>()
+                            .ok_or_else( || not_supported( $n ) )
+                            .and_then( |cap| $s.expand( cap.expand() ) )
                     } };
 
-                    ( $slf:expr , $cap:path , $name:expr , |$ex:ident| $expansion:expr ) => { {
-                        $slf.term.info.get::<$cap>()
-                            .ok_or_else( || not_supported( $name ) )
+                    ( $s:expr , $cap:path , $n:expr , |$ex:ident| $expansion:expr ) => { {
+                        $s.term.info.get::<$cap>()
+                            .ok_or_else( || not_supported( $n ) )
                             .and_then( |cap| {
                                 let $ex = cap.expand();
-                                $slf.expand( $expansion )
+                                $s.expand( $expansion )
                             } )
                     } }
                 }
@@ -64054,10 +65276,10 @@ pub mod system
                     let mut sequences = SequenceMap::new();
 
                     macro_rules! add {
-                        ( $seq:ty , $key:expr ) => { {
+                        ( $seq:ty , $k:expr ) => { {
                             if let Some( seq ) = info.get::<$seq>() {
                                 if let Some( s ) = ascii_str( seq.as_ref() ) {
-                                    sequences.insert( s.into(), SeqData::Key( $key ) );
+                                    sequences.insert( s.into(), SeqData::Key( $k ) );
                                 }
                             }
                         } }
@@ -64458,12 +65680,12 @@ pub mod system
         */
         macro_rules! define_commands
         {
-            ( $($name:ident => $str:expr,)+ ) => 
+            ( $($n:ident => $str:expr,)+ ) => 
             {
 
                 #[derive( Clone, Debug, Eq, PartialEq )]
                 pub enum Command {
-                    $($name, )+
+                    $($n, )+
 
                     Custom( Cow<'static, str> ),
                     Macro( Cow<'static, str> ),
@@ -64475,7 +65697,7 @@ pub mod system
                 {
                     fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
                         match *self {
-                            $( Command::$name => f.write_str( $str ) , )+
+                            $( Command::$n => f.write_str( $str ) , )+
                             Command::Custom( ref s ) => f.write_str( s ),
                             Command::Macro( ref s ) => write!( f, "\"{}\"",
                                 char::escape_sequence( s ) )
@@ -64498,7 +65720,7 @@ pub mod system
 
                     fn opt_from_str( s:&str ) -> Option<Command> {
                         match s {
-                            $( $str => Some( Command::$name ), )+
+                            $( $str => Some( Command::$n ), )+
                             _ => None
                         }
                     }
@@ -68835,19 +70057,19 @@ pub mod system
         }
 
         macro_rules! define_variables {
-            ( $( $field:ident : $ty:ty => ( $name:expr , $conv:ident ,
+            ( $( $f:ident : $ty:ty => ( $n:expr , $conv:ident ,
                     |$gr:ident| $getter:expr , |$sr:ident, $v:ident| $setter:expr ) , )+ ) => {
-                static VARIABLE_NAMES:&[&str] = &[ $( $name ),+ ];
+                static VARIABLE_NAMES:&[&str] = &[ $( $n ),+ ];
 
                 pub struct Variables {
-                    $( pub $field : $ty ),*
+                    $( pub $f : $ty ),*
                 }
 
                 impl Variables
                 {
                     pub fn get_variable( &self, name:&str ) -> Option<Variable> {
                         match name {
-                            $( $name => {
+                            $( $n => {
                                 let $gr = self;
                                 Some( Variable::from( $getter ) )
                             } )+
@@ -68858,7 +70080,7 @@ pub mod system
                     pub fn set_variable( &mut self, name:&str, value:&str )
                             -> Option<Variable> {
                         match name {
-                            $( $name => {
+                            $( $n => {
                                 if let Some( $v ) = $conv( value ) {
                                     let $sr = self;
                                     Some( Variable::from( $setter ) )
@@ -68879,7 +70101,7 @@ pub mod system
                     fn next( &mut self ) -> Option<Self::Item>
                     {
                         let res = match VARIABLE_NAMES.get( self.n ).cloned() {
-                            $( Some( $name ) => ( $name, {
+                            $( Some( $n ) => ( $n, {
                                 let $gr = self.vars;
                                 Variable::from( $getter )
                             } ) , )+
@@ -70344,6 +71566,24 @@ pub mod time
         */
     }
 
+    pub mod instant
+    {
+        /*!
+        */
+        use ::
+        {
+            borrow::{ Borrow },
+            cmp::{ Ord, Ordering, PartialEq, PartialOrd },
+            ops::{ Add, Sub },
+            time::std::{ Duration as StdDuration, Instant as StdInstant, * },
+            *,
+        };
+        /*
+        */
+        #[repr( transparent )] #[derive( Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash )]
+        pub struct Instant( pub StdInstant );
+    }  pub use self::instant::{ * };
+
     pub mod duration
     {
         /*!
@@ -70503,7 +71743,7 @@ pub mod types
     /*
     use regex::Regex;
     use crate::parsers;
-    use crate::parsers::parser_line::tokens_to_redirections;
+    use crate::parses::lines::tokens_to_redirections;
     */
     pub type Token = (String, String);
     pub type Tokens = Vec<Token>;
@@ -71116,7 +72356,7 @@ pub mod types
 
             for cap in re.captures_iter( text ) {
                 let name = cap[1].to_string();
-                let value = parsers::parser_line::unquote( &cap[2]);
+                let value = parses::lines::unquote( &cap[2]);
                 envs.insert( name, value );
             }
 
@@ -71132,7 +72372,7 @@ pub mod types
     {
         pub fn from_line(line: &str, sh: &mut shell::Shell) -> Result<CommandLine, String>
         {
-            let linfo = parsers::parser_line::parse_line(line );
+            let linfo = parses::lines::parse_line(line );
             let mut tokens = linfo.tokens;
             shell::do_expansion( sh, &mut tokens );
             let envs = drain_env_tokens( &mut tokens );
@@ -75664,14 +76904,14 @@ pub mod values
     */
     macro_rules! get_fn
     {
-        ( $doc:expr, $name:tt, $type:ty, $variant:ident ) =>
+        ( $d:expr, $n:tt, $t:ty, $v:ident ) =>
         {
-            #[doc=$doc]
-            pub fn $name( &self ) -> OverResult<$type> {
-                if let Value::$variant( ref inner ) = *self {
+            #[doc=$d]
+            pub fn $n( &self ) -> OverResult<$t> {
+                if let Value::$v( ref inner ) = *self {
                     Ok( inner.clone() )
                 } else {
-                    Err( OverError::TypeMismatch( Type::$variant, self.get_type() ) )
+                    Err( OverError::TypeMismatch( Type::$v, self.get_type() ) )
                 }
             }
         }
@@ -75679,11 +76919,11 @@ pub mod values
 
     macro_rules! impl_eq
     {
-        ( $valtype:ident, $type:ty ) =>
+        ( $valtype:ident, $t:ty ) =>
         {
-            impl PartialEq<$type> for Value
+            impl PartialEq<$t> for Value
             {
-                fn eq( &self, other:&$type ) -> bool
+                fn eq( &self, other:&$t ) -> bool
                 {
                     match *self
                     {
@@ -75693,7 +76933,7 @@ pub mod values
                 }
             }
             
-            impl PartialEq<Value> for $type
+            impl PartialEq<Value> for $t
             {
                 fn eq( &self, other:&Value ) -> bool
                 {
@@ -75709,11 +76949,11 @@ pub mod values
     
     macro_rules! impl_eq_int
     {
-        ( $type:ty, $fn:tt ) =>
+        ( $t:ty, $fn:tt ) =>
         {
-            impl PartialEq<$type> for Value
+            impl PartialEq<$t> for Value
             {
-                fn eq( &self, other:&$type ) -> bool
+                fn eq( &self, other:&$t ) -> bool
                 {
                     match *self
                     {
@@ -75727,7 +76967,7 @@ pub mod values
                 }
             }
             
-            impl PartialEq<Value> for $type
+            impl PartialEq<Value> for $t
             {
                 fn eq( &self, other:&Value ) -> bool
                 {
@@ -75747,11 +76987,11 @@ pub mod values
 
     macro_rules! impl_from
     {
-        ( $type:ty, $fn:tt ) =>
+        ( $t:ty, $fn:tt ) =>
         {
-            impl From<$type> for Value
+            impl From<$t> for Value
             {
-                fn from( inner: $type ) -> Self { Value::$fn( inner.into() ) }
+                fn from( inner: $t ) -> Self { Value::$fn( inner.into() ) }
             }
         };
     }
@@ -76115,4 +77355,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 76118 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 77358 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
