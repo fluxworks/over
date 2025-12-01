@@ -3797,6 +3797,248 @@ pub mod parse;
             }
         };
     }
+    
+    #[macro_export] macro_rules! __impl_assign
+    {
+        ($s:tt $o:ident $f:ident $x:ty : $($(#[$a:meta])* $t:ty),+) =>
+        {$(
+            $(#[$a])*
+            impl ::ops::$o<$t> for $x
+            {
+                #[inline] fn $f( &mut self, rhs: $t ) { *self = *self $s rhs; }
+            }
+        )+};
+    }
+    
+    #[macro_export] macro_rules! impl_add_assign
+    {
+        ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
+        {
+            __impl_assign!( + AddAssign add_assign $x : $($(#[$a])* $t),+ );
+        };
+    }
+    
+    #[macro_export] macro_rules! impl_sub_assign
+    {
+        ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
+        {
+            __impl_assign!(- SubAssign sub_assign $x : $($(#[$a])* $t),+);
+        };
+    }
+    
+    #[macro_export] macro_rules! impl_mul_assign
+    {
+        ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
+        {
+            __impl_assign!(* MulAssign mul_assign $x : $($(#[$a])* $t),+);
+        };
+    }
+    
+    #[macro_export] macro_rules! impl_div_assign
+    {
+        ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
+        {
+            __impl_assign!(/ DivAssign div_assign $x : $($(#[$a])* $t),+);
+        };
+    }
+    
+    #[macro_export] macro_rules! div_floor
+    {
+        ($s:expr, $r:expr) =>
+        {
+            match ($s, $r)
+            {
+                (t, o) =>
+                {
+                    let d = t / o;
+                    let r = t % o;                    
+                    let c = (t ^ o) >> (::time::size_of_val(&t) * 8 - 1);
+
+                    if r != 0 { d + c } else { d }
+                }
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! carry 
+    {
+        (@most_once $v:expr, $n:literal.. $m:expr) => 
+        {
+            match ($v, $n, $m) {
+                (v, n, m) => {
+                    if ::hint::likely(v >= n) {
+                        if ::hint::likely(v < m) {
+                            (v, 0)
+                        } else {
+                            (v - (m - n), 1)
+                        }
+                    } else {
+                        (v + (m - n), -1)
+                    }
+                }
+            }
+        };
+        (@most_twice $v:expr, $n:literal.. $m:expr) => {
+            match ($v, $n, $m) {
+                (v, n, m) => {
+                    if ::hint::likely(v >= n) {
+                        if ::hint::likely(v < m) {
+                            (v, 0)
+                        } else if v < 2 * m - n {
+                            (v - (m - n), 1)
+                        } else {
+                            (v - 2 * (m - n), 2)
+                        }
+                    } else {
+                        if v >= n - m {
+                            (v + (m - n), -1)
+                        } else {
+                            (v + 2 * (m - n), -2)
+                        }
+                    }
+                }
+            }
+        };
+        (@most_thrice $v:expr, $n:literal.. $m:expr) => {
+            match ($v, $n, $m) {
+                (v, n, m) => {
+                    if ::hint::likely(v >= n) {
+                        if ::hint::likely(v < m) {
+                            (v, 0)
+                        } else if v < 2 * m - n {
+                            (v - (m - n), 1)
+                        } else if v < 3 * m - 2 * n {
+                            (v - 2 * (m - n), 2)
+                        } else {
+                            (v - 3 * (m - n), 3)
+                        }
+                    } else {
+                        if v >= n - m {
+                            (v + (m - n), -1)
+                        } else if v >= 2 * (n - m) {
+                            (v + 2 * (m - n), -2)
+                        } else {
+                            (v + 3 * (m - n), -3)
+                        }
+                    }
+                }
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! cascade {
+        (@ordinal ordinal) => {};
+        (@y y) => {};
+        
+        ($from:ident in $n:literal.. $m:expr => $t:tt) => {
+            #[allow(unused_comparisons, unused_assignments)]
+            let n = $n;
+            let m = $m;
+            if ::hint::unlikely($from >= m) {
+                $from -= m - n;
+                $t += 1;
+            } else if ::hint::unlikely($from < n) {
+                $from += m - n;
+                $t -= 1;
+            }
+        };
+        
+        ($ordinal:ident => $y:ident) => {
+            cascade!(@ordinal $ordinal);
+            cascade!(@y $y);
+
+            let days_in_year = ::util::days_in_year($y) as i16;
+            #[allow(unused_assignments)]
+            if ::hint::unlikely($ordinal > days_in_year) {
+                $ordinal -= days_in_year;
+                $y += 1;
+            } else if ::hint::unlikely($ordinal < 1) {
+                $y -= 1;
+                $ordinal += ::time::days_in_year($y) as i16;
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! ensure_ranged {
+        ($type:ty : $value:ident) => {
+            match <$type>::new($value) {
+                Some(val) => val,
+                None => {
+                    ::hint::cold_path();
+                    #[allow(trivial_numeric_casts)]
+                    return Err(::error::ComponentRange {
+                        name: stringify!($value),
+                        minimum: <$type>::MIN.get() as i64,
+                        maximum: <$type>::MAX.get() as i64,
+                        value: $value as i64,
+                        conditional_message: None,
+                    });
+                }
+            }
+        };
+
+        ($type:ty : $value:ident $(as $as_type:ident)? * $factor:expr) => {
+            match ($value $(as $as_type)?).checked_mul($factor) {
+                Some(val) => match <$type>::new(val) {
+                    Some(val) => val,
+                    None => {
+                        ::hint::cold_path();
+                        #[allow(trivial_numeric_casts)]
+                        return Err(::error::ComponentRange {
+                            name: stringify!($value),
+                            minimum: <$type>::MIN.get() as i64 / $factor as i64,
+                            maximum: <$type>::MAX.get() as i64 / $factor as i64,
+                            value: $value as i64,
+                            conditional_message: None,
+                        });
+                    }
+                },
+                None => {
+                    ::hint::cold_path();
+                    return Err(::error::ComponentRange {
+                        name: stringify!($value),
+                        minimum: <$type>::MIN.get() as i64 / $factor as i64,
+                        maximum: <$type>::MAX.get() as i64 / $factor as i64,
+                        value: $value as i64,
+                        conditional_message: None,
+                    });
+                }
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! const_try {
+        ($e:expr) => {
+            match $e {
+                Ok(value) => value,
+                Err(error) => return Err(error),
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! const_try_opt {
+        ($e:expr) => {
+            match $e {
+                Some(value) => value,
+                None => return None,
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! bug {
+        () => {
+            compile_error!("provide an error message to help fix a possible bug")
+        };
+        ($descr:literal) => {
+            ::panic::panics(concat!("internal error: ", $descr))
+        };
+    }
+    
+    pub use bug;
+    pub use {
+        __impl_assign, carry, cascade, const_try, const_try_opt, div_floor, ensure_ranged,
+        impl_add_assign, impl_div_assign, impl_mul_assign, impl_sub_assign,
+    };
 }
 
 pub mod arch
@@ -6868,6 +7110,24 @@ pub mod hash
     pub use std::hash::{ * };
 }
 
+pub mod hint
+{
+    /*!
+    Hints to the compiler that affects how code should be emitted or optimized. */
+    pub use std::hint::{ * };
+    #[cold] #[inline( always )] pub const fn cold_path() {}
+    #[inline( always )] pub const fn likely( b:bool ) -> bool
+    {
+        if !b { cold_path(); }
+        b
+    }
+    #[inline( always )] pub const fn unlikely( b:bool ) -> bool
+    {
+        if b { cold_path(); }
+        b
+    }
+}
+
 pub mod highlights
 {
     /*!
@@ -7506,7 +7766,7 @@ pub mod num
             }
             macro_rules! bounded_impl
             {
-                ( $t:ty, $min:expr, $max:expr ) =>
+                ( $t:ty, $min:expr, $m:expr ) =>
                 {
                     impl Bounded for $t {
                         #[inline] fn min_value() -> $t {
@@ -7514,7 +7774,7 @@ pub mod num
                         }
 
                         #[inline] fn max_value() -> $t {
-                            $max
+                            $m
                         }
                     }
                 };
@@ -7544,7 +7804,7 @@ pub mod num
             }
             macro_rules! bounded_impl_nonzero 
             {
-                ( $t:ty, $min:expr, $max:expr ) => {
+                ( $t:ty, $min:expr, $m:expr ) => {
                     impl Bounded for $t {
                         #[inline] fn min_value() -> $t {
                            
@@ -7554,7 +7814,7 @@ pub mod num
 
                         #[inline] fn max_value() -> $t {
                            
-                            bounded_impl_nonzero_const!( $t, $max, MAX );
+                            bounded_impl_nonzero_const!( $t, $m, MAX );
                             MAX
                         }
                     }
@@ -7674,8 +7934,8 @@ pub mod num
                     #[inline] fn $method( &self ) -> Option<$DstT>
                     {
                         let min = $DstT::MIN as $SrcT;
-                        let max = $DstT::MAX as $SrcT;
-                        if size_of::<$SrcT>() <= size_of::<$DstT>() || ( min <= *self && *self <= max ) {
+                        let m = $DstT::MAX as $SrcT;
+                        if size_of::<$SrcT>() <= size_of::<$DstT>() || ( min <= *self && *self <= m ) {
                             Some( *self as $DstT )
                         } else {
                             None
@@ -7688,8 +7948,8 @@ pub mod num
                 ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
                     #[inline] fn $method( &self ) -> Option<$DstT>
                     {
-                        let max = $DstT::MAX as $SrcT;
-                        if 0 <= *self && ( size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= max ) {
+                        let m = $DstT::MAX as $SrcT;
+                        if 0 <= *self && ( size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= m ) {
                             Some( *self as $DstT )
                         } else {
                             None
@@ -7736,8 +7996,8 @@ pub mod num
                 ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
                     #[inline] fn $method( &self ) -> Option<$DstT>
                     {
-                        let max = $DstT::MAX as $SrcT;
-                        if size_of::<$SrcT>() < size_of::<$DstT>() || *self <= max {
+                        let m = $DstT::MAX as $SrcT;
+                        if size_of::<$SrcT>() < size_of::<$DstT>() || *self <= m {
                             Some( *self as $DstT )
                         } else {
                             None
@@ -7750,8 +8010,8 @@ pub mod num
                 ( $SrcT:ident : $( fn $method:ident -> $DstT:ident ; )* ) => {$( 
                     #[inline] fn $method( &self ) -> Option<$DstT>
                     {
-                        let max = $DstT::MAX as $SrcT;
-                        if size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= max {
+                        let m = $DstT::MAX as $SrcT;
+                        if size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= m {
                             Some( *self as $DstT )
                         } else {
                             None
@@ -8370,7 +8630,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn max( self, other: Self ) -> Self {
+                #[inline] fn m( self, other: Self ) -> Self {
                     if self.is_nan() {
                         return other;
                     }
@@ -8386,8 +8646,8 @@ pub mod num
                     }
                 }
 
-                fn clamp( self, min: Self, max: Self ) -> Self {
-                    ::num::traits::clamp( self, min, max )
+                fn clamp( self, min: Self, m: Self ) -> Self {
+                    ::num::traits::clamp( self, min, m )
                 }
 
                 #[inline] fn recip( self ) -> Self {
@@ -8435,12 +8695,12 @@ pub mod num
                     Self::is_finite( self ) -> bool;
                     Self::is_normal( self ) -> bool;
                     Self::is_subnormal( self ) -> bool;
-                    Self::clamp( self, min: Self, max: Self ) -> Self;
+                    Self::clamp( self, min: Self, m: Self ) -> Self;
                     Self::classify( self ) -> FpCategory;
                     Self::is_sign_positive( self ) -> bool;
                     Self::is_sign_negative( self ) -> bool;
                     Self::min( self, other: Self ) -> Self;
-                    Self::max( self, other: Self ) -> Self;
+                    Self::m( self, other: Self ) -> Self;
                     Self::recip( self ) -> Self;
                     Self::to_degrees( self ) -> Self;
                     Self::to_radians( self ) -> Self;
@@ -8484,12 +8744,12 @@ pub mod num
                     Self::is_finite( self ) -> bool;
                     Self::is_normal( self ) -> bool;
                     Self::is_subnormal( self ) -> bool;
-                    Self::clamp( self, min: Self, max: Self ) -> Self;
+                    Self::clamp( self, min: Self, m: Self ) -> Self;
                     Self::classify( self ) -> FpCategory;
                     Self::is_sign_positive( self ) -> bool;
                     Self::is_sign_negative( self ) -> bool;
                     Self::min( self, other: Self ) -> Self;
-                    Self::max( self, other: Self ) -> Self;
+                    Self::m( self, other: Self ) -> Self;
                     Self::recip( self ) -> Self;
                     Self::to_degrees( self ) -> Self;
                     Self::to_radians( self ) -> Self;
@@ -8564,10 +8824,10 @@ pub mod num
                     self * halfpi / ninety
                 }
 
-                fn max( self, other: Self ) -> Self;
+                fn m( self, other: Self ) -> Self;
                 fn min( self, other: Self ) -> Self;
-                fn clamp( self, min: Self, max: Self ) -> Self {
-                    num::traits::clamp( self, min, max )
+                fn clamp( self, min: Self, m: Self ) -> Self {
+                    num::traits::clamp( self, min, m )
                 }
 
                 fn abs_sub( self, other: Self ) -> Self;
@@ -8628,7 +8888,7 @@ pub mod num
                             Self::is_normal( self ) -> bool;
                             Self::is_subnormal( self ) -> bool;
                             Self::classify( self ) -> FpCategory;
-                            Self::clamp( self, min: Self, max: Self ) -> Self;
+                            Self::clamp( self, min: Self, m: Self ) -> Self;
                             Self::floor( self ) -> Self;
                             Self::ceil( self ) -> Self;
                             Self::round( self ) -> Self;
@@ -8651,7 +8911,7 @@ pub mod num
                             Self::log10( self ) -> Self;
                             Self::to_degrees( self ) -> Self;
                             Self::to_radians( self ) -> Self;
-                            Self::max( self, other: Self ) -> Self;
+                            Self::m( self, other: Self ) -> Self;
                             Self::min( self, other: Self ) -> Self;
                             Self::cbrt( self ) -> Self;
                             Self::hypot( self, other: Self ) -> Self;
@@ -10335,7 +10595,7 @@ pub mod num
                 fn log10( self ) -> Self;
                 fn to_degrees( self ) -> Self;
                 fn to_radians( self ) -> Self;
-                fn max( self, other: Self ) -> Self;
+                fn m( self, other: Self ) -> Self;
                 fn min( self, other: Self ) -> Self;
                 fn abs_sub( self, other: Self ) -> Self;
                 fn cbrt( self ) -> Self;
@@ -10389,7 +10649,7 @@ pub mod num
                     Float::log10( self ) -> Self;
                     Float::to_degrees( self ) -> Self;
                     Float::to_radians( self ) -> Self;
-                    Float::max( self, other: Self ) -> Self;
+                    Float::m( self, other: Self ) -> Self;
                     Float::min( self, other: Self ) -> Self;
                     Float::abs_sub( self, other: Self ) -> Self;
                     Float::cbrt( self ) -> Self;
@@ -10792,13 +11052,13 @@ pub mod num
         
         float_trait_impl!( Num for f32 f64 );
 
-        #[inline] pub fn clamp<T: PartialOrd>( input: T, min: T, max: T ) -> T
+        #[inline] pub fn clamp<T: PartialOrd>( input: T, min: T, m: T ) -> T
         {
-            debug_assert!( min <= max, "min must be less than or equal to max" );
+            debug_assert!( min <= m, "min must be less than or equal to m" );
             if input < min {
                 min
-            } else if input > max {
-                max
+            } else if input > m {
+                m
             } else {
                 input
             }
@@ -10814,11 +11074,11 @@ pub mod num
             }
         }
 
-        #[inline] pub fn clamp_max<T: PartialOrd>( input: T, max: T ) -> T
+        #[inline] pub fn clamp_max<T: PartialOrd>( input: T, m: T ) -> T
         {
-            debug_assert!( max == max, "max must not be NAN" );
-            if input > max {
-                max
+            debug_assert!( m == m, "m must not be NAN" );
+            if input > m {
+                m
             } else {
                 input
             }
@@ -17454,7 +17714,7 @@ pub mod num
                     debug_assert!( ( 3..256 ).contains( &radix ) );
                     BASES[radix as usize]
                 }
-                const fn generate_radix_bases( max: BigDigit ) -> [( BigDigit, usize ); 257] {
+                const fn generate_radix_bases( m: BigDigit ) -> [( BigDigit, usize ); 257] {
                     let mut bases = [( 0, 0 ); 257];
 
                     let mut radix: BigDigit = 3;
@@ -17464,7 +17724,7 @@ pub mod num
                             let mut base = radix;
 
                             while let Some( b ) = base.checked_mul( radix ) {
-                                if b > max {
+                                if b > m {
                                     break;
                                 }
                                 base = b;
@@ -20538,7 +20798,7 @@ pub mod num
 
            
            
-            let shift: isize = diff.max( MIN_EXP as isize ) - MANTISSA_DIGITS as isize - 2;
+            let shift: isize = diff.m( MIN_EXP as isize ) - MANTISSA_DIGITS as isize - 2;
             if shift >= 0 {
                 denom <<= shift as usize
             } else {
@@ -20552,7 +20812,7 @@ pub mod num
             let n_rounding_bits = {
                 let quotient_bits = 64 - quotient.leading_zeros() as isize;
                 let subnormal_bits = MIN_EXP as isize - shift;
-                quotient_bits.max( subnormal_bits ) - MANTISSA_DIGITS as isize
+                quotient_bits.m( subnormal_bits ) - MANTISSA_DIGITS as isize
             } as usize;
             debug_assert!( n_rounding_bits == 2 || n_rounding_bits == 3 );
             let rounding_bit_mask = ( 1u64 << n_rounding_bits ) - 1;
@@ -20790,7 +21050,7 @@ pub mod now
 
     fn line_to_tokens( sh: &mut Shell, line: &str ) -> ( Tokens, HashMap<String, String> )
     {
-        let linfo = parsers::parser_line::parse_line(line );
+        let linfo = parses::lines::parse_line( line );
         let mut tokens = linfo.tokens;
         shell::do_expansion( sh, &mut tokens );
         let envs = drain_env_tokens( &mut tokens );
@@ -22036,6 +22296,7 @@ pub mod option
 pub mod panic
 {
     pub use std::panic::{ * };
+    #[inline( never )] #[cold] #[track_caller] const fn panics( m:&str ) -> ! { panic!("{}", m) }
 }
 
 pub mod parses
@@ -22077,6 +22338,19 @@ pub mod parses
         static ref TUP_SENTINEL: Obj = Obj::from_map_unchecked( HashMap::new() );
     }
     pub const MAX_DEPTH: usize = 64;
+    
+
+    pub mod lines
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+    }
 
     pub fn load_from_file( path:&str ) -> ParseResult<Obj>
     {
@@ -23482,6 +23756,7 @@ pub mod parses
             None => Ok( () ),
         }
     }
+    
 }
 
 pub mod path
@@ -25263,7 +25538,7 @@ pub mod rand
             };
             /*
             use crate::Rng;
-            use core::iter;
+            use ::iter;
             #[cfg(feature = "alloc")]
             use alloc::string::String;
             */
@@ -25294,6 +25569,991 @@ pub mod rand
                     }
                 }
             }
+        }
+    }
+}
+
+pub mod range
+{
+    /*!
+    */
+    pub use std::range::{ * };
+    use ::
+    {
+        borrow::{ Borrow },
+        cmp::{ Ordering },
+        num::{ IntErrorKind },
+        str::{ FromStr },
+        error::{ Error },
+        *,
+    };
+    /*
+    */
+    pub mod traits
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+    } pub use self::traits::{*};
+
+    mod unsafe_wrapper
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+    } pub use self::unsafe_wrapper::{*};
+
+    #[derive(Debug, Clone, Copy, PartialEq, Eq)]
+    pub struct TryFromIntError;
+
+    impl fmt::Display for TryFromIntError
+    {
+        #[inline] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.write_str("out of range integral type conversion attempted") }
+    }
+    
+    impl Error for TryFromIntError {}
+
+    #[derive( Debug, Clone, PartialEq, Eq )]
+    pub struct ParseIntError
+    {
+        kind: IntErrorKind,
+    }
+
+    impl ParseIntError
+    {
+        #[inline( always )] pub fn kind(&self) -> &IntErrorKind { &self.kind }
+    }
+
+    impl fmt::Display for ParseIntError
+    {
+        fn fmt( &self, f: &mut fmt::Formatter<'_> ) -> fmt::Result
+        {
+            match self.kind
+            {
+                IntErrorKind::Empty => "cannot parse integer from empty string",
+                IntErrorKind::InvalidDigit => "invalid digit found in string",
+                IntErrorKind::PosOverflow => "number too large to fit in target type",
+                IntErrorKind::NegOverflow => "number too small to fit in target type",
+                IntErrorKind::Zero => "number would be zero for non-zero type",
+                _ => "Unknown Int error kind",
+            }
+            .fmt( f )
+        }
+    }
+    
+    impl Error for ParseIntError {}
+
+    macro_rules! const_try_opt 
+    {
+        ($e:expr) => 
+        {
+            match $e 
+            {
+                Some(v) => v,
+                None => return None,
+            }
+        };
+    }
+
+    macro_rules! if_signed 
+    {
+        (true $($x:tt)*) => { $($x)*};
+        (false $($x:tt)*) => {};
+    }
+
+    macro_rules! if_unsigned 
+    {
+        (true $($x:tt)*) => {};
+        (false $($x:tt)*) => { $($x)* };
+    }
+
+    macro_rules! article 
+    {
+        (true) => {"An"};
+        (false) => {"A"};
+    }
+
+    macro_rules! unsafe_unwrap_unchecked 
+    {
+        ($e:expr) => 
+        {{
+            let opt = $e;
+            debug_assert!(opt.is_some());
+            match $e 
+            {
+                Some(value) => value,
+                None => ::hint::unreachable_unchecked(),
+            }
+        }};
+    }
+    
+    #[inline] pub const unsafe fn assume(b: bool)
+    {
+        debug_assert!(b);
+        if !b { unsafe { ::hint::unreachable_unchecked() } }
+    }
+    
+    macro_rules! impl_ranged 
+    {
+        ($(
+            $type:ident 
+            {
+                mod_name: $mod_name:ident
+                internal: $in:ident
+                signed: $is_signed:ident
+                unsigned: $unsigned_type:ident
+                optional: $optional_type:ident
+            }
+        )*) =>
+        {$(
+            #[repr( transparent )] #[derive( Clone, Copy, Eq, Ord, Hash )]
+            pub struct $type<const MIN: $in, const MAX: $in>( Unsafe<$in> );
+            
+            #[derive( Clone, Copy, Eq, Hash )] pub struct $optional_type<const MIN: $in, const MAX: $in>( $in );
+
+            impl $type<0, 0> 
+            {
+                #[inline( always )] pub const fn exact<const VALUE: $in>() -> $type<VALUE, VALUE> {
+
+                    unsafe { $type::new_unchecked(VALUE) }
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> $type<MIN, MAX> 
+            {
+                pub const MIN: Self = Self::new_static::<MIN>();
+                pub const MAX: Self = Self::new_static::<MAX>();
+                #[inline(always)] pub const unsafe fn new_unchecked(value: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe {
+                        $crate::assume(MIN <= value && value <= MAX);
+                        Self(Unsafe::new(value))
+                    }
+                }
+                
+                #[inline( always )] pub const fn get(self) -> $in {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe { $crate::assume(MIN <= *self.0.get() && *self.0.get() <= MAX) };
+                    *self.0.get()
+                }
+
+                #[inline( always )] pub const fn get_ref(&self) -> &$in {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    let value = self.0.get();
+                    unsafe { $crate::assume(MIN <= *value && *value <= MAX) };
+                    value
+                }
+                
+                #[inline( always )] pub const fn new(value: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    if value < MIN || value > MAX {
+                        None
+                    } else {
+
+                        Some(unsafe { Self::new_unchecked(value) })
+                    }
+                }
+                
+                #[inline( always )] pub const fn new_static<const VALUE: $in>() -> Self {
+                    <($type<MIN, VALUE>, $type<VALUE, MAX>) as $crate::traits::StaticIsValid>::ASSERT;
+
+                    unsafe { Self::new_unchecked(VALUE) }
+                }
+                
+                #[inline] pub const fn new_saturating(value: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    if value < MIN {
+                        Self::MIN
+                    } else if value > MAX {
+                        Self::MAX
+                    } else {
+
+                        unsafe { Self::new_unchecked(value) }
+                    }
+                }
+                
+                pub const fn expand<const NEW_MIN: $in, const NEW_MAX: $in>(
+                    self,
+                ) -> $type<NEW_MIN, NEW_MAX> {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$type<NEW_MIN, NEW_MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <($type<MIN, MAX>, $type<NEW_MIN, NEW_MAX>) as $crate::traits::ExpandIsValid>
+                        ::ASSERT;
+
+                    unsafe { $type::new_unchecked(self.get()) }
+                }
+
+                pub const fn narrow<
+                    const NEW_MIN: $in,
+                    const NEW_MAX: $in,
+                >(self) -> Option<$type<NEW_MIN, NEW_MAX>> {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$type<NEW_MIN, NEW_MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    <($type<MIN, MAX>, $type<NEW_MIN, NEW_MAX>) as $crate::traits::NarrowIsValid>
+                        ::ASSERT;
+                    $type::<NEW_MIN, NEW_MAX>::new(self.get())
+                }
+                
+                #[inline] pub fn from_str_radix(src: &str, radix: u32) -> Result<Self, ParseIntError> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    match $in::from_str_radix(src, radix) {
+                        Ok(value) if value > MAX => {
+                            Err(ParseIntError { kind: IntErrorKind::PosOverflow })
+                        }
+                        Ok(value) if value < MIN => {
+                            Err(ParseIntError { kind: IntErrorKind::NegOverflow })
+                        }
+                        
+                        Ok(value) => Ok(unsafe { Self::new_unchecked(value) }),
+                        Err(e) => Err(ParseIntError { kind: e.kind().clone() }),
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_add(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_add(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_add(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_add(rhs)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_sub(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_sub(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_sub(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_sub(rhs)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_mul(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_mul(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_mul(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_mul(rhs)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_div(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_div(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_div(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_div(rhs)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_div_euclid(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_div_euclid(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_div_euclid(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe {
+                        Self::new_unchecked(
+                            unsafe_unwrap_unchecked!(self.get().checked_div_euclid(rhs))
+                        )
+                    }
+                }
+
+                if_unsigned!($is_signed
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn rem<const RHS_VALUE: $in>(
+                    self,
+                    rhs: $type<RHS_VALUE, RHS_VALUE>,
+                ) -> $type<0, RHS_VALUE> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe { $type::new_unchecked(self.get() % rhs.get()) }
+                });
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_rem(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_rem(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_rem(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_rem(rhs)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_rem_euclid(self, rhs: $in) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_rem_euclid(rhs)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_rem_euclid(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    unsafe {
+                        Self::new_unchecked(
+                            unsafe_unwrap_unchecked!(self.get().checked_rem_euclid(rhs))
+                        )
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_neg(self) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_neg()))
+                }
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_neg(self) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe { Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_neg())) }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const fn neg(self) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    <Self as $crate::traits::NegIsSafe>::ASSERT;
+
+                    unsafe { self.unchecked_neg() }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_shl(self, rhs: u32) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_shl(rhs)))
+                }
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_shl(self, rhs: u32) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_shl(rhs)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_shr(self, rhs: u32) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_shr(rhs)))
+                }
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_shr(self, rhs: u32) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_shr(rhs)))
+                    }
+                }
+
+                if_signed!($is_signed
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_abs(self) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_abs()))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_abs(self) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe { Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_abs())) }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const fn abs(self) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    <Self as $crate::traits::AbsIsSafe>::ASSERT;
+
+                    unsafe { self.unchecked_abs() }
+                });
+
+
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn checked_pow(self, exp: u32) -> Option<Self> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(const_try_opt!(self.get().checked_pow(exp)))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline( always )] pub const unsafe fn unchecked_pow(self, exp: u32) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe {
+                        Self::new_unchecked(unsafe_unwrap_unchecked!(self.get().checked_pow(exp)))
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn saturating_add(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new_saturating(self.get().saturating_add(rhs))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn saturating_sub(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new_saturating(self.get().saturating_sub(rhs))
+                }
+
+                if_signed!($is_signed
+
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn saturating_neg(self) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new_saturating(self.get().saturating_neg())
+                });
+
+                if_signed!($is_signed
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn saturating_abs(self) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new_saturating(self.get().saturating_abs())
+                });
+
+
+
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn saturating_mul(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new_saturating(self.get().saturating_mul(rhs))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn saturating_pow(self, exp: u32) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new_saturating(self.get().saturating_pow(exp))
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] const fn rem_euclid_unsigned(
+                    rhs: $in,
+                    range_len: $unsigned_type
+                ) -> $unsigned_type {
+                    #[allow(unused_comparisons)]
+                    if rhs >= 0 {
+                        (rhs as $unsigned_type) % range_len
+                    } else {
+                        let rhs_abs = ($in::wrapping_sub(0, rhs)) as $unsigned_type;
+                        ((($unsigned_type::MAX / range_len) * range_len) - (rhs_abs)) % range_len
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn wrapping_add(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    if MIN == $in::MIN && MAX == $in::MAX {
+
+                        return unsafe { Self::new_unchecked(self.get().wrapping_add(rhs)) }
+                    }
+
+                    let inner = self.get();
+                    let range_len = MAX.abs_diff(MIN) + 1;
+                    let offset = Self::rem_euclid_unsigned(rhs, range_len);
+
+                    let greater_vals = MAX.abs_diff(inner);
+                    if offset <= greater_vals {
+                        unsafe { Self::new_unchecked(
+                            ((inner as $unsigned_type).wrapping_add(offset)) as $in
+                        ) }
+                    }
+                    
+                    else {
+                        unsafe { Self::new_unchecked(
+                            ((MIN as $unsigned_type).wrapping_add(
+                                offset - (greater_vals + 1)
+                            )) as $in
+                        ) }
+                    }
+                }
+                
+                #[must_use = "this returns the result of the operation, without modifying the original"]
+                #[inline] pub const fn wrapping_sub(self, rhs: $in) -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    if MIN == $in::MIN && MAX == $in::MAX {
+
+                        return unsafe { Self::new_unchecked(self.get().wrapping_sub(rhs)) }
+                    }
+
+                    let inner = self.get();
+                    let range_len = MAX.abs_diff(MIN) + 1;
+                    let offset = Self::rem_euclid_unsigned(rhs, range_len);
+
+                    let lesser_vals = MIN.abs_diff(inner);
+                    if offset <= lesser_vals {
+                        unsafe { Self::new_unchecked(
+                            ((inner as $unsigned_type).wrapping_sub(offset)) as $in
+                        ) }
+                    }
+                    
+                    else {
+                        unsafe { Self::new_unchecked(
+                            ((MAX as $unsigned_type).wrapping_sub(
+                                offset - (lesser_vals + 1)
+                            )) as $in
+                        ) }
+                    }
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> $optional_type<MIN, MAX> 
+            {
+                const NICHE: $in = match (MIN, MAX) {
+                    ($in::MIN, $in::MAX) => panic!("type has no niche"),
+                    ($in::MIN, _) => $in::MAX,
+                    (_, _) => $in::MIN,
+                };
+                
+                pub const None: Self = Self(Self::NICHE);
+                
+                #[inline( always )] pub const fn Some(value: $type<MIN, MAX>) -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    Self(value.get())
+                }
+                
+                #[inline( always )] pub const fn get(self) -> Option<$type<MIN, MAX>> {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    if self.0 == Self::NICHE {
+                        None
+                    } else {
+
+                        Some(unsafe { $type::new_unchecked(self.0) })
+                    }
+                }
+                
+                #[inline( always )] pub const unsafe fn some_unchecked(value: $in) -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+
+                    unsafe { $crate::assume(MIN <= value && value <= MAX) };
+                    Self(value)
+                }
+                
+                #[inline( always )] pub const fn inner(self) -> $in {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.0
+                }
+
+                #[inline( always )] pub const fn get_primitive(self) -> Option<$in> {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    Some(const_try_opt!(self.get()).get())
+                }
+                
+                #[inline( always )] pub const fn is_none(self) -> bool {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().is_none()
+                }
+                
+                #[inline( always )] pub const fn is_some(self) -> bool {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().is_some()
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::Debug for $type<MIN, MAX> 
+            {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::Debug for $optional_type<MIN, MAX> 
+            {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::Display for $type<MIN, MAX> 
+            {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> Default for $optional_type<MIN, MAX> 
+            {
+                #[inline( always )] fn default() -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::None
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> AsRef<$in> for $type<MIN, MAX> 
+            {
+                #[inline( always )] fn as_ref(&self) -> &$in {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    &self.get_ref()
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> Borrow<$in> for $type<MIN, MAX> 
+            {
+                #[inline( always )] fn borrow(&self) -> &$in {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    &self.get_ref()
+                }
+            }
+
+            impl<
+                const MIN_A: $in,
+                const MAX_A: $in,
+                const MIN_B: $in,
+                const MAX_B: $in,
+            > PartialEq<$type<MIN_B, MAX_B>> for $type<MIN_A, MAX_A> 
+            {
+                #[inline( always )] fn eq(&self, other: &$type<MIN_B, MAX_B>) -> bool {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get() == other.get()
+                }
+            }
+
+            impl<
+                const MIN_A: $in,
+                const MAX_A: $in,
+                const MIN_B: $in,
+                const MAX_B: $in,
+            > PartialEq<$optional_type<MIN_B, MAX_B>> for $optional_type<MIN_A, MAX_A> {
+                #[inline( always )] fn eq(&self, other: &$optional_type<MIN_B, MAX_B>) -> bool {
+                    <$type<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.inner() == other.inner()
+                }
+            }
+
+            impl<
+                const MIN_A: $in,
+                const MAX_A: $in,
+                const MIN_B: $in,
+                const MAX_B: $in,
+            > PartialOrd<$type<MIN_B, MAX_B>> for $type<MIN_A, MAX_A> {
+                #[inline( always )] fn partial_cmp(&self, other: &$type<MIN_B, MAX_B>) -> Option<Ordering> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().partial_cmp(&other.get())
+                }
+            }
+
+            impl<
+                const MIN_A: $in,
+                const MAX_A: $in,
+                const MIN_B: $in,
+                const MAX_B: $in,
+            > PartialOrd<$optional_type<MIN_B, MAX_B>> for $optional_type<MIN_A, MAX_A> {
+                #[inline]
+                fn partial_cmp(&self, other: &$optional_type<MIN_B, MAX_B>) -> Option<Ordering> {
+                    <$type<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
+                    <$type<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
+                    if self.is_none() && other.is_none() {
+                        Some(Ordering::Equal)
+                    } else if self.is_none() {
+                        Some(Ordering::Less)
+                    } else if other.is_none() {
+                        Some(Ordering::Greater)
+                    } else {
+                        self.inner().partial_cmp(&other.inner())
+                    }
+                }
+            }
+
+            impl<
+                const MIN: $in,
+                const MAX: $in,
+            > Ord for $optional_type<MIN, MAX> {
+                #[inline]
+                fn cmp(&self, other: &Self) -> Ordering {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    if self.is_none() && other.is_none() {
+                        Ordering::Equal
+                    } else if self.is_none() {
+                        Ordering::Less
+                    } else if other.is_none() {
+                        Ordering::Greater
+                    } else {
+                        self.inner().cmp(&other.inner())
+                    }
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::Binary for $type<MIN, MAX> {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::LowerHex for $type<MIN, MAX> {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::UpperHex for $type<MIN, MAX> {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::LowerExp for $type<MIN, MAX> {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::UpperExp for $type<MIN, MAX> {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> fmt::Octal for $type<MIN, MAX> {
+                #[inline( always )] fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    self.get().fmt(f)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> From<$type<MIN, MAX>> for $in {
+                #[inline( always )] fn from(value: $type<MIN, MAX>) -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    value.get()
+                }
+            }
+
+            impl<
+                const MIN: $in,
+                const MAX: $in,
+            > From<$type<MIN, MAX>> for $optional_type<MIN, MAX> {
+                #[inline( always )] fn from(value: $type<MIN, MAX>) -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::Some(value)
+                }
+            }
+
+            impl<
+                const MIN: $in,
+                const MAX: $in,
+            > From<Option<$type<MIN, MAX>>> for $optional_type<MIN, MAX> {
+                #[inline( always )] fn from(value: Option<$type<MIN, MAX>>) -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    match value {
+                        Some(value) => Self::Some(value),
+                        None => Self::None,
+                    }
+                }
+            }
+
+            impl<
+                const MIN: $in,
+                const MAX: $in,
+            > From<$optional_type<MIN, MAX>> for Option<$type<MIN, MAX>> {
+                #[inline( always )] fn from(value: $optional_type<MIN, MAX>) -> Self {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    value.get()
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> TryFrom<$in> for $type<MIN, MAX> {
+                type Error = TryFromIntError;
+
+                #[inline]
+                fn try_from(value: $in) -> Result<Self, Self::Error> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::new(value).ok_or(TryFromIntError)
+                }
+            }
+
+            impl<const MIN: $in, const MAX: $in> FromStr for $type<MIN, MAX> {
+                type Err = ParseIntError;
+
+                #[inline]
+                fn from_str(s: &str) -> Result<Self, Self::Err> {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    let value = s.parse::<$in>().map_err(|e| ParseIntError {
+                        kind: e.kind().clone()
+                    })?;
+                    if value < MIN {
+                        Err(ParseIntError { kind: IntErrorKind::NegOverflow })
+                    } else if value > MAX {
+                        Err(ParseIntError { kind: IntErrorKind::PosOverflow })
+                    } else {
+
+                        Ok(unsafe { Self::new_unchecked(value) })
+                    }
+                }
+            }
+                        
+            impl<
+                const MIN: $in,
+                const MAX: $in,
+            > rand::distributions::Distribution<$type<MIN, MAX>> for rand::distributions::Standard {
+                #[inline]
+                fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> $type<MIN, MAX> {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    $type::new(rng.gen_range(MIN..=MAX)).expect("rand failed to generate a valid value")
+                }
+            }
+            
+            impl<
+                const MIN: $in,
+                const MAX: $in,
+            > rand::distributions::Distribution<$optional_type<MIN, MAX>>
+            for rand::distributions::Standard {
+                #[inline]
+                fn sample<R: rand::Rng + ?Sized>(&self, rng: &mut R) -> $optional_type<MIN, MAX> {
+                    <$type<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
+                    rng.gen::<Option<$type<MIN, MAX>>>().into()
+                }
+            }
+            
+            impl<const MIN: $in, const MAX: $in> num_traits::Bounded for $type<MIN, MAX> {
+                #[inline( always )] fn min_value() -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::MIN
+                }
+
+                #[inline( always )] fn max_value() -> Self {
+                    <Self as ::range::traits::RangeIsValid>::ASSERT;
+                    Self::MAX
+                }
+            }  
+        )*};
+    }
+    
+    impl_ranged! 
+    {
+        RangedU8 {
+            mod_name: ranged_u8
+            internal: u8
+            signed: false
+            unsigned: u8
+            optional: OptionRangedU8
+        }
+        RangedU16 {
+            mod_name: ranged_u16
+            internal: u16
+            signed: false
+            unsigned: u16
+            optional: OptionRangedU16
+        }
+        RangedU32 {
+            mod_name: ranged_u32
+            internal: u32
+            signed: false
+            unsigned: u32
+            optional: OptionRangedU32
+        }
+        RangedU64 {
+            mod_name: ranged_u64
+            internal: u64
+            signed: false
+            unsigned: u64
+            optional: OptionRangedU64
+        }
+        RangedU128 {
+            mod_name: ranged_u128
+            internal: u128
+            signed: false
+            unsigned: u128
+            optional: OptionRangedU128
+        }
+        RangedUsize {
+            mod_name: ranged_usize
+            internal: usize
+            signed: false
+            unsigned: usize
+            optional: OptionRangedUsize
+        }
+        RangedI8 {
+            mod_name: ranged_i8
+            internal: i8
+            signed: true
+            unsigned: u8
+            optional: OptionRangedI8
+        }
+        RangedI16 {
+            mod_name: ranged_i16
+            internal: i16
+            signed: true
+            unsigned: u16
+            optional: OptionRangedI16
+        }
+        RangedI32 {
+            mod_name: ranged_i32
+            internal: i32
+            signed: true
+            unsigned: u32
+            optional: OptionRangedI32
+        }
+        RangedI64 {
+            mod_name: ranged_i64
+            internal: i64
+            signed: true
+            unsigned: u64
+            optional: OptionRangedI64
+        }
+        RangedI128 {
+            mod_name: ranged_i128
+            internal: i128
+            signed: true
+            unsigned: u128
+            optional: OptionRangedI128
+        }
+        RangedIsize {
+            mod_name: ranged_isize
+            internal: isize
+            signed: true
+            unsigned: usize
+            optional: OptionRangedIsize
         }
     }
 }
@@ -25415,7 +26675,8 @@ pub mod regex
             /*
             */            
             #[derive( Clone )]
-            pub struct Captures {
+            pub struct Captures 
+            {
                 group_info: GroupInfo,
                 pid: Option<PatternID>,
                 slots: Vec<Option<NonMaxUsize>>,
@@ -25437,23 +26698,19 @@ pub mod regex
                     Captures { group_info, pid: None, slots: vec![] }
                 }
                 
-                #[inline]
-                pub fn is_match(&self) -> bool {
+                #[inline] pub fn is_match(&self) -> bool {
                     self.pid.is_some()
                 }
                 
-                #[inline]
-                pub fn pattern(&self) -> Option<PatternID> {
+                #[inline] pub fn pattern(&self) -> Option<PatternID> {
                     self.pid
                 }
                 
-                #[inline]
-                pub fn get_match(&self) -> Option<Match> {
+                #[inline] pub fn get_match(&self) -> Option<Match> {
                     Some(Match::new(self.pattern()?, self.get_group(0)?))
                 }
                 
-                #[inline]
-                pub fn get_group(&self, index: usize) -> Option<Span> {
+                #[inline] pub fn get_group(&self, index: usize) -> Option<Span> {
                     let pid = self.pattern()?;
                     
                     let (slot_start, slot_end) = if self.group_info().pattern_len() == 1 {
@@ -25579,36 +26836,30 @@ pub mod regex
                 }
             }
             
-            impl Captures {
-                #[inline]
-                pub fn clear(&mut self) {
+            impl Captures 
+            {
+                #[inline] pub fn clear(&mut self) {
                     self.pid = None;
                     for slot in self.slots.iter_mut() {
                         *slot = None;
                     }
                 }
                 
-                #[inline]
-                pub fn set_pattern(&mut self, pid: Option<PatternID>) {
+                #[inline] pub fn set_pattern(&mut self, pid: Option<PatternID>) {
                     self.pid = pid;
                 }
                 
-                #[inline]
-                pub fn slots(&self) -> &[Option<NonMaxUsize>] {
+                #[inline] pub fn slots(&self) -> &[Option<NonMaxUsize>] {
                     &self.slots
                 }
-
-
-
                 
-
-                #[inline]
-                pub fn slots_mut(&mut self) -> &mut [Option<NonMaxUsize>] {
+                #[inline] pub fn slots_mut(&mut self) -> &mut [Option<NonMaxUsize>] {
                     &mut self.slots
                 }
             }
 
-            impl ::fmt::Debug for Captures {
+            impl ::fmt::Debug for Captures 
+            {
                 fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
                     let mut dstruct = f.debug_struct("Captures");
                     dstruct.field("pid", &self.pid);
@@ -25619,12 +26870,14 @@ pub mod regex
                 }
             }
             
-            struct CapturesDebugMap<'a> {
+            struct CapturesDebugMap<'a> 
+            {
                 pid: PatternID,
                 caps: &'a Captures,
             }
 
-            impl<'a> ::fmt::Debug for CapturesDebugMap<'a> {
+            impl<'a> ::fmt::Debug for CapturesDebugMap<'a> 
+            {
                 fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
                     struct Key<'a>(usize, Option<&'a str>);
 
@@ -25652,12 +26905,14 @@ pub mod regex
             }
             
             #[derive( Clone, Debug )]
-            pub struct CapturesPatternIter<'a> {
+            pub struct CapturesPatternIter<'a> 
+            {
                 caps: &'a Captures,
                 names: ::iter::Enumerate<GroupInfoPatternNames<'a>>,
             }
 
-            impl<'a> Iterator for CapturesPatternIter<'a> {
+            impl<'a> Iterator for CapturesPatternIter<'a> 
+            {
                 type Item = Option<Span>;
 
                 fn next(&mut self) -> Option<Option<Span>> {
@@ -25737,19 +26992,16 @@ pub mod regex
                         .expect("empty group info is always valid")
                 }
 
-                #[inline]
-                pub fn to_index(&self, pid: PatternID, name: &str) -> Option<usize> {
+                #[inline] pub fn to_index(&self, pid: PatternID, name: &str) -> Option<usize> {
                     let indices = self.0.name_to_index.get(pid.as_usize())?;
                     indices.get(name).cloned().map(|i| i.as_usize())
                 }
 
-                #[inline]
-                pub fn to_name(&self, pid: PatternID, group_index: usize) -> Option<&str> {
+                #[inline] pub fn to_name(&self, pid: PatternID, group_index: usize) -> Option<&str> {
                     let pattern_names = self.0.index_to_name.get(pid.as_usize())?;
                     pattern_names.get(group_index)?.as_deref()
                 }
-                #[inline]
-                pub fn pattern_names(&self, pid: PatternID) -> GroupInfoPatternNames<'_> {
+                #[inline] pub fn pattern_names(&self, pid: PatternID) -> GroupInfoPatternNames<'_> {
                     GroupInfoPatternNames {
                         it: self
                             .0
@@ -25760,8 +27012,7 @@ pub mod regex
                     }
                 }
 
-                #[inline]
-                pub fn all_names(&self) -> GroupInfoAllNames<'_> {
+                #[inline] pub fn all_names(&self) -> GroupInfoAllNames<'_> {
                     GroupInfoAllNames {
                         group_info: self,
                         pids: PatternID::iter(self.pattern_len()),
@@ -25770,8 +27021,7 @@ pub mod regex
                     }
                 }
                 
-                #[inline]
-                pub fn slots(
+                #[inline] pub fn slots(
                     &self,
                     pid: PatternID,
                     group_index: usize,
@@ -25791,8 +27041,7 @@ pub mod regex
                 
 
 
-                #[inline]
-                pub fn slot(&self, pid: PatternID, group_index: usize) -> Option<usize> {
+                #[inline] pub fn slot(&self, pid: PatternID, group_index: usize) -> Option<usize> {
                     if group_index >= self.group_len(pid) {
                         return None;
                     }
@@ -25806,38 +27055,31 @@ pub mod regex
                     }
                 }
                 
-                #[inline]
-                pub fn pattern_len(&self) -> usize {
+                #[inline] pub fn pattern_len(&self) -> usize {
                     self.0.pattern_len()
                 }
                 
-                #[inline]
-                pub fn group_len(&self, pid: PatternID) -> usize {
+                #[inline] pub fn group_len(&self, pid: PatternID) -> usize {
                     self.0.group_len(pid)
                 }
 
-                #[inline]
-                pub fn all_group_len(&self) -> usize {
+                #[inline] pub fn all_group_len(&self) -> usize {
                     self.slot_len() / 2
                 }
 
-                #[inline]
-                pub fn slot_len(&self) -> usize {
+                #[inline] pub fn slot_len(&self) -> usize {
                     self.0.small_slot_len().as_usize()
                 }
 
-                #[inline]
-                pub fn implicit_slot_len(&self) -> usize {
+                #[inline] pub fn implicit_slot_len(&self) -> usize {
                     self.pattern_len() * 2
                 }
 
-                #[inline]
-                pub fn explicit_slot_len(&self) -> usize {
+                #[inline] pub fn explicit_slot_len(&self) -> usize {
                     self.slot_len().saturating_sub(self.implicit_slot_len())
                 }
 
-                #[inline]
-                pub fn memory_usage(&self) -> usize {
+                #[inline] pub fn memory_usage(&self) -> usize {
                     use ::mem::size_of as s;
 
                     s::<GroupInfoInner>()
@@ -25851,14 +27093,16 @@ pub mod regex
             type CaptureNameMap = ::collections::HashMap<Arc<str>, SmallIndex>;
 
             #[derive(Debug, Default)]
-            struct GroupInfoInner {
+            struct GroupInfoInner 
+            {
                 slot_ranges: Vec<(SmallIndex, SmallIndex)>,
                 name_to_index: Vec<CaptureNameMap>,
                 index_to_name: Vec<Vec<Option<Arc<str>>>>,
                 memory_extra: usize,
             }
 
-            impl GroupInfoInner {
+            impl GroupInfoInner 
+            {
                 fn add_first_group(&mut self, pid: PatternID) {
                     assert_eq!(pid.as_usize(), self.slot_ranges.len());
                     assert_eq!(pid.as_usize(), self.name_to_index.len());
@@ -25955,12 +27199,14 @@ pub mod regex
             }
             
             #[derive( Clone, Debug )]
-            pub struct GroupInfoError {
+            pub struct GroupInfoError 
+            {
                 kind: GroupInfoErrorKind,
             }
             
             #[derive( Clone, Debug )]
-            enum GroupInfoErrorKind {
+            enum GroupInfoErrorKind 
+            {
 
 
                 TooManyPatterns { err: PatternIDError },
@@ -25997,7 +27243,8 @@ pub mod regex
                 },
             }
 
-            impl GroupInfoError {
+            impl GroupInfoError 
+            {
                 fn too_many_patterns(err: PatternIDError) -> GroupInfoError {
                     GroupInfoError { kind: GroupInfoErrorKind::TooManyPatterns { err } }
                 }
@@ -26028,7 +27275,8 @@ pub mod regex
                 }
             }
             
-            impl ::error::Error for GroupInfoError {
+            impl ::error::Error for GroupInfoError 
+            {
                 fn source(&self) -> Option<&(dyn ::error::Error + 'static)> {
                     match self.kind {
                         GroupInfoErrorKind::TooManyPatterns { .. }
@@ -26040,8 +27288,10 @@ pub mod regex
                 }
             }
 
-            impl ::fmt::Display for GroupInfoError {
-                fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            impl ::fmt::Display for GroupInfoError 
+            {
+                fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+                {
                     use self::GroupInfoErrorKind::*;
 
                     match self.kind {
@@ -26051,23 +27301,19 @@ pub mod regex
                         TooManyGroups { pattern, minimum } => {
                             write!(
                                 f,
-                                "too many capture groups (at least {}) were \
-                                found for pattern {}",
+                                "too many capture groups (at least {}) were found for pattern {}",
                                 minimum,
                                 pattern.as_usize()
                             )
                         }
                         MissingGroups { pattern } => write!(
                             f,
-                            "no capturing groups found for pattern {} \
-                            (either all patterns have zero groups or all patterns have \
-                            at least one group)",
+                            "no capturing groups found for pattern {} (either all patterns have zero groups or all patterns have at least one group)",
                             pattern.as_usize(),
                         ),
                         FirstMustBeUnnamed { pattern } => write!(
                             f,
-                            "first capture group (at index 0) for pattern {} has a name \
-                            (it must be unnamed)",
+                            "first capture group (at index 0) for pattern {} has a name (it must be unnamed)",
                             pattern.as_usize(),
                         ),
                         Duplicate { pattern, ref name } => write!(
@@ -26081,17 +27327,20 @@ pub mod regex
             }
             
             #[derive( Clone, Debug )]
-            pub struct GroupInfoPatternNames<'a> {
+            pub struct GroupInfoPatternNames<'a> 
+            {
                 it: ::slice::Iter<'a, Option<Arc<str>>>,
             }
 
-            impl GroupInfoPatternNames<'static> {
+            impl GroupInfoPatternNames<'static>
+            {
                 fn empty() -> GroupInfoPatternNames<'static> {
                     GroupInfoPatternNames { it: [].iter() }
                 }
             }
 
-            impl<'a> Iterator for GroupInfoPatternNames<'a> {
+            impl<'a> Iterator for GroupInfoPatternNames<'a> 
+            {
                 type Item = Option<&'a str>;
 
                 fn next(&mut self) -> Option<Option<&'a str>> {
@@ -26111,14 +27360,16 @@ pub mod regex
             impl<'a> ::iter::FusedIterator for GroupInfoPatternNames<'a> {}
             
             #[derive(Debug )]
-            pub struct GroupInfoAllNames<'a> {
+            pub struct GroupInfoAllNames<'a> 
+            {
                 group_info: &'a GroupInfo,
                 pids: PatternIDIter,
                 current_pid: Option<PatternID>,
                 names: Option<::iter::Enumerate<GroupInfoPatternNames<'a>>>,
             }
 
-            impl<'a> Iterator for GroupInfoAllNames<'a> {
+            impl<'a> Iterator for GroupInfoAllNames<'a> 
+            {
                 type Item = (PatternID, usize, Option<&'a str>);
 
                 fn next(&mut self) -> Option<(PatternID, usize, Option<&'a str>)> {
@@ -26157,7 +27408,6 @@ pub mod regex
             };
             /*
             */
-
             const DEAD:StateID = StateID::ZERO;
                 
             pub mod dense
@@ -26854,7 +28104,7 @@ pub mod regex
                         let update_special_accel =
                             |special: &mut Special, accel_id: StateID| {
                                 special.min_accel = cmp::min(special.min_accel, accel_id);
-                                special.max_accel = cmp::max(special.max_accel, accel_id);
+                                special.max_accel = cmp::m(special.max_accel, accel_id);
                             };
                         if cmatch > 0 && self.special.matches() {
                             let mut next_id = self.special.max_match;
@@ -26984,7 +28234,7 @@ pub mod regex
                                 next_id = self.tt.next_state_id(next_id);
                             }
                             matches = new_matches;
-                            self.special.max_match = cmp::max(
+                            self.special.max_match = cmp::m(
                                 self.special.min_match,
                                 self.tt.prev_state_id(next_id),
                             );
@@ -27000,7 +28250,7 @@ pub mod regex
                                 remapper.swap(self, next_id, id);
                                 next_id = self.tt.next_state_id(next_id);
                             }
-                            self.special.max_start = cmp::max(
+                            self.special.max_start = cmp::m(
                                 self.special.min_start,
                                 self.tt.prev_state_id(next_id),
                             );
@@ -28423,8 +29673,8 @@ pub mod regex
                             ),
                             BuildErrorKind::TooManyStartStates => {
                                 let stride = Start::len();
-                                let max = usize::try_from(::isize::MAX).unwrap();
-                                let limit = (max - stride) / stride;
+                                let m = usize::try_from(::isize::MAX).unwrap();
+                                let limit = (m - stride) / stride;
                                 write!(
                                     f,
                                     "compiling DFA with start states exceeds pattern \
@@ -28644,7 +29894,7 @@ pub mod regex
                         }
                         if self.nfa.group_info().explicit_slot_len() > Slots::LIMIT {
                             return Err(BuildError::not_one_pass(
-                                "too many explicit capturing groups (max is 16)",
+                                "too many explicit capturing groups (m is 16)",
                             ));
                         }
                         assert_eq!(DEAD, self.add_empty_state()?);
@@ -30278,9 +31528,9 @@ pub mod regex
 
                         let (special, nread) = Special::from_bytes(&slice[nr..])?;
                         nr += nread;
-                        if special.max.as_usize() >= tt.sparse().len() {
+                        if special.m.as_usize() >= tt.sparse().len() {
                             return Err(DeserializeError::generic(
-                                "max should not be greater than or equal to sparse bytes",
+                                "m should not be greater than or equal to sparse bytes",
                             ));
                         }
 
@@ -33643,36 +34893,9 @@ pub mod regex
                     ($msg:expr) => { return Err(DeserializeError::generic($msg)); };
                 }
 
-                //
-
-                //
-                //
-                //
-                //
-                //
-
-                //
-                //
-
-                //
-                //
-                //
-
-                //
-
-                //
-
-                //
-
-                //
-
-                //
-
-                //
-                //
                 #[derive( Clone, Copy, Debug )]
                 pub struct Special {
-                    pub max: StateID,
+                    pub m: StateID,
                     pub quit_id: StateID,
                     pub min_match: StateID,
                     pub max_match: StateID,
@@ -33685,7 +34908,7 @@ pub mod regex
                 impl Special {
                         pub fn new() -> Special {
                         Special {
-                            max: DEAD,
+                            m: DEAD,
                             quit_id: DEAD,
                             min_match: DEAD,
                             max_match: DEAD,
@@ -33698,7 +34921,7 @@ pub mod regex
 
                         pub fn remap(&self, map: impl Fn(StateID) -> StateID) -> Special {
                         Special {
-                            max: map( self.max),
+                            m: map( self.m),
                             quit_id: map( self.quit_id),
                             min_match: map( self.min_match),
                             max_match: map( self.max_match),
@@ -33722,17 +34945,17 @@ pub mod regex
                             Ok(id)
                         };
 
-                        let max = read_id("special max id")?;
+                        let m = read_id("special m id")?;
                         let quit_id = read_id("special quit id")?;
                         let min_match = read_id("special min match id")?;
-                        let max_match = read_id("special max match id")?;
+                        let max_match = read_id("special m match id")?;
                         let min_accel = read_id("special min accel id")?;
-                        let max_accel = read_id("special max accel id")?;
+                        let max_accel = read_id("special m accel id")?;
                         let min_start = read_id("special min start id")?;
-                        let max_start = read_id("special max start id")?;
+                        let max_start = read_id("special m start id")?;
 
                         let special = Special {
-                            max,
+                            m,
                             quit_id,
                             min_match,
                             max_match,
@@ -33796,17 +35019,17 @@ pub mod regex
                             err!("min_accel should not be greater than min_start");
                         }
 
-                        if self.max < self.quit_id {
-                            err!("quit_id should not be greater than max");
+                        if self.m < self.quit_id {
+                            err!("quit_id should not be greater than m");
                         }
-                        if self.max < self.max_match {
-                            err!("max_match should not be greater than max");
+                        if self.m < self.max_match {
+                            err!("max_match should not be greater than m");
                         }
-                        if self.max < self.max_accel {
-                            err!("max_accel should not be greater than max");
+                        if self.m < self.max_accel {
+                            err!("max_accel should not be greater than m");
                         }
-                        if self.max < self.max_start {
-                            err!("max_start should not be greater than max");
+                        if self.m < self.max_start {
+                            err!("max_start should not be greater than m");
                         }
 
                         Ok( () )
@@ -33817,8 +35040,8 @@ pub mod regex
                         len: usize,
                         stride2: usize,
                     ) -> Result<(), DeserializeError> {
-                        if ( self.max.as_usize() >> stride2) >= len {
-                            err!("max should not be greater than or equal to state length");
+                        if ( self.m.as_usize() >> stride2) >= len {
+                            err!("m should not be greater than or equal to state length");
                         }
                         Ok( () )
                     }
@@ -33828,7 +35051,7 @@ pub mod regex
                         if dst.len() < self.write_to_len() { return Err(SerializeError::buffer_too_small("special state ids")); }
 
                         let mut nwrite = 0;
-                        nwrite += write_state_id::<E>( self.max, &mut dst[nwrite..]);
+                        nwrite += write_state_id::<E>( self.m, &mut dst[nwrite..]);
                         nwrite += write_state_id::<E>( self.quit_id, &mut dst[nwrite..]);
                         nwrite += write_state_id::<E>( self.min_match, &mut dst[nwrite..]);
                         nwrite += write_state_id::<E>( self.max_match, &mut dst[nwrite..]);
@@ -33853,19 +35076,19 @@ pub mod regex
                     pub fn write_to_len( &self ) -> usize { 8 * StateID::SIZE }
                         pub fn set_max(&mut self) {
                         use ::cmp::max;
-                        self.max = max(
+                        self.m = m(
                             self.quit_id,
-                            max( self.max_match, max( self.max_accel, self.max_start)),
+                            m( self.max_match, m( self.max_accel, self.max_start)),
                         );
                     }
                         pub fn set_no_special_start_states(&mut self) {
                         use ::cmp::max;
-                        self.max = max( self.quit_id, max( self.max_match, self.max_accel));
+                        self.m = m( self.quit_id, m( self.max_match, self.max_accel));
                         self.min_start = DEAD;
                         self.max_start = DEAD;
                     }
                     #[inline] pub fn is_special_state(&self, id: StateID) -> bool {
-                        id <= self.max
+                        id <= self.m
                     }
                     #[inline] pub fn is_dead_state(&self, id: StateID) -> bool {
                         id == DEAD
@@ -41773,7 +42996,7 @@ pub mod regex
                         *,
                     };
                     /*
-                    use core::{borrow::Borrow, cell::RefCell};
+                    use ::{borrow::Borrow, cell::RefCell};
 
                     use alloc::{sync::Arc, vec, vec::Vec};
 
@@ -42128,11 +43351,11 @@ pub mod regex
                             &self,
                             rep: &hir::Repetition,
                         ) -> Result<ThompsonRef, BuildError> {
-                            match (rep.min, rep.max) {
+                            match (rep.min, rep.m) {
                                 (0, Some(1)) => self.c_zero_or_one(&rep.sub, rep.greedy),
                                 (min, None) => self.c_at_least(&rep.sub, rep.greedy, min),
-                                (min, Some(max)) if min == max => self.c_exactly(&rep.sub, min),
-                                (min, Some(max)) => self.c_bounded(&rep.sub, rep.greedy, min, max),
+                                (min, Some(m)) if min == m => self.c_exactly(&rep.sub, min),
+                                (min, Some(m)) => self.c_bounded(&rep.sub, rep.greedy, min, m),
                             }
                         }
                         fn c_bounded(
@@ -42140,16 +43363,16 @@ pub mod regex
                             expr: &Hir,
                             greedy: bool,
                             min: u32,
-                            max: u32,
+                            m: u32,
                         ) -> Result<ThompsonRef, BuildError> {
                             let prefix = self.c_exactly(expr, min)?;
-                            if min == max {
+                            if min == m {
                                 return Ok(prefix);
                             }
                             
                             let empty = self.add_empty()?;
                             let mut prev_end = prefix.end;
-                            for _ in min..max {
+                            for _ in min..m {
                                 let union = if greedy {
                                     self.add_union()
                                 } else {
@@ -43842,7 +45065,7 @@ pub mod regex
                 ) -> Option<Prefilter> {
                     Choice::new(kind, needles).and_then(|choice| {
                         let max_needle_len =
-                            needles.iter().map(|b| b.as_ref().len()).max().unwrap_or(0);
+                            needles.iter().map(|b| b.as_ref().len()).m().unwrap_or(0);
                         Prefilter::from_choice(choice, max_needle_len)
                     })
                 }
@@ -43883,8 +45106,7 @@ pub mod regex
                         .and_then(|lits| Prefilter::new(kind, lits))
                 }
 
-                #[inline]
-                pub fn find(&self, haystack: &[u8], span: Span) -> Option<Span> {
+                #[inline] pub fn find(&self, haystack: &[u8], span: Span) -> Option<Span> {
                     #[cfg(not(feature = "alloc"))]
                     {
                         unreachable!()
@@ -43894,8 +45116,7 @@ pub mod regex
                     }
                 }
 
-                #[inline]
-                pub fn prefix(&self, haystack: &[u8], span: Span) -> Option<Span> {
+                #[inline] pub fn prefix(&self, haystack: &[u8], span: Span) -> Option<Span> {
                     #[cfg(not(feature = "alloc"))]
                     {
                         unreachable!()
@@ -43905,8 +45126,7 @@ pub mod regex
                     }
                 }
 
-                #[inline]
-                pub fn memory_usage(&self) -> usize {
+                #[inline] pub fn memory_usage(&self) -> usize {
                     #[cfg(not(feature = "alloc"))]
                     {
                         unreachable!()
@@ -43916,8 +45136,7 @@ pub mod regex
                     }
                 }
 
-                #[inline]
-                pub fn max_needle_len(&self) -> usize {
+                #[inline] pub fn max_needle_len(&self) -> usize {
                     #[cfg(not(feature = "alloc"))]
                     {
                         unreachable!()
@@ -43927,8 +45146,7 @@ pub mod regex
                     }
                 }
 
-                #[inline]
-                pub fn is_fast(&self) -> bool {
+                #[inline] pub fn is_fast(&self) -> bool {
                     #[cfg(not(feature = "alloc"))]
                     {
                         unreachable!()
@@ -44148,8 +45366,7 @@ pub mod regex
 
                 #[inline] pub fn new(index: usize) -> Result<SmallIndex, SmallIndexError> { SmallIndex::try_from(index) }
                 
-                #[inline]
-                pub const fn new_unchecked(index: usize) -> SmallIndex {
+                #[inline] pub const fn new_unchecked(index: usize) -> SmallIndex {
 
                     SmallIndex(index as u32)
                 }
@@ -44158,25 +45375,21 @@ pub mod regex
                     SmallIndex::new(index).expect("invalid small index")
                 }
                 
-                #[inline]
-                pub const fn as_usize(&self) -> usize {
+                #[inline] pub const fn as_usize(&self) -> usize {
 
                     self.0 as usize
                 }
                 
-                #[inline]
-                pub const fn as_u64(&self) -> u64 {
+                #[inline] pub const fn as_u64(&self) -> u64 {
 
                     self.0 as u64
                 }
                 
-                #[inline]
-                pub const fn as_u32(&self) -> u32 {
+                #[inline] pub const fn as_u32(&self) -> u32 {
                     self.0
                 }
                 
-                #[inline]
-                pub const fn as_i32(&self) -> i32 {
+                #[inline] pub const fn as_i32(&self) -> i32 {
 
                     self.0 as i32
                }
@@ -45252,266 +46465,105 @@ pub mod regex
                     }
                 }
 
-                /// Enable or disable the case insensitive flag by default.
-                ///
-                /// When Unicode mode is enabled, case insensitivity is Unicode-aware.
-                /// Specifically, it will apply the "simple" case folding rules as
-                /// specified by Unicode.
-                ///
-                /// By default this is disabled. It may alternatively be selectively
-                /// enabled in the regular expression itself via the `i` flag.
                 pub fn case_insensitive(mut self, yes: bool) -> Config {
                     self.case_insensitive = yes;
                     self
                 }
-
-                /// Enable or disable the multi-line matching flag by default.
-                ///
-                /// When this is enabled, the `^` and `$` look-around assertions will
-                /// match immediately after and immediately before a new line character,
-                /// respectively. Note that the `\A` and `\z` look-around assertions are
-                /// unaffected by this setting and always correspond to matching at the
-                /// beginning and end of the input.
-                ///
-                /// By default this is disabled. It may alternatively be selectively
-                /// enabled in the regular expression itself via the `m` flag.
+                
                 pub fn multi_line(mut self, yes: bool) -> Config {
                     self.multi_line = yes;
                     self
                 }
-
-                /// Enable or disable the "dot matches any character" flag by default.
-                ///
-                /// When this is enabled, `.` will match any character. When it's disabled,
-                /// then `.` will match any character except for a new line character.
-                ///
-                /// Note that `.` is impacted by whether the "unicode" setting is enabled
-                /// or not. When Unicode is enabled (the default), `.` will match any UTF-8
-                /// encoding of any Unicode scalar value (sans a new line, depending on
-                /// whether this "dot matches new line" option is enabled). When Unicode
-                /// mode is disabled, `.` will match any byte instead. Because of this,
-                /// when Unicode mode is disabled, `.` can only be used when the "allow
-                /// invalid UTF-8" option is enabled, since `.` could otherwise match
-                /// invalid UTF-8.
-                ///
-                /// By default this is disabled. It may alternatively be selectively
-                /// enabled in the regular expression itself via the `s` flag.
+                
                 pub fn dot_matches_new_line(mut self, yes: bool) -> Config {
                     self.dot_matches_new_line = yes;
                     self
                 }
-
-                /// Enable or disable the "CRLF mode" flag by default.
-                ///
-                /// By default this is disabled. It may alternatively be selectively
-                /// enabled in the regular expression itself via the `R` flag.
-                ///
-                /// When CRLF mode is enabled, the following happens:
-                ///
-                /// * Unless `dot_matches_new_line` is enabled, `.` will match any character
-                /// except for `\r` and `\n`.
-                /// * When `multi_line` mode is enabled, `^` and `$` will treat `\r\n`,
-                /// `\r` and `\n` as line terminators. And in particular, neither will
-                /// match between a `\r` and a `\n`.
+                
                 pub fn crlf(mut self, yes: bool) -> Config {
                     self.crlf = yes;
                     self
                 }
-
-                /// Sets the line terminator for use with `(?u-s:.)` and `(?-us:.)`.
-                ///
-                /// Namely, instead of `.` (by default) matching everything except for `\n`,
-                /// this will cause `.` to match everything except for the byte given.
-                ///
-                /// If `.` is used in a context where Unicode mode is enabled and this byte
-                /// isn't ASCII, then an error will be returned. When Unicode mode is
-                /// disabled, then any byte is permitted, but will return an error if UTF-8
-                /// mode is enabled and it is a non-ASCII byte.
-                ///
-                /// In short, any ASCII value for a line terminator is always okay. But a
-                /// non-ASCII byte might result in an error depending on whether Unicode
-                /// mode or UTF-8 mode are enabled.
-                ///
-                /// Note that if `R` mode is enabled then it always takes precedence and
-                /// the line terminator will be treated as `\r` and `\n` simultaneously.
-                ///
-                /// Note also that this *doesn't* impact the look-around assertions
-                /// `(?m:^)` and `(?m:$)`. That's usually controlled by additional
-                /// configuration in the regex engine itself.
+                
                 pub fn line_terminator(mut self, byte: u8) -> Config {
                     self.line_terminator = byte;
                     self
                 }
-
-                /// Enable or disable the "swap greed" flag by default.
-                ///
-                /// When this is enabled, `.*` (for example) will become ungreedy and `.*?`
-                /// will become greedy.
-                ///
-                /// By default this is disabled. It may alternatively be selectively
-                /// enabled in the regular expression itself via the `U` flag.
+                
                 pub fn swap_greed(mut self, yes: bool) -> Config {
                     self.swap_greed = yes;
                     self
                 }
-
-                /// Enable verbose mode in the regular expression.
-                ///
-                /// When enabled, verbose mode permits insignificant whitespace in many
-                /// places in the regular expression, as well as comments. Comments are
-                /// started using `#` and continue until the end of the line.
-                ///
-                /// By default, this is disabled. It may be selectively enabled in the
-                /// regular expression by using the `x` flag regardless of this setting.
+                
                 pub fn ignore_whitespace(mut self, yes: bool) -> Config {
                     self.ignore_whitespace = yes;
                     self
                 }
-
-                /// Enable or disable the Unicode flag (`u`) by default.
-                ///
-                /// By default this is **enabled**. It may alternatively be selectively
-                /// disabled in the regular expression itself via the `u` flag.
-                ///
-                /// Note that unless "allow invalid UTF-8" is enabled (it's disabled by
-                /// default), a regular expression will fail to parse if Unicode mode is
-                /// disabled and a sub-expression could possibly match invalid UTF-8.
-                ///
-                /// **WARNING**: Unicode mode can greatly increase the size of the compiled
-                /// DFA, which can noticeably impact both memory usage and compilation
-                /// time. This is especially noticeable if your regex contains character
-                /// classes like `\w` that are impacted by whether Unicode is enabled or
-                /// not. If Unicode is not necessary, you are encouraged to disable it.
+                
                 pub fn unicode(mut self, yes: bool) -> Config {
                     self.unicode = yes;
                     self
                 }
-
-                /// When disabled, the builder will permit the construction of a regular
-                /// expression that may match invalid UTF-8.
-                ///
-                /// For example, when [`Config::unicode`] is disabled, then
-                /// expressions like `[^a]` may match invalid UTF-8 since they can match
-                /// any single byte that is not `a`. By default, these sub-expressions
-                /// are disallowed to avoid returning offsets that split a UTF-8
-                /// encoded codepoint. However, in cases where matching at arbitrary
-                /// locations is desired, this option can be disabled to permit all such
-                /// sub-expressions.
-                ///
-                /// When enabled (the default), the builder is guaranteed to produce a
-                /// regex that will only ever match valid UTF-8 (otherwise, the builder
-                /// will return an error).
+                
                 pub fn utf8(mut self, yes: bool) -> Config {
                     self.utf8 = yes;
                     self
                 }
-
-                /// Set the nesting limit used for the regular expression parser.
-                ///
-                /// The nesting limit controls how deep the abstract syntax tree is allowed
-                /// to be. If the AST exceeds the given limit (e.g., with too many nested
-                /// groups), then an error is returned by the parser.
-                ///
-                /// The purpose of this limit is to act as a heuristic to prevent stack
-                /// overflow when building a finite automaton from a regular expression's
-                /// abstract syntax tree. In particular, construction currently uses
-                /// recursion. In the future, the implementation may stop using recursion
-                /// and this option will no longer be necessary.
-                ///
-                /// This limit is not checked until the entire AST is parsed. Therefore,
-                /// if callers want to put a limit on the amount of heap space used, then
-                /// they should impose a limit on the length, in bytes, of the concrete
-                /// pattern string. In particular, this is viable since the parser will
-                /// limit itself to heap space proportional to the length of the pattern
-                /// string.
-                ///
-                /// Note that a nest limit of `0` will return a nest limit error for most
-                /// patterns but not all. For example, a nest limit of `0` permits `a` but
-                /// not `ab`, since `ab` requires a concatenation AST item, which results
-                /// in a nest depth of `1`. In general, a nest limit is not something that
-                /// manifests in an obvious way in the concrete syntax, therefore, it
-                /// should not be used in a granular way.
+                
                 pub fn nest_limit(mut self, limit: u32) -> Config {
                     self.nest_limit = limit;
                     self
                 }
-
-                /// Whether to support octal syntax or not.
-                ///
-                /// Octal syntax is a little-known way of uttering Unicode codepoints in
-                /// a regular expression. For example, `a`, `\x61`, `\u0061` and
-                /// `\141` are all equivalent regular expressions, where the last example
-                /// shows octal syntax.
-                ///
-                /// While supporting octal syntax isn't in and of itself a problem, it does
-                /// make good error messages harder. That is, in PCRE based regex engines,
-                /// syntax like `\1` invokes a backreference, which is explicitly
-                /// unsupported in Rust's regex engine. However, many users expect it to
-                /// be supported. Therefore, when octal support is disabled, the error
-                /// message will explicitly mention that backreferences aren't supported.
-                ///
-                /// Octal syntax is disabled by default.
+                
                 pub fn octal(mut self, yes: bool) -> Config {
                     self.octal = yes;
                     self
                 }
 
-                /// Returns whether "unicode" mode is enabled.
                 pub fn get_unicode(&self) -> bool {
                     self.unicode
                 }
 
-                /// Returns whether "case insensitive" mode is enabled.
                 pub fn get_case_insensitive(&self) -> bool {
                     self.case_insensitive
                 }
 
-                /// Returns whether "multi line" mode is enabled.
                 pub fn get_multi_line(&self) -> bool {
                     self.multi_line
                 }
 
-                /// Returns whether "dot matches new line" mode is enabled.
                 pub fn get_dot_matches_new_line(&self) -> bool {
                     self.dot_matches_new_line
                 }
 
-                /// Returns whether "CRLF" mode is enabled.
                 pub fn get_crlf(&self) -> bool {
                     self.crlf
                 }
 
-                /// Returns the line terminator in this syntax configuration.
                 pub fn get_line_terminator(&self) -> u8 {
                     self.line_terminator
                 }
 
-                /// Returns whether "swap greed" mode is enabled.
                 pub fn get_swap_greed(&self) -> bool {
                     self.swap_greed
                 }
 
-                /// Returns whether "ignore whitespace" mode is enabled.
                 pub fn get_ignore_whitespace(&self) -> bool {
                     self.ignore_whitespace
                 }
 
-                /// Returns whether UTF-8 mode is enabled.
                 pub fn get_utf8(&self) -> bool {
                     self.utf8
                 }
 
-                /// Returns the "nest limit" setting.
                 pub fn get_nest_limit(&self) -> u32 {
                     self.nest_limit
                 }
 
-                /// Returns whether "octal" mode is enabled.
                 pub fn get_octal(&self) -> bool {
                     self.octal
                 }
 
-                /// Applies this configuration to the given parser.
                 pub fn apply(&self, builder: &mut ParserBuilder) {
                     builder
                         .unicode(self.unicode)
@@ -45527,7 +46579,6 @@ pub mod regex
                         .octal(self.octal);
                 }
 
-                /// Applies this configuration to the given AST parser.
                 pub fn apply_ast(&self, builder: &mut ast::parse::ParserBuilder) {
                     builder
                         .ignore_whitespace(self.ignore_whitespace)
@@ -45535,7 +46586,6 @@ pub mod regex
                         .octal(self.octal);
                 }
 
-                /// Applies this configuration to the given AST-to-HIR translator.
                 pub fn apply_hir(
                     &self,
                     builder: &mut hir::translate::TranslatorBuilder,
@@ -49855,7 +50905,7 @@ pub mod regex
             pub mod print
             {
                 /*!
-                Provides a regular expression printer for `Ast`.*/
+                Provides a regular expression printer for `Ast`. */
                 use ::
                 {
                     regex::
@@ -49918,24 +50968,27 @@ pub mod regex
                 #[derive( Debug )]
                 struct Writer<W> { wtr: W, }
 
-                impl<W: fmt::Write> Visitor for Writer<W> {
+                impl<W: fmt::Write> Visitor for Writer<W> 
+                {
                     type Output = ();
                     type Err = fmt::Error;
 
-                    fn finish(self) -> fmt::Result {
-                        Ok( () )
-                    }
+                    fn finish(self) -> fmt::Result  { Ok( () ) }
 
-                    fn visit_pre( &mut self, ast: &Ast) -> fmt::Result {
-                        match *ast {
+                    fn visit_pre( &mut self, ast: &Ast) -> fmt::Result 
+                    {
+                        match *ast 
+                        {
                             Ast::Group(ref x) => self.fmt_group_pre(x),
                             Ast::ClassBracketed(ref x) => self.fmt_class_bracketed_pre(x),
                             _ => Ok( () ),
                         }
                     }
 
-                    fn visit_post( &mut self, ast: &Ast) -> fmt::Result {
-                        match *ast {
+                    fn visit_post( &mut self, ast: &Ast) -> fmt::Result 
+                    {
+                        match *ast 
+                        {
                             Ast::Empty(_) => Ok( () ),
                             Ast::Flags(ref x) => self.fmt_set_flags(x),
                             Ast::Literal(ref x) => self.fmt_literal(x),
@@ -51955,7 +53008,7 @@ pub mod regex
                             pos += 1;
                         }
                         let note_len = span.end.column.saturating_sub(span.start.column);
-                        for _ in 0..::cmp::max(1, note_len) {
+                        for _ in 0..::cmp::m(1, note_len) {
                             notes.push('^');
                             pos += 1;
                         }
@@ -52191,8 +53244,8 @@ pub mod regex
                     
                     pub fn negate(&mut self) {
                         if self.ranges.is_empty() {
-                            let (min, max) = (I::Bound::min_value(), I::Bound::max_value());
-                            self.ranges.push(I::create(min, max));
+                            let (min, m) = (I::Bound::min_value(), I::Bound::max_value());
+                            self.ranges.push(I::create(min, m));
                             self.folded = true;
                             return;
                         }
@@ -52288,13 +53341,13 @@ pub mod regex
                             return None;
                         }
                         let lower = cmp::min( self.lower(), other.lower());
-                        let upper = cmp::max( self.upper(), other.upper());
+                        let upper = cmp::m( self.upper(), other.upper());
                         Some(Self::create(lower, upper))
                     }
 
                     fn intersect(&self, other: &Self) -> Option<Self>
                     {
-                        let lower = cmp::max( self.lower(), other.lower());
+                        let lower = cmp::m( self.lower(), other.lower());
                         let upper = cmp::min( self.upper(), other.upper());
                         if lower <= upper {
                             Some(Self::create(lower, upper))
@@ -52335,13 +53388,13 @@ pub mod regex
                         let upper1 = self.upper().as_u32();
                         let lower2 = other.lower().as_u32();
                         let upper2 = other.upper().as_u32();
-                        cmp::max(lower1, lower2) <= cmp::min(upper1, upper2).saturating_add(1)
+                        cmp::m(lower1, lower2) <= cmp::min(upper1, upper2).saturating_add(1)
                     }
                     
                     fn is_intersection_empty(&self, other: &Self) -> bool {
                         let (lower1, upper1) = ( self.lower(), self.upper());
                         let (lower2, upper2) = (other.lower(), other.upper());
-                        cmp::max(lower1, lower2) > cmp::min(upper1, upper2)
+                        cmp::m(lower1, lower2) > cmp::min(upper1, upper2)
                     }
 
                     fn is_subset(&self, other: &Self) -> bool {
@@ -52529,8 +53582,8 @@ pub mod regex
                     fn extract_repetition(&self, rep: &hir::Repetition) -> Seq {
                         let mut subseq = self.extract(&rep.sub);
                         match *rep {
-                            hir::Repetition { min: 0, max, greedy, .. } => {
-                                if max != Some(1) {
+                            hir::Repetition { min: 0, m, greedy, .. } => {
+                                if m != Some(1) {
                                     subseq.make_inexact();
                                 }
                                 let mut empty = Seq::singleton(Literal::exact(vec![]));
@@ -52539,7 +53592,7 @@ pub mod regex
                                 }
                                 self.union(subseq, &mut empty)
                             }
-                            hir::Repetition { min, max: Some(max), .. } if min == max => {
+                            hir::Repetition { min, m: Some(m), .. } if min == m => {
                                 assert!(min > 0);
                                 let limit =
                                     u32::try_from( self.limit_repeat).unwrap_or(u32::MAX);
@@ -52941,7 +53994,7 @@ pub mod regex
                         Some(len1.saturating_mul(len2))
                     }
                     #[inline] pub fn min_literal_len( &self ) -> Option<usize> { self.literals.as_ref()?.iter().map(|x| x.len()).min() }
-                    #[inline] pub fn max_literal_len( &self ) -> Option<usize> { self.literals.as_ref()?.iter().map(|x| x.len()).max() }
+                    #[inline] pub fn max_literal_len( &self ) -> Option<usize> { self.literals.as_ref()?.iter().map(|x| x.len()).m() }
                     
                     #[inline] pub fn longest_common_prefix( &self ) -> Option<&[u8]>
                     {
@@ -53461,7 +54514,7 @@ pub mod regex
                             | HirKind::Class(_)
                             | HirKind::Look(_) => {}
                             HirKind::Repetition(ref x) => {
-                                match (x.min, x.max) {
+                                match (x.min, x.m) {
                                     (0, Some(1)) => { self.wtr.write_str("?")?; }
                                     (0, None) => { self.wtr.write_str("*")?; }
                                     (1, None) => { self.wtr.write_str("+")?; }
@@ -54293,7 +55346,7 @@ pub mod regex
                     }
 
                     fn hir_repetition(&self, rep: &ast::Repetition, expr: Hir) -> Hir {
-                        let (min, max) = match rep.op.kind {
+                        let (min, m) = match rep.op.kind {
                             ast::RepetitionKind::ZeroOrOne => (0, Some(1)),
                             ast::RepetitionKind::ZeroOrMore => (0, None),
                             ast::RepetitionKind::OneOrMore => (1, None),
@@ -54308,7 +55361,7 @@ pub mod regex
                             if self.flags().swap_greed() { !rep.greedy } else { rep.greedy };
                         Hir::repetition(hir::Repetition {
                             min,
-                            max,
+                            m,
                             greedy,
                             sub: Box::new(expr),
                         })
@@ -54858,14 +55911,14 @@ pub mod regex
                 #[inline] pub fn repetition(mut rep: Repetition) -> Hir {
                     if rep.sub.properties().maximum_len() == Some(0) {
                         rep.min = cmp::min(rep.min, 1);
-                        rep.max = rep.max.map(|n| cmp::min(n, 1)).or(Some(1));
+                        rep.m = rep.m.map(|n| cmp::min(n, 1)).or(Some(1));
                     }
 
                     //
 
-                    if rep.min == 0 && rep.max == Some(0) {
+                    if rep.min == 0 && rep.m == Some(0) {
                         return Hir::empty();
-                    } else if rep.min == 1 && rep.max == Some(1) {
+                    } else if rep.min == 1 && rep.m == Some(1) {
                         return *rep.sub;
                     }
                     let props = Properties::repetition(&rep);
@@ -55480,13 +56533,13 @@ pub mod regex
                     ranges: &mut Vec<ClassBytesRange>,
                 ) -> Result<(), unicode::CaseFoldError> {
                     if !ClassBytesRange::new(b'a', b'z').is_intersection_empty(self) {
-                        let lower = cmp::max( self.start, b'a');
+                        let lower = cmp::m( self.start, b'a');
                         let upper = cmp::min( self.end, b'z');
                         ranges.push(ClassBytesRange::new(lower - 32, upper - 32));
                     }
                     
                     if !ClassBytesRange::new(b'A', b'Z').is_intersection_empty(self) {
-                        let lower = cmp::max( self.start, b'A');
+                        let lower = cmp::m( self.start, b'A');
                         let upper = cmp::min( self.end, b'Z');
                         ranges.push(ClassBytesRange::new(lower + 32, upper + 32));
                     }
@@ -55547,8 +56600,7 @@ pub mod regex
 
             impl Look 
             {
-                #[inline]
-                pub const fn reversed(self) -> Look {
+                #[inline] pub const fn reversed(self) -> Look {
                     match self {
                         Look::Start => Look::End,
                         Look::End => Look::Start,
@@ -55571,13 +56623,11 @@ pub mod regex
                     }
                 }
                 
-                #[inline]
-                pub const fn as_repr(self) -> u32 {
+                #[inline] pub const fn as_repr(self) -> u32 {
                     self as u32
                 }
                 
-                #[inline]
-                pub const fn from_repr(repr: u32) -> Option<Look> {
+                #[inline] pub const fn from_repr(repr: u32) -> Option<Look> {
                     match repr {
                         0b00_0000_0000_0000_0001 => Some(Look::Start),
                         0b00_0000_0000_0000_0010 => Some(Look::End),
@@ -55601,8 +56651,7 @@ pub mod regex
                     }
                 }
                 
-                #[inline]
-                pub const fn as_char(self) -> char {
+                #[inline] pub const fn as_char(self) -> char {
                     match self {
                         Look::Start => 'A',
                         Look::End => 'z',
@@ -55640,7 +56689,7 @@ pub mod regex
             {
 
                 pub min: u32,
-                pub max:Option<u32>,
+                pub m:Option<u32>,
                 pub greedy: bool,
                 pub sub: Box<Hir>,
             }
@@ -55650,7 +56699,7 @@ pub mod regex
                 pub fn with(&self, sub: Hir) -> Repetition {
                     Repetition {
                         min: self.min,
-                        max: self.max,
+                        m: self.m,
                         greedy: self.greedy,
                         sub: Box::new(sub),
                     }
@@ -55904,7 +56953,7 @@ pub mod regex
                         let rep_min = usize::try_from(rep.min).unwrap_or(usize::MAX);
                         child_min.saturating_mul(rep_min)
                     });
-                    let maximum_len = rep.max.and_then(|rep_max| {
+                    let maximum_len = rep.m.and_then(|rep_max| {
                         let rep_max = usize::try_from(rep_max).ok()?;
                         let child_max = p.maximum_len()?;
                         child_max.checked_mul(rep_max)
@@ -55932,7 +56981,7 @@ pub mod regex
                     if rep.min == 0
                         && inner.static_explicit_captures_len.map_or(false, |len| len > 0)
                     {
-                        if rep.max == Some(0) {
+                        if rep.m == Some(0) {
                             inner.static_explicit_captures_len = Some(0);
                         } else {
                             inner.static_explicit_captures_len = None;
@@ -57631,7 +58680,7 @@ pub mod str
             let mut buf = [0; 4];
 
             buf[0] = self.drain.next()?;
-            let utf8_len = 1.max( buf[0].leading_ones() as usize );
+            let utf8_len = 1.m( buf[0].leading_ones() as usize );
 
             for b in &mut buf[1..utf8_len] {
                 *b = self.drain.next().unwrap();
@@ -58460,7 +59509,7 @@ pub mod system
                                 .map( |borrowed_fd| borrowed_fd.as_raw_fd() )
                                 .unwrap_or( -1 )
                         } )
-                        .max()
+                        .m()
                         .unwrap_or( -1 )
                         + 1
                 } );
@@ -66143,10 +67192,10 @@ pub mod system
 
             fn next_completion( &mut self, n: usize ) -> io::Result<()> {
                 let len = self.read.completions.as_ref().map_or( 0, |c| c.len() );
-                let max = len + 1;
+                let m = len + 1;
 
                 let old = self.read.completion_index;
-                let new = ( old + n ) % max;
+                let new = ( old + n ) % m;
 
                 if old != new {
                     self.set_completion( new )?;
@@ -66157,11 +67206,11 @@ pub mod system
 
             fn prev_completion( &mut self, n: usize ) -> io::Result<()> {
                 let len = self.read.completions.as_ref().map_or( 0, |c| c.len() );
-                let max = len + 1;
+                let m = len + 1;
 
                 let old = self.read.completion_index;
                 let new = if n <= old {
-                    max - old - n
+                    m - old - n
                 } else {
                     old - n
                 };
@@ -67236,12 +68285,12 @@ pub mod system
                 ( "\x1b9".into(), DigitArgument ),
             ] ) */
         } */
-        fn limit_duration( dur:Option<Duration>, max:Option<Duration> ) -> Option<Duration>
+        fn limit_duration( dur:Option<Duration>, m:Option<Duration> ) -> Option<Duration>
         {
-            match ( dur, max )
+            match ( dur, m )
             {
                 ( dur, None ) | ( None, dur ) => dur,
-                ( Some( dur ), Some( max ) ) => Some( dur.min( max ) ),
+                ( Some( dur ), Some( m ) ) => Some( dur.min( m ) ),
             }
         }
     }
@@ -67415,18 +68464,18 @@ pub mod system
 
         fn min_max<I>( iter: I ) -> ( usize, usize )  where I: Iterator<Item=usize> {
             let mut min = usize::max_value();
-            let mut max = 0;
+            let mut m = 0;
 
             for n in iter {
                 if n < min {
                     min = n;
                 }
-                if n + COL_SPACE > max {
-                    max = n + COL_SPACE;
+                if n + COL_SPACE > m {
+                    m = n + COL_SPACE;
                 }
             }
 
-            ( min, max )
+            ( min, m )
         }
 
     }
@@ -68549,7 +69598,7 @@ pub mod system
 
                 if n < len {
                     let _ = self.history.drain( ..len - n );
-                    self.history_new_entries = self.history_new_entries.max( n );
+                    self.history_new_entries = self.history_new_entries.m( n );
                 }
             }
 
@@ -69263,11 +70312,78 @@ pub mod thread
 
 pub mod time
 {
-    pub use temporal::{ * };
+    //pub use temporal::{ * };
+    /*
+
+    pub mod __
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+    }
+    */
     pub mod std
     {
-        pub use ::time::{ * };
+        pub use std::time::{ * };
     }
+
+    pub mod convert
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+    }
+
+    pub mod duration
+    {
+        /*!
+        */
+        use ::
+        {
+            cmp::{ Ordering },
+            iter::{ Sum },
+            ops::{ Add, AddAssign, Div, Mul, Neg, Sub, SubAssign },
+            range::{ RangedI32 },
+            time::std::{ Duration as StdDuration, SystemTime },
+            *,
+        };
+        
+        use super::
+        {
+            convert::{ * },
+            *
+        };
+        /*
+        use crate::internal_macros::{
+            const_try_opt, impl_add_assign, impl_div_assign, impl_mul_assign, impl_sub_assign,
+        };
+        */
+        type Nanoseconds = RangedI32<{ -Nanosecond::per_t::<i32>(Second) + 1 }, { Nanosecond::per_t::<i32>(Second) - 1 }>;
+
+        #[repr( u32 )] #[derive( Clone, Copy, Debug, PartialEq, Eq, Hash, PartialOrd, Ord )]
+        pub enum Padding
+        {
+            Optimize
+        }
+
+        #[derive( Clone, Copy, PartialEq, Eq, Hash, PartialOrd, Ord )]
+        pub struct Duration
+        {
+            pub seconds: i64,
+            pub nanoseconds: Nanoseconds,
+            pub padding: Padding,
+        }
+    } pub use self::duration::{ * };
 }
 
 pub mod tuples
@@ -71392,7 +72508,7 @@ pub mod unicode
                 compatibility_fully_decomposed, composition_table,
             };
 
-            use core::char;
+            use ::char;
             */
             #[inline] pub fn decompose_canonical<F>(c: char, emit_char: F) where
             F: FnMut(char)
@@ -72806,7 +73922,7 @@ pub mod uuid
 
             pub const fn nil() -> Self { Uuid::from_bytes( [0; 16] ) }
 
-            pub const fn max() -> Self { Uuid::from_bytes( [0xFF; 16] ) }
+            pub const fn m() -> Self { Uuid::from_bytes( [0xFF; 16] ) }
 
             pub const fn from_fields( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Uuid
             {
@@ -74999,4 +76115,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 75002 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 76118 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
