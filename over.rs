@@ -37,10 +37,10 @@ pub mod __
     /*
     */
 }
-*/
+
 extern crate rand;
 extern crate proc_macro;
-
+*/
 #[macro_use] pub mod macros
 {
 
@@ -51,127 +51,140 @@ extern crate proc_macro;
             ::__private::TokenStream::new()
         };
        
-        ($tt:tt) => 
+        ($t:tt) => 
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::token!{$tt _s}
+            ::token!{$t _s}
             _s
         }};
        
         
-        (# $var:ident) => 
+        (# $v:ident) => 
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::ToTokens::to_tokens(&$var, &mut _s);
+            ::ToTokens::to_tokens(&$v, &mut _s);
             _s
         }};
         
-        ($tt1:tt $tt2:tt) =>
+        ($t1:tt $t2:tt) =>
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::token!{$tt1 _s}
-            ::token!{$tt2 _s}
+            ::token!{$t1 _s}
+            ::token!{$t2 _s}
             _s
         }};
        
-        ($($tt:tt)*) =>
+        ($($t:tt)*) =>
         {{
             let mut _s = ::__private::TokenStream::new();
-            ::each_token!{_s $($tt)*}
+            ::each_token!{_s $($t)*}
             _s
         }};
     }
 
     #[macro_export] macro_rules! span
     {
-        ($span:expr=>) => {{
-            let _: ::__private::Span = ::__private::get_span($span).__into_span();
+        ($s:expr=>) => 
+        {{
+            let _: ::__private::Span = ::__private::get_span($s).__into_span();
             ::__private::TokenStream::new()
         }};
        
-        ($span:expr=> $tt:tt) => {{
+        ($s:expr=> $t:tt) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _span: ::__private::Span = ::__private::get_span($span).__into_span();
-            ::quote_token_spanned!{$tt _s _span}
+            let _t: ::__private::Span = ::__private::get_span($s).__into_span();
+            ::quote_token_spanned!{$t _s _t}
             _s
         }};
        
-        ($span:expr=> # $var:ident) => {{
+        ($s:expr=> # $v:ident) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _: ::__private::Span = ::__private::get_span($span).__into_span();
-            ::ToTokens::to_tokens(&$var, &mut _s);
+            let _: ::__private::Span = ::__private::get_span($s).__into_span();
+            ::ToTokens::to_tokens(&$v, &mut _s);
             _s
         }};
-        ($span:expr=> $tt1:tt $tt2:tt) => {{
+
+        ($s:expr=> $t1:tt $t2:tt) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _span: ::__private::Span = ::__private::get_span($span).__into_span();
-            ::quote_token_spanned!{$tt1 _s _span}
-            ::quote_token_spanned!{$tt2 _s _span}
+            let _t: ::__private::Span = ::__private::get_span($s).__into_span();
+            ::quote_token_spanned!{$t1 _s _t}
+            ::quote_token_spanned!{$t2 _s _t}
             _s
         }};
        
-        ($span:expr=> $($tt:tt)*) => {{
+        ($s:expr=> $($t:tt)*) => 
+        {{
             let mut _s = ::__private::TokenStream::new();
-            let _span: ::__private::Span = ::__private::get_span($span).__into_span();
-            ::each_token_span!{_s _span $($tt)*}
+            let _t: ::__private::Span = ::__private::get_span($s).__into_span();
+            ::each_token_span!{_s _t $($t)*}
             _s
         }};
     }
    
     #[macro_export] macro_rules! names
     {
-        ($call:ident! $extra:tt $($tts:tt)*) => {
-            ::names_with_context!{$call! $extra
-                (@ $($tts)*)
-                ($($tts)* @)
+        ($c:ident! $x:tt $($ts:tt)*) => 
+        {
+            ::names_with_context!{$c! $x
+                (@ $($ts)*)
+                ($($ts)* @)
             }
         };
     }
 
     #[macro_export] macro_rules! names_with_context
     {
-        ($call:ident! $extra:tt ($($b1:tt)*) ($($curr:tt)*)) => {
+        ($c:ident! $x:tt ($($b1:tt)*) ($($d:tt)*)) => 
+        {
             $(
-                ::variable_with_context!{$call! $extra $b1 $curr}
+                ::variable_with_context!{$c! $x $b1 $d }
             )*
         };
     }
 
     #[macro_export] macro_rules! variable_with_context
     {
-        ($call:ident! $extra:tt $b1:tt ( $($inner:tt)* )) => {
-            ::names!{$call! $extra $($inner)*}
+        ($c:ident! $x:tt $b1:tt ( $($q:tt)* )) => 
+        {
+            ::names!{$c! $x $($q)*}
         };
 
-        ($call:ident! $extra:tt $b1:tt [ $($inner:tt)* ]) => {
-            ::names!{$call! $extra $($inner)*}
+        ($c:ident! $x:tt $b1:tt [ $($q:tt)* ]) => 
+        {
+            ::names!{$c! $x $($q)*}
         };
 
-        ($call:ident! $extra:tt $b1:tt { $($inner:tt)* }) => {
-            ::names!{$call! $extra $($inner)*}
+        ($c:ident! $x:tt $b1:tt { $($q:tt)* }) => 
+        {
+            ::names!{$c! $x $($q)*}
         };
 
-        ($call:ident!($($extra:tt)*) # $var:ident) => {
-            ::$call!($($extra)* $var);
+        ($c:ident!($($x:tt)*) # $v:ident) => 
+        {
+            ::$c!($($x)* $v);
         };
 
-        ($call:ident! $extra:tt $b1:tt $curr:tt) => {};
+        ($c:ident! $x:tt $b1:tt $d:tt) => {};
     }
 
     #[macro_export] macro_rules! iterate_quote 
     {
-        ($has_iter:ident $var:ident) => {
-           
-            #[allow(unused_mut)]
-            let (mut $var, i) = $var.quote_into_iter();
-            let $has_iter = $has_iter | i;
+        ($h:ident $v:ident) => 
+        {
+            let (mut $v, i) = $v.quote_into_iter();
+            let $h = $h | i;
         };
     }
 
     #[macro_export] macro_rules! iterate_quote_or_break 
     {
-        ($var:ident) => {
-            let $var = match $var.next() {
+        ($v:ident) => 
+        {
+            let $v = match $v.next()
+            {
                 Some(_x) => ::__private::RepInterp(_x),
                 None => break,
             };
@@ -180,167 +193,168 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! each_token 
     {
-        ($tokens:ident $($tts:tt)*) => {
-            ::tokens_with_context!{$tokens
-                (@ @ @ @ @ @ $($tts)*)
-                (@ @ @ @ @ $($tts)* @)
-                (@ @ @ @ $($tts)* @ @)
-                (@ @ @ $(($tts))* @ @ @)
-                (@ @ $($tts)* @ @ @ @)
-                (@ $($tts)* @ @ @ @ @)
-                ($($tts)* @ @ @ @ @ @)
+        ($k:ident $($ts:tt)*) => 
+        {
+            ::tokens_with_context!{$k
+                (@ @ @ @ @ @ $($ts)*)
+                (@ @ @ @ @ $($ts)* @)
+                (@ @ @ @ $($ts)* @ @)
+                (@ @ @ $(($ts))* @ @ @)
+                (@ @ $($ts)* @ @ @ @)
+                (@ $($ts)* @ @ @ @ @)
+                ($($ts)* @ @ @ @ @ @)
             }
         };
     }
 
     #[macro_export] macro_rules! each_token_span
     {
-        ($tokens:ident $span:ident $($tts:tt)*) => {
-            ::tokens_with_context_span!{$tokens $span
-                (@ @ @ @ @ @ $($tts)*)
-                (@ @ @ @ @ $($tts)* @)
-                (@ @ @ @ $($tts)* @ @)
-                (@ @ @ $(($tts))* @ @ @)
-                (@ @ $($tts)* @ @ @ @)
-                (@ $($tts)* @ @ @ @ @)
-                ($($tts)* @ @ @ @ @ @)
+        ($k:ident $s:ident $($ts:tt)*) => {
+            ::tokens_with_context_span!{$k $s
+                (@ @ @ @ @ @ $($ts)*)
+                (@ @ @ @ @ $($ts)* @)
+                (@ @ @ @ $($ts)* @ @)
+                (@ @ @ $(($ts))* @ @ @)
+                (@ @ $($ts)* @ @ @ @)
+                (@ $($ts)* @ @ @ @ @)
+                ($($ts)* @ @ @ @ @ @)
             }
         };
     }
 
     #[macro_export] macro_rules! tokens_with_context
     {
-        ($tokens:ident
+        ($k:ident
             ($($b3:tt)*) ($($b2:tt)*) ($($b1:tt)*)
-            ($($curr:tt)*)
+            ($($c:tt)*)
             ($($a1:tt)*) ($($a2:tt)*) ($($a3:tt)*)
         ) => {
             $(
-                ::token_with_context!{$tokens $b3 $b2 $b1 $curr $a1 $a2 $a3}
+                ::token_with_context!{$k $b3 $b2 $b1 $c $a1 $a2 $a3}
             )*
         };
     }
 
     #[macro_export] macro_rules! tokens_with_context_span
     {
-        ($tokens:ident $span:ident
+        ($k:ident $s:ident
             ($($b3:tt)*) ($($b2:tt)*) ($($b1:tt)*)
-            ($($curr:tt)*)
+            ($($c:tt)*)
             ($($a1:tt)*) ($($a2:tt)*) ($($a3:tt)*)
         ) => {
             $(
-                ::token_with_context_span!{$tokens $span $b3 $b2 $b1 $curr $a1 $a2 $a3}
+                ::token_with_context_span!{$k $s $b3 $b2 $b1 $c $a1 $a2 $a3}
             )*
         };
     }
 
     #[macro_export] macro_rules! token_with_context
     {  
-        ($tokens:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
        
-        ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => 
+        ($k:ident $b3:tt $b2:tt $b1:tt (#) ( $($q:tt)* ) * $a3:tt) => 
         {{
             use ::__private::ext::*;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::names!{iterate_quote!(has_iter) () $($inner)*}
+            ::names!{iterate_quote!(has_iter) () $($q)*}
             let _: ::__private::HasIterator = has_iter;
             
             while true 
             {
-                ::names!{iterate_quote_or_break!() () $($inner)*}
-                ::each_token!{$tokens $($inner)*}
+                ::names!{iterate_quote_or_break!() () $($q)*}
+                ::each_token!{$k $($q)*}
             }
         }};
        
-        ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
+        ($k:ident $b3:tt $b2:tt # (( $($q:tt)* )) * $a2:tt $a3:tt) => {};
        
-        ($tokens:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $b3:tt # ( $($q:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
        
-        ($tokens:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => 
+        ($k:ident $b3:tt $b2:tt $b1:tt (#) ( $($q:tt)* ) $sep:tt *) => 
         {{
             use ::__private::ext::*;
             let mut _i = 0usize;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::names!{iterate_quote!(has_iter) () $($inner)*}
+            ::names!{iterate_quote!(has_iter) () $($q)*}
             let _: ::__private::HasIterator = has_iter;
             while true {
-                ::names!{iterate_quote_or_break!() () $($inner)*}
+                ::names!{iterate_quote_or_break!() () $($q)*}
                 if _i > 0 {
-                    ::token!{$sep $tokens}
+                    ::token!{$sep $k}
                 }
                 _i += 1;
-                ::each_token!{$tokens $($inner)*}
+                ::each_token!{$k $($q)*}
             }
         }};
        
-        ($tokens:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
+        ($k:ident $b3:tt $b2:tt # (( $($q:tt)* )) $sep:tt * $a3:tt) => {};
        
-        ($tokens:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
+        ($k:ident $b3:tt # ( $($q:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
        
        
-        ($tokens:ident # ( $($inner:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
-            ::token!{* $tokens}
+        ($k:ident # ( $($q:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
+            ::token!{* $k}
         };
        
-        ($tokens:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident # ( $($q:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
        
-        ($tokens:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
-            ::ToTokens::to_tokens(&$var, &mut $tokens);
+        ($k:ident $b3:tt $b2:tt $b1:tt (#) $v:ident $a2:tt $a3:tt) => {
+            ::ToTokens::to_tokens(&$v, &mut $k);
         };
        
-        ($tokens:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $b3:tt $b2:tt # ($v:ident) $a1:tt $a2:tt $a3:tt) => {};
        
-        ($tokens:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
-            ::token!{$curr $tokens}
+        ($k:ident $b3:tt $b2:tt $b1:tt ($c:tt) $a1:tt $a2:tt $a3:tt) => {
+            ::token!{$c $k}
         };
     }
     
     #[macro_export] macro_rules! token_with_context_span
     {
-        ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $s:ident $b3:tt $b2:tt $b1:tt @ $a1:tt $a2:tt $a3:tt) => {};
 
-        ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) * $a3:tt) => {{
+        ($k:ident $s:ident $b3:tt $b2:tt $b1:tt (#) ( $($q:tt)* ) * $a3:tt) => {{
             use ::__private::ext::*;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::names!{iterate_quote!(has_iter) () $($inner)*}
+            ::names!{iterate_quote!(has_iter) () $($q)*}
             let _: ::__private::HasIterator = has_iter;
             while true {
-                ::names!{iterate_quote_or_break!() () $($inner)*}
-                ::each_token_span!{$tokens $span $($inner)*}
+                ::names!{iterate_quote_or_break!() () $($q)*}
+                ::each_token_span!{$k $s $($q)*}
             }
         }};
-        ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) * $a2:tt $a3:tt) => {};
-        ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $s:ident $b3:tt $b2:tt # (( $($q:tt)* )) * $a2:tt $a3:tt) => {};
+        ($k:ident $s:ident $b3:tt # ( $($q:tt)* ) (*) $a1:tt $a2:tt $a3:tt) => {};
 
-        ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) ( $($inner:tt)* ) $sep:tt *) => {{
+        ($k:ident $s:ident $b3:tt $b2:tt $b1:tt (#) ( $($q:tt)* ) $sep:tt *) => {{
             use ::__private::ext::*;
             let mut _i = 0usize;
             let has_iter = ::__private::ThereIsNoIteratorInRepetition;
-            ::names!{iterate_quote!(has_iter) () $($inner)*}
+            ::names!{iterate_quote!(has_iter) () $($q)*}
             let _: ::__private::HasIterator = has_iter;
             while true {
-                ::names!{iterate_quote_or_break!() () $($inner)*}
+                ::names!{iterate_quote_or_break!() () $($q)*}
                 if _i > 0 {
-                    ::quote_token_spanned!{$sep $tokens $span}
+                    ::quote_token_spanned!{$sep $k $s}
                 }
                 _i += 1;
-                ::each_token_span!{$tokens $span $($inner)*}
+                ::each_token_span!{$k $s $($q)*}
             }
         }};
-        ($tokens:ident $span:ident $b3:tt $b2:tt # (( $($inner:tt)* )) $sep:tt * $a3:tt) => {};
-        ($tokens:ident $span:ident $b3:tt # ( $($inner:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
-        ($tokens:ident $span:ident # ( $($inner:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
-            ::quote_token_spanned!{* $tokens $span}
+        ($k:ident $s:ident $b3:tt $b2:tt # (( $($q:tt)* )) $sep:tt * $a3:tt) => {};
+        ($k:ident $s:ident $b3:tt # ( $($q:tt)* ) ($sep:tt) * $a2:tt $a3:tt) => {};
+        ($k:ident $s:ident # ( $($q:tt)* ) * (*) $a1:tt $a2:tt $a3:tt) => {
+            ::quote_token_spanned!{* $k $s}
         };
-        ($tokens:ident $span:ident # ( $($inner:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $s:ident # ( $($q:tt)* ) $sep:tt (*) $a1:tt $a2:tt $a3:tt) => {};
 
-        ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt (#) $var:ident $a2:tt $a3:tt) => {
-            ::ToTokens::to_tokens(&$var, &mut $tokens);
+        ($k:ident $s:ident $b3:tt $b2:tt $b1:tt (#) $v:ident $a2:tt $a3:tt) => {
+            ::ToTokens::to_tokens(&$v, &mut $k);
         };
-        ($tokens:ident $span:ident $b3:tt $b2:tt # ($var:ident) $a1:tt $a2:tt $a3:tt) => {};
+        ($k:ident $s:ident $b3:tt $b2:tt # ($v:ident) $a1:tt $a2:tt $a3:tt) => {};
 
-        ($tokens:ident $span:ident $b3:tt $b2:tt $b1:tt ($curr:tt) $a1:tt $a2:tt $a3:tt) => {
-            ::quote_token_spanned!{$curr $tokens $span}
+        ($k:ident $s:ident $b3:tt $b2:tt $b1:tt ($c:tt) $a1:tt $a2:tt $a3:tt) => {
+            ::quote_token_spanned!{$c $k $s}
         };
     }
     
@@ -364,579 +378,582 @@ extern crate proc_macro;
             );
         };
 
-        ({ $($inner:tt)* } $tokens:ident) =>
+        ({ $($q:tt)* } $k:ident) =>
         {
             ::__private::push_group
             (
-                &mut $tokens,
+                &mut $k,
                 ::__private::Delimiter::Brace,
-                ::quote!($($inner)*),
+                ::quote!($($q)*),
             );
         };
 
-        (# $tokens:ident) =>
+        (# $k:ident) =>
         {
-            ::__private::push_pound(&mut $tokens);
+            ::__private::push_pound(&mut $k);
         };
 
-        (, $tokens:ident) =>
+        (, $k:ident) =>
         {
-            ::__private::push_comma(&mut $tokens);
+            ::__private::push_comma(&mut $k);
         };
 
-        (. $tokens:ident) =>
+        (. $k:ident) =>
         {
-            ::__private::push_dot(&mut $tokens);
+            ::__private::push_dot(&mut $k);
         };
 
-        (; $tokens:ident) =>
+        (; $k:ident) =>
         {
-            ::__private::push_semi(&mut $tokens);
+            ::__private::push_semi(&mut $k);
         };
 
-        (: $tokens:ident) =>
+        (: $k:ident) =>
         {
-            ::__private::push_colon(&mut $tokens);
+            ::__private::push_colon(&mut $k);
         };
 
-        (+ $tokens:ident) =>
+        (+ $k:ident) =>
         {
-            ::__private::push_add(&mut $tokens);
+            ::__private::push_add(&mut $k);
         };
 
-        (+= $tokens:ident) =>
+        (+= $k:ident) =>
         {
-            ::__private::push_add_eq(&mut $tokens);
+            ::__private::push_add_eq(&mut $k);
         };
 
-        (& $tokens:ident) =>
+        (& $k:ident) =>
         {
-            ::__private::push_and(&mut $tokens);
+            ::__private::push_and(&mut $k);
         };
 
-        (&& $tokens:ident) =>
+        (&& $k:ident) =>
         {
-            ::__private::push_and_and(&mut $tokens);
+            ::__private::push_and_and(&mut $k);
         };
 
-        (&= $tokens:ident) =>
+        (&= $k:ident) =>
         {
-            ::__private::push_and_eq(&mut $tokens);
+            ::__private::push_and_eq(&mut $k);
         };
 
-        (@ $tokens:ident) =>
+        (@ $k:ident) =>
         {
-            ::__private::push_at(&mut $tokens);
+            ::__private::push_at(&mut $k);
         };
 
-        (! $tokens:ident) =>
+        (! $k:ident) =>
         {
-            ::__private::push_bang(&mut $tokens);
+            ::__private::push_bang(&mut $k);
         };
 
-        (^ $tokens:ident) =>
+        (^ $k:ident) =>
         {
-            ::__private::push_caret(&mut $tokens);
+            ::__private::push_caret(&mut $k);
         };
 
-        (^= $tokens:ident) =>
+        (^= $k:ident) =>
         {
-            ::__private::push_caret_eq(&mut $tokens);
+            ::__private::push_caret_eq(&mut $k);
         };
 
-        (/ $tokens:ident) =>
+        (/ $k:ident) =>
         {
-            ::__private::push_div(&mut $tokens);
+            ::__private::push_div(&mut $k);
         };
 
-        (/= $tokens:ident) =>
+        (/= $k:ident) =>
         {
-            ::__private::push_div_eq(&mut $tokens);
+            ::__private::push_div_eq(&mut $k);
         };
 
-        (.. $tokens:ident) =>
+        (.. $k:ident) =>
         {
-            ::__private::push_dot2(&mut $tokens);
+            ::__private::push_dot2(&mut $k);
         };
 
-        (... $tokens:ident) =>
+        (... $k:ident) =>
         {
-            ::__private::push_dot3(&mut $tokens);
+            ::__private::push_dot3(&mut $k);
         };
 
-        (..= $tokens:ident) =>
+        (..= $k:ident) =>
         {
-            ::__private::push_dot_dot_eq(&mut $tokens);
+            ::__private::push_dot_dot_eq(&mut $k);
         };
 
-        (= $tokens:ident) =>
+        (= $k:ident) =>
         {
-            ::__private::push_eq(&mut $tokens);
+            ::__private::push_eq(&mut $k);
         };
 
-        (== $tokens:ident) =>
+        (== $k:ident) =>
         {
-            ::__private::push_eq_eq(&mut $tokens);
+            ::__private::push_eq_eq(&mut $k);
         };
 
-        (>= $tokens:ident) =>
+        (>= $k:ident) =>
         {
-            ::__private::push_ge(&mut $tokens);
+            ::__private::push_ge(&mut $k);
         };
 
-        (> $tokens:ident) =>
+        (> $k:ident) =>
         {
-            ::__private::push_gt(&mut $tokens);
+            ::__private::push_gt(&mut $k);
         };
 
-        (<= $tokens:ident) =>
+        (<= $k:ident) =>
         {
-            ::__private::push_le(&mut $tokens);
+            ::__private::push_le(&mut $k);
         };
 
-        (< $tokens:ident) =>
+        (< $k:ident) =>
         {
-            ::__private::push_lt(&mut $tokens);
+            ::__private::push_lt(&mut $k);
         };
 
-        (*= $tokens:ident) =>
+        (*= $k:ident) =>
         {
-            ::__private::push_mul_eq(&mut $tokens);
+            ::__private::push_mul_eq(&mut $k);
         };
 
-        (!= $tokens:ident) =>
+        (!= $k:ident) =>
         {
-            ::__private::push_ne(&mut $tokens);
+            ::__private::push_ne(&mut $k);
         };
 
-        (| $tokens:ident) =>
+        (| $k:ident) =>
         {
-            ::__private::push_or(&mut $tokens);
+            ::__private::push_or(&mut $k);
         };
 
-        (|= $tokens:ident) =>
+        (|= $k:ident) =>
         {
-            ::__private::push_or_eq(&mut $tokens);
+            ::__private::push_or_eq(&mut $k);
         };
 
-        (|| $tokens:ident) =>
+        (|| $k:ident) =>
         {
-            ::__private::push_or_or(&mut $tokens);
+            ::__private::push_or_or(&mut $k);
         };
 
-        (? $tokens:ident) =>
+        (? $k:ident) =>
         {
-            ::__private::push_question(&mut $tokens);
+            ::__private::push_question(&mut $k);
         };
 
-        (-> $tokens:ident) =>
+        (-> $k:ident) =>
         {
-            ::__private::push_rarrow(&mut $tokens);
+            ::__private::push_rarrow(&mut $k);
         };
 
-        (<- $tokens:ident) =>
+        (<- $k:ident) =>
         {
-            ::__private::push_larrow(&mut $tokens);
+            ::__private::push_larrow(&mut $k);
         };
 
-        (% $tokens:ident) =>
+        (% $k:ident) =>
         {
-            ::__private::push_rem(&mut $tokens);
+            ::__private::push_rem(&mut $k);
         };
 
-        (%= $tokens:ident) =>
+        (%= $k:ident) =>
         {
-            ::__private::push_rem_eq(&mut $tokens);
+            ::__private::push_rem_eq(&mut $k);
         };
 
-        (=> $tokens:ident) =>
+        (=> $k:ident) =>
         {
-            ::__private::push_fat_arrow(&mut $tokens);
+            ::__private::push_fat_arrow(&mut $k);
         };
 
-        (<< $tokens:ident) =>
+        (<< $k:ident) =>
         {
-            ::__private::push_shl(&mut $tokens);
+            ::__private::push_shl(&mut $k);
         };
 
-        (<<= $tokens:ident) =>
+        (<<= $k:ident) =>
         {
-            ::__private::push_shl_eq(&mut $tokens);
+            ::__private::push_shl_eq(&mut $k);
         };
 
-        (>> $tokens:ident) =>
+        (>> $k:ident) =>
         {
-            ::__private::push_shr(&mut $tokens);
+            ::__private::push_shr(&mut $k);
         };
 
-        (>>= $tokens:ident) =>
+        (>>= $k:ident) =>
         {
-            ::__private::push_shr_eq(&mut $tokens);
+            ::__private::push_shr_eq(&mut $k);
         };
 
-        (* $tokens:ident) =>
+        (* $k:ident) =>
         {
-            ::__private::push_star(&mut $tokens);
+            ::__private::push_star(&mut $k);
         };
 
-        (- $tokens:ident) =>
+        (- $k:ident) =>
         {
-            ::__private::push_sub(&mut $tokens);
+            ::__private::push_sub(&mut $k);
         };
 
-        (-= $tokens:ident) =>
+        (-= $k:ident) =>
         {
-            ::__private::push_sub_eq(&mut $tokens);
+            ::__private::push_sub_eq(&mut $k);
         };
 
-        ($lifetime:lifetime $tokens:ident) =>
+        ($lifetime:lifetime $k:ident) =>
         {
-            ::__private::push_lifetime(&mut $tokens, stringify!($lifetime));
+            ::__private::push_lifetime(&mut $k, stringify!($lifetime));
         };
 
-        (_ $tokens:ident) =>
+        (_ $k:ident) =>
         {
-            ::__private::push_underscore(&mut $tokens);
+            ::__private::push_underscore(&mut $k);
         };
 
-        ($other:tt $tokens:ident) =>
+        ($other:tt $k:ident) =>
         {
-            ::__private::parse(&mut $tokens, stringify!($other));
+            ::__private::parse(&mut $k, stringify!($other));
         };
     }
 
     #[macro_export] macro_rules! quote_token_spanned
     {
-        ($ident:ident $tokens:ident $span:ident) =>
+        ($j:ident $k:ident $s:ident) =>
         {
-            ::__private::push_ident_spanned(&mut $tokens, $span, stringify!($ident));
+            ::__private::push_ident_spanned(&mut $k, $s, stringify!($j));
         };
 
-        (:: $tokens:ident $span:ident) =>
+        (:: $k:ident $s:ident) =>
         {
-            ::__private::push_colon2_spanned(&mut $tokens, $span);
+            ::__private::push_colon2_spanned(&mut $k, $s);
         };
 
-        (( $($inner:tt)* ) $tokens:ident $span:ident) =>
+        (( $($q:tt)* ) $k:ident $s:ident) =>
         {
             ::__private::push_group_spanned            
             (
-                &mut $tokens,
-                $span,
+                &mut $k,
+                $s,
                 ::__private::Delimiter::Parenthesis,
-                ::span!($span=> $($inner)*),
+                ::span!($s=> $($q)*),
             );
         };
 
-        ([ $($inner:tt)* ] $tokens:ident $span:ident) =>
+        ([ $($q:tt)* ] $k:ident $s:ident) =>
         {
             ::__private::push_group_spanned
             (
-                &mut $tokens,
-                $span,
+                &mut $k,
+                $s,
                 ::__private::Delimiter::Bracket,
-                ::span!($span=> $($inner)*),
+                ::span!($s=> $($q)*),
             );
         };
 
-        ({ $($inner:tt)* } $tokens:ident $span:ident) =>
+        ({ $($q:tt)* } $k:ident $s:ident) =>
         {
             ::__private::push_group_spanned
             
             (
-                &mut $tokens,
-                $span,
+                &mut $k,
+                $s,
                 ::__private::Delimiter::Brace,
-                ::span!($span=> $($inner)*),
+                ::span!($s=> $($q)*),
             );
         };
 
-        (# $tokens:ident $span:ident) =>
+        (# $k:ident $s:ident) =>
         {
-            ::__private::push_pound_spanned(&mut $tokens, $span);
+            ::__private::push_pound_spanned(&mut $k, $s);
         };
 
-        (, $tokens:ident $span:ident) =>
+        (, $k:ident $s:ident) =>
         {
-            ::__private::push_comma_spanned(&mut $tokens, $span);
+            ::__private::push_comma_spanned(&mut $k, $s);
         };
 
-        (. $tokens:ident $span:ident) =>
+        (. $k:ident $s:ident) =>
         {
-            ::__private::push_dot_spanned(&mut $tokens, $span);
+            ::__private::push_dot_spanned(&mut $k, $s);
         };
 
-        (; $tokens:ident $span:ident) =>
+        (; $k:ident $s:ident) =>
         {
-            ::__private::push_semi_spanned(&mut $tokens, $span);
+            ::__private::push_semi_spanned(&mut $k, $s);
         };
 
-        (: $tokens:ident $span:ident) =>
+        (: $k:ident $s:ident) =>
         {
-            ::__private::push_colon_spanned(&mut $tokens, $span);
+            ::__private::push_colon_spanned(&mut $k, $s);
         };
 
-        (+ $tokens:ident $span:ident) =>
+        (+ $k:ident $s:ident) =>
         {
-            ::__private::push_add_spanned(&mut $tokens, $span);
+            ::__private::push_add_spanned(&mut $k, $s);
         };
 
-        (+= $tokens:ident $span:ident) =>
+        (+= $k:ident $s:ident) =>
         {
-            ::__private::push_add_eq_spanned(&mut $tokens, $span);
+            ::__private::push_add_eq_spanned(&mut $k, $s);
         };
 
-        (& $tokens:ident $span:ident) =>
+        (& $k:ident $s:ident) =>
         {
-            ::__private::push_and_spanned(&mut $tokens, $span);
+            ::__private::push_and_spanned(&mut $k, $s);
         };
 
-        (&& $tokens:ident $span:ident) =>
+        (&& $k:ident $s:ident) =>
         {
-            ::__private::push_and_and_spanned(&mut $tokens, $span);
+            ::__private::push_and_and_spanned(&mut $k, $s);
         };
 
-        (&= $tokens:ident $span:ident) =>
+        (&= $k:ident $s:ident) =>
         {
-            ::__private::push_and_eq_spanned(&mut $tokens, $span);
+            ::__private::push_and_eq_spanned(&mut $k, $s);
         };
 
-        (@ $tokens:ident $span:ident) =>
+        (@ $k:ident $s:ident) =>
         {
-            ::__private::push_at_spanned(&mut $tokens, $span);
+            ::__private::push_at_spanned(&mut $k, $s);
         };
 
-        (! $tokens:ident $span:ident) =>
+        (! $k:ident $s:ident) =>
         {
-            ::__private::push_bang_spanned(&mut $tokens, $span);
+            ::__private::push_bang_spanned(&mut $k, $s);
         };
 
-        (^ $tokens:ident $span:ident) =>
+        (^ $k:ident $s:ident) =>
         {
-            ::__private::push_caret_spanned(&mut $tokens, $span);
+            ::__private::push_caret_spanned(&mut $k, $s);
         };
 
-        (^= $tokens:ident $span:ident) =>
+        (^= $k:ident $s:ident) =>
         {
-            ::__private::push_caret_eq_spanned(&mut $tokens, $span);
+            ::__private::push_caret_eq_spanned(&mut $k, $s);
         };
 
-        (/ $tokens:ident $span:ident) =>
+        (/ $k:ident $s:ident) =>
         {
-            ::__private::push_div_spanned(&mut $tokens, $span);
+            ::__private::push_div_spanned(&mut $k, $s);
         };
 
-        (/= $tokens:ident $span:ident) =>
+        (/= $k:ident $s:ident) =>
         {
-            ::__private::push_div_eq_spanned(&mut $tokens, $span);
+            ::__private::push_div_eq_spanned(&mut $k, $s);
         };
 
-        (.. $tokens:ident $span:ident) =>
+        (.. $k:ident $s:ident) =>
         {
-            ::__private::push_dot2_spanned(&mut $tokens, $span);
+            ::__private::push_dot2_spanned(&mut $k, $s);
         };
 
-        (... $tokens:ident $span:ident) =>
+        (... $k:ident $s:ident) =>
         {
-            ::__private::push_dot3_spanned(&mut $tokens, $span);
+            ::__private::push_dot3_spanned(&mut $k, $s);
         };
 
-        (..= $tokens:ident $span:ident) =>
+        (..= $k:ident $s:ident) =>
         {
-            ::__private::push_dot_dot_eq_spanned(&mut $tokens, $span);
+            ::__private::push_dot_dot_eq_spanned(&mut $k, $s);
         };
 
-        (= $tokens:ident $span:ident) =>
+        (= $k:ident $s:ident) =>
         {
-            ::__private::push_eq_spanned(&mut $tokens, $span);
+            ::__private::push_eq_spanned(&mut $k, $s);
         };
 
-        (== $tokens:ident $span:ident) =>
+        (== $k:ident $s:ident) =>
         {
-            ::__private::push_eq_eq_spanned(&mut $tokens, $span);
+            ::__private::push_eq_eq_spanned(&mut $k, $s);
         };
 
-        (>= $tokens:ident $span:ident) =>
+        (>= $k:ident $s:ident) =>
         {
-            ::__private::push_ge_spanned(&mut $tokens, $span);
+            ::__private::push_ge_spanned(&mut $k, $s);
         };
 
-        (> $tokens:ident $span:ident) =>
+        (> $k:ident $s:ident) =>
         {
-            ::__private::push_gt_spanned(&mut $tokens, $span);
+            ::__private::push_gt_spanned(&mut $k, $s);
         };
 
-        (<= $tokens:ident $span:ident) =>
+        (<= $k:ident $s:ident) =>
         {
-            ::__private::push_le_spanned(&mut $tokens, $span);
+            ::__private::push_le_spanned(&mut $k, $s);
         };
 
-        (< $tokens:ident $span:ident) =>
+        (< $k:ident $s:ident) =>
         {
-            ::__private::push_lt_spanned(&mut $tokens, $span);
+            ::__private::push_lt_spanned(&mut $k, $s);
         };
 
-        (*= $tokens:ident $span:ident) =>
+        (*= $k:ident $s:ident) =>
         {
-            ::__private::push_mul_eq_spanned(&mut $tokens, $span);
+            ::__private::push_mul_eq_spanned(&mut $k, $s);
         };
 
-        (!= $tokens:ident $span:ident) =>
+        (!= $k:ident $s:ident) =>
         {
-            ::__private::push_ne_spanned(&mut $tokens, $span);
+            ::__private::push_ne_spanned(&mut $k, $s);
         };
 
-        (| $tokens:ident $span:ident) =>
+        (| $k:ident $s:ident) =>
         {
-            ::__private::push_or_spanned(&mut $tokens, $span);
+            ::__private::push_or_spanned(&mut $k, $s);
         };
 
-        (|= $tokens:ident $span:ident) =>
+        (|= $k:ident $s:ident) =>
         {
-            ::__private::push_or_eq_spanned(&mut $tokens, $span);
+            ::__private::push_or_eq_spanned(&mut $k, $s);
         };
 
-        (|| $tokens:ident $span:ident) =>
+        (|| $k:ident $s:ident) =>
         {
-            ::__private::push_or_or_spanned(&mut $tokens, $span);
+            ::__private::push_or_or_spanned(&mut $k, $s);
         };
 
-        (? $tokens:ident $span:ident) =>
+        (? $k:ident $s:ident) =>
         {
-            ::__private::push_question_spanned(&mut $tokens, $span);
+            ::__private::push_question_spanned(&mut $k, $s);
         };
 
-        (-> $tokens:ident $span:ident) =>
+        (-> $k:ident $s:ident) =>
         {
-            ::__private::push_rarrow_spanned(&mut $tokens, $span);
+            ::__private::push_rarrow_spanned(&mut $k, $s);
         };
 
-        (<- $tokens:ident $span:ident) =>
+        (<- $k:ident $s:ident) =>
         {
-            ::__private::push_larrow_spanned(&mut $tokens, $span);
+            ::__private::push_larrow_spanned(&mut $k, $s);
         };
 
-        (% $tokens:ident $span:ident) =>
+        (% $k:ident $s:ident) =>
         {
-            ::__private::push_rem_spanned(&mut $tokens, $span);
+            ::__private::push_rem_spanned(&mut $k, $s);
         };
 
-        (%= $tokens:ident $span:ident) =>
+        (%= $k:ident $s:ident) =>
         {
-            ::__private::push_rem_eq_spanned(&mut $tokens, $span);
+            ::__private::push_rem_eq_spanned(&mut $k, $s);
         };
 
-        (=> $tokens:ident $span:ident) =>
+        (=> $k:ident $s:ident) =>
         {
-            ::__private::push_fat_arrow_spanned(&mut $tokens, $span);
+            ::__private::push_fat_arrow_spanned(&mut $k, $s);
         };
 
-        (<< $tokens:ident $span:ident) =>
+        (<< $k:ident $s:ident) =>
         {
-            ::__private::push_shl_spanned(&mut $tokens, $span);
+            ::__private::push_shl_spanned(&mut $k, $s);
         };
 
-        (<<= $tokens:ident $span:ident) =>
+        (<<= $k:ident $s:ident) =>
         {
-            ::__private::push_shl_eq_spanned(&mut $tokens, $span);
+            ::__private::push_shl_eq_spanned(&mut $k, $s);
         };
 
-        (>> $tokens:ident $span:ident) =>
+        (>> $k:ident $s:ident) =>
         {
-            ::__private::push_shr_spanned(&mut $tokens, $span);
+            ::__private::push_shr_spanned(&mut $k, $s);
         };
 
-        (>>= $tokens:ident $span:ident) =>
+        (>>= $k:ident $s:ident) =>
         {
-            ::__private::push_shr_eq_spanned(&mut $tokens, $span);
+            ::__private::push_shr_eq_spanned(&mut $k, $s);
         };
 
-        (* $tokens:ident $span:ident) =>
+        (* $k:ident $s:ident) =>
         {
-            ::__private::push_star_spanned(&mut $tokens, $span);
+            ::__private::push_star_spanned(&mut $k, $s);
         };
 
-        (- $tokens:ident $span:ident) =>
+        (- $k:ident $s:ident) =>
         {
-            ::__private::push_sub_spanned(&mut $tokens, $span);
+            ::__private::push_sub_spanned(&mut $k, $s);
         };
 
-        (-= $tokens:ident $span:ident) =>
+        (-= $k:ident $s:ident) =>
         {
-            ::__private::push_sub_eq_spanned(&mut $tokens, $span);
+            ::__private::push_sub_eq_spanned(&mut $k, $s);
         };
 
-        ($lifetime:lifetime $tokens:ident $span:ident) =>
+        ($lifetime:lifetime $k:ident $s:ident) =>
         {
-            ::__private::push_lifetime_spanned(&mut $tokens, $span, stringify!($lifetime));
+            ::__private::push_lifetime_spanned(&mut $k, $s, stringify!($lifetime));
         };
 
-        (_ $tokens:ident $span:ident) =>
+        (_ $k:ident $s:ident) =>
         {
-            ::__private::push_underscore_spanned(&mut $tokens, $span);
+            ::__private::push_underscore_spanned(&mut $k, $s);
         };
 
-        ($other:tt $tokens:ident $span:ident) =>
+        ($other:tt $k:ident $s:ident) =>
         {
-            ::__private::parse_spanned(&mut $tokens, $span, stringify!($other));
+            ::__private::parse_spanned(&mut $k, $s, stringify!($other));
         };
     }
 
     #[macro_export] macro_rules! format_ident
     {
-        ($fmt:expr) => {
-            format_ident_impl!([
+        ($f:expr) => 
+        {
+            format_ident_impl!
+            ([
                 ::quote::__private::Option::None,
-                $fmt
+                $f
             ])
         };
 
-        ($fmt:expr, $($rest:tt)*) => {
+        ($f:expr, $($r:tt)*) => 
+        {
             format_ident_impl!([
                 ::quote::__private::Option::None,
-                $fmt
-            ] $($rest)*)
+                $f
+            ] $($r)*)
         };
     }
 
     #[macro_export] macro_rules! format_ident_impl
     {
        
-        ([$span:expr, $($fmt:tt)*]) => {
+        ([$s:expr, $($f:tt)*]) => {
             ::quote::__private::mk_ident(
-                &::quote::__private::format!($($fmt)*),
-                $span,
+                &::quote::__private::format!($($f)*),
+                $s,
             )
         };
 
        
-        ([$old:expr, $($fmt:tt)*] span = $span:expr) => {
-            format_ident_impl!([$old, $($fmt)*] span = $span,)
+        ([$old:expr, $($f:tt)*] span = $s:expr) => {
+            format_ident_impl!([$old, $($f)*] span = $s,)
         };
-        ([$old:expr, $($fmt:tt)*] span = $span:expr, $($rest:tt)*) => {
+        ([$old:expr, $($f:tt)*] span = $s:expr, $($r:tt)*) => {
             format_ident_impl!([
-                ::quote::__private::Option::Some::<::quote::__private::Span>($span),
-                $($fmt)*
-            ] $($rest)*)
+                ::quote::__private::Option::Some::<::quote::__private::Span>($s),
+                $($f)*
+            ] $($r)*)
         };
 
        
-        ([$span:expr, $($fmt:tt)*] $name:ident = $arg:expr) => {
-            format_ident_impl!([$span, $($fmt)*] $name = $arg,)
+        ([$s:expr, $($f:tt)*] $n:ident = $y:expr) => {
+            format_ident_impl!([$s, $($f)*] $n = $y,)
         };
-        ([$span:expr, $($fmt:tt)*] $name:ident = $arg:expr, $($rest:tt)*) => {
-            match ::quote::__private::IdentFragmentAdapter(&$arg) {
-                arg => format_ident_impl!([$span.or(arg.span()), $($fmt)*, $name = arg] $($rest)*),
+        ([$s:expr, $($f:tt)*] $n:ident = $y:expr, $($r:tt)*) => {
+            match ::quote::__private::IdentFragmentAdapter(&$y) {
+                arg => format_ident_impl!([$s.or(arg.span()), $($f)*, $n = arg] $($r)*),
             }
         };
 
        
-        ([$span:expr, $($fmt:tt)*] $arg:expr) => {
-            format_ident_impl!([$span, $($fmt)*] $arg,)
+        ([$s:expr, $($f:tt)*] $y:expr) => {
+            format_ident_impl!([$s, $($f)*] $y,)
         };
-        ([$span:expr, $($fmt:tt)*] $arg:expr, $($rest:tt)*) => {
-            match ::quote::__private::IdentFragmentAdapter(&$arg) {
-                arg => format_ident_impl!([$span.or(arg.span()), $($fmt)*, arg] $($rest)*),
+        ([$s:expr, $($f:tt)*] $y:expr, $($r:tt)*) => {
+            match ::quote::__private::IdentFragmentAdapter(&$y) {
+                arg => format_ident_impl!([$s.or(arg.span()), $($f)*, arg] $($r)*),
             }
         };
     }
@@ -944,83 +961,84 @@ extern crate proc_macro;
     #[macro_export] macro_rules! ast_struct 
     {
         (
-            $(#[$attr:meta])*
-            $pub:ident $struct:ident $name:ident #full $body:tt
+            $(#[$a:meta])*
+            $p:ident $s:ident $n:ident #full $b:tt
         ) =>
         {
-            check_keyword_matches!(pub $pub);
-            check_keyword_matches!(struct $struct);
-            $(#[$attr])* $pub $struct $name $body
+            check_keyword_matches!(pub $p);
+            check_keyword_matches!(struct $s);
+            $(#[$a])* $p $s $n $b
         };
 
         (
-            $(#[$attr:meta])*
-            $pub:ident $struct:ident $name:ident $body:tt
+            $(#[$a:meta])*
+            $p:ident $s:ident $n:ident $b:tt
         ) => {
-            check_keyword_matches!(pub $pub);
-            check_keyword_matches!(struct $struct);
+            check_keyword_matches!(pub $p);
+            check_keyword_matches!(struct $s);
 
-            $(#[$attr])* $pub $struct $name $body
+            $(#[$a])* $p $s $n $b
         };
     }
     
     #[macro_export] macro_rules! ast_enum
     {
         (
-            $(#[$enum_attr:meta])*
-            $pub:ident $enum:ident $name:ident $body:tt
+            $(#[$a:meta])*
+            $p:ident $e:ident $n:ident $b:tt
         ) => {
-            check_keyword_matches!(pub $pub);
-            check_keyword_matches!(enum $enum);
+            check_keyword_matches!(pub $p);
+            check_keyword_matches!(enum $e);
 
-            $(#[$enum_attr])* $pub $enum $name $body
+            $(#[$a])* $p $e $n $b
         };
     }
 
     #[macro_export] macro_rules! ast_enum_of_structs
     {
         (
-            $(#[$enum_attr:meta])*
-            $pub:ident $enum:ident $name:ident $body:tt
+            $(#[$a:meta])*
+            $p:ident $e:ident $n:ident $b:tt
         ) => {
-            check_keyword_matches!(pub $pub);
-            check_keyword_matches!(enum $enum);
+            check_keyword_matches!(pub $p);
+            check_keyword_matches!(enum $e);
 
-            $(#[$enum_attr])* $pub $enum $name $body
+            $(#[$a])* $p $e $n $b
 
-            ast_enum_of_structs_impl!($name $body);
+            ast_enum_of_structs_impl!($n $b);
 
-                generate_to_tokens!(() tokens $name $body);
+                generate_to_tokens!(() k $n $b);
         };
     }
 
     #[macro_export] macro_rules! ast_enum_of_structs_impl
     {
         (
-            $name:ident {
+            $n:ident {
                 $(
-                    $(#[cfg $cfg_attr:tt])*
-                    $(#[doc $($doc_attr:tt)*])*
-                    $variant:ident $( ($member:ident) )*,
+                    $(#[cfg $c:tt])*
+                    $(#[doc $($d:tt)*])*
+                    $v:ident $( ($m:ident) )*,
                 )*
             }
         ) => {
             $($(
-                ast_enum_from_struct!($name::$variant, $member);
+                ast_enum_from_struct!($n::$v, $m);
             )*)*
         };
     }
 
     #[macro_export] macro_rules! ast_enum_from_struct
     {
-        ($name:ident::Verbatim, $member:ident) => {};
+        ($n:ident::Verbatim, $m:ident) => {};
 
-        ($name:ident::$variant:ident, $member:ident) =>
+        ($n:ident::$v:ident, $m:ident) =>
         {
-            impl From<$member> for $name
+            impl From<$m> for $n
             {
-                fn from(e: $member) -> $name {
-                    $name::$variant(e)
+                fn from(e:$m) -> $n
+                {
+                    $n::$v( e )
                 }
             }
         };
@@ -1029,39 +1047,48 @@ extern crate proc_macro;
     #[macro_export] macro_rules! generate_to_tokens
     {
         (
-            ($($arms:tt)*) $tokens:ident $name:ident {
-                $(#[cfg $cfg_attr:tt])*
-                $(#[doc $($doc_attr:tt)*])*
-                $variant:ident,
-                $($next:tt)*
+            ($($a:tt)*) $k:ident $n:ident 
+            {
+                $(#[cfg $c:tt])*
+                $(#[doc $($d:tt)*])*
+                $v:ident,
+                $($o:tt)*
             }
-        ) => {
-            generate_to_tokens!(
-                ($($arms)* $(#[cfg $cfg_attr])* $name::$variant => {})
-                $tokens $name { $($next)* }
+        ) => 
+        {
+            generate_to_tokens!
+            (
+                ($($a)* $(#[cfg $c])* $n::$v => {})
+                $k $n { $($o)* }
             );
         };
 
         (
-            ($($arms:tt)*) $tokens:ident $name:ident {
-                $(#[cfg $cfg_attr:tt])*
-                $(#[doc $($doc_attr:tt)*])*
-                $variant:ident($member:ident),
-                $($next:tt)*
+            ($($a:tt)*) $k:ident $n:ident 
+            {
+                $(#[cfg $c:tt])*
+                $(#[doc $($d:tt)*])*
+                $v:ident($m:ident),
+                $($o:tt)*
             }
-        ) => {
-            generate_to_tokens!(
-                ($($arms)* $(#[cfg $cfg_attr])* $name::$variant(_e) => _e.to_tokens($tokens),)
-                $tokens $name { $($next)* }
+        ) => 
+        {
+            generate_to_tokens!
+            (
+                ($($a)* $(#[cfg $c])* $n::$v(_e) => _e.to_tokens($k),)
+                $k $n { $($o)* }
             );
         };
 
-        (($($arms:tt)*) $tokens:ident $name:ident {}) => {
-            impl ::quote::ToTokens for $name {
-                fn to_tokens(&self, $tokens:&mut ::process::macros::TokenStream )
+        (($($a:tt)*) $k:ident $n:ident {}) => 
+        {
+            impl ::quote::ToTokens for $n 
+            {
+                fn to_tokens(&self, $k:&mut ::process::macros::TokenStream )
                 {
-                    match self {
-                        $($arms)*
+                    match self 
+                    {
+                        $($a)*
                     }
                 }
             }
@@ -1070,11 +1097,12 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! pub_if_not_doc
     {
-        ($(#[$m:meta])* $pub:ident $($item:tt)*) => {
-            check_keyword_matches!(pub $pub);
+        ($(#[$m:meta])* $p:ident $($i:tt)*) =>
+        {
+            check_keyword_matches!(pub $p);
 
             $(#[$m])*
-            $pub $($item)*
+            $p $($i)*
         };
     }
 
@@ -1088,29 +1116,29 @@ extern crate proc_macro;
     #[macro_export] macro_rules! return_impl_trait
     {
         (
-            $(#[$attr:meta])*
-            $vis:vis fn $name:ident $args:tt -> $impl_trait:ty [$concrete:ty] $body:block
-        ) => {
-            #[cfg(not(docsrs))]
-            $(#[$attr])*
-            $vis fn $name $args -> $concrete $body
-
-            #[cfg(docsrs)]
-            $(#[$attr])*
-            $vis fn $name $args -> $impl_trait $body
+            $(#[$a:meta])*
+            $v:vis fn $n:ident $z:tt -> $t:ty [$c:ty] $b:block
+        ) => 
+        {
+            $(#[$a])*
+            $v fn $n $z -> $c $b
         };
     }
 
     #[macro_export] macro_rules! parenthesized
     {
-        ($content:ident in $cursor:expr) => {
-            match ::syntax::__private::parse_parens(&$cursor) {
-                ::syntax::__private::Ok(parens) => {
-                    $content = parens.content;
-                    parens.token
+        ($c:ident in $q:expr) => 
+        {
+            match ::syntax::__private::parse_parens(&$q) 
+            {
+                ::syntax::__private::Ok(p) => 
+                {
+                    $c = p.content;
+                    p.token
                 }
-                ::syntax::__private::Err(error) => {
-                    return ::syntax::__private::Err(error);
+                ::syntax::__private::Err(e) => 
+                {
+                    return ::syntax::__private::Err(e);
                 }
             }
         };
@@ -1118,15 +1146,19 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! braced
     {
-        ($content:ident in $cursor:expr) => 
+        ($c:ident in $q:expr) => 
         {
-            match ::syntax::__private::parse_braces(&$cursor) {
-                ::syntax::__private::Ok(braces) => {
-                    $content = braces.content;
-                    braces.token
+            match ::syntax::__private::parse_braces(&$q)
+            {
+                ::syntax::__private::Ok(b) => 
+                {
+                    $c = b.content;
+                    b.token
                 }
-                ::syntax::__private::Err(error) => {
-                    return ::syntax::__private::Err(error);
+
+                ::syntax::__private::Err(e) => 
+                {
+                    return ::syntax::__private::Err(e);
                 }
             }
         };
@@ -1134,16 +1166,16 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! bracketed
     {
-        ($content:ident in $cursor:expr) =>
+        ($c:ident in $q:expr) =>
         {
-            match ::syntax::__private::parse_brackets(&$cursor)
+            match ::syntax::__private::parse_brackets(&$q)
             {
-                ::syntax::__private::Ok(brackets) => {
-                    $content = brackets.content;
-                    brackets.token
+                ::syntax::__private::Ok(b) => {
+                    $c = b.content;
+                    b.token
                 }
-                ::syntax::__private::Err(error) => {
-                    return ::syntax::__private::Err(error);
+                ::syntax::__private::Err(e) => {
+                    return ::syntax::__private::Err(e);
                 }
             }
         };
@@ -1151,96 +1183,105 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! parse_quote
     {
-        ($($tt:tt)*) =>
+        ($($t:tt)*) =>
         {
-            ::syntax::__private::parse_quote(::syntax::__private::quote::quote!($($tt)*))
+            ::syntax::__private::parse_quote(::syntax::__private::quote::quote!($($t)*))
         };
     }
 
     #[macro_export] macro_rules! parse_quote_spanned
     {
-        ($span:expr=> $($tt:tt)*) =>
+        ($s:expr=> $($t:tt)*) =>
         {
-            ::syntax::__private::parse_quote( span!($span=> $($tt)*) )
+            ::syntax::__private::parse_quote( span!($s=> $($t)*) )
         };
     }
     
     #[macro_export] macro_rules! parse_macro_input
     {
-        ($tokenstream:ident as $ty:ty) => {
-            match ::syntax::parse::<$ty>($tokenstream) {
+        ($s:ident as $ty:ty) =>
+        {
+            match ::syntax::parse::<$ty>($s) {
+                ::syntax::__private::Ok(d) => d,
+                ::syntax::__private::Err(e) => {
+                    return ::syntax::__private::TokenStream::from(e.to_compile_error());
+                }
+            }
+        };
+
+        ($s:ident with $p:path) => 
+        {
+            match ::syntax::parse::Parser::parse($p, $s)
+            {
                 ::syntax::__private::Ok(data) => data,
                 ::syntax::__private::Err(err) => {
                     return ::syntax::__private::TokenStream::from(err.to_compile_error());
                 }
             }
         };
-        ($tokenstream:ident with $parser:path) => {
-            match ::syntax::parse::Parser::parse($parser, $tokenstream) {
-                ::syntax::__private::Ok(data) => data,
-                ::syntax::__private::Err(err) => {
-                    return ::syntax::__private::TokenStream::from(err.to_compile_error());
-                }
-            }
-        };
-        ($tokenstream:ident) => {
-            ::syntax::parse_macro_input!($tokenstream as _)
+
+        ($s:ident) => 
+        {
+            ::syntax::parse_macro_input!($s as _)
         };
     }
 
     #[macro_export] macro_rules! custom_punctuation
     {
-        ($ident:ident, $($tt:tt)+) =>
+        ($j:ident, $($t:tt)+) =>
         {
-            pub struct $ident {
-                #[allow(dead_code)]
-                pub spans: ::syntax::custom_punctuation_repr!($($tt)+),
+            pub struct $j
+            {
+                pub spans: ::syntax::custom_punctuation_repr!($($t)+),
             }
-
-                #[allow(dead_code, non_snake_case)]
-            pub fn $ident<__S: ::syntax::__private::IntoSpans<::syntax::custom_punctuation_repr!($($tt)+)>>(
-                spans: __S,
-            ) -> $ident {
-                let _validate_len = 0 $(+ ::syntax::custom_punctuation_len!(strict, $tt))*;
-                $ident {
+            
+            pub fn $j<__S: ::syntax::__private::IntoSpans<::syntax::custom_punctuation_repr!($($t)+)>>( spans: __S ) -> $j
+            {
+                let _validate_len = 0 $(+ ::syntax::custom_punctuation_len!(strict, $t))*;
+                $j
+                {
                     spans: ::syntax::__private::IntoSpans::into_spans(spans)
                 }
             }
 
-            const _: () = {
-                impl ::syntax::__private::Default for $ident {
+            const _: () = 
+            {
+                impl ::syntax::__private::Default for $j
+                {
                     fn default() -> Self {
-                        $ident(::syntax::__private::Span::call_site())
+                        $j(::syntax::__private::Span::call_site())
                     }
                 }
 
-                ::syntax::impl_parse_for_custom_punctuation!($ident, $($tt)+);
-                ::syntax::impl_to_tokens_for_custom_punctuation!($ident, $($tt)+);
-                ::syntax::impl_clone_for_custom_punctuation!($ident, $($tt)+);
-                ::syntax::impl_extra_traits_for_custom_punctuation!($ident, $($tt)+);
+                ::syntax::impl_parse_for_custom_punctuation!($j, $($t)+);
+                ::syntax::impl_to_tokens_for_custom_punctuation!($j, $($t)+);
+                ::syntax::impl_clone_for_custom_punctuation!($j, $($t)+);
+                ::syntax::impl_extra_traits_for_custom_punctuation!($j, $($t)+);
             };
         };
     }
     
     #[macro_export] macro_rules! impl_parse_for_custom_punctuation
     {
-        ($ident:ident, $($tt:tt)+) => {
-            impl ::syntax::__private::CustomToken for $ident {
-                fn peek(cursor: ::syntax::buffer::Cursor) -> ::syntax::__private::bool {
-                    ::syntax::__private::peek_punct(cursor, ::syntax::stringify_punct!($($tt)+))
+        ($j:ident, $($t:tt)+) => 
+        {
+            impl ::syntax::__private::CustomToken for $j
+            {
+                fn peek(q: ::syntax::buffer::Cursor) -> ::syntax::__private::bool {
+                    ::syntax::__private::peek_punct(q, ::syntax::stringify_punct!($($t)+))
                 }
 
                 fn display() -> &'static ::syntax::__private::str {
-                    ::syntax::__private::concat!("`", ::syntax::stringify_punct!($($tt)+), "`")
+                    ::syntax::__private::concat!("`", ::syntax::stringify_punct!($($t)+), "`")
                 }
             }
 
-            impl ::syntax::parse::Parse for $ident
+            impl ::syntax::parse::Parse for $j
             {
-                fn parse(input: ::syntax::parse::ParseStream) -> ::syntax::parse::Result<$ident> {
-                    let spans: ::syntax::custom_punctuation_repr!($($tt)+) =
-                        ::syntax::__private::parse_punct(input, ::syntax::stringify_punct!($($tt)+))?;
-                    Ok($ident(spans))
+                fn parse(input: ::syntax::parse::ParseStream) -> ::syntax::parse::Result<$j> {
+                    let spans: ::syntax::custom_punctuation_repr!($($t)+) =
+                        ::syntax::__private::parse_punct(input, ::syntax::stringify_punct!($($t)+))?;
+                    Ok($j(spans))
                 }
             }
         };
@@ -1248,10 +1289,13 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! impl_to_tokens_for_custom_punctuation
     {
-        ($ident:ident, $($tt:tt)+) => {
-            impl ::syntax::__private::ToTokens for $ident {
-                fn to_tokens(&self, tokens: &mut ::syntax::__private::TokenStream2) {
-                    ::syntax::__private::print_punct(::syntax::stringify_punct!($($tt)+), &self.spans, tokens)
+        ($j:ident, $($t:tt)+) => 
+        {
+            impl ::syntax::__private::ToTokens for $j 
+            {
+                fn to_tokens(&self, k: &mut ::syntax::__private::TokenStream2) 
+                {
+                    ::syntax::__private::print_punct(::syntax::stringify_punct!($($t)+), &self.spans, k)
                 }
             }
         };
@@ -1259,36 +1303,38 @@ extern crate proc_macro;
         
     #[macro_export] macro_rules! impl_clone_for_custom_punctuation
     {
-        ($ident:ident, $($tt:tt)+) => {
-            impl ::syntax::__private::Copy for $ident {}
-
-            #[allow(clippy::expl_impl_clone_on_copy)]
-            impl ::syntax::__private::Clone for $ident {
-                fn clone(&self) -> Self {
-                    *self
-                }
+        ($j:ident, $($t:tt)+) => 
+        {
+            impl ::syntax::__private::Copy for $j {}
+            
+            impl ::syntax::__private::Clone for $j
+            {
+                fn clone(&self) -> Self { *self }
             }
         };
     }
     
     #[macro_export] macro_rules! impl_extra_traits_for_custom_punctuation
     {
-        ($ident:ident, $($tt:tt)+) => {
-            impl ::syntax::__private::Debug for $ident {
-                fn fmt(&self, f: &mut ::syntax::__private::Formatter) -> ::syntax::__private::FmtResult {
-                    ::syntax::__private::Formatter::write_str(f, ::syntax::__private::stringify!($ident))
+        ($j:ident, $($t:tt)+) =>
+        {
+            impl ::syntax::__private::Debug for $j
+            {
+                fn fmt(&self, f: &mut ::syntax::__private::Formatter) -> ::syntax::__private::FmtResult
+                {
+                    ::syntax::__private::Formatter::write_str(f, ::syntax::__private::stringify!($j))
                 }
             }
 
-            impl ::syntax::__private::Eq for $ident {}
+            impl ::syntax::__private::Eq for $j {}
 
-            impl ::syntax::__private::PartialEq for $ident {
-                fn eq(&self, _other: &Self) -> ::syntax::__private::bool {
-                    true
-                }
+            impl ::syntax::__private::PartialEq for $j
+            {
+                fn eq(&self, _other: &Self) -> ::syntax::__private::bool { true }
             }
 
-            impl ::syntax::__private::Hash for $ident {
+            impl ::syntax::__private::Hash for $j
+            {
                 fn hash<__H: ::syntax::__private::Hasher>(&self, _state: &mut __H) {}
             }
         };
@@ -1296,61 +1342,62 @@ extern crate proc_macro;
         
     #[macro_export] macro_rules! custom_punctuation_repr
     {
-        ($($tt:tt)+) => {
-            [::syntax::__private::Span; 0 $(+ ::syntax::custom_punctuation_len!(lenient, $tt))+]
+        ($($t:tt)+) =>
+        {
+            [::syntax::__private::Span; 0 $(+ ::syntax::custom_punctuation_len!(lenient, $t))+]
         };
     }
     
     #[macro_export] macro_rules! custom_punctuation_len
     {
-        ($mode:ident, &)     => { 1 };
-        ($mode:ident, &&)    => { 2 };
-        ($mode:ident, &=)    => { 2 };
-        ($mode:ident, @)     => { 1 };
-        ($mode:ident, ^)     => { 1 };
-        ($mode:ident, ^=)    => { 2 };
-        ($mode:ident, :)     => { 1 };
-        ($mode:ident, ,)     => { 1 };
-        ($mode:ident, $)     => { 1 };
-        ($mode:ident, .)     => { 1 };
-        ($mode:ident, ..)    => { 2 };
-        ($mode:ident, ...)   => { 3 };
-        ($mode:ident, ..=)   => { 3 };
-        ($mode:ident, =)     => { 1 };
-        ($mode:ident, ==)    => { 2 };
-        ($mode:ident, =>)    => { 2 };
-        ($mode:ident, >=)    => { 2 };
-        ($mode:ident, >)     => { 1 };
-        ($mode:ident, <-)    => { 2 };
-        ($mode:ident, <=)    => { 2 };
-        ($mode:ident, <)     => { 1 };
-        ($mode:ident, -)     => { 1 };
-        ($mode:ident, -=)    => { 2 };
-        ($mode:ident, !=)    => { 2 };
-        ($mode:ident, !)     => { 1 };
-        ($mode:ident, |)     => { 1 };
-        ($mode:ident, |=)    => { 2 };
-        ($mode:ident, ||)    => { 2 };
-        ($mode:ident, ::)    => { 2 };
-        ($mode:ident, %)     => { 1 };
-        ($mode:ident, %=)    => { 2 };
-        ($mode:ident, +)     => { 1 };
-        ($mode:ident, +=)    => { 2 };
-        ($mode:ident, #)     => { 1 };
-        ($mode:ident, ?)     => { 1 };
-        ($mode:ident, ->)    => { 2 };
-        ($mode:ident, ;)     => { 1 };
-        ($mode:ident, <<)    => { 2 };
-        ($mode:ident, <<=)   => { 3 };
-        ($mode:ident, >>)    => { 2 };
-        ($mode:ident, >>=)   => { 3 };
-        ($mode:ident, /)     => { 1 };
-        ($mode:ident, /=)    => { 2 };
-        ($mode:ident, *)     => { 1 };
-        ($mode:ident, *=)    => { 2 };
-        ($mode:ident, ~)     => { 1 };
-        (lenient, $tt:tt)    => { 0 };
-        (strict, $tt:tt)     => {{ ::syntax::custom_punctuation_unexpected!($tt); 0 }};
+        ($m:ident, &)     => { 1 };
+        ($m:ident, &&)    => { 2 };
+        ($m:ident, &=)    => { 2 };
+        ($m:ident, @)     => { 1 };
+        ($m:ident, ^)     => { 1 };
+        ($m:ident, ^=)    => { 2 };
+        ($m:ident, :)     => { 1 };
+        ($m:ident, ,)     => { 1 };
+        ($m:ident, $)     => { 1 };
+        ($m:ident, .)     => { 1 };
+        ($m:ident, ..)    => { 2 };
+        ($m:ident, ...)   => { 3 };
+        ($m:ident, ..=)   => { 3 };
+        ($m:ident, =)     => { 1 };
+        ($m:ident, ==)    => { 2 };
+        ($m:ident, =>)    => { 2 };
+        ($m:ident, >=)    => { 2 };
+        ($m:ident, >)     => { 1 };
+        ($m:ident, <-)    => { 2 };
+        ($m:ident, <=)    => { 2 };
+        ($m:ident, <)     => { 1 };
+        ($m:ident, -)     => { 1 };
+        ($m:ident, -=)    => { 2 };
+        ($m:ident, !=)    => { 2 };
+        ($m:ident, !)     => { 1 };
+        ($m:ident, |)     => { 1 };
+        ($m:ident, |=)    => { 2 };
+        ($m:ident, ||)    => { 2 };
+        ($m:ident, ::)    => { 2 };
+        ($m:ident, %)     => { 1 };
+        ($m:ident, %=)    => { 2 };
+        ($m:ident, +)     => { 1 };
+        ($m:ident, +=)    => { 2 };
+        ($m:ident, #)     => { 1 };
+        ($m:ident, ?)     => { 1 };
+        ($m:ident, ->)    => { 2 };
+        ($m:ident, ;)     => { 1 };
+        ($m:ident, <<)    => { 2 };
+        ($m:ident, <<=)   => { 3 };
+        ($m:ident, >>)    => { 2 };
+        ($m:ident, >>=)   => { 3 };
+        ($m:ident, /)     => { 1 };
+        ($m:ident, /=)    => { 2 };
+        ($m:ident, *)     => { 1 };
+        ($m:ident, *=)    => { 2 };
+        ($m:ident, ~)     => { 1 };
+        (lenient, $t:tt)    => { 0 };
+        (strict, $t:tt)     => {{ ::syntax::custom_punctuation_unexpected!($t); 0 }};
     }
     
     #[macro_export] macro_rules! custom_punctuation_unexpected
@@ -1360,76 +1407,79 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! stringify_punct
     {
-        ($($tt:tt)+) => {
-            ::syntax::__private::concat!($(::syntax::__private::stringify!($tt)),+)
+        ($($t:tt)+) =>
+        {
+            ::syntax::__private::concat!($(::syntax::__private::stringify!($t)),+)
         };
     }
 
     #[macro_export] macro_rules! custom_keyword
     {
-        ($ident:ident) => {
-            #[allow(non_camel_case_types)]
-            pub struct $ident {
-                #[allow(dead_code)]
+        ($j:ident) =>
+        {
+            pub struct $j
+            {
                 pub span: ::syntax::__private::Span,
             }
-
-                #[allow(dead_code, non_snake_case)]
-            pub fn $ident<__S: ::syntax::__private::IntoSpans<::syntax::__private::Span>>(
+            
+            pub fn $j<__S: ::syntax::__private::IntoSpans<::syntax::__private::Span>>(
                 span: __S,
-            ) -> $ident {
-                $ident {
+            ) -> $j
+            {
+                $j
+                {
                     span: ::syntax::__private::IntoSpans::into_spans(span),
                 }
             }
 
             const _: () = {
-                impl ::syntax::__private::Default for $ident {
+                impl ::syntax::__private::Default for $j {
                     fn default() -> Self {
-                        $ident {
+                        $j {
                             span: ::syntax::__private::Span::call_site(),
                         }
                     }
                 }
 
-                ::syntax::impl_parse_for_custom_keyword!($ident);
-                ::syntax::impl_to_tokens_for_custom_keyword!($ident);
-                ::syntax::impl_clone_for_custom_keyword!($ident);
-                ::syntax::impl_extra_traits_for_custom_keyword!($ident);
+                ::syntax::impl_parse_for_custom_keyword!($j);
+                ::syntax::impl_to_tokens_for_custom_keyword!($j);
+                ::syntax::impl_clone_for_custom_keyword!($j);
+                ::syntax::impl_extra_traits_for_custom_keyword!($j);
             };
         };
     }
     
     #[macro_export] macro_rules! impl_parse_for_custom_keyword
     {
-        ($ident:ident) => {
+        ($j:ident) =>
+        {
            
-            impl ::syntax::__private::CustomToken for $ident {
-                fn peek(cursor: ::syntax::buffer::Cursor) -> ::syntax::__private::bool {
-                    if let ::syntax::__private::Some((ident, _rest)) = cursor.ident() {
-                        ident == ::syntax::__private::stringify!($ident)
+            impl ::syntax::__private::CustomToken for $j {
+                fn peek(q: ::syntax::buffer::Cursor) -> ::syntax::__private::bool {
+                    if let ::syntax::__private::Some((ident, _rest)) = q.ident() {
+                        ident == ::syntax::__private::stringify!($j)
                     } else {
                         false
                     }
                 }
 
                 fn display() -> &'static ::syntax::__private::str {
-                    ::syntax::__private::concat!("`", ::syntax::__private::stringify!($ident), "`")
+                    ::syntax::__private::concat!("`", ::syntax::__private::stringify!($j), "`")
                 }
             }
 
-            impl ::syntax::parse::Parse for $ident
+            impl ::syntax::parse::Parse for $j
             {
-                fn parse(input: ::syntax::parse::ParseStream) -> ::syntax::parse::Result<$ident> {
-                    input.step(|cursor| {
-                        if let ::syntax::__private::Some((ident, rest)) = cursor.ident() {
-                            if ident == ::syntax::__private::stringify!($ident) {
-                                return ::syntax::__private::Ok(($ident { span: ident.span() }, rest));
+                fn parse(input: ::syntax::parse::ParseStream) -> ::syntax::parse::Result<$j> {
+                    input.step(|q| {
+                        if let ::syntax::__private::Some((ident, rest)) = q.ident() {
+                            if ident == ::syntax::__private::stringify!($j) {
+                                return ::syntax::__private::Ok(($j { span: ident.span() }, rest));
                             }
                         }
-                        ::syntax::__private::Err(cursor.error(::syntax::__private::concat!(
+                        ::syntax::__private::Err(q.error(::syntax::__private::concat!(
                             "expected `",
-                            ::syntax::__private::stringify!($ident),
+                            ::syntax::__private::stringify!($j),
                             "`",
                         )))
                     })
@@ -1440,11 +1490,14 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! impl_to_tokens_for_custom_keyword
     {
-        ($ident:ident) => {
-            impl ::syntax::__private::ToTokens for $ident {
-                fn to_tokens(&self, tokens: &mut ::syntax::__private::TokenStream2) {
-                    let ident = ::syntax::Ident::new(::syntax::__private::stringify!($ident), self.span);
-                    ::syntax::__private::TokenStreamExt::append(tokens, ident);
+        ($j:ident) =>
+        {
+            impl ::syntax::__private::ToTokens for $j
+            {
+                fn to_tokens(&self, k: &mut ::syntax::__private::TokenStream2) 
+                {
+                    let i = ::syntax::Ident::new(::syntax::__private::stringify!($j), self.span);
+                    ::syntax::__private::TokenStreamExt::append(k, i);
                 }
             }
         };
@@ -1452,43 +1505,46 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! impl_clone_for_custom_keyword
     {
-        ($ident:ident) => {
-            impl ::syntax::__private::Copy for $ident {}
-
-            #[allow(clippy::expl_impl_clone_on_copy)]
-            impl ::syntax::__private::Clone for $ident {
-                fn clone(&self) -> Self {
-                    *self
-                }
+        ($j:ident) => 
+        {
+            impl ::syntax::__private::Copy for $j {}
+            
+            impl ::syntax::__private::Clone for $j 
+            {
+                fn clone(&self) -> Self { *self }
             }
         };
     }
     
     #[macro_export] macro_rules! impl_extra_traits_for_custom_keyword 
     {
-        ($ident:ident) => {
-            impl ::syntax::__private::Debug for $ident {
+        ($j:ident) =>
+        {
+            impl ::syntax::__private::Debug for $j 
+            {
                 fn fmt(&self, f: &mut ::syntax::__private::Formatter) -> ::syntax::__private::FmtResult {
                     ::syntax::__private::Formatter::write_str(
                         f,
                         ::syntax::__private::concat!(
                             "Keyword [",
-                            ::syntax::__private::stringify!($ident),
+                            ::syntax::__private::stringify!($j),
                             "]",
                         ),
                     )
                 }
             }
 
-            impl ::syntax::__private::Eq for $ident {}
+            impl ::syntax::__private::Eq for $j {}
 
-            impl ::syntax::__private::PartialEq for $ident {
+            impl ::syntax::__private::PartialEq for $j 
+            {
                 fn eq(&self, _other: &Self) -> ::syntax::__private::bool {
                     true
                 }
             }
 
-            impl ::syntax::__private::Hash for $ident {
+            impl ::syntax::__private::Hash for $j 
+            {
                 fn hash<__H: ::syntax::__private::Hasher>(&self, _state: &mut __H) {}
             }
         };
@@ -1496,58 +1552,54 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward
     {
-        ($( Self :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret {
-                    Self::$method(self $( , $arg )* )
+        ($( Self :: $m:ident ( self $( , $y:ident : $ty:ty )* ) -> $r:ty ; )*) =>
+        {$(
+                #[inline] fn $m(self $( , $y : $ty )* ) -> $r
+                {
+                    Self::$m(self $( , $y )* )
                 }
-            )*};
-        ($( $base:ident :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret {
-                    <Self as $base>::$method(self $( , $arg )* )
-                }
-            )*};
-        ($( $base:ident :: $method:ident ( $( $arg:ident : $ty:ty ),* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method( $( $arg : $ty ),* ) -> $ret {
-                    <Self as $base>::$method( $( $arg ),* )
-                }
-            )*};
-        ($( $imp:path as $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret {
-                    $imp(self $( , $arg )* )
-                }
-            )*};
+        )*};
+
+        ($( $b:ident :: $m:ident ( self $( , $y:ident : $ty:ty )* ) -> $r:ty ; )*) =>
+        {$(
+            #[inline] fn $m(self $( , $y : $ty )* ) -> $r { <Self as $b>::$m(self $( , $y )* ) }
+        )*};
+
+        ($( $b:ident :: $m:ident ( $( $y:ident : $ty:ty ),* ) -> $r:ty ; )*) =>
+        {$(
+            #[inline] fn $m( $( $y : $ty ),* ) -> $r { <Self as $b>::$m( $( $y ),* ) }
+        )*};
+
+        ($( $l:path as $m:ident ( self $( , $y:ident : $ty:ty )* ) -> $r:ty ; )*) =>
+        {$(
+            #[inline] fn $m(self $( , $y : $ty )* ) -> $r { $l(self $( , $y )* ) }
+        )*};
     }
 
     #[macro_export] macro_rules! constant
     {
-        ($( $method:ident () -> $ret:expr ; )*)
-            => {$(
-                #[inline] fn $method() -> Self {
-                    $ret
-                }
-            )*};
+        ($( $m:ident () -> $r:expr ; )*) =>
+        {$(
+                #[inline] fn $m() -> Self { $r }
+        )*};
     }
     
     #[macro_export] macro_rules! forward_ref_ref_binop
     {
-        (impl $imp:ident, $method:ident) =>
+        (impl $l:ident, $m:ident) =>
         {
-            impl<'a, 'b, T: Clone + Integer> $imp<&'b Ratio<T>> for &'a Ratio<T> {
+            impl<'a, 'b, T: Clone + Integer> $l<&'b Ratio<T>> for &'a Ratio<T>
+            {
                 type Output = Ratio<T>;
-
-                #[inline] fn $method(self, other: &'b Ratio<T>) -> Ratio<T> {
-                    self.clone().$method(other.clone())
-                }
+                #[inline] fn $m(self, o:&'b Ratio<T>) -> Ratio<T> { self.clone().$m(o.clone()) }
             }
-            impl<'a, 'b, T: Clone + Integer> $imp<&'b T> for &'a Ratio<T> {
-                type Output = Ratio<T>;
 
-                #[inline] fn $method(self, other: &'b T) -> Ratio<T> {
-                    self.clone().$method(other.clone())
+            impl<'a, 'b, T: Clone + Integer> $l<&'b T> for &'a Ratio<T>
+            {
+                type Output = Ratio<T>;
+                #[inline] fn $m(self, o:&'b T) -> Ratio<T>
+                {
+                    self.clone().$m(o.clone())
                 }
             }
         };
@@ -1555,14 +1607,14 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_ref_ref_binop_big
     {
-        (impl $imp:ident for $res:ty, $method:ident) =>
+        (impl $l:ident for $z:ty, $m:ident) =>
         {
-            impl $imp<&$res> for &$res
+            impl $l<&$z> for &$z
             {
-                type Output = $res;
-                #[inline] fn $method(self, other: &$res) -> $res
+                type Output = $z;
+                #[inline] fn $m(self, o:&$z) -> $z
                 {
-                    $imp::$method(self.clone(), other)
+                    $l::$m(self.clone(), o)
                 }
             }
         };
@@ -1570,33 +1622,32 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_ref_val_binop
     {
-        (impl $imp:ident, $method:ident) =>
+        (impl $l:ident, $m:ident) =>
         {
-            impl<'a, T> $imp<Ratio<T>> for &'a Ratio<T> where
+            impl<'a, T> $l<Ratio<T>> for &'a Ratio<T> where
             T: Clone + Integer
             {
                 type Output = Ratio<T>;
-                #[inline] fn $method(self, other: Ratio<T>) -> Ratio<T> { self.clone().$method(other) }
+                #[inline] fn $m(self, o: Ratio<T>) -> Ratio<T> { self.clone().$m(o) }
             }
 
-            impl<'a, T> $imp<T> for &'a Ratio<T> where
+            impl<'a, T> $l<T> for &'a Ratio<T> where
             T: Clone + Integer,
             {
                 type Output = Ratio<T>;
-                #[inline] fn $method(self, other: T) -> Ratio<T> { self.clone().$method(other) }
+                #[inline] fn $m(self, o: T) -> Ratio<T> { self.clone().$m(o) }
             }
         };
     }
 
     #[macro_export] macro_rules! forward_ref_val_binop_big
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<$res> for &$res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
+        (impl $l:ident for $z:ty, $m:ident) => {
+            impl $l<$z> for &$z {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z {
                    
-                    $imp::$method(self, &other)
+                    $l::$m(self, &o)
                 }
             }
         };
@@ -1604,153 +1655,143 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_val_ref_binop
     {
-        (impl $imp:ident, $method:ident) => {
-            impl<'a, T> $imp<&'a Ratio<T>> for Ratio<T> where
-                T: Clone + Integer,
+        (impl $l:ident, $m:ident) => 
+        {
+            impl<'a, T> $l<&'a Ratio<T>> for Ratio<T> where
+            T: Clone + Integer
             {
                 type Output = Ratio<T>;
-
-                #[inline] fn $method(self, other: &Ratio<T>) -> Ratio<T> {
-                    self.$method(other.clone())
+                #[inline] fn $m(self, o:&Ratio<T>) -> Ratio<T> {
+                    self.$m(o.clone())
                 }
             }
-            impl<'a, T> $imp<&'a T> for Ratio<T> where
-                T: Clone + Integer,
+
+            impl<'a, T> $l<&'a T> for Ratio<T> where
+            T: Clone + Integer
             {
                 type Output = Ratio<T>;
-
-                #[inline] fn $method(self, other: &T) -> Ratio<T> {
-                    self.$method(other.clone())
+                #[inline] fn $m(self, o:&T) -> Ratio<T> {
+                    self.$m(o.clone())
                 }
             }
         };
     }
-
     
     #[macro_export] macro_rules! forward_val_ref_binop_big
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<&$res> for $res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$res) -> $res {
-                   
-                    $imp::$method(&self, other)
-                }
+        (impl $l:ident for $z:ty, $m:ident) => 
+        {
+            impl $l<&$z> for $z 
+            {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$z) -> $z { $l::$m(&self, o) }
             }
         };
     }
 
     #[macro_export] macro_rules! forward_all_binop
     {
-        (impl $imp:ident, $method:ident) =>
+        (impl $l:ident, $m:ident) =>
         {
-            forward_ref_ref_binop!(impl $imp, $method);
-            forward_ref_val_binop!(impl $imp, $method);
-            forward_val_ref_binop!(impl $imp, $method);
+            forward_ref_ref_binop!(impl $l, $m);
+            forward_ref_val_binop!(impl $l, $m);
+            forward_val_ref_binop!(impl $l, $m);
         };
     }
 
     #[macro_export] macro_rules! cfg_32
     {
-        ($($any:tt)+) => {
-            #[cfg(not(target_pointer_width = "64"))] $($any)+
+        ($($a:tt)+) => {
+            #[cfg(not(target_pointer_width = "64"))] $($a)+
         }
     }
 
     #[macro_export] macro_rules! cfg_32_or_test 
     {
-        ($($any:tt)+) => {
-            #[cfg(any(not(target_pointer_width = "64"), test))] $($any)+
+        ($($a:tt)+) => {
+            #[cfg(any(not(target_pointer_width = "64"), test))] $($a)+
         }
     }
 
     #[macro_export] macro_rules! cfg_64
     {
-        ($($any:tt)+) => {
-            #[cfg(target_pointer_width = "64")] $($any)+
+        ($($a:tt)+) => {
+            #[cfg(target_pointer_width = "64")] $($a)+
         }
     }
 
     #[macro_export] macro_rules! cfg_digit
     {
-        ($item32:item $item64:item) => {
-            cfg_32!($item32);
-            cfg_64!($item64);
+        ($i32:item $i64:item) =>
+        {
+            cfg_32!($i32);
+            cfg_64!($i64);
         };
     }
 
     #[macro_export] macro_rules! cfg_digit_expr
     {
-        ($expr32:expr, $expr64:expr) => {
-            cfg_32!($expr32);
-            cfg_64!($expr64);
+        ($e32:expr, $e64:expr) => 
+        {
+            cfg_32!($e32);
+            cfg_64!($e64);
         };
     }
 
     #[macro_export] macro_rules! forward_val_val_binop
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<$res> for $res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
-                   
-                    $imp::$method(self, &other)
-                }
+        (impl $l:ident for $z:ty, $m:ident) =>
+        {
+            impl $l<$z> for $z
+            {
+                type Output = $z;
+                #[inline] fn $m(self, o: $z) -> $z { $l::$m(self, &o) }
             }
         };
     }
 
     #[macro_export] macro_rules! forward_val_val_binop_commutative
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<$res> for $res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
-                   
-                    if self.capacity() >= other.capacity() {
-                        $imp::$method(self, &other)
+        (impl $l:ident for $z:ty, $m:ident) => 
+        {
+            impl $l<$z> for $z 
+            {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z
+                {
+                    if self.capacity() >= o.capacity() {
+                        $l::$m(self, &o)
                     } else {
-                        $imp::$method(other, &self)
+                        $l::$m(o, &self)
                     }
                 }
             }
         };
     }
-    /*
-     */
-
+    
     #[macro_export] macro_rules! forward_ref_val_binop_commutative
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<$res> for &$res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
+        (impl $l:ident for $z:ty, $m:ident) => {
+            impl $l<$z> for &$z {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z {
                    
-                    $imp::$method(other, self)
+                    $l::$m(o, self)
                 }
             }
         };
     }
-    /*
-
-     */
-
+    
     #[macro_export] macro_rules! forward_ref_ref_binop_commutative
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<&$res> for &$res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$res) -> $res {
-                   
-                    if self.len() >= other.len() {
-                        $imp::$method(self.clone(), other)
+        (impl $l:ident for $z:ty, $m:ident) => {
+            impl $l<&$z> for &$z {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$z) -> $z {
+                    if self.len() >= o.len() {
+                        $l::$m(self.clone(), o)
                     } else {
-                        $imp::$method(other.clone(), self)
+                        $l::$m(o.clone(), self)
                     }
                 }
             }
@@ -1759,10 +1800,10 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_val_assign
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            impl $imp<$res> for $res {
-                #[inline] fn $method(&mut self, other: $res) {
-                    self.$method(&other);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            impl $l<$z> for $z {
+                #[inline] fn $m(&mut self, o:$z) {
+                    self.$m(&o);
                 }
             }
         };
@@ -1770,10 +1811,10 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_val_assign_scalar
     {
-        (impl $imp:ident for $res:ty, $scalar:ty, $method:ident) => {
-            impl $imp<$res> for $scalar {
-                #[inline] fn $method(&mut self, other: $res) {
-                    self.$method(&other);
+        (impl $l:ident for $z:ty, $s:ty, $m:ident) => {
+            impl $l<$z> for $s {
+                #[inline] fn $m(&mut self, o:$z) {
+                    self.$m(&o);
                 }
             }
         };
@@ -1781,12 +1822,11 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! forward_scalar_val_val_binop_commutative
     {
-        (impl $imp:ident < $scalar:ty > for $res:ty, $method:ident) => {
-            impl $imp<$res> for $scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
-                    $imp::$method(other, self)
+        (impl $l:ident < $s:ty > for $z:ty, $m:ident) => {
+            impl $l<$z> for $s {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z {
+                    $l::$m(o, self)
                 }
             }
         };
@@ -1794,20 +1834,19 @@ extern crate proc_macro;
     
     #[macro_export] macro_rules! forward_scalar_val_val_binop_to_ref_val
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            impl $imp<$scalar> for $res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $scalar) -> $res {
-                    $imp::$method(&self, other)
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => 
+        {
+            impl $l<$s> for $z {
+                type Output = $z;
+                #[inline] fn $m(self, o:$s) -> $z {
+                    $l::$m(&self, o)
                 }
             }
 
-            impl $imp<$res> for $scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
-                    $imp::$method(self, &other)
+            impl $l<$z> for $s {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z {
+                    $l::$m(self, &o)
                 }
             }
         };
@@ -1815,20 +1854,18 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_scalar_ref_ref_binop_to_ref_val
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            impl $imp<&$scalar> for &$res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$scalar) -> $res {
-                    $imp::$method(self, *other)
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => {
+            impl $l<&$s> for &$z {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$s) -> $z {
+                    $l::$m(self, *o)
                 }
             }
 
-            impl $imp<&$res> for &$scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$res) -> $res {
-                    $imp::$method(*self, other)
+            impl $l<&$z> for &$s {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$z) -> $z {
+                    $l::$m(*self, o)
                 }
             }
         };
@@ -1836,20 +1873,19 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_scalar_val_ref_binop_to_ref_val 
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            impl $imp<&$scalar> for $res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$scalar) -> $res {
-                    $imp::$method(&self, *other)
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => 
+        {
+            impl $l<&$s> for $z {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$s) -> $z {
+                    $l::$m(&self, *o)
                 }
             }
 
-            impl $imp<$res> for &$scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
-                    $imp::$method(*self, &other)
+            impl $l<$z> for &$s {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z {
+                    $l::$m(*self, &o)
                 }
             }
         };
@@ -1857,20 +1893,19 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_scalar_val_ref_binop_to_val_val 
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            impl $imp<&$scalar> for $res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$scalar) -> $res {
-                    $imp::$method(self, *other)
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => 
+        {
+            impl $l<&$s> for $z {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$s) -> $z {
+                    $l::$m(self, *o)
                 }
             }
 
-            impl $imp<$res> for &$scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $res) -> $res {
-                    $imp::$method(*self, other)
+            impl $l<$z> for &$s {
+                type Output = $z;
+                #[inline] fn $m(self, o:$z) -> $z {
+                    $l::$m(*self, o)
                 }
             }
         };
@@ -1878,20 +1913,19 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_scalar_ref_val_binop_to_val_val 
     {
-        (impl $imp:ident < $scalar:ty > for $res:ty, $method:ident) => {
-            impl $imp<$scalar> for &$res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: $scalar) -> $res {
-                    $imp::$method(self.clone(), other)
+        (impl $l:ident < $s:ty > for $z:ty, $m:ident) => 
+        {
+            impl $l<$s> for &$z {
+                type Output = $z;
+                #[inline] fn $m(self, o:$s) -> $z {
+                    $l::$m(self.clone(), o)
                 }
             }
 
-            impl $imp<&$res> for $scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$res) -> $res {
-                    $imp::$method(self, other.clone())
+            impl $l<&$z> for $s {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$z) -> $z {
+                    $l::$m(self, o.clone())
                 }
             }
         };
@@ -1899,20 +1933,19 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! forward_scalar_ref_ref_binop_to_val_val 
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            impl $imp<&$scalar> for &$res {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$scalar) -> $res {
-                    $imp::$method(self.clone(), *other)
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => 
+        {
+            impl $l<&$s> for &$z {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$s) -> $z {
+                    $l::$m(self.clone(), *o)
                 }
             }
 
-            impl $imp<&$res> for &$scalar {
-                type Output = $res;
-
-                #[inline] fn $method(self, other: &$res) -> $res {
-                    $imp::$method(*self, other.clone())
+            impl $l<&$z> for &$s {
+                type Output = $z;
+                #[inline] fn $m(self, o:&$z) -> $z {
+                    $l::$m(*self, o.clone())
                 }
             }
         };
@@ -1920,25 +1953,22 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! promote_scalars 
     {
-        (impl $imp:ident<$promo:ty> for $res:ty, $method:ident, $( $scalar:ty ),*) => {
+        (impl $l:ident<$p:ty> for $z:ty, $m:ident, $( $s:ty ),*) => 
+        {
             $(
-                forward_all_scalar_binop_to_val_val!(impl $imp<$scalar> for $res, $method);
+                forward_all_scalar_binop_to_val_val!(impl $l<$s> for $z, $m);
 
-                impl $imp<$scalar> for $res {
-                    type Output = $res;
-
-                    #[allow(clippy::cast_lossless)]
-                    #[inline] fn $method(self, other: $scalar) -> $res {
-                        $imp::$method(self, other as $promo)
+                impl $l<$s> for $z {
+                    type Output = $z;
+                    #[inline] fn $m(self, o:$s) -> $z {
+                        $l::$m(self, o as $p)
                     }
                 }
 
-                impl $imp<$res> for $scalar {
-                    type Output = $res;
-
-                    #[allow(clippy::cast_lossless)]
-                    #[inline] fn $method(self, other: $res) -> $res {
-                        $imp::$method(self as $promo, other)
+                impl $l<$z> for $s {
+                    type Output = $z;
+                    #[inline] fn $m(self, o:$z) -> $z {
+                        $l::$m(self as $p, o)
                     }
                 }
             )*
@@ -1947,12 +1977,14 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! promote_scalars_assign 
     {
-        (impl $imp:ident<$promo:ty> for $res:ty, $method:ident, $( $scalar:ty ),*) => {
+        (impl $l:ident<$p:ty> for $z:ty, $m:ident, $( $s:ty ),*) =>
+        {
             $(
-                impl $imp<$scalar> for $res {
-                    #[allow(clippy::cast_lossless)]
-                    #[inline] fn $method(&mut self, other: $scalar) {
-                        self.$method(other as $promo);
+                impl $l<$s> for $z
+                {
+                    #[inline] fn $m(&mut self, o:$s)
+                    {
+                        self.$m(o as $p);
                     }
                 }
             )*
@@ -1961,120 +1993,120 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! promote_unsigned_scalars 
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_scalars!(impl $imp<u32> for $res, $method, u8, u16);
-            promote_scalars!(impl $imp<::num::big::UsizePromotion> for $res, $method, usize);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            promote_scalars!(impl $l<u32> for $z, $m, u8, u16);
+            promote_scalars!(impl $l<::num::big::UsizePromotion> for $z, $m, usize);
         }
     }
 
     #[macro_export] macro_rules! promote_unsigned_scalars_assign 
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_scalars_assign!(impl $imp<u32> for $res, $method, u8, u16);
-            promote_scalars_assign!(impl $imp<::num::big::UsizePromotion> for $res, $method, usize);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            promote_scalars_assign!(impl $l<u32> for $z, $m, u8, u16);
+            promote_scalars_assign!(impl $l<::num::big::UsizePromotion> for $z, $m, usize);
         }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars 
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_scalars!(impl $imp<i32> for $res, $method, i8, i16);
-            promote_scalars!(impl $imp<::num::big::IsizePromotion> for $res, $method, isize);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            promote_scalars!(impl $l<i32> for $z, $m, i8, i16);
+            promote_scalars!(impl $l<::num::big::IsizePromotion> for $z, $m, isize);
         }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars_assign 
     {
-        (impl $imp:ident for $res:ty, $method:ident) =>
+        (impl $l:ident for $z:ty, $m:ident) =>
         {
-            promote_scalars_assign!(impl $imp<i32> for $res, $method, i8, i16);
-            promote_scalars_assign!(impl $imp<::num::big::IsizePromotion> for $res, $method, isize);
+            promote_scalars_assign!(impl $l<i32> for $z, $m, i8, i16);
+            promote_scalars_assign!(impl $l<::num::big::IsizePromotion> for $z, $m, isize);
         }
     }
 
     #[macro_export] macro_rules! forward_all_binop_to_ref_ref
     {
-        (impl $imp:ident for $res:ty, $method:ident) =>
+        (impl $l:ident for $z:ty, $m:ident) =>
         {
-            forward_val_val_binop!(impl $imp for $res, $method);
-            forward_val_ref_binop_big!(impl $imp for $res, $method);
-            forward_ref_val_binop_big!(impl $imp for $res, $method);
+            forward_val_val_binop!(impl $l for $z, $m);
+            forward_val_ref_binop_big!(impl $l for $z, $m);
+            forward_ref_val_binop_big!(impl $l for $z, $m);
         };
     }
     
     #[macro_export] macro_rules! forward_all_binop_to_val_ref
     {
-        (impl $imp:ident for $res:ty, $method:ident) =>
+        (impl $l:ident for $z:ty, $m:ident) =>
         {
-            forward_val_val_binop!(impl $imp for $res, $method);
-            forward_ref_val_binop!(impl $imp for $res, $method);
-            forward_ref_ref_binop!(impl $imp for $res, $method);
+            forward_val_val_binop!(impl $l for $z, $m);
+            forward_ref_val_binop!(impl $l for $z, $m);
+            forward_ref_ref_binop!(impl $l for $z, $m);
         };
     }
     
     #[macro_export] macro_rules! forward_all_binop_to_val_ref_commutative
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            forward_val_val_binop_commutative!(impl $imp for $res, $method);
-            forward_ref_val_binop_commutative!(impl $imp for $res, $method);
-            forward_ref_ref_binop_commutative!(impl $imp for $res, $method);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            forward_val_val_binop_commutative!(impl $l for $z, $m);
+            forward_ref_val_binop_commutative!(impl $l for $z, $m);
+            forward_ref_ref_binop_commutative!(impl $l for $z, $m);
         };
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_ref_val
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            forward_scalar_val_val_binop_to_ref_val!(impl $imp<$scalar> for $res, $method);
-            forward_scalar_val_ref_binop_to_ref_val!(impl $imp<$scalar> for $res, $method);
-            forward_scalar_ref_ref_binop_to_ref_val!(impl $imp<$scalar> for $res, $method);
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => {
+            forward_scalar_val_val_binop_to_ref_val!(impl $l<$s> for $z, $m);
+            forward_scalar_val_ref_binop_to_ref_val!(impl $l<$s> for $z, $m);
+            forward_scalar_ref_ref_binop_to_ref_val!(impl $l<$s> for $z, $m);
         }
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_val_val
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            forward_scalar_val_ref_binop_to_val_val!(impl $imp<$scalar> for $res, $method);
-            forward_scalar_ref_val_binop_to_val_val!(impl $imp<$scalar> for $res, $method);
-            forward_scalar_ref_ref_binop_to_val_val!(impl $imp<$scalar> for $res, $method);
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => {
+            forward_scalar_val_ref_binop_to_val_val!(impl $l<$s> for $z, $m);
+            forward_scalar_ref_val_binop_to_val_val!(impl $l<$s> for $z, $m);
+            forward_scalar_ref_ref_binop_to_val_val!(impl $l<$s> for $z, $m);
         }
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_val_val_commutative
     {
-        (impl $imp:ident<$scalar:ty> for $res:ty, $method:ident) => {
-            forward_scalar_val_val_binop_commutative!(impl $imp<$scalar> for $res, $method);
-            forward_all_scalar_binop_to_val_val!(impl $imp<$scalar> for $res, $method);
+        (impl $l:ident<$s:ty> for $z:ty, $m:ident) => {
+            forward_scalar_val_val_binop_commutative!(impl $l<$s> for $z, $m);
+            forward_all_scalar_binop_to_val_val!(impl $l<$s> for $z, $m);
         }
     }
 
     #[macro_export] macro_rules! promote_all_scalars
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_unsigned_scalars!(impl $imp for $res, $method);
-            promote_signed_scalars!(impl $imp for $res, $method);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            promote_unsigned_scalars!(impl $l for $z, $m);
+            promote_signed_scalars!(impl $l for $z, $m);
         }
     }
 
     #[macro_export] macro_rules! promote_all_scalars_assign
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_unsigned_scalars_assign!(impl $imp for $res, $method);
-            promote_signed_scalars_assign!(impl $imp for $res, $method);
+        (impl $l:ident for $z:ty, $m:ident) => {
+            promote_unsigned_scalars_assign!(impl $l for $z, $m);
+            promote_signed_scalars_assign!(impl $l for $z, $m);
         }
     }
 
     #[macro_export] macro_rules! impl_sum_iter_type
     {
-        ($res:ty) => {
-            impl<T> Sum<T> for $res
+        ($z:ty) => {
+            impl<T> Sum<T> for $z
             where
-                $res: Add<T, Output = $res>,
+                $z: Add<T, Output = $z>,
             {
                 fn sum<I>(iter: I) -> Self
                 where
                     I: Iterator<Item = T>,
                 {
-                    iter.fold(Self::ZERO, <$res>::add)
+                    iter.fold(Self::ZERO, <$z>::add)
                 }
             }
         };
@@ -2082,16 +2114,16 @@ extern crate proc_macro;
 
     #[macro_export] macro_rules! impl_product_iter_type
     {
-        ($res:ty) => {
-            impl<T> Product<T> for $res
+        ($z:ty) => {
+            impl<T> Product<T> for $z
             where
-                $res: Mul<T, Output = $res>,
+                $z: Mul<T, Output = $z>,
             {
                 fn product<I>(iter: I) -> Self
                 where
                     I: Iterator<Item = T>,
                 {
-                    iter.fold(One::one(), <$res>::mul)
+                    iter.fold(One::one(), <$z>::mul)
                 }
             }
         };
@@ -2099,16 +2131,17 @@ extern crate proc_macro;
 
     #[macro_export( local_inner_macros )] macro_rules! __lazy_static_internal
     {
-        ($(#[$attr:meta])* ($($vis:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) =>
+        ($(#[$a:meta])* ($($v:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) =>
         {
-            __lazy_static_internal!(@MAKE TY, $(#[$attr])*, ($($vis)*), $N);
+            __lazy_static_internal!(@MAKE TY, $(#[$a])*, ($($v)*), $N);
             __lazy_static_internal!(@TAIL, $N : $T = $e);
             lazy_static!($($t)*);
         };
 
         (@TAIL, $N:ident : $T:ty = $e:expr) =>
         {
-            impl ::ops::Deref for $N {
+            impl ::ops::Deref for $N
+            {
                 type Target = $T;
                 fn deref(&self) -> &$T {
                     #[inline(always)]
@@ -2122,37 +2155,36 @@ extern crate proc_macro;
                     __stability()
                 }
             }
-            impl $crate::LazyStatic for $N {
+
+            impl $crate::LazyStatic for $N
+            {
                 fn initialize(lazy: &Self) {
                     let _ = &**lazy;
                 }
             }
         };
-        // `vis` is wrapped in `()` to prevent parsing ambiguity
-        (@MAKE TY, $(#[$attr:meta])*, ($($vis:tt)*), $N:ident) =>
+        
+        (@MAKE TY, $(#[$a:meta])*, ($($v:tt)*), $N:ident) =>
         {
-            #[allow(missing_copy_implementations)]
-            #[allow(non_camel_case_types)]
-            #[allow(dead_code)]
-            $(#[$attr])*
-            $($vis)* struct $N {__private_field: ()}
+            $(#[$a])*
+            $($v)* struct $N {__private_field: ()}
             #[doc(hidden)]
-            $($vis)* static $N: $N = $N {__private_field: ()};
+            $($v)* static $N: $N = $N {__private_field: ()};
         };
         () => ()
     }
 
     #[macro_export( local_inner_macros )] macro_rules! lazy_static
     {
-        ($(#[$attr:meta])* static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+        ($(#[$a:meta])* static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
             // use `()` to explicitly forward the information about private items
-            __lazy_static_internal!($(#[$attr])* () static ref $N : $T = $e; $($t)*);
+            __lazy_static_internal!($(#[$a])* () static ref $N : $T = $e; $($t)*);
         };
-        ($(#[$attr:meta])* pub static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
-            __lazy_static_internal!($(#[$attr])* (pub) static ref $N : $T = $e; $($t)*);
+        ($(#[$a:meta])* pub static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+            __lazy_static_internal!($(#[$a])* (pub) static ref $N : $T = $e; $($t)*);
         };
-        ($(#[$attr:meta])* pub ($($vis:tt)+) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
-            __lazy_static_internal!($(#[$attr])* (pub ($($vis)+)) static ref $N : $T = $e; $($t)*);
+        ($(#[$a:meta])* pub ($($v:tt)+) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => {
+            __lazy_static_internal!($(#[$a])* (pub ($($v)+)) static ref $N : $T = $e; $($t)*);
         };
         () => ()
     }
@@ -3126,7 +3158,6 @@ pub mod num
                
 
                 fn min_value() -> Self;
-
                 fn max_value() -> Self;
             }
 
@@ -3265,15 +3296,15 @@ pub mod num
 
             macro_rules! bounded_tuple 
             {
-                ( $($name:ident)* ) => (
-                    impl<$($name: Bounded,)*> Bounded for ($($name,)*) {
+                ( $($n:ident)* ) => (
+                    impl<$($n: Bounded,)*> Bounded for ($($n,)*) {
                         #[inline]
                         fn min_value() -> Self {
-                            ($($name::min_value(),)*)
+                            ($($n::min_value(),)*)
                         }
                         #[inline]
                         fn max_value() -> Self {
-                            ($($name::max_value(),)*)
+                            ($($n::max_value(),)*)
                         }
                     }
                 );
@@ -3320,7 +3351,6 @@ pub mod num
 
 
                 fn to_i64(&self) -> Option<i64>;
-
                 #[inline] fn to_i128(&self) -> Option<i128> {
                     self.to_i64().map(From::from)
                 }
@@ -3346,7 +3376,6 @@ pub mod num
                 }
 
                 fn to_u64(&self) -> Option<u64>;
-
                 #[inline] fn to_u128(&self) -> Option<u128> {
                     self.to_u64().map(From::from)
                 }
@@ -3365,8 +3394,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_int_to_int 
             {
-                ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$DstT> {
+                ($SrcT:ident : $( fn $m:ident -> $DstT:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$DstT> {
                         let min = $DstT::MIN as $SrcT;
                         let max = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() <= size_of::<$DstT>() || (min <= *self && *self <= max) {
@@ -3380,8 +3409,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_int_to_uint 
             {
-                ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$DstT> {
+                ($SrcT:ident : $( fn $m:ident -> $DstT:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$DstT> {
                         let max = $DstT::MAX as $SrcT;
                         if 0 <= *self && (size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= max) {
                             Some(*self as $DstT)
@@ -3435,8 +3464,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_uint_to_int 
             {
-                ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$DstT> {
+                ($SrcT:ident : $( fn $m:ident -> $DstT:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$DstT> {
                         let max = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() < size_of::<$DstT>() || *self <= max {
                             Some(*self as $DstT)
@@ -3449,8 +3478,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_uint_to_uint 
             {
-                ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$DstT> {
+                ($SrcT:ident : $( fn $m:ident -> $DstT:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$DstT> {
                         let max = $DstT::MAX as $SrcT;
                         if size_of::<$SrcT>() <= size_of::<$DstT>() || *self <= max {
                             Some(*self as $DstT)
@@ -3504,9 +3533,9 @@ pub mod num
 
             macro_rules! impl_to_primitive_nonzero_to_method 
             {
-                ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$DstT> {
-                        self.get().$method()
+                ($SrcT:ident : $( fn $m:ident -> $DstT:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$DstT> {
+                        self.get().$m()
                     }
                 )*}
             }
@@ -3553,8 +3582,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_float_to_float 
             {
-                ($SrcT:ident : $( fn $method:ident -> $DstT:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$DstT> {
+                ($SrcT:ident : $( fn $m:ident -> $DstT:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$DstT> {
                        
                        
                         Some(*self as $DstT)
@@ -3573,8 +3602,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_float_to_signed_int 
             {
-                ($f:ident : $( fn $method:ident -> $i:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$i> {
+                ($f:ident : $( fn $m:ident -> $i:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$i> {
                        
                        
                         if size_of::<$f>() > size_of::<$i>() {
@@ -3602,8 +3631,8 @@ pub mod num
 
             macro_rules! impl_to_primitive_float_to_unsigned_int 
             {
-                ($f:ident : $( fn $method:ident -> $u:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$u> {
+                ($f:ident : $( fn $m:ident -> $u:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$u> {
                        
                        
                         if size_of::<$f>() > size_of::<$u>() {
@@ -3895,9 +3924,9 @@ pub mod num
 
             macro_rules! impl_to_primitive_wrapping 
             {
-                ($( fn $method:ident -> $i:ident ; )*) => {$(
-                    #[inline] fn $method(&self) -> Option<$i> {
-                        (self.0).$method()
+                ($( fn $m:ident -> $i:ident ; )*) => {$(
+                    #[inline] fn $m(&self) -> Option<$i> {
+                        (self.0).$m()
                     }
                 )*}
             }
@@ -3926,9 +3955,9 @@ pub mod num
 
             macro_rules! impl_from_primitive_wrapping 
             {
-                ($( fn $method:ident ( $i:ident ); )*) => {$(
-                    #[inline] fn $method(n: $i) -> Option<Self> {
-                        T::$method(n).map(Wrapping)
+                ($( fn $m:ident ( $i:ident ); )*) => {$(
+                    #[inline] fn $m(n: $i) -> Option<Self> {
+                        T::$m(n).map(Wrapping)
                     }
                 )*}
             }
@@ -4083,28 +4112,17 @@ pub mod num
                 ops::{ Add, Div, Neg },
                 *,
             };
-            /*
-            */
-
+            
             pub trait FloatCore: Num + NumCast + Neg<Output = Self> + PartialOrd + Copy
             {
-
                 fn infinity() -> Self;
-
                 fn neg_infinity() -> Self;
-
                 fn nan() -> Self;
-
                 fn neg_zero() -> Self;
-
                 fn min_value() -> Self;
-
                 fn min_positive_value() -> Self;
-
                 fn epsilon() -> Self;
-
                 fn max_value() -> Self;
-
                 #[inline] fn is_nan(self) -> bool {
                     self != self
                 }
@@ -4126,7 +4144,6 @@ pub mod num
                 }
 
                 fn classify(self) -> FpCategory;
-
                 #[inline] fn floor(self) -> Self {
                     let f = self.fract();
                     if f.is_nan() || f.is_zero() {
@@ -4214,32 +4231,24 @@ pub mod num
                     sign < 0
                 }
 
-                #[inline] fn min(self, other: Self) -> Self {
-                    if self.is_nan() {
-                        return other;
-                    }
-                    if other.is_nan() {
+                #[inline] fn min(self, o: Self) -> Self {
+                    if self.is_nan() { return o; }
+                    if o.is_nan() {
                         return self;
                     }
-                    if self < other {
+                    if self < o {
                         self
-                    } else {
-                        other
-                    }
+                    } else { o }
                 }
 
-                #[inline] fn max(self, other: Self) -> Self {
-                    if self.is_nan() {
-                        return other;
-                    }
-                    if other.is_nan() {
+                #[inline] fn max(self, o: Self) -> Self {
+                    if self.is_nan() { return o; }
+                    if o.is_nan() {
                         return self;
                     }
-                    if self > other {
+                    if self > o {
                         self
-                    } else {
-                        other
-                    }
+                    } else { o }
                 }
 
                 fn clamp(self, min: Self, max: Self) -> Self {
@@ -4262,9 +4271,7 @@ pub mod num
                 }
 
                 fn to_degrees(self) -> Self;
-
                 fn to_radians(self) -> Self;
-
                 fn integer_decode(self) -> (u64, i16, i8);
             }
 
@@ -4298,8 +4305,8 @@ pub mod num
                     Self::classify(self) -> FpCategory;
                     Self::is_sign_positive(self) -> bool;
                     Self::is_sign_negative(self) -> bool;
-                    Self::min(self, other: Self) -> Self;
-                    Self::max(self, other: Self) -> Self;
+                    Self::min(self, o: Self) -> Self;
+                    Self::max(self, o: Self) -> Self;
                     Self::recip(self) -> Self;
                     Self::to_degrees(self) -> Self;
                     Self::to_radians(self) -> Self;
@@ -4348,8 +4355,8 @@ pub mod num
                     Self::classify(self) -> FpCategory;
                     Self::is_sign_positive(self) -> bool;
                     Self::is_sign_negative(self) -> bool;
-                    Self::min(self, other: Self) -> Self;
-                    Self::max(self, other: Self) -> Self;
+                    Self::min(self, o: Self) -> Self;
+                    Self::max(self, o: Self) -> Self;
                     Self::recip(self) -> Self;
                     Self::to_degrees(self) -> Self;
                     Self::to_radians(self) -> Self;
@@ -4372,77 +4379,45 @@ pub mod num
             {
 
                 fn nan() -> Self;
-
                 fn infinity() -> Self;
-
                 fn neg_infinity() -> Self;
-
                 fn neg_zero() -> Self;
-
                 fn min_value() -> Self;
-
                 fn min_positive_value() -> Self;
-
                 fn epsilon() -> Self {
                     Self::from(f32::EPSILON).expect("Unable to cast from f32::EPSILON")
                 }
 
                 fn max_value() -> Self;
-
                 fn is_nan(self) -> bool;
-
                 fn is_infinite(self) -> bool;
-
                 fn is_finite(self) -> bool;
-
                 fn is_normal(self) -> bool;
-
                 #[inline] fn is_subnormal(self) -> bool {
                     self.classify() == FpCategory::Subnormal
                 }
 
                 fn classify(self) -> FpCategory;
-
                 fn floor(self) -> Self;
-
                 fn ceil(self) -> Self;
-
                 fn round(self) -> Self;
-
                 fn trunc(self) -> Self;
-
                 fn fract(self) -> Self;
-
                 fn abs(self) -> Self;
-
                 fn signum(self) -> Self;
-
                 fn is_sign_positive(self) -> bool;
-
                 fn is_sign_negative(self) -> bool;
-
                 fn mul_add(self, a: Self, b: Self) -> Self;
-
                 fn recip(self) -> Self;
-
                 fn powi(self, n: i32) -> Self;
-
                 fn powf(self, n: Self) -> Self;
-
                 fn sqrt(self) -> Self;
-
                 fn exp(self) -> Self;
-
                 fn exp2(self) -> Self;
-
                 fn ln(self) -> Self;
-
                 fn log(self, base: Self) -> Self;
-
                 fn log2(self) -> Self;
-
                 fn log10(self) -> Self;
-
                 #[inline] fn to_degrees(self) -> Self {
                     let halfpi = Self::zero().acos();
                     let ninety = Self::from(90u8).unwrap();
@@ -4455,54 +4430,32 @@ pub mod num
                     self * halfpi / ninety
                 }
 
-                fn max(self, other: Self) -> Self;
-
-                fn min(self, other: Self) -> Self;
-
+                fn max(self, o: Self) -> Self;
+                fn min(self, o: Self) -> Self;
                 fn clamp(self, min: Self, max: Self) -> Self {
                     num::traits::clamp(self, min, max)
                 }
 
-                fn abs_sub(self, other: Self) -> Self;
-
+                fn abs_sub(self, o: Self) -> Self;
                 fn cbrt(self) -> Self;
-
-                fn hypot(self, other: Self) -> Self;
-
+                fn hypot(self, o: Self) -> Self;
                 fn sin(self) -> Self;
-
                 fn cos(self) -> Self;
-
                 fn tan(self) -> Self;
-
                 fn asin(self) -> Self;
-
                 fn acos(self) -> Self;
-
                 fn atan(self) -> Self;
-
-                fn atan2(self, other: Self) -> Self;
-
+                fn atan2(self, o: Self) -> Self;
                 fn sin_cos(self) -> (Self, Self);
-
                 fn exp_m1(self) -> Self;
-
                 fn ln_1p(self) -> Self;
-
                 fn sinh(self) -> Self;
-
                 fn cosh(self) -> Self;
-
                 fn tanh(self) -> Self;
-
                 fn asinh(self) -> Self;
-
                 fn acosh(self) -> Self;
-
                 fn atanh(self) -> Self;
-
                 fn integer_decode(self) -> (u64, i16, i8);
-
                 fn copysign(self, sign: Self) -> Self {
                     if self.is_sign_negative() == sign.is_sign_negative() {
                         self
@@ -4529,8 +4482,8 @@ pub mod num
 
                         #[inline]
                         #[allow(deprecated)]
-                        fn abs_sub(self, other: Self) -> Self {
-                            <$T>::abs_sub(self, other)
+                        fn abs_sub(self, o: Self) -> Self {
+                            <$T>::abs_sub(self, o)
                         }
 
                         #[inline]
@@ -4568,17 +4521,17 @@ pub mod num
                             Self::log10(self) -> Self;
                             Self::to_degrees(self) -> Self;
                             Self::to_radians(self) -> Self;
-                            Self::max(self, other: Self) -> Self;
-                            Self::min(self, other: Self) -> Self;
+                            Self::max(self, o: Self) -> Self;
+                            Self::min(self, o: Self) -> Self;
                             Self::cbrt(self) -> Self;
-                            Self::hypot(self, other: Self) -> Self;
+                            Self::hypot(self, o: Self) -> Self;
                             Self::sin(self) -> Self;
                             Self::cos(self) -> Self;
                             Self::tan(self) -> Self;
                             Self::asin(self) -> Self;
                             Self::acos(self) -> Self;
                             Self::atan(self) -> Self;
-                            Self::atan2(self, other: Self) -> Self;
+                            Self::atan2(self, o: Self) -> Self;
                             Self::sin_cos(self) -> (Self, Self);
                             Self::exp_m1(self) -> Self;
                             Self::ln_1p(self) -> Self;
@@ -4629,7 +4582,8 @@ pub mod num
             
             macro_rules! float_const_impl
             {
-                ($(#[$doc:meta] $constant:ident,)+) => (
+                ($(#[$doc:meta] $constant:ident,)+) => 
+                (
                     #[allow(non_snake_case)]
                     pub trait FloatConst {
                         $(#[$doc] fn $constant() -> Self;)+
@@ -4652,7 +4606,9 @@ pub mod num
                     float_const_impl! { @float f32, $($constant,)+ }
                     float_const_impl! { @float f64, $($constant,)+ }
                 );
-                (@float $T:ident, $($constant:ident,)+) => (
+
+                (@float $T:ident, $($constant:ident,)+) => 
+                (
                     impl FloatConst for $T {
                         constant! {
                             $( $constant() -> $T::consts::$constant; )+
@@ -4702,32 +4658,16 @@ pub mod num
 
             pub trait TotalOrder
             {
-
-                fn total_cmp(&self, other: &Self) -> Ordering;
+                fn total_cmp(&self, o:&Self) -> Ordering;
             }
 
             macro_rules! totalorder_impl
             {
-                ($T:ident, $I:ident, $U:ident, $bits:expr) => {
-                    impl TotalOrder for $T {
-                        #[inline]
-                        #[cfg(has_total_cmp)]
-                        fn total_cmp(&self, other: &Self) -> Ordering {
-                           
-                            Self::total_cmp(&self, other)
-                        }
-                        #[inline]
-                        #[cfg(not(has_total_cmp))]
-                        fn total_cmp(&self, other: &Self) -> Ordering {
-                           
-                            let mut left = self.to_bits() as $I;
-                            let mut right = other.to_bits() as $I;
-
-                            left ^= (((left >> ($bits - 1)) as $U) >> 1) as $I;
-                            right ^= (((right >> ($bits - 1)) as $U) >> 1) as $I;
-
-                            left.cmp(&right)
-                        }
+                ($T:ident, $I:ident, $U:ident, $b:expr) => 
+                {
+                    impl TotalOrder for $T
+                    {
+                        #[inline] fn total_cmp(&self, o:&Self) -> Ordering { Self::total_cmp(&self, o) }
                     }
                 };
             }
@@ -4752,7 +4692,6 @@ pub mod num
 
                
                 fn zero() -> Self;
-
                 fn set_zero(&mut self) {
                     *self = Zero::zero();
                 }
@@ -4856,7 +4795,6 @@ pub mod num
 
                
                 fn one() -> Self;
-
                 fn set_one(&mut self) {
                     *self = One::one();
                 }
@@ -5007,7 +4945,6 @@ pub mod num
             {
 
                 fn count_ones(self) -> u32;
-
                 fn count_zeros(self) -> u32;
 
 
@@ -5043,21 +4980,15 @@ pub mod num
 
 
                 fn unsigned_shr(self, n: u32) -> Self;
-
                 fn swap_bytes(self) -> Self;
-
                 fn reverse_bits(self) -> Self {
                     reverse_bits_fallback(self)
                 }
 
                 fn from_be(x: Self) -> Self;
-
                 fn from_le(x: Self) -> Self;
-
                 fn to_be(self) -> Self;
-
                 fn to_le(self) -> Self;
-
                 fn pow(self, exp: u32) -> Self;
             }
 
@@ -5451,11 +5382,11 @@ pub mod num
                 }
 
                 macro_rules! checked_impl {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self, v: &$t) -> Option<$t> {
-                                <$t>::$method(*self, *v)
+                            fn $m(&self, v: &$t) -> Option<$t> {
+                                <$t>::$m(*self, *v)
                             }
                         }
                     };
@@ -5570,11 +5501,11 @@ pub mod num
                 checked_impl!(CheckedRem, checked_rem, i128);
 
                 macro_rules! checked_impl_unary {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self) -> Option<$t> {
-                                <$t>::$method(*self)
+                            fn $m(&self) -> Option<$t> {
+                                <$t>::$m(*self)
                             }
                         }
                     };
@@ -5626,11 +5557,11 @@ pub mod num
                 }
 
                 macro_rules! checked_shift_impl {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self, rhs: u32) -> Option<$t> {
-                                <$t>::$method(*self, rhs)
+                            fn $m(&self, rhs: u32) -> Option<$t> {
+                                <$t>::$m(*self, rhs)
                             }
                         }
                     };
@@ -5974,11 +5905,11 @@ pub mod num
                 /*
                 */
                 macro_rules! overflowing_impl {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self, v: &Self) -> (Self, bool) {
-                                <$t>::$method(*self, *v)
+                            fn $m(&self, v: &Self) -> (Self, bool) {
+                                <$t>::$m(*self, *v)
                             }
                         }
                     };
@@ -6090,11 +6021,11 @@ pub mod num
 
                 macro_rules! saturating_impl
                 {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self, v: &Self) -> Self {
-                                <$t>::$method(*self, *v)
+                            fn $m(&self, v: &Self) -> Self {
+                                <$t>::$m(*self, *v)
                             }
                         }
                     };
@@ -6178,19 +6109,19 @@ pub mod num
                 */
                 macro_rules! wrapping_impl
                 {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self, v: &Self) -> Self {
-                                <$t>::$method(*self, *v)
+                            fn $m(&self, v: &Self) -> Self {
+                                <$t>::$m(*self, *v)
                             }
                         }
                     };
-                    ($trait_name:ident, $method:ident, $t:ty, $rhs:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty, $rhs:ty) => {
                         impl $trait_name<$rhs> for $t {
                             #[inline]
-                            fn $method(&self, v: &$rhs) -> Self {
-                                <$t>::$method(*self, *v)
+                            fn $m(&self, v: &$rhs) -> Self {
+                                <$t>::$m(*self, *v)
                             }
                         }
                     };
@@ -6261,11 +6192,11 @@ pub mod num
 
                 macro_rules! wrapping_unary_impl 
                 {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self) -> $t {
-                                <$t>::$method(*self)
+                            fn $m(&self) -> $t {
+                                <$t>::$m(*self)
                             }
                         }
                     };
@@ -6292,11 +6223,11 @@ pub mod num
 
                 macro_rules! wrapping_shift_impl 
                 {
-                    ($trait_name:ident, $method:ident, $t:ty) => {
+                    ($trait_name:ident, $m:ident, $t:ty) => {
                         impl $trait_name for $t {
                             #[inline]
-                            fn $method(&self, rhs: u32) -> $t {
-                                <$t>::$method(*self, rhs)
+                            fn $m(&self, rhs: u32) -> $t {
+                                <$t>::$m(*self, rhs)
                             }
                         }
                     };
@@ -6423,7 +6354,6 @@ pub mod num
             {
 
                 type Output;
-
                 fn pow(self, rhs: RHS) -> Self::Output;
             }
 
@@ -6436,12 +6366,12 @@ pub mod num
                 ($t:ty, $rhs:ty) => {
                     pow_impl!($t, $rhs, usize, pow);
                 };
-                ($t:ty, $rhs:ty, $desired_rhs:ty, $method:expr) => {
+                ($t:ty, $rhs:ty, $desired_rhs:ty, $m:expr) => {
                     impl Pow<$rhs> for $t {
                         type Output = $t;
                         #[inline]
                         fn pow(self, rhs: $rhs) -> $t {
-                            ($method)(self, <$desired_rhs>::from(rhs))
+                            ($m)(self, <$desired_rhs>::from(rhs))
                         }
                     }
 
@@ -6449,7 +6379,7 @@ pub mod num
                         type Output = $t;
                         #[inline]
                         fn pow(self, rhs: &'a $rhs) -> $t {
-                            ($method)(self, <$desired_rhs>::from(*rhs))
+                            ($m)(self, <$desired_rhs>::from(*rhs))
                         }
                     }
 
@@ -6457,7 +6387,7 @@ pub mod num
                         type Output = $t;
                         #[inline]
                         fn pow(self, rhs: $rhs) -> $t {
-                            ($method)(*self, <$desired_rhs>::from(rhs))
+                            ($m)(*self, <$desired_rhs>::from(rhs))
                         }
                     }
 
@@ -6465,7 +6395,7 @@ pub mod num
                         type Output = $t;
                         #[inline]
                         fn pow(self, rhs: &'a $rhs) -> $t {
-                            ($method)(*self, <$desired_rhs>::from(*rhs))
+                            ($m)(*self, <$desired_rhs>::from(*rhs))
                         }
                     }
                 };
@@ -6615,25 +6545,15 @@ pub mod num
             {
 
                 fn min_value() -> Self;
-
                 fn min_positive_value() -> Self;
-
                 fn epsilon() -> Self;
-
                 fn max_value() -> Self;
-
                 fn floor(self) -> Self;
-
                 fn ceil(self) -> Self;
-
                 fn round(self) -> Self;
-
                 fn trunc(self) -> Self;
-
                 fn fract(self) -> Self;
-
                 fn abs(self) -> Self;
-
                 fn signum(self) -> Self;
 
 
@@ -6641,73 +6561,39 @@ pub mod num
 
 
                 fn is_sign_negative(self) -> bool;
-
                 fn mul_add(self, a: Self, b: Self) -> Self;
-
                 fn recip(self) -> Self;
-
                 fn powi(self, n: i32) -> Self;
-
                 fn powf(self, n: Self) -> Self;
-
                 fn sqrt(self) -> Self;
-
                 fn exp(self) -> Self;
-
                 fn exp2(self) -> Self;
-
                 fn ln(self) -> Self;
-
                 fn log(self, base: Self) -> Self;
-
                 fn log2(self) -> Self;
-
                 fn log10(self) -> Self;
-
                 fn to_degrees(self) -> Self;
-
                 fn to_radians(self) -> Self;
-
-                fn max(self, other: Self) -> Self;
-
-                fn min(self, other: Self) -> Self;
-
-                fn abs_sub(self, other: Self) -> Self;
-
+                fn max(self, o: Self) -> Self;
+                fn min(self, o: Self) -> Self;
+                fn abs_sub(self, o: Self) -> Self;
                 fn cbrt(self) -> Self;
-
-                fn hypot(self, other: Self) -> Self;
-
+                fn hypot(self, o: Self) -> Self;
                 fn sin(self) -> Self;
-
                 fn cos(self) -> Self;
-
                 fn tan(self) -> Self;
-
                 fn asin(self) -> Self;
-
                 fn acos(self) -> Self;
-
                 fn atan(self) -> Self;
-
-                fn atan2(self, other: Self) -> Self;
-
+                fn atan2(self, o: Self) -> Self;
                 fn sin_cos(self) -> (Self, Self);
-
                 fn exp_m1(self) -> Self;
-
                 fn ln_1p(self) -> Self;
-
                 fn sinh(self) -> Self;
-
                 fn cosh(self) -> Self;
-
                 fn tanh(self) -> Self;
-
                 fn asinh(self) -> Self;
-
                 fn acosh(self) -> Self;
-
                 fn atanh(self) -> Self;
             }
 
@@ -6742,18 +6628,18 @@ pub mod num
                     Float::log10(self) -> Self;
                     Float::to_degrees(self) -> Self;
                     Float::to_radians(self) -> Self;
-                    Float::max(self, other: Self) -> Self;
-                    Float::min(self, other: Self) -> Self;
-                    Float::abs_sub(self, other: Self) -> Self;
+                    Float::max(self, o: Self) -> Self;
+                    Float::min(self, o: Self) -> Self;
+                    Float::abs_sub(self, o: Self) -> Self;
                     Float::cbrt(self) -> Self;
-                    Float::hypot(self, other: Self) -> Self;
+                    Float::hypot(self, o: Self) -> Self;
                     Float::sin(self) -> Self;
                     Float::cos(self) -> Self;
                     Float::tan(self) -> Self;
                     Float::asin(self) -> Self;
                     Float::acos(self) -> Self;
                     Float::atan(self) -> Self;
-                    Float::atan2(self, other: Self) -> Self;
+                    Float::atan2(self, o: Self) -> Self;
                     Float::sin_cos(self) -> (Self, Self);
                     Float::exp_m1(self) -> Self;
                     Float::ln_1p(self) -> Self;
@@ -6785,14 +6671,11 @@ pub mod num
             {
 
                 fn abs(&self) -> Self;
-
-                fn abs_sub(&self, other: &Self) -> Self;
+                fn abs_sub(&self, o:&Self) -> Self;
 
 
                 fn signum(&self) -> Self;
-
                 fn is_positive(&self) -> bool;
-
                 fn is_negative(&self) -> bool;
             }
 
@@ -6805,8 +6688,8 @@ pub mod num
                         }
 
                         #[inline]
-                        fn abs_sub(&self, other: &$t) -> $t {
-                            if *self <= *other { 0 } else { *self - *other }
+                        fn abs_sub(&self, o:&$t) -> $t {
+                            if *self <= *o { 0 } else { *self - *o }
                         }
 
                         #[inline]
@@ -6836,8 +6719,8 @@ pub mod num
                     Wrapping(self.0.abs())
                 }
 
-                #[inline] fn abs_sub(&self, other: &Self) -> Self {
-                    Wrapping(self.0.abs_sub(&other.0))
+                #[inline] fn abs_sub(&self, o:&Self) -> Self {
+                    Wrapping(self.0.abs_sub(&o.0))
                 }
 
                 #[inline] fn signum(&self) -> Self {
@@ -6864,11 +6747,11 @@ pub mod num
 
 
                         #[inline]
-                        fn abs_sub(&self, other: &$t) -> $t {
-                            if *self <= *other {
+                        fn abs_sub(&self, o:&$t) -> $t {
+                            if *self <= *o {
                                 0.
                             } else {
-                                *self - *other
+                                *self - *o
                             }
                         }
                         
@@ -6911,8 +6794,8 @@ pub mod num
 
             macro_rules! empty_trait_impl
             {
-                ($name:ident for $($t:ty)*) => ($(
-                    impl $name for $t {}
+                ($n:ident for $($t:ty)*) => ($(
+                    impl $n for $t {}
                 )*)
             }
 
@@ -6971,8 +6854,8 @@ pub mod num
 
         macro_rules! int_trait_impl
         {
-            ($name:ident for $($t:ty)*) => ($(
-                impl $name for $t {
+            ($n:ident for $($t:ty)*) => ($(
+                impl $n for $t {
                     type FromStrRadixErr = ::num::ParseIntError;
                     #[inline] fn from_str_radix(s: &str, radix: u32)
                                     -> Result<Self, ::num::ParseIntError>
@@ -7031,8 +6914,8 @@ pub mod num
         
         macro_rules! float_trait_impl
         {
-            ($name:ident for $($t:ident)*) => ($(
-                impl $name for $t {
+            ($n:ident for $($t:ident)*) => ($(
+                impl $n for $t {
                     type FromStrRadixErr = ParseFloatError;
 
                     fn from_str_radix(src: &str, radix: u32)
@@ -7262,9 +7145,9 @@ pub mod num
             */
 
             pub trait Average: Integer {
-                fn average_ceil(&self, other: &Self) -> Self;
+                fn average_ceil(&self, o:&Self) -> Self;
                 
-                fn average_floor(&self, other: &Self) -> Self;
+                fn average_floor(&self, o:&Self) -> Self;
             }
 
             impl<I> Average for I
@@ -7277,11 +7160,11 @@ pub mod num
                
 
 
-                #[inline] fn average_floor(&self, other: &I) -> I {
+                #[inline] fn average_floor(&self, o:&I) -> I {
                     (self & other) + ((self ^ other) >> 1)
                 }
 
-                #[inline] fn average_ceil(&self, other: &I) -> I {
+                #[inline] fn average_ceil(&self, o:&I) -> I {
                     (self | other) - ((self ^ other) >> 1)
                 }
             }
@@ -7574,10 +7457,10 @@ pub mod num
         {
 
 
-            fn div_floor(&self, other: &Self) -> Self;
-            fn mod_floor(&self, other: &Self) -> Self;
+            fn div_floor(&self, o:&Self) -> Self;
+            fn mod_floor(&self, o:&Self) -> Self;
 
-            fn div_ceil(&self, other: &Self) -> Self {
+            fn div_ceil(&self, o:&Self) -> Self {
                 let (q, r) = self.div_mod_floor(other);
                 if r.is_zero() {
                     q
@@ -7586,20 +7469,20 @@ pub mod num
                 }
             }
 
-            fn gcd(&self, other: &Self) -> Self;
+            fn gcd(&self, o:&Self) -> Self;
 
-            fn lcm(&self, other: &Self) -> Self;
+            fn lcm(&self, o:&Self) -> Self;
 
-            #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
+            #[inline] fn gcd_lcm(&self, o:&Self) -> (Self, Self) {
                 (self.gcd(other), self.lcm(other))
             }
             
-            #[inline] fn extended_gcd(&self, other: &Self) -> ExtendedGcd<Self> where
+            #[inline] fn extended_gcd(&self, o:&Self) -> ExtendedGcd<Self> where
                 Self: Clone,
             {
                 let mut s = (Self::zero(), Self::one());
                 let mut t = (Self::one(), Self::zero());
-                let mut r = (other.clone(), self.clone());
+                let mut r = (o.clone(), self.clone());
 
                 while !r.0.is_zero() {
                     let q = r.1.clone() / r.0.clone();
@@ -7628,7 +7511,7 @@ pub mod num
                 }
             }
 
-            #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self)
+            #[inline] fn extended_gcd_lcm(&self, o:&Self) -> (ExtendedGcd<Self>, Self)
             where
                 Self: Clone + Signed,
             {
@@ -7636,11 +7519,11 @@ pub mod num
             }
 
             #[deprecated(note = "Please use is_multiple_of instead")]
-            #[inline] fn divides(&self, other: &Self) -> bool {
+            #[inline] fn divides(&self, o:&Self) -> bool {
                 self.is_multiple_of(other)
             }
 
-            fn is_multiple_of(&self, other: &Self) -> bool;
+            fn is_multiple_of(&self, o:&Self) -> bool;
 
 
             fn is_even(&self) -> bool;
@@ -7648,13 +7531,13 @@ pub mod num
 
             fn is_odd(&self) -> bool;
 
-            fn div_rem(&self, other: &Self) -> (Self, Self);
+            fn div_rem(&self, o:&Self) -> (Self, Self);
 
-            fn div_mod_floor(&self, other: &Self) -> (Self, Self) {
+            fn div_mod_floor(&self, o:&Self) -> (Self, Self) {
                 (self.div_floor(other), self.mod_floor(other))
             }
             
-            #[inline] fn next_multiple_of(&self, other: &Self) -> Self
+            #[inline] fn next_multiple_of(&self, o:&Self) -> Self
             where
                 Self: Clone,
             {
@@ -7667,7 +7550,7 @@ pub mod num
                     }
             }
             
-            #[inline] fn prev_multiple_of(&self, other: &Self) -> Self
+            #[inline] fn prev_multiple_of(&self, o:&Self) -> Self
             where
                 Self: Clone,
             {
@@ -7744,41 +7627,41 @@ pub mod num
             ($T:ty, $test_mod:ident) => {
                 impl Integer for $T {
 
-                    #[inline] fn div_floor(&self, other: &Self) -> Self {
+                    #[inline] fn div_floor(&self, o:&Self) -> Self {
                        
                        
                         let (d, r) = self.div_rem(other);
-                        if (r > 0 && *other < 0) || (r < 0 && *other > 0) {
+                        if (r > 0 && *o < 0) || (r < 0 && *o > 0) {
                             d - 1
                         } else {
                             d
                         }
                     }
 
-                    #[inline] fn mod_floor(&self, other: &Self) -> Self {
+                    #[inline] fn mod_floor(&self, o:&Self) -> Self {
                        
                        
-                        let r = *self % *other;
-                        if (r > 0 && *other < 0) || (r < 0 && *other > 0) {
-                            r + *other
+                        let r = *self % *o;
+                        if (r > 0 && *o < 0) || (r < 0 && *o > 0) {
+                            r + *o
                         } else {
                             r
                         }
                     }
 
-                    #[inline] fn div_mod_floor(&self, other: &Self) -> (Self, Self)
+                    #[inline] fn div_mod_floor(&self, o:&Self) -> (Self, Self)
                     {
                         let (d, r) = self.div_rem(other);
-                        if (r > 0 && *other < 0) || (r < 0 && *other > 0) {
-                            (d - 1, r + *other)
+                        if (r > 0 && *o < 0) || (r < 0 && *o > 0) {
+                            (d - 1, r + *o)
                         } else {
                             (d, r)
                         }
                     }
 
-                    #[inline] fn div_ceil(&self, other: &Self) -> Self {
+                    #[inline] fn div_ceil(&self, o:&Self) -> Self {
                         let (d, r) = self.div_rem(other);
-                        if (r > 0 && *other > 0) || (r < 0 && *other < 0) {
+                        if (r > 0 && *o > 0) || (r < 0 && *o < 0) {
                             d + 1
                         } else {
                             d
@@ -7787,10 +7670,10 @@ pub mod num
 
 
 
-                    #[inline] fn gcd(&self, other: &Self) -> Self {
+                    #[inline] fn gcd(&self, o:&Self) -> Self {
                        
                         let mut m = *self;
-                        let mut n = *other;
+                        let mut n = *o;
                         if m == 0 || n == 0 {
                             return (m | n).abs();
                         }
@@ -7830,40 +7713,40 @@ pub mod num
                         m << shift
                     }
 
-                    #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self) {
+                    #[inline] fn extended_gcd_lcm(&self, o:&Self) -> (ExtendedGcd<Self>, Self) {
                         let egcd = self.extended_gcd(other);
                        
                         let lcm = if egcd.gcd.is_zero() {
                             Self::zero()
                         } else {
-                            (*self * (*other / egcd.gcd)).abs()
+                            (*self * (*o / egcd.gcd)).abs()
                         };
                         (egcd, lcm)
                     }
 
 
 
-                    #[inline] fn lcm(&self, other: &Self) -> Self {
+                    #[inline] fn lcm(&self, o:&Self) -> Self {
                         self.gcd_lcm(other).1
                     }
 
 
 
-                    #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
+                    #[inline] fn gcd_lcm(&self, o:&Self) -> (Self, Self) {
                         if self.is_zero() && other.is_zero() {
                             return (Self::zero(), Self::zero());
                         }
                         let gcd = self.gcd(other);
                        
-                        let lcm = (*self * (*other / gcd)).abs();
+                        let lcm = (*self * (*o / gcd)).abs();
                         (gcd, lcm)
                     }
 
-                    #[inline] fn is_multiple_of(&self, other: &Self) -> bool {
-                        if other.is_zero() {
+                    #[inline] fn is_multiple_of(&self, o:&Self) -> bool {
+                        if o.is_zero() {
                             return self.is_zero();
                         }
-                        *self % *other == 0
+                        *self % *o == 0
                     }
 
                     #[inline] fn is_even(&self) -> bool {
@@ -7874,27 +7757,27 @@ pub mod num
                         !self.is_even()
                     }
 
-                    #[inline] fn div_rem(&self, other: &Self) -> (Self, Self) {
-                        (*self / *other, *self % *other)
+                    #[inline] fn div_rem(&self, o:&Self) -> (Self, Self) {
+                        (*self / *o, *self % *o)
                     }
 
-                    #[inline] fn next_multiple_of(&self, other: &Self) -> Self {
+                    #[inline] fn next_multiple_of(&self, o:&Self) -> Self {
                        
-                        if *other == -1 {
+                        if *o == -1 {
                             return *self;
                         }
 
-                        let m = Integer::mod_floor(self, other);
+                        let m = Integer::mod_floor(self, o);
                         *self + if m == 0 { 0 } else { other - m }
                     }
 
-                    #[inline] fn prev_multiple_of(&self, other: &Self) -> Self {
+                    #[inline] fn prev_multiple_of(&self, o:&Self) -> Self {
                        
-                        if *other == -1 {
+                        if *o == -1 {
                             return *self;
                         }
 
-                        *self - Integer::mod_floor(self, other)
+                        *self - Integer::mod_floor(self, o)
                     }
                 }
             };
@@ -7912,22 +7795,22 @@ pub mod num
             ($T:ty, $test_mod:ident) => {
                 impl Integer for $T {
 
-                    #[inline] fn div_floor(&self, other: &Self) -> Self {
-                        *self / *other
+                    #[inline] fn div_floor(&self, o:&Self) -> Self {
+                        *self / *o
                     }
 
-                    #[inline] fn mod_floor(&self, other: &Self) -> Self {
-                        *self % *other
+                    #[inline] fn mod_floor(&self, o:&Self) -> Self {
+                        *self % *o
                     }
 
-                    #[inline] fn div_ceil(&self, other: &Self) -> Self {
-                        *self / *other + (0 != *self % *other) as Self
+                    #[inline] fn div_ceil(&self, o:&Self) -> Self {
+                        *self / *o + (0 != *self % *o) as Self
                     }
 
-                    #[inline] fn gcd(&self, other: &Self) -> Self {
+                    #[inline] fn gcd(&self, o:&Self) -> Self {
                        
                         let mut m = *self;
-                        let mut n = *other;
+                        let mut n = *o;
                         if m == 0 || n == 0 {
                             return m | n;
                         }
@@ -7951,37 +7834,37 @@ pub mod num
                         m << shift
                     }
 
-                    #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self) {
+                    #[inline] fn extended_gcd_lcm(&self, o:&Self) -> (ExtendedGcd<Self>, Self) {
                         let egcd = self.extended_gcd(other);
                        
                         let lcm = if egcd.gcd.is_zero() {
                             Self::zero()
                         } else {
-                            *self * (*other / egcd.gcd)
+                            *self * (*o / egcd.gcd)
                         };
                         (egcd, lcm)
                     }
 
-                    #[inline] fn lcm(&self, other: &Self) -> Self {
+                    #[inline] fn lcm(&self, o:&Self) -> Self {
                         self.gcd_lcm(other).1
                     }
 
 
 
-                    #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self) {
+                    #[inline] fn gcd_lcm(&self, o:&Self) -> (Self, Self) {
                         if self.is_zero() && other.is_zero() {
                             return (Self::zero(), Self::zero());
                         }
                         let gcd = self.gcd(other);
-                        let lcm = *self * (*other / gcd);
+                        let lcm = *self * (*o / gcd);
                         (gcd, lcm)
                     }
 
-                    #[inline] fn is_multiple_of(&self, other: &Self) -> bool {
-                        if other.is_zero() {
+                    #[inline] fn is_multiple_of(&self, o:&Self) -> bool {
+                        if o.is_zero() {
                             return self.is_zero();
                         }
-                        *self % *other == 0
+                        *self % *o == 0
                     }
 
                     #[inline] fn is_even(&self) -> bool {
@@ -7992,8 +7875,8 @@ pub mod num
                         !self.is_even()
                     }
 
-                    #[inline] fn div_rem(&self, other: &Self) -> (Self, Self) {
-                        (*self / *other, *self % *other)
+                    #[inline] fn div_rem(&self, o:&Self) -> (Self, Self) {
+                        (*self / *o, *self % *o)
                     }
                 }
             };
@@ -8166,7 +8049,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: &BigInt) -> BigInt {
+                    #[inline] fn add(self, o:&BigInt) -> BigInt {
                         bigint_add!(
                             self,
                             self.clone(),
@@ -8182,8 +8065,8 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: BigInt) -> BigInt {
-                        bigint_add!(self, self.clone(), &self.data, other, other, other.data)
+                    #[inline] fn add(self, o: BigInt) -> BigInt {
+                        bigint_add!(self, self.clone(), &self.data, o, o, o.data)
                     }
                 }
 
@@ -8191,8 +8074,8 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: &BigInt) -> BigInt {
-                        bigint_add!(self, self, self.data, other, other.clone(), &other.data)
+                    #[inline] fn add(self, o:&BigInt) -> BigInt {
+                        bigint_add!(self, self, self.data, o, o.clone(), &o.data)
                     }
                 }
 
@@ -8200,14 +8083,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: BigInt) -> BigInt {
-                        bigint_add!(self, self, self.data, other, other, other.data)
+                    #[inline] fn add(self, o: BigInt) -> BigInt {
+                        bigint_add!(self, self, self.data, o, o, o.data)
                     }
                 }
 
                 impl AddAssign<&BigInt> for BigInt 
                 {
-                    #[inline] fn add_assign(&mut self, other: &BigInt) {
+                    #[inline] fn add_assign(&mut self, o:&BigInt) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n + other;
                     }
@@ -8225,7 +8108,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: u32) -> BigInt {
+                    #[inline] fn add(self, o: u32) -> BigInt {
                         match self.sign {
                             NoSign => From::from(other),
                             Plus => BigInt::from(self.data + other),
@@ -8240,7 +8123,7 @@ pub mod num
 
                 impl AddAssign<u32> for BigInt
                 {
-                    #[inline] fn add_assign(&mut self, other: u32) {
+                    #[inline] fn add_assign(&mut self, o: u32) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n + other;
                     }
@@ -8250,7 +8133,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: u64) -> BigInt {
+                    #[inline] fn add(self, o: u64) -> BigInt {
                         match self.sign {
                             NoSign => From::from(other),
                             Plus => BigInt::from(self.data + other),
@@ -8265,7 +8148,7 @@ pub mod num
 
                 impl AddAssign<u64> for BigInt
                 {
-                    #[inline] fn add_assign(&mut self, other: u64) {
+                    #[inline] fn add_assign(&mut self, o: u64) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n + other;
                     }
@@ -8275,7 +8158,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: u128) -> BigInt {
+                    #[inline] fn add(self, o: u128) -> BigInt {
                         match self.sign {
                             NoSign => BigInt::from(other),
                             Plus => BigInt::from(self.data + other),
@@ -8289,7 +8172,7 @@ pub mod num
                 }
                 impl AddAssign<u128> for BigInt
                 {
-                    #[inline] fn add_assign(&mut self, other: u128) {
+                    #[inline] fn add_assign(&mut self, o: u128) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n + other;
                     }
@@ -8303,7 +8186,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: i32) -> BigInt {
+                    #[inline] fn add(self, o: i32) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self + u,
                             Negative(u) => self - u,
@@ -8312,7 +8195,7 @@ pub mod num
                 }
                 impl AddAssign<i32> for BigInt
                 {
-                    #[inline] fn add_assign(&mut self, other: i32) {
+                    #[inline] fn add_assign(&mut self, o: i32) {
                         match other.checked_uabs() {
                             Positive(u) => *self += u,
                             Negative(u) => *self -= u,
@@ -8324,7 +8207,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: i64) -> BigInt {
+                    #[inline] fn add(self, o: i64) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self + u,
                             Negative(u) => self - u,
@@ -8333,7 +8216,7 @@ pub mod num
                 }
                 impl AddAssign<i64> for BigInt
                 {
-                    #[inline] fn add_assign(&mut self, other: i64) {
+                    #[inline] fn add_assign(&mut self, o: i64) {
                         match other.checked_uabs() {
                             Positive(u) => *self += u,
                             Negative(u) => *self -= u,
@@ -8345,7 +8228,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add(self, other: i128) -> BigInt {
+                    #[inline] fn add(self, o: i128) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self + u,
                             Negative(u) => self - u,
@@ -8354,7 +8237,7 @@ pub mod num
                 }
                 impl AddAssign<i128> for BigInt
                 {
-                    #[inline] fn add_assign(&mut self, other: i128) {
+                    #[inline] fn add_assign(&mut self, o: i128) {
                         match other.checked_uabs() {
                             Positive(u) => *self += u,
                             Negative(u) => *self -= u,
@@ -8396,7 +8279,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: &BigInt) -> BigInt {
+                    #[inline] fn div(self, o:&BigInt) -> BigInt {
                         let (q, _) = self.div_rem(other);
                         q
                     }
@@ -8404,7 +8287,7 @@ pub mod num
 
                 impl DivAssign<&BigInt> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: &BigInt) {
+                    #[inline] fn div_assign(&mut self, o:&BigInt) {
                         *self = &*self / other;
                     }
                 }
@@ -8420,14 +8303,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: u32) -> BigInt {
+                    #[inline] fn div(self, o: u32) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data / other)
                     }
                 }
 
                 impl DivAssign<u32> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: u32) {
+                    #[inline] fn div_assign(&mut self, o: u32) {
                         self.data /= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8438,8 +8321,8 @@ pub mod num
                 impl Div<BigInt> for u32 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: BigInt) -> BigInt {
-                        BigInt::from_biguint(other.sign, self / other.data)
+                    #[inline] fn div(self, o: BigInt) -> BigInt {
+                        BigInt::from_biguint(o.sign, self / other.data)
                     }
                 }
 
@@ -8447,14 +8330,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: u64) -> BigInt {
+                    #[inline] fn div(self, o: u64) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data / other)
                     }
                 }
 
                 impl DivAssign<u64> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: u64) {
+                    #[inline] fn div_assign(&mut self, o: u64) {
                         self.data /= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8465,8 +8348,8 @@ pub mod num
                 impl Div<BigInt> for u64 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: BigInt) -> BigInt {
-                        BigInt::from_biguint(other.sign, self / other.data)
+                    #[inline] fn div(self, o: BigInt) -> BigInt {
+                        BigInt::from_biguint(o.sign, self / other.data)
                     }
                 }
 
@@ -8474,14 +8357,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: u128) -> BigInt {
+                    #[inline] fn div(self, o: u128) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data / other)
                     }
                 }
 
                 impl DivAssign<u128> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: u128) {
+                    #[inline] fn div_assign(&mut self, o: u128) {
                         self.data /= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8492,8 +8375,8 @@ pub mod num
                 impl Div<BigInt> for u128 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: BigInt) -> BigInt {
-                        BigInt::from_biguint(other.sign, self / other.data)
+                    #[inline] fn div(self, o: BigInt) -> BigInt {
+                        BigInt::from_biguint(o.sign, self / other.data)
                     }
                 }
 
@@ -8505,7 +8388,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: i32) -> BigInt {
+                    #[inline] fn div(self, o: i32) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self / u,
                             Negative(u) => -self / u,
@@ -8515,7 +8398,7 @@ pub mod num
 
                 impl DivAssign<i32> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: i32) {
+                    #[inline] fn div_assign(&mut self, o: i32) {
                         match other.checked_uabs() {
                             Positive(u) => *self /= u,
                             Negative(u) => {
@@ -8529,7 +8412,7 @@ pub mod num
                 impl Div<BigInt> for i32 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: BigInt) -> BigInt {
+                    #[inline] fn div(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u / other,
                             Negative(u) => u / -other,
@@ -8541,7 +8424,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: i64) -> BigInt {
+                    #[inline] fn div(self, o: i64) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self / u,
                             Negative(u) => -self / u,
@@ -8551,7 +8434,7 @@ pub mod num
 
                 impl DivAssign<i64> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: i64) {
+                    #[inline] fn div_assign(&mut self, o: i64) {
                         match other.checked_uabs() {
                             Positive(u) => *self /= u,
                             Negative(u) => {
@@ -8565,7 +8448,7 @@ pub mod num
                 impl Div<BigInt> for i64 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: BigInt) -> BigInt {
+                    #[inline] fn div(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u / other,
                             Negative(u) => u / -other,
@@ -8577,7 +8460,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: i128) -> BigInt {
+                    #[inline] fn div(self, o: i128) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self / u,
                             Negative(u) => -self / u,
@@ -8587,7 +8470,7 @@ pub mod num
 
                 impl DivAssign<i128> for BigInt
                 {
-                    #[inline] fn div_assign(&mut self, other: i128) {
+                    #[inline] fn div_assign(&mut self, o: i128) {
                         match other.checked_uabs() {
                             Positive(u) => *self /= u,
                             Negative(u) => {
@@ -8601,7 +8484,7 @@ pub mod num
                 impl Div<BigInt> for i128 {
                     type Output = BigInt;
 
-                    #[inline] fn div(self, other: BigInt) -> BigInt {
+                    #[inline] fn div(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u / other,
                             Negative(u) => u / -other,
@@ -8615,7 +8498,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: &BigInt) -> BigInt {
+                    #[inline] fn rem(self, o:&BigInt) -> BigInt {
                         if let Some(other) = other.to_u32() {
                             self % other
                         } else if let Some(other) = other.to_i32() {
@@ -8629,7 +8512,7 @@ pub mod num
 
                 impl RemAssign<&BigInt> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: &BigInt) {
+                    #[inline] fn rem_assign(&mut self, o:&BigInt) {
                         *self = &*self % other;
                     }
                 }
@@ -8645,14 +8528,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: u32) -> BigInt {
+                    #[inline] fn rem(self, o: u32) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data % other)
                     }
                 }
 
                 impl RemAssign<u32> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: u32) {
+                    #[inline] fn rem_assign(&mut self, o: u32) {
                         self.data %= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8663,7 +8546,7 @@ pub mod num
                 impl Rem<BigInt> for u32 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: BigInt) -> BigInt {
+                    #[inline] fn rem(self, o: BigInt) -> BigInt {
                         BigInt::from(self % other.data)
                     }
                 }
@@ -8672,14 +8555,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: u64) -> BigInt {
+                    #[inline] fn rem(self, o: u64) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data % other)
                     }
                 }
 
                 impl RemAssign<u64> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: u64) {
+                    #[inline] fn rem_assign(&mut self, o: u64) {
                         self.data %= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8690,7 +8573,7 @@ pub mod num
                 impl Rem<BigInt> for u64 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: BigInt) -> BigInt {
+                    #[inline] fn rem(self, o: BigInt) -> BigInt {
                         BigInt::from(self % other.data)
                     }
                 }
@@ -8699,14 +8582,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: u128) -> BigInt {
+                    #[inline] fn rem(self, o: u128) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data % other)
                     }
                 }
 
                 impl RemAssign<u128> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: u128) {
+                    #[inline] fn rem_assign(&mut self, o: u128) {
                         self.data %= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8717,7 +8600,7 @@ pub mod num
                 impl Rem<BigInt> for u128 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: BigInt) -> BigInt {
+                    #[inline] fn rem(self, o: BigInt) -> BigInt {
                         BigInt::from(self % other.data)
                     }
                 }
@@ -8730,14 +8613,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: i32) -> BigInt {
+                    #[inline] fn rem(self, o: i32) -> BigInt {
                         self % other.unsigned_abs()
                     }
                 }
 
                 impl RemAssign<i32> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: i32) {
+                    #[inline] fn rem_assign(&mut self, o: i32) {
                         *self %= other.unsigned_abs();
                     }
                 }
@@ -8745,7 +8628,7 @@ pub mod num
                 impl Rem<BigInt> for i32 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: BigInt) -> BigInt {
+                    #[inline] fn rem(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u % other,
                             Negative(u) => -(u % other),
@@ -8757,14 +8640,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: i64) -> BigInt {
+                    #[inline] fn rem(self, o: i64) -> BigInt {
                         self % other.unsigned_abs()
                     }
                 }
 
                 impl RemAssign<i64> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: i64) {
+                    #[inline] fn rem_assign(&mut self, o: i64) {
                         *self %= other.unsigned_abs();
                     }
                 }
@@ -8772,7 +8655,7 @@ pub mod num
                 impl Rem<BigInt> for i64 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: BigInt) -> BigInt {
+                    #[inline] fn rem(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u % other,
                             Negative(u) => -(u % other),
@@ -8784,14 +8667,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: i128) -> BigInt {
+                    #[inline] fn rem(self, o: i128) -> BigInt {
                         self % other.unsigned_abs()
                     }
                 }
 
                 impl RemAssign<i128> for BigInt
                 {
-                    #[inline] fn rem_assign(&mut self, other: i128) {
+                    #[inline] fn rem_assign(&mut self, o: i128) {
                         *self %= other.unsigned_abs();
                     }
                 }
@@ -8799,7 +8682,7 @@ pub mod num
                 impl Rem<BigInt> for i128 {
                     type Output = BigInt;
 
-                    #[inline] fn rem(self, other: BigInt) -> BigInt {
+                    #[inline] fn rem(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u % other,
                             Negative(u) => -(u % other),
@@ -8903,8 +8786,8 @@ pub mod num
                 impl Mul<Sign> for Sign {
                     type Output = Sign;
 
-                    #[inline] fn mul(self, other: Sign) -> Sign {
-                        match (self, other) {
+                    #[inline] fn mul(self, o: Sign) -> Sign {
+                        match (self, o) {
                             (NoSign, _) | (_, NoSign) => NoSign,
                             (Plus, Plus) | (Minus, Minus) => Plus,
                             (Plus, Minus) | (Minus, Plus) => Minus,
@@ -8918,7 +8801,7 @@ pub mod num
                             type Output = BigInt;
 
                             #[inline]
-                            fn mul(self, other: $Other) -> BigInt {
+                            fn mul(self, o:$Other) -> BigInt {
                                
                                 let BigInt { data: x, .. } = self;
                                 let BigInt { data: y, .. } = other;
@@ -8938,7 +8821,7 @@ pub mod num
                     ($(impl MulAssign<$Other:ty> for BigInt;)*) => {$(
                         impl MulAssign<$Other> for BigInt {
                             #[inline]
-                            fn mul_assign(&mut self, other: $Other) {
+                            fn mul_assign(&mut self, o:$Other) {
                                
                                 let BigInt { data: y, .. } = other;
                                 self.data *= y;
@@ -8966,14 +8849,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul(self, other: u32) -> BigInt {
+                    #[inline] fn mul(self, o: u32) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data * other)
                     }
                 }
 
                 impl MulAssign<u32> for BigInt
                 {
-                    #[inline] fn mul_assign(&mut self, other: u32) {
+                    #[inline] fn mul_assign(&mut self, o: u32) {
                         self.data *= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -8985,14 +8868,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul(self, other: u64) -> BigInt {
+                    #[inline] fn mul(self, o: u64) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data * other)
                     }
                 }
 
                 impl MulAssign<u64> for BigInt
                 {
-                    #[inline] fn mul_assign(&mut self, other: u64) {
+                    #[inline] fn mul_assign(&mut self, o: u64) {
                         self.data *= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -9004,14 +8887,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul(self, other: u128) -> BigInt {
+                    #[inline] fn mul(self, o: u128) -> BigInt {
                         BigInt::from_biguint(self.sign, self.data * other)
                     }
                 }
 
                 impl MulAssign<u128> for BigInt
                 {
-                    #[inline] fn mul_assign(&mut self, other: u128) {
+                    #[inline] fn mul_assign(&mut self, o: u128) {
                         self.data *= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -9027,7 +8910,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul(self, other: i32) -> BigInt {
+                    #[inline] fn mul(self, o: i32) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self * u,
                             Negative(u) => -self * u,
@@ -9037,7 +8920,7 @@ pub mod num
 
                 impl MulAssign<i32> for BigInt
                 {
-                    #[inline] fn mul_assign(&mut self, other: i32) {
+                    #[inline] fn mul_assign(&mut self, o: i32) {
                         match other.checked_uabs() {
                             Positive(u) => *self *= u,
                             Negative(u) => {
@@ -9052,7 +8935,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul(self, other: i64) -> BigInt {
+                    #[inline] fn mul(self, o: i64) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self * u,
                             Negative(u) => -self * u,
@@ -9062,7 +8945,7 @@ pub mod num
 
                 impl MulAssign<i64> for BigInt
                 {
-                    #[inline] fn mul_assign(&mut self, other: i64) {
+                    #[inline] fn mul_assign(&mut self, o: i64) {
                         match other.checked_uabs() {
                             Positive(u) => *self *= u,
                             Negative(u) => {
@@ -9077,7 +8960,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul(self, other: i128) -> BigInt {
+                    #[inline] fn mul(self, o: i128) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self * u,
                             Negative(u) => -self * u,
@@ -9087,7 +8970,7 @@ pub mod num
 
                 impl MulAssign<i128> for BigInt
                 {
-                    #[inline] fn mul_assign(&mut self, other: i128) {
+                    #[inline] fn mul_assign(&mut self, o: i128) {
                         match other.checked_uabs() {
                             Positive(u) => *self *= u,
                             Negative(u) => {
@@ -9145,7 +9028,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: &BigInt) -> BigInt {
+                    #[inline] fn sub(self, o:&BigInt) -> BigInt {
                         bigint_sub!(
                             self,
                             self.clone(),
@@ -9161,8 +9044,8 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
-                        bigint_sub!(self, self.clone(), &self.data, other, other, other.data)
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
+                        bigint_sub!(self, self.clone(), &self.data, o, o, o.data)
                     }
                 }
 
@@ -9170,8 +9053,8 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: &BigInt) -> BigInt {
-                        bigint_sub!(self, self, self.data, other, other.clone(), &other.data)
+                    #[inline] fn sub(self, o:&BigInt) -> BigInt {
+                        bigint_sub!(self, self, self.data, o, o.clone(), &o.data)
                     }
                 }
 
@@ -9179,14 +9062,14 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
-                        bigint_sub!(self, self, self.data, other, other, other.data)
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
+                        bigint_sub!(self, self, self.data, o, o, o.data)
                     }
                 }
 
                 impl SubAssign<&BigInt> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: &BigInt) {
+                    #[inline] fn sub_assign(&mut self, o:&BigInt) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n - other;
                     }
@@ -9203,7 +9086,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: u32) -> BigInt {
+                    #[inline] fn sub(self, o: u32) -> BigInt {
                         match self.sign {
                             NoSign => -BigInt::from(other),
                             Minus => -BigInt::from(self.data + other),
@@ -9217,7 +9100,7 @@ pub mod num
                 }
                 impl SubAssign<u32> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: u32) {
+                    #[inline] fn sub_assign(&mut self, o: u32) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n - other;
                     }
@@ -9226,7 +9109,7 @@ pub mod num
                 impl Sub<BigInt> for u32 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
                         -(other - self)
                     }
                 }
@@ -9234,7 +9117,7 @@ pub mod num
                 impl Sub<BigInt> for u64 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
                         -(other - self)
                     }
                 }
@@ -9242,7 +9125,7 @@ pub mod num
                 impl Sub<BigInt> for u128 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
                         -(other - self)
                     }
                 }
@@ -9251,7 +9134,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: u64) -> BigInt {
+                    #[inline] fn sub(self, o: u64) -> BigInt {
                         match self.sign {
                             NoSign => -BigInt::from(other),
                             Minus => -BigInt::from(self.data + other),
@@ -9266,7 +9149,7 @@ pub mod num
 
                 impl SubAssign<u64> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: u64) {
+                    #[inline] fn sub_assign(&mut self, o: u64) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n - other;
                     }
@@ -9276,7 +9159,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: u128) -> BigInt {
+                    #[inline] fn sub(self, o: u128) -> BigInt {
                         match self.sign {
                             NoSign => -BigInt::from(other),
                             Minus => -BigInt::from(self.data + other),
@@ -9291,7 +9174,7 @@ pub mod num
 
                 impl SubAssign<u128> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: u128) {
+                    #[inline] fn sub_assign(&mut self, o: u128) {
                         let n = mem::replace(self, Self::ZERO);
                         *self = n - other;
                     }
@@ -9305,7 +9188,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: i32) -> BigInt {
+                    #[inline] fn sub(self, o: i32) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self - u,
                             Negative(u) => self + u,
@@ -9314,7 +9197,7 @@ pub mod num
                 }
                 impl SubAssign<i32> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: i32) {
+                    #[inline] fn sub_assign(&mut self, o: i32) {
                         match other.checked_uabs() {
                             Positive(u) => *self -= u,
                             Negative(u) => *self += u,
@@ -9325,7 +9208,7 @@ pub mod num
                 impl Sub<BigInt> for i32 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u - other,
                             Negative(u) => -other - u,
@@ -9337,7 +9220,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: i64) -> BigInt {
+                    #[inline] fn sub(self, o: i64) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self - u,
                             Negative(u) => self + u,
@@ -9346,7 +9229,7 @@ pub mod num
                 }
                 impl SubAssign<i64> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: i64) {
+                    #[inline] fn sub_assign(&mut self, o: i64) {
                         match other.checked_uabs() {
                             Positive(u) => *self -= u,
                             Negative(u) => *self += u,
@@ -9357,7 +9240,7 @@ pub mod num
                 impl Sub<BigInt> for i64 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u - other,
                             Negative(u) => -other - u,
@@ -9369,7 +9252,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: i128) -> BigInt {
+                    #[inline] fn sub(self, o: i128) -> BigInt {
                         match other.checked_uabs() {
                             Positive(u) => self - u,
                             Negative(u) => self + u,
@@ -9379,7 +9262,7 @@ pub mod num
 
                 impl SubAssign<i128> for BigInt
                 {
-                    #[inline] fn sub_assign(&mut self, other: i128) {
+                    #[inline] fn sub_assign(&mut self, o: i128) {
                         match other.checked_uabs() {
                             Positive(u) => *self -= u,
                             Negative(u) => *self += u,
@@ -9390,7 +9273,7 @@ pub mod num
                 impl Sub<BigInt> for i128 {
                     type Output = BigInt;
 
-                    #[inline] fn sub(self, other: BigInt) -> BigInt {
+                    #[inline] fn sub(self, o: BigInt) -> BigInt {
                         match self.checked_uabs() {
                             Positive(u) => u - other,
                             Negative(u) => -other - u,
@@ -9507,12 +9390,12 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn bitand(self, other: &BigInt) -> BigInt {
-                        match (self.sign, other.sign) {
+                    #[inline] fn bitand(self, o:&BigInt) -> BigInt {
+                        match (self.sign, o.sign) {
                             (NoSign, _) | (_, NoSign) => BigInt::ZERO,
                             (Plus, Plus) => BigInt::from(&self.data & &other.data),
                             (Plus, Minus) => self.clone() & other,
-                            (Minus, Plus) => other.clone() & self,
+                            (Minus, Plus) => o.clone() & self,
                             (Minus, Minus) => {
                                
                                 if self.len() >= other.len() {
@@ -9529,7 +9412,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn bitand(mut self, other: &BigInt) -> BigInt {
+                    #[inline] fn bitand(mut self, o:&BigInt) -> BigInt {
                         self &= other;
                         self
                     }
@@ -9538,8 +9421,8 @@ pub mod num
                 forward_val_assign!(impl BitAndAssign for BigInt, bitand_assign);
 
                 impl BitAndAssign<&BigInt> for BigInt {
-                    fn bitand_assign(&mut self, other: &BigInt) {
-                        match (self.sign, other.sign) {
+                    fn bitand_assign(&mut self, o:&BigInt) {
+                        match (self.sign, o.sign) {
                             (NoSign, _) => {}
                             (_, NoSign) => self.set_zero(),
                             (Plus, Plus) => {
@@ -9549,16 +9432,16 @@ pub mod num
                                 }
                             }
                             (Plus, Minus) => {
-                                bitand_pos_neg(self.digits_mut(), other.digits());
+                                bitand_pos_neg(self.digits_mut(), o.digits());
                                 self.normalize();
                             }
                             (Minus, Plus) => {
-                                bitand_neg_pos(self.digits_mut(), other.digits());
+                                bitand_neg_pos(self.digits_mut(), o.digits());
                                 self.sign = Plus;
                                 self.normalize();
                             }
                             (Minus, Minus) => {
-                                bitand_neg_neg(self.digits_mut(), other.digits());
+                                bitand_neg_neg(self.digits_mut(), o.digits());
                                 self.normalize();
                             }
                         }
@@ -9638,12 +9521,12 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn bitor(self, other: &BigInt) -> BigInt {
-                        match (self.sign, other.sign) {
-                            (NoSign, _) => other.clone(),
+                    #[inline] fn bitor(self, o:&BigInt) -> BigInt {
+                        match (self.sign, o.sign) {
+                            (NoSign, _) => o.clone(),
                             (_, NoSign) => self.clone(),
                             (Plus, Plus) => BigInt::from(&self.data | &other.data),
-                            (Plus, Minus) => other.clone() | self,
+                            (Plus, Minus) => o.clone() | self,
                             (Minus, Plus) => self.clone() | other,
                             (Minus, Minus) => {
                                
@@ -9661,7 +9544,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn bitor(mut self, other: &BigInt) -> BigInt {
+                    #[inline] fn bitor(mut self, o:&BigInt) -> BigInt {
                         self |= other;
                         self
                     }
@@ -9670,22 +9553,22 @@ pub mod num
                 forward_val_assign!(impl BitOrAssign for BigInt, bitor_assign);
 
                 impl BitOrAssign<&BigInt> for BigInt {
-                    fn bitor_assign(&mut self, other: &BigInt) {
-                        match (self.sign, other.sign) {
+                    fn bitor_assign(&mut self, o:&BigInt) {
+                        match (self.sign, o.sign) {
                             (_, NoSign) => {}
                             (NoSign, _) => self.clone_from(other),
                             (Plus, Plus) => self.data |= &other.data,
                             (Plus, Minus) => {
-                                bitor_pos_neg(self.digits_mut(), other.digits());
+                                bitor_pos_neg(self.digits_mut(), o.digits());
                                 self.sign = Minus;
                                 self.normalize();
                             }
                             (Minus, Plus) => {
-                                bitor_neg_pos(self.digits_mut(), other.digits());
+                                bitor_neg_pos(self.digits_mut(), o.digits());
                                 self.normalize();
                             }
                             (Minus, Minus) => {
-                                bitor_neg_neg(self.digits_mut(), other.digits());
+                                bitor_neg_neg(self.digits_mut(), o.digits());
                                 self.normalize();
                             }
                         }
@@ -9793,7 +9676,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn bitxor(mut self, other: &BigInt) -> BigInt {
+                    #[inline] fn bitxor(mut self, o:&BigInt) -> BigInt {
                         self ^= other;
                         self
                     }
@@ -9803,8 +9686,8 @@ pub mod num
 
                 impl BitXorAssign<&BigInt> for BigInt
                 {
-                    fn bitxor_assign(&mut self, other: &BigInt) {
-                        match (self.sign, other.sign) {
+                    fn bitxor_assign(&mut self, o:&BigInt) {
+                        match (self.sign, o.sign) {
                             (_, NoSign) => {}
                             (NoSign, _) => self.clone_from(other),
                             (Plus, Plus) => {
@@ -9814,16 +9697,16 @@ pub mod num
                                 }
                             }
                             (Plus, Minus) => {
-                                bitxor_pos_neg(self.digits_mut(), other.digits());
+                                bitxor_pos_neg(self.digits_mut(), o.digits());
                                 self.sign = Minus;
                                 self.normalize();
                             }
                             (Minus, Plus) => {
-                                bitxor_neg_pos(self.digits_mut(), other.digits());
+                                bitxor_neg_pos(self.digits_mut(), o.digits());
                                 self.normalize();
                             }
                             (Minus, Minus) => {
-                                bitxor_neg_neg(self.digits_mut(), other.digits());
+                                bitxor_neg_neg(self.digits_mut(), o.digits());
                                 self.sign = Plus;
                                 self.normalize();
                             }
@@ -10403,8 +10286,8 @@ pub mod num
                 */
 
                 
-                #[inline] fn powsign<T: Integer>(sign: Sign, other: &T) -> Sign {
-                    if other.is_zero() {
+                #[inline] fn powsign<T: Integer>(sign: Sign, o:&T) -> Sign {
+                    if o.is_zero() {
                         Plus
                     } else if sign != Minus || other.is_odd() {
                         sign
@@ -10614,7 +10497,6 @@ pub mod num
             impl Neg for Sign 
             {
                 type Output = Sign;
-
                 #[inline] fn neg(self) -> Sign {
                     match self {
                         Minus => Plus,
@@ -10639,9 +10521,9 @@ pub mod num
                     }
                 }
 
-                #[inline] fn clone_from(&mut self, other: &Self) {
+                #[inline] fn clone_from(&mut self, o:&Self) {
                     self.sign = other.sign;
-                    self.data.clone_from(&other.data);
+                    self.data.clone_from(&o.data);
                 }
             }
 
@@ -10658,9 +10540,9 @@ pub mod num
 
             impl PartialEq for BigInt
             {
-                #[inline] fn eq(&self, other: &BigInt) -> bool {
+                #[inline] fn eq(&self, o:&BigInt) -> bool {
                     debug_assert!((self.sign != NoSign) ^ self.data.is_zero());
-                    debug_assert!((other.sign != NoSign) ^ other.data.is_zero());
+                    debug_assert!((o.sign != NoSign) ^ other.data.is_zero());
                     self.sign == other.sign && (self.sign == NoSign || self.data == other.data)
                 }
             }
@@ -10669,25 +10551,25 @@ pub mod num
 
             impl PartialOrd for BigInt
             {
-                #[inline] fn partial_cmp(&self, other: &BigInt) -> Option<Ordering> {
+                #[inline] fn partial_cmp(&self, o:&BigInt) -> Option<Ordering> {
                     Some(self.cmp(other))
                 }
             }
 
             impl Ord for BigInt
             {
-                #[inline] fn cmp(&self, other: &BigInt) -> Ordering {
+                #[inline] fn cmp(&self, o:&BigInt) -> Ordering {
                     debug_assert!((self.sign != NoSign) ^ self.data.is_zero());
-                    debug_assert!((other.sign != NoSign) ^ other.data.is_zero());
-                    let scmp = self.sign.cmp(&other.sign);
+                    debug_assert!((o.sign != NoSign) ^ other.data.is_zero());
+                    let scmp = self.sign.cmp(&o.sign);
                     if scmp != Equal {
                         return scmp;
                     }
 
                     match self.sign {
                         NoSign => Equal,
-                        Plus => self.data.cmp(&other.data),
-                        Minus => other.data.cmp(&self.data),
+                        Plus => self.data.cmp(&o.data),
+                        Minus => o.data.cmp(&self.data),
                     }
                 }
             }
@@ -10746,7 +10628,6 @@ pub mod num
             impl Not for BigInt
             {
                 type  Output = BigInt;
-
                 fn not(mut self) -> BigInt {
                     match self.sign {
                         NoSign | Plus => {
@@ -10765,7 +10646,6 @@ pub mod num
             impl Not for &BigInt
             {
                 type  Output = BigInt;
-
                 fn not(self) -> BigInt {
                     match self.sign {
                         NoSign => -BigInt::one(),
@@ -10825,8 +10705,8 @@ pub mod num
                     }
                 }
 
-                #[inline] fn abs_sub(&self, other: &BigInt) -> BigInt {
-                    if *self <= *other {
+                #[inline] fn abs_sub(&self, o:&BigInt) -> BigInt {
+                    if *self <= *o {
                         Self::ZERO
                     } else {
                         self - other
@@ -10853,7 +10733,6 @@ pub mod num
             trait UnsignedAbs 
             {
                 type Unsigned;
-
                 fn checked_uabs(self) -> CheckedUnsignedAbs<Self::Unsigned>;
             }
 
@@ -10891,7 +10770,6 @@ pub mod num
             impl Neg for BigInt
             {
                 type  Output = BigInt;
-
                 #[inline] fn neg(mut self) -> BigInt {
                     self.sign = -self.sign;
                     self
@@ -10901,7 +10779,6 @@ pub mod num
             impl Neg for &BigInt
             {
                 type Output = BigInt;
-
                 #[inline] fn neg(self) -> BigInt 
                 {
                     -self.clone()
@@ -10910,22 +10787,22 @@ pub mod num
 
             impl Integer for BigInt
             {
-                #[inline] fn div_rem(&self, other: &BigInt) -> (BigInt, BigInt) {
+                #[inline] fn div_rem(&self, o:&BigInt) -> (BigInt, BigInt) {
                    
-                    let (d_ui, r_ui) = self.data.div_rem(&other.data);
+                    let (d_ui, r_ui) = self.data.div_rem(&o.data);
                     let d = BigInt::from_biguint(self.sign, d_ui);
                     let r = BigInt::from_biguint(self.sign, r_ui);
-                    if other.is_negative() {
+                    if o.is_negative() {
                         (-d, r)
                     } else {
                         (d, r)
                     }
                 }
 
-                #[inline] fn div_floor(&self, other: &BigInt) -> BigInt {
-                    let (d_ui, m) = self.data.div_mod_floor(&other.data);
+                #[inline] fn div_floor(&self, o:&BigInt) -> BigInt {
+                    let (d_ui, m) = self.data.div_mod_floor(&o.data);
                     let d = BigInt::from(d_ui);
-                    match (self.sign, other.sign) {
+                    match (self.sign, o.sign) {
                         (Plus, Plus) | (NoSign, Plus) | (Minus, Minus) => d,
                         (Plus, Minus) | (NoSign, Minus) | (Minus, Plus) => {
                             if m.is_zero() {
@@ -10938,11 +10815,11 @@ pub mod num
                     }
                 }
 
-                #[inline] fn mod_floor(&self, other: &BigInt) -> BigInt {
+                #[inline] fn mod_floor(&self, o:&BigInt) -> BigInt {
                    
-                    let m_ui = self.data.mod_floor(&other.data);
-                    let m = BigInt::from_biguint(other.sign, m_ui);
-                    match (self.sign, other.sign) {
+                    let m_ui = self.data.mod_floor(&o.data);
+                    let m = BigInt::from_biguint(o.sign, m_ui);
+                    match (self.sign, o.sign) {
                         (Plus, Plus) | (NoSign, Plus) | (Minus, Minus) => m,
                         (Plus, Minus) | (NoSign, Minus) | (Minus, Plus) => {
                             if m.is_zero() {
@@ -10955,12 +10832,12 @@ pub mod num
                     }
                 }
 
-                fn div_mod_floor(&self, other: &BigInt) -> (BigInt, BigInt) {
+                fn div_mod_floor(&self, o:&BigInt) -> (BigInt, BigInt) {
                    
-                    let (d_ui, m_ui) = self.data.div_mod_floor(&other.data);
+                    let (d_ui, m_ui) = self.data.div_mod_floor(&o.data);
                     let d = BigInt::from(d_ui);
-                    let m = BigInt::from_biguint(other.sign, m_ui);
-                    match (self.sign, other.sign) {
+                    let m = BigInt::from_biguint(o.sign, m_ui);
+                    match (self.sign, o.sign) {
                         (Plus, Plus) | (NoSign, Plus) | (Minus, Minus) => (d, m),
                         (Plus, Minus) | (NoSign, Minus) | (Minus, Plus) => {
                             if m.is_zero() {
@@ -10973,10 +10850,10 @@ pub mod num
                     }
                 }
 
-                #[inline] fn div_ceil(&self, other: &Self) -> Self {
-                    let (d_ui, m) = self.data.div_mod_floor(&other.data);
+                #[inline] fn div_ceil(&self, o:&Self) -> Self {
+                    let (d_ui, m) = self.data.div_mod_floor(&o.data);
                     let d = BigInt::from(d_ui);
-                    match (self.sign, other.sign) {
+                    match (self.sign, o.sign) {
                         (Plus, Minus) | (NoSign, Minus) | (Minus, Plus) => -d,
                         (Plus, Plus) | (NoSign, Plus) | (Minus, Minus) => {
                             if m.is_zero() {
@@ -10989,21 +10866,21 @@ pub mod num
                     }
                 }
 
-                #[inline] fn gcd(&self, other: &BigInt) -> BigInt {
-                    BigInt::from(self.data.gcd(&other.data))
+                #[inline] fn gcd(&self, o:&BigInt) -> BigInt {
+                    BigInt::from(self.data.gcd(&o.data))
                 }
 
-                #[inline] fn lcm(&self, other: &BigInt) -> BigInt {
-                    BigInt::from(self.data.lcm(&other.data))
+                #[inline] fn lcm(&self, o:&BigInt) -> BigInt {
+                    BigInt::from(self.data.lcm(&o.data))
                 }
 
 
-                #[inline] fn gcd_lcm(&self, other: &BigInt) -> (BigInt, BigInt) {
-                    let (gcd, lcm) = self.data.gcd_lcm(&other.data);
+                #[inline] fn gcd_lcm(&self, o:&BigInt) -> (BigInt, BigInt) {
+                    let (gcd, lcm) = self.data.gcd_lcm(&o.data);
                     (BigInt::from(gcd), BigInt::from(lcm))
                 }
 
-                #[inline] fn extended_gcd_lcm(&self, other: &BigInt) -> (::num::integers::ExtendedGcd<BigInt>, BigInt) {
+                #[inline] fn extended_gcd_lcm(&self, o:&BigInt) -> (::num::integers::ExtendedGcd<BigInt>, BigInt) {
                     let egcd = self.extended_gcd(other);
                     let lcm = if egcd.gcd.is_zero() {
                         Self::ZERO
@@ -11013,12 +10890,12 @@ pub mod num
                     (egcd, lcm)
                 }
 
-                #[inline] fn divides(&self, other: &BigInt) -> bool {
+                #[inline] fn divides(&self, o:&BigInt) -> bool {
                     self.is_multiple_of(other)
                 }
 
-                #[inline] fn is_multiple_of(&self, other: &BigInt) -> bool {
-                    self.data.is_multiple_of(&other.data)
+                #[inline] fn is_multiple_of(&self, o:&BigInt) -> bool {
+                    self.data.is_multiple_of(&o.data)
                 }
 
                 #[inline] fn is_even(&self) -> bool {
@@ -11029,7 +10906,7 @@ pub mod num
                     self.data.is_odd()
                 }
 
-                #[inline] fn next_multiple_of(&self, other: &Self) -> Self {
+                #[inline] fn next_multiple_of(&self, o:&Self) -> Self {
                     let m = self.mod_floor(other);
                     if m.is_zero() {
                         self.clone()
@@ -11038,7 +10915,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn prev_multiple_of(&self, other: &Self) -> Self {
+                #[inline] fn prev_multiple_of(&self, o:&Self) -> Self {
                     self - self.mod_floor(other)
                 }
 
@@ -11105,7 +10982,6 @@ pub mod num
                     sign: NoSign,
                     data: BigUint::ZERO,
                 };
-
                 #[inline] pub fn new(sign: Sign, digits: Vec<u32>) -> BigInt {
                     BigInt::from_biguint(sign, BigUint::new(digits))
                 }
@@ -11380,7 +11256,6 @@ pub mod num
             impl ::num::traits::FromBytes for BigInt
             {
                 type  Bytes = [u8];
-
                 fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                     Self::from_signed_bytes_be(bytes)
                 }
@@ -11393,7 +11268,6 @@ pub mod num
             impl ::num::traits::ToBytes for BigInt
             {
                 type  Bytes = Vec<u8>;
-
                 fn to_be_bytes(&self) -> Self::Bytes {
                     self.to_signed_bytes_be()
                 }
@@ -11430,7 +11304,6 @@ pub mod num
             {
 
                 fn gen_biguint(&mut self, bit_size: u64) -> BigUint;
-
                 fn gen_bigint(&mut self, bit_size: u64) -> BigInt;
 
 
@@ -11493,7 +11366,6 @@ pub mod num
                         biguint_from_vec(data)
                     }
                 );
-
                 fn gen_bigint(&mut self, bit_size: u64) -> BigInt {
                     loop {
                        
@@ -11561,7 +11433,6 @@ pub mod num
             impl UniformSampler for UniformBigUint 
             {
                 type X = BigUint;
-
                 #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self
                 where
                     B1: SampleBorrow<Self::X> + Sized,
@@ -11615,7 +11486,6 @@ pub mod num
             impl UniformSampler for UniformBigInt 
             {
                 type X = BigInt;
-
                 #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self
                 where
                     B1: SampleBorrow<Self::X> + Sized,
@@ -11736,7 +11606,6 @@ pub mod num
                         unsafe { arch::_addcarry_u64(carry, a, b, out) }
                     }
                 );
-
                 #[inline] pub fn __add2(a: &mut [BigDigit], b: &[BigDigit]) -> BigDigit {
                     debug_assert!(a.len() >= b.len());
 
@@ -11775,21 +11644,21 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    fn add(mut self, other: &BigUint) -> BigUint {
+                    fn add(mut self, o:&BigUint) -> BigUint {
                         self += other;
                         self
                     }
                 }
                 impl AddAssign<&BigUint> for BigUint
                 {
-                    #[inline] fn add_assign(&mut self, other: &BigUint) {
+                    #[inline] fn add_assign(&mut self, o:&BigUint) {
                         let self_len = self.data.len();
-                        let carry = if self_len < other.data.len() {
-                            let lo_carry = __add2(&mut self.data[..], &other.data[..self_len]);
-                            self.data.extend_from_slice(&other.data[self_len..]);
+                        let carry = if self_len < o.data.len() {
+                            let lo_carry = __add2(&mut self.data[..], &o.data[..self_len]);
+                            self.data.extend_from_slice(&o.data[self_len..]);
                             __add2(&mut self.data[self_len..], &[lo_carry])
                         } else {
-                            __add2(&mut self.data[..], &other.data[..])
+                            __add2(&mut self.data[..], &o.data[..])
                         };
                         if carry != 0 {
                             self.data.push(carry);
@@ -11807,7 +11676,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn add(mut self, other: u32) -> BigUint {
+                    #[inline] fn add(mut self, o: u32) -> BigUint {
                         self += other;
                         self
                     }
@@ -11815,8 +11684,8 @@ pub mod num
 
                 impl AddAssign<u32> for BigUint
                 {
-                    #[inline] fn add_assign(&mut self, other: u32) {
-                        if other != 0 {
+                    #[inline] fn add_assign(&mut self, o: u32) {
+                        if o != 0 {
                             if self.data.is_empty() {
                                 self.data.push(0);
                             }
@@ -11833,7 +11702,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn add(mut self, other: u64) -> BigUint {
+                    #[inline] fn add(mut self, o: u64) -> BigUint {
                         self += other;
                         self
                     }
@@ -11842,7 +11711,7 @@ pub mod num
                 impl AddAssign<u64> for BigUint {
                     cfg_digit!(
                         #[inline]
-                        fn add_assign(&mut self, other: u64) {
+                        fn add_assign(&mut self, o: u64) {
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
                             if hi == 0 {
                                 *self += lo;
@@ -11859,8 +11728,8 @@ pub mod num
                         }
 
                         #[inline]
-                        fn add_assign(&mut self, other: u64) {
-                            if other != 0 {
+                        fn add_assign(&mut self, o: u64) {
+                            if o != 0 {
                                 if self.data.is_empty() {
                                     self.data.push(0);
                                 }
@@ -11878,7 +11747,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn add(mut self, other: u128) -> BigUint {
+                    #[inline] fn add(mut self, o: u128) -> BigUint {
                         self += other;
                         self
                     }
@@ -11887,8 +11756,8 @@ pub mod num
                 impl AddAssign<u128> for BigUint {
                     cfg_digit!(
                         #[inline]
-                        fn add_assign(&mut self, other: u128) {
-                            if other <= u128::from(u64::MAX) {
+                        fn add_assign(&mut self, o: u128) {
+                            if o <= u128::from(u64::MAX) {
                                 *self += other as u64
                             } else {
                                 let (a, b, c, d) = super::u32_from_u128(other);
@@ -11912,7 +11781,7 @@ pub mod num
                         }
 
                         #[inline]
-                        fn add_assign(&mut self, other: u128) {
+                        fn add_assign(&mut self, o: u128) {
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
                             if hi == 0 {
                                 *self += lo;
@@ -11966,7 +11835,6 @@ pub mod num
                 /*
                 */
                 pub const FAST_DIV_WIDE: bool = true;
-
                 #[inline] fn div_wide(hi: BigDigit, lo: BigDigit, divisor: BigDigit) -> (BigDigit, BigDigit)
                 {
                    
@@ -12284,8 +12152,8 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div(self, other: BigUint) -> BigUint {
-                        let (q, _) = div_rem(self, other);
+                    #[inline] fn div(self, o: BigUint) -> BigUint {
+                        let (q, _) = div_rem(self, o);
                         q
                     }
                 }
@@ -12294,14 +12162,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div(self, other: &BigUint) -> BigUint {
+                    #[inline] fn div(self, o:&BigUint) -> BigUint {
                         let (q, _) = self.div_rem(other);
                         q
                     }
                 }
                 impl DivAssign<&BigUint> for BigUint
                 {
-                    #[inline] fn div_assign(&mut self, other: &BigUint) {
+                    #[inline] fn div_assign(&mut self, o:&BigUint) {
                         *self = &*self / other;
                     }
                 }
@@ -12316,14 +12184,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div(self, other: u32) -> BigUint {
-                        let (q, _) = div_rem_digit(self, other as BigDigit);
+                    #[inline] fn div(self, o: u32) -> BigUint {
+                        let (q, _) = div_rem_digit(self, o as BigDigit);
                         q
                     }
                 }
                 impl DivAssign<u32> for BigUint
                 {
-                    #[inline] fn div_assign(&mut self, other: u32) {
+                    #[inline] fn div_assign(&mut self, o: u32) {
                         *self = &*self / other;
                     }
                 }
@@ -12331,7 +12199,7 @@ pub mod num
                 impl Div<BigUint> for u32 {
                     type Output = BigUint;
 
-                    #[inline] fn div(self, other: BigUint) -> BigUint {
+                    #[inline] fn div(self, o: BigUint) -> BigUint {
                         match other.data.len() {
                             0 => panic!("attempt to divide by zero"),
                             1 => From::from(self as BigDigit / other.data[0]),
@@ -12344,14 +12212,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div(self, other: u64) -> BigUint {
+                    #[inline] fn div(self, o: u64) -> BigUint {
                         let (q, _) = div_rem(self, From::from(other));
                         q
                     }
                 }
                 impl DivAssign<u64> for BigUint
                 {
-                    #[inline] fn div_assign(&mut self, other: u64) {
+                    #[inline] fn div_assign(&mut self, o: u64) {
                        
                         let temp = mem::replace(self, Self::ZERO);
                         *self = temp / other;
@@ -12363,17 +12231,17 @@ pub mod num
 
                     cfg_digit!(
                         #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        fn div(self, o: BigUint) -> BigUint {
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
-                                1 => From::from(self / u64::from(other.data[0])),
-                                2 => From::from(self / ::num::big::digit::to_doublebigdigit(other.data[1], other.data[0])),
+                                1 => From::from(self / u64::from(o.data[0])),
+                                2 => From::from(self / ::num::big::digit::to_doublebigdigit(o.data[1], o.data[0])),
                                 _ => BigUint::ZERO,
                             }
                         }
 
                         #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        fn div(self, o: BigUint) -> BigUint {
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / other.data[0]),
@@ -12387,7 +12255,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div(self, other: u128) -> BigUint {
+                    #[inline] fn div(self, o: u128) -> BigUint {
                         let (q, _) = div_rem(self, From::from(other));
                         q
                     }
@@ -12395,7 +12263,7 @@ pub mod num
 
                 impl DivAssign<u128> for BigUint
                 {
-                    #[inline] fn div_assign(&mut self, other: u128) {
+                    #[inline] fn div_assign(&mut self, o: u128) {
                         *self = &*self / other;
                     }
                 }
@@ -12405,28 +12273,28 @@ pub mod num
 
                     cfg_digit!(
                         #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        fn div(self, o: BigUint) -> BigUint {
                             use super::u32_to_u128;
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
-                                1 => From::from(self / u128::from(other.data[0])),
+                                1 => From::from(self / u128::from(o.data[0])),
                                 2 => From::from(
-                                    self / u128::from(::num::big::digit::to_doublebigdigit(other.data[1], other.data[0])),
+                                    self / u128::from(::num::big::digit::to_doublebigdigit(o.data[1], o.data[0])),
                                 ),
-                                3 => From::from(self / u32_to_u128(0, other.data[2], other.data[1], other.data[0])),
+                                3 => From::from(self / u32_to_u128(0, o.data[2], o.data[1], o.data[0])),
                                 4 => From::from(
-                                    self / u32_to_u128(other.data[3], other.data[2], other.data[1], other.data[0]),
+                                    self / u32_to_u128(o.data[3], o.data[2], o.data[1], o.data[0]),
                                 ),
                                 _ => BigUint::ZERO,
                             }
                         }
 
                         #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        fn div(self, o: BigUint) -> BigUint {
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / other.data[0] as u128),
-                                2 => From::from(self / ::num::big::digit::to_doublebigdigit(other.data[1], other.data[0])),
+                                2 => From::from(self / ::num::big::digit::to_doublebigdigit(o.data[1], o.data[0])),
                                 _ => BigUint::ZERO,
                             }
                         }
@@ -12441,11 +12309,11 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: BigUint) -> BigUint {
+                    #[inline] fn rem(self, o: BigUint) -> BigUint {
                         if let Some(other) = other.to_u32() {
                             &self % other
                         } else {
-                            let (_, r) = div_rem(self, other);
+                            let (_, r) = div_rem(self, o);
                             r
                         }
                     }
@@ -12455,7 +12323,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: &BigUint) -> BigUint {
+                    #[inline] fn rem(self, o:&BigUint) -> BigUint {
                         if let Some(other) = other.to_u32() {
                             self % other
                         } else {
@@ -12466,7 +12334,7 @@ pub mod num
                 }
                 impl RemAssign<&BigUint> for BigUint
                 {
-                    #[inline] fn rem_assign(&mut self, other: &BigUint) {
+                    #[inline] fn rem_assign(&mut self, o:&BigUint) {
                         *self = &*self % other;
                     }
                 }
@@ -12481,13 +12349,13 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: u32) -> BigUint {
-                        rem_digit(self, other as BigDigit).into()
+                    #[inline] fn rem(self, o: u32) -> BigUint {
+                        rem_digit(self, o as BigDigit).into()
                     }
                 }
                 impl RemAssign<u32> for BigUint
                 {
-                    #[inline] fn rem_assign(&mut self, other: u32) {
+                    #[inline] fn rem_assign(&mut self, o: u32) {
                         *self = &*self % other;
                     }
                 }
@@ -12495,18 +12363,18 @@ pub mod num
                 impl Rem<&BigUint> for u32 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(mut self, other: &BigUint) -> BigUint {
+                    #[inline] fn rem(mut self, o:&BigUint) -> BigUint {
                         self %= other;
                         From::from(self)
                     }
                 }
 
                 macro_rules! impl_rem_assign_scalar {
-                    ($scalar:ty, $to_scalar:ident) => {
-                        forward_val_assign_scalar!(impl RemAssign for BigUint, $scalar, rem_assign);
-                        impl RemAssign<&BigUint> for $scalar {
+                    ($s:ty, $to_scalar:ident) => {
+                        forward_val_assign_scalar!(impl RemAssign for BigUint, $s, rem_assign);
+                        impl RemAssign<&BigUint> for $s {
                             #[inline]
-                            fn rem_assign(&mut self, other: &BigUint) {
+                            fn rem_assign(&mut self, o:&BigUint) {
                                 *self = match other.$to_scalar() {
                                     None => *self,
                                     Some(0) => panic!("attempt to divide by zero"),
@@ -12535,14 +12403,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: u64) -> BigUint {
+                    #[inline] fn rem(self, o: u64) -> BigUint {
                         let (_, r) = div_rem(self, From::from(other));
                         r
                     }
                 }
                 impl RemAssign<u64> for BigUint
                 {
-                    #[inline] fn rem_assign(&mut self, other: u64) {
+                    #[inline] fn rem_assign(&mut self, o: u64) {
                         *self = &*self % other;
                     }
                 }
@@ -12550,7 +12418,7 @@ pub mod num
                 impl Rem<BigUint> for u64 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(mut self, other: BigUint) -> BigUint {
+                    #[inline] fn rem(mut self, o: BigUint) -> BigUint {
                         self %= other;
                         From::from(self)
                     }
@@ -12560,7 +12428,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: u128) -> BigUint {
+                    #[inline] fn rem(self, o: u128) -> BigUint {
                         let (_, r) = div_rem(self, From::from(other));
                         r
                     }
@@ -12568,7 +12436,7 @@ pub mod num
 
                 impl RemAssign<u128> for BigUint
                 {
-                    #[inline] fn rem_assign(&mut self, other: u128) {
+                    #[inline] fn rem_assign(&mut self, o: u128) {
                         *self = &*self % other;
                     }
                 }
@@ -12576,7 +12444,7 @@ pub mod num
                 impl Rem<BigUint> for u128 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(mut self, other: BigUint) -> BigUint {
+                    #[inline] fn rem(mut self, o: BigUint) -> BigUint {
                         self %= other;
                         From::from(self)
                     }
@@ -13109,13 +12977,13 @@ pub mod num
                             type Output = BigUint;
 
                             #[inline]
-                            fn mul(self, other: $Other) -> BigUint {
-                                match (&*self.data, &*other.data) {
+                            fn mul(self, o:$Other) -> BigUint {
+                                match (&*self.data, &*o.data) {
                                    
                                     (&[], _) | (_, &[]) => BigUint::ZERO,
                                    
                                     (_, &[digit]) => self * digit,
-                                    (&[digit], _) => other * digit,
+                                    (&[digit], _) => o * digit,
                                    
                                     (x, y) => mul3(x, y),
                                 }
@@ -13134,8 +13002,8 @@ pub mod num
                     ($(impl MulAssign<$Other:ty> for BigUint;)*) => {$(
                         impl MulAssign<$Other> for BigUint {
                             #[inline]
-                            fn mul_assign(&mut self, other: $Other) {
-                                match (&*self.data, &*other.data) {
+                            fn mul_assign(&mut self, o:$Other) {
+                                match (&*self.data, &*o.data) {
                                    
                                     (&[], _) => {},
                                     (_, &[]) => self.set_zero(),
@@ -13164,15 +13032,15 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn mul(mut self, other: u32) -> BigUint {
+                    #[inline] fn mul(mut self, o: u32) -> BigUint {
                         self *= other;
                         self
                     }
                 }
                 impl MulAssign<u32> for BigUint
                 {
-                    #[inline] fn mul_assign(&mut self, other: u32) {
-                        scalar_mul(self, other as BigDigit);
+                    #[inline] fn mul_assign(&mut self, o: u32) {
+                        scalar_mul(self, o as BigDigit);
                     }
                 }
 
@@ -13180,7 +13048,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn mul(mut self, other: u64) -> BigUint {
+                    #[inline] fn mul(mut self, o: u64) -> BigUint {
                         self *= other;
                         self
                     }
@@ -13188,9 +13056,9 @@ pub mod num
                 impl MulAssign<u64> for BigUint {
                     cfg_digit!(
                         #[inline]
-                        fn mul_assign(&mut self, other: u64) {
+                        fn mul_assign(&mut self, o: u64) {
                             if let Some(other) = BigDigit::from_u64(other) {
-                                scalar_mul(self, other);
+                                scalar_mul(self, o);
                             } else {
                                 let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
                                 *self = mul3(&self.data, &[lo, hi]);
@@ -13198,8 +13066,8 @@ pub mod num
                         }
 
                         #[inline]
-                        fn mul_assign(&mut self, other: u64) {
-                            scalar_mul(self, other);
+                        fn mul_assign(&mut self, o: u64) {
+                            scalar_mul(self, o);
                         }
                     );
                 }
@@ -13208,7 +13076,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn mul(mut self, other: u128) -> BigUint {
+                    #[inline] fn mul(mut self, o: u128) -> BigUint {
                         self *= other;
                         self
                     }
@@ -13217,9 +13085,9 @@ pub mod num
                 impl MulAssign<u128> for BigUint {
                     cfg_digit!(
                         #[inline]
-                        fn mul_assign(&mut self, other: u128) {
+                        fn mul_assign(&mut self, o: u128) {
                             if let Some(other) = BigDigit::from_u128(other) {
-                                scalar_mul(self, other);
+                                scalar_mul(self, o);
                             } else {
                                 *self = match super::u32_from_u128(other) {
                                     (0, 0, c, d) => mul3(&self.data, &[d, c]),
@@ -13230,9 +13098,9 @@ pub mod num
                         }
 
                         #[inline]
-                        fn mul_assign(&mut self, other: u128) {
+                        fn mul_assign(&mut self, o: u128) {
                             if let Some(other) = BigDigit::from_u128(other) {
-                                scalar_mul(self, other);
+                                scalar_mul(self, o);
                             } else {
                                 let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
                                 *self = mul3(&self.data, &[lo, hi]);
@@ -13357,7 +13225,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    fn sub(mut self, other: &BigUint) -> BigUint {
+                    fn sub(mut self, o:&BigUint) -> BigUint {
                         self -= other;
                         self
                     }
@@ -13365,8 +13233,8 @@ pub mod num
 
                 impl SubAssign<&BigUint> for BigUint
                 {
-                    fn sub_assign(&mut self, other: &BigUint) {
-                        sub2(&mut self.data[..], &other.data[..]);
+                    fn sub_assign(&mut self, o:&BigUint) {
+                        sub2(&mut self.data[..], &o.data[..]);
                         self.normalize();
                     }
                 }
@@ -13400,7 +13268,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn sub(mut self, other: u32) -> BigUint {
+                    #[inline] fn sub(mut self, o: u32) -> BigUint {
                         self -= other;
                         self
                     }
@@ -13408,7 +13276,7 @@ pub mod num
 
                 impl SubAssign<u32> for BigUint 
                 {
-                    fn sub_assign(&mut self, other: u32) {
+                    fn sub_assign(&mut self, o: u32) {
                         sub2(&mut self.data[..], &[other as BigDigit]);
                         self.normalize();
                     }
@@ -13421,7 +13289,7 @@ pub mod num
                     cfg_digit!(
                         #[inline]
                         fn sub(self, mut other: BigUint) -> BigUint {
-                            if other.data.len() == 0 {
+                            if o.data.len() == 0 {
                                 other.data.push(self);
                             } else {
                                 sub2rev(&[self], &mut other.data[..]);
@@ -13431,7 +13299,7 @@ pub mod num
 
                         #[inline]
                         fn sub(self, mut other: BigUint) -> BigUint {
-                            if other.data.is_empty() {
+                            if o.data.is_empty() {
                                 other.data.push(self as BigDigit);
                             } else {
                                 sub2rev(&[self as BigDigit], &mut other.data[..]);
@@ -13445,7 +13313,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn sub(mut self, other: u64) -> BigUint {
+                    #[inline] fn sub(mut self, o: u64) -> BigUint {
                         self -= other;
                         self
                     }
@@ -13455,14 +13323,14 @@ pub mod num
                 {
                     cfg_digit!(
                         #[inline]
-                        fn sub_assign(&mut self, other: u64) {
+                        fn sub_assign(&mut self, o: u64) {
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
                         }
 
                         #[inline]
-                        fn sub_assign(&mut self, other: u64) {
+                        fn sub_assign(&mut self, o: u64) {
                             sub2(&mut self.data[..], &[other as BigDigit]);
                             self.normalize();
                         }
@@ -13487,7 +13355,7 @@ pub mod num
 
                         #[inline]
                         fn sub(self, mut other: BigUint) -> BigUint {
-                            if other.data.is_empty() {
+                            if o.data.is_empty() {
                                 other.data.push(self);
                             } else {
                                 sub2rev(&[self], &mut other.data[..]);
@@ -13501,7 +13369,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn sub(mut self, other: u128) -> BigUint {
+                    #[inline] fn sub(mut self, o: u128) -> BigUint {
                         self -= other;
                         self
                     }
@@ -13511,14 +13379,14 @@ pub mod num
                 {
                     cfg_digit!(
                         #[inline]
-                        fn sub_assign(&mut self, other: u128) {
+                        fn sub_assign(&mut self, o: u128) {
                             let (a, b, c, d) = super::u32_from_u128(other);
                             sub2(&mut self.data[..], &[d, c, b, a]);
                             self.normalize();
                         }
 
                         #[inline]
-                        fn sub_assign(&mut self, other: u128) {
+                        fn sub_assign(&mut self, o: u128) {
                             let (hi, lo) = ::num::big::digit::from_doublebigdigit(other);
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
@@ -13586,7 +13454,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn bitand(self, other: &BigUint) -> BigUint {
+                    #[inline] fn bitand(self, o:&BigUint) -> BigUint {
                        
                         if self.data.len() <= other.data.len() {
                             self.clone() & other
@@ -13602,18 +13470,18 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn bitand(mut self, other: &BigUint) -> BigUint {
+                    #[inline] fn bitand(mut self, o:&BigUint) -> BigUint {
                         self &= other;
                         self
                     }
                 }
                 impl BitAndAssign<&BigUint> for BigUint
                 {
-                    #[inline] fn bitand_assign(&mut self, other: &BigUint) {
-                        for (ai, &bi) in self.data.iter_mut().zip(other.data.iter()) {
+                    #[inline] fn bitand_assign(&mut self, o:&BigUint) {
+                        for (ai, &bi) in self.data.iter_mut().zip(o.data.iter()) {
                             *ai &= bi;
                         }
-                        self.data.truncate(other.data.len());
+                        self.data.truncate(o.data.len());
                         self.normalize();
                     }
                 }
@@ -13625,18 +13493,18 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    fn bitor(mut self, other: &BigUint) -> BigUint {
+                    fn bitor(mut self, o:&BigUint) -> BigUint {
                         self |= other;
                         self
                     }
                 }
                 impl BitOrAssign<&BigUint> for BigUint
                 {
-                    #[inline] fn bitor_assign(&mut self, other: &BigUint) {
-                        for (ai, &bi) in self.data.iter_mut().zip(other.data.iter()) {
+                    #[inline] fn bitor_assign(&mut self, o:&BigUint) {
+                        for (ai, &bi) in self.data.iter_mut().zip(o.data.iter()) {
                             *ai |= bi;
                         }
-                        if other.data.len() > self.data.len() {
+                        if o.data.len() > self.data.len() {
                             let extra = &other.data[self.data.len()..];
                             self.data.extend(extra.iter().cloned());
                         }
@@ -13650,18 +13518,18 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    fn bitxor(mut self, other: &BigUint) -> BigUint {
+                    fn bitxor(mut self, o:&BigUint) -> BigUint {
                         self ^= other;
                         self
                     }
                 }
                 impl BitXorAssign<&BigUint> for BigUint
                 {
-                    #[inline] fn bitxor_assign(&mut self, other: &BigUint) {
-                        for (ai, &bi) in self.data.iter_mut().zip(other.data.iter()) {
+                    #[inline] fn bitxor_assign(&mut self, o:&BigUint) {
+                        for (ai, &bi) in self.data.iter_mut().zip(o.data.iter()) {
                             *ai ^= bi;
                         }
-                        if other.data.len() > self.data.len() {
+                        if o.data.len() > self.data.len() {
                             let extra = &other.data[self.data.len()..];
                             self.data.extend(extra.iter().cloned());
                         }
@@ -15441,8 +15309,8 @@ pub mod num
                     }
                 }
 
-                #[inline] fn clone_from(&mut self, other: &Self) {
-                    self.data.clone_from(&other.data);
+                #[inline] fn clone_from(&mut self, o:&Self) {
+                    self.data.clone_from(&o.data);
                 }
             }
 
@@ -15456,9 +15324,9 @@ pub mod num
 
             impl PartialEq for BigUint
             {
-                #[inline] fn eq(&self, other: &BigUint) -> bool {
+                #[inline] fn eq(&self, o:&BigUint) -> bool {
                     debug_assert!(self.data.last() != Some(&0));
-                    debug_assert!(other.data.last() != Some(&0));
+                    debug_assert!(o.data.last() != Some(&0));
                     self.data == other.data
                 }
             }
@@ -15467,15 +15335,15 @@ pub mod num
 
             impl PartialOrd for BigUint
             {
-                #[inline] fn partial_cmp(&self, other: &BigUint) -> Option<Ordering> {
+                #[inline] fn partial_cmp(&self, o:&BigUint) -> Option<Ordering> {
                     Some(self.cmp(other))
                 }
             }
 
             impl Ord for BigUint
             {
-                #[inline] fn cmp(&self, other: &BigUint) -> Ordering {
-                    cmp_slice(&self.data[..], &other.data[..])
+                #[inline] fn cmp(&self, o:&BigUint) -> Ordering {
+                    cmp_slice(&self.data[..], &o.data[..])
                 }
             }
 
@@ -15486,7 +15354,7 @@ pub mod num
 
                 match Ord::cmp(&a.len(), &b.len()) {
                     Ordering::Equal => Iterator::cmp(a.iter().rev(), b.iter().rev()),
-                    other => other,
+                    other => o,
                 }
             }
 
@@ -15575,26 +15443,26 @@ pub mod num
 
             impl Integer for BigUint
             {
-                #[inline] fn div_rem(&self, other: &BigUint) -> (BigUint, BigUint) {
-                    division::div_rem_ref(self, other)
+                #[inline] fn div_rem(&self, o:&BigUint) -> (BigUint, BigUint) {
+                    division::div_rem_ref(self, o)
                 }
 
-                #[inline] fn div_floor(&self, other: &BigUint) -> BigUint {
-                    let (d, _) = division::div_rem_ref(self, other);
+                #[inline] fn div_floor(&self, o:&BigUint) -> BigUint {
+                    let (d, _) = division::div_rem_ref(self, o);
                     d
                 }
 
-                #[inline] fn mod_floor(&self, other: &BigUint) -> BigUint {
-                    let (_, m) = division::div_rem_ref(self, other);
+                #[inline] fn mod_floor(&self, o:&BigUint) -> BigUint {
+                    let (_, m) = division::div_rem_ref(self, o);
                     m
                 }
 
-                #[inline] fn div_mod_floor(&self, other: &BigUint) -> (BigUint, BigUint) {
-                    division::div_rem_ref(self, other)
+                #[inline] fn div_mod_floor(&self, o:&BigUint) -> (BigUint, BigUint) {
+                    division::div_rem_ref(self, o)
                 }
 
-                #[inline] fn div_ceil(&self, other: &BigUint) -> BigUint {
-                    let (d, m) = division::div_rem_ref(self, other);
+                #[inline] fn div_ceil(&self, o:&BigUint) -> BigUint {
+                    let (d, m) = division::div_rem_ref(self, o);
                     if m.is_zero() {
                         d
                     } else {
@@ -15602,7 +15470,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn gcd(&self, other: &Self) -> Self
+                #[inline] fn gcd(&self, o:&Self) -> Self
                 {
                     #[inline] fn twos(x: &BigUint) -> u64 {
                         x.trailing_zeros().unwrap_or(0)
@@ -15612,7 +15480,7 @@ pub mod num
                     if self.is_zero() {
                         return other.clone();
                     }
-                    if other.is_zero() {
+                    if o.is_zero() {
                         return self.clone();
                     }
                     let mut m = self.clone();
@@ -15636,7 +15504,7 @@ pub mod num
                     n << shift
                 }
 
-                #[inline] fn lcm(&self, other: &BigUint) -> BigUint
+                #[inline] fn lcm(&self, o:&BigUint) -> BigUint
                 {
                     if self.is_zero() && other.is_zero() {
                         Self::ZERO
@@ -15645,7 +15513,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn gcd_lcm(&self, other: &Self) -> (Self, Self)
+                #[inline] fn gcd_lcm(&self, o:&Self) -> (Self, Self)
                 {
                     let gcd = self.gcd(other);
                     let lcm = if gcd.is_zero() {
@@ -15656,12 +15524,12 @@ pub mod num
                     (gcd, lcm)
                 }
 
-                #[inline] fn divides(&self, other: &BigUint) -> bool {
+                #[inline] fn divides(&self, o:&BigUint) -> bool {
                     self.is_multiple_of(other)
                 }
 
-                #[inline] fn is_multiple_of(&self, other: &BigUint) -> bool {
-                    if other.is_zero() {
+                #[inline] fn is_multiple_of(&self, o:&BigUint) -> bool {
+                    if o.is_zero() {
                         return self.is_zero();
                     }
                     (self % other).is_zero()
@@ -15679,7 +15547,7 @@ pub mod num
                     !self.is_even()
                 }
 
-                #[inline] fn next_multiple_of(&self, other: &Self) -> Self {
+                #[inline] fn next_multiple_of(&self, o:&Self) -> Self {
                     let m = self.mod_floor(other);
                     if m.is_zero() {
                         self.clone()
@@ -15688,7 +15556,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn prev_multiple_of(&self, other: &Self) -> Self {
+                #[inline] fn prev_multiple_of(&self, o:&Self) -> Self {
                     self - self.mod_floor(other)
                 }
 
@@ -15892,7 +15760,6 @@ pub mod num
             {
 
                 pub const ZERO: Self = BigUint { data: Vec::new() };
-
                 #[inline] pub fn new(digits: Vec<u32>) -> BigUint
                 {
                     let mut big = Self::ZERO;
@@ -16164,7 +16031,6 @@ pub mod num
 
             impl ::num::traits::FromBytes for BigUint {
                 type Bytes = [u8];
-
                 fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                     Self::from_bytes_be(bytes)
                 }
@@ -16176,7 +16042,6 @@ pub mod num
 
             impl ::num::traits::ToBytes for BigUint {
                 type Bytes = Vec<u8>;
-
                 fn to_be_bytes(&self) -> Self::Bytes {
                     self.to_bytes_be()
                 }
@@ -16824,10 +16689,10 @@ pub mod num
         
         impl<T: Clone + Integer> Ord for Ratio<T> 
         {
-            #[inline] fn cmp(&self, other: &Self) -> cmp::Ordering {
+            #[inline] fn cmp(&self, o:&Self) -> cmp::Ordering {
                
                 if self.denom == other.denom {
-                    let ord = self.numer.cmp(&other.numer);
+                    let ord = self.numer.cmp(&o.numer);
                     return if self.denom < T::zero() {
                         ord.reverse()
                     } else {
@@ -16840,7 +16705,7 @@ pub mod num
                     if self.numer.is_zero() {
                         return cmp::Ordering::Equal;
                     }
-                    let ord = self.denom.cmp(&other.denom);
+                    let ord = self.denom.cmp(&o.denom);
                     return if self.numer < T::zero() {
                         ord
                     } else {
@@ -16854,7 +16719,7 @@ pub mod num
 
                
                 let (self_int, self_rem) = self.numer.div_mod_floor(&self.denom);
-                let (other_int, other_rem) = other.numer.div_mod_floor(&other.denom);
+                let (other_int, other_rem) = other.numer.div_mod_floor(&o.denom);
                 match self_int.cmp(&other_int) {
                     cmp::Ordering::Greater => cmp::Ordering::Greater,
                     cmp::Ordering::Less => cmp::Ordering::Less,
@@ -16866,7 +16731,7 @@ pub mod num
                             (false, false) => {
                                
                                 let self_recip = Ratio::new_raw(self.denom.clone(), self_rem);
-                                let other_recip = Ratio::new_raw(other.denom.clone(), other_rem);
+                                let other_recip = Ratio::new_raw(o.denom.clone(), other_rem);
                                 self_recip.cmp(&other_recip).reverse()
                             }
                         }
@@ -16877,14 +16742,14 @@ pub mod num
 
         impl<T: Clone + Integer> PartialOrd for Ratio<T>
         {
-            #[inline] fn partial_cmp(&self, other: &Self) -> Option<cmp::Ordering> {
+            #[inline] fn partial_cmp(&self, o:&Self) -> Option<cmp::Ordering> {
                 Some(self.cmp(other))
             }
         }
 
         impl<T: Clone + Integer> PartialEq for Ratio<T> 
         {
-            #[inline] fn eq(&self, other: &Self) -> bool {
+            #[inline] fn eq(&self, o:&Self) -> bool {
                 self.cmp(other) == cmp::Ordering::Equal
             }
         }
@@ -16895,7 +16760,6 @@ pub mod num
         {
             fn hash<H: Hasher>(&self, state: &mut H) {
                 recurse(&self.numer, &self.denom, state);
-
                 fn recurse<T: Integer + Hash, H: Hasher>(numer: &T, denom: &T, state: &mut H) {
                     if !denom.is_zero() {
                         let (int, rem) = numer.div_mod_floor(denom);
@@ -16979,11 +16843,11 @@ pub mod num
 
             impl<T: Clone + Integer + NumAssign> AddAssign for Ratio<T>
             {
-                fn add_assign(&mut self, other: Ratio<T>) {
+                fn add_assign(&mut self, o: Ratio<T>) {
                     if self.denom == other.denom {
                         self.numer += other.numer
                     } else {
-                        let lcm = self.denom.lcm(&other.denom);
+                        let lcm = self.denom.lcm(&o.denom);
                         let lhs_numer = self.numer.clone() * (lcm.clone() / self.denom.clone());
                         let rhs_numer = other.numer * (lcm.clone() / other.denom);
                         self.numer = lhs_numer + rhs_numer;
@@ -16995,9 +16859,9 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> DivAssign for Ratio<T>
             {
-                fn div_assign(&mut self, other: Ratio<T>) {
-                    let gcd_ac = self.numer.gcd(&other.numer);
-                    let gcd_bd = self.denom.gcd(&other.denom);
+                fn div_assign(&mut self, o: Ratio<T>) {
+                    let gcd_ac = self.numer.gcd(&o.numer);
+                    let gcd_bd = self.denom.gcd(&o.denom);
                     self.numer /= gcd_ac.clone();
                     self.numer *= other.denom / gcd_bd.clone();
                     self.denom /= gcd_bd;
@@ -17008,9 +16872,9 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> MulAssign for Ratio<T>
             {
-                fn mul_assign(&mut self, other: Ratio<T>) {
-                    let gcd_ad = self.numer.gcd(&other.denom);
-                    let gcd_bc = self.denom.gcd(&other.numer);
+                fn mul_assign(&mut self, o: Ratio<T>) {
+                    let gcd_ad = self.numer.gcd(&o.denom);
+                    let gcd_bc = self.denom.gcd(&o.numer);
                     self.numer /= gcd_ad.clone();
                     self.numer *= other.numer / gcd_bc.clone();
                     self.denom /= gcd_bc;
@@ -17021,11 +16885,11 @@ pub mod num
 
             impl<T: Clone + Integer + NumAssign> RemAssign for Ratio<T>
             {
-                fn rem_assign(&mut self, other: Ratio<T>) {
+                fn rem_assign(&mut self, o: Ratio<T>) {
                     if self.denom == other.denom {
                         self.numer %= other.numer
                     } else {
-                        let lcm = self.denom.lcm(&other.denom);
+                        let lcm = self.denom.lcm(&o.denom);
                         let lhs_numer = self.numer.clone() * (lcm.clone() / self.denom.clone());
                         let rhs_numer = other.numer * (lcm.clone() / other.denom);
                         self.numer = lhs_numer % rhs_numer;
@@ -17037,11 +16901,11 @@ pub mod num
 
             impl<T: Clone + Integer + NumAssign> SubAssign for Ratio<T>
             {
-                fn sub_assign(&mut self, other: Ratio<T>) {
+                fn sub_assign(&mut self, o: Ratio<T>) {
                     if self.denom == other.denom {
                         self.numer -= other.numer
                     } else {
-                        let lcm = self.denom.lcm(&other.denom);
+                        let lcm = self.denom.lcm(&o.denom);
                         let lhs_numer = self.numer.clone() * (lcm.clone() / self.denom.clone());
                         let rhs_numer = other.numer * (lcm.clone() / other.denom);
                         self.numer = lhs_numer - rhs_numer;
@@ -17053,7 +16917,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> AddAssign<T> for Ratio<T>
             {
-                fn add_assign(&mut self, other: T) {
+                fn add_assign(&mut self, o: T) {
                     self.numer += self.denom.clone() * other;
                     self.reduce();
                 }
@@ -17061,8 +16925,8 @@ pub mod num
 
             impl<T: Clone + Integer + NumAssign> DivAssign<T> for Ratio<T>
             {
-                fn div_assign(&mut self, other: T) {
-                    let gcd = self.numer.gcd(&other);
+                fn div_assign(&mut self, o: T) {
+                    let gcd = self.numer.gcd(&o);
                     self.numer /= gcd.clone();
                     self.denom *= other / gcd;
                     self.reduce();
@@ -17071,8 +16935,8 @@ pub mod num
 
             impl<T: Clone + Integer + NumAssign> MulAssign<T> for Ratio<T>
             {
-                fn mul_assign(&mut self, other: T) {
-                    let gcd = self.denom.gcd(&other);
+                fn mul_assign(&mut self, o: T) {
+                    let gcd = self.denom.gcd(&o);
                     self.denom /= gcd.clone();
                     self.numer *= other / gcd;
                     self.reduce();
@@ -17081,7 +16945,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> RemAssign<T> for Ratio<T>
             {
-                fn rem_assign(&mut self, other: T) {
+                fn rem_assign(&mut self, o: T) {
                     self.numer %= self.denom.clone() * other;
                     self.reduce();
                 }
@@ -17089,24 +16953,24 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> SubAssign<T> for Ratio<T>
             {
-                fn sub_assign(&mut self, other: T) {
+                fn sub_assign(&mut self, o: T) {
                     self.numer -= self.denom.clone() * other;
                     self.reduce();
                 }
             }
 
             macro_rules! forward_op_assign {
-                (impl $imp:ident, $method:ident) => {
-                    impl<'a, T: Clone + Integer + NumAssign> $imp<&'a Ratio<T>> for Ratio<T> {
+                (impl $l:ident, $m:ident) => {
+                    impl<'a, T: Clone + Integer + NumAssign> $l<&'a Ratio<T>> for Ratio<T> {
                         #[inline]
-                        fn $method(&mut self, other: &Ratio<T>) {
-                            self.$method(other.clone())
+                        fn $m(&mut self, o:&Ratio<T>) {
+                            self.$m(o.clone())
                         }
                     }
-                    impl<'a, T: Clone + Integer + NumAssign> $imp<&'a T> for Ratio<T> {
+                    impl<'a, T: Clone + Integer + NumAssign> $l<&'a T> for Ratio<T> {
                         #[inline]
-                        fn $method(&mut self, other: &T) {
-                            self.$method(other.clone())
+                        fn $m(&mut self, o:&T) {
+                            self.$m(o.clone())
                         }
                     }
                 };
@@ -17175,26 +17039,26 @@ pub mod num
 
         macro_rules! arith_impl
         {
-            (impl $imp:ident, $method:ident) => {
-                forward_all_binop!(impl $imp, $method);
+            (impl $l:ident, $m:ident) => {
+                forward_all_binop!(impl $l, $m);
                
-                impl<T: Clone + Integer> $imp<Ratio<T>> for Ratio<T> {
+                impl<T: Clone + Integer> $l<Ratio<T>> for Ratio<T> {
                     type Output = Ratio<T>;
-                    #[inline] fn $method(self, rhs: Ratio<T>) -> Ratio<T> {
+                    #[inline] fn $m(self, rhs: Ratio<T>) -> Ratio<T> {
                         if self.denom == rhs.denom {
-                            return Ratio::new(self.numer.$method(rhs.numer), rhs.denom);
+                            return Ratio::new(self.numer.$m(rhs.numer), rhs.denom);
                         }
                         let lcm = self.denom.lcm(&rhs.denom);
                         let lhs_numer = self.numer * (lcm.clone() / self.denom);
                         let rhs_numer = rhs.numer * (lcm.clone() / rhs.denom);
-                        Ratio::new(lhs_numer.$method(rhs_numer), lcm)
+                        Ratio::new(lhs_numer.$m(rhs_numer), lcm)
                     }
                 }
                
-                impl<T: Clone + Integer> $imp<T> for Ratio<T> {
+                impl<T: Clone + Integer> $l<T> for Ratio<T> {
                     type Output = Ratio<T>;
-                    #[inline] fn $method(self, rhs: T) -> Ratio<T> {
-                        Ratio::new(self.numer.$method(self.denom.clone() * rhs), self.denom)
+                    #[inline] fn $m(self, rhs: T) -> Ratio<T> {
+                        Ratio::new(self.numer.$m(self.denom.clone() * rhs), self.denom)
                     }
                 }
             };
@@ -17264,14 +17128,14 @@ pub mod num
         
         macro_rules! checked_arith_impl
         {
-            (impl $imp:ident, $method:ident) => {
-                impl<T: Clone + Integer + CheckedMul + $imp> $imp for Ratio<T> {
-                    #[inline] fn $method(&self, rhs: &Ratio<T>) -> Option<Ratio<T>> {
+            (impl $l:ident, $m:ident) => {
+                impl<T: Clone + Integer + CheckedMul + $l> $l for Ratio<T> {
+                    #[inline] fn $m(&self, rhs: &Ratio<T>) -> Option<Ratio<T>> {
                         let gcd = self.denom.clone().gcd(&rhs.denom);
                         let lcm = (self.denom.clone() / gcd.clone()).checked_mul(&rhs.denom)?;
                         let lhs_numer = (lcm.clone() / self.denom.clone()).checked_mul(&self.numer)?;
                         let rhs_numer = (lcm.clone() / rhs.denom.clone()).checked_mul(&rhs.numer)?;
-                        Some(Ratio::new(lhs_numer.$method(&rhs_numer)?, lcm))
+                        Some(Ratio::new(lhs_numer.$m(&rhs_numer)?, lcm))
                     }
                 }
             };
@@ -17413,8 +17277,8 @@ pub mod num
                 }
             }
 
-            #[inline] fn abs_sub(&self, other: &Ratio<T>) -> Ratio<T> {
-                if *self <= *other {
+            #[inline] fn abs_sub(&self, o:&Ratio<T>) -> Ratio<T> {
+                if *self <= *o {
                     Zero::zero()
                 } else {
                     self - other
@@ -18208,9 +18072,9 @@ pub mod process
             */
             macro_rules! suffixed_numbers
             {
-                ($($name:ident => $kind:ident,)*) => 
+                ($($n:ident => $kind:ident,)*) => 
                 ($(
-                    pub fn $name(n: $kind) -> Literal 
+                    pub fn $n(n: $kind) -> Literal 
                     {
                         Literal::_new(format!(concat!("{}", stringify!($kind)), n))
                     }
@@ -18219,9 +18083,9 @@ pub mod process
 
             macro_rules! unsuffixed_numbers
             {
-                ($($name:ident => $kind:ident,)*) => 
+                ($($n:ident => $kind:ident,)*) => 
                 ($(
-                    pub fn $name(n: $kind) -> Literal { Literal::_new(n.to_string()) }
+                    pub fn $n(n: $kind) -> Literal { Literal::_new(n.to_string()) }
                 )*)
             }
 
@@ -18272,13 +18136,13 @@ pub mod process
                 pub fn from_str_checked(src: &str) -> Result<Self, LexError>
                
                 {
-                    let mut cursor = get_cursor(src);
+                    let mut q = get_cursor(src);
                     const BYTE_ORDER_MARK: &str = "\u{feff}";
-                    if cursor.starts_with(BYTE_ORDER_MARK) {
-                        cursor = cursor.advance(BYTE_ORDER_MARK.len());
+                    if q.starts_with(BYTE_ORDER_MARK) {
+                        q = q.advance(BYTE_ORDER_MARK.len());
                     }
 
-                    parse::token_stream(cursor)
+                    parse::token_stream(q)
                 }
                 
                 pub fn from_str_unchecked(src: &str) -> Self {
@@ -18470,10 +18334,10 @@ pub mod process
 
             impl iter::FromIterator<TokenTree> for TokenStream
             {
-                fn from_iter<I: IntoIterator<Item = TokenTree>>(tokens: I) -> Self
+                fn from_iter<I: IntoIterator<Item = TokenTree>>(k: I) -> Self
                 {
                     let mut stream = TokenStream::new();
-                    stream.extend(tokens);
+                    stream.extend(k);
                     stream
                 }
             }
@@ -18494,10 +18358,10 @@ pub mod process
 
             impl Extend<TokenTree> for TokenStream
             {
-                fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, tokens: I)
+                fn extend<I: IntoIterator<Item = TokenTree>>(&mut self, k: I)
                 {
                     let mut vec = self.inner.make_mut();
-                    tokens
+                    k
                         .into_iter()
                         .for_each(|token| push_token_from_proc_macro(vec.as_mut(), token));
                 }
@@ -18724,7 +18588,7 @@ pub mod process
                     *self
                 }
 
-                pub fn located_at( &self, other: Span) -> Span {
+                pub fn located_at( &self, o: Span) -> Span {
                     other
                 }
 
@@ -18783,7 +18647,7 @@ pub mod process
                     None
                 }
 
-                pub fn join( &self, other: Span) -> Option<Span>
+                pub fn join( &self, o: Span) -> Option<Span>
                     {
                     #[cfg(fuzzing)]
                     return {
@@ -18799,8 +18663,8 @@ pub mod process
                             return None;
                         }
                         Some(Span {
-                            lo: cmp::min(self.lo, other.lo),
-                            hi: cmp::max(self.hi, other.hi),
+                            lo: cmp::min(self.lo, o.lo),
+                            hi: cmp::max(self.hi, o.hi),
                         })
                     })
                 }
@@ -19035,7 +18899,7 @@ pub mod process
 
             impl PartialEq for Ident
             {
-                fn eq( &self, other: &Ident) -> bool
+                fn eq( &self, o:&Ident) -> bool
         {
                     self.sym == other.sym && self.raw == other.raw
                 }
@@ -19044,13 +18908,13 @@ pub mod process
             impl<T> PartialEq<T> for Ident where
             T: ?Sized + AsRef<str>
             {
-                fn eq( &self, other: &T) -> bool
+                fn eq( &self, o:&T) -> bool
                 {
                     let other = other.as_ref();
                     if self.raw {
                         other.starts_with("r#") && *self.sym == other[2..]
                     } else {
-                        *self.sym == *other
+                        *self.sym == *o
                     }
                 }
             }
@@ -19094,18 +18958,18 @@ pub mod process
 
                 pub fn from_str_checked(repr: &str) -> Result<Self, LexError>
                 {
-                    let mut cursor = get_cursor(repr);
-                            let lo = cursor.off;
+                    let mut q = get_cursor(repr);
+                            let lo = q.off;
 
-                    let negative = cursor.starts_with_char('-');
+                    let negative = q.starts_with_char('-');
                     if negative {
-                        cursor = cursor.advance(1);
-                        if !cursor.starts_with_fn(|ch| ch.is_ascii_digit()) {
+                        q = q.advance(1);
+                        if !q.starts_with_fn(|ch| ch.is_ascii_digit()) {
                             return Err(LexError::call_site());
                         }
                     }
 
-                    if let Ok((rest, mut literal)) = parse::literal(cursor) {
+                    if let Ok((rest, mut literal)) = parse::literal(q) {
                         if rest.is_empty() {
                             if negative {
                                 literal.repr.insert(0, '-');
@@ -19862,9 +19726,9 @@ pub mod process
                     } */
                 }
 
-                pub fn resolved_at( &self, other: Span) -> Span 
+                pub fn resolved_at( &self, o: Span) -> Span 
                 {
-                    match (self, other) {
+                    match (self, o) {
                         (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(a.resolved_at(b)),
                         (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.resolved_at(b)),
                         (Span::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
@@ -19872,9 +19736,9 @@ pub mod process
                     }
                 }
 
-                pub fn located_at( &self, other: Span) -> Span 
+                pub fn located_at( &self, o: Span) -> Span 
                 {
-                    match (self, other) {
+                    match (self, o) {
                         (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(a.located_at(b)),
                         (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.located_at(b)),
                         (Span::Compiler(_), Span::Fallback(_)) => mismatch(line!()),
@@ -19955,10 +19819,10 @@ pub mod process
                     }
                 }
 
-                pub fn join( &self, other: Span) -> Option<Span> 
+                pub fn join( &self, o: Span) -> Option<Span> 
                
                 {
-                    let ret = match (self, other) {
+                    let ret = match (self, o) {
                         #[cfg(proc_macro_span)]
                         (Span::Compiler(a), Span::Compiler(b)) => Span::Compiler(proc_macro_span::join(a, b)?),
                         (Span::Fallback(a), Span::Fallback(b)) => Span::Fallback(a.join(b)?),
@@ -19967,9 +19831,9 @@ pub mod process
                     Some(ret)
                 }
                 
-                pub fn eq( &self, other: &Span) -> bool 
+                pub fn eq( &self, o:&Span) -> bool 
                 {
-                    match (self, other)
+                    match (self, o)
                     {
                         //(Span::Compiler(a), Span::Compiler(b)) => a.eq(b),
                         (Span::Fallback(a), Span::Fallback(b)) => a.eq(b),
@@ -20222,9 +20086,9 @@ pub mod process
 
             impl PartialEq for Ident           
             {
-                fn eq( &self, other: &Ident) -> bool
+                fn eq( &self, o:&Ident) -> bool
         {
-                    match (self, other) {
+                    match (self, o) {
                         (Ident::Compiler(t), Ident::Compiler(o)) => t.to_string() == o.to_string(),
                         (Ident::Fallback(t), Ident::Fallback(o)) => t == o,
                         (Ident::Compiler(_), Ident::Fallback(_)) => mismatch(line!()),
@@ -20236,7 +20100,7 @@ pub mod process
             impl<T> PartialEq<T> for Ident where
             T: ?Sized + AsRef<str>
             {
-                fn eq( &self, other: &T) -> bool
+                fn eq( &self, o:&T) -> bool
                 {
                     let other = other.as_ref();
                     match self {
@@ -20277,12 +20141,12 @@ pub mod process
 
             macro_rules! suffixed_numbers 
             {
-                ($($name:ident => $kind:ident,)*) => ($(
-                    pub fn $name(n: $kind) -> Literal {
+                ($($n:ident => $kind:ident,)*) => ($(
+                    pub fn $n(n: $kind) -> Literal {
                         if inside_proc_macro() {
-                            Literal::Compiler(proc_macro::Literal::$name(n))
+                            Literal::Compiler(proc_macro::Literal::$n(n))
                         } else {
-                            Literal::Fallback(fallback::Literal::$name(n))
+                            Literal::Fallback(fallback::Literal::$n(n))
                         }
                     }
                 )*)
@@ -20290,12 +20154,12 @@ pub mod process
 
             macro_rules! unsuffixed_integers 
             {
-                ($($name:ident => $kind:ident,)*) => ($(
-                    pub fn $name(n: $kind) -> Literal {
+                ($($n:ident => $kind:ident,)*) => ($(
+                    pub fn $n(n: $kind) -> Literal {
                         if inside_proc_macro() {
-                            Literal::Compiler(proc_macro::Literal::$name(n))
+                            Literal::Compiler(proc_macro::Literal::$n(n))
                         } else {
-                            Literal::Fallback(fallback::Literal::$name(n))
+                            Literal::Fallback(fallback::Literal::$n(n))
                         }
                     }
                 )*)
@@ -20540,17 +20404,17 @@ pub mod process
 
             impl Ord for LineColumn
             {
-                fn cmp( &self, other: &Self) -> Ordering
+                fn cmp( &self, o:&Self) -> Ordering
                 {
                     self.line
-                    .cmp(&other.line)
-                    .then(self.column.cmp(&other.column))
+                    .cmp(&o.line)
+                    .then(self.column.cmp(&o.column))
                 }
             }
 
             impl PartialOrd for LineColumn
             {
-                fn partial_cmp( &self, other: &Self) -> Option<Ordering>
+                fn partial_cmp( &self, o:&Self) -> Option<Ordering>
                 {
                     Some(self.cmp(other))
                 }
@@ -20673,8 +20537,8 @@ pub mod process
                             && (!s.starts_with("///") || s.starts_with("////"))
                             && !s.starts_with("//!")
                         {
-                            let (cursor, _) = take_until_newline_or_eof(s);
-                            s = cursor;
+                            let (q, _) = take_until_newline_or_eof(s);
+                            s = q;
                             continue;
                         } else if s.starts_with("/**/") {
                             s = s.advance(4);
@@ -20833,14 +20697,14 @@ pub mod process
                 }
             }
 
-            fn lex_error(cursor: Cursor) -> LexError
+            fn lex_error(q: Cursor) -> LexError
             {
                 LexError
                 {
                     span: Span
                     {
-                        lo:cursor.off,
-                        hi:cursor.off,
+                        lo:q.off,
+                        hi:q.off,
                     },
                 }
             }
@@ -21763,7 +21627,7 @@ pub mod process
                 pub fn file(this: &Span) -> String { this.file() }
                 pub fn local_file(this: &Span) -> Option<PathBuf>
                     { this.local_file() }
-                pub fn join(this: &Span, other: Span) -> Option<Span> 
+                pub fn join(this: &Span, o: Span) -> Option<Span> 
                 {
                     //this.join(other)
                     None
@@ -22100,7 +21964,7 @@ pub mod process
             fn from_str(src: &str) -> Result<TokenStream, LexError>
             {
                 match imp::TokenStream::from_str_checked(src) {
-                    Ok(tokens) => Ok(TokenStream::_new(tokens)),
+                    Ok(k) => Ok(TokenStream::_new(k)),
                     Err(lex) => Err(LexError {
                         inner: lex,
                         _marker: marker::MARKER,
@@ -22241,15 +22105,15 @@ pub mod process
             }
 
 
-            pub fn resolved_at( &self, other: Span) -> Span 
+            pub fn resolved_at( &self, o: Span) -> Span 
             {
-                Span::_new(self.inner.resolved_at(other.inner))
+                Span::_new(self.inner.resolved_at(o.inner))
             }
 
 
-            pub fn located_at( &self, other: Span) -> Span 
+            pub fn located_at( &self, o: Span) -> Span 
             {
-                Span::_new(self.inner.located_at(other.inner))
+                Span::_new(self.inner.located_at(o.inner))
             }
 
             pub fn unwrap( self ) -> proc_macro::Span 
@@ -22294,15 +22158,15 @@ pub mod process
                 self.inner.local_file()
             }
 
-            pub fn join( &self, other: Span) -> Option<Span>
+            pub fn join( &self, o: Span) -> Option<Span>
            
             {
-                self.inner.join(other.inner).map(Span::_new)
+                self.inner.join(o.inner).map(Span::_new)
             }
 
-            pub fn eq( &self, other: &Span) -> bool
+            pub fn eq( &self, o:&Span) -> bool
             {
-                self.inner.eq(&other.inner)
+                self.inner.eq(&o.inner)
             }
 
             pub fn source_text( &self ) -> Option<String>
@@ -22626,7 +22490,7 @@ pub mod process
 
         impl PartialEq for Ident       
         {
-            fn eq( &self, other: &Ident) -> bool
+            fn eq( &self, o:&Ident) -> bool
             {
                 self.inner == other.inner
             }
@@ -22635,7 +22499,7 @@ pub mod process
         impl<T> PartialEq<T> for Ident where
         T: ?Sized + AsRef<str>       
         {
-            fn eq( &self, other: &T) -> bool
+            fn eq( &self, o:&T) -> bool
             {
                 self.inner == other
             }
@@ -22645,7 +22509,7 @@ pub mod process
 
         impl PartialOrd for Ident       
         {
-            fn partial_cmp( &self, other: &Ident) -> Option<Ordering>
+            fn partial_cmp( &self, o:&Ident) -> Option<Ordering>
                     {
                 Some(self.cmp(other))
             }
@@ -22654,9 +22518,9 @@ pub mod process
         impl Ord for Ident 
        
         {
-            fn cmp( &self, other: &Ident) -> Ordering
+            fn cmp( &self, o:&Ident) -> Ordering
             {
-                self.to_string().cmp(&other.to_string())
+                self.to_string().cmp(&o.to_string())
             }
         }
 
@@ -22693,22 +22557,22 @@ pub mod process
 
         macro_rules! suffixed_int_literals
         {
-            ($($name:ident => $kind:ident,)*) => 
+            ($($n:ident => $kind:ident,)*) => 
             ($(
 
-                pub fn $name(n: $kind) -> Literal 
+                pub fn $n(n: $kind) -> Literal 
                 {
-                    Literal::_new(imp::Literal::$name(n))
+                    Literal::_new(imp::Literal::$n(n))
                 }
             )*);
         }
 
         macro_rules! unsuffixed_int_literals 
         {
-            ($($name:ident => $kind:ident,)*) => ($(
+            ($($n:ident => $kind:ident,)*) => ($(
 
-                pub fn $name(n: $kind) -> Literal {
-                    Literal::_new(imp::Literal::$name(n))
+                pub fn $n(n: $kind) -> Literal {
+                    Literal::_new(imp::Literal::$n(n))
                 }
             )*)
         }
@@ -22874,7 +22738,7 @@ pub mod ptr
 pub mod quote
 {
     /*!
-    Provides the [`quote!`] macro for turning Rust syntax tree data structures into tokens of source code. */
+    Provides the [`quote!`] macro for turning Rust syntax tree data structures into k of source code. */
     use ::
     {
         *,
@@ -23068,13 +22932,13 @@ pub mod quote
 
         pub trait ToTokens {
 
-            fn to_tokens(&self, tokens: &mut TokenStream);
+            fn to_tokens(&self, k: &mut TokenStream);
 
             fn to_token_stream(&self) -> TokenStream
             {
-                let mut tokens = TokenStream::new();
-                self.to_tokens(&mut tokens);
-                tokens
+                let mut k = TokenStream::new();
+                self.to_tokens(&mut k);
+                k
             }
 
             fn into_token_stream(self) -> TokenStream where
@@ -23086,69 +22950,69 @@ pub mod quote
         }
 
         impl<'a, T: ?Sized + ToTokens> ToTokens for &'a T {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
+            fn to_tokens(&self, k: &mut TokenStream) {
+                (**self).to_tokens(k);
             }
         }
 
         impl<'a, T: ?Sized + ToTokens> ToTokens for &'a mut T {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
+            fn to_tokens(&self, k: &mut TokenStream) {
+                (**self).to_tokens(k);
             }
         }
 
         impl<'a, T: ?Sized + ToOwned + ToTokens> ToTokens for Cow<'a, T>
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
+            fn to_tokens(&self, k: &mut TokenStream) {
+                (**self).to_tokens(k);
             }
         }
 
         impl<T: ?Sized + ToTokens> ToTokens for Box<T>
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
+            fn to_tokens(&self, k: &mut TokenStream) {
+                (**self).to_tokens(k);
             }
         }
 
         impl<T: ?Sized + ToTokens> ToTokens for Rc<T>
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                (**self).to_tokens(tokens);
+            fn to_tokens(&self, k: &mut TokenStream) {
+                (**self).to_tokens(k);
             }
         }
 
         impl<T: ToTokens> ToTokens for Option<T>
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
+            fn to_tokens(&self, k: &mut TokenStream) {
                 if let Some(ref t) = *self {
-                    t.to_tokens(tokens);
+                    t.to_tokens(k);
                 }
             }
         }
 
         impl ToTokens for str 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(Literal::string(self));
+            fn to_tokens(&self, k: &mut TokenStream) {
+                k.append(Literal::string(self));
             }
         }
 
         impl ToTokens for String 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream)
+            fn to_tokens(&self, k: &mut TokenStream)
             {
-                self.as_str().to_tokens(tokens);
+                self.as_str().to_tokens(k);
             }
         }
 
         macro_rules! primitive 
         {
-            ($($t:ident => $name:ident)*) => {
+            ($($t:ident => $n:ident)*) => {
                 $(
                     impl ToTokens for $t {
-                        fn to_tokens(&self, tokens: &mut TokenStream) {
-                            tokens.append(Literal::$name(*self));
+                        fn to_tokens(&self, k: &mut TokenStream) {
+                            k.append(Literal::$n(*self));
                         }
                     }
                 )*
@@ -23177,44 +23041,44 @@ pub mod quote
 
         impl ToTokens for char 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(Literal::character(*self));
+            fn to_tokens(&self, k: &mut TokenStream) {
+                k.append(Literal::character(*self));
             }
         }
 
         impl ToTokens for bool 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
+            fn to_tokens(&self, k: &mut TokenStream) {
                 let word = if *self { "true" } else { "false" };
-                tokens.append(Ident::new(word, Span::call_site()));
+                k.append(Ident::new(word, Span::call_site()));
             }
         }
 
         impl ToTokens for Group 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
+            fn to_tokens(&self, k: &mut TokenStream) {
+                k.append(self.clone());
             }
         }
 
         impl ToTokens for Ident 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
+            fn to_tokens(&self, k: &mut TokenStream) {
+                k.append(self.clone());
             }
         }
 
         impl ToTokens for Punct 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
+            fn to_tokens(&self, k: &mut TokenStream) {
+                k.append(self.clone());
             }
         }
 
         impl ToTokens for Literal 
         {
-            fn to_tokens(&self, tokens: &mut TokenStream) {
-                tokens.append(self.clone());
+            fn to_tokens(&self, k: &mut TokenStream) {
+                k.append(self.clone());
             }
         }
 
@@ -23252,49 +23116,49 @@ pub mod quote
         
         macro_rules! push_punct
         {
-            ($name:ident $spanned:ident $char1:tt) => {
-                    pub fn $name(tokens: &mut TokenStream)
+            ($n:ident $sned:ident $char1:tt) => {
+                    pub fn $n(k: &mut TokenStream)
                 {
-                    tokens.append(Punct::new($char1, Spacing::Alone));
+                    k.append(Punct::new($char1, Spacing::Alone));
                 }
-                    pub fn $spanned(tokens: &mut TokenStream, span: Span) {
+                    pub fn $sned(k: &mut TokenStream, span: Span) {
                     let mut punct = Punct::new($char1, Spacing::Alone);
                     punct.set_span(span);
-                    tokens.append(punct);
+                    k.append(punct);
                 }
             };
-            ($name:ident $spanned:ident $char1:tt $char2:tt) => {
-                    pub fn $name(tokens: &mut TokenStream)
+            ($n:ident $sned:ident $char1:tt $char2:tt) => {
+                    pub fn $n(k: &mut TokenStream)
                 {
-                    tokens.append(Punct::new($char1, Spacing::Joint));
-                    tokens.append(Punct::new($char2, Spacing::Alone));
+                    k.append(Punct::new($char1, Spacing::Joint));
+                    k.append(Punct::new($char2, Spacing::Alone));
                 }
-                    pub fn $spanned(tokens: &mut TokenStream, span: Span) {
+                    pub fn $sned(k: &mut TokenStream, span: Span) {
                     let mut punct = Punct::new($char1, Spacing::Joint);
                     punct.set_span(span);
-                    tokens.append(punct);
+                    k.append(punct);
                     let mut punct = Punct::new($char2, Spacing::Alone);
                     punct.set_span(span);
-                    tokens.append(punct);
+                    k.append(punct);
                 }
             };
-            ($name:ident $spanned:ident $char1:tt $char2:tt $char3:tt) => {
-                    pub fn $name(tokens: &mut TokenStream)
+            ($n:ident $sned:ident $char1:tt $char2:tt $char3:tt) => {
+                    pub fn $n(k: &mut TokenStream)
                 {
-                    tokens.append(Punct::new($char1, Spacing::Joint));
-                    tokens.append(Punct::new($char2, Spacing::Joint));
-                    tokens.append(Punct::new($char3, Spacing::Alone));
+                    k.append(Punct::new($char1, Spacing::Joint));
+                    k.append(Punct::new($char2, Spacing::Joint));
+                    k.append(Punct::new($char3, Spacing::Alone));
                 }
-                    pub fn $spanned(tokens: &mut TokenStream, span: Span) {
+                    pub fn $sned(k: &mut TokenStream, span: Span) {
                     let mut punct = Punct::new($char1, Spacing::Joint);
                     punct.set_span(span);
-                    tokens.append(punct);
+                    k.append(punct);
                     let mut punct = Punct::new($char2, Spacing::Joint);
                     punct.set_span(span);
-                    tokens.append(punct);
+                    k.append(punct);
                     let mut punct = Punct::new($char3, Spacing::Alone);
                     punct.set_span(span);
-                    tokens.append(punct);
+                    k.append(punct);
                 }
             };
         }
@@ -23438,9 +23302,9 @@ pub mod quote
 
         impl<T: ToTokens> ToTokens for RepInterp<T>
         {
-            fn to_tokens(&self, tokens: &mut TokenStream)
+            fn to_tokens(&self, k: &mut TokenStream)
             {
-                self.0.to_tokens(tokens);
+                self.0.to_tokens(k);
             }
         }
         
@@ -23490,7 +23354,6 @@ pub mod quote
             impl<T> Deref for GetSpan<T>
             {
                 type Target = GetSpanInner<T>;
-
                 #[inline] fn deref(&self) -> &Self::Target {
                     &self.0
                 }
@@ -23499,21 +23362,20 @@ pub mod quote
             impl<T> Deref for GetSpanInner<T>
             {
                 type Target = GetSpanBase<T>;
-
                 #[inline] fn deref(&self) -> &Self::Target {
                     &self.0
                 }
             }
         }
 
-        pub fn push_group(tokens: &mut TokenStream, delimiter: Delimiter, inner: TokenStream) 
+        pub fn push_group(k: &mut TokenStream, delimiter: Delimiter, inner: TokenStream) 
         {
-            tokens.append(Group::new(delimiter, inner));
+            k.append(Group::new(delimiter, inner));
         }
 
         pub fn push_group_spanned
         (
-            tokens: &mut TokenStream,
+            k: &mut TokenStream,
             span: Span,
             delimiter: Delimiter,
             inner: TokenStream,
@@ -23521,19 +23383,19 @@ pub mod quote
         {
             let mut g = Group::new(delimiter, inner);
             g.set_span(span);
-            tokens.append(g);
+            k.append(g);
         }
 
-        pub fn parse(tokens: &mut TokenStream, s: &str)
+        pub fn parse(k: &mut TokenStream, s: &str)
         {
             let s: TokenStream = s.parse().expect("invalid token stream");
-            tokens.extend(iter::once(s));
+            k.extend(iter::once(s));
         }
 
-        pub fn parse_spanned(tokens: &mut TokenStream, span: Span, s: &str)
+        pub fn parse_spanned(k: &mut TokenStream, span: Span, s: &str)
         {
             let s: TokenStream = s.parse().expect("invalid token stream");
-            tokens.extend(s.into_iter().map(|t| respan_token_tree(t, span)));
+            k.extend(s.into_iter().map(|t| respan_token_tree(t, span)));
         }
         
         fn respan_token_tree(mut token: TokenTree, span: Span) -> TokenTree
@@ -23548,23 +23410,23 @@ pub mod quote
                     *g = Group::new(g.delimiter(), stream);
                     g.set_span(span);
                 }
-                other => other.set_span(span),
+                other => o.set_span(span),
             }
             token
         }
 
-        pub fn push_ident(tokens: &mut TokenStream, s: &str)
+        pub fn push_ident(k: &mut TokenStream, s: &str)
         {
             let span = Span::call_site();
-            push_ident_spanned(tokens, span, s);
+            push_ident_spanned(k, span, s);
         }
 
-        pub fn push_ident_spanned(tokens: &mut TokenStream, span: Span, s: &str)
+        pub fn push_ident_spanned(k: &mut TokenStream, span: Span, s: &str)
         {
-            tokens.append(ident_maybe_raw(s, span));
+            k.append(ident_maybe_raw(s, span));
         }
 
-        pub fn push_lifetime(tokens: &mut TokenStream, lifetime: &str)
+        pub fn push_lifetime(k: &mut TokenStream, lifetime: &str)
         {
             struct Lifetime<'a> {
                 name: &'a str,
@@ -23589,13 +23451,13 @@ pub mod quote
                 }
             }
 
-            tokens.extend(Lifetime {
+            k.extend(Lifetime {
                 name: &lifetime[1..],
                 state: 0,
             });
         }
 
-        pub fn push_lifetime_spanned(tokens: &mut TokenStream, span: Span, lifetime: &str)
+        pub fn push_lifetime_spanned(k: &mut TokenStream, span: Span, lifetime: &str)
         {
             struct Lifetime<'a> {
                 name: &'a str,
@@ -23623,7 +23485,7 @@ pub mod quote
                 }
             }
 
-            tokens.extend(Lifetime {
+            k.extend(Lifetime {
                 name: &lifetime[1..],
                 span,
                 state: 0,
@@ -23675,14 +23537,14 @@ pub mod quote
         push_punct!(push_sub push_sub_spanned '-');
         push_punct!(push_sub_eq push_sub_eq_spanned '-' '=');
 
-        pub fn push_underscore(tokens: &mut TokenStream)
+        pub fn push_underscore(k: &mut TokenStream)
         {
-            push_underscore_spanned(tokens, Span::call_site());
+            push_underscore_spanned(k, Span::call_site());
         }
 
-        pub fn push_underscore_spanned(tokens: &mut TokenStream, span: Span)
+        pub fn push_underscore_spanned(k: &mut TokenStream, span: Span)
         {
-            tokens.append(Ident::new("_", span));
+            k.append(Ident::new("_", span));
         }
        
         pub fn mk_ident(id: &str, span: Option<Span>) -> Ident
@@ -23768,9 +23630,9 @@ pub mod quote
             }
         }
 
-        fn join_spans(tokens: TokenStream) -> Span
+        fn join_spans(k: TokenStream) -> Span
         {
-            let mut iter = tokens.into_iter().map(|tt| tt.span());
+            let mut iter = k.into_iter().map(|tt| tt.span());
 
             let first = match iter.next() {
                 Some(span) => span,
