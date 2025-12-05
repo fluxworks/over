@@ -3,7 +3,7 @@
 #![feature
 ( 
     
- )]
+)]
 
 #![allow
 ( 
@@ -81,8 +81,7 @@ pub mod parse;
     {
         () =>
         {
-            ::__private::TokenStream::new()
-        };
+            ::__private::TokenStream::new() };
        
         ( $a:tt ) => 
         {{
@@ -120,8 +119,7 @@ pub mod parse;
         ( $s:expr=> ) => 
         {{
             let _: ::__private::Span = ::__private::get_span( $s ).__into_span();
-            ::__private::TokenStream::new()
-        }};
+            ::__private::TokenStream::new() }};
        
         ( $s:expr=> $a:tt ) => 
         {{
@@ -366,13 +364,11 @@ pub mod parse;
     {
         ( $id:ident $k:ident ) =>
         {
-            ::__private::push_ident( &mut $k, stringify!( $id ) );
-        };
+            ::__private::push_ident( &mut $k, stringify!( $id ) ); };
 
         ( :: $k:ident ) =>
         {
-            ::__private::push_colon2( &mut $k );
-        };
+            ::__private::push_colon2( &mut $k ); };
 
         ( ( $( $in:tt )* ) $k:ident ) =>
         {
@@ -381,8 +377,7 @@ pub mod parse;
                 &mut $k,
                 ::__private::Delimiter::Parenthesis,
                 ::quote!( $( $in )* ),
-             );
-        };
+             ); };
 
         ( [ $( $in:tt )* ] $k:ident ) =>
         {
@@ -391,8 +386,7 @@ pub mod parse;
                 &mut $k,
                 ::__private::Delimiter::Bracket,
                 ::quote!( $( $in )* ),
-             );
-        };
+             ); };
 
         ( { $( $in:tt )* } $k:ident ) =>
         {
@@ -401,251 +395,202 @@ pub mod parse;
                 &mut $k,
                 ::__private::Delimiter::Brace,
                 ::quote!( $( $in )* ),
-             );
-        };
+             ); };
 
         ( # $k:ident ) =>
         {
-            ::__private::push_pound( &mut $k );
-        };
+            ::__private::push_pound( &mut $k ); };
 
         ( , $k:ident ) =>
         {
-            ::__private::push_comma( &mut $k );
-        };
+            ::__private::push_comma( &mut $k ); };
 
         ( . $k:ident ) =>
         {
-            ::__private::push_dot( &mut $k );
-        };
+            ::__private::push_dot( &mut $k ); };
 
         ( ; $k:ident ) =>
         {
-            ::__private::push_semi( &mut $k );
-        };
+            ::__private::push_semi( &mut $k ); };
 
         ( : $k:ident ) =>
         {
-            ::__private::push_colon( &mut $k );
-        };
+            ::__private::push_colon( &mut $k ); };
 
         ( + $k:ident ) =>
         {
-            ::__private::push_add( &mut $k );
-        };
+            ::__private::push_add( &mut $k ); };
 
         ( += $k:ident ) =>
         {
-            ::__private::push_add_eq( &mut $k );
-        };
+            ::__private::push_add_eq( &mut $k ); };
 
         ( & $k:ident ) =>
         {
-            ::__private::push_and( &mut $k );
-        };
+            ::__private::push_and( &mut $k ); };
 
         ( && $k:ident ) =>
         {
-            ::__private::push_and_and( &mut $k );
-        };
+            ::__private::push_and_and( &mut $k ); };
 
         ( &= $k:ident ) =>
         {
-            ::__private::push_and_eq( &mut $k );
-        };
+            ::__private::push_and_eq( &mut $k ); };
 
         ( @ $k:ident ) =>
         {
-            ::__private::push_at( &mut $k );
-        };
+            ::__private::push_at( &mut $k ); };
 
         ( ! $k:ident ) =>
         {
-            ::__private::push_bang( &mut $k );
-        };
+            ::__private::push_bang( &mut $k ); };
 
         ( ^ $k:ident ) =>
         {
-            ::__private::push_caret( &mut $k );
-        };
+            ::__private::push_caret( &mut $k ); };
 
         ( ^= $k:ident ) =>
         {
-            ::__private::push_caret_eq( &mut $k );
-        };
+            ::__private::push_caret_eq( &mut $k ); };
 
         ( / $k:ident ) =>
         {
-            ::__private::push_div( &mut $k );
-        };
+            ::__private::push_div( &mut $k ); };
 
         ( /= $k:ident ) =>
         {
-            ::__private::push_div_eq( &mut $k );
-        };
+            ::__private::push_div_eq( &mut $k ); };
 
         ( .. $k:ident ) =>
         {
-            ::__private::push_dot2( &mut $k );
-        };
+            ::__private::push_dot2( &mut $k ); };
 
         ( ... $k:ident ) =>
         {
-            ::__private::push_dot3( &mut $k );
-        };
+            ::__private::push_dot3( &mut $k ); };
 
         ( ..= $k:ident ) =>
         {
-            ::__private::push_dot_dot_eq( &mut $k );
-        };
+            ::__private::push_dot_dot_eq( &mut $k ); };
 
         ( = $k:ident ) =>
         {
-            ::__private::push_eq( &mut $k );
-        };
+            ::__private::push_eq( &mut $k ); };
 
         ( == $k:ident ) =>
         {
-            ::__private::push_eq_eq( &mut $k );
-        };
+            ::__private::push_eq_eq( &mut $k ); };
 
         ( >= $k:ident ) =>
         {
-            ::__private::push_ge( &mut $k );
-        };
+            ::__private::push_ge( &mut $k ); };
 
         ( > $k:ident ) =>
         {
-            ::__private::push_gt( &mut $k );
-        };
+            ::__private::push_gt( &mut $k ); };
 
         ( <= $k:ident ) =>
         {
-            ::__private::push_le( &mut $k );
-        };
+            ::__private::push_le( &mut $k ); };
 
         ( < $k:ident ) =>
         {
-            ::__private::push_lt( &mut $k );
-        };
+            ::__private::push_lt( &mut $k ); };
 
         ( *= $k:ident ) =>
         {
-            ::__private::push_mul_eq( &mut $k );
-        };
+            ::__private::push_mul_eq( &mut $k ); };
 
         ( != $k:ident ) =>
         {
-            ::__private::push_ne( &mut $k );
-        };
+            ::__private::push_ne( &mut $k ); };
 
         ( | $k:ident ) =>
         {
-            ::__private::push_or( &mut $k );
-        };
+            ::__private::push_or( &mut $k ); };
 
         ( |= $k:ident ) =>
         {
-            ::__private::push_or_eq( &mut $k );
-        };
+            ::__private::push_or_eq( &mut $k ); };
 
         ( || $k:ident ) =>
         {
-            ::__private::push_or_or( &mut $k );
-        };
+            ::__private::push_or_or( &mut $k ); };
 
         ( ? $k:ident ) =>
         {
-            ::__private::push_question( &mut $k );
-        };
+            ::__private::push_question( &mut $k ); };
 
         ( -> $k:ident ) =>
         {
-            ::__private::push_rarrow( &mut $k );
-        };
+            ::__private::push_rarrow( &mut $k ); };
 
         ( <- $k:ident ) =>
         {
-            ::__private::push_larrow( &mut $k );
-        };
+            ::__private::push_larrow( &mut $k ); };
 
         ( % $k:ident ) =>
         {
-            ::__private::push_rem( &mut $k );
-        };
+            ::__private::push_rem( &mut $k ); };
 
         ( %= $k:ident ) =>
         {
-            ::__private::push_rem_eq( &mut $k );
-        };
+            ::__private::push_rem_eq( &mut $k ); };
 
         ( => $k:ident ) =>
         {
-            ::__private::push_fat_arrow( &mut $k );
-        };
+            ::__private::push_fat_arrow( &mut $k ); };
 
         ( << $k:ident ) =>
         {
-            ::__private::push_shl( &mut $k );
-        };
+            ::__private::push_shl( &mut $k ); };
 
         ( <<= $k:ident ) =>
         {
-            ::__private::push_shl_eq( &mut $k );
-        };
+            ::__private::push_shl_eq( &mut $k ); };
 
         ( >> $k:ident ) =>
         {
-            ::__private::push_shr( &mut $k );
-        };
+            ::__private::push_shr( &mut $k ); };
 
         ( >>= $k:ident ) =>
         {
-            ::__private::push_shr_eq( &mut $k );
-        };
+            ::__private::push_shr_eq( &mut $k ); };
 
         ( * $k:ident ) =>
         {
-            ::__private::push_star( &mut $k );
-        };
+            ::__private::push_star( &mut $k ); };
 
         ( - $k:ident ) =>
         {
-            ::__private::push_sub( &mut $k );
-        };
+            ::__private::push_sub( &mut $k ); };
 
         ( -= $k:ident ) =>
         {
-            ::__private::push_sub_eq( &mut $k );
-        };
+            ::__private::push_sub_eq( &mut $k ); };
 
         ( $l:lifetime $k:ident ) =>
         {
-            ::__private::push_lifetime( &mut $k, stringify!( $l ) );
-        };
+            ::__private::push_lifetime( &mut $k, stringify!( $l ) ); };
 
         ( _ $k:ident ) =>
         {
-            ::__private::push_underscore( &mut $k );
-        };
+            ::__private::push_underscore( &mut $k ); };
 
         ( $o:tt $k:ident ) =>
         {
-            ::__private::parse( &mut $k, stringify!( $o ) );
-        };
+            ::__private::parse( &mut $k, stringify!( $o ) ); };
     }
 
     #[macro_export] macro_rules! quote_token_spanned
     {
         ( $id:ident $k:ident $s:ident ) =>
         {
-            ::__private::push_ident_spanned( &mut $k, $s, stringify!( $id ) );
-        };
+            ::__private::push_ident_spanned( &mut $k, $s, stringify!( $id ) ); };
 
         ( :: $k:ident $s:ident ) =>
         {
-            ::__private::push_colon2_spanned( &mut $k, $s );
-        };
+            ::__private::push_colon2_spanned( &mut $k, $s ); };
 
         ( ( $( $in:tt )* ) $k:ident $s:ident ) =>
         {
@@ -655,8 +600,7 @@ pub mod parse;
                 $s,
                 ::__private::Delimiter::Parenthesis,
                 ::quote_spanned!( $s=> $( $in )* ),
-             );
-        };
+             ); };
 
         ( [ $( $in:tt )* ] $k:ident $s:ident ) =>
         {
@@ -666,8 +610,7 @@ pub mod parse;
                 $s,
                 ::__private::Delimiter::Bracket,
                 ::quote_spanned!( $s=> $( $in )* ),
-             );
-        };
+             ); };
 
         ( { $( $in:tt )* } $k:ident $s:ident ) =>
         {
@@ -678,238 +621,191 @@ pub mod parse;
                 $s,
                 ::__private::Delimiter::Brace,
                 ::quote_spanned!( $s=> $( $in )* ),
-             );
-        };
+             ); };
 
         ( # $k:ident $s:ident ) =>
         {
-            ::__private::push_pound_spanned( &mut $k, $s );
-        };
+            ::__private::push_pound_spanned( &mut $k, $s ); };
 
         ( , $k:ident $s:ident ) =>
         {
-            ::__private::push_comma_spanned( &mut $k, $s );
-        };
+            ::__private::push_comma_spanned( &mut $k, $s ); };
 
         ( . $k:ident $s:ident ) =>
         {
-            ::__private::push_dot_spanned( &mut $k, $s );
-        };
+            ::__private::push_dot_spanned( &mut $k, $s ); };
 
         ( ; $k:ident $s:ident ) =>
         {
-            ::__private::push_semi_spanned( &mut $k, $s );
-        };
+            ::__private::push_semi_spanned( &mut $k, $s ); };
 
         ( : $k:ident $s:ident ) =>
         {
-            ::__private::push_colon_spanned( &mut $k, $s );
-        };
+            ::__private::push_colon_spanned( &mut $k, $s ); };
 
         ( + $k:ident $s:ident ) =>
         {
-            ::__private::push_add_spanned( &mut $k, $s );
-        };
+            ::__private::push_add_spanned( &mut $k, $s ); };
 
         ( += $k:ident $s:ident ) =>
         {
-            ::__private::push_add_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_add_eq_spanned( &mut $k, $s ); };
 
         ( & $k:ident $s:ident ) =>
         {
-            ::__private::push_and_spanned( &mut $k, $s );
-        };
+            ::__private::push_and_spanned( &mut $k, $s ); };
 
         ( && $k:ident $s:ident ) =>
         {
-            ::__private::push_and_and_spanned( &mut $k, $s );
-        };
+            ::__private::push_and_and_spanned( &mut $k, $s ); };
 
         ( &= $k:ident $s:ident ) =>
         {
-            ::__private::push_and_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_and_eq_spanned( &mut $k, $s ); };
 
         ( @ $k:ident $s:ident ) =>
         {
-            ::__private::push_at_spanned( &mut $k, $s );
-        };
+            ::__private::push_at_spanned( &mut $k, $s ); };
 
         ( ! $k:ident $s:ident ) =>
         {
-            ::__private::push_bang_spanned( &mut $k, $s );
-        };
+            ::__private::push_bang_spanned( &mut $k, $s ); };
 
         ( ^ $k:ident $s:ident ) =>
         {
-            ::__private::push_caret_spanned( &mut $k, $s );
-        };
+            ::__private::push_caret_spanned( &mut $k, $s ); };
 
         ( ^= $k:ident $s:ident ) =>
         {
-            ::__private::push_caret_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_caret_eq_spanned( &mut $k, $s ); };
 
         ( / $k:ident $s:ident ) =>
         {
-            ::__private::push_div_spanned( &mut $k, $s );
-        };
+            ::__private::push_div_spanned( &mut $k, $s ); };
 
         ( /= $k:ident $s:ident ) =>
         {
-            ::__private::push_div_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_div_eq_spanned( &mut $k, $s ); };
 
         ( .. $k:ident $s:ident ) =>
         {
-            ::__private::push_dot2_spanned( &mut $k, $s );
-        };
+            ::__private::push_dot2_spanned( &mut $k, $s ); };
 
         ( ... $k:ident $s:ident ) =>
         {
-            ::__private::push_dot3_spanned( &mut $k, $s );
-        };
+            ::__private::push_dot3_spanned( &mut $k, $s ); };
 
         ( ..= $k:ident $s:ident ) =>
         {
-            ::__private::push_dot_dot_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_dot_dot_eq_spanned( &mut $k, $s ); };
 
         ( = $k:ident $s:ident ) =>
         {
-            ::__private::push_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_eq_spanned( &mut $k, $s ); };
 
         ( == $k:ident $s:ident ) =>
         {
-            ::__private::push_eq_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_eq_eq_spanned( &mut $k, $s ); };
 
         ( >= $k:ident $s:ident ) =>
         {
-            ::__private::push_ge_spanned( &mut $k, $s );
-        };
+            ::__private::push_ge_spanned( &mut $k, $s ); };
 
         ( > $k:ident $s:ident ) =>
         {
-            ::__private::push_gt_spanned( &mut $k, $s );
-        };
+            ::__private::push_gt_spanned( &mut $k, $s ); };
 
         ( <= $k:ident $s:ident ) =>
         {
-            ::__private::push_le_spanned( &mut $k, $s );
-        };
+            ::__private::push_le_spanned( &mut $k, $s ); };
 
         ( < $k:ident $s:ident ) =>
         {
-            ::__private::push_lt_spanned( &mut $k, $s );
-        };
+            ::__private::push_lt_spanned( &mut $k, $s ); };
 
         ( *= $k:ident $s:ident ) =>
         {
-            ::__private::push_mul_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_mul_eq_spanned( &mut $k, $s ); };
 
         ( != $k:ident $s:ident ) =>
         {
-            ::__private::push_ne_spanned( &mut $k, $s );
-        };
+            ::__private::push_ne_spanned( &mut $k, $s ); };
 
         ( | $k:ident $s:ident ) =>
         {
-            ::__private::push_or_spanned( &mut $k, $s );
-        };
+            ::__private::push_or_spanned( &mut $k, $s ); };
 
         ( |= $k:ident $s:ident ) =>
         {
-            ::__private::push_or_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_or_eq_spanned( &mut $k, $s ); };
 
         ( || $k:ident $s:ident ) =>
         {
-            ::__private::push_or_or_spanned( &mut $k, $s );
-        };
+            ::__private::push_or_or_spanned( &mut $k, $s ); };
 
         ( ? $k:ident $s:ident ) =>
         {
-            ::__private::push_question_spanned( &mut $k, $s );
-        };
+            ::__private::push_question_spanned( &mut $k, $s ); };
 
         ( -> $k:ident $s:ident ) =>
         {
-            ::__private::push_rarrow_spanned( &mut $k, $s );
-        };
+            ::__private::push_rarrow_spanned( &mut $k, $s ); };
 
         ( <- $k:ident $s:ident ) =>
         {
-            ::__private::push_larrow_spanned( &mut $k, $s );
-        };
+            ::__private::push_larrow_spanned( &mut $k, $s ); };
 
         ( % $k:ident $s:ident ) =>
         {
-            ::__private::push_rem_spanned( &mut $k, $s );
-        };
+            ::__private::push_rem_spanned( &mut $k, $s ); };
 
         ( %= $k:ident $s:ident ) =>
         {
-            ::__private::push_rem_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_rem_eq_spanned( &mut $k, $s ); };
 
         ( => $k:ident $s:ident ) =>
         {
-            ::__private::push_fat_arrow_spanned( &mut $k, $s );
-        };
+            ::__private::push_fat_arrow_spanned( &mut $k, $s ); };
 
         ( << $k:ident $s:ident ) =>
         {
-            ::__private::push_shl_spanned( &mut $k, $s );
-        };
+            ::__private::push_shl_spanned( &mut $k, $s ); };
 
         ( <<= $k:ident $s:ident ) =>
         {
-            ::__private::push_shl_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_shl_eq_spanned( &mut $k, $s ); };
 
         ( >> $k:ident $s:ident ) =>
         {
-            ::__private::push_shr_spanned( &mut $k, $s );
-        };
+            ::__private::push_shr_spanned( &mut $k, $s ); };
 
         ( >>= $k:ident $s:ident ) =>
         {
-            ::__private::push_shr_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_shr_eq_spanned( &mut $k, $s ); };
 
         ( * $k:ident $s:ident ) =>
         {
-            ::__private::push_star_spanned( &mut $k, $s );
-        };
+            ::__private::push_star_spanned( &mut $k, $s ); };
 
         ( - $k:ident $s:ident ) =>
         {
-            ::__private::push_sub_spanned( &mut $k, $s );
-        };
+            ::__private::push_sub_spanned( &mut $k, $s ); };
 
         ( -= $k:ident $s:ident ) =>
         {
-            ::__private::push_sub_eq_spanned( &mut $k, $s );
-        };
+            ::__private::push_sub_eq_spanned( &mut $k, $s ); };
 
         ( $l:lifetime $k:ident $s:ident ) =>
         {
-            ::__private::push_lifetime_spanned( &mut $k, $s, stringify!( $l ) );
-        };
+            ::__private::push_lifetime_spanned( &mut $k, $s, stringify!( $l ) ); };
 
         ( _ $k:ident $s:ident ) =>
         {
-            ::__private::push_underscore_spanned( &mut $k, $s );
-        };
+            ::__private::push_underscore_spanned( &mut $k, $s ); };
 
         ( $o:tt $k:ident $s:ident ) =>
         {
-            ::__private::parse_spanned( &mut $k, $s, stringify!( $o ) );
-        };
+            ::__private::parse_spanned( &mut $k, $s, stringify!( $o ) ); };
     }
 
     #[macro_export] macro_rules! format_ident
@@ -918,12 +814,10 @@ pub mod parse;
             format_ident_impl!( [
                 ::quote::__private::Option::None,
                 $f
-            ] )
-        };
+            ] ) };
 
         ( $f:expr, $( $r:tt )* ) => {
-            format_ident_impl!( [ None, $f ] $( $r )* )
-        };
+            format_ident_impl!( [ None, $f ] $( $r )* ) };
     }
 
     #[macro_export] macro_rules! format_ident_impl
@@ -933,8 +827,7 @@ pub mod parse;
             ::quote::__private::mk_ident( 
                 &::quote::__private::format!( $( $f )* ),
                 $s,
-            )
-        };
+            ) };
 
        
         ( [$o:expr, $( $f:tt )*] span = $s:expr ) => { format_ident_impl!( [$o, $( $f )*] span = $s, ) };
@@ -942,8 +835,7 @@ pub mod parse;
             format_ident_impl!( [
                 ::quote::__private::Option::Some::<::quote::__private::Span>( $s ),
                 $( $f )*
-            ] $( $r )* )
-        };
+            ] $( $r )* ) };
 
        
         ( [$s:expr, $( $f:tt )*] $n:ident = $a:expr ) => { format_ident_impl!( [$s, $( $f )*] $n = $a, ) };
@@ -1010,8 +902,7 @@ pub mod parse;
             $( #[$e] )* $p $en $n $b
 
             ast_enum_of_structs_impl!( $n $b );
-            generate_to_tokens!( () tokens $n $b );
-        };
+            generate_to_tokens!( () tokens $n $b ); };
     }
 
     #[macro_export] macro_rules! ast_enum_of_structs_impl
@@ -1059,8 +950,7 @@ pub mod parse;
             generate_to_tokens!( 
                 ( $( $a )* $( #[cfg $c] )* $n::$v => {} )
                 $k $n { $( $next )* }
-             );
-        };
+             ); };
 
         ( 
             ( $( $a:tt )* ) $k:ident $n:ident {
@@ -1073,8 +963,7 @@ pub mod parse;
             generate_to_tokens!( 
                 ( $( $a )* $( #[cfg $c] )* $n::$v( _e ) => _e.to_tokens( $k ), )
                 $k $n { $( $next )* }
-             );
-        };
+             ); };
 
         ( ( $( $a:tt )* ) $k:ident $n:ident {} ) => {
             impl ::quote::ToTokens for $n {
@@ -1167,16 +1056,14 @@ pub mod parse;
     {
         ( $( $a:tt )* ) =>
         {
-            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote!( $( $a )* ) )
-        };
+            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote!( $( $a )* ) ) };
     }
 
     #[macro_export] macro_rules! parse_quote_spanned
     {
         ( $s:expr=> $( $a:tt )* ) =>
         {
-            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote_spanned!( $s=> $( $a )* ) )
-        };
+            ::syntax::__private::parse_quote( ::syntax::__private::quote::quote_spanned!( $s=> $( $a )* ) ) };
     }
     
     #[macro_export] macro_rules! parse_macro_input
@@ -1569,14 +1456,14 @@ pub mod parse;
             T: Clone + Integer
             {
                 type Output = Ratio<T>;
-                #[inline] fn $m( self, other: Ratio<T> ) -> Ratio<T> { self.clone().$m( other ) }
+                #[inline] fn $m( self, o: Ratio<T> ) -> Ratio<T> { self.clone().$m(o) }
             }
             
             impl<'a, T> $i<T> for &'a Ratio<T> where
             T: Clone + Integer,
             {
                 type Output = Ratio<T>;
-                #[inline] fn $m( self, other: T ) -> Ratio<T> { self.clone().$m( other ) }
+                #[inline] fn $m( self, o: T ) -> Ratio<T> { self.clone().$m(o) }
             }
         };
     }
@@ -1587,7 +1474,7 @@ pub mod parse;
             impl $i<$r> for &$r {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                    
                     $i::$m( self, &other )
                 }
@@ -1636,8 +1523,7 @@ pub mod parse;
         {
             forward_ref_ref_binop!( impl $i, $m );
             forward_ref_val_binop!( impl $i, $m );
-            forward_val_ref_binop!( impl $i, $m );
-        };
+            forward_val_ref_binop!( impl $i, $m ); };
     }
 
     #[macro_export] macro_rules! cfg_32
@@ -1659,16 +1545,14 @@ pub mod parse;
     {
         ( $i32:item $i64:item ) => {
             cfg_32!( $i32 );
-            cfg_64!( $i64 );
-        };
+            cfg_64!( $i64 ); };
     }
 
     #[macro_export] macro_rules! cfg_digit_expr
     {
         ( $e32:expr, $e64:expr ) => {
             cfg_32!( $e32 );
-            cfg_64!( $e64 );
-        };
+            cfg_64!( $e64 ); };
     }
 
     #[macro_export] macro_rules! forward_val_val_binop
@@ -1677,7 +1561,7 @@ pub mod parse;
             impl $i<$r> for $r {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                    
                     $i::$m( self, &other )
                 }
@@ -1691,7 +1575,7 @@ pub mod parse;
             impl $i<$r> for $r {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                    
                     if self.capacity() >= other.capacity() {
                         $i::$m( self, &other )
@@ -1711,7 +1595,7 @@ pub mod parse;
             impl $i<$r> for &$r {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                    
                     $i::$m( other, self )
                 }
@@ -1744,7 +1628,7 @@ pub mod parse;
     {
         ( impl $i:ident for $r:ty, $m:ident ) => {
             impl $i<$r> for $r {
-                #[inline] fn $m( &mut self, other: $r ) {
+                #[inline] fn $m( &mut self, o: $r ) {
                     self.$m( &other );
                 }
             }
@@ -1755,7 +1639,7 @@ pub mod parse;
     {
         ( impl $i:ident for $r:ty, $s:ty, $m:ident ) => {
             impl $i<$r> for $s {
-                #[inline] fn $m( &mut self, other: $r ) {
+                #[inline] fn $m( &mut self, o: $r ) {
                     self.$m( &other );
                 }
             }
@@ -1768,7 +1652,7 @@ pub mod parse;
             impl $i<$r> for $s {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                     $i::$m( other, self )
                 }
             }
@@ -1781,7 +1665,7 @@ pub mod parse;
             impl $i<$s> for $r {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $s ) -> $r {
+                #[inline] fn $m( self, o: $s ) -> $r {
                     $i::$m( &self, other )
                 }
             }
@@ -1789,7 +1673,7 @@ pub mod parse;
             impl $i<$r> for $s {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                     $i::$m( self, &other )
                 }
             }
@@ -1831,7 +1715,7 @@ pub mod parse;
             impl $i<$r> for &$s {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                     $i::$m( *self, &other )
                 }
             }
@@ -1852,7 +1736,7 @@ pub mod parse;
             impl $i<$r> for &$s {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $r ) -> $r {
+                #[inline] fn $m( self, o: $r ) -> $r {
                     $i::$m( *self, other )
                 }
             }
@@ -1865,7 +1749,7 @@ pub mod parse;
             impl $i<$s> for &$r {
                 type Output = $r;
 
-                #[inline] fn $m( self, other: $s ) -> $r {
+                #[inline] fn $m( self, o: $s ) -> $r {
                     $i::$m( self.clone(), other )
                 }
             }
@@ -1910,14 +1794,14 @@ pub mod parse;
                 impl $i<$s> for $r {
                     type Output = $r;
                     
-                    #[inline] fn $m( self, other: $s ) -> $r {
+                    #[inline] fn $m( self, o: $s ) -> $r {
                         $i::$m( self, other as $p )
                     }
                 }
 
                 impl $i<$r> for $s {
                     type Output = $r;
-                    #[inline] fn $m( self, other: $r ) -> $r {
+                    #[inline] fn $m( self, o: $r ) -> $r {
                         $i::$m( self as $p, other )
                     }
                 }
@@ -1931,7 +1815,7 @@ pub mod parse;
             $( 
                 impl $i<$s> for $r {
                     #[allow( clippy::cast_lossless )]
-                    #[inline] fn $m( &mut self, other: $s ) {
+                    #[inline] fn $m( &mut self, o: $s ) {
                         self.$m( other as $p );
                     }
                 }
@@ -1943,24 +1827,21 @@ pub mod parse;
     {
         ( impl $i:ident for $r:ty, $m:ident ) => {
             promote_scalars!( impl $i<u32> for $r, $m, u8, u16 );
-            promote_scalars!( impl $i<::num::big::UsizePromotion> for $r, $m, usize );
-        }
+            promote_scalars!( impl $i<::num::big::UsizePromotion> for $r, $m, usize ); }
     }
 
     #[macro_export] macro_rules! promote_unsigned_scalars_assign 
     {
         ( impl $i:ident for $r:ty, $m:ident ) => {
             promote_scalars_assign!( impl $i<u32> for $r, $m, u8, u16 );
-            promote_scalars_assign!( impl $i<::num::big::UsizePromotion> for $r, $m, usize );
-        }
+            promote_scalars_assign!( impl $i<::num::big::UsizePromotion> for $r, $m, usize ); }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars 
     {
         ( impl $i:ident for $r:ty, $m:ident ) => {
             promote_scalars!( impl $i<i32> for $r, $m, i8, i16 );
-            promote_scalars!( impl $i<::num::big::IsizePromotion> for $r, $m, isize );
-        }
+            promote_scalars!( impl $i<::num::big::IsizePromotion> for $r, $m, isize ); }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars_assign 
@@ -1968,8 +1849,7 @@ pub mod parse;
         ( impl $i:ident for $r:ty, $m:ident ) =>
         {
             promote_scalars_assign!( impl $i<i32> for $r, $m, i8, i16 );
-            promote_scalars_assign!( impl $i<::num::big::IsizePromotion> for $r, $m, isize );
-        }
+            promote_scalars_assign!( impl $i<::num::big::IsizePromotion> for $r, $m, isize ); }
     }
 
     #[macro_export] macro_rules! forward_all_binop_to_ref_ref
@@ -1978,8 +1858,7 @@ pub mod parse;
         {
             forward_val_val_binop!( impl $i for $r, $m );
             forward_val_ref_binop_big!( impl $i for $r, $m );
-            forward_ref_val_binop_big!( impl $i for $r, $m );
-        };
+            forward_ref_val_binop_big!( impl $i for $r, $m ); };
     }
     
     #[macro_export] macro_rules! forward_all_binop_to_val_ref
@@ -1988,8 +1867,7 @@ pub mod parse;
         {
             forward_val_val_binop!( impl $i for $r, $m );
             forward_ref_val_binop!( impl $i for $r, $m );
-            forward_ref_ref_binop!( impl $i for $r, $m );
-        };
+            forward_ref_ref_binop!( impl $i for $r, $m ); };
     }
     
     #[macro_export] macro_rules! forward_all_binop_to_val_ref_commutative
@@ -1997,8 +1875,7 @@ pub mod parse;
         ( impl $i:ident for $r:ty, $m:ident ) => {
             forward_val_val_binop_commutative!( impl $i for $r, $m );
             forward_ref_val_binop_commutative!( impl $i for $r, $m );
-            forward_ref_ref_binop_commutative!( impl $i for $r, $m );
-        };
+            forward_ref_ref_binop_commutative!( impl $i for $r, $m ); };
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_ref_val
@@ -2006,8 +1883,7 @@ pub mod parse;
         ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
             forward_scalar_val_val_binop_to_ref_val!( impl $i<$s> for $r, $m );
             forward_scalar_val_ref_binop_to_ref_val!( impl $i<$s> for $r, $m );
-            forward_scalar_ref_ref_binop_to_ref_val!( impl $i<$s> for $r, $m );
-        }
+            forward_scalar_ref_ref_binop_to_ref_val!( impl $i<$s> for $r, $m ); }
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_val_val
@@ -2015,32 +1891,28 @@ pub mod parse;
         ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
             forward_scalar_val_ref_binop_to_val_val!( impl $i<$s> for $r, $m );
             forward_scalar_ref_val_binop_to_val_val!( impl $i<$s> for $r, $m );
-            forward_scalar_ref_ref_binop_to_val_val!( impl $i<$s> for $r, $m );
-        }
+            forward_scalar_ref_ref_binop_to_val_val!( impl $i<$s> for $r, $m ); }
     }
 
     #[macro_export] macro_rules! forward_all_scalar_binop_to_val_val_commutative
     {
         ( impl $i:ident<$s:ty> for $r:ty, $m:ident ) => {
             forward_scalar_val_val_binop_commutative!( impl $i<$s> for $r, $m );
-            forward_all_scalar_binop_to_val_val!( impl $i<$s> for $r, $m );
-        }
+            forward_all_scalar_binop_to_val_val!( impl $i<$s> for $r, $m ); }
     }
 
     #[macro_export] macro_rules! promote_all_scalars
     {
         ( impl $i:ident for $r:ty, $m:ident ) => {
             promote_unsigned_scalars!( impl $i for $r, $m );
-            promote_signed_scalars!( impl $i for $r, $m );
-        }
+            promote_signed_scalars!( impl $i for $r, $m ); }
     }
 
     #[macro_export] macro_rules! promote_all_scalars_assign
     {
         ( impl $i:ident for $r:ty, $m:ident ) => {
             promote_unsigned_scalars_assign!( impl $i for $r, $m );
-            promote_signed_scalars_assign!( impl $i for $r, $m );
-        }
+            promote_signed_scalars_assign!( impl $i for $r, $m ); }
     }
 
     #[macro_export] macro_rules! impl_sum_iter_type
@@ -2108,27 +1980,23 @@ pub mod parse;
     #[macro_export] macro_rules! frac 
     {
         ( $i1:expr, $i2:expr ) => {{
-            ::num::rational::BigRational::new( $i1.into(), $i2.into() )
-        }};
+            ::num::rational::BigRational::new( $i1.into(), $i2.into() ) }};
     }
 
     #[macro_export] macro_rules! arr 
     {
         [] => 
         {
-            $crate::arrays::Arr::from_vec( vec![] ).unwrap()
-        };
+            $crate::arrays::Arr::from_vec( vec![] ).unwrap() };
 
         [ $( $e:expr ),+ , ] => 
         {
            
-            try_arr![ $( $e ),+ ].unwrap()
-        };
+            try_arr![ $( $e ),+ ].unwrap() };
 
         [ $( $e:expr ),+ ] => 
         {
-            try_arr![ $( $e ),+ ].unwrap()
-        };
+            try_arr![ $( $e ),+ ].unwrap() };
     }
 
     #[macro_export] macro_rules! try_arr 
@@ -2136,13 +2004,11 @@ pub mod parse;
         [ $( $e:expr ),+ , ] => 
         {
            
-            try_arr![ $( $e ),+ ]
-        };
+            try_arr![ $( $e ),+ ] };
 
         [ $( $e:expr ),+ ] => 
         {{
-                $crate::arrays::Arr::from_vec( vec![ $( $e.into() ),+ ] )
-        }};
+                $crate::arrays::Arr::from_vec( vec![ $( $e.into() ),+ ] ) }};
     }
 
     #[macro_export] macro_rules! tup 
@@ -2800,8 +2666,7 @@ pub mod parse;
         {
             __lazy_static_internal!(@MAKE TY, $(#[$a])*, ( $( $v )*), $N);
             __lazy_static_internal!(@TAIL, $N : $T = $e );
-            lazy_static!( $( $t )*);
-        };
+            lazy_static!( $( $t )*); };
         
         (@TAIL, $N:ident : $T:ty = $e:expr ) =>
         {
@@ -2841,18 +2706,15 @@ pub mod parse;
     {
         ( $(#[$a:meta])* static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!( $(#[$a])* () static ref $N : $T = $e; $( $t )*);
-        };
+            __lazy_static_internal!( $(#[$a])* () static ref $N : $T = $e; $( $t )*); };
 
         ( $(#[$a:meta])* pub static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!( $(#[$a])* ( pub) static ref $N : $T = $e; $( $t )*);
-        };
+            __lazy_static_internal!( $(#[$a])* ( pub) static ref $N : $T = $e; $( $t )*); };
 
         ( $(#[$a:meta])* pub ( $( $v:tt )+) static ref $N:ident : $T:ty = $e:expr; $( $t:tt )*) =>
         {
-            __lazy_static_internal!( $(#[$a])* ( pub ( $( $v )+ ) ) static ref $N : $T = $e; $( $t )*);
-        };
+            __lazy_static_internal!( $(#[$a])* ( pub ( $( $v )+ ) ) static ref $N : $T = $e; $( $t )*); };
 
         () => ()
     }
@@ -3073,8 +2935,7 @@ pub mod parse;
     {
         ( $o:expr, { $( $t:tt )* }) =>
         {
-            (|| { ::__bitflags_match!( $o, { $( $t )* }) })()
-        };
+            (|| { ::__bitflags_match!( $o, { $( $t )* }) })() };
     }
 
     #[macro_export] macro_rules! __bitflags_match
@@ -3229,8 +3090,7 @@ pub mod parse;
             $v:vis struct $P:ident
         ) => {
             $(#[$o])*
-            $v struct $P(<$P as ::bits::flags::PublicFlags>::Internal);
-        };
+            $v struct $P(<$P as ::bits::flags::PublicFlags>::Internal); };
     }
 
     #[macro_export] macro_rules! __impl_public_bitflags_forward 
@@ -3279,25 +3139,25 @@ pub mod parse;
                     
                     fn is_all( &self ) { self.0.is_all() }
                     
-                    fn intersects(&self, other) { self.0.intersects(other.0) }
+                    fn intersects(&self, other) { self.0.intersects(o.0) }
                     
-                    fn contains(&self, other) { self.0.contains(other.0) }
+                    fn contains(&self, other) { self.0.contains(o.0) }
                     
-                    fn insert( &mut self, other) { self.0.insert(other.0) }
+                    fn insert( &mut self, other) { self.0.insert(o.0) }
                     
-                    fn remove( &mut self, other) { self.0.remove(other.0) }
+                    fn remove( &mut self, other) { self.0.remove(o.0) }
                     
-                    fn toggle( &mut self, other) { self.0.toggle(other.0) }
+                    fn toggle( &mut self, other) { self.0.toggle(o.0) }
                     
-                    fn set( &mut self, other, value) { self.0.set(other.0, value) }
+                    fn set( &mut self, other, value) { self.0.set(o.0, value) }
                     
-                    fn intersection(self, other) { Self( self.0.intersection(other.0)) }
+                    fn intersection(self, other) { Self( self.0.intersection(o.0)) }
                     
-                    fn union(self, other) { Self( self.0.union(other.0)) }
+                    fn union(self, other) { Self( self.0.union(o.0)) }
                     
-                    fn difference(self, other) { Self( self.0.difference(other.0)) }
+                    fn difference(self, other) { Self( self.0.difference(o.0)) }
                     
-                    fn symmetric_difference(self, other) { Self( self.0.symmetric_difference(other.0)) }
+                    fn symmetric_difference(self, other) { Self( self.0.symmetric_difference(o.0)) }
                     
                     fn complement(self) { Self( self.0.complement()) }
                 }
@@ -3393,16 +3253,16 @@ pub mod parse;
                     
                     fn contains(&self, other) { self.0 & other.0 == other.0 }
                     
-                    fn insert( &mut self, other) { *self = Self( self.0).union( other ); }
+                    fn insert( &mut self, other) { *self = Self( self.0).union(o); }
                     
-                    fn remove( &mut self, other) { *self = Self( self.0).difference( other ); }
+                    fn remove( &mut self, other) { *self = Self( self.0).difference(o); }
                     
-                    fn toggle( &mut self, other) { *self = Self( self.0).symmetric_difference( other ); }
+                    fn toggle( &mut self, other) { *self = Self( self.0).symmetric_difference(o); }
                     
                     fn set( &mut self, other, value)
                     {
-                        if value { self.insert( other ); }
-                        else { self.remove( other ); }
+                        if value { self.insert(o); }
+                        else { self.remove(o); }
                     }
                     
                     fn intersection(self, other) { Self( self.0 & other.0) }
@@ -3526,14 +3386,14 @@ pub mod parse;
             {
                 type Output = Self;
 
-                #[inline] fn bitor(self, other: $P ) -> Self { self.union( other ) }
+                #[inline] fn bitor(self, o: $P ) -> Self { self.union(o) }
             }
 
             $(#[$o])*
             impl ::ops::BitOrAssign for $P
             {
 
-                #[inline] fn bitor_assign( &mut self, other: Self) { self.insert( other ); }
+                #[inline] fn bitor_assign( &mut self, o: Self) { self.insert(o); }
             }
 
             $(#[$o])*
@@ -3541,14 +3401,14 @@ pub mod parse;
             {
                 type Output = Self;
 
-                #[inline] fn bitxor(self, other: Self) -> Self { self.symmetric_difference( other ) }
+                #[inline] fn bitxor(self, o: Self) -> Self { self.symmetric_difference(o) }
             }
 
             $(#[$o])*
             impl ::ops::BitXorAssign for $P
             {
 
-                #[inline] fn bitxor_assign( &mut self, other: Self) { self.toggle( other ); }
+                #[inline] fn bitxor_assign( &mut self, o: Self) { self.toggle(o); }
             }
 
             $(#[$o])*
@@ -3556,15 +3416,15 @@ pub mod parse;
             {
                 type Output = Self;
 
-                #[inline] fn bitand(self, other: Self) -> Self { self.intersection( other ) }
+                #[inline] fn bitand(self, o: Self) -> Self { self.intersection(o) }
             }
 
             $(#[$o])*
             impl ::ops::BitAndAssign for $P
             {
 
-                #[inline] fn bitand_assign( &mut self, other: Self)
-                { *self = Self::from_bits_retain( self.bits()).intersection( other ); }
+                #[inline] fn bitand_assign( &mut self, o: Self)
+                { *self = Self::from_bits_retain( self.bits()).intersection(o); }
             }
 
             $(#[$o])*
@@ -3572,14 +3432,14 @@ pub mod parse;
             {
                 type Output = Self;
 
-                #[inline] fn sub(self, other: Self) -> Self { self.difference( other ) }
+                #[inline] fn sub(self, o: Self) -> Self { self.difference(o) }
             }
 
             $(#[$o])*
             impl ::ops::SubAssign for $P
             {
 
-                #[inline] fn sub_assign( &mut self, other: Self) { self.remove( other ); }
+                #[inline] fn sub_assign( &mut self, o: Self) { self.remove(o); }
             }
 
             $(#[$o])*
@@ -3698,8 +3558,7 @@ pub mod parse;
         ) =>
         {
             #[repr( transparent )] #[derive( Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash )]            
-            $v struct $I( $T );
-        };
+            $v struct $I( $T ); };
     }
 
     #[macro_export] macro_rules! __impl_internal_bitflags
@@ -3798,32 +3657,28 @@ pub mod parse;
     {
         ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
         {
-            __impl_assign!( + AddAssign add_assign $x : $($(#[$a])* $t),+ );
-        };
+            __impl_assign!( + AddAssign add_assign $x : $($(#[$a])* $t),+ ); };
     }
     
     #[macro_export] macro_rules! impl_sub_assign
     {
         ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
         {
-            __impl_assign!(- SubAssign sub_assign $x : $($(#[$a])* $t),+);
-        };
+            __impl_assign!(- SubAssign sub_assign $x : $($(#[$a])* $t),+); };
     }
     
     #[macro_export] macro_rules! impl_mul_assign
     {
         ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
         {
-            __impl_assign!(* MulAssign mul_assign $x : $($(#[$a])* $t),+);
-        };
+            __impl_assign!(* MulAssign mul_assign $x : $($(#[$a])* $t),+); };
     }
     
     #[macro_export] macro_rules! impl_div_assign
     {
         ($x:ty : $($(#[$a:meta])* $t:ty),+ $(,)?) =>
         {
-            __impl_assign!(/ DivAssign div_assign $x : $($(#[$a])* $t),+);
-        };
+            __impl_assign!(/ DivAssign div_assign $x : $($(#[$a])* $t),+); };
     }
     
     #[macro_export] macro_rules! div_floor
@@ -4011,11 +3866,9 @@ pub mod parse;
     
     #[macro_export] macro_rules! bug {
         () => {
-            compile_error!("provide an error message to help fix a possible bug")
-        };
+            compile_error!("provide an error message to help fix a possible bug") };
         ($d:literal) => {
-            ::panic::panics(concat!("internal error: ", $d))
-        };
+            ::panic::panics(concat!("internal error: ", $d)) };
     }
     
     pub use bug;
@@ -4024,6 +3877,43 @@ pub mod parse;
         __impl_assign, carry, cascade, const_try, const_try_opt, div_floor, ensure_ranged,
         impl_add_assign, impl_div_assign, impl_mul_assign, impl_sub_assign,
     };
+    
+    #[macro_export] macro_rules! smallvec_inline
+    {
+        (@one $x:expr) => (1usize);
+        
+        ($elem:expr; $n:expr) => 
+        ({ ::vec::SmallVec::<_, $n>::from_buf([$elem; $n]) });
+        
+        ($($x:expr),+ $(,)?) =>
+        ({
+            const N: usize = 0usize $(+ smallvec_inline!(@one $x))*;
+            ::vec::SmallVec::<_, N>::from_buf([$($x,)*])
+        });
+    }
+    
+    #[macro_export] macro_rules! smallvec
+    {
+        (@one $x:expr) => (1usize);
+
+        () => ( ::vec::SmallVec::new() );
+
+        ($e:expr; $n:expr) => ({ ::vec::from_elem($e, $n) });
+
+        ($($x:expr),+$(,)?) =>
+        ({
+            const COUNT: usize = 0usize $(+ smallvec!(@one $x))+;
+            let mut vec = ::vec::SmallVec::new();
+            
+            if COUNT <= vec.capacity()
+            {
+                $(vec.push($x);)*
+                vec
+            }
+
+            else { ::vec::SmallVec::from_vec(vec![$($x,)+]) }
+        });
+    }
 }
 
 pub mod api
@@ -4156,8 +4046,7 @@ pub mod api
             let n = tools::unquote(&cap[1]);
             let v = if cap[2].starts_with('"') || cap[2].starts_with('\'') { tools::unquote(&cap[2]) }
             else { cap[2].to_string() };
-            sh.add_alias(n.as_str(), v.as_str());
-        }
+            sh.add_alias(n.as_str(), v.as_str()); }
 
         CommandResult::new()
     }
@@ -4175,7 +4064,8 @@ pub mod api
         }
 
         let mut j = -1;
-        if ts.len() == 1 {
+        if ts.len() == 1       
+        {
             if let Some((g, _)) = s.jobs.iter().next() {
                 j = *g;
             }
@@ -4261,21 +4151,18 @@ pub mod api
 
         let mut dir_to = if args.len() == 1 {
             let home = get::user_home();
-            home.to_string()
-        } else {
-            args[1..].join("")
-        };
+            home.to_string() } else {
+            args[1..].join("") };
 
-        if dir_to == "-" {
+        if dir_to == "-"
+        {
             if sh.previous_dir.is_empty() {
                 let info = "no previous dir";
                 print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
                 return cr;
             }
-            dir_to = sh.previous_dir.clone();
-        } else if !dir_to.starts_with('/') {
-            dir_to = format!("{}/{}", str_current_dir, dir_to);
-        }
+            dir_to = sh.previous_dir.clone(); } else if !dir_to.starts_with('/') {
+            dir_to = format!("{}/{}", str_current_dir, dir_to); }
 
         if !Path::new(&dir_to).exists() {
             let info = format!(":: cd: {}: No such file or directory", &args[1]);
@@ -4333,8 +4220,7 @@ pub mod api
         let git_hash = "#";
         /*
         if !git_hash.is_empty() {
-            info.push(("git-commit", env!("GIT_HASH")));
-        }*/
+            info.push(("git-commit", env!("GIT_HASH"))); }*/
 
         let git_branch = "main";
         let mut branch = String::new();
@@ -4345,16 +4231,14 @@ pub mod api
             if git_status != "0" {
                 branch.push_str(" (dirty)");
             }
-            info.push(("git-branch", &branch));
-        }
+            info.push(("git-branch", &branch)); }
 
         info.push(("built-with", "0.0.0"));
         info.push(("built-at", "25.12.1"));
 
         let mut lines = Vec::new();
         for (k, v) in &info {
-            lines.push(format!("{: >12}: {}", k, v));
-        }
+            lines.push(format!("{: >12}: {}", k, v)); }
         let buffer = lines.join("\n");
         let mut cr = CommandResult::new();
         print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
@@ -4403,7 +4287,8 @@ pub mod api
             }
         }
 
-        for (_i, job) in sh.jobs.iter() {
+        for (_i, job) in sh.jobs.iter()
+        {
             if !job.cmd.starts_with("nohup ") {
                 let mut info = String::new();
                 info.push_str("There are background jobs.");
@@ -4423,7 +4308,8 @@ pub mod api
         let tokens = cmd.tokens.clone();
 
         let re_name_ptn = Regex::new(r"^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$").unwrap();
-        for (_, text) in tokens.iter() {
+        for (_, text) in tokens.iter()
+        {
             if text == "export" {
                 continue;
             }
@@ -4466,7 +4352,8 @@ pub mod api
         }
 
         let mut job_id = -1;
-        if tokens.len() == 1 {
+        if tokens.len() == 1
+        {
             if let Some((gid, _)) = sh.jobs.iter().next() {
                 job_id = *gid;
             }
@@ -4499,7 +4386,7 @@ pub mod api
 
         {
             let mut result = sh.get_job_by_id(job_id);
-            // fall back to find job by using prcess group id
+
             if result.is_none() {
                 result = sh.get_job_by_gid(job_id);
             }
@@ -4626,8 +4513,7 @@ pub mod api
         let no_trim = cmd.tokens.len() >= 2 && cmd.tokens[1].1 == "-f";
         for (_i, job) in jobs.iter() {
             let line = jobc::get_job_line(job, !no_trim);
-            lines.push(line);
-        }
+            lines.push(line); }
         let buffer = lines.join("\n");
 
         print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
@@ -4676,7 +4562,8 @@ pub mod api
 
         let mut buffer = String::new();
 
-        if cmd.has_here_string() {
+        if cmd.has_here_string()
+        {
             if let Some(redirect_from) = &cmd.redirect_from {
                 buffer.push_str(&redirect_from.1);
                 buffer.push('\n');
@@ -4706,15 +4593,12 @@ pub mod api
             let name = name.unwrap();
 
             let value = value_list.get(i).unwrap_or(&String::new()).clone();
-            sh.set_env(name, &value);
-        }
+            sh.set_env(name, &value); }
 
         let name_last = &name_list[idx_2rd_last];
         let value_left: String = if value_list.len() > idx_2rd_last {
-            value_list[idx_2rd_last..].join(" ")
-        } else {
-            String::new()
-        };
+            value_list[idx_2rd_last..].join(" ") } else {
+            String::new() };
         sh.set_env(name_last, &value_left);
         cr
     }
@@ -4793,8 +4677,7 @@ pub mod api
         let mut all_stderr = String::new();
 
         if app.a {
-            report_all(&app, &mut all_stdout, &mut all_stderr);
-        } else if handle_limit(app.n, "open_files", app.H, &mut all_stdout, &mut all_stderr)
+            report_all(&app, &mut all_stdout, &mut all_stderr); } else if handle_limit(app.n, "open_files", app.H, &mut all_stdout, &mut all_stderr)
             || handle_limit(
                 app.c,
                 "core_file_size",
@@ -4804,15 +4687,12 @@ pub mod api
             )
         {
         } else {
-            report_all(&app, &mut all_stdout, &mut all_stderr);
-        }
+            report_all(&app, &mut all_stdout, &mut all_stderr); }
 
         if !all_stdout.is_empty() {
-            print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
-        }
+            print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture); }
         if !all_stderr.is_empty() {
-            print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
-        }
+            print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture); }
 
         cr
     }
@@ -4905,8 +4785,7 @@ pub mod api
             let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
             print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
             let cr_list = execute::run_command_line(sh, &line, false, false);
-            return cr_list[0].clone();
-        }
+            return cr_list[0].clone(); }
 
         if len == 3 && subcmd == "enter" {
             let _err = enter_env(sh, args[2].as_str());
@@ -4944,20 +4823,15 @@ pub mod api
             history_table
         );
         if !opt.pattern.is_empty() {
-            sql = format!("{} AND inp LIKE '%{}%'", sql, opt.pattern)
-        }
+            sql = format!("{} AND inp LIKE '%{}%'", sql, opt.pattern) }
         if opt.session {
-            sql = format!("{} AND sessionid = '{}'", sql, sh.session_id)
-        }
+            sql = format!("{} AND sessionid = '{}'", sql, sh.session_id) }
         if opt.pwd {
-            sql = format!("{} AND info like '%dir:{}|%'", sql, sh.current_dir)
-        }
+            sql = format!("{} AND info like '%dir:{}|%'", sql, sh.current_dir) }
 
         if opt.asc {
-            sql = format!("{} ORDER BY tsb", sql);
-        } else {
-            sql = format!("{} order by tsb desc", sql);
-        };
+            sql = format!("{} ORDER BY tsb", sql); } else {
+            sql = format!("{} order by tsb desc", sql); };
         sql = format!("{} limit {} ", sql, opt.limit);
 
         let mut stmt = match conn.prepare(&sql) {
@@ -5031,8 +4905,7 @@ pub mod api
         }
 
         if !opt.asc {
-            lines.reverse();
-        }
+            lines.reverse(); }
 
         let buffer = lines.join("\n");
 
@@ -5062,8 +4935,7 @@ pub mod api
         let mut lines = Vec::new();
         for (name, value) in sh.get_alias_list() {
             let line = format!("alias {}='{}'", name, value);
-            lines.push(line);
-        }
+            lines.push(line); }
         let buffer = lines.join("\n");
         let mut cr = CommandResult::new();
         print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
@@ -5082,17 +4954,16 @@ pub mod api
         let mut cr = CommandResult::new();
         if let Some(content) = sh.get_alias_content(name_to_find) {
             let info = format!("alias {}='{}'", name_to_find, content);
-            print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
-        } else {
+            print_stdout_with_capture(&info, &mut cr, cl, cmd, capture); } else {
             let info = format!(":: alias: {}: not found", name_to_find);
-            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
-        }
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture); }
         cr
     }
 
     fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
     {
-        for id_ in name_list {
+        for id_ in name_list
+        {
             if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
                 return Some(id_.to_string());
             }
@@ -5113,7 +4984,8 @@ pub mod api
             rlim_max: 0,
         };
 
-        unsafe {
+        unsafe
+        {
             if libc::getrlimit(limit_id, &mut rlp) != 0 {
                 return format!(
                     ":: ulimit: error getting limit: {}",
@@ -5122,7 +4994,7 @@ pub mod api
             }
         }
 
-        // to support armv7-linux-gnueabihf & 32-bit musl systems
+
         if for_hard {
             #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
             {
@@ -5143,7 +5015,8 @@ pub mod api
             }
         }
 
-        unsafe {
+        unsafe
+        {
             if libc::setrlimit(limit_id, &rlp) != 0 {
                 return format!(
                     ":: ulimit: error setting limit: {}",
@@ -5176,7 +5049,8 @@ pub mod api
         let mut result_stdout = String::new();
         let mut result_stderr = String::new();
 
-        unsafe {
+        unsafe
+        {
             if libc::getrlimit(limit_id, &mut rlp) != 0 {
                 result_stderr.push_str(&format!("error getting limit: {}", Error::last_os_error()));
                 return (result_stdout, result_stderr);
@@ -5196,8 +5070,7 @@ pub mod api
                 format!("{}\t\t{}\n", desc, to_print)
             };
 
-            result_stdout.push_str(&info);
-        }
+            result_stdout.push_str(&info); }
 
         (result_stdout, result_stderr)
     }
@@ -5207,8 +5080,7 @@ pub mod api
         for limit_name in &["open_files", "core_file_size"] {
             let (out, err) = get_limit(limit_name, false, app.H);
             all_stdout.push_str(&out);
-            all_stderr.push_str(&err);
-        }
+            all_stderr.push_str(&err); }
     }
 
     fn handle_limit
@@ -5300,8 +5172,7 @@ pub mod arrays
 
             Ok( Arr {
                 inner: Arc::new( ArrInner { vec, inner_t: tcur } ),
-            } )
-        }
+            } ) }
 
         pub fn from_vec_unchecked( v:Vec<Value>, inner_t: Type ) -> Arr 
         {
@@ -5324,6 +5195,7 @@ pub mod arrays
         }
 
         pub fn get( &self, index: usize ) -> OverResult<Value> 
+       
         {
             if index >= self.inner.vec.len() {
                 Err( OverError::ArrOutOfBounds( index ) )
@@ -5340,27 +5212,22 @@ pub mod arrays
 
         pub fn ptr_eq( &self, other:&Self ) -> bool 
         {
-            Arc::ptr_eq( &self.inner, &other.inner )
-        }
+            Arc::ptr_eq( &self.inner, &other.inner ) }
 
         pub fn iter( &self ) -> Iter<Value> 
-        {
-            self.vec_ref().iter()
-        }
+        { self.vec_ref().iter() }
     }
 
     impl Default for Arr 
     {
         fn default() -> Self {
-            Self::from_vec_unchecked( vec![], Type::Any )
-        }
+            Self::from_vec_unchecked( vec![], Type::Any ) }
     }
 
     impl fmt::Display for Arr 
     {
         fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-            write!( f, "{}", self.format( true, INDENT_STEP ) )
-        }
+            write!( f, "{}", self.format( true, INDENT_STEP ) ) }
     }
 
     impl PartialEq for Arr 
@@ -6513,11 +6380,11 @@ pub mod bits
 
                 fn is_all( &self ) -> bool  { Self::all().bits() | self.bits() == self.bits() }
 
-                fn intersects(&self, other: Self) -> bool where
+                fn intersects(&self, o: Self) -> bool where
                 Self: Sized
                 { self.bits() & other.bits() != Self::Bits::EMPTY }
 
-                fn contains(&self, other: Self) -> bool where
+                fn contains(&self, o: Self) -> bool where
                 Self: Sized
                 { self.bits() & other.bits() == other.bits() }
 
@@ -6525,23 +6392,23 @@ pub mod bits
                 Self: Sized
                 { *self = Self::from_bits_truncate( self.bits()); }
 
-                fn insert( &mut self, other: Self) where
+                fn insert( &mut self, o: Self) where
                 Self: Sized
-                { *self = Self::from_bits_retain( self.bits()).union( other ); }
+                { *self = Self::from_bits_retain( self.bits()).union(o); }
 
-                fn remove( &mut self, other: Self) where
+                fn remove( &mut self, o: Self) where
                 Self: Sized
-                { *self = Self::from_bits_retain( self.bits()).difference( other ); }
+                { *self = Self::from_bits_retain( self.bits()).difference(o); }
 
-                fn toggle( &mut self, other: Self) where
+                fn toggle( &mut self, o: Self) where
                 Self: Sized
-                { *self = Self::from_bits_retain( self.bits()).symmetric_difference( other ); }
+                { *self = Self::from_bits_retain( self.bits()).symmetric_difference(o); }
 
-                fn set( &mut self, other: Self, value:bool ) where
+                fn set( &mut self, o: Self, value:bool ) where
                 Self: Sized
                 {
-                    if value { self.insert( other ); }
-                    else { self.remove( other ); }
+                    if value { self.insert(o); }
+                    else { self.remove(o); }
                 }
 
                 fn clear(&mut self) where
@@ -6549,16 +6416,16 @@ pub mod bits
                 { *self = Self::empty(); }
 
                 #[must_use]
-                fn intersection(self, other: Self) -> Self { Self::from_bits_retain( self.bits() & other.bits()) }
+                fn intersection(self, o: Self) -> Self { Self::from_bits_retain( self.bits() & other.bits()) }
 
                 #[must_use]
-                fn union(self, other: Self) -> Self { Self::from_bits_retain( self.bits() | other.bits()) }
+                fn union(self, o: Self) -> Self { Self::from_bits_retain( self.bits() | other.bits()) }
 
                 #[must_use]
-                fn difference(self, other: Self) -> Self { Self::from_bits_retain( self.bits() & !other.bits()) }
+                fn difference(self, o: Self) -> Self { Self::from_bits_retain( self.bits() & !other.bits()) }
 
                 #[must_use]
-                fn symmetric_difference(self, other: Self) -> Self { Self::from_bits_retain( self.bits() ^ other.bits()) }
+                fn symmetric_difference(self, o: Self) -> Self { Self::from_bits_retain( self.bits() ^ other.bits()) }
 
                 #[must_use]
                 fn complement(self) -> Self { Self::from_bits_truncate(!self.bits()) }
@@ -6744,8 +6611,7 @@ pub mod char
 
             file.read_to_string( &mut contents )?;
 
-            Self::from_string_impl( Some( String::from( path ) ), contents )
-        }
+            Self::from_string_impl( Some( String::from( path ) ), contents ) }
 
         fn from_string_impl( file:Option<String>, contents: String ) -> io::Result<CharStream> 
         {
@@ -6761,13 +6627,11 @@ pub mod char
                     line: 1,
                     col: 1,
                 } ) ),
-            } )
-        }
+            } ) }
 
         pub fn from_string( contents: String ) -> io::Result<CharStream> 
         {
-            Self::from_string_impl( None, contents )
-        }
+            Self::from_string_impl( None, contents ) }
 
         pub fn peek( &self ) -> Option<char> 
         {
@@ -6783,8 +6647,7 @@ pub mod char
         pub fn file( &self ) -> Option<String> 
         {
             let inner = self.inner.borrow();
-            inner.file.clone()
-        }
+            inner.file.clone() }
 
         pub fn line( &self ) -> usize 
         {
@@ -6880,8 +6743,7 @@ pub mod char
 
         let name = match name_lc.rfind( '-' ) {
             Some( pos ) => &name_lc[pos + 1..],
-            None => &name_lc[..]
-        };
+            None => &name_lc[..] };
 
         let ch = match name {
             "del" | "rubout"  => DELETE,
@@ -7007,8 +6869,7 @@ pub mod char
 
         match chars.next() {
             Some( ( idx, _ ) ) => cur + idx,
-            None => s.len()
-        }
+            None => s.len() }
     }
 
     pub fn forward_search( n: usize, buf:&str, mut cur: usize, ch:char ) -> Option<usize>
@@ -7107,6 +6968,7 @@ pub mod env
             "/sbin",
             "/bin",
         ]
+       
         {
             if Path::new( x ).exists() { paths.push( x.to_string() ); }
         }
@@ -7211,8 +7073,7 @@ pub mod error
     {
         fn from( e: ParseError ) -> Self
         {
-            OverError::ParseError( format!( "{}", e ) )
-        }
+            OverError::ParseError( format!( "{}", e ) ) }
     }
 
     pub mod parse
@@ -7237,8 +7098,7 @@ pub mod error
 
         pub fn parse_err<T>( file:Option<String>, kind: ParseErrorKind ) -> ParseResult<T>
         {
-            Err( ParseError { file, kind } )
-        }
+            Err( ParseError { file, kind } ) }
 
         #[derive( Debug )]
         pub enum ParseErrorKind
@@ -7690,12 +7550,10 @@ pub mod error
         }
 
         pub fn errno() -> Errno {
-            sys::errno()
-        }
+            sys::errno() }
 
         pub fn set_errno(err: Errno) {
-            sys::set_errno(err )
-        }
+            sys::set_errno(err ) }
 
     }
 
@@ -7733,8 +7591,7 @@ pub mod expand
             let ss = s.clone();
             let to = format!( "$head{}$z", home );
             let result = re.replace_all( ss.as_str(), to.as_str() );
-            s = result.to_string();
-        }
+            s = result.to_string(); }
 
         s
     }
@@ -7745,6 +7602,7 @@ pub mod expand
         let mut buff = Vec::new();
 
         for ( sep, text ) in tokens.iter()
+       
         {
             if !sep.is_empty() || !needs_globbing( text )
             {
@@ -7920,11 +7778,9 @@ pub mod get
     pub fn config_dir() -> String
     {
         if let Ok( x ) = env::var( "XDG_CONFIG_HOME" ) {
-            format!( "{}/cicada", x)
-        } else {
+            format!( "{}/cicada", x) } else {
             let home = user_home();
-            format!( "{}/.config/cicada", home )
-        }
+            format!( "{}/.config/cicada", home ) }
     }
 
     pub fn user_completer_dir() -> String
@@ -7987,7 +7843,8 @@ pub mod get
     {
         let mut count = 0;
         let mut met_x01 = false;
-        for c in prompt.chars() {
+        for c in prompt.chars()
+        {
             if c == '\x01' {
                 met_x01 = true;
                 continue;
@@ -8066,6 +7923,7 @@ pub mod fmt
         let mut string = String::with_capacity( s.len() );
 
         for ch in s.chars() 
+       
         {
             if let Some( s ) = get_char_map( ch  ) { string.push_str( s  ); }            
             else { string.push( ch  ); }
@@ -8094,7 +7952,8 @@ pub mod fmt
 
     impl Format for char 
     {
-        fn format( &self, _full: bool, _indent_amt: usize ) -> String {
+        fn format( &self, _full: bool, _indent_amt: usize ) -> String
+        {
             if let Some( s ) = get_char_map( *self ) {
                 format!( "\'{}\'", s )
             } else {
@@ -8106,8 +7965,7 @@ pub mod fmt
     impl Format for String 
     {
         fn format( &self, _full: bool, _indent_amt: usize ) -> String {
-            format!( "\"{}\"", replace_all( self ) )
-        }
+            format!( "\"{}\"", replace_all( self ) ) }
     }
 
     impl Format for Value 
@@ -8234,7 +8092,8 @@ pub mod fmt
 
     impl Format for Obj 
     {
-        fn format( &self, full: bool, indent_amt: usize ) -> String {
+        fn format( &self, full: bool, indent_amt: usize ) -> String
+        {
             if self.is_empty() && !self.has_parent() {
                 if full {
                     String::from( "{}" )
@@ -8434,8 +8293,7 @@ pub mod highlights
             start_byte + search_area
             .char_indices()
             .nth( non_ws_offset )
-            .map_or(0, |(idx, _ )| idx)
-        }
+            .map_or(0, |(idx, _ )| idx) }
         else { return None; };
 
         search_area = &line[token_start_byte..];
@@ -8445,8 +8303,7 @@ pub mod highlights
         if !sep.is_empty() && search_area.starts_with( sep)
         {
             estimated_len += sep.len();
-            current_search_offset += sep.len();
-        }
+            current_search_offset += sep.len(); }
         
         if search_area[current_search_offset..].starts_with(word )
         {
@@ -8455,8 +8312,7 @@ pub mod highlights
             
             if !sep.is_empty() && search_area[current_search_offset..].starts_with( sep) { estimated_len += sep.len(); }
 
-            Some( token_start_byte..( token_start_byte + estimated_len ) )
-        }
+            Some( token_start_byte..( token_start_byte + estimated_len ) ) }
         
         else if word.is_empty()
         && !sep.is_empty()
@@ -8464,10 +8320,10 @@ pub mod highlights
         && search_area[sep.len()..].starts_with( sep)
         {
             estimated_len += sep.len() * 2;
-            Some( token_start_byte..( token_start_byte + estimated_len ) )
-        }
+            Some( token_start_byte..( token_start_byte + estimated_len ) ) }
 
         else
+       
         {
             if search_area.starts_with(word ) { Some( token_start_byte..( token_start_byte + word.len() ) ) }
             else { None }
@@ -8743,6 +8599,7 @@ pub mod is
         if args.len() > 1 && ( args[1] == "--login" || args[1] == "-l" ) { return true; }
 
         if let Ok( term_program) = ::env::var( "TERM_PROGRAM" )
+       
         {
             if term_program == "vscode" { return true; }
         }
@@ -8761,11 +8618,13 @@ pub mod is
         if builtin(word ) { return true; }
 
         if let Ok( aliases ) = ::highlights::ALIASES.lock()
+       
         {
             if aliases.contains(word ) { return true; }
         }
 
         if let Ok( commands ) = ::highlights::AVAILABLE_COMMANDS.lock()
+       
         {
             if commands.contains(word ) { return true; }
         }
@@ -8827,7 +8686,7 @@ pub mod is
             _ => false,
         }
     }
-    // #[inline] pub fn is_public_assigned( c:char ) -> bool
+
     #[inline] pub fn public_assigned( c:char ) -> bool
     {
         match c
@@ -8895,6 +8754,7 @@ pub mod marker
     #[derive( Copy, Clone, PartialEq, Eq )]
     pub struct ProcMacroAutoTraits( pub PhantomData<Rc<()>>  );
     impl UnwindSafe for ProcMacroAutoTraits {}
+    
     impl RefUnwindSafe for ProcMacroAutoTraits {}
 }
 
@@ -9073,8 +8933,7 @@ pub mod num
                  );
             }
             for_each_tuple!( bounded_tuple );
-            bounded_impl!( f64, f64::MIN, f64::MAX );
-        } pub use self::bounds::Bounded;
+            bounded_impl!( f64, f64::MIN, f64::MAX ); } pub use self::bounds::Bounded;
 
         pub mod cast
         {
@@ -9813,7 +9672,7 @@ pub mod num
                     sign < 0
                 }
 
-                #[inline] fn min( self, other: Self ) -> Self {
+                #[inline] fn min( self, o: Self ) -> Self {
                     if self.is_nan() {
                         return other;
                     }
@@ -9829,7 +9688,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn m( self, other: Self ) -> Self {
+                #[inline] fn m( self, o: Self ) -> Self {
                     if self.is_nan() {
                         return other;
                     }
@@ -9898,8 +9757,8 @@ pub mod num
                     Self::classify( self ) -> FpCategory;
                     Self::is_sign_positive( self ) -> bool;
                     Self::is_sign_negative( self ) -> bool;
-                    Self::min( self, other: Self ) -> Self;
-                    Self::m( self, other: Self ) -> Self;
+                    Self::min( self, o: Self ) -> Self;
+                    Self::m( self, o: Self ) -> Self;
                     Self::recip( self ) -> Self;
                     Self::to_degrees( self ) -> Self;
                     Self::to_radians( self ) -> Self;
@@ -9947,8 +9806,8 @@ pub mod num
                     Self::classify( self ) -> FpCategory;
                     Self::is_sign_positive( self ) -> bool;
                     Self::is_sign_negative( self ) -> bool;
-                    Self::min( self, other: Self ) -> Self;
-                    Self::m( self, other: Self ) -> Self;
+                    Self::min( self, o: Self ) -> Self;
+                    Self::m( self, o: Self ) -> Self;
                     Self::recip( self ) -> Self;
                     Self::to_degrees( self ) -> Self;
                     Self::to_radians( self ) -> Self;
@@ -10023,22 +9882,22 @@ pub mod num
                     self * halfpi / ninety
                 }
 
-                fn m( self, other: Self ) -> Self;
-                fn min( self, other: Self ) -> Self;
+                fn m( self, o: Self ) -> Self;
+                fn min( self, o: Self ) -> Self;
                 fn clamp( self, min: Self, m: Self ) -> Self {
                     num::traits::clamp( self, min, m )
                 }
 
-                fn abs_sub( self, other: Self ) -> Self;
+                fn abs_sub( self, o: Self ) -> Self;
                 fn cbrt( self ) -> Self;
-                fn hypot( self, other: Self ) -> Self;
+                fn hypot( self, o: Self ) -> Self;
                 fn sin( self ) -> Self;
                 fn cos( self ) -> Self;
                 fn tan( self ) -> Self;
                 fn asin( self ) -> Self;
                 fn acos( self ) -> Self;
                 fn atan( self ) -> Self;
-                fn atan2( self, other: Self ) -> Self;
+                fn atan2( self, o: Self ) -> Self;
                 fn sin_cos( self ) -> ( Self, Self );
                 fn exp_m1( self ) -> Self;
                 fn ln_1p( self ) -> Self;
@@ -10073,7 +9932,7 @@ pub mod num
                         }
                         #[inline]
                         #[allow( deprecated )]
-                        fn abs_sub( self, other: Self ) -> Self {
+                        fn abs_sub( self, o: Self ) -> Self {
                             <$T>::abs_sub( self, other )
                         }
 
@@ -10110,17 +9969,17 @@ pub mod num
                             Self::log10( self ) -> Self;
                             Self::to_degrees( self ) -> Self;
                             Self::to_radians( self ) -> Self;
-                            Self::m( self, other: Self ) -> Self;
-                            Self::min( self, other: Self ) -> Self;
+                            Self::m( self, o: Self ) -> Self;
+                            Self::min( self, o: Self ) -> Self;
                             Self::cbrt( self ) -> Self;
-                            Self::hypot( self, other: Self ) -> Self;
+                            Self::hypot( self, o: Self ) -> Self;
                             Self::sin( self ) -> Self;
                             Self::cos( self ) -> Self;
                             Self::tan( self ) -> Self;
                             Self::asin( self ) -> Self;
                             Self::acos( self ) -> Self;
                             Self::atan( self ) -> Self;
-                            Self::atan2( self, other: Self ) -> Self;
+                            Self::atan2( self, o: Self ) -> Self;
                             Self::sin_cos( self ) -> ( Self, Self );
                             Self::exp_m1( self ) -> Self;
                             Self::ln_1p( self ) -> Self;
@@ -10261,8 +10120,7 @@ pub mod num
                 };
             }
             totalorder_impl!( f64, i64, u64, 64 );
-            totalorder_impl!( f32, i32, u32, 32 );
-        } pub use self::float::{ Float, FloatConst };
+            totalorder_impl!( f32, i32, u32, 32 ); } pub use self::float::{ Float, FloatConst };
 
         pub mod identities
         {
@@ -10636,8 +10494,7 @@ pub mod num
             prim_int_impl!( i32, i32, u32 );
             prim_int_impl!( i64, i64, u64 );
             prim_int_impl!( i128, i128, u128 );
-            prim_int_impl!( isize, isize, usize );
-        } pub use self::int::PrimInt;
+            prim_int_impl!( isize, isize, usize ); } pub use self::int::PrimInt;
 
         pub mod ops
         {
@@ -11794,18 +11651,18 @@ pub mod num
                 fn log10( self ) -> Self;
                 fn to_degrees( self ) -> Self;
                 fn to_radians( self ) -> Self;
-                fn m( self, other: Self ) -> Self;
-                fn min( self, other: Self ) -> Self;
-                fn abs_sub( self, other: Self ) -> Self;
+                fn m( self, o: Self ) -> Self;
+                fn min( self, o: Self ) -> Self;
+                fn abs_sub( self, o: Self ) -> Self;
                 fn cbrt( self ) -> Self;
-                fn hypot( self, other: Self ) -> Self;
+                fn hypot( self, o: Self ) -> Self;
                 fn sin( self ) -> Self;
                 fn cos( self ) -> Self;
                 fn tan( self ) -> Self;
                 fn asin( self ) -> Self;
                 fn acos( self ) -> Self;
                 fn atan( self ) -> Self;
-                fn atan2( self, other: Self ) -> Self;
+                fn atan2( self, o: Self ) -> Self;
                 fn sin_cos( self ) -> ( Self, Self );
                 fn exp_m1( self ) -> Self;
                 fn ln_1p( self ) -> Self;
@@ -11848,18 +11705,18 @@ pub mod num
                     Float::log10( self ) -> Self;
                     Float::to_degrees( self ) -> Self;
                     Float::to_radians( self ) -> Self;
-                    Float::m( self, other: Self ) -> Self;
-                    Float::min( self, other: Self ) -> Self;
-                    Float::abs_sub( self, other: Self ) -> Self;
+                    Float::m( self, o: Self ) -> Self;
+                    Float::min( self, o: Self ) -> Self;
+                    Float::abs_sub( self, o: Self ) -> Self;
                     Float::cbrt( self ) -> Self;
-                    Float::hypot( self, other: Self ) -> Self;
+                    Float::hypot( self, o: Self ) -> Self;
                     Float::sin( self ) -> Self;
                     Float::cos( self ) -> Self;
                     Float::tan( self ) -> Self;
                     Float::asin( self ) -> Self;
                     Float::acos( self ) -> Self;
                     Float::atan( self ) -> Self;
-                    Float::atan2( self, other: Self ) -> Self;
+                    Float::atan2( self, o: Self ) -> Self;
                     Float::sin_cos( self ) -> ( Self, Self );
                     Float::exp_m1( self ) -> Self;
                     Float::ln_1p( self ) -> Self;
@@ -12042,8 +11899,7 @@ pub mod num
                         <$t>::from_str_radix( s, radix )
                     }
                 }
-            )* )
-        }
+            )* ) }
 
         int_trait_impl!( Num for usize u8 u16 u32 u64 u128 );
         int_trait_impl!( Num for isize i8 i16 i32 i64 i128 );
@@ -12086,8 +11942,7 @@ pub mod num
                 && a.bytes().zip( b.bytes() ).all( |( a, b )| {
                     let a_to_ascii_lower = a | ( ( ( b'A' <= a && a <= b'Z' ) as u8 ) << 5 );
                     a_to_ascii_lower == b
-                } )
-        }
+                } ) }
         
         macro_rules! float_trait_impl
         {
@@ -12246,8 +12101,7 @@ pub mod num
                         Ok( sig * exp )
                     }
                 }
-            )* )
-        }
+            )* ) }
         
         float_trait_impl!( Num for f32 f64 );
 
@@ -12581,8 +12435,7 @@ pub mod num
             unsigned_roots!( u32 );
             unsigned_roots!( u64 );
             unsigned_roots!( u128 );
-            unsigned_roots!( usize );
-        } pub use self::roots::{cbrt, nth_root, sqrt, Roots};
+            unsigned_roots!( usize ); } pub use self::roots::{cbrt, nth_root, sqrt, Roots};
 
         pub trait Integer: Sized + Num + PartialOrd + Ord + Eq 
         {
@@ -12590,7 +12443,7 @@ pub mod num
             fn div_floor( &self, other:&Self ) -> Self;
             fn mod_floor( &self, other:&Self ) -> Self;
             fn div_ceil( &self, other:&Self ) -> Self {
-                let ( q, r ) = self.div_mod_floor( other );
+                let ( q, r ) = self.div_mod_floor(o);
                 if r.is_zero() {
                     q
                 } else {
@@ -12601,7 +12454,7 @@ pub mod num
             fn gcd( &self, other:&Self ) -> Self;
             fn lcm( &self, other:&Self ) -> Self;
             #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self ) {
-                ( self.gcd( other ), self.lcm( other ) )
+                ( self.gcd(o), self.lcm(o) )
             }
 
             #[inline] fn extended_gcd( &self, other:&Self ) -> ExtendedGcd<Self> where
@@ -12640,12 +12493,12 @@ pub mod num
             #[inline] fn extended_gcd_lcm( &self, other:&Self ) -> ( ExtendedGcd<Self>, Self ) where
                 Self: Clone + Signed,
             {
-                ( self.extended_gcd( other ), self.lcm( other ) )
+                ( self.extended_gcd(o), self.lcm(o) )
             }
 
             #[deprecated( note = "Please use is_multiple_of instead" )]
             #[inline] fn divides( &self, other:&Self ) -> bool {
-                self.is_multiple_of( other )
+                self.is_multiple_of(o)
             }
 
             fn is_multiple_of( &self, other:&Self ) -> bool;
@@ -12653,14 +12506,14 @@ pub mod num
             fn is_odd( &self ) -> bool;
             fn div_rem( &self, other:&Self ) -> ( Self, Self );
             fn div_mod_floor( &self, other:&Self ) -> ( Self, Self ) {
-                ( self.div_floor( other ), self.mod_floor( other ) )
+                ( self.div_floor(o), self.mod_floor(o) )
             }
 
             #[inline] fn next_multiple_of( &self, other:&Self ) -> Self
             where
                 Self: Clone,
             {
-                let m = self.mod_floor( other );
+                let m = self.mod_floor(o);
                 self.clone()
                     + if m.is_zero() {
                         Self::zero()
@@ -12673,7 +12526,7 @@ pub mod num
             where
                 Self: Clone,
             {
-                self.clone() - self.mod_floor( other )
+                self.clone() - self.mod_floor(o)
             }
             
             fn dec( &mut self ) where
@@ -12699,43 +12552,35 @@ pub mod num
 
         #[inline] pub fn div_rem<T: Integer>( x: T, y: T ) -> ( T, T ) 
         {
-            x.div_rem( &y )
-        }
+            x.div_rem( &y ) }
 
         #[inline] pub fn div_floor<T: Integer>( x: T, y: T ) -> T 
         {
-            x.div_floor( &y )
-        }
+            x.div_floor( &y ) }
 
         #[inline] pub fn mod_floor<T: Integer>( x: T, y: T ) -> T 
         {
-            x.mod_floor( &y )
-        }
+            x.mod_floor( &y ) }
 
         #[inline] pub fn div_mod_floor<T: Integer>( x: T, y: T ) -> ( T, T ) 
         {
-            x.div_mod_floor( &y )
-        }
+            x.div_mod_floor( &y ) }
 
         #[inline] pub fn div_ceil<T: Integer>( x: T, y: T ) -> T 
         {
-            x.div_ceil( &y )
-        }
+            x.div_ceil( &y ) }
 
         #[inline( always )] pub fn gcd<T: Integer>( x: T, y: T ) -> T 
         {
-            x.gcd( &y )
-        }
+            x.gcd( &y ) }
 
         #[inline( always )] pub fn lcm<T: Integer>( x: T, y: T ) -> T 
         {
-            x.lcm( &y )
-        }
+            x.lcm( &y ) }
 
         #[inline( always )] pub fn gcd_lcm<T: Integer>( x: T, y: T ) -> ( T, T ) 
         {
-            x.gcd_lcm( &y )
-        }
+            x.gcd_lcm( &y ) }
 
         macro_rules! impl_integer_for_isize 
         {
@@ -12745,7 +12590,7 @@ pub mod num
                     #[inline] fn div_floor( &self, other:&Self ) -> Self {
                        
                        
-                        let ( d, r ) = self.div_rem( other );
+                        let ( d, r ) = self.div_rem(o);
                         if ( r > 0 && *other < 0 ) || ( r < 0 && *other > 0 ) {
                             d - 1
                         } else {
@@ -12767,7 +12612,7 @@ pub mod num
                     #[inline] fn div_mod_floor( &self, other:&Self ) -> ( Self, Self ) {
                        
                        
-                        let ( d, r ) = self.div_rem( other );
+                        let ( d, r ) = self.div_rem(o);
                         if ( r > 0 && *other < 0 ) || ( r < 0 && *other > 0 ) {
                             ( d - 1, r + *other )
                         } else {
@@ -12775,7 +12620,7 @@ pub mod num
                         }
                     }
                     #[inline] fn div_ceil( &self, other:&Self ) -> Self {
-                        let ( d, r ) = self.div_rem( other );
+                        let ( d, r ) = self.div_rem(o);
                         if ( r > 0 && *other > 0 ) || ( r < 0 && *other < 0 ) {
                             d + 1
                         } else {
@@ -12823,7 +12668,7 @@ pub mod num
                         m << shift
                     }
                     #[inline] fn extended_gcd_lcm( &self, other:&Self ) -> ( ExtendedGcd<Self>, Self ) {
-                        let egcd = self.extended_gcd( other );
+                        let egcd = self.extended_gcd(o);
                        
                         let lcm = if egcd.gcd.is_zero() {
                             Self::zero()
@@ -12833,13 +12678,13 @@ pub mod num
                         ( egcd, lcm )
                     }
                     #[inline] fn lcm( &self, other:&Self ) -> Self {
-                        self.gcd_lcm( other ).1
+                        self.gcd_lcm(o).1
                     }
                     #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self ) {
                         if self.is_zero() && other.is_zero() {
                             return ( Self::zero(), Self::zero() );
                         }
-                        let gcd = self.gcd( other );
+                        let gcd = self.gcd(o);
                        
                         let lcm = ( *self * ( *other / gcd ) ).abs();
                         ( gcd, lcm )
@@ -12929,7 +12774,7 @@ pub mod num
                         m << shift
                     }
                     #[inline] fn extended_gcd_lcm( &self, other:&Self ) -> ( ExtendedGcd<Self>, Self ) {
-                        let egcd = self.extended_gcd( other );
+                        let egcd = self.extended_gcd(o);
                        
                         let lcm = if egcd.gcd.is_zero() {
                             Self::zero()
@@ -12940,13 +12785,13 @@ pub mod num
                     }
 
                     #[inline] fn lcm( &self, other:&Self ) -> Self {
-                        self.gcd_lcm( other ).1
+                        self.gcd_lcm(o).1
                     }
                     #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self ) {
                         if self.is_zero() && other.is_zero() {
                             return ( Self::zero(), Self::zero() );
                         }
-                        let gcd = self.gcd( other );
+                        let gcd = self.gcd(o);
                         let lcm = *self * ( *other / gcd );
                         ( gcd, lcm )
                     }
@@ -13023,8 +12868,7 @@ pub mod num
         {
            
             let g = gcd( r.clone(), b.clone() );
-            r / g.clone() * ( a / ( b / g ) )
-        }
+            r / g.clone() * ( a / ( b / g ) ) }
 
         pub fn binomial<T: Integer + Clone>( mut n: T, k: T ) -> T
         {
@@ -13151,7 +12995,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: BigInt ) -> BigInt {
+                    #[inline] fn add( self, o: BigInt ) -> BigInt {
                         bigint_add!( self, self.clone(), &self.data, other, other, other.data )
                     }
                 }
@@ -13167,7 +13011,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: BigInt ) -> BigInt {
+                    #[inline] fn add( self, o: BigInt ) -> BigInt {
                         bigint_add!( self, self, self.data, other, other, other.data )
                     }
                 }
@@ -13190,11 +13034,11 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: u32 ) -> BigInt {
+                    #[inline] fn add( self, o: u32 ) -> BigInt {
                         match self.sign {
-                            NoSign => From::from( other ),
+                            NoSign => From::from(o),
                             Plus => BigInt::from( self.data + other ),
-                            Minus => match self.data.cmp( &From::from( other ) ) {
+                            Minus => match self.data.cmp( &From::from(o) ) {
                                 Equal => Self::ZERO,
                                 Less => BigInt::from( other - self.data ),
                                 Greater => -BigInt::from( self.data - other ),
@@ -13204,7 +13048,7 @@ pub mod num
                 }
                 impl AddAssign<u32> for BigInt
                 {
-                    #[inline] fn add_assign( &mut self, other: u32 ) {
+                    #[inline] fn add_assign( &mut self, o: u32 ) {
                         let n = mem::replace( self, Self::ZERO );
                         *self = n + other;
                     }
@@ -13213,11 +13057,11 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: u64 ) -> BigInt {
+                    #[inline] fn add( self, o: u64 ) -> BigInt {
                         match self.sign {
-                            NoSign => From::from( other ),
+                            NoSign => From::from(o),
                             Plus => BigInt::from( self.data + other ),
-                            Minus => match self.data.cmp( &From::from( other ) ) {
+                            Minus => match self.data.cmp( &From::from(o) ) {
                                 Equal => Self::ZERO,
                                 Less => BigInt::from( other - self.data ),
                                 Greater => -BigInt::from( self.data - other ),
@@ -13227,7 +13071,7 @@ pub mod num
                 }
                 impl AddAssign<u64> for BigInt
                 {
-                    #[inline] fn add_assign( &mut self, other: u64 ) {
+                    #[inline] fn add_assign( &mut self, o: u64 ) {
                         let n = mem::replace( self, Self::ZERO );
                         *self = n + other;
                     }
@@ -13236,11 +13080,11 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: u128 ) -> BigInt {
+                    #[inline] fn add( self, o: u128 ) -> BigInt {
                         match self.sign {
-                            NoSign => BigInt::from( other ),
+                            NoSign => BigInt::from(o),
                             Plus => BigInt::from( self.data + other ),
-                            Minus => match self.data.cmp( &From::from( other ) ) {
+                            Minus => match self.data.cmp( &From::from(o) ) {
                                 Equal => Self::ZERO,
                                 Less => BigInt::from( other - self.data ),
                                 Greater => -BigInt::from( self.data - other ),
@@ -13250,7 +13094,7 @@ pub mod num
                 }
                 impl AddAssign<u128> for BigInt
                 {
-                    #[inline] fn add_assign( &mut self, other: u128 ) {
+                    #[inline] fn add_assign( &mut self, o: u128 ) {
                         let n = mem::replace( self, Self::ZERO );
                         *self = n + other;
                     }
@@ -13263,7 +13107,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: i32 ) -> BigInt {
+                    #[inline] fn add( self, o: i32 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self + u,
                             Negative( u ) => self - u,
@@ -13272,7 +13116,7 @@ pub mod num
                 }
                 impl AddAssign<i32> for BigInt
                 {
-                    #[inline] fn add_assign( &mut self, other: i32 ) {
+                    #[inline] fn add_assign( &mut self, o: i32 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self += u,
                             Negative( u ) => *self -= u,
@@ -13283,7 +13127,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: i64 ) -> BigInt {
+                    #[inline] fn add( self, o: i64 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self + u,
                             Negative( u ) => self - u,
@@ -13292,7 +13136,7 @@ pub mod num
                 }
                 impl AddAssign<i64> for BigInt
                 {
-                    #[inline] fn add_assign( &mut self, other: i64 ) {
+                    #[inline] fn add_assign( &mut self, o: i64 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self += u,
                             Negative( u ) => *self -= u,
@@ -13303,7 +13147,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn add( self, other: i128 ) -> BigInt {
+                    #[inline] fn add( self, o: i128 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self + u,
                             Negative( u ) => self - u,
@@ -13312,7 +13156,7 @@ pub mod num
                 }
                 impl AddAssign<i128> for BigInt
                 {
-                    #[inline] fn add_assign( &mut self, other: i128 ) {
+                    #[inline] fn add_assign( &mut self, o: i128 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self += u,
                             Negative( u ) => *self -= u,
@@ -13350,7 +13194,7 @@ pub mod num
                     type Output = BigInt;
 
                     #[inline] fn div( self, other:&BigInt ) -> BigInt {
-                        let ( q, _ ) = self.div_rem( other );
+                        let ( q, _ ) = self.div_rem(o);
                         q
                     }
                 }
@@ -13372,13 +13216,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: u32 ) -> BigInt {
+                    #[inline] fn div( self, o: u32 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data / other )
                     }
                 }
                 impl DivAssign<u32> for BigInt
                 {
-                    #[inline] fn div_assign( &mut self, other: u32 ) {
+                    #[inline] fn div_assign( &mut self, o: u32 ) {
                         self.data /= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13388,7 +13232,7 @@ pub mod num
                 impl Div<BigInt> for u32 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: BigInt ) -> BigInt {
+                    #[inline] fn div( self, o: BigInt ) -> BigInt {
                         BigInt::from_biguint( other.sign, self / other.data )
                     }
                 }
@@ -13396,13 +13240,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: u64 ) -> BigInt {
+                    #[inline] fn div( self, o: u64 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data / other )
                     }
                 }
                 impl DivAssign<u64> for BigInt
                 {
-                    #[inline] fn div_assign( &mut self, other: u64 ) {
+                    #[inline] fn div_assign( &mut self, o: u64 ) {
                         self.data /= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13412,7 +13256,7 @@ pub mod num
                 impl Div<BigInt> for u64 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: BigInt ) -> BigInt {
+                    #[inline] fn div( self, o: BigInt ) -> BigInt {
                         BigInt::from_biguint( other.sign, self / other.data )
                     }
                 }
@@ -13420,13 +13264,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: u128 ) -> BigInt {
+                    #[inline] fn div( self, o: u128 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data / other )
                     }
                 }
                 impl DivAssign<u128> for BigInt
                 {
-                    #[inline] fn div_assign( &mut self, other: u128 ) {
+                    #[inline] fn div_assign( &mut self, o: u128 ) {
                         self.data /= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13436,7 +13280,7 @@ pub mod num
                 impl Div<BigInt> for u128 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: BigInt ) -> BigInt {
+                    #[inline] fn div( self, o: BigInt ) -> BigInt {
                         BigInt::from_biguint( other.sign, self / other.data )
                     }
                 }
@@ -13448,7 +13292,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: i32 ) -> BigInt {
+                    #[inline] fn div( self, o: i32 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self / u,
                             Negative( u ) => -self / u,
@@ -13457,7 +13301,7 @@ pub mod num
                 }
                 impl DivAssign<i32> for BigInt
                 {
-                    #[inline] fn div_assign( &mut self, other: i32 ) {
+                    #[inline] fn div_assign( &mut self, o: i32 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self /= u,
                             Negative( u ) => {
@@ -13470,7 +13314,7 @@ pub mod num
                 impl Div<BigInt> for i32 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: BigInt ) -> BigInt {
+                    #[inline] fn div( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u / other,
                             Negative( u ) => u / -other,
@@ -13481,7 +13325,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: i64 ) -> BigInt {
+                    #[inline] fn div( self, o: i64 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self / u,
                             Negative( u ) => -self / u,
@@ -13490,7 +13334,7 @@ pub mod num
                 }
                 impl DivAssign<i64> for BigInt
                 {
-                    #[inline] fn div_assign( &mut self, other: i64 ) {
+                    #[inline] fn div_assign( &mut self, o: i64 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self /= u,
                             Negative( u ) => {
@@ -13503,7 +13347,7 @@ pub mod num
                 impl Div<BigInt> for i64 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: BigInt ) -> BigInt {
+                    #[inline] fn div( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u / other,
                             Negative( u ) => u / -other,
@@ -13514,7 +13358,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: i128 ) -> BigInt {
+                    #[inline] fn div( self, o: i128 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self / u,
                             Negative( u ) => -self / u,
@@ -13523,7 +13367,7 @@ pub mod num
                 }
                 impl DivAssign<i128> for BigInt
                 {
-                    #[inline] fn div_assign( &mut self, other: i128 ) {
+                    #[inline] fn div_assign( &mut self, o: i128 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self /= u,
                             Negative( u ) => {
@@ -13536,7 +13380,7 @@ pub mod num
                 impl Div<BigInt> for i128 {
                     type Output = BigInt;
 
-                    #[inline] fn div( self, other: BigInt ) -> BigInt {
+                    #[inline] fn div( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u / other,
                             Negative( u ) => u / -other,
@@ -13550,12 +13394,12 @@ pub mod num
                     type Output = BigInt;
 
                     #[inline] fn rem( self, other:&BigInt ) -> BigInt {
-                        if let Some( other ) = other.to_u32() {
+                        if let Some(o) = other.to_u32() {
                             self % other
-                        } else if let Some( other ) = other.to_i32() {
+                        } else if let Some(o) = other.to_i32() {
                             self % other
                         } else {
-                            let ( _, r ) = self.div_rem( other );
+                            let ( _, r ) = self.div_rem(o);
                             r
                         }
                     }
@@ -13578,13 +13422,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: u32 ) -> BigInt {
+                    #[inline] fn rem( self, o: u32 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data % other )
                     }
                 }
                 impl RemAssign<u32> for BigInt
                 {
-                    #[inline] fn rem_assign( &mut self, other: u32 ) {
+                    #[inline] fn rem_assign( &mut self, o: u32 ) {
                         self.data %= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13594,7 +13438,7 @@ pub mod num
                 impl Rem<BigInt> for u32 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: BigInt ) -> BigInt {
+                    #[inline] fn rem( self, o: BigInt ) -> BigInt {
                         BigInt::from( self % other.data )
                     }
                 }
@@ -13602,13 +13446,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: u64 ) -> BigInt {
+                    #[inline] fn rem( self, o: u64 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data % other )
                     }
                 }
                 impl RemAssign<u64> for BigInt
                 {
-                    #[inline] fn rem_assign( &mut self, other: u64 ) {
+                    #[inline] fn rem_assign( &mut self, o: u64 ) {
                         self.data %= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13618,7 +13462,7 @@ pub mod num
                 impl Rem<BigInt> for u64 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: BigInt ) -> BigInt {
+                    #[inline] fn rem( self, o: BigInt ) -> BigInt {
                         BigInt::from( self % other.data )
                     }
                 }
@@ -13626,13 +13470,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: u128 ) -> BigInt {
+                    #[inline] fn rem( self, o: u128 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data % other )
                     }
                 }
                 impl RemAssign<u128> for BigInt
                 {
-                    #[inline] fn rem_assign( &mut self, other: u128 ) {
+                    #[inline] fn rem_assign( &mut self, o: u128 ) {
                         self.data %= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13642,7 +13486,7 @@ pub mod num
                 impl Rem<BigInt> for u128 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: BigInt ) -> BigInt {
+                    #[inline] fn rem( self, o: BigInt ) -> BigInt {
                         BigInt::from( self % other.data )
                     }
                 }
@@ -13654,20 +13498,20 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: i32 ) -> BigInt {
+                    #[inline] fn rem( self, o: i32 ) -> BigInt {
                         self % other.unsigned_abs()
                     }
                 }
                 impl RemAssign<i32> for BigInt
                 {
-                    #[inline] fn rem_assign( &mut self, other: i32 ) {
+                    #[inline] fn rem_assign( &mut self, o: i32 ) {
                         *self %= other.unsigned_abs();
                     }
                 }
                 impl Rem<BigInt> for i32 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: BigInt ) -> BigInt {
+                    #[inline] fn rem( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u % other,
                             Negative( u ) => -( u % other ),
@@ -13678,20 +13522,20 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: i64 ) -> BigInt {
+                    #[inline] fn rem( self, o: i64 ) -> BigInt {
                         self % other.unsigned_abs()
                     }
                 }
                 impl RemAssign<i64> for BigInt
                 {
-                    #[inline] fn rem_assign( &mut self, other: i64 ) {
+                    #[inline] fn rem_assign( &mut self, o: i64 ) {
                         *self %= other.unsigned_abs();
                     }
                 }
                 impl Rem<BigInt> for i64 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: BigInt ) -> BigInt {
+                    #[inline] fn rem( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u % other,
                             Negative( u ) => -( u % other ),
@@ -13702,20 +13546,20 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: i128 ) -> BigInt {
+                    #[inline] fn rem( self, o: i128 ) -> BigInt {
                         self % other.unsigned_abs()
                     }
                 }
                 impl RemAssign<i128> for BigInt
                 {
-                    #[inline] fn rem_assign( &mut self, other: i128 ) {
+                    #[inline] fn rem_assign( &mut self, o: i128 ) {
                         *self %= other.unsigned_abs();
                     }
                 }
                 impl Rem<BigInt> for i128 {
                     type Output = BigInt;
 
-                    #[inline] fn rem( self, other: BigInt ) -> BigInt {
+                    #[inline] fn rem( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u % other,
                             Negative( u ) => -( u % other ),
@@ -13811,7 +13655,7 @@ pub mod num
                 impl Mul<Sign> for Sign {
                     type Output = Sign;
 
-                    #[inline] fn mul( self, other: Sign ) -> Sign {
+                    #[inline] fn mul( self, o: Sign ) -> Sign {
                         match ( self, other ) {
                             ( NoSign, _ ) | ( _, NoSign ) => NoSign,
                             ( Plus, Plus ) | ( Minus, Minus ) => Plus,
@@ -13825,7 +13669,7 @@ pub mod num
                             type Output = BigInt;
 
                             #[inline]
-                            fn mul( self, other: $Other ) -> BigInt {
+                            fn mul( self, o: $Other ) -> BigInt {
                                
                                 let BigInt { data: x, .. } = self;
                                 let BigInt { data: y, .. } = other;
@@ -13844,7 +13688,7 @@ pub mod num
                     ( $( impl MulAssign<$Other:ty> for BigInt; )* ) => {$( 
                         impl MulAssign<$Other> for BigInt {
                             #[inline]
-                            fn mul_assign( &mut self, other: $Other ) {
+                            fn mul_assign( &mut self, o: $Other ) {
                                
                                 let BigInt { data: y, .. } = other;
                                 self.data *= y;
@@ -13871,13 +13715,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul( self, other: u32 ) -> BigInt {
+                    #[inline] fn mul( self, o: u32 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data * other )
                     }
                 }
                 impl MulAssign<u32> for BigInt
                 {
-                    #[inline] fn mul_assign( &mut self, other: u32 ) {
+                    #[inline] fn mul_assign( &mut self, o: u32 ) {
                         self.data *= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13888,13 +13732,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul( self, other: u64 ) -> BigInt {
+                    #[inline] fn mul( self, o: u64 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data * other )
                     }
                 }
                 impl MulAssign<u64> for BigInt
                 {
-                    #[inline] fn mul_assign( &mut self, other: u64 ) {
+                    #[inline] fn mul_assign( &mut self, o: u64 ) {
                         self.data *= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13905,13 +13749,13 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul( self, other: u128 ) -> BigInt {
+                    #[inline] fn mul( self, o: u128 ) -> BigInt {
                         BigInt::from_biguint( self.sign, self.data * other )
                     }
                 }
                 impl MulAssign<u128> for BigInt
                 {
-                    #[inline] fn mul_assign( &mut self, other: u128 ) {
+                    #[inline] fn mul_assign( &mut self, o: u128 ) {
                         self.data *= other;
                         if self.data.is_zero() {
                             self.sign = NoSign;
@@ -13926,7 +13770,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul( self, other: i32 ) -> BigInt {
+                    #[inline] fn mul( self, o: i32 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self * u,
                             Negative( u ) => -self * u,
@@ -13935,7 +13779,7 @@ pub mod num
                 }
                 impl MulAssign<i32> for BigInt
                 {
-                    #[inline] fn mul_assign( &mut self, other: i32 ) {
+                    #[inline] fn mul_assign( &mut self, o: i32 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self *= u,
                             Negative( u ) => {
@@ -13949,7 +13793,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul( self, other: i64 ) -> BigInt {
+                    #[inline] fn mul( self, o: i64 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self * u,
                             Negative( u ) => -self * u,
@@ -13958,7 +13802,7 @@ pub mod num
                 }
                 impl MulAssign<i64> for BigInt
                 {
-                    #[inline] fn mul_assign( &mut self, other: i64 ) {
+                    #[inline] fn mul_assign( &mut self, o: i64 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self *= u,
                             Negative( u ) => {
@@ -13972,7 +13816,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn mul( self, other: i128 ) -> BigInt {
+                    #[inline] fn mul( self, o: i128 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self * u,
                             Negative( u ) => -self * u,
@@ -13981,7 +13825,7 @@ pub mod num
                 }
                 impl MulAssign<i128> for BigInt
                 {
-                    #[inline] fn mul_assign( &mut self, other: i128 ) {
+                    #[inline] fn mul_assign( &mut self, o: i128 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self *= u,
                             Negative( u ) => {
@@ -14048,7 +13892,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         bigint_sub!( self, self.clone(), &self.data, other, other, other.data )
                     }
                 }
@@ -14064,7 +13908,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         bigint_sub!( self, self, self.data, other, other, other.data )
                     }
                 }
@@ -14087,11 +13931,11 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: u32 ) -> BigInt {
+                    #[inline] fn sub( self, o: u32 ) -> BigInt {
                         match self.sign {
-                            NoSign => -BigInt::from( other ),
+                            NoSign => -BigInt::from(o),
                             Minus => -BigInt::from( self.data + other ),
-                            Plus => match self.data.cmp( &From::from( other ) ) {
+                            Plus => match self.data.cmp( &From::from(o) ) {
                                 Equal => Self::ZERO,
                                 Greater => BigInt::from( self.data - other ),
                                 Less => -BigInt::from( other - self.data ),
@@ -14101,7 +13945,7 @@ pub mod num
                 }
                 impl SubAssign<u32> for BigInt
                 {
-                    #[inline] fn sub_assign( &mut self, other: u32 ) {
+                    #[inline] fn sub_assign( &mut self, o: u32 ) {
                         let n = mem::replace( self, Self::ZERO );
                         *self = n - other;
                     }
@@ -14109,21 +13953,21 @@ pub mod num
                 impl Sub<BigInt> for u32 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         -( other - self )
                     }
                 }
                 impl Sub<BigInt> for u64 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         -( other - self )
                     }
                 }
                 impl Sub<BigInt> for u128 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         -( other - self )
                     }
                 }
@@ -14131,11 +13975,11 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: u64 ) -> BigInt {
+                    #[inline] fn sub( self, o: u64 ) -> BigInt {
                         match self.sign {
-                            NoSign => -BigInt::from( other ),
+                            NoSign => -BigInt::from(o),
                             Minus => -BigInt::from( self.data + other ),
-                            Plus => match self.data.cmp( &From::from( other ) ) {
+                            Plus => match self.data.cmp( &From::from(o) ) {
                                 Equal => Self::ZERO,
                                 Greater => BigInt::from( self.data - other ),
                                 Less => -BigInt::from( other - self.data ),
@@ -14145,7 +13989,7 @@ pub mod num
                 }
                 impl SubAssign<u64> for BigInt
                 {
-                    #[inline] fn sub_assign( &mut self, other: u64 ) {
+                    #[inline] fn sub_assign( &mut self, o: u64 ) {
                         let n = mem::replace( self, Self::ZERO );
                         *self = n - other;
                     }
@@ -14154,11 +13998,11 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: u128 ) -> BigInt {
+                    #[inline] fn sub( self, o: u128 ) -> BigInt {
                         match self.sign {
-                            NoSign => -BigInt::from( other ),
+                            NoSign => -BigInt::from(o),
                             Minus => -BigInt::from( self.data + other ),
-                            Plus => match self.data.cmp( &From::from( other ) ) {
+                            Plus => match self.data.cmp( &From::from(o) ) {
                                 Equal => Self::ZERO,
                                 Greater => BigInt::from( self.data - other ),
                                 Less => -BigInt::from( other - self.data ),
@@ -14168,7 +14012,7 @@ pub mod num
                 }
                 impl SubAssign<u128> for BigInt
                 {
-                    #[inline] fn sub_assign( &mut self, other: u128 ) {
+                    #[inline] fn sub_assign( &mut self, o: u128 ) {
                         let n = mem::replace( self, Self::ZERO );
                         *self = n - other;
                     }
@@ -14181,7 +14025,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: i32 ) -> BigInt {
+                    #[inline] fn sub( self, o: i32 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self - u,
                             Negative( u ) => self + u,
@@ -14190,7 +14034,7 @@ pub mod num
                 }
                 impl SubAssign<i32> for BigInt
                 {
-                    #[inline] fn sub_assign( &mut self, other: i32 ) {
+                    #[inline] fn sub_assign( &mut self, o: i32 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self -= u,
                             Negative( u ) => *self += u,
@@ -14200,7 +14044,7 @@ pub mod num
                 impl Sub<BigInt> for i32 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u - other,
                             Negative( u ) => -other - u,
@@ -14211,7 +14055,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: i64 ) -> BigInt {
+                    #[inline] fn sub( self, o: i64 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self - u,
                             Negative( u ) => self + u,
@@ -14220,7 +14064,7 @@ pub mod num
                 }
                 impl SubAssign<i64> for BigInt
                 {
-                    #[inline] fn sub_assign( &mut self, other: i64 ) {
+                    #[inline] fn sub_assign( &mut self, o: i64 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self -= u,
                             Negative( u ) => *self += u,
@@ -14230,7 +14074,7 @@ pub mod num
                 impl Sub<BigInt> for i64 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u - other,
                             Negative( u ) => -other - u,
@@ -14241,7 +14085,7 @@ pub mod num
                 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: i128 ) -> BigInt {
+                    #[inline] fn sub( self, o: i128 ) -> BigInt {
                         match other.checked_uabs() {
                             Positive( u ) => self - u,
                             Negative( u ) => self + u,
@@ -14250,7 +14094,7 @@ pub mod num
                 }
                 impl SubAssign<i128> for BigInt
                 {
-                    #[inline] fn sub_assign( &mut self, other: i128 ) {
+                    #[inline] fn sub_assign( &mut self, o: i128 ) {
                         match other.checked_uabs() {
                             Positive( u ) => *self -= u,
                             Negative( u ) => *self += u,
@@ -14260,7 +14104,7 @@ pub mod num
                 impl Sub<BigInt> for i128 {
                     type Output = BigInt;
 
-                    #[inline] fn sub( self, other: BigInt ) -> BigInt {
+                    #[inline] fn sub( self, o: BigInt ) -> BigInt {
                         match self.checked_uabs() {
                             Positive( u ) => u - other,
                             Negative( u ) => -other - u,
@@ -14528,7 +14372,7 @@ pub mod num
                     fn bitor_assign( &mut self, other:&BigInt ) {
                         match ( self.sign, other.sign ) {
                             ( _, NoSign ) => {}
-                            ( NoSign, _ ) => self.clone_from( other ),
+                            ( NoSign, _ ) => self.clone_from(o),
                             ( Plus, Plus ) => self.data |= &other.data,
                             ( Plus, Minus ) => {
                                 bitor_pos_neg( self.digits_mut(), other.digits() );
@@ -14658,7 +14502,7 @@ pub mod num
                     fn bitxor_assign( &mut self, other:&BigInt ) {
                         match ( self.sign, other.sign ) {
                             ( _, NoSign ) => {}
-                            ( NoSign, _ ) => self.clone_from( other ),
+                            ( NoSign, _ ) => self.clone_from(o),
                             ( Plus, Plus ) => {
                                 self.data ^= &other.data;
                                 if self.data.is_zero() {
@@ -15466,7 +15310,7 @@ pub mod num
             
             impl PartialOrd for BigInt
             {
-                #[inline] fn partial_cmp( &self, other:&BigInt ) -> Option<Ordering> { Some( self.cmp( other ) ) }
+                #[inline] fn partial_cmp( &self, other:&BigInt ) -> Option<Ordering> { Some( self.cmp(o) ) }
             }
             
             impl Ord for BigInt
@@ -15787,7 +15631,7 @@ pub mod num
                 }
 
                 #[inline] fn extended_gcd_lcm( &self, other:&BigInt ) -> ( ::num::integers::ExtendedGcd<BigInt>, BigInt ) {
-                    let egcd = self.extended_gcd( other );
+                    let egcd = self.extended_gcd(o);
                     let lcm = if egcd.gcd.is_zero() {
                         Self::ZERO
                     } else {
@@ -15797,7 +15641,7 @@ pub mod num
                 }
 
                 #[inline] fn divides( &self, other:&BigInt ) -> bool {
-                    self.is_multiple_of( other )
+                    self.is_multiple_of(o)
                 }
 
                 #[inline] fn is_multiple_of( &self, other:&BigInt ) -> bool {
@@ -15809,7 +15653,7 @@ pub mod num
                 #[inline] fn is_odd( &self ) -> bool { self.data.is_odd() }
 
                 #[inline] fn next_multiple_of( &self, other:&Self ) -> Self {
-                    let m = self.mod_floor( other );
+                    let m = self.mod_floor(o);
                     if m.is_zero() {
                         self.clone()
                     } else {
@@ -15818,7 +15662,7 @@ pub mod num
                 }
 
                 #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self {
-                    self - self.mod_floor( other )
+                    self - self.mod_floor(o)
                 }
                 fn dec( &mut self ) {
                     *self -= 1u32;
@@ -16476,14 +16320,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn add( mut self, other: u32 ) -> BigUint {
+                    #[inline] fn add( mut self, o: u32 ) -> BigUint {
                         self += other;
                         self
                     }
                 }
                 impl AddAssign<u32> for BigUint
                 {
-                    #[inline] fn add_assign( &mut self, other: u32 ) {
+                    #[inline] fn add_assign( &mut self, o: u32 ) {
                         if other != 0 {
                             if self.data.is_empty() {
                                 self.data.push( 0 );
@@ -16499,15 +16343,15 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn add( mut self, other: u64 ) -> BigUint {
+                    #[inline] fn add( mut self, o: u64 ) -> BigUint {
                         self += other;
                         self
                     }
                 }
                 impl AddAssign<u64> for BigUint {
                     cfg_digit!( 
-                        #[inline] fn add_assign( &mut self, other: u64 ) {
-                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
+                        #[inline] fn add_assign( &mut self, o: u64 ) {
+                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit(o);
                             if hi == 0 {
                                 *self += lo;
                             } else {
@@ -16521,7 +16365,7 @@ pub mod num
                             }
                         }
 
-                        #[inline] fn add_assign( &mut self, other: u64 ) {
+                        #[inline] fn add_assign( &mut self, o: u64 ) {
                             if other != 0 {
                                 if self.data.is_empty() {
                                     self.data.push( 0 );
@@ -16538,18 +16382,18 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn add( mut self, other: u128 ) -> BigUint {
+                    #[inline] fn add( mut self, o: u128 ) -> BigUint {
                         self += other;
                         self
                     }
                 }
                 impl AddAssign<u128> for BigUint {
                     cfg_digit!( 
-                        #[inline] fn add_assign( &mut self, other: u128 ) {
+                        #[inline] fn add_assign( &mut self, o: u128 ) {
                             if other <= u128::from( u64::MAX ) {
                                 *self += other as u64
                             } else {
-                                let ( a, b, c, d ) = super::u32_from_u128( other );
+                                let ( a, b, c, d ) = super::u32_from_u128(o);
                                 let carry = if a > 0 {
                                     while self.data.len() < 4 {
                                         self.data.push( 0 );
@@ -16569,8 +16413,8 @@ pub mod num
                             }
                         }
 
-                        #[inline] fn add_assign( &mut self, other: u128 ) {
-                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
+                        #[inline] fn add_assign( &mut self, o: u128 ) {
+                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit(o);
                             if hi == 0 {
                                 *self += lo;
                             } else {
@@ -16917,7 +16761,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div( self, other: BigUint ) -> BigUint {
+                    #[inline] fn div( self, o: BigUint ) -> BigUint {
                         let ( q, _ ) = div_rem( self, other );
                         q
                     }
@@ -16927,7 +16771,7 @@ pub mod num
                     type Output = BigUint;
 
                     #[inline] fn div( self, other:&BigUint ) -> BigUint {
-                        let ( q, _ ) = self.div_rem( other );
+                        let ( q, _ ) = self.div_rem(o);
                         q
                     }
                 }
@@ -16947,21 +16791,21 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div( self, other: u32 ) -> BigUint {
+                    #[inline] fn div( self, o: u32 ) -> BigUint {
                         let ( q, _ ) = div_rem_digit( self, other as BigDigit );
                         q
                     }
                 }
                 impl DivAssign<u32> for BigUint
                 {
-                    #[inline] fn div_assign( &mut self, other: u32 ) {
+                    #[inline] fn div_assign( &mut self, o: u32 ) {
                         *self = &*self / other;
                     }
                 }
                 impl Div<BigUint> for u32 {
                     type Output = BigUint;
 
-                    #[inline] fn div( self, other: BigUint ) -> BigUint {
+                    #[inline] fn div( self, o: BigUint ) -> BigUint {
                         match other.data.len() {
                             0 => panic!( "attempt to divide by zero" ),
                             1 => From::from( self as BigDigit / other.data[0] ),
@@ -16973,14 +16817,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div( self, other: u64 ) -> BigUint {
-                        let ( q, _ ) = div_rem( self, From::from( other ) );
+                    #[inline] fn div( self, o: u64 ) -> BigUint {
+                        let ( q, _ ) = div_rem( self, From::from(o) );
                         q
                     }
                 }
                 impl DivAssign<u64> for BigUint
                 {
-                    #[inline] fn div_assign( &mut self, other: u64 ) {
+                    #[inline] fn div_assign( &mut self, o: u64 ) {
                        
                         let temp = mem::replace( self, Self::ZERO );
                         *self = temp / other;
@@ -16990,7 +16834,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline] fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, o: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
                                 1 => From::from( self / u64::from( other.data[0] ) ),
@@ -16999,7 +16843,7 @@ pub mod num
                             }
                         }
 
-                        #[inline] fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, o: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
                                 1 => From::from( self / other.data[0] ),
@@ -17012,14 +16856,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn div( self, other: u128 ) -> BigUint {
-                        let ( q, _ ) = div_rem( self, From::from( other ) );
+                    #[inline] fn div( self, o: u128 ) -> BigUint {
+                        let ( q, _ ) = div_rem( self, From::from(o) );
                         q
                     }
                 }
                 impl DivAssign<u128> for BigUint
                 {
-                    #[inline] fn div_assign( &mut self, other: u128 ) {
+                    #[inline] fn div_assign( &mut self, o: u128 ) {
                         *self = &*self / other;
                     }
                 }
@@ -17027,7 +16871,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline] fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, o: BigUint ) -> BigUint {
                             use super::u32_to_u128;
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
@@ -17043,7 +16887,7 @@ pub mod num
                             }
                         }
 
-                        #[inline] fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, o: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
                                 1 => From::from( self / other.data[0] as u128 ),
@@ -17061,8 +16905,8 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem( self, other: BigUint ) -> BigUint {
-                        if let Some( other ) = other.to_u32() {
+                    #[inline] fn rem( self, o: BigUint ) -> BigUint {
+                        if let Some(o) = other.to_u32() {
                             &self % other
                         } else {
                             let ( _, r ) = div_rem( self, other );
@@ -17075,10 +16919,10 @@ pub mod num
                     type Output = BigUint;
 
                     #[inline] fn rem( self, other:&BigUint ) -> BigUint {
-                        if let Some( other ) = other.to_u32() {
+                        if let Some(o) = other.to_u32() {
                             self % other
                         } else {
-                            let ( _, r ) = self.div_rem( other );
+                            let ( _, r ) = self.div_rem(o);
                             r
                         }
                     }
@@ -17099,13 +16943,13 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem( self, other: u32 ) -> BigUint {
+                    #[inline] fn rem( self, o: u32 ) -> BigUint {
                         rem_digit( self, other as BigDigit ).into()
                     }
                 }
                 impl RemAssign<u32> for BigUint
                 {
-                    #[inline] fn rem_assign( &mut self, other: u32 ) {
+                    #[inline] fn rem_assign( &mut self, o: u32 ) {
                         *self = &*self % other;
                     }
                 }
@@ -17150,21 +16994,21 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem( self, other: u64 ) -> BigUint {
-                        let ( _, r ) = div_rem( self, From::from( other ) );
+                    #[inline] fn rem( self, o: u64 ) -> BigUint {
+                        let ( _, r ) = div_rem( self, From::from(o) );
                         r
                     }
                 }
                 impl RemAssign<u64> for BigUint
                 {
-                    #[inline] fn rem_assign( &mut self, other: u64 ) {
+                    #[inline] fn rem_assign( &mut self, o: u64 ) {
                         *self = &*self % other;
                     }
                 }
                 impl Rem<BigUint> for u64 {
                     type Output = BigUint;
 
-                    #[inline] fn rem( mut self, other: BigUint ) -> BigUint {
+                    #[inline] fn rem( mut self, o: BigUint ) -> BigUint {
                         self %= other;
                         From::from( self )
                     }
@@ -17173,21 +17017,21 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem( self, other: u128 ) -> BigUint {
-                        let ( _, r ) = div_rem( self, From::from( other ) );
+                    #[inline] fn rem( self, o: u128 ) -> BigUint {
+                        let ( _, r ) = div_rem( self, From::from(o) );
                         r
                     }
                 }
                 impl RemAssign<u128> for BigUint
                 {
-                    #[inline] fn rem_assign( &mut self, other: u128 ) {
+                    #[inline] fn rem_assign( &mut self, o: u128 ) {
                         *self = &*self % other;
                     }
                 }
                 impl Rem<BigUint> for u128 {
                     type Output = BigUint;
 
-                    #[inline] fn rem( mut self, other: BigUint ) -> BigUint {
+                    #[inline] fn rem( mut self, o: BigUint ) -> BigUint {
                         self %= other;
                         From::from( self )
                     }
@@ -17694,7 +17538,7 @@ pub mod num
                             type Output = BigUint;
 
                             #[inline]
-                            fn mul( self, other: $Other ) -> BigUint {
+                            fn mul( self, o: $Other ) -> BigUint {
                                 match ( &*self.data, &*other.data ) {
                                    
                                     ( &[], _ ) | ( _, &[] ) => BigUint::ZERO,
@@ -17718,7 +17562,7 @@ pub mod num
                     ( $( impl MulAssign<$Other:ty> for BigUint; )* ) => {$( 
                         impl MulAssign<$Other> for BigUint {
                             #[inline]
-                            fn mul_assign( &mut self, other: $Other ) {
+                            fn mul_assign( &mut self, o: $Other ) {
                                 match ( &*self.data, &*other.data ) {
                                    
                                     ( &[], _ ) => {},
@@ -17747,14 +17591,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn mul( mut self, other: u32 ) -> BigUint {
+                    #[inline] fn mul( mut self, o: u32 ) -> BigUint {
                         self *= other;
                         self
                     }
                 }
                 impl MulAssign<u32> for BigUint
                 {
-                    #[inline] fn mul_assign( &mut self, other: u32 ) {
+                    #[inline] fn mul_assign( &mut self, o: u32 ) {
                         scalar_mul( self, other as BigDigit );
                     }
                 }
@@ -17762,23 +17606,23 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn mul( mut self, other: u64 ) -> BigUint {
+                    #[inline] fn mul( mut self, o: u64 ) -> BigUint {
                         self *= other;
                         self
                     }
                 }
                 impl MulAssign<u64> for BigUint {
                     cfg_digit!( 
-                        #[inline] fn mul_assign( &mut self, other: u64 ) {
-                            if let Some( other ) = BigDigit::from_u64( other ) {
+                        #[inline] fn mul_assign( &mut self, o: u64 ) {
+                            if let Some(o) = BigDigit::from_u64(o) {
                                 scalar_mul( self, other );
                             } else {
-                                let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
+                                let ( hi, lo ) = ::num::big::digit::from_doublebigdigit(o);
                                 *self = mul3( &self.data, &[lo, hi] );
                             }
                         }
 
-                        #[inline] fn mul_assign( &mut self, other: u64 ) {
+                        #[inline] fn mul_assign( &mut self, o: u64 ) {
                             scalar_mul( self, other );
                         }
                      );
@@ -17787,18 +17631,18 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn mul( mut self, other: u128 ) -> BigUint {
+                    #[inline] fn mul( mut self, o: u128 ) -> BigUint {
                         self *= other;
                         self
                     }
                 }
                 impl MulAssign<u128> for BigUint {
                     cfg_digit!( 
-                        #[inline] fn mul_assign( &mut self, other: u128 ) {
-                            if let Some( other ) = BigDigit::from_u128( other ) {
+                        #[inline] fn mul_assign( &mut self, o: u128 ) {
+                            if let Some(o) = BigDigit::from_u128(o) {
                                 scalar_mul( self, other );
                             } else {
-                                *self = match super::u32_from_u128( other ) {
+                                *self = match super::u32_from_u128(o) {
                                     ( 0, 0, c, d ) => mul3( &self.data, &[d, c] ),
                                     ( 0, b, c, d ) => mul3( &self.data, &[d, c, b] ),
                                     ( a, b, c, d ) => mul3( &self.data, &[d, c, b, a] ),
@@ -17806,11 +17650,11 @@ pub mod num
                             }
                         }
 
-                        #[inline] fn mul_assign( &mut self, other: u128 ) {
-                            if let Some( other ) = BigDigit::from_u128( other ) {
+                        #[inline] fn mul_assign( &mut self, o: u128 ) {
+                            if let Some(o) = BigDigit::from_u128(o) {
                                 scalar_mul( self, other );
                             } else {
-                                let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
+                                let ( hi, lo ) = ::num::big::digit::from_doublebigdigit(o);
                                 *self = mul3( &self.data, &[lo, hi] );
                             }
                         }
@@ -17963,14 +17807,14 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn sub( mut self, other: u32 ) -> BigUint {
+                    #[inline] fn sub( mut self, o: u32 ) -> BigUint {
                         self -= other;
                         self
                     }
                 }
                 impl SubAssign<u32> for BigUint 
                 {
-                    fn sub_assign( &mut self, other: u32 ) {
+                    fn sub_assign( &mut self, o: u32 ) {
                         sub2( &mut self.data[..], &[other as BigDigit] );
                         self.normalize();
                     }
@@ -18003,7 +17847,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn sub( mut self, other: u64 ) -> BigUint {
+                    #[inline] fn sub( mut self, o: u64 ) -> BigUint {
                         self -= other;
                         self
                     }
@@ -18011,13 +17855,13 @@ pub mod num
                 impl SubAssign<u64> for BigUint 
                 {
                     cfg_digit!( 
-                        #[inline] fn sub_assign( &mut self, other: u64 ) {
-                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
+                        #[inline] fn sub_assign( &mut self, o: u64 ) {
+                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit(o);
                             sub2( &mut self.data[..], &[lo, hi] );
                             self.normalize();
                         }
 
-                        #[inline] fn sub_assign( &mut self, other: u64 ) {
+                        #[inline] fn sub_assign( &mut self, o: u64 ) {
                             sub2( &mut self.data[..], &[other as BigDigit] );
                             self.normalize();
                         }
@@ -18051,7 +17895,7 @@ pub mod num
                 {
                     type Output = BigUint;
 
-                    #[inline] fn sub( mut self, other: u128 ) -> BigUint {
+                    #[inline] fn sub( mut self, o: u128 ) -> BigUint {
                         self -= other;
                         self
                     }
@@ -18059,14 +17903,14 @@ pub mod num
                 impl SubAssign<u128> for BigUint 
                 {
                     cfg_digit!( 
-                        #[inline] fn sub_assign( &mut self, other: u128 ) {
-                            let ( a, b, c, d ) = super::u32_from_u128( other );
+                        #[inline] fn sub_assign( &mut self, o: u128 ) {
+                            let ( a, b, c, d ) = super::u32_from_u128(o);
                             sub2( &mut self.data[..], &[d, c, b, a] );
                             self.normalize();
                         }
 
-                        #[inline] fn sub_assign( &mut self, other: u128 ) {
-                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
+                        #[inline] fn sub_assign( &mut self, o: u128 ) {
+                            let ( hi, lo ) = ::num::big::digit::from_doublebigdigit(o);
                             sub2( &mut self.data[..], &[lo, hi] );
                             self.normalize();
                         }
@@ -19816,7 +19660,7 @@ pub mod num
             
             impl PartialOrd for BigUint
             {
-                #[inline] fn partial_cmp( &self, other:&BigUint ) -> Option<Ordering> { Some( self.cmp( other ) ) }
+                #[inline] fn partial_cmp( &self, other:&BigUint ) -> Option<Ordering> { Some( self.cmp(o) ) }
             }
             
             impl Ord for BigUint
@@ -19988,13 +19832,13 @@ pub mod num
                     if self.is_zero() && other.is_zero() {
                         Self::ZERO
                     } else {
-                        self / self.gcd( other ) * other
+                        self / self.gcd(o) * other
                     }
                 }
 
                 #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self )
                 {
-                    let gcd = self.gcd( other );
+                    let gcd = self.gcd(o);
                     let lcm = if gcd.is_zero() {
                         Self::ZERO
                     } else {
@@ -20004,7 +19848,7 @@ pub mod num
                 }
 
                 #[inline] fn divides( &self, other:&BigUint ) -> bool {
-                    self.is_multiple_of( other )
+                    self.is_multiple_of(o)
                 }
 
                 #[inline] fn is_multiple_of( &self, other:&BigUint ) -> bool {
@@ -20025,7 +19869,7 @@ pub mod num
                 #[inline] fn is_odd( &self ) -> bool { !self.is_even() }
 
                 #[inline] fn next_multiple_of( &self, other:&Self ) -> Self {
-                    let m = self.mod_floor( other );
+                    let m = self.mod_floor(o);
                     if m.is_zero() {
                         self.clone()
                     } else {
@@ -20034,7 +19878,7 @@ pub mod num
                 }
 
                 #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self {
-                    self - self.mod_floor( other )
+                    self - self.mod_floor(o)
                 }
                 fn dec( &mut self ) {
                     *self -= 1u32;
@@ -20535,8 +20379,7 @@ pub mod num
                         n as u32,
                     )
                 }
-             );
-        }
+             ); }
 
         #[cfg( target_pointer_width = "32" )]
         type UsizePromotion = u32;
@@ -21102,13 +20945,13 @@ pub mod num
 
         impl<T: Clone + Integer> PartialOrd for Ratio<T>
         {
-            #[inline] fn partial_cmp( &self, other:&Self ) -> Option<cmp::Ordering> { Some( self.cmp( other ) ) }
+            #[inline] fn partial_cmp( &self, other:&Self ) -> Option<cmp::Ordering> { Some( self.cmp(o) ) }
         }
 
         impl<T: Clone + Integer> PartialEq for Ratio<T> 
         {
             #[inline] fn eq( &self, other:&Self ) -> bool {
-                self.cmp( other ) == cmp::Ordering::Equal
+                self.cmp(o) == cmp::Ordering::Equal
             }
         }
 
@@ -21193,7 +21036,7 @@ pub mod num
 
             impl<T: Clone + Integer + NumAssign> AddAssign for Ratio<T>
             {
-                fn add_assign( &mut self, other: Ratio<T> ) {
+                fn add_assign( &mut self, o: Ratio<T> ) {
                     if self.denom == other.denom {
                         self.numer += other.numer
                     } else {
@@ -21209,7 +21052,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> DivAssign for Ratio<T>
             {
-                fn div_assign( &mut self, other: Ratio<T> ) {
+                fn div_assign( &mut self, o: Ratio<T> ) {
                     let gcd_ac = self.numer.gcd( &other.numer );
                     let gcd_bd = self.denom.gcd( &other.denom );
                     self.numer /= gcd_ac.clone();
@@ -21222,7 +21065,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> MulAssign for Ratio<T>
             {
-                fn mul_assign( &mut self, other: Ratio<T> ) {
+                fn mul_assign( &mut self, o: Ratio<T> ) {
                     let gcd_ad = self.numer.gcd( &other.denom );
                     let gcd_bc = self.denom.gcd( &other.numer );
                     self.numer /= gcd_ad.clone();
@@ -21235,7 +21078,7 @@ pub mod num
             
             impl<T: Clone + Integer + NumAssign> RemAssign for Ratio<T>
             {
-                fn rem_assign( &mut self, other: Ratio<T> ) {
+                fn rem_assign( &mut self, o: Ratio<T> ) {
                     if self.denom == other.denom {
                         self.numer %= other.numer
                     } else {
@@ -21251,7 +21094,7 @@ pub mod num
             
             impl<T: Clone + Integer + NumAssign> SubAssign for Ratio<T>
             {
-                fn sub_assign( &mut self, other: Ratio<T> ) {
+                fn sub_assign( &mut self, o: Ratio<T> ) {
                     if self.denom == other.denom {
                         self.numer -= other.numer
                     } else {
@@ -21267,7 +21110,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> AddAssign<T> for Ratio<T>
             {
-                fn add_assign( &mut self, other: T ) {
+                fn add_assign( &mut self, o: T ) {
                     self.numer += self.denom.clone() * other;
                     self.reduce();
                 }
@@ -21275,7 +21118,7 @@ pub mod num
             
             impl<T: Clone + Integer + NumAssign> DivAssign<T> for Ratio<T>
             {
-                fn div_assign( &mut self, other: T ) {
+                fn div_assign( &mut self, o: T ) {
                     let gcd = self.numer.gcd( &other );
                     self.numer /= gcd.clone();
                     self.denom *= other / gcd;
@@ -21285,7 +21128,7 @@ pub mod num
             
             impl<T: Clone + Integer + NumAssign> MulAssign<T> for Ratio<T>
             {
-                fn mul_assign( &mut self, other: T ) {
+                fn mul_assign( &mut self, o: T ) {
                     let gcd = self.denom.gcd( &other );
                     self.denom /= gcd.clone();
                     self.numer *= other / gcd;
@@ -21295,7 +21138,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> RemAssign<T> for Ratio<T>
             {
-                fn rem_assign( &mut self, other: T ) {
+                fn rem_assign( &mut self, o: T ) {
                     self.numer %= self.denom.clone() * other;
                     self.reduce();
                 }
@@ -21303,7 +21146,7 @@ pub mod num
            
             impl<T: Clone + Integer + NumAssign> SubAssign<T> for Ratio<T>
             {
-                fn sub_assign( &mut self, other: T ) {
+                fn sub_assign( &mut self, o: T ) {
                     self.numer -= self.denom.clone() * other;
                     self.reduce();
                 }
@@ -21326,8 +21169,7 @@ pub mod num
             forward_op_assign!( impl DivAssign, div_assign );
             forward_op_assign!( impl MulAssign, mul_assign );
             forward_op_assign!( impl RemAssign, rem_assign );
-            forward_op_assign!( impl SubAssign, sub_assign );
-        }
+            forward_op_assign!( impl SubAssign, sub_assign ); }
 
         forward_all_binop!( impl Mul, mul );
        
@@ -21525,8 +21367,7 @@ pub mod num
         impl<T: ConstZero + ConstOne> Ratio<T>
         {
 
-            pub const ZERO: Self = Self::new_raw( T::ZERO, T::ONE );
-        }
+            pub const ZERO: Self = Self::new_raw( T::ZERO, T::ONE ); }
 
         impl<T: Clone + Integer + ConstZero + ConstOne> ConstZero for Ratio<T>
         {
@@ -21546,8 +21387,7 @@ pub mod num
         impl<T: ConstOne> Ratio<T> 
         {
 
-            pub const ONE: Self = Self::new_raw( T::ONE, T::ONE );
-        }
+            pub const ONE: Self = Self::new_raw( T::ONE, T::ONE ); }
 
         impl<T: Clone + Integer + ConstOne> ConstOne for Ratio<T> 
         {
@@ -21810,8 +21650,7 @@ pub mod num
             let r = approximate_float_unsigned( abs_val, max_error, max_iterations )?;
 
            
-            Some( if negative { r.neg() } else { r } )
-        }
+            Some( if negative { r.neg() } else { r } ) }
         
         fn approximate_float_unsigned<T, F>( val: F, max_error: F, max_iterations: usize ) -> Option<Ratio<T>> where
             T: Integer + Bounded + NumCast + Clone,
@@ -21893,8 +21732,7 @@ pub mod num
             if d1.is_zero() {
                 return None;
             }
-            Some( Ratio::new( n1, d1 ) )
-        }
+            Some( Ratio::new( n1, d1 ) ) }
         
         impl<T: Clone + Integer + ToPrimitive + ToBigInt> ToPrimitive for Ratio<T>
         {
@@ -22029,8 +21867,7 @@ pub mod num
            
            
             let q_float = quotient as f64 * flo_sign;
-            ldexp( q_float, shift as i32 )
-        }
+            ldexp( q_float, shift as i32 ) }
 
         fn ldexp( x: f64, exp: i32 ) -> f64
         {
@@ -22100,8 +21937,7 @@ pub mod num
         pub fn frac_from_whole_and_dec( whole: BigInt, decimal: BigInt, dec_len: usize ) -> BigRational
         {
             let denom = ::num::traits::pow( BigInt::from_u8( 10 ).unwrap(), dec_len );
-            BigRational::new( whole, 1.into() ) + BigRational::new( decimal, denom )
-        }
+            BigRational::new( whole, 1.into() ) + BigRational::new( decimal, denom ) }
     }
 }
 
@@ -22226,6 +22062,7 @@ pub mod now
         let mut sep = String::new();
 
         for token in parses::lines::line_to_cmds(line )
+       
         {
             if token == ";" || token == "&&" || token == "||"
             {
@@ -22241,8 +22078,7 @@ pub mod now
             let cr = run_proc( sh, &cmd, tty, capture );
             status = cr.status;
             sh.previous_status = status;
-            cr_list.push( Cr );
-        }
+            cr_list.push( Cr ); }
 
         cr_list
     }
@@ -22260,8 +22096,7 @@ pub mod now
     {
         for ( name, value ) in envs.iter()
         {
-            sh.set_env( name, value );
-        }
+            sh.set_env( name, value ); }
     }
 
     fn run_proc( sh: &mut Shell, line: &str, tty: bool, capture:bool ) -> CommandResult
@@ -22307,8 +22142,7 @@ pub mod now
         if tokens.is_empty()
         {
             set_shell_vars( sh, &envs );
-            return CommandResult::new();
-        }
+            return CommandResult::new(); }
 
         match CommandLine::from_line(line, sh )
         {
@@ -22377,56 +22211,47 @@ pub mod now
         if cname == "alias"
         {
             let cr = ::api::run_alias( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "bg"
         {
             let cr = ::api::run_bg( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "cd"
         {
             let cr = ::api::run_cd( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "cinfo"
         {
             let cr = ::api::run_info( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "exec"
         {
             let cr = ::api::run_exec( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "exit"
         {
             let cr = ::api::run_exit( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "export"
         {
             let cr = ::api::run_export( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "fg"
         {
             let cr = ::api::run_fg( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "history"
         {
             let cr = ::api::run_history( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "jobs"
         {
@@ -22438,56 +22263,47 @@ pub mod now
         else if cname == "minfd"
         {
             let cr = ::api::run_minfd( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "read"
         {
             let cr = ::api::run_read( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "set"
         {
             let cr = ::api::run_set( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "source"
         {
             let cr = ::api::run_source( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "ulimit"
         {
             let cr = ::api::run_ulimit( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "unalias"
         {
             let cr = ::api::run_unalias( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "unset"
         {
             let cr = ::api::run_unset( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "unpath"
         {
             let cr = ::api::run_unpath( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
         
         else if cname == "vox"
         {
             let cr = ::api::run_vox( sh, cl, cmd, capture );
-            return Some( cr );
-        }
+            return Some( cr ); }
 
         None
     }
@@ -22505,18 +22321,15 @@ pub mod now
         if cl.background && capture
         {
             println_stderr!( ":: cannot capture output of background cmd" );
-            return ( term_given, CommandResult::error() );
-        }
+            return ( term_given, CommandResult::error() ); }
         
         if let Some( cr ) = try_run_func( sh, cl, capture, log_cmd ) {
-            return ( term_given, cr );
-        }
+            return ( term_given, cr ); }
 
         let length = cl.commands.len();
         if length == 0 {
             println!( ":: invalid command: cmds with empty length" );
-            return ( false, CommandResult::error() );
-        }
+            return ( false, CommandResult::error() ); }
 
         let mut pipes = Vec::new();
         let mut errored_pipes = false;
@@ -22538,13 +22351,11 @@ pub mod now
                 ::process::close( fds.0);
                 ::process::close( fds.1);
             }
-            return ( false, CommandResult::error() );
-        }
+            return ( false, CommandResult::error() ); }
 
         if pipes.len() + 1 != length {
             println!( ":: invalid command: unmatched pipes count" );
-            return ( false, CommandResult::error() );
-        }
+            return ( false, CommandResult::error() ); }
 
         let mut pgid: i32 = 0;
         let mut fg_pids: Vec<i32> = Vec::new();
@@ -22612,10 +22423,10 @@ pub mod now
         }
 
         if cl.is_single_and_builtin() {
-            return ( false, cmd_result );
-        }
+            return ( false, cmd_result ); }
 
-        if cl.background {
+        if cl.background
+        {
             if let Some(job) = sh.get_job_by_gid( pgid ) {
                 println_stderr!( "[{}] {}", job.id, job.gid );
             }
@@ -22649,6 +22460,7 @@ pub mod now
     {
         let capture = options.capture_output;
         if cl.is_single_and_builtin()
+       
         {
             if let Some( cr ) = try_run_builtin( sh, cl, idx_cmd, capture )
             {
@@ -23048,8 +22860,7 @@ pub mod now
             let mut cr = CommandResult::new();
             cr.stdout = stdout;
             cr.stderr = stderr;
-            return Some( cr );
-        }
+            return Some( cr ); }
 
         None
     }
@@ -23153,8 +22964,7 @@ pub mod objects
                     parent: None,
                     id,
                 } ),
-            } )
-        }
+            } ) }
 
         pub fn from_map_with_parent( obj_map: HashMap<String, Value>, parent: Obj ) -> OverResult<Obj> 
         {
@@ -23171,8 +22981,7 @@ pub mod objects
                     parent: Some( parent ),
                     id,
                 } ),
-            } )
-        }
+            } ) }
 
         pub fn from_map_unchecked( obj_map: HashMap<String, Value> ) -> Obj 
         {
@@ -23201,8 +23010,7 @@ pub mod objects
         }
 
         pub fn id( &self ) -> usize 
-        {
-            self.inner.id
+        { self.inner.id
         }
 
         pub fn map_ref( &self ) -> &HashMap<String, Value> 
@@ -23212,19 +23020,15 @@ pub mod objects
 
         pub fn from_file( path:&str ) -> OverResult<Obj> 
         {
-            Ok( parses::load_from_file( path )? )
-        }
+            Ok( parses::load_from_file( path )? ) }
 
         pub fn write_to_file( &self, path:&str ) -> OverResult<()>
         {
             str::write_file_from( path, &self.write_str() )?;
-            Ok( () )
-        }
+            Ok( () ) }
 
         pub fn write_str( &self ) -> String 
-        {
-            self.format( false, 0 )
-        }
+        { self.format( false, 0 ) }
 
         pub fn with_each<F>( &self, mut f: F ) where
         F: FnMut( &String, &Value ),
@@ -23235,24 +23039,17 @@ pub mod objects
         }
 
         pub fn len( &self ) -> usize 
-        {
-            self.inner.map.len()
-        }
+        { self.inner.map.len() }
 
         pub fn is_empty( &self ) -> bool 
-        {
-            self.inner.map.is_empty()
-        }
+        { self.inner.map.is_empty() }
 
         pub fn ptr_eq( &self, other:&Self ) -> bool 
         {
-            Arc::ptr_eq( &self.inner, &other.inner )
-        }
+            Arc::ptr_eq( &self.inner, &other.inner ) }
 
         pub fn contains( &self, field:&str ) -> bool 
-        {
-            self.inner.map.contains_key( field )
-        }
+        { self.inner.map.contains_key( field ) }
 
         pub fn get( &self, field:&str ) -> Option<Value> 
         {
@@ -23349,9 +23146,7 @@ pub mod objects
          );
 
         pub fn has_parent( &self ) -> bool 
-        {
-            self.inner.parent.is_some()
-        }
+        { self.inner.parent.is_some() }
 
         pub fn get_parent( &self ) -> Option<Obj> 
         {
@@ -23391,33 +23186,25 @@ pub mod objects
         }
 
         pub fn keys( &self ) -> Keys<String, Value> 
-        {
-            self.map_ref().keys()
-        }
+        { self.map_ref().keys() }
 
         pub fn values( &self ) -> Values<String, Value> 
-        {
-            self.map_ref().values()
-        }
+        { self.map_ref().values() }
 
         pub fn iter( &self ) -> Iter<String, Value> 
-        {
-            self.map_ref().iter()
-        }
+        { self.map_ref().iter() }
     }
 
     impl Default for Obj 
     {
         fn default() -> Self {
-            Self::from_map_unchecked( map! {} )
-        }
+            Self::from_map_unchecked( map! {} ) }
     }
 
     impl fmt::Display for Obj 
     {
         fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-            write!( f, "{}", self.format( true, INDENT_STEP ) )
-        }
+            write!( f, "{}", self.format( true, INDENT_STEP ) ) }
     }
 
     impl FromStr for Obj 
@@ -23426,9 +23213,9 @@ pub mod objects
 
         fn from_str( s:&str ) -> Result<Self, Self::Err> 
         {
-            Ok( parses::load_from_str( s )? )
-        }
+            Ok( parses::load_from_str( s )? ) }
     }
+    
     impl PartialEq for Obj 
     {
         fn eq( &self, other:&Self ) -> bool {
@@ -23585,8 +23372,7 @@ pub mod parses
         let mut obj: ObjMap = HashMap::new();
        
         if !find_char( stream.clone() ) {
-            return Ok( Obj::from_map_unchecked( obj ) );
-        }
+            return Ok( Obj::from_map_unchecked( obj ) ); }
 
         let mut globals: GlobalMap = HashMap::new();
         let mut parent = None;
@@ -23618,16 +23404,14 @@ pub mod parses
     {
        
         if depth > MAX_DEPTH {
-            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
-        }
+            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) ); }
 
        
         let ch = stream.next().unwrap();
         assert_eq!( ch, '{' );
        
         if !find_char( stream.clone() ) {
-            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) );
-        }
+            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ); }
 
         let mut obj: ObjMap = HashMap::new();
         let mut parent = None;
@@ -23669,16 +23453,14 @@ pub mod parses
         if peek == '}' && cur_brace.is_some() 
         {
             let _ = stream.next();
-            return Ok( false );
-        }
+            return Ok( false ); }
         
         else if is::end_delimiter( peek ) 
         {
             return parse_err( 
                 stream.file(),
                 InvalidClosingBracket( cur_brace, peek, stream.line(), stream.col() ),
-             );
-        }
+             ); }
 
        
         let ( field_line, field_col ) = ( stream.line(), stream.col() );
@@ -23687,18 +23469,15 @@ pub mod parses
         let ( field, is_global, is_parent ) = parse_field( stream.clone(), field_line, field_col )?;
 
         if !is_global && !is_parent && obj.contains_key( &field ) {
-            return parse_err( stream.file(), DuplicateField( field, field_line, field_col ) );
-        } else if is_parent && parent.is_some() {
+            return parse_err( stream.file(), DuplicateField( field, field_line, field_col ) ); } else if is_parent && parent.is_some() {
             return parse_err( 
                 stream.file(),
                 DuplicateField( "^".into(), field_line, field_col ),
-             );
-        }
+             ); }
 
        
         if !find_char( stream.clone() ) {
-            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) );
-        }
+            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ); }
 
        
         let ( value_line, value_col ) = ( stream.line(), stream.col() );
@@ -23714,19 +23493,17 @@ pub mod parses
             true,
         )?;
        
-        if is_global {
+        if is_global
+        {
             if globals.contains_key( &field ) {
                 return parse_err( stream.file(), DuplicateGlobal( field, field_line, field_col ) );
             }
-            globals.insert( field, value );
-        } else if is_parent {
+            globals.insert( field, value ); } else if is_parent {
             let par = value
                 .get_obj()
                 .map_err( | e |ParseError::from_over( &e, stream.file(), value_line, value_col ) )?;
-            *parent = Some( par );
-        } else {
-            obj.insert( field, value );
-        }
+            *parent = Some( par ); } else {
+            obj.insert( field, value ); }
 
        
         if !find_char( stream.clone() ) {
@@ -23789,8 +23566,7 @@ pub mod parses
                     ExpectedType( tcur, tnew, value_line, value_col ),
                  );
             }
-            vec.push( value );
-        }
+            vec.push( value ); }
 
         let arr = Arr::from_vec_unchecked( vec, tcur );
 
@@ -23809,8 +23585,7 @@ pub mod parses
        
         if depth > MAX_DEPTH 
         {
-            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
-        }
+            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) ); }
 
        
         let ch = stream.next().unwrap();
@@ -23876,8 +23651,7 @@ pub mod parses
                     ExpectedType( tcur, tnew, value_line, value_col ),
                  );
             }
-            vec.push( value );
-        }
+            vec.push( value ); }
 
         let arr = Arr::from_vec_unchecked( vec, tcur );
 
@@ -23910,8 +23684,7 @@ pub mod parses
                 true,
             )?;
 
-            vec.push( value );
-        }
+            vec.push( value ); }
 
         Ok( vec.into() )
     }
@@ -23927,8 +23700,7 @@ pub mod parses
     {        
         if depth > MAX_DEPTH 
         {
-            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
-        }
+            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) ); }
         
         let ch = stream.next().unwrap();
         assert_eq!( ch, '(' );
@@ -23936,6 +23708,7 @@ pub mod parses
         let mut vec = Vec::new();
 
         loop 
+       
         {
             if !find_char( stream.clone() ) 
             {
@@ -23971,8 +23744,7 @@ pub mod parses
                 true,
             )?;
 
-            vec.push( value );
-        }
+            vec.push( value ); }
 
         let tup = Tup::from_vec( vec );
 
@@ -23995,8 +23767,7 @@ pub mod parses
         if ch == '@' {
             let ch = stream.next().unwrap();
             is_global = true;
-            field.push( ch );
-        }
+            field.push( ch ); }
 
         while let Some( ch ) = stream.next() 
         {
@@ -24137,13 +23908,11 @@ pub mod parses
                     col2,
                 )?;
             }
-            Ok( val1 )
-        } 
+            Ok( val1 ) } 
 
         else 
         {
-            Ok( res )
-        }
+            Ok( res ) }
     }
 
     fn parse_unary_op
@@ -24225,8 +23994,7 @@ pub mod parses
             if ch != '_' {
                 under = false;
             }
-            let _ = stream.next();
-        }
+            let _ = stream.next(); }
 
         if dec {
            
@@ -24249,15 +24017,13 @@ pub mod parses
             };
 
             let f = frac_from_whole_and_dec( whole, decimal, dec_len );
-            Ok( f.into() )
-        } else {
+            Ok( f.into() ) } else {
            
             if s1.is_empty() {
                 return parse_err( stream.file(), InvalidNumeric( line, col ) );
             }
             let i: BigInt = s1.parse()?;
-            Ok( i.into() )
-        }
+            Ok( i.into() ) }
     }
    
     fn parse_variable
@@ -24282,8 +24048,7 @@ pub mod parses
         if ch == '@' {
             let ch = stream.next().unwrap();
             is_global = true;
-            var.push( ch );
-        }
+            var.push( ch ); }
 
         while let Some( ch ) = stream.peek() 
         {
@@ -24561,15 +24326,13 @@ pub mod parses
 
        
         if depth > MAX_DEPTH {
-            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
-        }
+            return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) ); }
 
         let ch = stream.next().unwrap();
         assert_eq!( ch, '<' );
        
         if !find_char( stream.clone() ) {
-            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) );
-        }
+            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ); }
 
         let ( mut line, mut col ) = ( stream.line(), stream.col() );
         let mut value = parse_value( 
@@ -24622,8 +24385,7 @@ pub mod parses
 
        
         if !find_char( stream.clone() ) {
-            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) );
-        }
+            return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ); }
 
         match stream.next().unwrap() {
             '>' => (),
@@ -24656,8 +24418,7 @@ pub mod parses
         let path = pathbuf.as_path();
         
         if !path.is_file() {
-            return parse_err( stream.file(), InvalidIncludePath( include_file, line, col ) );
-        }
+            return parse_err( stream.file(), InvalidIncludePath( include_file, line, col ) ); }
 
        
         let path_str = match path.to_str() {
@@ -24679,20 +24440,17 @@ pub mod parses
         let storing = if let Some( file ) = stream.file() {
             let full_file = String::from( Path::new( &file ).canonicalize().unwrap().to_str().unwrap() );
             included.1.insert( full_file.clone() );
-            Some( full_file )
-        } else {
+            Some( full_file ) } else {
             None
         };
         
         if included.1.contains( full_path_str ) {
-            return parse_err( stream.file(), CyclicInclude( include_file, line, col ) );
-        }
+            return parse_err( stream.file(), CyclicInclude( include_file, line, col ) ); }
 
        
         let value = if included.0.contains_key( full_path_str ) {
             let value = &included.0[full_path_str];
-            value.clone()
-        } else {
+            value.clone() } else {
             let value: Value = match include_type {
                 IncludeType::Obj => parse_obj_file_includes( path_str, included )?.into(),
                 IncludeType::Str => parse_str_file( path_str )?.into(),
@@ -24705,8 +24463,7 @@ pub mod parses
         };
        
         if let Some( file ) = storing {
-            included.1.remove( &file );
-        }
+            included.1.remove( &file ); }
 
         Ok( value )
     }
@@ -25134,8 +24891,7 @@ pub mod path
                     todo: Vec::new(),
                     scope: None,
                 }
-            );
-        }
+            ); }
 
         let scope = root.map_or_else( || PathBuf::from( "." ), to_scope );
         let scope = PathWrapper::from_path( scope );
@@ -25145,8 +24901,7 @@ pub mod path
 
         for component in components
         {
-            dir_patterns.push( Pattern::new( component )? );
-        }
+            dir_patterns.push( Pattern::new( component )? ); }
 
         if root_len == pattern.len()
         {
@@ -25159,8 +24914,7 @@ pub mod path
                     is_recursive: false,
                     has_metachars: false,
                 }
-            );
-        }
+            ); }
 
         let last_is_separator = pattern.chars().next_back().map( is_separator );
         let require_dir = last_is_separator == Some( true );
@@ -25217,8 +24971,7 @@ pub mod path
                 "attempting to read `{}` resulted in an error: {}",
                 self.path.display(),
                 self.error
-            )
-        }
+            ) }
     }
 
     #[derive( Debug )]
@@ -25275,6 +25028,7 @@ pub mod path
         type Item = GlobResult;
 
         fn next( &mut self) -> Option<GlobResult>
+       
         {
             if let Some( scope ) = self.scope.take()
             {
@@ -25383,8 +25137,7 @@ pub mod path
                 f,
                 "Pattern syntax error near position {}: {}",
                 self.pos, self.msg
-            )
-        }
+            ) }
     }
 
     #[derive( Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
@@ -25573,8 +25326,7 @@ pub mod path
                 original: pattern.to_string(),
                 is_recursive,
                 has_metachars,
-            })
-        }
+            }) }
 
         pub fn escape( s:&str ) -> String
         {
@@ -25602,8 +25354,7 @@ pub mod path
 
         pub fn matches_path_with( &self, path: &Path, options: MatchOptions ) -> bool
         {
-            path.to_str().map_or( false, |s| self.matches_with( s, options ) )
-        }
+            path.to_str().map_or( false, |s| self.matches_with( s, options ) ) }
 
         pub fn as_str( &self ) -> &str { &self.original }
 
@@ -25707,6 +25458,7 @@ pub mod path
     )
     {
         let add = | todo:&mut Vec<_>, next_path: PathWrapper |
+       
         {
             if idx + 1 == patterns.len() { todo.push( Ok( ( next_path, usize::MAX ) ) ); }
             else { fill_todo( todo, patterns, idx + 1, &next_path, options ); }
@@ -25811,6 +25563,7 @@ pub mod path
         let mut i = 0;
 
         while i < s.len()
+       
         {
             if i + 3 <= s.len() && s[i + 1] == '-' {
                 cs.push( CharRange( s[i], s[i + 2] ) );
@@ -25973,12 +25726,13 @@ pub mod prompts
         */
 
         pub fn read_string() -> String
+       
         {
             if let Ok( x ) = env::var( "PROMPT" ) { return x; }
-            DEFAULT_PROMPT.to_string()
-        }
+            DEFAULT_PROMPT.to_string() }
 
         pub fn apply_item( sh: &shell::Shell, result: &mut String, token:&str )
+       
         {
             if let Some( x ) = sh.get_env( token )
             {
@@ -25986,8 +25740,7 @@ pub mod prompts
                 return;
             }
 
-            apply_preset_item( sh, result, token );
-        }
+            apply_preset_item( sh, result, token ); }
 
         pub fn apply_command( result: &mut String, token: &str, prefix: &str, suffix:&str )
         {
@@ -26154,231 +25907,176 @@ pub mod prompts
         /*
         */
         fn apply_seq( prompt: &mut String) {
-            prompt.push_str(libs::colored::SEQ);
-        }
+            prompt.push_str(libs::colored::SEQ); }
 
         fn apply_end_seq( prompt: &mut String) {
-            prompt.push_str(libs::colored::END_SEQ);
-        }
+            prompt.push_str(libs::colored::END_SEQ); }
 
         fn apply_esc( prompt: &mut String) {
-            prompt.push_str(libs::colored::ESC);
-        }
+            prompt.push_str(libs::colored::ESC); }
 
         fn apply_underlined( prompt: &mut String) {
-            prompt.push_str(libs::colored::UNDERLINED);
-        }
+            prompt.push_str(libs::colored::UNDERLINED); }
 
         fn apply_user( prompt: &mut String) {
             let username = tools::get_user_name();
-            prompt.push_str( &username );
-        }
+            prompt.push_str( &username ); }
 
         fn apply_black( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK);
-        }
+            prompt.push_str(libs::colored::BLACK); }
 
         fn apply_black_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK_B);
-        }
+            prompt.push_str(libs::colored::BLACK_B); }
 
         fn apply_black_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK_BG);
-        }
+            prompt.push_str(libs::colored::BLACK_BG); }
 
         fn apply_blue( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE);
-        }
+            prompt.push_str(libs::colored::BLUE); }
 
         fn apply_blue_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_B);
-        }
+            prompt.push_str(libs::colored::BLUE_B); }
 
         fn apply_blue_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_BG);
-        }
+            prompt.push_str(libs::colored::BLUE_BG); }
 
         fn apply_bold( prompt: &mut String) {
-            prompt.push_str(libs::colored::BOLD);
-        }
+            prompt.push_str(libs::colored::BOLD); }
 
         fn apply_green( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN);
-        }
+            prompt.push_str(libs::colored::GREEN); }
 
         fn apply_green_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_B);
-        }
+            prompt.push_str(libs::colored::GREEN_B); }
 
         fn apply_green_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_BG);
-        }
+            prompt.push_str(libs::colored::GREEN_BG); }
 
         fn apply_red( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED);
-        }
+            prompt.push_str(libs::colored::RED); }
 
         fn apply_red_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_B);
-        }
+            prompt.push_str(libs::colored::RED_B); }
 
         fn apply_red_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_BG);
-        }
+            prompt.push_str(libs::colored::RED_BG); }
 
         fn apply_white( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE);
-        }
+            prompt.push_str(libs::colored::WHITE); }
 
         fn apply_white_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE_B);
-        }
+            prompt.push_str(libs::colored::WHITE_B); }
 
         fn apply_white_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE_BG);
-        }
+            prompt.push_str(libs::colored::WHITE_BG); }
 
         fn apply_hidden( prompt: &mut String) {
-            prompt.push_str(libs::colored::HIDDEN);
-        }
+            prompt.push_str(libs::colored::HIDDEN); }
 
         fn apply_reset( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESEt );
-        }
+            prompt.push_str(libs::colored::RESEt ); }
 
         fn apply_reverse( prompt: &mut String) {
-            prompt.push_str(libs::colored::REVERSE);
-        }
+            prompt.push_str(libs::colored::REVERSE); }
 
         fn apply_dim( prompt: &mut String) {
-            prompt.push_str(libs::colored::DIM);
-        }
+            prompt.push_str(libs::colored::DIM); }
 
         fn apply_blink( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLINK);
-        }
+            prompt.push_str(libs::colored::BLINK); }
 
         fn apply_reset_underlined( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_UNDERLINED);
-        }
+            prompt.push_str(libs::colored::RESET_UNDERLINED); }
 
         fn apply_reset_dim( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_DIM);
-        }
+            prompt.push_str(libs::colored::RESET_DIM); }
 
         fn apply_reset_reverse( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_REVERSE);
-        }
+            prompt.push_str(libs::colored::RESET_REVERSE); }
 
         fn apply_reset_hidden( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_HIDDEN);
-        }
+            prompt.push_str(libs::colored::RESET_HIDDEN); }
 
         fn apply_reset_blink( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_BLINK);
-        }
+            prompt.push_str(libs::colored::RESET_BLINK); }
 
         fn apply_reset_bold( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_BOLD);
-        }
+            prompt.push_str(libs::colored::RESET_BOLD); }
 
         fn apply_default( prompt: &mut String) {
-            prompt.push_str(libs::colored::DEFAULt );
-        }
+            prompt.push_str(libs::colored::DEFAULt ); }
 
         fn apply_default_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::DEFAULT_BG);
-        }
+            prompt.push_str(libs::colored::DEFAULT_BG); }
 
         fn apply_cyan( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN);
-        }
+            prompt.push_str(libs::colored::CYAN); }
 
         fn apply_cyan_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_L);
-        }
+            prompt.push_str(libs::colored::CYAN_L); }
 
         fn apply_cyan_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_BG);
-        }
+            prompt.push_str(libs::colored::CYAN_BG); }
 
         fn apply_cyan_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_L_BG);
-        }
+            prompt.push_str(libs::colored::CYAN_L_BG); }
 
         fn apply_red_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_L);
-        }
+            prompt.push_str(libs::colored::RED_L); }
 
         fn apply_red_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_L_BG);
-        }
+            prompt.push_str(libs::colored::RED_L_BG); }
 
         fn apply_green_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_L);
-        }
+            prompt.push_str(libs::colored::GREEN_L); }
 
         fn apply_green_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_L_BG);
-        }
+            prompt.push_str(libs::colored::GREEN_L_BG); }
 
         fn apply_gray_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_L);
-        }
+            prompt.push_str(libs::colored::GRAY_L); }
 
         fn apply_gray_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_L_BG);
-        }
+            prompt.push_str(libs::colored::GRAY_L_BG); }
 
         fn apply_gray_d( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_D);
-        }
+            prompt.push_str(libs::colored::GRAY_D); }
 
         fn apply_gray_d_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_D_BG);
-        }
+            prompt.push_str(libs::colored::GRAY_D_BG); }
 
         fn apply_magenta( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA);
-        }
+            prompt.push_str(libs::colored::MAGENTA); }
 
         fn apply_magenta_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_BG);
-        }
+            prompt.push_str(libs::colored::MAGENTA_BG); }
 
         fn apply_magenta_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_L);
-        }
+            prompt.push_str(libs::colored::MAGENTA_L); }
 
         fn apply_magenta_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_L_BG);
-        }
+            prompt.push_str(libs::colored::MAGENTA_L_BG); }
 
         fn apply_yellow( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW);
-        }
+            prompt.push_str(libs::colored::YELLOW); }
 
         fn apply_yellow_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_BG);
-        }
+            prompt.push_str(libs::colored::YELLOW_BG); }
 
         fn apply_yellow_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_L);
-        }
+            prompt.push_str(libs::colored::YELLOW_L); }
 
         fn apply_yellow_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_L_BG);
-        }
+            prompt.push_str(libs::colored::YELLOW_L_BG); }
 
         fn apply_blue_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_L);
-        }
+            prompt.push_str(libs::colored::BLUE_L); }
 
         fn apply_blue_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_L_BG);
-        }
+            prompt.push_str(libs::colored::BLUE_L_BG); }
 
-        fn apply_color_status( sh: &shell::Shell, prompt: &mut String) {
+        fn apply_color_status( sh: &shell::Shell, prompt: &mut String)
+        {
             if sh.previous_status == 0 {
                 prompt.push_str(libs::colored::GREEN_B);
             } else {
@@ -26407,8 +26105,7 @@ pub mod prompts
                 }
             }
 
-            String::new()
-        }
+            String::new() }
 
         fn apply_gitbr( prompt: &mut String) {
             let git_root = _find_git_root();
@@ -26512,18 +26209,17 @@ pub mod prompts
 
             else { last };
 
-            prompt.push_str( pwd );
-        }
+            prompt.push_str( pwd ); }
 
         pub fn apply_hostname( prompt: &mut String)
         {
             let hostname = tools::get_hostname();
-            prompt.push_str( &hostname );
-        }
+            prompt.push_str( &hostname ); }
 
         pub fn apply_newline( prompt: &mut String) { prompt.push('\n'); }
 
         pub fn apply_pyenv( prompt: &mut String)
+       
         {
             if let Ok( x ) = env::var( "VIRTUAL_ENV" )
             {
@@ -26622,7 +26318,8 @@ pub mod prompts
     {
         let ps = read_string();
         let mut prompt = render( sh, &ps );
-        if let Some((w, _h ) ) = libs::term_size::dimensions() {
+        if let Some((w, _h ) ) = libs::term_size::dimensions()
+        {
             if get::prompt_len( &prompt ) > (w / 2) as i32
                 && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#)
             {
@@ -26846,8 +26543,7 @@ pub mod range
                 IntErrorKind::Zero => "number would be zero for non-zero type",
                 _ => "Unknown Int error kind",
             }
-            .fmt( f )
-        }
+            .fmt( f ) }
     }
     
     impl Error for ParseIntError {}
@@ -27445,7 +27141,7 @@ pub mod range
                 const MAX_B: $in,
             > PartialEq<$t<MIN_B, MAX_B>> for $t<MIN_A, MAX_A> 
             {
-                #[inline( always )] fn eq(&self, other: &$t<MIN_B, MAX_B>) -> bool {
+                #[inline( always )] fn eq(&self, o: &$t<MIN_B, MAX_B>) -> bool {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get() == other.get()
@@ -27458,7 +27154,7 @@ pub mod range
                 const MIN_B: $in,
                 const MAX_B: $in,
             > PartialEq<$ot<MIN_B, MAX_B>> for $ot<MIN_A, MAX_A> {
-                #[inline( always )] fn eq(&self, other: &$ot<MIN_B, MAX_B>) -> bool {
+                #[inline( always )] fn eq(&self, o: &$ot<MIN_B, MAX_B>) -> bool {
                     <$t<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
                     <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     self.inner() == other.inner()
@@ -27471,7 +27167,7 @@ pub mod range
                 const MIN_B: $in,
                 const MAX_B: $in,
             > PartialOrd<$t<MIN_B, MAX_B>> for $t<MIN_A, MAX_A> {
-                #[inline( always )] fn partial_cmp(&self, other: &$t<MIN_B, MAX_B>) -> Option<Ordering> {
+                #[inline( always )] fn partial_cmp(&self, o: &$t<MIN_B, MAX_B>) -> Option<Ordering> {
                     <Self as ::range::traits::RangeIsValid>::ASSERT;
                     <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     self.get().partial_cmp(&other.get())
@@ -27485,7 +27181,7 @@ pub mod range
                 const MAX_B: $in,
             > PartialOrd<$ot<MIN_B, MAX_B>> for $ot<MIN_A, MAX_A> {
                 #[inline]
-                fn partial_cmp(&self, other: &$ot<MIN_B, MAX_B>) -> Option<Ordering> {
+                fn partial_cmp(&self, o: &$ot<MIN_B, MAX_B>) -> Option<Ordering> {
                     <$t<MIN_A, MAX_A> as ::range::traits::RangeIsValid>::ASSERT;
                     <$t<MIN_B, MAX_B> as ::range::traits::RangeIsValid>::ASSERT;
                     if self.is_none() && other.is_none() {
@@ -27505,7 +27201,7 @@ pub mod range
                 const MAX: $in,
             > Ord for $ot<MIN, MAX> {
                 #[inline]
-                fn cmp(&self, other: &Self) -> Ordering {
+                fn cmp(&self, o: &Self) -> Ordering {
                     <$t<MIN, MAX> as ::range::traits::RangeIsValid>::ASSERT;
                     if self.is_none() && other.is_none() {
                         Ordering::Equal
@@ -27820,8 +27516,7 @@ pub mod rc
             }
 
             let args = vec!["source".to_string(), rc_file];
-            scripting::run_script( sh, &args );
-        }
+            scripting::run_script( sh, &args ); }
     }
 }
 
@@ -35321,7 +35016,7 @@ pub mod regex
                         }
                     }
 
-                    fn intersection(&self, other: &StateSet, dest: &mut StateSet) {
+                    fn intersection(&self, o: &StateSet, dest: &mut StateSet) {
                         dest.clear();
                         if self.is_empty() || other.is_empty() { return; }
 
@@ -35353,7 +35048,7 @@ pub mod regex
                         }
                     }
 
-                    fn subtract(&self, other: &StateSet, dest: &mut StateSet) {
+                    fn subtract(&self, o: &StateSet, dest: &mut StateSet) {
                         dest.clear();
                         if self.is_empty() || other.is_empty() {
                             self.iter(|s| dest.add(s));
@@ -53043,14 +52738,14 @@ pub mod regex
 
             impl Ord for Span 
             {
-                fn cmp(&self, other: &Span) -> Ordering {
+                fn cmp(&self, o: &Span) -> Ordering {
                     (&self.start, &self.end).cmp(&(&other.start, &other.end))
                 }
             }
 
             impl PartialOrd for Span 
             {
-                fn partial_cmp(&self, other: &Span) -> Option<Ordering> { Some( self.cmp(other)) }
+                fn partial_cmp(&self, o: &Span) -> Option<Ordering> { Some( self.cmp(other)) }
             }
 
             #[derive( Clone, Copy, Eq, PartialEq )]
@@ -53074,14 +52769,14 @@ pub mod regex
 
             impl Ord for Position 
             {
-                fn cmp(&self, other: &Position) -> Ordering {
+                fn cmp(&self, o: &Position) -> Ordering {
                     self.offset.cmp(&other.offset)
                 }
             }
 
             impl PartialOrd for Position 
             {
-                fn partial_cmp(&self, other: &Position) -> Option<Ordering> { Some( self.cmp(other)) }
+                fn partial_cmp(&self, o: &Position) -> Option<Ordering> { Some( self.cmp(other)) }
             }
 
             impl Span            
@@ -54314,7 +54009,7 @@ pub mod regex
 
                 impl<I: Interval> PartialEq for IntervalSet<I>
                 {
-                    fn eq(&self, other: &IntervalSet<I>) -> bool {
+                    fn eq(&self, o: &IntervalSet<I>) -> bool {
                         self.ranges.eq(&other.ranges)
                     }
                 }
@@ -54358,7 +54053,7 @@ pub mod regex
                         Ok( () )
                     }
 
-                    pub fn union( &mut self, other: &IntervalSet<I>) {
+                    pub fn union( &mut self, o: &IntervalSet<I>) {
                         if other.ranges.is_empty() || self.ranges == other.ranges { return; }
 
                         self.ranges.extend(&other.ranges);
@@ -54366,7 +54061,7 @@ pub mod regex
                         self.folded = self.folded && other.folded;
                     }
 
-                    pub fn intersect( &mut self, other: &IntervalSet<I>) {
+                    pub fn intersect( &mut self, o: &IntervalSet<I>) {
                         if self.ranges.is_empty() { return; }
                         if other.ranges.is_empty() {
                             self.ranges.clear();
@@ -54398,7 +54093,7 @@ pub mod regex
                         self.folded = self.folded && other.folded;
                     }
 
-                    pub fn difference( &mut self, other: &IntervalSet<I>) {
+                    pub fn difference( &mut self, o: &IntervalSet<I>) {
                         if self.ranges.is_empty() || other.ranges.is_empty() { return; }
                         //
 
@@ -54456,7 +54151,7 @@ pub mod regex
                         self.folded = self.folded && other.folded;
                     }
 
-                    pub fn symmetric_difference( &mut self, other: &IntervalSet<I>) {
+                    pub fn symmetric_difference( &mut self, o: &IntervalSet<I>) {
 
                         let mut intersection = self.clone();
                         intersection.intersect(other);
@@ -54558,7 +54253,7 @@ pub mod regex
                         int
                     }
 
-                    fn union(&self, other: &Self) -> Option<Self> {
+                    fn union(&self, o: &Self) -> Option<Self> {
                         if !self.is_contiguous(other) {
                             return None;
                         }
@@ -54567,7 +54262,7 @@ pub mod regex
                         Some(Self::create(lower, upper))
                     }
 
-                    fn intersect(&self, other: &Self) -> Option<Self>
+                    fn intersect(&self, o: &Self) -> Option<Self>
                     {
                         let lower = cmp::m( self.lower(), other.lower());
                         let upper = cmp::min( self.upper(), other.upper());
@@ -54578,7 +54273,7 @@ pub mod regex
                         }
                     }
                     
-                    fn difference(&self, other: &Self) -> (Option<Self>, Option<Self>) {
+                    fn difference(&self, o: &Self) -> (Option<Self>, Option<Self>) {
                         if self.is_subset(other) {
                             return (None, None);
                         }
@@ -54605,7 +54300,7 @@ pub mod regex
                         ret
                     }
                     
-                    fn is_contiguous(&self, other: &Self) -> bool {
+                    fn is_contiguous(&self, o: &Self) -> bool {
                         let lower1 = self.lower().as_u32();
                         let upper1 = self.upper().as_u32();
                         let lower2 = other.lower().as_u32();
@@ -54613,15 +54308,15 @@ pub mod regex
                         cmp::m(lower1, lower2) <= cmp::min(upper1, upper2).saturating_add(1)
                     }
                     
-                    fn is_intersection_empty(&self, other: &Self) -> bool {
+                    fn is_intersection_empty(&self, o: &Self) -> bool {
                         let (lower1, upper1) = ( self.lower(), self.upper());
-                        let (lower2, upper2) = (other.lower(), other.upper());
+                        let (lower2, upper2) = (o.lower(), other.upper());
                         cmp::m(lower1, lower2) > cmp::min(upper1, upper2)
                     }
 
-                    fn is_subset(&self, other: &Self) -> bool {
+                    fn is_subset(&self, o: &Self) -> bool {
                         let (lower1, upper1) = ( self.lower(), self.upper());
-                        let (lower2, upper2) = (other.lower(), other.upper());
+                        let (lower2, upper2) = (o.lower(), other.upper());
                         (lower2 <= lower1 && lower1 <= upper2)
                             && (lower2 <= upper1 && upper1 <= upper2)
                     }
@@ -55023,7 +54718,7 @@ pub mod regex
                         self.literals = None;
                     }
                     
-                    #[inline] pub fn cross_forward( &mut self, other: &mut Seq) {
+                    #[inline] pub fn cross_forward( &mut self, o: &mut Seq) {
                         let (lits1, lits2) = match self.cross_preamble(other) {
                             None => return,
                             Some((lits1, lits2)) => (lits1, lits2),
@@ -55050,7 +54745,7 @@ pub mod regex
                         self.dedup();
                     }
                     
-                    #[inline] pub fn cross_reverse( &mut self, other: &mut Seq) {
+                    #[inline] pub fn cross_reverse( &mut self, o: &mut Seq) {
                         let (lits1, lits2) = match self.cross_preamble(other) {
                             None => return,
                             Some((lits1, lits2)) => (lits1, lits2),
@@ -55108,7 +54803,7 @@ pub mod regex
                         
                         Some( (lits1, lits2))
                     }
-                    #[inline] pub fn union( &mut self, other: &mut Seq) {
+                    #[inline] pub fn union( &mut self, o: &mut Seq) {
                         let lits2 = match other.literals {
                             None => {
                                 self.make_infinite();
@@ -55125,7 +54820,7 @@ pub mod regex
                         self.dedup();
                     }
                     
-                    #[inline] pub fn union_into_empty( &mut self, other: &mut Seq) {
+                    #[inline] pub fn union_into_empty( &mut self, o: &mut Seq) {
                         let lits2 = other.literals.as_mut().map(|lits| lits.drain(..));
                         let lits1 = match self.literals {
                             None => return,
@@ -55202,14 +54897,14 @@ pub mod regex
                     #[inline] pub fn is_exact( &self ) -> bool { self.literals().map_or(false, |lits| lits.iter().all(|x| x.is_exact())) }
                     #[inline] pub fn is_inexact( &self ) -> bool { self.literals().map_or(true, |lits| lits.iter().all(|x| !x.is_exact())) }
                     
-                    #[inline] pub fn max_union_len(&self, other: &Seq) -> Option<usize>
+                    #[inline] pub fn max_union_len(&self, o: &Seq) -> Option<usize>
                     {
                         let len1 = self.len()?;
                         let len2 = other.len()?;
                         Some(len1.saturating_add(len2))
                     }
                     
-                    #[inline] pub fn max_cross_len(&self, other: &Seq) -> Option<usize>
+                    #[inline] pub fn max_cross_len(&self, o: &Seq) -> Option<usize>
                     {
                         let len1 = self.len()?;
                         let len2 = other.len()?;
@@ -57492,19 +57187,19 @@ pub mod regex
                     self.set.negate();
                 }
 
-                pub fn union( &mut self, other: &ClassUnicode) {
+                pub fn union( &mut self, o: &ClassUnicode) {
                     self.set.union(&other.set);
                 }
 
-                pub fn intersect( &mut self, other: &ClassUnicode) {
+                pub fn intersect( &mut self, o: &ClassUnicode) {
                     self.set.intersect(&other.set);
                 }
 
-                pub fn difference( &mut self, other: &ClassUnicode) {
+                pub fn difference( &mut self, o: &ClassUnicode) {
                     self.set.difference(&other.set);
                 }
 
-                pub fn symmetric_difference( &mut self, other: &ClassUnicode) {
+                pub fn symmetric_difference( &mut self, o: &ClassUnicode) {
                     self.set.symmetric_difference(&other.set);
                 }
 
@@ -57663,19 +57358,19 @@ pub mod regex
                     self.set.negate();
                 }
 
-                pub fn union( &mut self, other: &ClassBytes) {
+                pub fn union( &mut self, o: &ClassBytes) {
                     self.set.union(&other.set);
                 }
 
-                pub fn intersect( &mut self, other: &ClassBytes) {
+                pub fn intersect( &mut self, o: &ClassBytes) {
                     self.set.intersect(&other.set);
                 }
 
-                pub fn difference( &mut self, other: &ClassBytes) {
+                pub fn difference( &mut self, o: &ClassBytes) {
                     self.set.difference(&other.set);
                 }
 
-                pub fn symmetric_difference( &mut self, other: &ClassBytes) {
+                pub fn symmetric_difference( &mut self, o: &ClassBytes) {
                     self.set.symmetric_difference(&other.set);
                 }
 
@@ -58392,27 +58087,27 @@ pub mod regex
                     *self = self.remove(look);
                }
                 
-                #[inline] pub fn subtract(self, other: LookSet) -> LookSet {
+                #[inline] pub fn subtract(self, o: LookSet) -> LookSet {
                     LookSet { bits: self.bits & !other.bits }
                }
                 
-                #[inline] pub fn set_subtract( &mut self, other: LookSet) {
+                #[inline] pub fn set_subtract( &mut self, o: LookSet) {
                     *self = self.subtract(other);
                 }
 
-                #[inline] pub fn union(self, other: LookSet) -> LookSet {
+                #[inline] pub fn union(self, o: LookSet) -> LookSet {
                     LookSet { bits: self.bits | other.bits }
                }
                 
-                #[inline] pub fn set_union( &mut self, other: LookSet) {
+                #[inline] pub fn set_union( &mut self, o: LookSet) {
                     *self = self.union(other);
                 }
 
-                #[inline] pub fn intersect(self, other: LookSet) -> LookSet {
+                #[inline] pub fn intersect(self, o: LookSet) -> LookSet {
                     LookSet { bits: self.bits & other.bits }
                }
                 
-                #[inline] pub fn set_intersect( &mut self, other: LookSet) {
+                #[inline] pub fn set_intersect( &mut self, o: LookSet) {
                     *self = self.intersect(other);
                 }
                 
@@ -59038,8 +58733,7 @@ pub mod regex
         match chars.next()
         {
             Some( ( ind, _ ) ) => cur + ind,
-            None => buf.len()
-        }
+            None => buf.len() }
     }
 
     pub fn back_n_words( n: usize, buf:&str, cur: usize, word_break:&str ) -> ops::Range<usize>
@@ -59082,12 +58776,10 @@ pub mod regex
     {
         let fwd = match buf[cur..].chars().next() {
             Some( ch ) => word_break.contains( ch ),
-            None => return buf.len()
-        };
+            None => return buf.len() };
 
         if fwd {
-            next_word( 1, buf, cur, word_break )
-        } else {
+            next_word( 1, buf, cur, word_break ) } else {
             let mut chars = buf[..cur].char_indices().rev();
 
             iter::drop_while( &mut chars, |( _, ch )| !word_break.contains( ch ) );
@@ -59115,8 +58807,7 @@ pub mod regex
         match chars.next() 
         {
             Some( ( idx, _ ) ) => cur + idx,
-            None => buf.len()
-        }
+            None => buf.len() }
     }
 
     pub fn word_end( buf:&str, cur: usize, word_break:&str ) -> usize
@@ -59128,8 +58819,7 @@ pub mod regex
         match chars.next()
         {
             Some( ( idx, _ ) ) => cur + idx,
-            None => buf.len()
-        }
+            None => buf.len() }
     }
     
     pub fn find_matching_parenthesis( s:&str, quotes:&str, open:char, close:char ) -> Option<usize>
@@ -59139,6 +58829,7 @@ pub mod regex
         let mut string_delim = None;
 
         while let Some( ( ind, ch ) ) = chars.next()
+       
         {
             if string_delim == Some( ch ) {
                 string_delim = None;
@@ -59374,6 +59065,7 @@ pub mod str
                 data: SmallVec::new(),
             }
         }
+        
         #[inline] pub fn with_capacity( n: usize ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::with_capacity( n ),
@@ -59406,6 +59098,7 @@ pub mod str
                 }
             }
         }
+        
         #[inline] pub unsafe fn from_buf_unchecked( buf: A ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::from_buf( buf ),
@@ -59453,9 +59146,7 @@ pub mod str
             }
         }
 
-        #[inline] pub fn push_str( &mut self, s:&str ) {
-            self.data.extend_from_slice( s.as_bytes() );
-        }
+        #[inline] pub fn push_str( &mut self, s:&str ) { self.data.extend_from_slice( s.as_bytes() ); }
 
         #[inline] pub fn pop( &mut self ) -> Option<char> 
         {
@@ -59469,32 +59160,23 @@ pub mod str
             }
         }
 
-        #[inline] pub fn grow( &mut self, new_cap: usize ) {
-            self.data.grow( new_cap );
-        }
-        #[inline] pub fn reserve( &mut self, additional: usize ) {
-            self.data.reserve( additional );
-        }
-        #[inline] pub fn reserve_exact( &mut self, additional: usize ) {
-            self.data.reserve( additional );
-        }
+        #[inline] pub fn grow( &mut self, new_cap: usize ) { self.data.grow( new_cap ); }
+        
+        #[inline] pub fn reserve( &mut self, additional: usize ) { self.data.reserve( additional ); }
+        
+        #[inline] pub fn reserve_exact( &mut self, additional: usize ) { self.data.reserve( additional ); }
 
-        #[inline] pub fn shrink_to_fit( &mut self ) {
-            self.data.shrink_to_fit();
-        }
+        #[inline] pub fn shrink_to_fit( &mut self ) { self.data.shrink_to_fit(); }
 
         #[inline] pub fn truncate( &mut self, len: usize ) {
             assert!( self.is_char_boundary( len ) );
-            self.data.truncate( len );
-        }
+            self.data.truncate( len ); }
 
         #[inline] pub fn as_str( &self ) -> &str { self }
 
         #[inline] pub fn as_mut_str( &mut self ) -> &mut str { self }
 
-        #[inline] pub fn clear( &mut self ) {
-            self.data.clear();
-        }
+        #[inline] pub fn clear( &mut self ) { self.data.clear(); }
 
         #[inline] pub fn remove( &mut self, idx: usize ) -> char {
             let ch = match self[idx..].chars().next() {
@@ -59543,9 +59225,11 @@ pub mod str
         }
 
         #[inline] pub unsafe fn as_mut_vec( &mut self ) -> &mut SmallVec<A> { &mut self.data }
+        
         #[inline] pub fn into_string( self ) -> String {
             unsafe { String::from_utf8_unchecked( self.data.into_vec() ) }
         }
+        
         #[inline] pub fn into_boxed_str( self ) -> Box<str> { self.into_string().into_boxed_str() }
 
         #[inline] pub fn into_inner( self ) -> Result<A, Self> { self.data.into_inner().map_err( |data| SmallString { data } ) }
@@ -59600,8 +59284,7 @@ pub mod str
                 guard.idx += ch_len;
             }
 
-            drop( guard );
-        }
+            drop( guard ); }
 
         fn as_ptr( &mut self ) -> *const u8 { self.data.as_ptr() }
         fn as_mut_ptr( &mut self ) -> *mut u8 { self.data.as_mut_ptr() }
@@ -59616,7 +59299,8 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> ops::DerefMut for SmallString<A> {
+    impl<A: Array<Item = u8>> ops::DerefMut for SmallString<A>
+    {
         #[inline] fn deref_mut( &mut self ) -> &mut str {
             let bytes:&mut [u8] = &mut self.data;
             unsafe { str::from_utf8_unchecked_mut( bytes ) }
@@ -59631,20 +59315,18 @@ pub mod str
 
     impl<A: Array<Item = u8>> BorrowMut<str> for SmallString<A> { #[inline] fn borrow_mut( &mut self ) -> &mut str { self } }
 
-    impl<A: Array<Item = u8>> AsRef<[u8]> for SmallString<A> {
+    impl<A: Array<Item = u8>> AsRef<[u8]> for SmallString<A>
+    {
         #[inline] fn as_ref( &self ) -> &[u8] { self.data.as_ref() }
     }
 
-    impl<A: Array<Item = u8>> fmt::Write for SmallString<A> {
-        #[inline] fn write_str( &mut self, s:&str ) -> fmt::Result {
-            self.push_str( s  );
-            Ok( () )
-        }
+    impl<A: Array<Item = u8>> fmt::Write for SmallString<A>
+    {
+        #[inline] fn write_str( &mut self, s:&str ) -> fmt::Result { self.push_str( s  );
+            Ok( () ) }
 
-        #[inline] fn write_char( &mut self, ch:char ) -> fmt::Result {
-            self.push( ch );
-            Ok( () )
-        }
+        #[inline] fn write_char( &mut self, ch:char ) -> fmt::Result { self.push( ch );
+            Ok( () ) }
     }
 
     impl<A: Array<Item = u8>> FromStr for SmallString<A> {
@@ -59653,23 +59335,28 @@ pub mod str
         fn from_str( s:&str ) -> Result<Self, Self::Err> { Ok( SmallString::from( s ) ) }
     }
     
-    impl<A: Array<Item = u8>> From<char> for SmallString<A> {
+    impl<A: Array<Item = u8>> From<char> for SmallString<A>
+    {
         #[inline] fn from( ch:char ) -> SmallString<A> { SmallString::from_str( ch.encode_utf8( &mut [0; 4] ) ) }
     }
 
-    impl<A: Array<Item = u8>> From<&'_ str> for SmallString<A> {
+    impl<A: Array<Item = u8>> From<&'_ str> for SmallString<A>
+    {
         #[inline] fn from( s:&str ) -> SmallString<A> { SmallString::from_str( s ) }
     }
 
-    impl<A: Array<Item = u8>> From<Box<str>> for SmallString<A> {
+    impl<A: Array<Item = u8>> From<Box<str>> for SmallString<A>
+    {
         #[inline] fn from( s: Box<str> ) -> SmallString<A> { SmallString::from_string( s.into() ) }
     }
 
-    impl<A: Array<Item = u8>> From<String> for SmallString<A> {
+    impl<A: Array<Item = u8>> From<String> for SmallString<A>
+    {
         #[inline] fn from( s: String ) -> SmallString<A> { SmallString::from_string( s ) }
     }
 
-    impl<'a, A: Array<Item = u8>> From<Cow<'a, str>> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> From<Cow<'a, str>> for SmallString<A>
+    {
         fn from( value: Cow<'a, str> ) -> Self {
             match value {
                 Cow::Borrowed( s ) => Self::from_str( s ),
@@ -59702,7 +59389,8 @@ pub mod str
     impl_index_str!( ops::RangeTo<usize> );
     impl_index_str!( ops::RangeFull );
 
-    impl<A: Array<Item = u8>> FromIterator<char> for SmallString<A> {
+    impl<A: Array<Item = u8>> FromIterator<char> for SmallString<A>
+    {
         fn from_iter<I: IntoIterator<Item = char>>( iter: I ) -> SmallString<A>
         {
             let mut s = SmallString::new();
@@ -59711,7 +59399,8 @@ pub mod str
         }
     }
 
-    impl<'a, A: Array<Item = u8>> FromIterator<&'a char> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> FromIterator<&'a char> for SmallString<A>
+    {
         fn from_iter<I: IntoIterator<Item = &'a char>>( iter: I ) -> SmallString<A>
         {
             let mut s = SmallString::new();
@@ -59720,7 +59409,8 @@ pub mod str
         }
     }
 
-    impl<'a, A: Array<Item = u8>> FromIterator<Cow<'a, str>> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> FromIterator<Cow<'a, str>> for SmallString<A>
+    {
         fn from_iter<I: IntoIterator<Item = Cow<'a, str>>>( iter: I ) -> SmallString<A>
         {
             let mut s = SmallString::new();
@@ -59729,7 +59419,8 @@ pub mod str
         }
     }
 
-    impl<'a, A: Array<Item = u8>> FromIterator<&'a str> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> FromIterator<&'a str> for SmallString<A>
+    {
         fn from_iter<I: IntoIterator<Item = &'a str>>( iter: I ) -> SmallString<A>
         {
             let mut s = SmallString::new();
@@ -59738,7 +59429,8 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> FromIterator<String> for SmallString<A> {
+    impl<A: Array<Item = u8>> FromIterator<String> for SmallString<A>
+    {
         fn from_iter<I: IntoIterator<Item = String>>( iter: I ) -> SmallString<A>
         {
             let mut s = SmallString::new();
@@ -59747,7 +59439,8 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> Extend<char> for SmallString<A> {
+    impl<A: Array<Item = u8>> Extend<char> for SmallString<A>
+    {
         fn extend<I: IntoIterator<Item = char>>( &mut self, iter: I ) {
             let iter = iter.into_iter();
             let ( lo, _ ) = iter.size_hint();
@@ -59760,13 +59453,13 @@ pub mod str
         }
     }
 
-    impl<'a, A: Array<Item = u8>> Extend<&'a char> for SmallString<A> {
-        fn extend<I: IntoIterator<Item = &'a char>>( &mut self, iter: I ) {
-            self.extend( iter.into_iter().cloned() );
-        }
+    impl<'a, A: Array<Item = u8>> Extend<&'a char> for SmallString<A>
+    {
+        fn extend<I: IntoIterator<Item = &'a char>>( &mut self, iter: I ) { self.extend( iter.into_iter().cloned() ); }
     }
 
-    impl<'a, A: Array<Item = u8>> Extend<Cow<'a, str>> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> Extend<Cow<'a, str>> for SmallString<A>
+    {
         fn extend<I: IntoIterator<Item = Cow<'a, str>>>( &mut self, iter: I ) {
             for s in iter {
                 self.push_str( &s );
@@ -59774,7 +59467,8 @@ pub mod str
         }
     }
 
-    impl<'a, A: Array<Item = u8>> Extend<&'a str> for SmallString<A> {
+    impl<'a, A: Array<Item = u8>> Extend<&'a str> for SmallString<A>
+    {
         fn extend<I: IntoIterator<Item = &'a str>>( &mut self, iter: I ) {
             for s in iter {
                 self.push_str( s  );
@@ -59782,7 +59476,8 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> Extend<String> for SmallString<A> {
+    impl<A: Array<Item = u8>> Extend<String> for SmallString<A>
+    {
         fn extend<I: IntoIterator<Item = String>>( &mut self, iter: I ) {
             for s in iter {
                 self.push_str( &s );
@@ -59790,16 +59485,16 @@ pub mod str
         }
     }
 
-    impl<A: Array<Item = u8>> fmt::Debug for SmallString<A> {
+    impl<A: Array<Item = u8>> fmt::Debug for SmallString<A>
+    {
         #[inline] fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-            fmt::Debug::fmt( &**self, f )
-        }
+            fmt::Debug::fmt( &**self, f ) }
     }
 
-    impl<A: Array<Item = u8>> fmt::Display for SmallString<A> {
+    impl<A: Array<Item = u8>> fmt::Display for SmallString<A>
+    {
         #[inline] fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-            fmt::Display::fmt( &**self, f )
-        }
+            fmt::Display::fmt( &**self, f ) }
     }
 
     eq_str!( str );
@@ -59830,8 +59525,7 @@ pub mod str
     
     impl<'a, A: Array<Item = u8>> PartialEq<Cow<'a, OsStr>> for SmallString<A> 
     {
-        #[inline] fn eq( &self, rhs:&Cow<OsStr> ) -> bool {
-            self[..] == **rhs
+        #[inline] fn eq( &self, rhs:&Cow<OsStr> ) -> bool { self[..] == **rhs
         }
     }
 
@@ -59839,9 +59533,7 @@ pub mod str
         A: Array<Item = u8>,
         B: Array<Item = u8>,
     {
-        #[inline] fn eq( &self, rhs:&SmallString<B> ) -> bool {
-            self[..] == rhs[..]
-        }
+        #[inline] fn eq( &self, rhs:&SmallString<B> ) -> bool { self[..] == rhs[..] }
     }
 
     impl<A: Array<Item = u8>> Eq for SmallString<A> {}
@@ -59853,16 +59545,12 @@ pub mod str
 
     impl<A: Array<Item = u8>> Ord for SmallString<A> 
     {
-        #[inline] fn cmp( &self, rhs:&SmallString<A> ) -> Ordering {
-            self[..].cmp( &rhs[..] )
-        }
+        #[inline] fn cmp( &self, rhs:&SmallString<A> ) -> Ordering { self[..].cmp( &rhs[..] ) }
     }
 
     impl<A: Array<Item = u8>> Hash for SmallString<A> 
     {
-        #[inline] fn hash<H: Hasher>( &self, state:&mut H ) {
-            self[..].hash( state )
-        }
+        #[inline] fn hash<H: Hasher>( &self, state:&mut H ) { self[..].hash( state ) }
     }
 
     pub struct Drain<'a> { iter: Chars<'a>, }
@@ -59888,9 +59576,7 @@ pub mod str
 
     impl<A: Array<Item = u8>> fmt::Debug for DrainRange<'_, A> 
     {
-        fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result {
-            self.drain.fmt( f )
-        }
+        fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result { self.drain.fmt( f ) }
     }
 
     impl<A: Array<Item = u8>> Iterator for DrainRange<'_, A> 
@@ -59910,13 +59596,11 @@ pub mod str
 
             unsafe { str::from_utf8_unchecked( &buf[..utf8_len] ) }
                 .chars()
-                .next()
-        }
+                .next() }
 
         fn size_hint( &self ) -> ( usize, Option<usize> ) {
             let len = self.drain.len();
-            ( len.div_ceil( 4 ), Some( len ) )
-        }
+            ( len.div_ceil( 4 ), Some( len ) ) }
     }
 
     impl<A: Array<Item = u8>> DoubleEndedIterator for DrainRange<'_, A> 
@@ -59935,9 +59619,9 @@ pub mod str
 
             unsafe { str::from_utf8_unchecked( &buf[i..] ) }
                 .chars()
-                .next()
-        }
+                .next() }
     }
+    
     impl<A: Array<Item = u8>> FusedIterator for DrainRange<'_, A> {}
 
     #[derive( Debug )]
@@ -59955,8 +59639,7 @@ pub mod str
             unsafe { slice::from_raw_parts( ptr, A::size() ) }
         }
 
-        #[inline] pub fn into_buf( self ) -> A {
-            self.buf
+        #[inline] pub fn into_buf( self ) -> A { self.buf
         }
 
         #[inline] pub fn utf8_error( &self ) -> Utf8Error { self.error }
@@ -59965,8 +59648,7 @@ pub mod str
     impl<A: Array<Item = u8>> fmt::Display for FromUtf8Error<A>
     {
         #[inline] fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-            fmt::Display::fmt( &self.error, f )
-        }
+            fmt::Display::fmt( &self.error, f ) }
     }
     
     pub fn filter_visible( s:&str ) -> Cow<str>
@@ -59979,6 +59661,7 @@ pub mod str
         let mut ignore = false;
 
         for ch in s.chars()
+       
         {
             if ch == START_INVISIBLE { ignore = true; }
             
@@ -60047,6 +59730,7 @@ pub mod system
         pub type c_float = f32;
         pub type c_int = i32;
         cfg_if!
+       
         {
             if #[cfg(all(target_pointer_width = "64", not(windows)))]
             {
@@ -60408,8 +60092,7 @@ pub mod system
             SigIgn,
             Handler( extern "C" fn ( c_int ) ),
             #[cfg( not( target_os = "redox" ) )]
-            SigAction( extern "C" fn ( c_int, *mut SignalInformation, *mut c_void ) )
-        }
+            SigAction( extern "C" fn ( c_int, *mut SignalInformation, *mut c_void ) ) }
         
         #[repr( C )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SignalAction
@@ -60514,6 +60197,7 @@ pub mod system
         }
 
         cfg_if!
+       
         {
             if #[cfg( target_pointer_width = "32" )] {
                 const ULONG_SIZE: usize = 32;
@@ -61430,8 +61114,7 @@ pub mod system
             assert!( 
                 usize::try_from( fd ).map_or( false, |fd| fd < FD_SETSIZE ),
                 "fd must be in the range 0..FD_SETSIZE",
-             );
-        }
+             ); }
 
         pub fn tcgetattraw( d:RawFd ) -> Result<Termios> 
         {
@@ -61479,8 +61162,7 @@ pub mod system
                     ::mem::transmute( &*inner_termios ) //&*inner_termios,
                 )
             } )
-            .map( drop )
-        }
+            .map( drop ) }
 
         pub const fn from_i32( e: i32 ) -> Errno 
         {
@@ -61623,8 +61305,7 @@ pub mod system
                 )
             };
 
-            Errno::result( res ).map( |r| r as usize )
-        }
+            Errno::result( res ).map( |r| r as usize ) }
 
         pub fn write( fd:RawFd, buf:&[u8] ) -> Result<usize> 
         {
@@ -61636,8 +61317,7 @@ pub mod system
                 )
             };
 
-            Errno::result( res ).map( |r| r as usize )
-        }
+            Errno::result( res ).map( |r| r as usize ) }
 
         #[inline] pub fn milliseconds( milliseconds: i64 ) -> TimeSpec
         {
@@ -61645,12 +61325,11 @@ pub mod system
             .checked_mul( 1_000_000 )
             .expect( "TimeSpec::milliseconds out of bounds" );
 
-            TimeSpec::nanoseconds( nanoseconds )
-        }
+            TimeSpec::nanoseconds( nanoseconds ) }
 
-        #[inline] pub fn div_rem_64( this: i64, other: i64 ) -> ( i64, i64 ) { ( this / other, this % other ) }
+        #[inline] pub fn div_rem_64( this: i64, o: i64 ) -> ( i64, i64 ) { ( this / other, this % other ) }
         
-        #[inline] pub fn div_floor_64( this: i64, other: i64 ) -> i64
+        #[inline] pub fn div_floor_64( this: i64, o: i64 ) -> i64
         {
             match div_rem_64( this, other )
             {
@@ -61659,7 +61338,7 @@ pub mod system
             }
         }
         
-        #[inline] pub fn mod_floor_64( this: i64, other: i64 ) -> i64
+        #[inline] pub fn mod_floor_64( this: i64, o: i64 ) -> i64
         {
             match this % other 
             {
@@ -61668,10 +61347,9 @@ pub mod system
             }
         }
 
-        #[inline] pub fn div_mod_floor_64( this: i64, other: i64 ) -> ( i64, i64 )
+        #[inline] pub fn div_mod_floor_64( this: i64, o: i64 ) -> ( i64, i64 )
         {
-            ( div_floor_64( this, other ), mod_floor_64( this, other ) )
-        }
+            ( div_floor_64( this, other ), mod_floor_64( this, other ) ) }
 
         #[inline] pub fn nanoseconds( nanoseconds: i64 ) -> TimeVal 
         {
@@ -61684,8 +61362,7 @@ pub mod system
             TimeVal( TimeValue {
                 tv_sec: secs as time_t,
                 tv_usec: micros as suseconds_t,
-            } )
-        }
+            } ) }
         
         pub const fn zero_init_time_specification() -> TimeSpecification
         {
@@ -61711,8 +61388,7 @@ pub mod system
                                     &a.sigaction as *const SignalAction,
                                     oldact.as_mut_ptr() ) };
 
-            Errno::result( res ).map( |_| SigAction { sigaction: unsafe { oldact.assume_init() } } )
-        }
+            Errno::result( res ).map( |_| SigAction { sigaction: unsafe { oldact.assume_init() } } ) }
 
         pub fn FD_SET( fd:c_int, set:*mut FDSet ) -> ()
         {
@@ -63138,9 +62814,9 @@ pub mod system
 
                 pub fn contains( &self, sig: Signal ) -> bool { self.0 & sig.as_bit() != 0 }
 
-                pub fn contains_all( &self, other: SignalSet ) -> bool { self.0 & other.0 == other.0 }
+                pub fn contains_all( &self, o: SignalSet ) -> bool { self.0 & other.0 == other.0 }
 
-                pub fn intersects( &self, other: SignalSet ) -> bool { self.0 & other.0 != 0 }
+                pub fn intersects( &self, o: SignalSet ) -> bool { self.0 & other.0 != 0 }
 
                 pub fn is_empty( &self ) -> bool { self.0 == 0 }
 
@@ -63154,16 +62830,16 @@ pub mod system
                     else { self.remove( sig ); }
                 }
 
-                pub fn difference( &self, other: SignalSet ) -> SignalSet
+                pub fn difference( &self, o: SignalSet ) -> SignalSet
                 { SignalSet( self.0 & !other.0 ) }
 
-                pub fn symmetric_difference( &self, other: SignalSet ) -> SignalSet
+                pub fn symmetric_difference( &self, o: SignalSet ) -> SignalSet
                 { SignalSet( self.0 ^ other.0 ) }
 
-                pub fn intersection( &self, other: SignalSet ) -> SignalSet
+                pub fn intersection( &self, o: SignalSet ) -> SignalSet
                 { SignalSet( self.0 & other.0 ) }
 
-                pub fn union( &self, other: SignalSet ) -> SignalSet { SignalSet( self.0 | other.0 ) }
+                pub fn union( &self, o: SignalSet ) -> SignalSet { SignalSet( self.0 | other.0 ) }
 
                 pub fn inverse( &self ) -> SignalSet { SignalSet( !self.0 & Signal::all_bits() ) }
             }
@@ -66102,6 +65778,7 @@ pub mod system
         }
 
         pub fn unescape( s:&str ) -> Cow<str> 
+       
         {
             if s.contains( '\\' ) {
                 let mut res = String::with_capacity( s.len() );
@@ -66226,15 +65903,13 @@ pub mod system
                 return None;
             }
 
-            Some( parse_text( filename, &buf ) )
-        }
+            Some( parse_text( filename, &buf ) ) }
 
         pub fn parse_text<P: ?Sized>( name:&P, line:&str ) -> Vec<Directive> where
         P: AsRef<Path>
         {
             let mut p = Parser::new( name.as_ref(), line );
-            p.parse()
-        }
+            p.parse() }
 
         struct Parser<'a> 
         {
@@ -66642,8 +66317,7 @@ pub mod system
                 _ => return None
             };
 
-            Some( esc.to_string() )
-        }
+            Some( esc.to_string() ) }
 
         fn parse_string( s:&str ) -> ( Token, &str ) 
         {
@@ -66664,8 +66338,7 @@ pub mod system
                 }
             }
 
-            ( Token::Invalid, "" )
-        }
+            ( Token::Invalid, "" ) }
 
         fn parse_word( s:&str ) -> ( &str, &str ) 
         {
@@ -69624,6 +69297,7 @@ pub mod system
 
         pub fn format_columns<S: AsRef<str>>( strs:&[S], screen_width: usize, horizontal: bool )
         -> Option<Vec<usize>>
+       
         {
             if strs.is_empty() {
                 return None;
@@ -69697,8 +69371,7 @@ pub mod system
                 }
             }
 
-            ( min, m )
-        }
+            ( min, m ) }
 
     }
 
@@ -71493,6 +71166,7 @@ pub mod system
         }
 
         pub fn display_str<'a>( s:&'a str, style: Display ) -> Cow<'a, str> 
+       
         {
             if s.chars().all( |ch| display( ch, style ) == DisplaySequence::Char( ch ) ) {
                 Borrowed( s )
@@ -71679,7 +71353,8 @@ pub mod tuples
                 f( value )
             }
         }
-        pub fn get( &self, index: usize ) -> OverResult<Value> {
+        pub fn get( &self, index: usize ) -> OverResult<Value>
+        {
             if index >= self.inner.vec.len() {
                 Err( OverError::TupOutOfBounds( index ) )
             } else {
@@ -71694,8 +71369,7 @@ pub mod tuples
         pub fn is_empty( &self ) -> bool { self.inner.vec.is_empty() }
 
         pub fn ptr_eq( &self, other:&Self ) -> bool {
-            Arc::ptr_eq( &self.inner, &other.inner )
-        }
+            Arc::ptr_eq( &self.inner, &other.inner ) }
 
         pub fn iter( &self ) -> Iter<Value> { self.vec_ref().iter() }
     }
@@ -71708,15 +71382,13 @@ pub mod tuples
     impl fmt::Display for Tup 
     {
         fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-            write!( f, "{}", self.format( true, INDENT_STEP ) )
-        }
+            write!( f, "{}", self.format( true, INDENT_STEP ) ) }
     }
 
     impl From<Vec<Value>> for Tup 
     {
         fn from( v: Vec<Value> ) -> Self {
-            Self::from_vec( vec )
-        }
+            Self::from_vec( vec ) }
     }
 
     impl PartialEq for Tup 
@@ -71953,7 +71625,7 @@ pub mod types
                     else { false }
                 }
 
-                _ => self.is( other ),
+                _ => self.is(o),
             }
         }
     }
@@ -72001,90 +71673,74 @@ pub mod types
     {
         pub fn from_exited( pid: i32, status: i32) -> Self 
         {
-            WaitStatus( pid, 0, status )
-        }
+            WaitStatus( pid, 0, status ) }
 
         pub fn from_signaled( pid: i32, sig: i32) -> Self 
         {
-            WaitStatus( pid, 1, sig)
-        }
+            WaitStatus( pid, 1, sig) }
 
         pub fn from_stopped( pid: i32, sig: i32) -> Self 
         {
-            WaitStatus( pid, 2, sig)
-        }
+            WaitStatus( pid, 2, sig) }
 
         pub fn from_continuted( pid: i32) -> Self 
         {
-            WaitStatus( pid, 3, 0)
-        }
+            WaitStatus( pid, 3, 0) }
 
         pub fn from_others() -> Self 
         {
-            WaitStatus(0, 9, 9)
-        }
+            WaitStatus(0, 9, 9) }
 
         pub fn from_error(errno: i32) -> Self 
         {
-            WaitStatus(0, 255, errno)
-        }
+            WaitStatus(0, 255, errno) }
 
         pub fn empty() -> Self 
         {
-            WaitStatus(0, 0, 0)
-        }
+            WaitStatus(0, 0, 0) }
 
         pub fn is_error( &self ) -> bool 
-        {
-            self.1 == 255
+        { self.1 == 255
         }
 
         pub fn is_others( &self ) -> bool 
-        {
-            self.1 == 9
+        { self.1 == 9
         }
 
         pub fn is_signaled( &self ) -> bool 
-        {
-            self.1 == 1
+        { self.1 == 1
         }
 
         pub fn get_errno( &self ) -> nix::Error 
         {
-            nix::Error::from_raw( self.2)
-        }
+            nix::Error::from_raw( self.2) }
 
         pub fn is_exited( &self ) -> bool 
-        {
-            self.0 != 0 && self.1 == 0
+        { self.0 != 0 && self.1 == 0
         }
 
         pub fn is_stopped( &self ) -> bool 
-        {
-            self.1 == 2
+        { self.1 == 2
         }
 
         pub fn is_continued( &self ) -> bool 
-        {
-            self.1 == 3
+        { self.1 == 3
         }
 
         pub fn get_pid( &self ) -> i32 
-        {
-            self.0
+        { self.0
         }
 
         fn _get_signaled_status( &self ) -> i32 
-        {
-            self.2 + 128
+        { self.2 + 128
         }
 
         pub fn get_signal( &self ) -> i32 
-        {
-            self.2
+        { self.2
         }
 
         pub fn get_name( &self ) -> String 
+       
         {
             if self.is_exited() {
                 "Exited".to_string()
@@ -72104,6 +71760,7 @@ pub mod types
         }
 
         pub fn get_status( &self ) -> i32 
+       
         {
             if self.is_exited() {
                 self.2
@@ -72122,8 +71779,7 @@ pub mod types
             let name = self.get_name();
             formatter.field( "name", &name );
             formatter.field( "ext", &self.2);
-            formatter.finish()
-        }
+            formatter.finish() }
     }
     
     #[derive( Debug )]
@@ -72215,8 +71871,7 @@ pub mod types
                 tokens: tokens_final,
                 redirects_to,
                 redirect_from,
-            })
-        }
+            }) }
 
         pub fn has_redirect_from( &self ) -> bool
         { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<" }
@@ -72226,8 +71881,7 @@ pub mod types
 
         pub fn is_builtin( &self ) -> bool
         {
-            is::builtin( &self.tokens[0].1)
-        }
+            is::builtin( &self.tokens[0].1) }
     }
 
     #[derive( Clone, Debug, Default )]
@@ -72255,9 +71909,7 @@ pub mod types
         }
 
         pub fn all_members_running( &self ) -> bool 
-        {
-            self.pids_stopped.is_empty()
-        }
+        { self.pids_stopped.is_empty() }
     }
 
     #[allow(dead_code )]
@@ -72349,7 +72001,8 @@ pub mod types
         let mut n = 0;
         let re = Regex::new( r"^([a-zA-Z0-9_]+)=(.*)$" ).unwrap();
 
-        for ( sep, text ) in tokens.iter() {
+        for ( sep, text ) in tokens.iter()
+        {
             if !sep.is_empty() || !::regex::contains( text, r"^([a-zA-Z0-9_]+)=(.*)$" ) {
                 break;
             }
@@ -72405,8 +72058,7 @@ pub mod types
                     envs,
                     background,
                 }
-            )
-        }
+            ) }
 
         pub fn is_empty( &self ) -> bool { self.commands.is_empty() }
 
@@ -73218,8 +72870,7 @@ pub mod unicode
             (
                 f,
                 "Unicode-aware case folding is not available (probably because the unicode-case feature is not enabled)"
-            )
-        }
+            ) }
     }
 
     #[derive( Debug )]
@@ -73235,8 +72886,7 @@ pub mod unicode
             (
                 f,
                 "Unicode-aware \\w class is not available (probably because the unicode-perl feature is not enabled)"
-            )
-        }
+            ) }
     }
 
     #[derive( Debug )]
@@ -73256,10 +72906,10 @@ pub mod unicode
                 table: tables::cases::CASE_FOLDING_SIMPLE,
                 last: None,
                 next: 0,
-            })
-        }
+            }) }
 
         pub fn mapping( &mut self, c: char) -> &'static [char]
+       
         {
             if let Some(last) = self.last {
                 assert!(
@@ -73307,8 +72957,7 @@ pub mod unicode
                         Ordering::Less
                     }
                 })
-                .is_ok()
-        }
+                .is_ok() }
 
         fn get(&self, c: char) -> Result<usize, usize> { self.table.binary_search_by_key(&c, |&(c1, _)| c1) }
     }
@@ -73395,8 +73044,7 @@ pub mod unicode
             if let Some(canon) = canonical_script(&norm)? {
                 return Ok(CanonicalClassQuery::Script(canon));
             }
-            Err(Error::PropertyNotFound)
-        }
+            Err(Error::PropertyNotFound) }
     }
 
     #[derive( Debug, Eq, PartialEq )]
@@ -73906,7 +73554,7 @@ pub mod unicode
                 )
             }
 
-            pub(crate) fn composition_table(c1: char, c2: char) -> Option<char>
+            pub fn composition_table(c1: char, c2: char) -> Option<char>
             {
                 if c1 < '\u{10000}' && c2 < '\u{10000}' {
                     mph_lookup(
@@ -73922,7 +73570,7 @@ pub mod unicode
                 }
             }
 
-            pub(crate) fn canonical_fully_decomposed(c: char) -> Option<&'static [char]>
+            pub fn canonical_fully_decomposed(c: char) -> Option<&'static [char]>
             {
                 mph_lookup
                 (
@@ -73936,7 +73584,7 @@ pub mod unicode
                 .map(|(start, len)| &CANONICAL_DECOMPOSED_CHARS[start as usize..][..len as usize])
             }
 
-            pub(crate) fn compatibility_fully_decomposed(c: char) -> Option<&'static [char]>
+            pub fn compatibility_fully_decomposed(c: char) -> Option<&'static [char]>
             {
                 mph_lookup
                 (
@@ -73950,7 +73598,7 @@ pub mod unicode
                 .map(|(start, len)| &COMPATIBILITY_DECOMPOSED_CHARS[start as usize..][..len as usize])
             }
 
-            pub(crate) fn cjk_compat_variants_fully_decomposed(c: char) -> Option<&'static [char]>
+            pub fn cjk_compat_variants_fully_decomposed(c: char) -> Option<&'static [char]>
             {
                 mph_lookup(
                     c.into(),
@@ -74149,8 +73797,7 @@ pub mod utf8
     impl ::fmt::Display for Error 
     {
         fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
-            crate::error::Formatter::from(self).fmt(f)
-        }
+            crate::error::Formatter::from(self).fmt(f) }
     }
     
     impl ::fmt::Display for ErrorKind 
@@ -74253,20 +73900,18 @@ pub mod utf8
     impl ::fmt::Debug for Span 
     {
         fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
-            write!(f, "Span({:?}, {:?})", self.start, self.end)
-        }
+            write!(f, "Span({:?}, {:?})", self.start, self.end) }
     }
     
     impl Ord for Span 
     {
-        fn cmp(&self, other: &Span) -> Ordering {
-            (&self.start, &self.end).cmp(&(&other.start, &other.end))
-        }
+        fn cmp(&self, o: &Span) -> Ordering {
+            (&self.start, &self.end).cmp(&(&other.start, &other.end)) }
     }
     
     impl PartialOrd for Span 
     {
-        fn partial_cmp(&self, other: &Span) -> Option<Ordering> { Some( self.cmp(other)) }
+        fn partial_cmp(&self, o: &Span) -> Option<Ordering> { Some( self.cmp(other)) }
     }
 
     #[derive( Clone, Copy, Eq, PartialEq )]    
@@ -74284,20 +73929,17 @@ pub mod utf8
                 f,
                 "Position(o: {:?}, l: {:?}, c: {:?})",
                 self.offset, self.line, self.column
-            )
-        }
+            ) }
     }
     
     impl Ord for Position 
     {
-        fn cmp(&self, other: &Position) -> Ordering {
-            self.offset.cmp(&other.offset)
-        }
+        fn cmp(&self, o: &Position) -> Ordering { self.offset.cmp(&other.offset) }
     }
     
     impl PartialOrd for Position 
     {
-        fn partial_cmp(&self, other: &Position) -> Option<Ordering> { Some( self.cmp(other)) }
+        fn partial_cmp(&self, o: &Position) -> Option<Ordering> { Some( self.cmp(other)) }
     }
     
     impl Span 
@@ -74308,8 +73950,7 @@ pub mod utf8
         }
 
         pub fn splat(pos: Position) -> Span {
-            Span::new(pos, pos)
-        }
+            Span::new(pos, pos) }
         pub fn with_start(self, pos: Position) -> Span {
             Span { start: pos, ..self }
         }
@@ -74366,52 +74007,40 @@ pub mod utf8
     {
 
         pub fn empty(span: Span) -> Ast {
-            Ast::Empty(Box::new(span))
-        }
+            Ast::Empty(Box::new(span)) }
 
         pub fn flags(e: SetFlags) -> Ast {
-            Ast::Flags(Box::new(e))
-        }
+            Ast::Flags(Box::new(e)) }
 
         pub fn literal(e: Literal) -> Ast {
-            Ast::Literal(Box::new(e))
-        }
+            Ast::Literal(Box::new(e)) }
 
         pub fn dot(span: Span) -> Ast {
-            Ast::Dot(Box::new(span))
-        }
+            Ast::Dot(Box::new(span)) }
 
         pub fn assertion(e: Assertion) -> Ast {
-            Ast::Assertion(Box::new(e))
-        }
+            Ast::Assertion(Box::new(e)) }
 
         pub fn class_unicode(e: ClassUnicode) -> Ast {
-            Ast::ClassUnicode(Box::new(e))
-        }
+            Ast::ClassUnicode(Box::new(e)) }
 
         pub fn class_perl(e: ClassPerl) -> Ast {
-            Ast::ClassPerl(Box::new(e))
-        }
+            Ast::ClassPerl(Box::new(e)) }
 
         pub fn class_bracketed(e: ClassBracketed) -> Ast {
-            Ast::ClassBracketed(Box::new(e))
-        }
+            Ast::ClassBracketed(Box::new(e)) }
 
         pub fn repetition(e: Repetition) -> Ast {
-            Ast::Repetition(Box::new(e))
-        }
+            Ast::Repetition(Box::new(e)) }
 
         pub fn group(e: Group) -> Ast {
-            Ast::Group(Box::new(e))
-        }
+            Ast::Group(Box::new(e)) }
 
         pub fn alternation(e: Alternation) -> Ast {
-            Ast::Alternation(Box::new(e))
-        }
+            Ast::Alternation(Box::new(e)) }
 
         pub fn concat(e: Concat) -> Ast {
-            Ast::Concat(Box::new(e))
-        }
+            Ast::Concat(Box::new(e)) }
 
         pub fn span( &self ) -> &Span {
             match *self {
@@ -74458,8 +74087,7 @@ pub mod utf8
     {
         fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
             use regex::ast::print::Printer;
-            Printer::new().print(self, f)
-        }
+            Printer::new().print(self, f) }
     }
 
     #[derive( Clone, Debug, Eq, PartialEq )]
@@ -74718,8 +74346,7 @@ pub mod utf8
     {
 
         pub fn union(ast: ClassSetUnion) -> ClassSet {
-            ClassSet::Item(ClassSetItem::Union(ast))
-        }
+            ClassSet::Item(ClassSetItem::Union(ast)) }
 
         pub fn span( &self ) -> &Span {
             match *self {
@@ -74790,13 +74417,13 @@ pub mod utf8
     
     impl ClassSetUnion 
     {
-        pub fn push( &mut self, item: ClassSetItem) {
+        pub fn push( &mut self, item: ClassSetItem)
+        {
             if self.items.is_empty() {
                 self.span.start = item.span().start;
             }
             self.span.end = item.span().end;
-            self.items.push(item);
-        }
+            self.items.push(item); }
 
         pub fn into_item(mut self) -> ClassSetItem 
         {
@@ -76156,6 +75783,7 @@ pub mod uuid
 
         #[inline] #[allow( dead_code )] 
         pub const fn parse_braced( input:&'_ [u8] ) -> Result<[u8; 16], InvalidUuid<'_>> 
+       
         {
             if let ( 38, [b'{', s @ .., b'}'] ) = ( input.len(), input ) { parse_hyphenated( s ) }
             else { Err( InvalidUuid( input ) ) }
@@ -76163,6 +75791,7 @@ pub mod uuid
 
         #[inline] #[allow( dead_code )] 
         pub const fn parse_urn( input:&'_ [u8] ) -> Result<[u8; 16], InvalidUuid<'_>> 
+       
         {
             if let ( 45, [b'u', b'r', b'n', b':', b'u', b'u', b'i', b'd', b':', s @ ..] ) = 
             ( input.len(), input ) { parse_hyphenated( s ) }
@@ -76171,6 +75800,7 @@ pub mod uuid
         }
 
         #[inline] pub const fn parse_simple( s:&'_ [u8] ) -> Result<[u8; 16], InvalidUuid<'_>> 
+       
         {
             if s.len() != 32 { return Err( InvalidUuid( s ) ); }
 
@@ -76188,10 +75818,10 @@ pub mod uuid
                 i += 1;
             }
 
-            Ok( buf )
-        }
+            Ok( buf ) }
 
         #[inline] pub const fn parse_hyphenated( s:&'_ [u8] ) -> Result<[u8; 16], InvalidUuid<'_>> 
+       
         {
             if s.len() != 36 { return Err( InvalidUuid( s ) ); }
             
@@ -76220,8 +75850,7 @@ pub mod uuid
                 j += 1;
             }
 
-            Ok( buf )
-        }
+            Ok( buf ) }
 
         const HEX_TABLE:&[u8; 256] = &
         {
@@ -76480,8 +76109,7 @@ pub mod uuid
             d4[6] = node_id[4];
             d4[7] = node_id[5];
 
-            Uuid::from_fields( time_low, time_mid, time_high_and_version, &d4 )
-        }
+            Uuid::from_fields( time_low, time_mid, time_high_and_version, &d4 ) }
 
         pub const fn decode_gregorian_timestamp( uuid:&Uuid ) -> ( u64, u16 )
         {
@@ -76498,8 +76126,7 @@ pub mod uuid
 
             let counter: u16 = (( bytes[8] & 0x3F ) as u16 ) << 8 | ( bytes[9] as u16 );
 
-            ( ticks, counter )
-        }
+            ( ticks, counter ) }
 
         pub const fn encode_sorted_gregorian_timestamp( ticks: u64, counter: u16, node_id:&[u8; 6] ) -> Uuid
         {
@@ -76518,8 +76145,7 @@ pub mod uuid
             d4[6] = node_id[4];
             d4[7] = node_id[5];
 
-            Uuid::from_fields( time_high, time_mid, time_low_and_version, &d4 )
-        }
+            Uuid::from_fields( time_high, time_mid, time_low_and_version, &d4 ) }
 
         pub const fn decode_sorted_gregorian_timestamp( uuid:&Uuid ) -> ( u64, u16 )
         {
@@ -76535,8 +76161,7 @@ pub mod uuid
 
             let counter: u16 = (( bytes[8] & 0x3F ) as u16 ) << 8 | ( bytes[9] as u16  );
 
-            ( ticks, counter )
-        }
+            ( ticks, counter ) }
 
         pub const fn encode_unix_timestamp_millis(  millis: u64, counter_random_bytes:&[u8; 10] ) -> Uuid
         {
@@ -76558,8 +76183,7 @@ pub mod uuid
             d4[6] = counter_random_bytes[8];
             d4[7] = counter_random_bytes[9];
 
-            Uuid::from_fields( millis_high, millis_low, counter_random_version, &d4 )
-        }
+            Uuid::from_fields( millis_high, millis_low, counter_random_version, &d4 ) }
 
         pub const fn decode_unix_timestamp_millis( uuid:&Uuid ) -> u64
         {
@@ -76580,8 +76204,7 @@ pub mod uuid
             let dur = ::time::std::SystemTime::UNIX_EPOCH.elapsed()
             .expect( "Getting elapsed time since UNIX_EPOCH. If this fails, we've somehow violated causality",  );
 
-            ( dur.as_secs(), dur.subsec_nanos() )
-        }
+            ( dur.as_secs(), dur.subsec_nanos() ) }
 
         pub trait ClockSequence
         {
@@ -76748,8 +76371,7 @@ pub mod uuid
             let d3 = ( bytes[6] as u16 ) << 8 | ( bytes[7] as u16 );
 
             let d4:&[u8; 8] = convert::TryInto::try_into( &bytes[8..16] ).unwrap();
-            ( d1, d2, d3, d4 )
-        }
+            ( d1, d2, d3, d4 ) }
 
         pub fn to_fields_le( &self ) -> ( u32, u16, u16, &[u8; 8] )
         {
@@ -76763,8 +76385,7 @@ pub mod uuid
             let d3 = ( self.as_bytes()[6] as u16 ) | ( self.as_bytes()[7] as u16 ) << 8;
 
             let d4:&[u8; 8] = convert::TryInto::try_into( &self.as_bytes()[8..16] ).unwrap();
-            ( d1, d2, d3, d4 )
-        }
+            ( d1, d2, d3, d4 ) }
 
         pub const fn as_u128( &self ) -> u128 { u128::from_be_bytes( *self.as_bytes() ) }
 
@@ -76773,8 +76394,7 @@ pub mod uuid
         pub const fn as_u64_pair( &self ) -> ( u64, u64 )
         {
             let value = self.as_u128();
-            ( ( value >> 64 ) as u64, value as u64 )
-        }
+            ( ( value >> 64 ) as u64, value as u64 ) }
 
         #[inline] pub const fn as_bytes( &self ) -> &Bytes { &self.0 }
 
@@ -76841,8 +76461,7 @@ pub mod uuid
 
         pub fn new_v4() -> Uuid
         {
-            Uuid::from_u128( uuid::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000 )
-        }
+            Uuid::from_u128( uuid::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000 ) }
     }
 
     impl Hash for Uuid
@@ -77016,6 +76635,7 @@ pub mod values
     impl Value
     {
         pub fn is_null( &self ) -> bool 
+       
         {
             if let Value::Null = *self { true }
             else { false }
@@ -77059,6 +76679,7 @@ pub mod values
         get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj  );
 
         pub fn get_arr( &self ) -> OverResult<arrays::Arr>
+       
         {
             if let Value::Arr( ref inner ) = *self { Ok( inner.clone() ) }
             else
@@ -77075,6 +76696,7 @@ pub mod values
         }
 
         pub fn get_tup( &self ) -> OverResult<tuples::Tup>
+       
         {
             if let Value::Tup( ref inner ) = *self { Ok( inner.clone() ) }
             else { Err( OverError::TypeMismatch( Type::Tup( vec![] ), self.get_type() ) ) }
@@ -77090,8 +76712,7 @@ pub mod values
     {
         fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result
         {
-            write!( f, "{}", self.format( true, INDENT_STEP ) )
-        }
+            write!( f, "{}", self.format( true, INDENT_STEP ) ) }
     }
 
     impl_eq!( Bool, bool );
@@ -77156,8 +76777,7 @@ pub mod values
     {
         fn from( inner:&str ) -> Self 
         {
-            Value::Str( inner.into() )
-        }
+            Value::Str( inner.into() ) }
     }
 
     impl_from!( bool, Bool );
@@ -77182,6 +76802,1878 @@ pub mod values
 pub mod vec
 {
     pub use std::vec::{ * };
+    /*
+    Small vectors in various sizes.
+
+    #![no_std]
+    #![cfg_attr(docsrs, feature(doc_cfg))]
+    #![cfg_attr(feature = "specialization", allow(incomplete_features))]
+    #![cfg_attr(feature = "specialization", feature(specialization, trusted_len))]
+    #![cfg_attr(feature = "may_dangle", feature(dropck_eyepatch))]
+
+    #[doc(hidden)]
+    pub extern crate alloc;
+
+    #[cfg(any(test, feature = "std"))]
+    extern crate std;
+
+    #[cfg(test)]
+    mod tests;
+
+    use alloc::boxed::Box;
+    use alloc::vec;
+    use alloc::vec::Vec;
+
+    use ::alloc::Layout;
+    use ::borrow::Borrow;
+    use ::borrow::BorrowMut;
+    use ::fmt::Debug;
+    use ::hash::{Hash, Hasher};
+    use ::marker::PhantomData;
+    use ::mem::align_of;
+    use ::mem::size_of;
+    use ::mem::ManuallyDrop;
+    use ::mem::MaybeUninit;
+    use ::ptr::addr_of;
+    use ::ptr::addr_of_mut;
+    use ::ptr::copy;
+    use ::ptr::copy_nonoverlapping;
+    use ::ptr::NonNull;
+
+    #[cfg(feature = "bytes")]
+    use bytes::{buf::UninitSlice, BufMut};
+    #[cfg(feature = "malloc_size_of")]
+    use malloc_size_of::{MallocShallowSizeOf, MallocSizeOf, MallocSizeOfOps};
+    #[cfg(feature = "serde")]
+    use serde_core::{
+        de::{Deserialize, Deserializer, SeqAccess, Visitor},
+        ser::{Serialize, SerializeSeq, Serializer},
+    };
+    #[cfg(feature = "std")]
+    use std::io;
+    */
+
+    #[derive(Debug)]
+    pub enum CollectionAllocErr {
+
+        CapacityOverflow,
+
+        AllocErr {
+
+            layout: Layout,
+        },
+    }
+    
+    impl ::fmt::Display for CollectionAllocErr {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            write!(f, "Allocation error: {:?}", self) }
+    }
+
+    impl ::error::Error for CollectionAllocErr {}
+    
+    #[repr(C)]
+    pub union RawSmallVec<T, const N: usize> {
+        inline: ManuallyDrop<MaybeUninit<[T; N]>>,
+        heap: (NonNull<T>, usize),
+    }
+
+    #[inline] fn infallible<T>(result: Result<T, CollectionAllocErr>) -> T {
+        match result {
+            Ok(x) => x,
+            Err(CollectionAllocErr::CapacityOverflow) => panic!("capacity overflow"),
+            Err(CollectionAllocErr::AllocErr { layout }) => ::alloc::handle_alloc_error(layout),
+        }
+    }
+
+    #[inline] fn slice_range<R>(range: R, bounds: ::ops::RangeTo<usize>) -> ::ops::Range<usize> where
+    R: ::ops::RangeBounds<usize>,
+    {
+        let len = bounds.end;
+
+        let start = match range.start_bound() {
+            ::ops::Bound::Included(&start) => start,
+            ::ops::Bound::Excluded(start) => start
+                .checked_add(1)
+                .unwrap_or_else(|| panic!("attempted to index slice from after maximum usize")),
+            ::ops::Bound::Unbounded => 0,
+        };
+
+        let end = match range.end_bound() {
+            ::ops::Bound::Included(end) => end
+                .checked_add(1)
+                .unwrap_or_else(|| panic!("attempted to index slice up to maximum usize")),
+            ::ops::Bound::Excluded(&end) => end,
+            ::ops::Bound::Unbounded => len,
+        };
+
+        if start > end {
+            panic!("slice index starts at {start} but ends at {end}"); }
+        if end > len {
+            panic!("range end index {end} out of range for slice of length {len}"); }
+
+        ::ops::Range { start, end }
+    }
+
+    impl<T, const N: usize> RawSmallVec<T, N>
+    {
+        #[inline] const fn is_zst() -> bool {
+            size_of::<T>() == 0
+        }
+
+        #[inline] const fn new() -> Self {
+            Self::new_inline(MaybeUninit::uninit()) }
+        
+        #[inline] const fn new_inline(inline: MaybeUninit<[T; N]>) -> Self {
+            Self {
+                inline: ManuallyDrop::new(inline),
+            }
+        }
+        
+        #[inline] const fn new_heap(ptr: NonNull<T>, capacity: usize) -> Self {
+            Self {
+                heap: (ptr, capacity),
+            }
+        }
+
+        #[inline] const fn as_ptr_inline(&self) -> *const T {
+
+            (unsafe { addr_of!(self.inline) }) as *const T
+        }
+
+        #[inline] const fn as_mut_ptr_inline(&mut self) -> *mut T {
+
+            (unsafe { addr_of_mut!(self.inline) }) as *mut T
+        }
+
+        #[inline] const unsafe fn as_ptr_heap(&self) -> *const T { self.heap.0.as_ptr() }
+
+        #[inline] const unsafe fn as_mut_ptr_heap(&mut self) -> *mut T { self.heap.0.as_ptr() }
+        
+        unsafe fn try_grow_raw(
+            &mut self,
+            len: TaggedLen,
+            new_capacity: usize,
+        ) -> Result<(), CollectionAllocErr> {
+            use ::alloc::{alloc, realloc};
+            debug_assert!(!Self::is_zst());
+            debug_assert!(new_capacity > 0);
+            debug_assert!(new_capacity >= len.value(Self::is_zst()));
+
+            let was_on_heap = len.on_heap(Self::is_zst());
+            let ptr = if was_on_heap {
+                self.as_mut_ptr_heap()
+            } else {
+                self.as_mut_ptr_inline()
+            };
+            let len = len.value(Self::is_zst());
+
+            let new_layout =
+                Layout::array::<T>(new_capacity).map_err(|_| CollectionAllocErr::CapacityOverflow)?;
+            if new_layout.size() > isize::MAX as usize {
+                return Err(CollectionAllocErr::CapacityOverflow);
+            }
+
+            let new_ptr = if len == 0 || !was_on_heap {
+                let new_ptr = alloc(new_layout) as *mut T;
+                let new_ptr =
+                    NonNull::new(new_ptr).ok_or(CollectionAllocErr::AllocErr { layout: new_layout })?;
+                copy_nonoverlapping(ptr, new_ptr.as_ptr(), len);
+                new_ptr
+            } else {
+                let old_layout =
+                    Layout::from_size_align_unchecked(self.heap.1 * size_of::<T>(), align_of::<T>());
+
+                let new_ptr = realloc(ptr as *mut u8, old_layout, new_layout.size()) as *mut T;
+                NonNull::new(new_ptr).ok_or(CollectionAllocErr::AllocErr { layout: new_layout })?
+            };
+            *self = Self::new_heap(new_ptr, new_capacity);
+            Ok(()) }
+    }
+    
+    #[repr(transparent)]
+    #[derive(Clone, Copy)]
+    struct TaggedLen(usize);
+
+    impl TaggedLen {
+        #[inline] pub const fn new(len: usize, on_heap: bool, is_zst: bool) -> Self
+        {
+            if is_zst {
+                debug_assert!(!on_heap);
+                TaggedLen(len)
+            } else {
+                debug_assert!(len < isize::MAX as usize);
+                TaggedLen((len << 1) | on_heap as usize)
+            }
+        }
+
+        #[inline]
+        #[must_use]
+        pub const fn on_heap(self, is_zst: bool) -> bool
+        {
+            if is_zst {
+                false
+            } else {
+                (self.0 & 1_usize) == 1
+            }
+        }
+
+        #[inline] pub const fn value(self, is_zst: bool) -> usize
+        {
+            if is_zst {
+                self.0
+            } else {
+                self.0 >> 1
+            }
+        }
+    }
+
+    #[repr(C)]
+    pub struct SmallVec<T, const N: usize> {
+        len: TaggedLen,
+        raw: RawSmallVec<T, N>,
+        _marker: PhantomData<T>,
+    }
+
+    unsafe impl<T: Send, const N: usize> Send for SmallVec<T, N> {}
+    unsafe impl<T: Sync, const N: usize> Sync for SmallVec<T, N> {}
+
+    impl<T, const N: usize> Default for SmallVec<T, N>
+    {
+        #[inline] fn default() -> Self {
+            Self::new() }
+    }
+
+
+    
+
+    pub struct Drain<'a, T: 'a, const N: usize> {
+        tail_start: usize,
+        tail_len: usize,
+        iter: ::slice::Iter<'a, T>,
+        vec: ::ptr::NonNull<SmallVec<T, N>>,
+    }
+
+    impl<'a, T: 'a, const N: usize> Iterator for Drain<'a, T, N> {
+        type Item = T;
+
+        #[inline] fn next(&mut self) -> Option<T> { self.iter
+                .next()
+                .map(|reference| unsafe { ::ptr::read(reference) }) }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    }
+
+    impl<'a, T: 'a, const N: usize> DoubleEndedIterator for Drain<'a, T, N>
+    {
+        #[inline] fn next_back(&mut self) -> Option<T> { self.iter
+                .next_back()
+                .map(|reference| unsafe { ::ptr::read(reference) }) }
+    }
+
+    impl<T, const N: usize> ExactSizeIterator for Drain<'_, T, N>
+    {
+        #[inline] fn len(&self) -> usize { self.iter.len() }
+    }
+
+    impl<T, const N: usize> ::iter::FusedIterator for Drain<'_, T, N> {}
+
+    impl<'a, T: 'a, const N: usize> Drop for Drain<'a, T, N>
+    {
+        fn drop(&mut self) {
+
+            struct DropGuard<'r, 'a, T, const N: usize>(&'r mut Drain<'a, T, N>);
+
+            impl<'r, 'a, T, const N: usize> Drop for DropGuard<'r, 'a, T, N> {
+                fn drop(&mut self) {
+                    if self.0.tail_len > 0 {
+                        unsafe {
+                            let source_vec = self.0.vec.as_mut();
+
+                            let start = source_vec.len();
+                            let tail = self.0.tail_start;
+                            if tail != start {
+                                let ptr = source_vec.as_mut_ptr();
+                                let src = ptr.add(tail);
+                                let dst = ptr.add(start);
+                                ::ptr::copy(src, dst, self.0.tail_len);
+                            }
+                            source_vec.set_len(start + self.0.tail_len);
+                        }
+                    }
+                }
+            }
+
+            let iter = ::mem::take(&mut self.iter);
+            let drop_len = iter.len();
+
+            let mut vec = self.vec;
+
+            if SmallVec::<T, N>::is_zst() {
+                unsafe {
+                    let vec = vec.as_mut();
+                    let old_len = vec.len();
+                    vec.set_len(old_len + drop_len + self.tail_len);
+                    vec.truncate(old_len + self.tail_len);
+                }
+
+                return;
+            }
+
+
+            let _guard = DropGuard(self);
+
+            if drop_len == 0 {
+                return;
+            }
+            let drop_ptr = iter.as_slice().as_ptr();
+
+            unsafe {
+                let vec_ptr = vec.as_mut().as_mut_ptr();
+
+                //let drop_offset = drop_ptr.offset_from_unsigned(vec_ptr);
+                let drop_offset = drop_ptr.offset_from(vec_ptr) as usize;
+                let to_drop = ::ptr::slice_from_raw_parts_mut(vec_ptr.add(drop_offset), drop_len);
+                ::ptr::drop_in_place(to_drop);
+            }
+        }
+    }
+
+    impl<T, const N: usize> Drain<'_, T, N>
+    {
+        #[must_use]
+        pub fn as_slice(&self) -> &[T] { self.iter.as_slice() }
+
+
+
+
+
+        unsafe fn fill<I: Iterator<Item = T>>(&mut self, replace_with: &mut I) -> bool {
+            let vec = unsafe { self.vec.as_mut() };
+            let range_start = vec.len();
+            let range_end = self.tail_start;
+            let range_slice = unsafe {
+                ::slice::from_raw_parts_mut(vec.as_mut_ptr().add(range_start), range_end - range_start)
+            };
+
+            for place in range_slice {
+                if let Some(new_item) = replace_with.next() {
+                    unsafe { ::ptr::write(place, new_item) };
+                    vec.set_len(vec.len() + 1);
+                } else {
+                    return false;
+                }
+            }
+            true
+        }
+
+
+        #[track_caller]
+        unsafe fn move_tail(&mut self, additional: usize) {
+            let vec = unsafe { self.vec.as_mut() };
+            let len = self.tail_start + self.tail_len;
+
+
+            let old_len = vec.len();
+            vec.set_len(len);
+            vec.reserve(additional);
+            vec.set_len(old_len);
+
+            let new_tail_start = self.tail_start + additional;
+            unsafe {
+                let src = vec.as_ptr().add(self.tail_start);
+                let dst = vec.as_mut_ptr().add(new_tail_start);
+                ::ptr::copy(src, dst, self.tail_len);
+            }
+            self.tail_start = new_tail_start;
+        }
+    }
+
+    #[cfg(feature = "extract_if")]
+
+    
+
+    pub struct ExtractIf<'a, T, const N: usize, F> where
+        F: FnMut(&mut T) -> bool,
+    {
+        vec: &'a mut SmallVec<T, N>,
+
+        idx: usize,
+
+        end: usize,
+
+        del: usize,
+
+        old_len: usize,
+
+        pred: F,
+    }
+
+    #[cfg(feature = "extract_if")]
+    impl<T, const N: usize, F> ::fmt::Debug for ExtractIf<'_, T, N, F> where
+        F: FnMut(&mut T) -> bool,
+        T: ::fmt::Debug,
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            f.debug_tuple("ExtractIf")
+                .field(&self.vec.as_slice())
+                .finish() }
+    }
+
+    #[cfg(feature = "extract_if")]
+    impl<T, F, const N: usize> Iterator for ExtractIf<'_, T, N, F> where
+        F: FnMut(&mut T) -> bool,
+    {
+        type Item = T;
+
+        fn next(&mut self) -> Option<T> {
+            unsafe {
+                while self.idx < self.end {
+                    let i = self.idx;
+                    let v = ::slice::from_raw_parts_mut(self.vec.as_mut_ptr(), self.old_len);
+                    let drained = (self.pred)(&mut v[i]);
+
+                    self.idx += 1;
+                    if drained {
+                        self.del += 1;
+                        return Some(::ptr::read(&v[i]));
+                    } else if self.del > 0 {
+                        let del = self.del;
+                        let src: *const T = &v[i];
+                        let dst: *mut T = &mut v[i - del];
+                        ::ptr::copy_nonoverlapping(src, dst, 1);
+                    }
+                }
+                None
+            }
+        }
+
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            (0, Some(self.end - self.idx)) }
+    }
+
+    #[cfg(feature = "extract_if")]
+    impl<T, F, const N: usize> Drop for ExtractIf<'_, T, N, F> where
+        F: FnMut(&mut T) -> bool,
+    {
+        fn drop(&mut self) {
+            unsafe {
+                if self.idx < self.old_len && self.del > 0 {
+                    let ptr = self.vec.as_mut_ptr();
+                    let src = ptr.add(self.idx);
+                    let dst = src.sub(self.del);
+                    let tail_len = self.old_len - self.idx;
+                    src.copy_to(dst, tail_len);
+                }
+                self.vec.set_len(self.old_len - self.del);
+            }
+        }
+    }
+
+    pub struct Splice<'a, I: Iterator + 'a, const N: usize> {
+        drain: Drain<'a, I::Item, N>,
+        replace_with: I,
+    }
+
+    impl<'a, I, const N: usize> ::fmt::Debug for Splice<'a, I, N> where
+        I: Debug + Iterator + 'a,
+        <I as Iterator>::Item: Debug,
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
+            f.debug_tuple("Splice").field(&self.drain).finish() }
+    }
+
+    impl<I: Iterator, const N: usize> Iterator for Splice<'_, I, N> {
+        type Item = I::Item;
+
+        fn next(&mut self) -> Option<Self::Item> { self.drain.next() }
+
+        fn size_hint(&self) -> (usize, Option<usize>) { self.drain.size_hint() }
+    }
+
+    impl<I: Iterator, const N: usize> DoubleEndedIterator for Splice<'_, I, N>
+    {
+        fn next_back(&mut self) -> Option<Self::Item> { self.drain.next_back() }
+    }
+
+    impl<I: Iterator, const N: usize> ExactSizeIterator for Splice<'_, I, N> {}
+
+    impl<I: Iterator, const N: usize> Drop for Splice<'_, I, N>
+    {
+        fn drop(&mut self) { self.drain.by_ref().for_each(drop);
+
+            self.drain.iter = [].iter();
+
+            unsafe {
+                if self.drain.tail_len == 0 {
+                    self.drain.vec.as_mut().extend(self.replace_with.by_ref());
+                    return;
+                }
+
+
+                if !self.drain.fill(&mut self.replace_with) {
+                    return;
+                }
+                let (lower_bound, _upper_bound) = self.replace_with.size_hint();
+                if lower_bound > 0 {
+                    self.drain.move_tail(lower_bound);
+                    if !self.drain.fill(&mut self.replace_with) {
+                        return;
+                    }
+                }
+
+
+                let mut collected = self.replace_with.by_ref().collect::<SmallVec<I::Item, N>>().into_iter();
+
+                if collected.len() > 0 {
+                    self.drain.move_tail(collected.len());
+                    let filled = self.drain.fill(&mut collected);
+                    debug_assert!(filled);
+                    debug_assert_eq!(collected.len(), 0);
+                }
+            }
+
+        }
+    }
+    
+    pub struct IntoIter<T, const N: usize>
+    {
+        raw: RawSmallVec<T, N>,
+        begin: usize,
+        end: TaggedLen,
+        _marker: PhantomData<T>,
+    }
+
+    unsafe impl<T, const N: usize> Send for IntoIter<T, N> where T: Send {}
+    unsafe impl<T, const N: usize> Sync for IntoIter<T, N> where T: Sync {}
+
+    impl<T, const N: usize> IntoIter<T, N>
+    {
+        #[inline] const fn is_zst() -> bool {
+            size_of::<T>() == 0
+        }
+
+        #[inline] const fn as_ptr(&self) -> *const T {
+            let on_heap = self.end.on_heap(Self::is_zst());
+            if on_heap {
+
+                unsafe { self.raw.as_ptr_heap() }
+            } else {
+                self.raw.as_ptr_inline()
+            }
+        }
+
+        #[inline] const fn as_mut_ptr(&mut self) -> *mut T {
+            let on_heap = self.end.on_heap(Self::is_zst());
+            if on_heap {
+
+                unsafe { self.raw.as_mut_ptr_heap() }
+            } else {
+                self.raw.as_mut_ptr_inline()
+            }
+        }
+
+        #[inline] pub const fn as_slice(&self) -> &[T] {
+            unsafe {
+                let ptr = self.as_ptr();
+                ::slice::from_raw_parts(
+                    ptr.add(self.begin),
+                    self.end.value(Self::is_zst()) - self.begin,
+                )
+            }
+        }
+
+        #[inline] pub const fn as_mut_slice(&mut self) -> &mut [T] {
+
+            unsafe {
+                let ptr = self.as_mut_ptr();
+                ::slice::from_raw_parts_mut(
+                    ptr.add(self.begin),
+                    self.end.value(Self::is_zst()) - self.begin,
+                )
+            }
+        }
+    }
+
+    impl<T, const N: usize> Iterator for IntoIter<T, N> {
+        type Item = T;
+
+        #[inline] fn next(&mut self) -> Option<Self::Item>
+        {
+            if self.begin == self.end.value(Self::is_zst()) {
+                None
+            } else {
+
+                unsafe {
+                    let ptr = self.as_mut_ptr();
+                    let value = ptr.add(self.begin).read();
+                    self.begin += 1;
+                    Some(value)
+                }
+            }
+        }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
+            let size = self.end.value(Self::is_zst()) - self.begin;
+            (size, Some(size)) }
+    }
+
+    impl<T, const N: usize> DoubleEndedIterator for IntoIter<T, N>
+    {
+        #[inline] fn next_back(&mut self) -> Option<Self::Item> {
+            let mut end = self.end.value(Self::is_zst());
+            if self.begin == end {
+                None
+            } else {
+
+                unsafe {
+                    let ptr = self.as_mut_ptr();
+                    let on_heap = self.end.on_heap(Self::is_zst());
+                    end -= 1;
+                    self.end = TaggedLen::new(end, on_heap, Self::is_zst());
+                    let value = ptr.add(end).read();
+                    Some(value)
+                }
+            }
+        }
+   }
+    
+    impl<T, const N: usize> ExactSizeIterator for IntoIter<T, N> {}
+    impl<T, const N: usize> ::iter::FusedIterator for IntoIter<T, N> {}
+
+    impl<T, const N: usize> SmallVec<T, N>
+    {
+        #[inline] pub const fn new() -> SmallVec<T, N> {
+            Self {
+                len: TaggedLen::new(0, false, Self::is_zst()),
+                raw: RawSmallVec::new(),
+                _marker: PhantomData,
+            }
+        }
+
+        #[inline] pub fn with_capacity(capacity: usize) -> Self {
+            let mut this = Self::new();
+            if capacity > Self::inline_size() {
+                this.grow(capacity);
+            }
+            this
+        }
+
+        #[inline] pub const fn from_buf<const S: usize>(elements: [T; S]) -> Self {
+            const { assert!(S <= N); }
+            let mut buf: MaybeUninit<[T; N]> = MaybeUninit::uninit();
+
+            unsafe {
+                copy_nonoverlapping(elements.as_ptr(), buf.as_mut_ptr() as *mut T, S);
+            }
+
+
+            ::mem::forget(elements);
+
+
+            Self {
+                len: TaggedLen::new(S, false, Self::is_zst()),
+                raw: RawSmallVec::new_inline(buf),
+                _marker: PhantomData,
+            }
+        }
+
+        #[inline] pub fn from_buf_and_len(buf: [T; N], len: usize) -> Self {
+            assert!(len <= N);
+
+            let mut vec = Self {
+                len: TaggedLen::new(len, false, Self::is_zst()),
+                raw: RawSmallVec::new_inline(MaybeUninit::new(buf)),
+                _marker: PhantomData,
+            };
+
+            unsafe {
+                let remainder_ptr = vec.raw.as_mut_ptr_inline().add(len);
+                let remainder_len = N - len;
+
+
+                ::ptr::drop_in_place(::ptr::slice_from_raw_parts_mut(
+                    remainder_ptr,
+                    remainder_len,
+                ));
+            }
+
+            vec
+        }
+        
+        #[inline] pub const unsafe fn from_buf_and_len_unchecked(buf: MaybeUninit<[T; N]>, len: usize) -> Self {
+            debug_assert!(len <= N);
+            Self {
+                len: TaggedLen::new(len, false, Self::is_zst()),
+                raw: RawSmallVec::new_inline(buf),
+                _marker: PhantomData,
+            }
+        }
+    }
+
+    impl<T, const N: usize> SmallVec<T, N>
+    {
+        #[inline] const fn is_zst() -> bool {
+            size_of::<T>() == 0
+        }
+
+        #[inline] pub fn from_vec(vec: Vec<T>) -> Self
+        {
+            if vec.capacity() == 0 {
+                return Self::new();
+            }
+
+            if Self::is_zst() {
+                let mut vec = vec;
+                let len = vec.len();
+                unsafe { vec.set_len(0) };
+                Self {
+                    len: TaggedLen::new(len, false, Self::is_zst()),
+                    raw: RawSmallVec::new(),
+                    _marker: PhantomData,
+                }
+            } else {
+                let mut vec = ManuallyDrop::new(vec);
+                let len = vec.len();
+                let cap = vec.capacity();
+                let ptr = unsafe { NonNull::new_unchecked(vec.as_mut_ptr()) };
+
+                Self {
+                    len: TaggedLen::new(len, true, Self::is_zst()),
+                    raw: RawSmallVec::new_heap(ptr, cap),
+                    _marker: PhantomData,
+                }
+            }
+        }
+        
+        #[inline] unsafe fn set_on_heap(&mut self) { self.len = TaggedLen::new(self.len(), true, Self::is_zst()); }
+        
+        #[inline] unsafe fn set_inline(&mut self) { self.len = TaggedLen::new(self.len(), false, Self::is_zst()); }
+        
+        #[inline] pub unsafe fn set_len(&mut self, new_len: usize) {
+            debug_assert!(new_len <= self.capacity());
+            let on_heap = self.len.on_heap(Self::is_zst());
+            self.len = TaggedLen::new(new_len, on_heap, Self::is_zst()); }
+
+        #[inline] pub const fn inline_size() -> usize
+        {
+            if Self::is_zst() {
+                usize::MAX
+            } else {
+                N
+            }
+        }
+
+        #[inline] pub const fn len(&self) -> usize { self.len.value(Self::is_zst()) }
+
+        #[must_use]
+        #[inline] pub const fn is_empty(&self) -> bool { self.len() == 0
+        }
+
+        #[inline] pub const fn capacity(&self) -> usize
+        {
+            if self.len.on_heap(Self::is_zst()) {
+
+                unsafe { self.raw.heap.1 }
+            } else {
+                Self::inline_size()
+            }
+        }
+
+        #[inline] pub const fn spilled(&self) -> bool { self.len.on_heap(Self::is_zst()) }
+        
+        #[inline] pub fn split_off(&mut self, at: usize) -> Self {
+            let len = self.len();
+            assert!(at <= len);
+
+            let other_len = len - at;
+            let mut other = Self::with_capacity(other_len);
+
+
+            unsafe {
+                self.set_len(at);
+                other.set_len(other_len);
+
+                ::ptr::copy_nonoverlapping(self.as_ptr().add(at), other.as_mut_ptr(), other_len);
+            }
+            other
+        }
+
+        pub fn drain<R>(&mut self, range: R) -> Drain<'_, T, N>
+        where
+            R: ::ops::RangeBounds<usize>,
+        {
+            let len = self.len();
+            let ::ops::Range { start, end } = slice_range(range, ..len);
+
+            unsafe {
+
+                self.set_len(start);
+
+
+                let range_slice = ::slice::from_raw_parts(self.as_ptr().add(start), end - start);
+
+
+                Drain {
+                    tail_start: end,
+                    tail_len: len - end,
+                    iter: range_slice.iter(),
+
+                    vec: ::ptr::NonNull::new_unchecked(self as *mut _),
+                    //vec: ::ptr::NonNull::from(self),
+                }
+            }
+        }
+        
+        pub fn splice<R, I>(&mut self, range: R, replace_with: I) -> Splice<'_, I::IntoIter, N> where
+        R: ::ops::RangeBounds<usize>,
+        I: IntoIterator<Item = T>
+        {
+            Splice { drain: self.drain(range), replace_with: replace_with.into_iter() }
+        }
+
+        #[inline] pub fn push(&mut self, value: T) {
+            let len = self.len();
+            if len == self.capacity() {
+                self.reserve(1);
+            }
+
+            let ptr = unsafe { self.as_mut_ptr().add(len) };
+            unsafe { ptr.write(value) };
+            unsafe { self.set_len(len + 1) }
+        }
+
+        #[inline] pub fn pop(&mut self) -> Option<T>
+        {
+            if self.is_empty() {
+                None
+            } else {
+                let len = self.len() - 1;
+
+                unsafe { self.set_len(len) };
+                let value = unsafe { self.as_mut_ptr().add(len).read() };
+                Some(value)
+            }
+        }
+
+        #[inline] pub fn pop_if(&mut self, predicate: impl FnOnce(&mut T) -> bool) -> Option<T> {
+            let last = self.last_mut()?;
+            if predicate(last) { self.pop() } else { None }
+        }
+
+        #[inline] pub fn append<const M: usize>(&mut self, o: &mut SmallVec<T, M>) {
+
+            let len = self.len();
+            let other_len = other.len();
+            let total_len = len + other_len;
+            if total_len > self.capacity() {
+                self.reserve(other_len);
+            }
+
+
+            let ptr = unsafe { self.as_mut_ptr().add(len) };
+            unsafe { other.set_len(0) }
+            unsafe { copy_nonoverlapping(o.as_ptr(), ptr, other_len) };
+            unsafe { self.set_len(total_len) }
+        }
+
+        #[inline] pub fn grow(&mut self, new_capacity: usize) {
+            infallible(self.try_grow(new_capacity)); }
+
+        #[cold]
+        pub fn try_grow(&mut self, new_capacity: usize) -> Result<(), CollectionAllocErr>
+        {
+            if Self::is_zst() {
+                return Ok(());
+            }
+
+            let len = self.len();
+            assert!(new_capacity >= len);
+
+            if new_capacity > Self::inline_size() {
+                let result = unsafe { self.raw.try_grow_raw(self.len, new_capacity) };
+
+                if result.is_ok() {
+
+                    unsafe { self.set_on_heap() };
+                }
+                result
+            } else {
+
+                if self.spilled() {
+                    unsafe {
+
+                        let (ptr, old_cap) = self.raw.heap;
+
+                        copy_nonoverlapping(ptr.as_ptr(), self.raw.as_mut_ptr_inline(), len);
+                        drop(DropDealloc {
+                            ptr: ptr.cast(),
+                            size_bytes: old_cap * size_of::<T>(),
+                            align: align_of::<T>(),
+                        });
+                        self.set_inline();
+                    }
+                }
+                Ok(())
+            }
+        }
+
+        #[inline] pub fn reserve(&mut self, additional: usize) {
+
+            if additional > self.capacity() - self.len() {
+                let new_capacity = infallible(
+                    self.len()
+                        .checked_add(additional)
+                        .and_then(usize::checked_next_power_of_two)
+                        .ok_or(CollectionAllocErr::CapacityOverflow),
+                );
+                self.grow(new_capacity);
+            }
+        }
+
+        #[inline] pub fn try_reserve(&mut self, additional: usize) -> Result<(), CollectionAllocErr>
+        {
+            if additional > self.capacity() - self.len() {
+                let new_capacity = self
+                    .len()
+                    .checked_add(additional)
+                    .and_then(usize::checked_next_power_of_two)
+                    .ok_or(CollectionAllocErr::CapacityOverflow)?;
+                self.try_grow(new_capacity)
+            } else {
+                Ok(())
+            }
+        }
+
+        #[inline] pub fn reserve_exact(&mut self, additional: usize) {
+
+            if additional > self.capacity() - self.len() {
+                let new_capacity = infallible(
+                    self.len()
+                        .checked_add(additional)
+                        .ok_or(CollectionAllocErr::CapacityOverflow),
+                );
+                self.grow(new_capacity);
+            }
+        }
+
+        #[inline] pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), CollectionAllocErr>
+        {
+            if additional > self.capacity() - self.len() {
+                let new_capacity = self
+                    .len()
+                    .checked_add(additional)
+                    .ok_or(CollectionAllocErr::CapacityOverflow)?;
+                self.try_grow(new_capacity)
+            } else {
+                Ok(())
+            }
+        }
+
+        #[inline] pub fn shrink_to_fit(&mut self)
+        {
+            if !self.spilled() {
+                return;
+            }
+            let len = self.len();
+            if len <= Self::inline_size() {
+
+                unsafe {
+                    let (ptr, capacity) = self.raw.heap;
+                    self.raw = RawSmallVec::new_inline(MaybeUninit::uninit());
+                    copy_nonoverlapping(ptr.as_ptr(), self.raw.as_mut_ptr_inline(), len);
+                    self.set_inline();
+                    ::alloc::dealloc(
+                        ptr.cast().as_ptr(),
+                        Layout::from_size_align_unchecked(capacity * size_of::<T>(), align_of::<T>()),
+                    );
+                }
+            } else if len < self.capacity() {
+
+                unsafe { infallible(self.raw.try_grow_raw(self.len, len)) };
+            }
+        }
+
+        #[inline] pub fn shrink_to(&mut self, min_capacity: usize)
+        {
+            if !self.spilled() {
+                return;
+            }
+            if self.capacity() > min_capacity {
+                let len = self.len();
+                let target = ::cmp::max(len, min_capacity);
+                if target <= Self::inline_size() {
+
+                    unsafe {
+                        let (ptr, capacity) = self.raw.heap;
+                        self.raw = RawSmallVec::new_inline(MaybeUninit::uninit());
+                        copy_nonoverlapping(ptr.as_ptr(), self.raw.as_mut_ptr_inline(), len);
+                        self.set_inline();
+                        ::alloc::dealloc(
+                            ptr.cast().as_ptr(),
+                            Layout::from_size_align_unchecked(capacity * size_of::<T>(), align_of::<T>()),
+                        );
+                    }
+                } else if target < self.capacity() {
+
+                    unsafe { infallible(self.raw.try_grow_raw(self.len, target)) };
+                }
+            }
+        }
+
+        #[inline] pub fn truncate(&mut self, len: usize)
+        {
+            unsafe
+            {
+                let old_len = self.len();
+                if len < old_len
+                {
+                    self.set_len(len);
+                    ::ptr::drop_in_place(::ptr::slice_from_raw_parts_mut
+                    (
+                        self.as_mut_ptr().add(len),
+                        old_len - len
+                    ))
+                }
+            }
+        }
+
+        #[inline] pub fn swap_remove(&mut self, index: usize) -> T
+        {
+            unsafe
+            {
+                let len = self.len();
+                assert!(index < len, "swap_remove index (is {index}) should be < len (is {len})");
+                let new_len = len - 1;
+                let value = ::ptr::read(self.as_ptr().add(index));
+                let base_ptr = self.as_mut_ptr();
+                ::ptr::copy(base_ptr.add(new_len), base_ptr.add(index), 1);
+                self.set_len(new_len);
+                value
+            }
+        }
+
+        #[inline] pub fn clear(&mut self)
+        {
+            unsafe
+            {
+                let old_len = self.len();
+                self.set_len(0);
+                ::ptr::drop_in_place(::ptr::slice_from_raw_parts_mut(
+                    self.as_mut_ptr(),
+                    old_len,
+                ));
+            }
+        }
+
+        #[inline] pub fn remove(&mut self, index: usize) -> T
+        {
+            unsafe
+            {
+                let len = self.len();
+                assert!(index < len, "removal index (is {index}) should be < len (is {len})");
+                let new_len = len - 1;
+
+                self.set_len(new_len);
+                let ptr = self.as_mut_ptr();
+                let ith = ptr.add(index);
+
+                let ith_item = ith.read();
+                copy(ith.add(1), ith, new_len - index);
+                ith_item
+            }
+        }
+
+        #[inline] pub fn insert(&mut self, index: usize, value: T)
+        {
+            unsafe
+            {
+                let len = self.len();
+                assert!(index <= len, "insertion index (is {index}) should be <= len (is {len})");
+                self.reserve(1);
+                let ptr = self.as_mut_ptr();
+                
+                if index < len { copy(ptr.add(index), ptr.add(index + 1), len - index); }
+
+                ptr.add(index).write(value);
+                self.set_len(len + 1);
+            }
+        }
+
+        #[inline] pub const fn as_slice(&self) -> &[T]
+        {
+            unsafe
+            {
+                let len = self.len();
+                let ptr = self.as_ptr();
+                ::slice::from_raw_parts(ptr, len)
+            }
+        }
+
+        #[inline] pub const fn as_mut_slice(&mut self) -> &mut [T]
+        {
+            unsafe
+            {
+                let len = self.len();
+                let ptr = self.as_mut_ptr();
+                ::slice::from_raw_parts_mut(ptr, len)
+            }
+        }
+
+        #[inline] pub const fn as_ptr(&self) -> *const T
+        {
+            unsafe
+            {
+                if self.len.on_heap(Self::is_zst()) { self.raw.as_ptr_heap() }
+                else { self.raw.as_ptr_inline() }
+            }
+        }
+
+        #[inline] pub const fn as_mut_ptr(&mut self) -> *mut T
+        {
+            unsafe
+            {
+                if self.len.on_heap(Self::is_zst()) { self.raw.as_mut_ptr_heap() } else { self.raw.as_mut_ptr_inline() }
+            }
+        }
+
+        #[inline] pub fn into_vec(self) -> Vec<T>
+        {
+            unsafe
+            {
+                let len = self.len();
+
+                if !self.spilled()
+                {
+                    let mut vec = Vec::with_capacity(len);
+                    let this = ManuallyDrop::new(self);
+                    copy_nonoverlapping(this.raw.as_ptr_inline(), vec.as_mut_ptr(), len);
+                    vec.set_len(len);
+                    vec
+                }
+                
+                else
+                {
+                    let this = ManuallyDrop::new(self);
+                    let (ptr, cap) = this.raw.heap;
+                    Vec::from_raw_parts(ptr.as_ptr(), len, cap)
+                }
+            }
+        }
+
+        #[inline] pub fn into_boxed_slice(self) -> Box<[T]> { self.into_vec().into_boxed_slice() }
+
+        #[inline] pub fn into_inner(self) -> Result<[T; N], Self>
+        {
+            unsafe
+            {
+                if self.len() != N { Err(self) }
+                else
+                {
+                    let mut this = self;
+                    this.set_len(0);
+                    let ptr = this.as_ptr() as *const [T; N];
+                    Ok(ptr.read())
+                }   
+            }
+        }
+
+        #[inline] pub fn retain<F: FnMut(&T) -> bool>(&mut self, mut f: F) { self.retain_mut(|elem| f(elem)) }
+
+        #[inline] pub fn retain_mut<F: FnMut(&mut T) -> bool>(&mut self, mut f: F)
+        {
+            unsafe
+            {
+                let mut del = 0;
+                let len = self.len();
+                let ptr = self.as_mut_ptr();
+
+                for i in 0..len
+                {
+                    if !f(&mut *ptr.add(i)) { del += 1; } 
+                    else if del > 0 { ::ptr::swap(ptr.add(i), ptr.add(i - del)); }
+                }
+
+                self.truncate(len - del);
+            }
+        }
+
+        #[inline] pub fn dedup(&mut self) where
+        T: PartialEq
+        { self.dedup_by(|a, b| a == b); }
+
+        #[inline] pub fn dedup_by_key<F, K>(&mut self, mut key: F) where
+        F: FnMut(&mut T) -> K,
+        K: PartialEq<K>
+        { self.dedup_by(|a, b| key(a) == key(b)); }
+
+        #[inline] pub fn dedup_by<F>(&mut self, mut same_bucket: F) where
+        F: FnMut(&mut T, &mut T) -> bool
+        {
+            unsafe
+            {
+                let len = self.len();
+
+                if len <= 1 { return; }
+
+                let ptr = self.as_mut_ptr();
+                let mut w: usize = 1;
+
+                for r in 1..len
+                {
+                    let p_r = ptr.add(r);
+                    let p_wm1 = ptr.add(w - 1);
+                    
+                    if !same_bucket(&mut *p_r, &mut *p_wm1)
+                    {
+                        if r != w
+                        {
+                            let p_w = p_wm1.add(1);
+                            ::ptr::swap(p_r, p_w);
+                        }
+
+                        w += 1;
+                    }
+                }
+
+                self.truncate(w);
+            }
+        }
+
+        pub fn resize_with<F>(&mut self, new_len: usize, f: F) where
+        F: FnMut() -> T
+        {
+            let old_len = self.len();
+            if old_len < new_len
+            {
+                let mut f = f;
+                let additional = new_len - old_len;
+                self.reserve(additional);
+
+                for _ in 0..additional
+                {
+                    self.push(f());
+                }
+            }
+            else if old_len > new_len { self.truncate(new_len); }
+        }
+
+        pub fn leak<'a>(self) -> &'a mut [T]
+        {
+            if !self.spilled()
+            {
+                panic!("SmallVec::leak() called on inline (stack) SmallVec, which cannot be safely leaked");
+            }
+
+            let mut me = ManuallyDrop::new(self);
+            unsafe { ::slice::from_raw_parts_mut(me.as_mut_ptr(), me.len()) }
+        }
+        
+        #[inline] pub fn spare_capacity_mut(&mut self) -> &mut [MaybeUninit<T>]
+        {
+            unsafe
+            {
+                ::slice::from_raw_parts_mut(
+                    self.as_mut_ptr().add(self.len()) as *mut MaybeUninit<T>,
+                    self.capacity() - self.len(),
+                )
+            }
+        }
+        
+        #[inline] pub unsafe fn from_raw_parts(ptr: *mut T, length: usize, capacity: usize) -> SmallVec<T, N>
+        {
+            assert!(!Self::is_zst());
+            let ptr = unsafe {
+                debug_assert!(!ptr.is_null(), "Called `from_raw_parts` with null pointer.");
+                NonNull::new_unchecked(ptr)
+            };
+
+            SmallVec
+            {
+                len: TaggedLen::new(length, true, Self::is_zst()),
+                raw: RawSmallVec::new_heap(ptr, capacity),
+                _marker: PhantomData,
+            }
+        }
+    }
+
+    impl<T: Clone, const N: usize> SmallVec<T, N>
+    {
+        #[inline] pub fn resize(&mut self, len: usize, value: T)
+        {
+            let old_len = self.len();
+            if len > old_len { self.extend(::iter::repeat_n(value, len - old_len)); } else { self.truncate(len); }
+        }
+
+        #[inline] pub fn extend_from_slice(&mut self, o: &[T]) { self.extend(o.iter()) }
+
+        pub fn extend_from_within<R>(&mut self, src: R) where
+        R: ::ops::RangeBounds<usize>
+        {
+            unsafe
+            {
+                let src = slice_range(src, ..self.len());
+                self.reserve(src.len());
+                self.extend_from_within_fallback(src);
+            }
+        }
+
+        #[inline] pub fn extend_from_slice_copy(&mut self, o: &[T]) where
+        T: Copy
+        {
+            unsafe
+            {
+                let len = other.len();
+                let src = other.as_ptr();
+                
+                let l = self.len();
+                self.reserve(len);
+                let dst = self.as_mut_ptr().add(l);
+                copy_nonoverlapping(src, dst, len);
+                self.set_len(l + len);
+            }
+        }
+
+        pub fn extend_from_within_copy<R>(&mut self, src: R) where
+        R: ::ops::RangeBounds<usize>,
+        T: Copy
+        {
+            unsafe
+            {
+                let src = slice_range(src, ..self.len());
+                let ::ops::Range { start, end } = src;
+                let len = end - start;
+                self.reserve(len);
+                let l = self.len();
+                let ptr = self.as_mut_ptr();
+                copy_nonoverlapping(ptr.add(start), ptr.add(l), len);
+                self.set_len(l + len);
+            }
+        }
+
+        pub fn insert_from_slice_copy(&mut self, index: usize, o: &[T]) where
+        T: Copy
+        {
+            unsafe
+            {
+                let l = self.len();
+                let len = other.len();
+                assert!(index <= l);
+                self.reserve(len);
+                let base_ptr = self.as_mut_ptr();
+                let ith_ptr = base_ptr.add(index);
+                let shifted_ptr = base_ptr.add(index + len);
+                copy(ith_ptr, shifted_ptr, l - index);
+                copy_nonoverlapping(o.as_ptr(), ith_ptr, len);
+                self.set_len(l + len);
+            }
+        }
+        
+        pub fn from_slice_copy(slice: &[T]) -> Self where
+        T: Copy
+        {
+            unsafe
+            {
+                let src = slice.as_ptr();
+                let len = slice.len();
+                let mut result = Self::with_capacity(len);
+                let dst = result.as_mut_ptr();
+                copy_nonoverlapping(src, dst, len);
+                result.set_len(len);
+            }
+
+            result
+        }
+    }
+
+    struct DropGuard<T>
+    {
+        ptr: *mut T,
+        len: usize
+    }
+    
+    impl<T> Drop for DropGuard<T>
+    {
+        #[inline] fn drop(&mut self)
+        {
+            unsafe
+            {
+                ::ptr::slice_from_raw_parts_mut(self.ptr, self.len).drop_in_place();
+            }
+        }
+    }
+
+    struct DropDealloc
+    {
+        ptr: NonNull<u8>,
+        size_bytes: usize,
+        align: usize,
+    }
+
+    impl Drop for DropDealloc
+    {
+        #[inline] fn drop(&mut self)
+        {
+            unsafe
+            {
+                if self.size_bytes > 0
+                {
+                    ::alloc::dealloc
+                    (
+                        self.ptr.as_ptr(),
+                        Layout::from_size_align_unchecked(self.size_bytes, self.align),
+                    );
+                }
+            }
+        }
+    }
+    
+    unsafe impl<#[may_dangle] T, const N: usize> Drop for SmallVec<T, N>
+    {
+        fn drop(&mut self)
+        {
+            unsafe
+            {
+                let on_heap = self.spilled();
+                let len = self.len();
+                let ptr = self.as_mut_ptr();
+                let _drop_dealloc = if on_heap
+                {
+                    let capacity = self.capacity();
+                    Some(DropDealloc
+                    {
+                        ptr: NonNull::new_unchecked(ptr as *mut u8),
+                        size_bytes: capacity * size_of::<T>(),
+                        align: align_of::<T>(),
+                    })
+                } else { None };
+
+                ::ptr::slice_from_raw_parts_mut(ptr, len).drop_in_place();
+            }
+        }
+    }
+
+    impl<T, const N: usize> Drop for IntoIter<T, N>
+    {
+        fn drop(&mut self)
+        {
+            unsafe
+            {
+                let is_zst = size_of::<T>() == 0;
+                let on_heap = self.end.on_heap(is_zst);
+                let begin = self.begin;
+                let end = self.end.value(is_zst);
+                let ptr = self.as_mut_ptr();
+                let _drop_dealloc = if on_heap
+                {
+                    let capacity = self.raw.heap.1;
+                    Some(DropDealloc
+                    {
+                        ptr: NonNull::new_unchecked(ptr as *mut u8),
+                        size_bytes: capacity * size_of::<T>(),
+                        align: align_of::<T>(),
+                    })
+                } else { None };
+
+                ::ptr::slice_from_raw_parts_mut(ptr.add(begin), end - begin).drop_in_place();
+            }
+        }
+    }
+
+    impl<T, const N: usize> ::ops::Deref for SmallVec<T, N>
+    {
+        type Target = [T];
+        #[inline] fn deref(&self) -> &Self::Target { self.as_slice() }
+    }
+    
+    impl<T, const N: usize> ::ops::DerefMut for SmallVec<T, N>
+    {
+        #[inline] fn deref_mut(&mut self) -> &mut Self::Target { self.as_mut_slice() }
+    }
+    
+    #[track_caller] pub fn from_elem<T: Clone, const N: usize>(elem: T, n: usize) -> SmallVec<T, N>
+    {
+        if n > SmallVec::<T, N>::inline_size() { SmallVec::<T, N>::from_vec(vec![elem; n]) }
+        else { unsafe { SmallVec::<T, N>::from_elem_fallback(elem, n) } }
+    }
+    
+    impl<T, const N: usize> SmallVec<T, N>
+    {
+        unsafe fn from_elem_fallback(elem: T, n: usize) -> Self where
+        T: Clone
+        {
+            unsafe
+            {
+                let mut result = Self::new();
+
+                if n > 0
+                {
+                    let ptr = result.raw.as_mut_ptr_inline();
+                    let mut guard = DropGuard { ptr, len: 0 };
+                    
+                    for i in 0..(n - 1)
+                    {
+                        ptr.add(i).write(elem.clone());
+                        guard.len += 1;
+                    }
+
+                    ::mem::forget(guard);
+                    ptr.add(n - 1).write(elem);
+                }
+
+                result.set_len(n);
+                result
+            }
+        }
+
+        fn extend_fallback<I>(&mut self, iter: I) where
+        I: IntoIterator<Item = T>
+        {
+            let iter = iter.into_iter();
+            let (size, _) = iter.size_hint();
+            self.reserve(size);
+            
+            for x in iter
+            {
+                self.push(x);
+            }
+        }
+        
+        unsafe fn extend_from_within_fallback(&mut self, src: ::ops::Range<usize>) where
+        T: Clone
+        {
+            unsafe
+            {
+                let old_len = self.len();
+                let start = src.start;
+                let len = src.len();
+                let ptr = self.as_mut_ptr();
+                let dst = ptr.add(old_len);
+                let src = ptr.add(start);
+                let mut guard = DropGuard { ptr: dst, len: 0 };
+                
+                for i in 0..len
+                {
+                    let val = (*src.add(i)).clone();
+                    dst.add(i).write(val);
+                    guard.len += 1;
+                }
+
+                ::mem::forget(guard);
+                self.set_len(old_len + len);
+            }
+        }
+
+        fn from_iter_fallback<I>(iter: I) -> Self where
+        I: Iterator<Item = T>
+        {
+            let (size, _) = iter.size_hint();
+            let mut v = Self::with_capacity(size);
+            for x in iter
+            {
+                v.push(x);
+            }
+            v
+        }
+
+        fn clone_from_fallback(&mut self, source: &[T]) where
+        T: Clone
+        {
+            self.truncate(source.len());
+            let (init, tail) = unsafe { source.split_at_unchecked(self.len()) };
+            self.clone_from_slice(init);
+            self.extend(tail.iter().cloned());
+        }
+        
+        unsafe fn from_slice_fallback(slice: &[T]) -> Self where
+        T: Clone
+        {
+            unsafe
+            {
+                let mut v = Self::new();
+                let src = slice.as_ptr();
+                let len = slice.len();
+                let dst = v.as_mut_ptr();
+                let mut guard = DropGuard { ptr: dst, len: 0 };
+                for i in 0..len {
+                    let val = (*src.add(i)).clone();
+                    dst.add(i).write(val);
+                    guard.len += 1;
+                }
+                ::mem::forget(guard);
+                v.set_len(len);
+                v
+            }
+        }
+    }
+
+    impl<T: Clone, const N: usize> From<&[T]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &[T]) -> Self
+        {
+            if slice.len() > Self::inline_size() { Self::from_vec(Vec::from(slice)) } else { unsafe { Self::from_slice_fallback(slice) } }
+        }
+    }
+
+    impl<T: Clone, const N: usize> From<&mut [T]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &mut [T]) -> Self { Self::from(slice as &[T]) }
+    }
+
+    impl<T: Clone, const M: usize, const N: usize> From<&[T; M]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &[T; M]) -> Self { Self::from(slice as &[T]) }
+    }
+
+    impl<T: Clone, const M: usize, const N: usize> From<&mut [T; M]> for SmallVec<T, N>
+    {
+        #[inline] fn from(slice: &mut [T; M]) -> Self { Self::from(slice as &[T]) }
+    }
+
+    impl<T, const N: usize, const M: usize> From<[T; M]> for SmallVec<T, N>
+    {
+        fn from(array: [T; M]) -> Self
+        {
+            if M > N { Self::from(Vec::from(array)) }
+            else
+            {
+                let mut this = Self::new();
+                debug_assert!(M <= this.capacity());
+                let array = ManuallyDrop::new(array);
+                unsafe
+                {
+                    copy_nonoverlapping(array.as_ptr(), this.as_mut_ptr(), M);
+                    this.set_len(M);
+                }
+                this
+            }
+        }
+    }
+
+    impl<T, const N: usize> From<Vec<T>> for SmallVec<T, N>
+    {
+        fn from(array: Vec<T>) -> Self { Self::from_vec(array) }
+    }
+
+    impl<T: Clone, const N: usize> Clone for SmallVec<T, N>
+    {
+        #[inline] fn clone(&self) -> SmallVec<T, N> { SmallVec::from(self.as_slice()) }
+
+        #[inline] fn clone_from(&mut self, source: &Self) { self.clone_from_fallback(&*source); }
+    }
+
+    impl<T: Clone, const N: usize> Clone for IntoIter<T, N>
+    {
+        #[inline] fn clone(&self) -> IntoIter<T, N> { SmallVec::from(self.as_slice()).into_iter() }
+    }
+
+    impl<T, const N: usize> Extend<T> for SmallVec<T, N>
+    {
+        #[inline] fn extend<I: IntoIterator<Item = T>>(&mut self, iter: I) { self.extend_fallback(iter); }
+    }
+
+    impl<'a, T: Clone + 'a, const N: usize> Extend<&'a T> for SmallVec<T, N>
+    {
+        #[inline] fn extend<I: IntoIterator<Item = &'a T>>(&mut self, iter: I) { self.extend_fallback(iter.into_iter().cloned()); }
+    }
+
+    impl<T, const N: usize> ::iter::FromIterator<T> for SmallVec<T, N>
+    {
+        #[inline] fn from_iter<I: IntoIterator<Item = T>>(iter: I) -> Self
+        {
+            Self::from_iter_fallback(iter.into_iter())
+        }
+    }
+
+    impl<T, const N: usize> IntoIterator for SmallVec<T, N>
+    {
+        type IntoIter = IntoIter<T, N>;
+        type Item = T;
+        fn into_iter(self) -> Self::IntoIter
+        {
+            unsafe
+            {
+                let this = ManuallyDrop::new(self);
+                IntoIter
+                {
+                    raw: (&this.raw as *const RawSmallVec<T, N>).read(),
+                    begin: 0,
+                    end: this.len,
+                    _marker: PhantomData,
+                }
+            }
+        }
+    }
+
+    impl<'a, T, const N: usize> IntoIterator for &'a SmallVec<T, N>
+    {
+        type IntoIter = ::slice::Iter<'a, T>;
+        type Item = &'a T;
+        fn into_iter(self) -> Self::IntoIter { self.iter() }
+    }
+
+    impl<'a, T, const N: usize> IntoIterator for &'a mut SmallVec<T, N>
+    {
+        type IntoIter = ::slice::IterMut<'a, T>;
+        type Item = &'a mut T;
+        fn into_iter(self) -> Self::IntoIter { self.iter_mut() }
+    }
+
+    impl<T, U, const N: usize, const M: usize> PartialEq<SmallVec<U, M>> for SmallVec<T, N> where
+    T: PartialEq<U>
+    {
+        #[inline] fn eq(&self, o: &SmallVec<U, M>) -> bool { self.as_slice().eq(o.as_slice()) }
+    }
+    
+    impl<T, const N: usize> Eq for SmallVec<T, N> where T: Eq {}
+
+    impl<T, U, const N: usize, const M: usize> PartialEq<[U; M]> for SmallVec<T, N> where
+    T: PartialEq<U>
+    {
+        #[inline] fn eq(&self, o: &[U; M]) -> bool { self[..] == o[..] }
+    }
+
+    impl<T, U, const N: usize, const M: usize> PartialEq<&[U; M]> for SmallVec<T, N> where
+    T: PartialEq<U>
+    {
+        #[inline] fn eq(&self, o: &&[U; M]) -> bool { self[..] == o[..] }
+    }
+
+    impl<T, U, const N: usize> PartialEq<[U]> for SmallVec<T, N> where
+    T: PartialEq<U>
+    {
+        #[inline] fn eq(&self, o: &[U]) -> bool { self[..] == o[..] }
+    }
+
+    impl<T, U, const N: usize> PartialEq<&[U]> for SmallVec<T, N> where
+    T: PartialEq<U>
+    {
+        #[inline] fn eq(&self, o: &&[U]) -> bool { self[..] == o[..] }
+    }
+
+    impl<T, U, const N: usize> PartialEq<&mut [U]> for SmallVec<T, N> where
+    T: PartialEq<U>
+    {
+        #[inline] fn eq(&self, o: &&mut [U]) -> bool { self[..] == o[..] }
+    }
+
+    impl<T, const N: usize> PartialOrd for SmallVec<T, N> where
+    T: PartialOrd
+    {
+        #[inline] fn partial_cmp(&self, o: &SmallVec<T, N>) -> Option<::cmp::Ordering> { self.as_slice().partial_cmp(o.as_slice()) }
+    }
+
+    impl<T, const N: usize> Ord for SmallVec<T, N> where
+    T: Ord
+    {
+        #[inline] fn cmp(&self, o: &SmallVec<T, N>) -> ::cmp::Ordering { self.as_slice().cmp(o.as_slice()) }
+    }
+
+    impl<T: Hash, const N: usize> Hash for SmallVec<T, N>
+    {
+        fn hash<H: Hasher>(&self, state: &mut H) { self.as_slice().hash(state) }
+    }
+
+    impl<T, const N: usize> Borrow<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn borrow(&self) -> &[T] { self.as_slice() }
+    }
+
+    impl<T, const N: usize> BorrowMut<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn borrow_mut(&mut self) -> &mut [T] { self.as_mut_slice() }
+    }
+
+    impl<T, const N: usize> AsRef<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn as_ref(&self) -> &[T] { self.as_slice() }
+    }
+
+    impl<T, const N: usize> AsMut<[T]> for SmallVec<T, N>
+    {
+        #[inline] fn as_mut(&mut self) -> &mut [T] { self.as_mut_slice() }
+    }
+
+    impl<T: Debug, const N: usize> Debug for SmallVec<T, N>
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
+        { f.debug_list().entries(self.iter()).finish() }
+    }
+
+    impl<T: Debug, const N: usize> Debug for IntoIter<T, N>
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
+        {
+            f.debug_tuple("IntoIter").field(&self.as_slice()).finish() }
+    }
+
+    impl<T: Debug, const N: usize> Debug for Drain<'_, T, N>
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
+        {
+            f.debug_tuple("Drain").field(&self.iter.as_slice()).finish() }
+    }
+            
+    impl<const N: usize> io::Write for SmallVec<u8, N>
+    {
+        #[inline] fn write(&mut self, b: &[u8]) -> io::Result<usize>
+        { self.extend_from_slice(b);
+            Ok(b.len()) }
+
+        #[inline] fn write_all(&mut self, b: &[u8]) -> io::Result<()>
+        { self.extend_from_slice(b);
+            Ok(()) }
+
+        #[inline] fn flush(&mut self) -> io::Result<()> { Ok(()) }
+    }
+    
+    unsafe impl<const N: usize> BufMut for SmallVec<u8, N>
+    {
+        #[inline] fn remaining_mut(&self) -> usize { isize::MAX as usize - self.len() }
+
+        #[inline] unsafe fn advance_mut(&mut self, c: usize)
+        {
+            let l = self.len();
+            let r = self.capacity() - l;
+
+            if r < c { panic!("advance out of bounds: the len is {r} but advancing by {c}"); }
+            
+            self.set_len(l + c);
+        }
+
+        #[inline] fn chunk_mut(&mut self) -> &mut UninitSlice
+        {
+            unsafe
+            {
+                if self.capacity() == self.len() { self.reserve(64); }
+
+                let c = self.capacity();
+                let l = self.len();
+                let ptr = self.as_mut_ptr();
+                UninitSlice::from_raw_parts_mut(p.add(l), c - l)
+            }
+        }
+        
+        #[inline] fn put<T: bytes::Buf>(&mut self, mut s: T) where
+        Self:Sized
+        { self.reserve(s.remaining());
+
+            while s.has_remaining()
+            {
+                let t = s.chunk();
+                let l = t.len();
+                self.extend_from_slice(t);
+                s.advance(l);
+            }
+        }
+
+        #[inline] fn put_slice(&mut self, s: &[u8]) { self.extend_from_slice(s); }
+        
+        #[inline] fn put_bytes(&mut self, v: u8, c: usize)
+        {
+            let l = self.len().saturating_add(c);
+            self.resize(l,v);
+        }
+    }
 }
 pub const INDENT_STEP: usize = 4;
 
@@ -77221,15 +78713,13 @@ pub fn main() -> Result<(), error::parse::ParseError>
         if is::script( &args )
         {
             let status = scripts::run( &mut sh, &args );
-            ::process::exit( status );
-        }
+            ::process::exit( status ); }
         
         if is::command_string( &args )
         {
             let line = env::args_to_command_line();
             now::run_command_line( &mut sh, &line, false, false );
-            ::process::exit( sh.previous_status );
-        }
+            ::process::exit( sh.previous_status ); }
 
         if is::non_tty()
         {
@@ -77355,4 +78845,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 77358 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 78848 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
