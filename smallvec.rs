@@ -4165,7 +4165,7 @@ pub mod api
             return cr;
         }
 
-        let str_current_dir = tools::get_current_dir();
+        let str_current_dir = get::current_dir();
 
         let mut dir_to = if args.len() == 1 {
             let home = get::user_home();
@@ -4283,7 +4283,7 @@ pub mod api
         cr
     }
 
-    pub fn run_exit(sh: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_exit(s: &Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let tokens = cmd.tokens.clone();
@@ -4352,7 +4352,7 @@ pub mod api
 
             for c in re_name_ptn.captures_iter(text) {
                 let name = c[1].to_string();
-                let token = parses::lines::unquote(&cap[2]);
+                let t = parses::lines::unquote(&cap[2]);
                 let v = expand::home(&token);
                 env::set_var(name, &value);
             }
@@ -4360,7 +4360,7 @@ pub mod api
         cr
     }
 
-    pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_fg(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let tokens = cmd.tokens.clone();
         let mut cr = CommandResult::new();
@@ -4446,7 +4446,7 @@ pub mod api
         }
     }
 
-    pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_history(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let hfile = history::get_history_file();
@@ -4521,7 +4521,7 @@ pub mod api
         }
     }
 
-    pub fn run_jobs(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_jobs(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         if sh.jobs.is_empty() {
@@ -4566,7 +4566,7 @@ pub mod api
         cr
     }
 
-    pub fn run_read(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_read(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let tokens = cmd.tokens.clone();
@@ -4626,7 +4626,7 @@ pub mod api
         cr
     }
 
-    pub fn run_set(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_set(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let tokens = &cmd.tokens;
@@ -4660,14 +4660,14 @@ pub mod api
         }
     }
 
-    pub fn run_source(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_source(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let tokens = &cmd.tokens;
         let args = parses::lines::tokens_to_args(tokens);
 
         if args.len() < 2 {
-            let info = ":: source: no file specified";
+            let info = ":: a: no file specified";
             print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
@@ -4721,7 +4721,7 @@ pub mod api
         cr
     }
 
-    pub fn run_unalias(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_unalias(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let tokens = cmd.tokens.clone();
         let mut cr = CommandResult::new();
@@ -4741,7 +4741,7 @@ pub mod api
         cr
     }
 
-    pub fn run_unpath(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_unpath(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let tokens = cmd.tokens.clone();
         let mut cr = CommandResult::new();
@@ -4757,7 +4757,7 @@ pub mod api
         cr
     }
 
-    pub fn run_unset(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_unset(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let tokens = cmd.tokens.clone();
         let mut cr = CommandResult::new();
@@ -4777,7 +4777,7 @@ pub mod api
         cr
     }
 
-    pub fn run_vox(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+    pub fn run_vox(s: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let tokens = cmd.tokens.clone();
@@ -4831,13 +4831,13 @@ pub mod api
         }
     }
 
-    fn add_history(sh: &Shell, ts: f64, input: &str) 
+    fn add_history(s: &Shell, ts: f64, input: &str) 
     {
         let (tsb, tse) = (ts, ts + 1.0);
         history::add_raw(sh, input, 0, tsb, tse);
     }
 
-    fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
+    fn list_current_history(s: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
     {
         let mut result_stderr = String::new();
         let result_stdout = String::new();
@@ -5105,10 +5105,12 @@ pub mod api
 
     fn report_all(app: &App, all_stdout: &mut String, all_stderr: &mut String)
     {
-        for limit_name in &["open_files", "core_file_size"] {
+        for limit_name in &["open_files", "core_file_size"]
+        {
             let (out, err) = get_limit(limit_name, false, app.H);
             all_stdout.push_str(&out);
-            all_stderr.push_str(&err); }
+            all_stderr.push_str(&err);
+        }
     }
 
     fn handle_limit
@@ -5123,13 +5125,17 @@ pub mod api
         match limit_option
         {
             None => false,
-            Some(None) => {
+
+            Some(None) =>
+            {
                 let (out, err) = get_limit(limit_name, true, for_hard);
                 all_stdout.push_str(&out);
                 all_stderr.push_str(&err);
                 true
             }
-            Some(Some(v)) => {
+
+            Some(Some(v)) =>
+            {
                 let err = set_limit(limit_name, v, for_hard);
                 if !err.is_empty() {
                     all_stderr.push_str(&err);
@@ -5139,6 +5145,7 @@ pub mod api
         }
     }
 }
+
 pub mod alloc
 {
     pub use std::alloc::{ * };
@@ -5158,7 +5165,7 @@ pub mod arrays
         error::{ OverError },
         fmt::{ Format },
         result::{ OverResult },
-        s::{ Iter },
+        slice::{ Iter },
         sync::{ Arc },
         types::{ Type },
         vs::{ Value },
@@ -5994,7 +6001,7 @@ pub mod bits
             {
 
                 #[doc(hidden)]
-                pub const fn __private_const_new(flags:&'static [Flag<B>], source: B, remaining: B) -> Self {
+                pub const fn __private_const_new(flags:&'static [Flag<B>], a: B, remaining: B) -> Self {
                     Iter {
                         inner: IterNames::__private_const_new(flags, source, remaining),
                         done: false,
@@ -6026,7 +6033,7 @@ pub mod bits
             pub struct IterNames<B: 'static> {
                 flags:&'static [Flag<B>],
                 idx: usize,
-                source: B,
+                a: B,
                 remaining: B,
             }
 
@@ -6037,7 +6044,7 @@ pub mod bits
                         flags: B::FLAGS,
                         idx: 0,
                         remaining: B::from_bits_retain(flags.bits()),
-                        source: B::from_bits_retain(flags.bits()),
+                        a: B::from_bits_retain(flags.bits()),
                     }
                 }
             }
@@ -6045,7 +6052,7 @@ pub mod bits
             impl<B: 'static> IterNames<B> {
 
                 #[doc(hidden)]
-                pub const fn __private_const_new(flags:&'static [Flag<B>], source: B, remaining: B) -> Self {
+                pub const fn __private_const_new(flags:&'static [Flag<B>], a: B, remaining: B) -> Self {
                     IterNames {
                         flags,
                         idx: 0,
@@ -6720,11 +6727,11 @@ pub mod char
                 Some( ch ) => {
                     if ch == '\n' {
                         let line = self.line();
-                        self.set_line( line + 1 );
-                        self.set_col( 1 );
+                        self.s_line( line + 1 );
+                        self.s_col( 1 );
                     } else {
                         let col = self.col();
-                        self.set_col( col + 1 );
+                        self.s_col( col + 1 );
                     }
                     Some( ch )
                 }
@@ -7254,7 +7261,7 @@ pub mod error
                     ),
                     InvalidIncludeChar( ref found, ref line, ref col ) => write!( 
                         f,
-                        "Invalid include token character \'{}\' at line {}, column {}",
+                        "Invalid include t character \'{}\' at line {}, column {}",
                         found, line, col
                     ),
                     InvalidIncludePath( ref path, ref line, ref col ) => write!( 
@@ -7703,10 +7710,10 @@ pub mod expand
         {
             tokens.remove(*i);
             
-            for (j, token ) in result.iter().enumerate()
+            for (j, t ) in result.iter().enumerate()
             {
-                let sep = if token.contains(' ') { "\"" } else { "" };
-                tokens.insert(*i + j, ( sep.to_string(), token.clone() ) );
+                let sep = if t.contains(' ') { "\"" } else { "" };
+                tokens.insert(*i + j, ( sep.to_string(), t.clone() ) );
             }
         }
     }
@@ -7879,7 +7886,7 @@ pub mod get
     {
         let mut c = 0;
         let mut met_x01 = false;
-        for c in prompt.chars()
+        for c in p.chars()
         {
             if c == '\x01' {
                 met_x01 = true;
@@ -8393,9 +8400,9 @@ pub mod highlights
             let mut current_byte_idx = 0;
             let mut is_start_of_segment = true;
 
-            for token in &line_info.tokens
+            for t in &line_info.tokens
             {
-                match find_token_range_heuristic(line, current_byte_idx, token )
+                match find_token_range_heuristic(line, current_byte_idx, t )
                 {
                     Some( token_range ) =>
                     {
@@ -8684,7 +8691,7 @@ pub mod is
     pub fn prompt_item_char( c:char, token:&str ) -> bool
     {
         let s = c.to_string();
-        if token.is_empty() { regex::contains( &s, r#"^[a-zA-Z_]$"#) }
+        if t.is_empty() { regex::contains( &s, r#"^[a-zA-Z_]$"#) }
         else { regex::contains( &s, r#"^[a-zA-Z0-9_]$"#) }
     }
 
@@ -14292,7 +14299,7 @@ pub mod num
                     fn bitand_assign( &mut self, other:&BigInt ) {
                         match ( self.sign, o.sign ) {
                             ( NoSign, _ ) => {}
-                            ( _, NoSign ) => self.set_zero(),
+                            ( _, NoSign ) => self.s_zero(),
                             ( Plus, Plus ) => {
                                 self.d &= &o.data;
                                 if self.d.is_zero() {
@@ -15790,7 +15797,7 @@ pub mod num
 
                 #[inline] pub fn assign_from_slice( &mut self, sign: Sign, s:&[u32] ) {
                     if sign == NoSign {
-                        self.set_zero();
+                        self.s_zero();
                     } else {
                         self.d.assign_from_slice( s );
                         self.sign = if self.d.is_zero() { NoSign } else { sign };
@@ -16058,7 +16065,7 @@ pub mod num
                            
                             let p = d.as_mut_ptr() as *mut u32;
                             debug_assert!( native_len * 2 >= l );
-                            let d = s::from_raw_parts_mut( p, l );
+                            let d = slice::from_raw_parts_mut( p, l );
                             gen_bits( self, d, rem );
                         }
                         #[cfg( target_endian = "big" )]
@@ -17611,7 +17618,7 @@ pub mod num
                                 match ( &*self.d, &*o.data ) {
                                    
                                     ( &[], _ ) => {},
-                                    ( _, &[] ) => self.set_zero(),
+                                    ( _, &[] ) => self.s_zero(),
                                    
                                     ( _, &[digit] ) => *self *= digit,
                                     ( &[digit], _ ) => *self = other * digit,
@@ -20787,7 +20794,7 @@ pub mod num
                     return;
                 }
                 if self.numer == self.denom {
-                    self.set_one();
+                    self.s_one();
                     return;
                 }
                 let g: T = self.numer.gcd( &self.denom );
@@ -22108,12 +22115,12 @@ pub mod now
         let mut status = 0;
         let mut sep = String::new();
 
-        for token in parses::lines::line_to_cmds(line )
+        for t in parses::lines::line_to_cmds(line )
        
         {
-            if token == ";" || token == "&&" || token == "||"
+            if t == ";" || t == "&&" || t == "||"
             {
-                sep = token.clone();
+                sep = t.clone();
                 continue;
             }
 
@@ -22121,7 +22128,7 @@ pub mod now
 
             if sep == "||" && status == 0 { break; }
 
-            let cmd = token.clone();
+            let cmd = t.clone();
             let cr = run_proc( sh, &cmd, tty, capture );
             status = cr.status;
             sh.previous_status = status;
@@ -22887,9 +22894,9 @@ pub mod now
         {
             let mut args = vec!["cicada".to_string()];
             
-            for token in &command.tokens
+            for t in &command.tokens
             {
-                args.push( token.1.to_string() );
+                args.push( t.1.to_string() );
             }
 
             let cr_list = scripts::run_lines( sh, &func_body, &args, capture );
@@ -23303,7 +23310,7 @@ pub mod ops
     impl<T> RangeArgument<T> for Range<T>   
     {
         fn start( &self ) -> Option<&T> { Some( &self.start ) }
-        fn end( &self ) -> Option<&T> { Some( &self.end ) }
+        fn end( &self ) -> Option<&T> { Some( &self.e ) }
     }
 
     impl<T> RangeArgument<T> for RangeFrom<T>   
@@ -23313,7 +23320,7 @@ pub mod ops
 
     impl<T> RangeArgument<T> for RangeTo<T>   
     {
-        fn end( &self ) -> Option<&T> { Some( &self.end ) }
+        fn end( &self ) -> Option<&T> { Some( &self.e ) }
     }
 
     impl<T> RangeArgument<T> for RangeFull {}
@@ -25432,7 +25439,7 @@ pub mod path
             options: MatchOptions,
         ) -> MatchResult
         {
-            for ( ti, token ) in self.tokens[i..].iter().enumerate()
+            for ( ti, t ) in self.tokens[i..].iter().enumerate()
             {
                 match *token
                 {
@@ -25782,137 +25789,158 @@ pub mod prompts
         use crate::libs;
         use crate::shell;
 
-        const DEFAULT_PROMPT: &str = "${COLOR_STATUS}$USER${RESET}\
-            @${COLOR_STATUS}$HOSTNAME${RESET}: \
-            ${COLOR_STATUS}$CWD${RESET}$ ";
+        
         use super::preset::apply_preset_item;
         use super::preset::apply_pyenv;
         */
+        const DEFAULT_PROMPT: &str = "${COLOR_STATUS}$USER${RESET}\
+            @${COLOR_STATUS}$HOSTNAME${RESET}: \
+            ${COLOR_STATUS}$CWD${RESET}$ ";
 
         pub fn read_string() -> String
-       
         {
             if let Ok( x ) = env::var( "PROMPT" ) { return x; }
-            DEFAULT_PROMPT.to_string() }
+            DEFAULT_PROMPT.to_string()
+        }
 
-        pub fn apply_item( sh: &shell::Shell, result: &mut String, token:&str )
-       
+        pub fn apply_item( s: &shell::Shell, z: &mut String, t:&str )
         {
-            if let Some( x ) = sh.get_env( token )
+            if let Some( x ) = s.get_env( t )
             {
-                result.push_str( &x);
+                z.push_str(&x);
                 return;
             }
 
-            apply_preset_item( sh, result, token ); }
+            apply_preset_item( s, z, t ); 
+        }
 
-        pub fn apply_command( result: &mut String, token: &str, prefix: &str, suffix:&str )
+        pub fn apply_command( z: &mut String, t: &str, a: &str, b:&str )
         {
-            let cr = now::run( token );
-            let output = cr.stdout.trim();
-            if !output.is_empty()
+            let c = now::run( t );
+            let o = c.o.trim();
+            if !o.is_empty()
             {
-                result.push_str( prefix);
-                result.push_str(output );
-                result.push_str( suffix);
+                z.push_str(a);
+                z.push_str(o);
+                z.push_str(b);
             }
         }
 
-        pub fn render( sh: &shell::Shell, ps:&str ) -> String
+        pub fn render( s:&shell::Shell, ps:&str ) -> String
         {
-            let mut prompt = String::new();
-            apply_pyenv( &mut prompt );
+            let mut p = String::new();
+            apply_pyenv( &mut p );
 
-            let mut met_dollar = false;
-            let mut met_brace = false;
-            let mut met_paren = false;
-            let mut token = String::new();
-            let mut prefix = String::new();
-            let mut suffix = String::new();
-            for c in ps.chars() {
-                if met_dollar {
-                    if c == '(' && !met_brace && !met_paren {
-                        met_paren = true;
+            let mut md = false;
+            let mut mb = false;
+            let mut mp = false;
+            let mut t = String::new();
+            let mut a = String::new();
+            let mut z = String::new();
+
+            for c in ps.chars() 
+            {
+                if md 
+                {
+                    if c == '(' && !met_brace && !met_paren 
+                    {
+                        mp = true;
                         continue;
                     }
                     
-                    if c == ')' && met_paren {
-                        apply_command( &mut prompt, &token, &prefix, &suffix);
-                        token.clear();
-                        prefix.clear();
-                        suffix.clear();
-                        met_dollar = false;
-                        met_paren = false;
+                    if c == ')' && mp 
+                    {
+                        apply_command( &mut p, &t, &a, &z);
+                        t.clear();
+                        a.clear();
+                        z.clear();
+                        md = false;
+                        mp = false;
                         continue;
                     }
                     
-                    if c == '{' && !met_brace && !met_paren {
-                        met_brace = true;
+                    if c == '{' && !mb && !mp 
+                    {
+                        mb = true;
                         continue;
-                    } else if c == '}' && met_brace {
-                        apply_item( sh, &mut prompt, &token );
-                        token.clear();
-                        met_dollar = false;
-                        met_brace = false;
-                        continue;
-                    } else if c == '$' {
-                        if token.is_empty() {
+                    }
 
-                            prompt.push('$');
-                            met_dollar = true;
-                            continue;
-                        } else {
-                            apply_item( sh, &mut prompt, &token );
-                            token.clear();
+                    else if c == '}' && mb 
+                    {
+                        apply_item( s, &mut p, &t );
+                        t.clear();
+                        md = false;
+                        mb = false;
+                        continue;
+                    }
+
+                    else if c == '$' 
+                    {
+                        if t.is_empty()
+                        {
+                            p.push('$');
+                            md = true;
                             continue;
                         }
-                    } else if met_paren {
-                        if is::prefix_char( c ) {
-                            prefix.push( c );
-                        } else if is::suffix_char( c ) {
-                            suffix.push( c );
-                        } else {
-                            token.push( c );
+
+                        else 
+                        {
+                            apply_item( s, &mut p, &t );
+                            t.clear();
+                            continue;
                         }
+                    }
+                    
+                    else if mp
+                    {
+                        if is::prefix_char( c ) { a.push( c ); }
+                        else if is::suffix_char( c ) { z.push( c ); }
+                        else { t.push( c ); }
                         continue;
-                    } else if is::prompt_item_char( c, &token ) {
-                        token.push( c );
+                    }
+                    
+                    else if is::prompt_item_char( c, &t ) 
+                    {
+                        t.push( c );
                         continue;
-                    } else if token.is_empty() {
-                        prompt.push('$');
-                        prompt.push( c );
-                        met_dollar = false;
+                    }
+
+                    else if t.is_empty() 
+                    {
+                        p.push('$');
+                        p.push( c );
+                        md = false;
                         continue;
                     }
                 }
 
-                if c == '$' {
-                    met_dollar = true;
+                if c == '$' 
+                {
+                    md = true;
                     continue;
                 }
 
-                if !token.is_empty() {
-                    apply_item( sh, &mut prompt, &token );
-                    token.clear();
+                if !t.is_empty() 
+                {
+                    apply_item( s, &mut p, &t );
+                    t.clear();
                 }
-                prompt.push( c );
-                met_dollar = false;
+
+                p.push( c );
+                md = false;
             }
 
-            if !token.is_empty() {
-                apply_item( sh, &mut prompt, &token );
-                met_dollar = false;
+            if !t.is_empty() 
+            {
+                apply_item( s, &mut p, &t );
+                md = false;
             }
 
-            if met_dollar {
+            if md { p.push('$'); }
+            
+            if p.trim().is_empty() { return format!( "cicada-{} >> ", "" ); }
 
-                prompt.push('$');
-            }
-            /*
-            if prompt.trim().is_empty() {
-                return format!( "cicada-{} >> ", env!( "CARGO_PKG_VERSION" ) );
-            } */
-            prompt
+            p
         }
     } pub use self::main::{ read_string, render };
 
@@ -25938,21 +25966,24 @@ pub mod prompts
 
         impl<T: Terminal> Function<T> for EnterFunction
         {
-            fn execute( &self, prompter: &mut Prompter<T>, count: i32, _ch:char ) -> io::Result<()>
+            fn execute( &self, p: &mut Prompter<T>, c: i32, d:char ) -> io::Result<()>
             {
-                let buf = prompter.buffer();
-                let linfo = parser_line::parse_line( buf);
-                if linfo.is_complete {
-                    prompter.accept_input()
-                } else if c > 0 {
-                    match prompter.insert( Count as usize, '\n') {
+                let b = p.buffer();
+                let i = parser_line::parse_line(b);
+                
+                if i.is_complete { p.accept_input() }
+
+                else if c > 0
+                {
+                    match p.insert( c as usize, '\n') 
+                    {
                         Ok(_ ) => {}
                         Err( e ) => { println!( "sub-prompt error: {}", e ); }
                     }
-                    prompter.insert_str( ">> " )
-                } else {
-                    Ok(() )
+                    p.insert_str( ">> " )
                 }
+
+                else { Ok(()) }
             }
         }
     } pub use self::multilines::{ EnterFunction };
@@ -25970,208 +26001,103 @@ pub mod prompts
         };
         /*
         */
-        fn apply_seq( prompt: &mut String) {
-            prompt.push_str(libs::colored::SEQ); }
-
-        fn apply_end_seq( prompt: &mut String) {
-            prompt.push_str(libs::colored::END_SEQ); }
-
-        fn apply_esc( prompt: &mut String) {
-            prompt.push_str(libs::colored::ESC); }
-
-        fn apply_underlined( prompt: &mut String) {
-            prompt.push_str(libs::colored::UNDERLINED); }
-
-        fn apply_user( prompt: &mut String) {
-            let username = tools::get_user_name();
-            prompt.push_str( &username ); }
-
-        fn apply_black( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK); }
-
-        fn apply_black_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK_B); }
-
-        fn apply_black_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK_BG); }
-
-        fn apply_blue( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE); }
-
-        fn apply_blue_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_B); }
-
-        fn apply_blue_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_BG); }
-
-        fn apply_bold( prompt: &mut String) {
-            prompt.push_str(libs::colored::BOLD); }
-
-        fn apply_green( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN); }
-
-        fn apply_green_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_B); }
-
-        fn apply_green_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_BG); }
-
-        fn apply_red( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED); }
-
-        fn apply_red_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_B); }
-
-        fn apply_red_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_BG); }
-
-        fn apply_white( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE); }
-
-        fn apply_white_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE_B); }
-
-        fn apply_white_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE_BG); }
-
-        fn apply_hidden( prompt: &mut String) {
-            prompt.push_str(libs::colored::HIDDEN); }
-
-        fn apply_reset( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESEt ); }
-
-        fn apply_reverse( prompt: &mut String) {
-            prompt.push_str(libs::colored::REVERSE); }
-
-        fn apply_dim( prompt: &mut String) {
-            prompt.push_str(libs::colored::DIM); }
-
-        fn apply_blink( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLINK); }
-
-        fn apply_reset_underlined( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_UNDERLINED); }
-
-        fn apply_reset_dim( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_DIM); }
-
-        fn apply_reset_reverse( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_REVERSE); }
-
-        fn apply_reset_hidden( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_HIDDEN); }
-
-        fn apply_reset_blink( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_BLINK); }
-
-        fn apply_reset_bold( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_BOLD); }
-
-        fn apply_default( prompt: &mut String) {
-            prompt.push_str(libs::colored::DEFAULt ); }
-
-        fn apply_default_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::DEFAULT_BG); }
-
-        fn apply_cyan( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN); }
-
-        fn apply_cyan_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_L); }
-
-        fn apply_cyan_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_BG); }
-
-        fn apply_cyan_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_L_BG); }
-
-        fn apply_red_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_L); }
-
-        fn apply_red_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_L_BG); }
-
-        fn apply_green_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_L); }
-
-        fn apply_green_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_L_BG); }
-
-        fn apply_gray_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_L); }
-
-        fn apply_gray_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_L_BG); }
-
-        fn apply_gray_d( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_D); }
-
-        fn apply_gray_d_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_D_BG); }
-
-        fn apply_magenta( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA); }
-
-        fn apply_magenta_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_BG); }
-
-        fn apply_magenta_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_L); }
-
-        fn apply_magenta_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_L_BG); }
-
-        fn apply_yellow( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW); }
-
-        fn apply_yellow_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_BG); }
-
-        fn apply_yellow_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_L); }
-
-        fn apply_yellow_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_L_BG); }
-
-        fn apply_blue_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_L); }
-
-        fn apply_blue_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_L_BG); }
-
-        fn apply_color_status( sh: &shell::Shell, prompt: &mut String)
+        fn apply_seq( p: &mut String ) { p.push_str(libs::colored::SEQ); }
+        fn apply_end_seq( p: &mut String ) { p.push_str(libs::colored::END_SEQ); }
+        fn apply_esc( p: &mut String ) { p.push_str(libs::colored::ESC); }
+        fn apply_underlined( p: &mut String ) { p.push_str(libs::colored::UNDERLINED); }
+        fn apply_user( p: &mut String) 
         {
-            if sh.previous_status == 0 {
-                prompt.push_str(libs::colored::GREEN_B);
-            } else {
-                prompt.push_str(libs::colored::RED_B);
-            }
+            let u = get::user_name();
+            p.push_str( &u );
+        }
+        fn apply_black( p: &mut String ) { p.push_str(libs::colored::BLACK); }
+        fn apply_black_b( p: &mut String ) { p.push_str(libs::colored::BLACK_B); }
+        fn apply_black_bg( p: &mut String ) { p.push_str(libs::colored::BLACK_BG); }
+        fn apply_blue( p: &mut String ) { p.push_str(libs::colored::BLUE); }
+        fn apply_blue_b( p: &mut String ) { p.push_str(libs::colored::BLUE_B); }
+        fn apply_blue_bg( p: &mut String ) { p.push_str(libs::colored::BLUE_BG); }
+        fn apply_bold( p: &mut String ) { p.push_str(libs::colored::BOLD); }
+        fn apply_green( p: &mut String ) { p.push_str(libs::colored::GREEN); }
+        fn apply_green_b( p: &mut String ) { p.push_str(libs::colored::GREEN_B); }
+        fn apply_green_bg( p: &mut String ) { p.push_str(libs::colored::GREEN_BG); }
+        fn apply_red( p: &mut String ) { p.push_str(libs::colored::RED); }
+        fn apply_red_b( p: &mut String ) { p.push_str(libs::colored::RED_B); }
+        fn apply_red_bg( p: &mut String ) { p.push_str(libs::colored::RED_BG); }
+        fn apply_white( p: &mut String ) { p.push_str(libs::colored::WHITE); }
+        fn apply_white_b( p: &mut String ) { p.push_str(libs::colored::WHITE_B); }
+        fn apply_white_bg( p: &mut String ) { p.push_str(libs::colored::WHITE_BG); }
+        fn apply_hidden( p: &mut String ) { p.push_str(libs::colored::HIDDEN); }
+        fn apply_reset( p: &mut String ) { p.push_str(libs::colored::RESEt ); }
+        fn apply_reverse( p: &mut String ) { p.push_str(libs::colored::REVERSE); }
+        fn apply_dim( p: &mut String ) { p.push_str(libs::colored::DIM); }
+        fn apply_blink( p: &mut String ) { p.push_str(libs::colored::BLINK); }
+        fn apply_reset_underlined( p: &mut String ) { p.push_str(libs::colored::RESET_UNDERLINED); }
+        fn apply_reset_dim( p: &mut String ) { p.push_str(libs::colored::RESET_DIM); }
+        fn apply_reset_reverse( p: &mut String ) { p.push_str(libs::colored::RESET_REVERSE); }
+        fn apply_reset_hidden( p: &mut String ) { p.push_str(libs::colored::RESET_HIDDEN); }
+        fn apply_reset_blink( p: &mut String ) { p.push_str(libs::colored::RESET_BLINK); }
+        fn apply_reset_bold( p: &mut String ) { p.push_str(libs::colored::RESET_BOLD); }
+        fn apply_default( p: &mut String ) { p.push_str(libs::colored::DEFAULt ); }
+        fn apply_default_bg( p: &mut String ) { p.push_str(libs::colored::DEFAULT_BG); }
+        fn apply_cyan( p: &mut String ) { p.push_str(libs::colored::CYAN); }
+        fn apply_cyan_l( p: &mut String ) { p.push_str(libs::colored::CYAN_L); }
+        fn apply_cyan_bg( p: &mut String ) { p.push_str(libs::colored::CYAN_BG); }
+        fn apply_cyan_l_bg( p: &mut String ) { p.push_str(libs::colored::CYAN_L_BG); }
+        fn apply_red_l( p: &mut String ) { p.push_str(libs::colored::RED_L); }
+        fn apply_red_l_bg( p: &mut String ) { p.push_str(libs::colored::RED_L_BG); }
+        fn apply_green_l( p: &mut String ) { p.push_str(libs::colored::GREEN_L); }
+        fn apply_green_l_bg( p: &mut String ) { p.push_str(libs::colored::GREEN_L_BG); }
+        fn apply_gray_l( p: &mut String ) { p.push_str(libs::colored::GRAY_L); }
+        fn apply_gray_l_bg( p: &mut String ) { p.push_str(libs::colored::GRAY_L_BG); }
+        fn apply_gray_d( p: &mut String ) { p.push_str(libs::colored::GRAY_D); }
+        fn apply_gray_d_bg( p: &mut String ) { p.push_str(libs::colored::GRAY_D_BG); }
+        fn apply_magenta( p: &mut String ) { p.push_str(libs::colored::MAGENTA); }
+        fn apply_magenta_bg( p: &mut String ) { p.push_str(libs::colored::MAGENTA_BG); }
+        fn apply_magenta_l( p: &mut String ) { p.push_str(libs::colored::MAGENTA_L); }
+        fn apply_magenta_l_bg( p: &mut String ) { p.push_str(libs::colored::MAGENTA_L_BG); }
+        fn apply_yellow( p: &mut String ) { p.push_str(libs::colored::YELLOW); }
+        fn apply_yellow_bg( p: &mut String ) { p.push_str(libs::colored::YELLOW_BG); }
+        fn apply_yellow_l( p: &mut String ) { p.push_str(libs::colored::YELLOW_L); }
+        fn apply_yellow_l_bg( p: &mut String ) { p.push_str(libs::colored::YELLOW_L_BG); }
+        fn apply_blue_l( p: &mut String ) { p.push_str(libs::colored::BLUE_L); }
+        fn apply_blue_l_bg( p: &mut String) { p.push_str(libs::colored::BLUE_L_BG); }
+        fn apply_color_status( s: &shell::Shell, p: &mut String)
+        {
+            if s.previous_status == 0 { p.push_str(libs::colored::GREEN_B); }
+            
+            else { p.push_str(libs::colored::RED_B); }
         }
 
-        fn _find_git_root() -> String {
-            let current_dir = libs::path::current_dir();
-            let dir_git = format!( "{}/.git", current_dir );
-            if Path::new( &dir_git ).exists() {
-                return current_dir;
-            }
+        fn _find_git_root() -> String 
+        {
+            let cd = path::current_dir();
+            let dg = format!( "{}/.git", cd );
 
-            let mut _dir = current_dir.clone();
-            while Path::new( &_dir ).parent().is_some() {
-                match Path::new( &_dir ).parent() {
-                    Some( p) => {
-                        _dir = p.to_string_lossy().to_string();
-                        let dir_git = format!( "{}/.git", _dir );
-                        if Path::new( &dir_git ).exists() {
-                            return _dir;
-                        }
+            if Path::new( &dg ).exists() { return cd; }
+
+            let mut d = cd.clone();
+
+            while Path::new( &d ).parent().is_some() 
+            {
+                match Path::new( &d ).parent() 
+                {
+                    Some( p) => 
+                    {
+                        d = p.to_string_lossy().to_string();
+                        let dg = format!( "{}/.git", d );
+
+                        if Path::new( &dg ).exists() { return d; }
                     }
+
                     None => { break; }
                 }
             }
 
-            String::new() }
+            String::new()
+        }
 
-        fn apply_gitbr( prompt: &mut String) {
+        fn apply_gitbr( p: &mut String)
+        {
             let git_root = _find_git_root();
             if git_root.is_empty() { return; }
 
@@ -26197,9 +26123,9 @@ pub mod prompts
 
             if let Some( branch ) = regex::find_first_group( r"^[a-z]+: ?[a-z]+/[a-z]+/(.+)$", text.trim() )
             {
-                apply_blue_b( prompt );
+                apply_blue_b( p );
                 if let Ok( x ) = env::var( "CICADA_GITBR_PREFIX" ) {
-                    prompt.push_str( &x);
+                    p.push_str( &x);
                 }
 
                 let _len_default: i32 = 32;
@@ -26216,23 +26142,23 @@ pub mod prompts
                 }
 
                 if branch.len() as i32 <= len_max {
-                    prompt.push_str( &branch );
+                    p.push_str( &branch );
                 } else {
                     let l = branch.len() as i32;
                     let offset = (l - len_max + 2) as usize;
                     let branch_short = format!( "..{}", &branch[offset..]);
-                    prompt.push_str( &branch_short );
+                    p.push_str( &branch_short );
                 }
                 if let Ok( x ) = env::var( "CICADA_GITBR_SUFFIX" ) {
-                    prompt.push_str( &x);
+                    p.push_str( &x);
                 }
-                apply_reset( prompt );
+                apply_reset( p );
             }
         }
 
-        pub fn apply_cwd( prompt: &mut String)
+        pub fn apply_cwd( p: &mut String)
         {
-            let _current_dir = match env::current_dir()
+            let cd = match env::current_dir()
             {
                 Ok( x ) => x,
                 Err( e ) =>
@@ -26242,7 +26168,7 @@ pub mod prompts
                 }
             };
 
-            let current_dir = match _current_dir.to_str()
+            let cd = match cd.to_str()
             {
                 Some( x ) => x,
                 None =>
@@ -26252,9 +26178,9 @@ pub mod prompts
                 }
             };
             
-            let _tokens: Vec<&str> = current_dir.split('/').collect();
+            let k: Vec<&str> = cd.split('/').collect();
 
-            let last = match _tokens.last()
+            let l = match k.last()
             {
                 Some( x ) => x,
                 None =>
@@ -26263,30 +26189,31 @@ pub mod prompts
                 }
             };
 
-            let home = get::user_home();
-            let pwd = if last.is_empty() { "/" }
-            else if current_dir == home { "~" }
+            let h = get::user_home();
+            let q = if l.is_empty() { "/" }
+            else if cd == home { "~" }
 
-            else { last };
+            else { l };
 
-            prompt.push_str( pwd ); }
+            p.push_str( q ); 
+        }
 
-        pub fn apply_hostname( prompt: &mut String)
+        pub fn apply_hostname( p: &mut String)
         {
-            let hostname = tools::get_hostname();
-            prompt.push_str( &hostname ); }
+            let h = get::hostname();
+            p.push_str( &h ); 
+        }
 
-        pub fn apply_newline( prompt: &mut String) { prompt.push('\n'); }
+        pub fn apply_newline( p: &mut String) { p.push('\n'); }
 
-        pub fn apply_pyenv( prompt: &mut String)
-       
+        pub fn apply_pyenv( p: &mut String)       
         {
             if let Ok( x ) = env::var( "VIRTUAL_ENV" )
             {
                 if !x.is_empty()
                 {
-                    let _tokens: Vec<&str> = x.split('/').collect();
-                    let env_name = match _tokens.last()
+                    let k: Vec<&str> = x.split('/').collect();
+                    let e = match k.last()
                     {
                         Some( x ) => x,
                         None =>
@@ -26295,98 +26222,103 @@ pub mod prompts
                         }
                     };
 
-                    apply_blue_b( prompt );
-                    prompt.push('(');
-                    prompt.push_str(env_name );
-                    prompt.push(')');
-                    apply_reset( prompt );
+                    apply_blue_b( p );
+                    p.push('(');
+                    p.push_str( e );
+                    p.push(')');
+                    apply_reset( p );
                 }
             }
         }
 
-        pub fn apply_preset_item( sh: &shell::Shell, prompt: &mut String, token:&str )
+        pub fn apply_preset_item( s: &shell::Shell, p: &mut String, t:&str )
         {
-            match token.to_ascii_lowercase().as_ref()
+            match t.to_ascii_lowercase().as_ref()
             {
-                "black" => apply_black( prompt ),
-                "black_b" => apply_black_b( prompt ),
-                "black_bg" => apply_black_bg( prompt ),
-                "blink" => apply_blink( prompt ),
-                "blue" => apply_blue( prompt ),
-                "blue_b" => apply_blue_b( prompt ),
-                "blue_bg" => apply_blue_bg( prompt ),
-                "blue_l" => apply_blue_l( prompt ),
-                "blue_l_bg" => apply_blue_l_bg( prompt ),
-                "bold" => apply_bold( prompt ),
-                "color_status" => apply_color_status( sh, prompt ),
-                "cwd" => apply_cwd( prompt ),
-                "cyan" => apply_cyan( prompt ),
-                "cyan_bg" => apply_cyan_bg( prompt ),
-                "cyan_l" => apply_cyan_l( prompt ),
-                "cyan_l_bg" => apply_cyan_l_bg( prompt ),
-                "default" => apply_default( prompt ),
-                "default_bg" => apply_default_bg( prompt ),
-                "dim" => apply_dim( prompt ),
-                "end_seq" => apply_end_seq( prompt ),
-                "esc" => apply_esc( prompt ),
-                "gitbr" => apply_gitbr( prompt ),
-                "gray_d" => apply_gray_d( prompt ),
-                "gray_d_bg" => apply_gray_d_bg( prompt ),
-                "gray_l" => apply_gray_l( prompt ),
-                "gray_l_bg" => apply_gray_l_bg( prompt ),
-                "green" => apply_green( prompt ),
-                "green_b" => apply_green_b( prompt ),
-                "green_bg" => apply_green_bg( prompt ),
-                "green_l" => apply_green_l( prompt ),
-                "green_l_bg" => apply_green_l_bg( prompt ),
-                "hidden" => apply_hidden( prompt ),
-                "hostname" => apply_hostname( prompt ),
-                "magenta" => apply_magenta( prompt ),
-                "magenta_bg" => apply_magenta_bg( prompt ),
-                "magenta_l" => apply_magenta_l( prompt ),
-                "magenta_l_bg" => apply_magenta_l_bg( prompt ),
-                "newline" => apply_newline( prompt ),
-                "red" => apply_red( prompt ),
-                "red_b" => apply_red_b( prompt ),
-                "red_bg" => apply_red_bg( prompt ),
-                "red_l" => apply_red_l( prompt ),
-                "red_l_bg" => apply_red_l_bg( prompt ),
-                "reset" => apply_reset( prompt ),
-                "reset_blink" => apply_reset_blink( prompt ),
-                "reset_bold" => apply_reset_bold( prompt ),
-                "reset_dim" => apply_reset_dim( prompt ),
-                "reset_hidden" => apply_reset_hidden( prompt ),
-                "reset_reverse" => apply_reset_reverse( prompt ),
-                "reset_underlined" => apply_reset_underlined( prompt ),
-                "reverse" => apply_reverse( prompt ),
-                "seq" => apply_seq( prompt ),
-                "underlined" => apply_underlined( prompt ),
-                "user" => apply_user( prompt ),
-                "white" => apply_white( prompt ),
-                "white_b" => apply_white_b( prompt ),
-                "white_bg" => apply_white_bg( prompt ),
-                "yellow" => apply_yellow( prompt ),
-                "yellow_bg" => apply_yellow_bg( prompt ),
-                "yellow_l" => apply_yellow_l( prompt ),
-                "yellow_l_bg" => apply_yellow_l_bg( prompt ),
+                "black" => apply_black( p ),
+                "black_b" => apply_black_b( p ),
+                "black_bg" => apply_black_bg( p ),
+                "blink" => apply_blink( p ),
+                "blue" => apply_blue( p ),
+                "blue_b" => apply_blue_b( p ),
+                "blue_bg" => apply_blue_bg( p ),
+                "blue_l" => apply_blue_l( p ),
+                "blue_l_bg" => apply_blue_l_bg( p ),
+                "bold" => apply_bold( p ),
+                "color_status" => apply_color_status( s, p ),
+                "cwd" => apply_cwd( p ),
+                "cyan" => apply_cyan( p ),
+                "cyan_bg" => apply_cyan_bg( p ),
+                "cyan_l" => apply_cyan_l( p ),
+                "cyan_l_bg" => apply_cyan_l_bg( p ),
+                "default" => apply_default( p ),
+                "default_bg" => apply_default_bg( p ),
+                "dim" => apply_dim( p ),
+                "end_seq" => apply_end_seq( p ),
+                "esc" => apply_esc( p ),
+                "gitbr" => apply_gitbr( p ),
+                "gray_d" => apply_gray_d( p ),
+                "gray_d_bg" => apply_gray_d_bg( p ),
+                "gray_l" => apply_gray_l( p ),
+                "gray_l_bg" => apply_gray_l_bg( p ),
+                "green" => apply_green( p ),
+                "green_b" => apply_green_b( p ),
+                "green_bg" => apply_green_bg( p ),
+                "green_l" => apply_green_l( p ),
+                "green_l_bg" => apply_green_l_bg( p ),
+                "hidden" => apply_hidden( p ),
+                "hostname" => apply_hostname( p ),
+                "magenta" => apply_magenta( p ),
+                "magenta_bg" => apply_magenta_bg( p ),
+                "magenta_l" => apply_magenta_l( p ),
+                "magenta_l_bg" => apply_magenta_l_bg( p ),
+                "newline" => apply_newline( p ),
+                "red" => apply_red( p ),
+                "red_b" => apply_red_b( p ),
+                "red_bg" => apply_red_bg( p ),
+                "red_l" => apply_red_l( p ),
+                "red_l_bg" => apply_red_l_bg( p ),
+                "reset" => apply_reset( p ),
+                "reset_blink" => apply_reset_blink( p ),
+                "reset_bold" => apply_reset_bold( p ),
+                "reset_dim" => apply_reset_dim( p ),
+                "reset_hidden" => apply_reset_hidden( p ),
+                "reset_reverse" => apply_reset_reverse( p ),
+                "reset_underlined" => apply_reset_underlined( p ),
+                "reverse" => apply_reverse( p ),
+                "seq" => apply_seq( p ),
+                "underlined" => apply_underlined( p ),
+                "user" => apply_user( p ),
+                "white" => apply_white( p ),
+                "white_b" => apply_white_b( p ),
+                "white_bg" => apply_white_bg( p ),
+                "yellow" => apply_yellow( p ),
+                "yellow_bg" => apply_yellow_bg( p ),
+                "yellow_l" => apply_yellow_l( p ),
+                "yellow_l_bg" => apply_yellow_l_bg( p ),
                 _ => (),
             }
         }
     }
 
-    pub fn read( sh: &shell::Shell) -> String
+    pub fn read( s:&shell::Shell ) -> String
     {
         let ps = read_string();
-        let mut prompt = render( sh, &ps );
-        if let Some((w, _h ) ) = libs::term_size::dimensions()
+        let mut p = render( s, &ps );
+
+        if let Some((w, _ ) ) = dimensions()
         {
-            if get::prompt_len( &prompt ) > (w / 2) as i32
-                && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#)
+            if get::prompt_len( &p ) > (w / 2) as i32
+            && !regex::contains( &ps, r#"(?i)\$\{?newline.\}?"#)
             {
-                prompt.push_str( "\n$ " );
+                p.push_str( "\n$ " );
             }
-        } else {
         }
+        
+        else
+        {
+        }
+
         prompt
     }
 }
@@ -28058,10 +27990,10 @@ pub mod regex
                 #[inline] pub fn memory_usage(&self) -> usize {
                     use ::mem::size_of as s;
 
-                    s::<GroupInfoInner>()
-                        + self.0.slot_ranges.len() * s::<(SmallIndex, SmallIndex)>()
-                        + self.0.name_to_index.len() * s::<CaptureNameMap>()
-                        + self.0.index_to_name.len() * s::<Vec<Option<Arc<str>>>>()
+                    slice::<GroupInfoInner>()
+                        + self.0.slot_ranges.len() * slice::<(SmallIndex, SmallIndex)>()
+                        + self.0.name_to_index.len() * slice::<CaptureNameMap>()
+                        + self.0.index_to_name.len() * slice::<Vec<Option<Arc<str>>>>()
                         + self.0.memory_extra
                 }
             }
@@ -28354,17 +28286,17 @@ pub mod regex
                         return None;
                     }
                     
-                    if self.current_pid.is_none() {
-                        self.current_pid = Some(self.pids.next()?);
+                    if self.c_pid.is_none() {
+                        self.c_pid = Some(self.pids.next()?);
                     }
-                    let pid = self.current_pid.unwrap();
+                    let pid = self.c_pid.unwrap();
                     if self.names.is_none() {
                         self.names = Some(self.group_info.pattern_names(pid).enumerate());
                     }
                     let (group_index, name) = match self.names.as_mut().unwrap().next() {
                         Some((group_index, name)) => (group_index, name),
                         None => {
-                            self.current_pid = None;
+                            self.c_pid = None;
                             self.names = None;
                             return self.next();
                         }
@@ -29147,7 +29079,7 @@ pub mod regex
                         }
                         
                         remapper.remap(self);
-                        self.set_pattern_map(&new_matches).unwrap();
+                        self.s_pattern_map(&new_matches).unwrap();
                         self.special.set_max();
                         self.special.validate().expect("special state ranges should validate");
                         self.special
@@ -29233,7 +29165,7 @@ pub mod regex
                         }
                         
                         remapper.remap(self);
-                        self.set_pattern_map(&matches)?;
+                        self.s_pattern_map(&matches)?;
                         self.special.set_max();
                         self.special.validate().expect("special state ranges should validate");
                         self.special
@@ -29595,8 +29527,8 @@ pub mod regex
                     }
 
                     fn swap( &mut self, id1: StateID, id2: StateID) {
-                        assert!( self.is_valid(id1), "invalid 'id1' state: {id1:?}");
-                        assert!( self.is_valid(id2), "invalid 'id2' state: {id2:?}");
+                        assert!( self.is_valid(id1), "invalid 'id1' s: {id1:?}");
+                        assert!( self.is_valid(id2), "invalid 'id2' s: {id2:?}");
                         for b in 0..self.classes.alphabet_len() {
                             self.table.swap(id1.as_usize() + b, id2.as_usize() + b);
                         }
@@ -32964,7 +32896,7 @@ pub mod regex
                                 "state with EOI transition to quit state is illegal",
                             ));
                         }
-                        Ok(state)
+                        Ok(s)
                     }
                     
                     fn states( &self ) -> StateIter<'_, T> { StateIter { trans: self, id: DEAD.as_usize() } }
@@ -33406,7 +33338,7 @@ pub mod regex
                         }
                         let state = self.trans.state(StateID::new_unchecked( self.id));
                         self.id = self.id + state.write_to_len();
-                        Some(state)
+                        Some(s)
                     }
                 }
 
@@ -33564,7 +33496,9 @@ pub mod regex
                         Ok( () )
                     }
                 }
-                struct StateMut<'a> {
+
+                struct StateMut<'a> 
+                {
 
                     id: StateID,
                     is_match: bool,
@@ -33585,11 +33519,11 @@ pub mod regex
                 }
                 
                 impl<'a> fmt::Debug for StateMut<'a>
-               
-               
                 {
-                    fn fmt( &self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                        let state = State {
+                    fn fmt( &self, f: &mut fmt::Formatter<'_>) -> fmt::Result 
+                    {
+                        let s = State 
+                        {
                             id: self.id,
                             is_match: self.is_match,
                             ntrans: self.ntrans,
@@ -33598,51 +33532,28 @@ pub mod regex
                             pattern_ids: self.pattern_ids,
                             accel: self.accel,
                         };
-                        fmt::Debug::fmt(&state, f)
+
+                        fmt::Debug::fmt(&s, f)
                     }
                 }
-
-                //
-                //
-
-                //
-
+                
                 #[derive( Debug )]
-                struct Seen {
-                    set: alloc::collections::BTreeSet<StateID>,
-                    #[cfg(not(feature = "alloc"))]
-                    set: ::marker::PhantomData<StateID>,
+                struct Seen 
+                {
+                    s: ::collections::BTreeSet<StateID>,
                 }
 
                 impl Seen
                 {
-                    fn new() -> Seen {
-                        Seen { set: alloc::collections::BTreeSet::new() }
+                    fn new() -> Seen
+                    {
+                        Seen { s: alloc::collections::BTreeSet::new() }
                     }
                     
-                    fn insert( &mut self, id: StateID) {
-                        self.set.insert(id);
-                    }
+                    fn insert( &mut self, i: StateID) { self.s.insert(i); }
                     
-                    fn contains(&self, id: &StateID) -> bool {
-                        self.set.contains(id)
-                    }
+                    fn contains(&self, i: &StateID) -> bool { self.s.contains(i) }
                 }
-
-                #[cfg(not(feature = "alloc"))]
-                impl Seen
-                {
-                    fn new() -> Seen {
-                        Seen { set: ::marker::PhantomData }
-                    }
-                    
-                    fn insert( &mut self, _id: StateID) {}
-                    
-                    fn contains(&self, _id: &StateID) -> bool {
-                        true
-                    }
-                }
-
                 /*
                 #[inline( always )]
                 fn binary_search_ranges(ranges: &[u8], needle: u8) -> Option<usize> {
@@ -33732,7 +33643,7 @@ pub mod regex
                     pub fn add( &mut self, accel: Accel) {
                         self.accels.extend_from_slice(&accel.as_accel_tys());
                         let l = self.len();
-                        self.set_len(l + 1);
+                        self.s_len(l + 1);
                     }
                     
                     fn set_len( &mut self, n: usize) {
@@ -34095,7 +34006,7 @@ pub mod regex
                     #[inline] fn try_search_overlapping_fwd(
                         &self,
                         input: &Input<'_>,
-                        state: &mut OverlappingState,
+                        s: &mut OverlappingState,
                     ) -> Result<(), MatchError>
                     {
                         let utf8empty = self.has_empty() && self.is_utf8();
@@ -34116,7 +34027,7 @@ pub mod regex
                     #[inline] fn try_search_overlapping_rev(
                         &self,
                         input: &Input<'_>,
-                        state: &mut OverlappingState,
+                        s: &mut OverlappingState,
                     ) -> Result<(), MatchError>
                     {
                         let utf8empty = self.has_empty() && self.is_utf8();
@@ -34247,13 +34158,13 @@ pub mod regex
                     #[inline] fn try_search_overlapping_fwd(
                         &self,
                         input: &Input<'_>,
-                        state: &mut OverlappingState,
+                        s: &mut OverlappingState,
                     ) -> Result<(), MatchError> { (**self).try_search_overlapping_fwd(input, state) }
 
                     #[inline] fn try_search_overlapping_rev(
                         &self,
                         input: &Input<'_>,
-                        state: &mut OverlappingState,
+                        s: &mut OverlappingState,
                     ) -> Result<(), MatchError> { (**self).try_search_overlapping_rev(input, state) }
 
                     #[inline] fn try_which_overlapping_matches(
@@ -34353,7 +34264,7 @@ pub mod regex
 
                 #[cold] #[inline( never )] fn skip_empty_utf8_splits_overlapping<F>(
                     input: &Input<'_>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                     mut search: F,
                 ) -> Result<(), MatchError> where
                 F: FnMut(&Input<'_>, &mut OverlappingState) -> Result<(), MatchError>,
@@ -35559,7 +35470,7 @@ pub mod regex
                 pub fn find_overlapping_fwd<A: Automaton + ?Sized>(
                     dfa: &A,
                     input: &Input<'_>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                 ) -> Result<(), MatchError> {
                     state.mat = None;
                     if input.is_done() {
@@ -35582,7 +35493,7 @@ pub mod regex
                     dfa: &A,
                     input: &Input<'_>,
                     pre:Option<&'_ Prefilter>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                 ) -> Result<(), MatchError> {
 
                     let universal_start = dfa.universal_start_state(Anchored::No).is_some();
@@ -35674,7 +35585,7 @@ pub mod regex
                 pub fn find_overlapping_rev<A: Automaton + ?Sized>(
                     dfa: &A,
                     input: &Input<'_>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                 ) -> Result<(), MatchError> {
                     state.mat = None;
                     if input.is_done() {
@@ -36469,7 +36380,7 @@ pub mod regex
                         &self,
                         cache: &mut Cache,
                         input: &Input<'_>,
-                        state: &mut OverlappingState,
+                        s: &mut OverlappingState,
                     ) -> Result<(), MatchError>
                     {
                         let utf8empty = self.get_nfa().has_empty() && self.get_nfa().is_utf8();
@@ -36491,7 +36402,7 @@ pub mod regex
                         &self,
                         cache: &mut Cache,
                         input: &Input<'_>,
-                        state: &mut OverlappingState,
+                        s: &mut OverlappingState,
                     ) -> Result<(), MatchError>
                     {
                         let utf8empty = self.get_nfa().has_empty() && self.get_nfa().is_utf8();
@@ -36808,7 +36719,7 @@ pub mod regex
                             current = self.saved_state_id();
                         }
 
-                        self.set_transition(current, unit, next);
+                        self.s_transition(current, unit, next);
                         Ok(next)
                     }
                     #[cold]
@@ -36835,7 +36746,7 @@ pub mod regex
                         let id = self
                             .cache_start_one(nfa_start_id, start)
                             .map_err(StartError::cache)?;
-                        self.set_start_state(anchored, start, id);
+                        self.s_start_state(anchored, start, id);
                         Ok(id)
                     }
                     ///
@@ -36893,7 +36804,7 @@ pub mod regex
                     
                     fn add_state(
                         &mut self,
-                        state: State,
+                        s: State,
                         idmap: impl Fn(LazyStateID) -> LazyStateID,
                     ) -> Result<LazyStateID, CacheError> {
                         if !self.as_ref().state_fits_in_cache(&state) {
@@ -36910,7 +36821,7 @@ pub mod regex
                         if !self.dfa.quitset.is_empty() && !self.as_ref().is_sentinel(id) {
                             let quit_id = self.as_ref().quit_id();
                             for b in self.dfa.quitset.iter() {
-                                self.set_transition(id, alphabet::Unit::u8(b), quit_id);
+                                self.s_transition(id, alphabet::Unit::u8(b), quit_id);
                             }
                         }
                         self.cache.memory_usage_state += state.memory_usage();
@@ -37013,9 +36924,9 @@ pub mod regex
                         assert_eq!(unk_id, self.as_ref().unknown_id());
                         assert_eq!(dead_id, self.as_ref().dead_id());
                         assert_eq!(quit_id, self.as_ref().quit_id());
-                        self.set_all_transitions(unk_id, unk_id);
-                        self.set_all_transitions(dead_id, dead_id);
-                        self.set_all_transitions(quit_id, quit_id);
+                        self.s_all_transitions(unk_id, unk_id);
+                        self.s_all_transitions(dead_id, dead_id);
+                        self.s_all_transitions(quit_id, quit_id);
                         self.cache.states_to_id.insert(dead, dead_id);
                     }
                     
@@ -37033,7 +36944,7 @@ pub mod regex
 
                     fn set_all_transitions( &mut self, from: LazyStateID, to: LazyStateID) {
                         for unit in self.dfa.classes.representatives(..) {
-                            self.set_transition(from, unit, to);
+                            self.s_transition(from, unit, to);
                         }
                     }
 
@@ -37143,14 +37054,14 @@ pub mod regex
                         id < self.cache.trans.len() && id % self.dfa.stride() == 0
                     }
 
-                    fn state_fits_in_cache(&self, state: &State) -> bool {
+                    fn state_fits_in_cache(&self, s: &State) -> bool {
                         let needed = self.cache.memory_usage()
                             + self.memory_usage_for_one_more_state(state.memory_usage());
                             
                         needed <= self.dfa.cache_capacity
                     }
                     
-                    fn state_builder_fits_in_cache(&self, state: &StateBuilderNFA) -> bool {
+                    fn state_builder_fits_in_cache(&self, s: &StateBuilderNFA) -> bool {
                         let needed = self.cache.memory_usage()
                             + self.memory_usage_for_one_more_state(state.as_bytes().len());
                             
@@ -37175,7 +37086,7 @@ pub mod regex
                 enum StateSaver {
 
                     None,
-                    ToSave { id: LazyStateID, state: State },
+                    ToSave { id: LazyStateID, s: State },
                     Saved(LazyStateID),
                 }
 
@@ -37516,7 +37427,7 @@ pub mod regex
 
                 #[cold] #[inline( never )] fn skip_empty_utf8_splits_overlapping<F>(
                     input: &Input<'_>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                     mut search: F,
                 ) -> Result<(), MatchError> where
                 F: FnMut(&Input<'_>, &mut OverlappingState) -> Result<(), MatchError>,
@@ -38484,7 +38395,7 @@ pub mod regex
                     dfa: &DFA,
                     cache: &mut Cache,
                     input: &Input<'_>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                 ) -> Result<(), MatchError> {
                     state.mat = None;
                     if input.is_done() {
@@ -38508,7 +38419,7 @@ pub mod regex
                     cache: &mut Cache,
                     input: &Input<'_>,
                     pre:Option<&'_ Prefilter>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                 ) -> Result<(), MatchError> {
 
                     let universal_start = dfa.get_nfa().look_set_prefix_any().is_empty();
@@ -38597,7 +38508,7 @@ pub mod regex
                     dfa: &DFA,
                     cache: &mut Cache,
                     input: &Input<'_>,
-                    state: &mut OverlappingState,
+                    s: &mut OverlappingState,
                 ) -> Result<(), MatchError> {
                     state.mat = None;
                     if input.is_done() {
@@ -43789,7 +43700,7 @@ pub mod regex
                             &mut self,
                             start_id: StateID,
                         ) -> Result<PatternID, BuildError> {
-                            let pid = self.current_pattern_id();
+                            let pid = self.c_pattern_id();
                             self.start_pattern[pid] = start_id;
                             self.pattern_id = None;
                             Ok(pid)
@@ -43835,7 +43746,7 @@ pub mod regex
                             name:Option<Arc<str>>,
                         ) -> Result<StateID, BuildError>
                         {
-                            let p = self.current_pattern_id();
+                            let p = self.c_pattern_id();
                             let group_index = match SmallIndex::try_from(group_index) {
                                 Err(_) => { return Err(BuildError::invalid_capture_index(group_index)) }
                                 Ok(group_index) => group_index,
@@ -43863,7 +43774,7 @@ pub mod regex
                             i: u32,
                         ) -> Result<StateID, BuildError>
                         {
-                            let p = self.current_pattern_id();
+                            let p = self.c_pattern_id();
                             let i = match SmallIndex::try_from( i )
                             {
                                 Err(_) => { return Err(BuildError::invalid_capture_index( i )) }
@@ -43877,7 +43788,7 @@ pub mod regex
 
                         pub fn add_match(&mut self) -> Result<StateID, BuildError>
                         {
-                            let pattern_id = self.current_pattern_id();
+                            let pattern_id = self.c_pattern_id();
                             let s = self.add(State::Match { pattern_id })?;
                             Ok( s )
                         }
@@ -44707,7 +44618,7 @@ pub mod regex
                     #[derive( Debug )]
                     struct Utf8Compiler<'a> {
                         builder: &'a mut Builder,
-                        state: &'a mut Utf8State,
+                        s: &'a mut Utf8State,
                         target: StateID,
                     }
 
@@ -44743,7 +44654,7 @@ pub mod regex
                     impl<'a> Utf8Compiler<'a> {
                         fn new(
                             builder: &'a mut Builder,
-                            state: &'a mut Utf8State,
+                            s: &'a mut Utf8State,
                         ) -> Result<Utf8Compiler<'a>, BuildError> {
                             let target = builder.add_empty()?;
                             state.clear();
@@ -45132,7 +45043,7 @@ pub mod regex
                             &self.group_info
                         }
 
-                        pub fn add(&mut self, state: State) -> StateID {
+                        pub fn add(&mut self, s: State) -> StateID {
                             match state {
                                 State::ByteRange { ref trans } => {
                                     self.byte_class_set.set_range(trans.start, trans.end);
@@ -45159,7 +45070,7 @@ pub mod regex
 
                             let id = StateID::new(self.states.len()).unwrap();
                             self.memory_extra += state.memory_usage();
-                            self.states.push(state);
+                            self.states.push(s);
                             id
                         }
                         
@@ -45504,7 +45415,7 @@ pub mod regex
                             unit.as_u8().map_or(false, |byte| self.matches_byte(byte))
                         }
                         pub fn matches_byte(&self, byte: u8) -> bool {
-                            self.start <= byte && byte <= self.end
+                            self.start <= byte && byte <= self.e
                         }
                     }
 
@@ -45513,7 +45424,7 @@ pub mod regex
                             use regex::automata::escape::DebugByte;
 
                             let Transition { start, end, next } = *self;
-                            if self.start == self.end {
+                            if self.start == self.e {
                                 write!(f, "{:?} => {:?}", DebugByte(a), next.as_usize())
                             } else {
                                 write!(
@@ -46293,7 +46204,7 @@ pub mod regex
 
             
             #[derive( Clone, Copy, Eq, Hash, PartialEq, PartialOrd, Ord)]
-            #[repr(transparent)]
+            #[repr( transparent )]
             pub struct NonMaxUsize(NonZeroUsize);
 
             impl NonMaxUsize {
@@ -46320,7 +46231,7 @@ pub mod regex
             #[derive(
                 Clone, Copy, Debug, Default, Eq, Hash, PartialEq, PartialOrd, Ord,
             )]
-            #[repr(transparent)]
+            #[repr( transparent )]
             pub struct SmallIndex(u32);
 
             impl SmallIndex {
@@ -46713,11 +46624,11 @@ pub mod regex
             }
            
             #[derive( Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd, Ord)]
-            #[repr(transparent)]
+            #[repr( transparent )]
             pub struct PatternID(SmallIndex);
 
             #[derive( Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd, Ord)]
-            #[repr(transparent)]
+            #[repr( transparent )]
             pub struct StateID(SmallIndex);
 
             index_type_impls!(PatternID, PatternIDError, PatternIDIter, WithPatternIDIter);
@@ -46782,22 +46693,22 @@ pub mod regex
                 
                 
                 #[inline] pub fn span<S: Into<Span>>(mut self, span: S) -> Input<'h> {
-                    self.set_span(span);
+                    self.s_span(span);
                     self
                 }
 
                 #[inline] pub fn range<R: RangeBounds<usize>>(mut self, r: R) -> Input<'h> {
-                    self.set_range(range);
+                    self.s_range(range);
                     self
                 }
                 
                 #[inline] pub fn anchored(mut self, mode: Anchored) -> Input<'h> {
-                    self.set_anchored(mode);
+                    self.s_anchored(mode);
                     self
                 }
                 
                 #[inline] pub fn earliest(mut self, yes: bool) -> Input<'h> {
-                    self.set_earliest(yes);
+                    self.s_earliest(yes);
                     self
                 }
                 
@@ -46826,7 +46737,7 @@ pub mod regex
                         Bound::Excluded(&i) => i,
                         Bound::Unbounded => self.haystack().len(),
                     };
-                    self.set_span(Span { start, e });
+                    self.s_span(Span { start, e });
                 }
 
                 
@@ -46835,7 +46746,7 @@ pub mod regex
 
                 
                 #[inline] pub fn set_start(&mut self, start: usize) {
-                    self.set_span(Span { start, ..self.get_span() });
+                    self.s_span(Span { start, ..self.get_span() });
                 }
 
                 
@@ -46844,7 +46755,7 @@ pub mod regex
 
                 
                 #[inline] pub fn set_end(&mut self, end: usize) {
-                    self.set_span(Span { end, ..self.get_span() });
+                    self.s_span(Span { end, ..self.get_span() });
                 }
 
                 
@@ -46945,26 +46856,26 @@ pub mod regex
                 #[inline] pub fn range(&self) -> Range<usize> { Range::from(*self) }
 
                 #[inline] pub fn is_empty(&self) -> bool {
-                    self.start >= self.end
+                    self.start >= self.e
                 }
 
                 #[inline] pub fn len(&self) -> usize {
-                    self.end.saturating_sub(self.start)
+                    self.e.saturating_sub(self.start)
                }
                 
                 #[inline] pub fn contains(&self, offset: usize) -> bool {
-                    !self.is_empty() && self.start <= offset && offset <= self.end
+                    !self.is_empty() && self.start <= offset && offset <= self.e
                }
                 
                 #[inline] pub fn offset(&self, offset: usize) -> Span {
-                    Span { start: self.start + offset, end: self.end + offset }
+                    Span { start: self.start + offset, end: self.e + offset }
                 }
             }
 
             impl ::fmt::Debug for Span
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
-                    write!(f, "{}..{}", self.start, self.end)
+                    write!(f, "{}..{}", self.start, self.e)
                 }
             }
 
@@ -47008,14 +46919,14 @@ pub mod regex
             impl PartialEq<Range<usize>> for Span 
             {
                 #[inline] fn eq(&self, r: &Range<usize>) -> bool {
-                    self.start == r.start && self.end == r.end
+                    self.start == r.start && self.e == r.end
                 }
             }
 
             impl PartialEq<Span> for Range<usize> 
             {
                 #[inline] fn eq(&self, span: &Span) -> bool {
-                    self.start == span.start && self.end == span.end
+                    self.start == span.start && self.e == span.end
                 }
             }
 
@@ -48560,13 +48471,13 @@ pub mod regex
 
                 #[inline] pub fn start( &self ) -> usize { self.start }
 
-                #[inline] pub fn end( &self ) -> usize { self.end }
+                #[inline] pub fn end( &self ) -> usize { self.e }
 
-                #[inline] pub fn is_empty( &self ) -> bool { self.start == self.end }
+                #[inline] pub fn is_empty( &self ) -> bool { self.start == self.e }
 
-                #[inline] pub fn len( &self ) -> usize { self.end - self.start }
+                #[inline] pub fn len( &self ) -> usize { self.e - self.start }
                 
-                #[inline] pub fn range( &self ) -> ::ops::Range<usize> { self.start..self.end }
+                #[inline] pub fn range( &self ) -> ::ops::Range<usize> { self.start..self.e }
 
                 #[inline] pub fn as_bytes( &self ) -> &'h [u8] { &self.haystack[self.range()] }
 
@@ -48580,7 +48491,7 @@ pub mod regex
                     use regex::automata::escape::DebugHaystack;
                     let mut fmt = f.debug_struct("Match");
                     fmt.field("start", &self.start)
-                    .field("end", &self.end)
+                    .field("end", &self.e)
                     .field("bytes", &DebugHaystack(&self.as_bytes()));
                     fmt.finish()
                 }
@@ -49233,13 +49144,13 @@ pub mod regex
             {
                 #[inline] pub fn start( &self ) -> usize { self.start }
                 
-                #[inline] pub fn end( &self ) -> usize { self.end }
+                #[inline] pub fn end( &self ) -> usize { self.e }
 
-                #[inline] pub fn is_empty( &self ) -> bool { self.start == self.end }
+                #[inline] pub fn is_empty( &self ) -> bool { self.start == self.e }
 
-                #[inline] pub fn len( &self ) -> usize { self.end - self.start }
+                #[inline] pub fn len( &self ) -> usize { self.e - self.start }
                 
-                #[inline] pub fn range( &self ) -> ::ops::Range<usize> { self.start..self.end }
+                #[inline] pub fn range( &self ) -> ::ops::Range<usize> { self.start..self.e }
 
                 #[inline] pub fn as_str( &self ) -> &'h str { &self.haystack[self.range()] }
 
@@ -49251,7 +49162,7 @@ pub mod regex
                 fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
                     f.debug_struct("Match")
                         .field("start", &self.start)
-                        .field("end", &self.end)
+                        .field("end", &self.e)
                         .field("string", &self.as_str())
                         .finish()
                 }
@@ -50676,7 +50587,7 @@ pub mod regex
                         let (kind, lhs) = match stack.pop() {
                             Some(ClassState::Op { kind, lhs }) => (kind, lhs),
                             Some(state @ ClassState::Open { .. }) => {
-                                stack.push(state);
+                                stack.push(s);
                                 return rhs;
                             }
                             None => unreachable!(),
@@ -52790,20 +52701,20 @@ pub mod regex
             impl ::fmt::Debug for Span
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
-                    write!(f, "Span({:?}, {:?})", self.start, self.end)
+                    write!(f, "Span({:?}, {:?})", self.start, self.e)
                 }
             }
 
             impl Ord for Span 
             {
                 fn cmp(&self, o: &Span) -> Ordering {
-                    (&self.start, &self.end).cmp(&(&o.start, &o.end))
+                    (&self.start, &self.e).cmp(&(&o.start, &o.end))
                 }
             }
 
             impl PartialOrd for Span 
             {
-                fn partial_cmp(&self, o: &Span) -> Option<Ordering> { Some( self.cmp(other)) }
+                fn partial_cmp(&self, o: &Span) -> Option<Ordering> { Some( self.cmp(o)) }
             }
 
             #[derive( Clone, Copy, Eq, PartialEq )]
@@ -52834,7 +52745,7 @@ pub mod regex
 
             impl PartialOrd for Position 
             {
-                fn partial_cmp(&self, o: &Position) -> Option<Ordering> { Some( self.cmp(other)) }
+                fn partial_cmp(&self, o: &Position) -> Option<Ordering> { Some( self.cmp(o)) }
             }
 
             impl Span            
@@ -52856,9 +52767,9 @@ pub mod regex
                     Span { end: pos, ..self }
                 }
 
-                pub fn is_one_line( &self ) -> bool { self.start.line == self.end.line }
+                pub fn is_one_line( &self ) -> bool { self.start.line == self.e.line }
 
-                pub fn is_empty( &self ) -> bool { self.start.offset == self.end.offset }
+                pub fn is_empty( &self ) -> bool { self.start.offset == self.e.offset }
             }
 
             impl Position 
@@ -53316,7 +53227,7 @@ pub mod regex
             impl ClassSetRange 
             {
 
-                pub fn is_valid( &self ) -> bool { self.start.c <= self.end.c }
+                pub fn is_valid( &self ) -> bool { self.start.c <= self.e.c }
             }
 
             #[derive( Clone, Debug, Eq, PartialEq )]
@@ -54212,8 +54123,8 @@ pub mod regex
                     pub fn symmetric_difference( &mut self, o: &IntervalSet<I>) {
 
                         let mut intersection = self.clone();
-                        intersection.intersect(other);
-                        self.union(other);
+                        intersection.intersect(o);
+                        self.union(o);
                         self.difference(&intersection);
                     }
                     
@@ -54312,7 +54223,7 @@ pub mod regex
                     }
 
                     fn union(&self, o: &Self) -> Option<Self> {
-                        if !self.is_contiguous(other) {
+                        if !self.is_contiguous(o) {
                             return None;
                         }
                         let lower = cmp::min( self.lower(), o.lower());
@@ -54332,10 +54243,10 @@ pub mod regex
                     }
                     
                     fn difference(&self, o: &Self) -> (Option<Self>, Option<Self>) {
-                        if self.is_subset(other) {
+                        if self.is_subset(o) {
                             return (None, None);
                         }
-                        if self.is_intersection_empty(other) {
+                        if self.is_intersection_empty(o) {
                             return (Some( self.clone()), None);
                         }
                         let add_lower = o.lower() > self.lower();
@@ -54777,7 +54688,7 @@ pub mod regex
                     }
                     
                     #[inline] pub fn cross_forward( &mut self, o: &mut Seq) {
-                        let (lits1, lits2) = match self.cross_preamble(other) {
+                        let (lits1, lits2) = match self.cross_preamble(o) {
                             None => return,
                             Some((lits1, lits2)) => (lits1, lits2),
                         };
@@ -54804,7 +54715,7 @@ pub mod regex
                     }
                     
                     #[inline] pub fn cross_reverse( &mut self, o: &mut Seq) {
-                        let (lits1, lits2) = match self.cross_preamble(other) {
+                        let (lits1, lits2) = match self.cross_preamble(o) {
                             None => return,
                             Some((lits1, lits2)) => (lits1, lits2),
                         };
@@ -55762,7 +55673,7 @@ pub mod regex
                             Ast::Group(ref x) => {
                                 let old_flags = x
                                     .flags()
-                                    .map(|ast| self.set_flags(ast))
+                                    .map(|ast| self.s_flags(ast))
                                     .unwrap_or_else(|| self.flags());
                                 self.push(HirFrame::Group { old_flags });
                             }
@@ -55782,7 +55693,7 @@ pub mod regex
                         match *ast {
                             Ast::Empty(_) => { self.push(HirFrame::Expr(Hir::empty())); }
                             Ast::Flags(ref x) => {
-                                self.set_flags(&x.flags);
+                                self.s_flags(&x.flags);
                                 //
 
                                 self.push(HirFrame::Expr(Hir::empty()));
@@ -57224,44 +57135,44 @@ pub mod regex
                 }
 
                 pub fn push( &mut self, r: ClassUnicodeRange) {
-                    self.set.push(range);
+                    self.s.push(range);
                 }
                 
-                pub fn iter( &self ) -> ClassUnicodeIter<'_> { ClassUnicodeIter( self.set.iter()) }
+                pub fn iter( &self ) -> ClassUnicodeIter<'_> { ClassUnicodeIter( self.s.iter()) }
 
-                pub fn ranges( &self ) -> &[ClassUnicodeRange] { self.set.intervals() }
+                pub fn ranges( &self ) -> &[ClassUnicodeRange] { self.s.intervals() }
 
                 pub fn case_fold_simple(&mut self) {
-                    self.set
+                    self.s
                         .case_fold_simple()
                         .expect("unicode-case feature must be enabled");
                 }
 
                 pub fn try_case_fold_simple(
                     &mut self,
-                ) -> ::result::Result<(), CaseFoldError> { self.set.case_fold_simple() }
+                ) -> ::result::Result<(), CaseFoldError> { self.s.case_fold_simple() }
 
                 pub fn negate(&mut self) {
-                    self.set.negate();
+                    self.s.negate();
                 }
 
                 pub fn union( &mut self, o: &ClassUnicode) {
-                    self.set.union(&o.set);
+                    self.s.union(&o.set);
                 }
 
                 pub fn intersect( &mut self, o: &ClassUnicode) {
-                    self.set.intersect(&o.set);
+                    self.s.intersect(&o.set);
                 }
 
                 pub fn difference( &mut self, o: &ClassUnicode) {
-                    self.set.difference(&o.set);
+                    self.s.difference(&o.set);
                 }
 
                 pub fn symmetric_difference( &mut self, o: &ClassUnicode) {
-                    self.set.symmetric_difference(&o.set);
+                    self.s.symmetric_difference(&o.set);
                 }
 
-                pub fn is_ascii( &self ) -> bool { self.set.intervals().last().map_or(true, |r| r.end <= '\x7F') }
+                pub fn is_ascii( &self ) -> bool { self.s.intervals().last().map_or(true, |r| r.end <= '\x7F') }
 
                 pub fn minimum_len( &self ) -> Option<usize> {
                     let first = self.ranges().get(0)?;
@@ -57320,10 +57231,10 @@ pub mod regex
                     } else {
                         format!("0x{:X}", u32::from( self.start))
                     };
-                    let e = if !self.end.is_whitespace() && !self.end.is_control() {
-                        self.end.to_string()
+                    let e = if !self.e.is_whitespace() && !self.e.is_control() {
+                        self.e.to_string()
                     } else {
-                        format!("0x{:X}", u32::from( self.end))
+                        format!("0x{:X}", u32::from( self.e))
                     };
                     f.debug_struct("ClassUnicodeRange")
                         .field("start", &start)
@@ -57338,14 +57249,14 @@ pub mod regex
 
                 #[inline] fn lower( &self ) -> char { self.start }
                 
-                #[inline] fn upper( &self ) -> char { self.end }
+                #[inline] fn upper( &self ) -> char { self.e }
                 
                 #[inline] fn set_lower( &mut self, bound: char) {
                     self.start = bound;
                 }
                 
                 #[inline] fn set_upper( &mut self, bound: char) {
-                    self.end = bound;
+                    self.e = bound;
                 }
 
                 fn case_fold_simple(
@@ -57353,10 +57264,10 @@ pub mod regex
                     ranges: &mut Vec<ClassUnicodeRange>,
                 ) -> Result<(), unicode::CaseFoldError> {
                     let mut folder = unicode::SimpleCaseFolder::new()?;
-                    if !folder.overlaps( self.start, self.end) {
+                    if !folder.overlaps( self.start, self.e) {
                         return Ok( () );
                     }
-                    let (a, end) = (u32::from( self.start), u32::from( self.end));
+                    let (a, end) = (u32::from( self.start), u32::from( self.e));
                     for cp in (a..=end).filter_map(char::from_u32) {
                         for &cp_folded in folder.mapping(cp) {
                             ranges.push(ClassUnicodeRange::new(cp_folded, cp_folded));
@@ -57375,10 +57286,10 @@ pub mod regex
 
                 pub fn start( &self ) -> char { self.start }
 
-                pub fn end( &self ) -> char { self.end }
+                pub fn end( &self ) -> char { self.e }
 
                 pub fn len( &self ) -> usize {
-                    let diff = 1 + u32::from( self.end) - u32::from( self.start);
+                    let diff = 1 + u32::from( self.e) - u32::from( self.start);
                     usize::try_from(diff).expect("char class l fits in usize")
                 }
             }
@@ -57401,38 +57312,38 @@ pub mod regex
                 }
 
                 pub fn push( &mut self, r: ClassBytesRange) {
-                    self.set.push(range);
+                    self.s.push(range);
                 }
                 
-                pub fn iter( &self ) -> ClassBytesIter<'_> { ClassBytesIter( self.set.iter()) }
+                pub fn iter( &self ) -> ClassBytesIter<'_> { ClassBytesIter( self.s.iter()) }
 
-                pub fn ranges( &self ) -> &[ClassBytesRange] { self.set.intervals() }
+                pub fn ranges( &self ) -> &[ClassBytesRange] { self.s.intervals() }
 
                 pub fn case_fold_simple(&mut self) {
-                    self.set.case_fold_simple().expect("ASCII case folding never fails");
+                    self.s.case_fold_simple().expect("ASCII case folding never fails");
                 }
 
                 pub fn negate(&mut self) {
-                    self.set.negate();
+                    self.s.negate();
                 }
 
                 pub fn union( &mut self, o: &ClassBytes) {
-                    self.set.union(&o.set);
+                    self.s.union(&o.set);
                 }
 
                 pub fn intersect( &mut self, o: &ClassBytes) {
-                    self.set.intersect(&o.set);
+                    self.s.intersect(&o.set);
                 }
 
                 pub fn difference( &mut self, o: &ClassBytes) {
-                    self.set.difference(&o.set);
+                    self.s.difference(&o.set);
                 }
 
                 pub fn symmetric_difference( &mut self, o: &ClassBytes) {
-                    self.set.symmetric_difference(&o.set);
+                    self.s.symmetric_difference(&o.set);
                 }
 
-                pub fn is_ascii( &self ) -> bool { self.set.intervals().last().map_or(true, |r| r.end <= 0x7F) }
+                pub fn is_ascii( &self ) -> bool { self.s.intervals().last().map_or(true, |r| r.end <= 0x7F) }
 
                 pub fn minimum_len( &self ) -> Option<usize> {
                     if self.ranges().is_empty() {
@@ -57494,14 +57405,14 @@ pub mod regex
 
                 #[inline] fn lower( &self ) -> u8 { self.start }
                 
-                #[inline] fn upper( &self ) -> u8 { self.end }
+                #[inline] fn upper( &self ) -> u8 { self.e }
                 
                 #[inline] fn set_lower( &mut self, bound: u8) {
                     self.start = bound;
                 }
                 
                 #[inline] fn set_upper( &mut self, bound: u8) {
-                    self.end = bound;
+                    self.e = bound;
                 }
                 fn case_fold_simple(
                     &self,
@@ -57509,13 +57420,13 @@ pub mod regex
                 ) -> Result<(), unicode::CaseFoldError> {
                     if !ClassBytesRange::new(b'a', b'z').is_intersection_empty(self) {
                         let lower = cmp::m( self.start, b'a');
-                        let upper = cmp::min( self.end, b'z');
+                        let upper = cmp::min( self.e, b'z');
                         ranges.push(ClassBytesRange::new(lower - 32, upper - 32));
                     }
                     
                     if !ClassBytesRange::new(b'A', b'Z').is_intersection_empty(self) {
                         let lower = cmp::m( self.start, b'A');
-                        let upper = cmp::min( self.end, b'Z');
+                        let upper = cmp::min( self.e, b'Z');
                         ranges.push(ClassBytesRange::new(lower + 32, upper + 32));
                     }
                     Ok( () )
@@ -57531,10 +57442,10 @@ pub mod regex
 
                 pub fn start( &self ) -> u8 { self.start }
 
-                pub fn end( &self ) -> u8 { self.end }
+                pub fn end( &self ) -> u8 { self.e }
 
                 pub fn len( &self ) -> usize {
-                    usize::from( self.end.checked_sub( self.start).unwrap())
+                    usize::from( self.e.checked_sub( self.start).unwrap())
                         .checked_add(1)
                         .unwrap()
                 }
@@ -57545,7 +57456,7 @@ pub mod regex
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result {
                     f.debug_struct("ClassBytesRange")
                         .field("start", &crate::debug::Byte( self.start))
-                        .field("end", &crate::debug::Byte( self.end))
+                        .field("end", &crate::debug::Byte( self.e))
                         .finish()
                 }
             }
@@ -58150,7 +58061,7 @@ pub mod regex
                }
                 
                 #[inline] pub fn set_subtract( &mut self, o: LookSet) {
-                    *self = self.subtract(other);
+                    *self = self.subtract(o);
                 }
 
                 #[inline] pub fn union(self, o: LookSet) -> LookSet {
@@ -58158,7 +58069,7 @@ pub mod regex
                }
                 
                 #[inline] pub fn set_union( &mut self, o: LookSet) {
-                    *self = self.union(other);
+                    *self = self.union(o);
                 }
 
                 #[inline] pub fn intersect(self, o: LookSet) -> LookSet {
@@ -58166,7 +58077,7 @@ pub mod regex
                }
                 
                 #[inline] pub fn set_intersect( &mut self, o: LookSet) {
-                    *self = self.intersect(other);
+                    *self = self.intersect(o);
                 }
                 
                 #[inline] pub fn read_repr(s: &[u8]) -> LookSet {
@@ -58208,12 +58119,12 @@ pub mod regex
                 type Item = Look;
 
                 #[inline] fn next(&mut self) -> Option<Look> {
-                    if self.set.is_empty() {
+                    if self.s.is_empty() {
                         return None;
                     }
-                    let bit = u16::try_from( self.set.bits.trailing_zeros()).unwrap();
+                    let bit = u16::try_from( self.s.bits.trailing_zeros()).unwrap();
                     let look = Look::from_repr(1 << bit)?;
-                    self.set = self.set.remove(look);
+                    self.s = self.s.remove(look);
                     Some(look)
                 }
             }
@@ -59033,7 +58944,7 @@ pub mod shell
     }
 }
 
-pub mod s
+pub mod slice
 {
     pub use std::slice::{ * };
 }
@@ -59177,15 +59088,11 @@ pub mod str
             unsafe
             {
                 let l = self.len();
-
                 self.d.set_len( 0 );
-
                 let p = self.as_ptr();
-
-                let s = s::from_raw_parts( p, l );
+                let s = slice::from_raw_parts( p, l );
                 let s = str::from_utf8_unchecked( s );
-
-                Drain { iter: s.chars() }
+                Drain { i: s.chars() }
             }
         }
 
@@ -59700,7 +59607,7 @@ pub mod str
 
         #[inline] pub fn as_bytes( &self ) -> &[u8] {
             let p = &self.buf as *const _ as *const u8;
-            unsafe { s::from_raw_parts( p, A::size() ) }
+            unsafe { slice::from_raw_parts( p, A::size() ) }
         }
 
         #[inline] pub fn into_buf( self ) -> A { self.buf
@@ -59761,8 +59668,7 @@ pub mod system
         *,
     };
     /*
-    nix v0.0.0
-    
+    nix v0.0.0    
     use nix::uni::{read, write};
     */
     pub mod api
@@ -60305,13 +60211,13 @@ pub mod system
             pub fn insert( &mut self, fd:RawFd )
             {
                 assert_fd_valid( fd  );
-                unsafe { FD_SET( fd.into(), &mut self.set ) };
+                unsafe { FD_SET( fd.into(), &mut self.s ) };
             }
 
             pub fn contains( &self, fd: BorrowedFd<'fd> ) -> bool
             {
                 assert_fd_valid( fd.as_raw_fd() );
-                FD_ISSET( fd.as_raw_fd(), &self.set )
+                FD_ISSET( fd.as_raw_fd(), &self.s )
             }
 
             pub fn highest( &self ) -> Option<BorrowedFd<'_>> { self.fds( None ).next_back() }
@@ -60338,7 +60244,7 @@ pub mod system
             {
                 for i in &mut self.range {
                     let borrowed_i = unsafe { BorrowedFd::borrow_raw( i as RawFd ) };
-                    if self.set.contains( borrowed_i ) {
+                    if self.s.contains( borrowed_i ) {
                         return Some( borrowed_i );
                     }
                 }
@@ -60358,7 +60264,7 @@ pub mod system
             {
                 while let Some( i ) = self.range.next_back() {
                     let borrowed_i = unsafe { BorrowedFd::borrow_raw( i as RawFd ) };
-                    if self.set.contains( borrowed_i ) {
+                    if self.s.contains( borrowed_i ) {
                         return Some( borrowed_i );
                     }
                 }
@@ -62200,9 +62106,9 @@ pub mod system
 
                 pub fn set_theme( &mut self, theme: Theme )
                 {
-                    self.set_fg( theme.fg );
-                    self.set_bg( theme.bg );
-                    self.set_style( theme.style );
+                    self.s_fg( theme.fg );
+                    self.s_bg( theme.bg );
+                    self.s_style( theme.style );
                 }
 
                 pub fn clear_screen( &mut self )
@@ -62308,7 +62214,7 @@ pub mod system
                             let mut pos = self.cursor;
 
                             for _ in 0..rem {
-                                self.set_cell( pos, ch );
+                                self.s_cell( pos, ch );
                                 pos.column += 1;
                             }
 
@@ -62319,12 +62225,12 @@ pub mod system
                         self.try_cursor()?;
 
                         let mut pos = self.cursor;
-                        self.set_cell( pos, ch );
+                        self.s_cell( pos, ch );
 
                         for _ in 1..width 
                         {
                             pos.column += 1;
-                            self.set_cell( pos, ' ' );
+                            self.s_cell( pos, ' ' );
                         }
 
                         self.cursor.column += width;
@@ -63334,7 +63240,7 @@ pub mod system
                 pub fn prepare( &self, config: PrepareConfig ) -> io::Result<PrepareState>
                 { self.0.prepare( config ).map( PrepareState ) }
 
-                pub fn restore( &self, state: PrepareState ) -> io::Result<()>
+                pub fn restore( &self, s: PrepareState ) -> io::Result<()>
                 { self.0.restore( state.0 ) }
 
                 pub fn wait_event( &self, timeout:Option<Duration> ) -> io::Result<bool>
@@ -63427,7 +63333,7 @@ pub mod system
                 ) -> io::Result<PrepareState>
                 { self.0.prepare_with_lock( &mut writer.0, config ).map( PrepareState ) }
 
-                pub fn restore( &mut self, state: PrepareState ) -> io::Result<()>
+                pub fn restore( &mut self, s: PrepareState ) -> io::Result<()>
                 { self.0.restore( state.0 ) }
 
                 pub fn restore_with_lock
@@ -63697,7 +63603,7 @@ pub mod system
                         let screen = Screen
                         {
                             term: term,
-                            state: Some( state ),
+                            s: Some( state ),
                             writer: Mutex::new( Writer
                             {
                                 buffer: ScreenBuffer::new( s ),
@@ -64133,7 +64039,7 @@ pub mod system
                     pub fn prepare( &self, config: PrepareConfig ) -> io::Result<PrepareState>
                     { self.lock_reader().prepare( config ) }
 
-                    pub fn restore( &self, state: PrepareState ) -> io::Result<()>
+                    pub fn restore( &self, s: PrepareState ) -> io::Result<()>
                     { self.lock_reader().restore( state ) }
 
                     pub fn clear_screen( &self ) -> io::Result<()>
@@ -64226,7 +64132,7 @@ pub mod system
                 impl Drop for Terminus
                 {
                     fn drop( &mut self ) {
-                        if let Err( e ) = self.set_cursor_mode( CursorMode::Normal ) {
+                        if let Err( e ) = self.s_cursor_mode( CursorMode::Normal ) {
                             eprintln!( "failed to restore terminus: {}", e );
                         }
 
@@ -64311,7 +64217,7 @@ pub mod system
                         }
                     }
 
-                    pub fn restore( &mut self, state: PrepareState ) -> io::Result<()>
+                    pub fn restore( &mut self, s: PrepareState ) -> io::Result<()>
                     {
                         let mut writer = self.term.lock_writer();
                         self.restore_with_lock( &mut writer, state )
@@ -64664,7 +64570,7 @@ pub mod system
                             Ok( () )
                         } else {
                             if let Some( fg ) = fg {
-                                self.set_fg_color( fg )?;
+                                self.s_fg_color( fg )?;
                             } else {
                                 self.clear_fg()?;
                             }
@@ -64680,7 +64586,7 @@ pub mod system
                             Ok( () )
                         } else {
                             if let Some( bg ) = bg {
-                                self.set_bg_color( bg )?;
+                                self.s_bg_color( bg )?;
                             } else {
                                 self.clear_bg()?;
                             }
@@ -64725,8 +64631,8 @@ pub mod system
                             let bg = self.writer.bg;
                             self.clear_attributes()?;
                             self.add_style( new_style )?;
-                            self.set_fg( fg )?;
-                            self.set_bg( bg )?;
+                            self.s_fg( fg )?;
+                            self.s_bg( bg )?;
                         } else {
                             if remove.contains( Style::ITALIC ) {
                                 expand_opt!( self, c::ExitItalicsMode )?;
@@ -64751,8 +64657,8 @@ pub mod system
                             let fg = self.writer.fg;
                             let bg = self.writer.bg;
                             self.clear_attributes()?;
-                            self.set_fg( fg )?;
-                            self.set_bg( bg )?;
+                            self.s_fg( fg )?;
+                            self.s_bg( bg )?;
                             self.add_style( style )?;
                         } else {
                             self.add_style( add )?;
@@ -64764,7 +64670,7 @@ pub mod system
 
                     pub fn set_theme( &mut self, theme: Theme ) -> io::Result<()> 
                     {
-                        self.set_attrs( theme.fg, theme.bg, theme.style )
+                        self.s_attrs( theme.fg, theme.bg, theme.style )
                     }
 
                     pub fn set_attrs( &mut self, fg:Option<Color>, bg:Option<Color>, style: Style ) -> io::Result<()>
@@ -64774,9 +64680,9 @@ pub mod system
                             self.clear_attributes()?;
                         }
 
-                        self.set_style( style )?;
-                        self.set_fg( fg )?;
-                        self.set_bg( bg )?;
+                        self.s_style( style )?;
+                        self.s_fg( fg )?;
+                        self.s_bg( bg )?;
 
                         Ok( () )
                     }
@@ -64787,8 +64693,8 @@ pub mod system
                         let style = self.writer.cur_style;
 
                         self.clear_attributes()?;
-                        self.set_bg( bg )?;
-                        self.set_style( style )
+                        self.s_bg( bg )?;
+                        self.s_style( style )
                     }
 
                     fn clear_bg( &mut self ) -> io::Result<()> 
@@ -64797,8 +64703,8 @@ pub mod system
                         let style = self.writer.cur_style;
 
                         self.clear_attributes()?;
-                        self.set_fg( fg )?;
-                        self.set_style( style )
+                        self.s_fg( fg )?;
+                        self.s_style( style )
                     }
 
                     fn set_fg_color( &mut self, fg: Color ) -> io::Result<()> 
@@ -64926,7 +64832,7 @@ pub mod system
                     pub fn write_styled( &mut self,
                             fg:Option<Color>, bg:Option<Color>, style: Style, text:&str )
                             -> io::Result<()> {
-                        self.set_attrs( fg, bg, style )?;
+                        self.s_attrs( fg, bg, style )?;
 
                         self.write_str( text )?;
                         self.clear_attributes()
@@ -65880,6 +65786,57 @@ pub mod system
         }
     }
 
+    pub mod fcntl
+    {
+        use ::
+        {
+            *,
+        };
+
+        libc_bitflags!
+        (
+            /// Configuration options for opened files.
+            pub struct OFlag: c_int
+            {
+                O_ACCMODE;
+                O_ALT_IO;
+                O_APPEND;
+                O_ASYNC;
+                O_CLOEXEC;
+                O_CREAT;
+                O_DIRECTORY;
+                O_DSYNC;
+                O_EXCL;
+                O_FSYNC;
+                O_NOCTTY;
+                O_NDELAY;
+                O_NOFOLLOW;
+                O_NONBLOCK;
+                O_PATH;
+                O_RDONLY;
+                O_RDWR;
+                O_RSYNC;
+                O_SHLOCK;
+                O_TRUNC;
+                O_WRONLY;
+            }
+        );
+        
+        pub fn open<P: ?Sized + NixPath>( p: &P, o: OFlag, m: Mode ) -> Result<os::fd::OwnedFd> 
+        {
+            use os::fd::FromRawFd;
+
+            let f = p.with_nix_path(|c| unsafe 
+            {
+                libc::open(c.as_ptr(), o.bits(), m.bits() as c_uint)
+            })?;
+
+            Errno::result(f)?;
+            
+            Ok( unsafe { os::fd::OwnedFd::from_raw_fd(f)  } )
+        }
+    }
+
     pub mod function
     {
         /*!
@@ -66677,7 +66634,7 @@ pub mod system
             fn write_str( &self, line:&str ) -> io::Result<()> { self.lock_writer_erase()?.write_str( line ) }
 
             pub fn set_prompt( &self, prompt:&str ) -> io::Result<()>
-            { self.lock_reader().set_prompt( prompt ) }
+            { self.lock_reader().set_prompt( p ) }
 
             pub fn set_buffer( &self, buf:&str ) -> io::Result<()> { self.lock_reader().set_buffer( buf ) }
 
@@ -67277,7 +67234,7 @@ pub mod system
                         } */
                         
                         else if is::control( ch ) {
-                            self.end_search_history()?;
+                            self.e_search_history()?;
                             self.read.macro_buffer.insert( 0, ch );
                         } else {
                             {
@@ -67301,7 +67258,7 @@ pub mod system
                             'q' | 'Q' |
                             'n' | 'N' | DELETE => {
                                 self.write.write_str( "\n" )?;
-                                self.end_page_completions()?;
+                                self.e_page_completions()?;
                             }
                             _ => ()
                         }
@@ -67319,7 +67276,7 @@ pub mod system
                             'q' | 'Q' |
                             'n' | 'N' | DELETE => {
                                 self.write.clear_prompt()?;
-                                self.end_page_completions()?;
+                                self.e_page_completions()?;
                             }
                             _ => ()
                         }
@@ -67349,7 +67306,7 @@ pub mod system
 
             pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> { self.write.set_cursor( pos ) }
 
-            pub fn set_prompt( &mut self, prompt:&str ) -> io::Result<()> { self.write.set_prompt( prompt ) }
+            pub fn set_prompt( &mut self, prompt:&str ) -> io::Result<()> { self.write.set_prompt( p ) }
 
             pub fn screen_size( &self ) -> Size { self.write.screen_size }
 
@@ -68084,7 +68041,7 @@ pub mod system
                         self.write.prompt_type = PromptType::CompleteMore;
                         self.write.draw_prompt()?;
                     } else {
-                        self.end_page_completions()?;
+                        self.e_page_completions()?;
                     }
                 }
 
@@ -68114,7 +68071,7 @@ pub mod system
                         self.write.prompt_type = PromptType::CompleteMore;
                         self.write.draw_prompt()?;
                     } else {
-                        self.end_page_completions()?;
+                        self.e_page_completions()?;
                     }
                 }
 
@@ -68156,7 +68113,7 @@ pub mod system
                 let new = ( old + n ) % m;
 
                 if old != new {
-                    self.set_completion( new )?;
+                    self.s_completion( new )?;
                 }
 
                 Ok( () )
@@ -68173,7 +68130,7 @@ pub mod system
                     old - n
                 };
 
-                self.set_completion( new )
+                self.s_completion( new )
             }
 
             fn set_completion( &mut self, new: usize ) -> io::Result<()> {
@@ -68216,7 +68173,7 @@ pub mod system
                 self.expire_blink()?;
 
                 if self.is_paging_completions() {
-                    self.end_page_completions()?;
+                    self.e_page_completions()?;
                 }
 
                 self.write.screen_size = size;
@@ -68519,7 +68476,7 @@ pub mod system
             pub last_resize:Option<system::terminal::Size>,
             pub last_signal:Option<system::terminal::Signal>,
             variables: Variables,
-            pub state: InputState,
+            pub s: InputState,
             pub max_wait_duration:Option<Duration>,
         }
 
@@ -68579,7 +68536,7 @@ pub mod system
                 res
             }
 
-            pub fn cancel_read_line( &mut self ) -> io::Result<()> { self.end_read_line() }
+            pub fn cancel_read_line( &mut self ) -> io::Result<()> { self.e_read_line() }
 
             fn initialize_read_line( &mut self ) -> io::Result<()> {
                 if !self.lock.is_active() {
@@ -68698,7 +68655,7 @@ pub mod system
                 }
             }
 
-            pub fn set_prompt( &mut self, prompt:&str ) -> io::Result<()> { self.prompter().set_prompt( prompt ) }
+            pub fn set_prompt( &mut self, prompt:&str ) -> io::Result<()> { self.prompter().set_prompt( p ) }
 
             pub fn add_history( &self, line: String ) {
                 if !self.lock.is_active() {
@@ -68995,7 +68952,7 @@ pub mod system
                     last_resize: None,
                     last_signal: None,
                     variables: Variables::default(),
-                    state: InputState::Inactive,
+                    s: InputState::Inactive,
                     max_wait_duration: None,
                 };
 
@@ -69129,7 +69086,7 @@ pub mod system
                             self.evaluate_directives( term, else_group );
                         }
                     }
-                    Directive::SetVariable( name, v ) => { self.set_variable( &name, &value ); }
+                    Directive::SetVariable( name, v ) => { self.s_variable( &name, &value ); }
                 }
             }
 
@@ -69149,7 +69106,7 @@ pub mod system
             { match_name( term.name(), v ) }
         }
 
-        pub struct BindingIter<'a>( s::Iter<'a, ( Cow<'static, str>, Command )> );
+        pub struct BindingIter<'a>( slice::Iter<'a, ( Cow<'static, str>, Command )> );
 
         impl<'a> ExactSizeIterator for BindingIter<'a> {}
 
@@ -69249,6 +69206,36 @@ pub mod system
             {
                 ( dur, None ) | ( None, dur ) => dur,
                 ( Some( dur ), Some( m ) ) => Some( dur.min( m ) ),
+            }
+        }
+    }
+
+    pub mod stat
+    {
+        use ::
+        {
+            *,
+        };
+
+        libc_bitflags!
+        {
+            pub struct Mode: mode_t
+            {
+                S_IRWXU;
+                S_IRUSR;
+                S_IWUSR;
+                S_IXUSR;
+                S_IRWXG;
+                S_IRGRP;
+                S_IWGRP;
+                S_IXGRP;
+                S_IRWXO;
+                S_IROTH;
+                S_IWOTH;
+                S_IXOTH;
+                S_ISUID as mode_t;
+                S_ISGID as mode_t;
+                S_ISVTX as mode_t;
             }
         }
     }
@@ -69498,9 +69485,9 @@ pub mod system
                 block_signals: bool,
                 report_signals: SignalSet
             ) -> io::Result<Term::PrepareState>;
-            fn restore( &mut self, state: Term::PrepareState ) -> io::Result<()>;
+            fn restore( &mut self, s: Term::PrepareState ) -> io::Result<()>;
 
-            unsafe fn restore_with_lock( &mut self, lock:&mut dyn TerminalWriter<Term>, state: Term::PrepareState )
+            unsafe fn restore_with_lock( &mut self, lock:&mut dyn TerminalWriter<Term>, s: Term::PrepareState )
             -> io::Result<()>;
             fn read( &mut self, buf:&mut Vec<u8> ) -> io::Result<Option<RawRead>>;
             fn wait_for_input( &mut self, timeout:Option<Duration> ) -> io::Result<bool>;
@@ -69586,13 +69573,13 @@ pub mod system
                 } )
             }
 
-            fn restore( &mut self, state: PrepareState ) -> io::Result<()> { self.restore( state ) }
+            fn restore( &mut self, s: PrepareState ) -> io::Result<()> { self.restore( state ) }
 
             unsafe fn restore_with_lock
             ( 
                 &mut self,
                 lock:&mut dyn TerminalWriter<DefaultTerminal>,
-                state: PrepareState
+                s: PrepareState
             ) -> io::Result<()>
             {
                 let lock = DefaultTerminal::cast_writer( lock );
@@ -69626,7 +69613,7 @@ pub mod system
             
             fn move_to_first_column( &mut self ) -> io::Result<()> { self.move_to_first_column() }
             
-            fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()> { self.set_cursor_mode( mode ) }
+            fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()> { self.s_cursor_mode( mode ) }
             
             fn write( &mut self, s:&str ) -> io::Result<()> { self.write_str( s ) }
             
@@ -70097,7 +70084,7 @@ pub mod system
                     self.clear_full_prompt()?;
                 }
 
-                self.d.set_prompt( prompt );
+                self.d.set_prompt( p );
 
                 if redraw {
                     self.draw_prompt()?;
@@ -70335,7 +70322,7 @@ pub mod system
 
             pub fn continue_history_search( &mut self, reverse: bool ) -> io::Result<()> {
                 if let Some( idx ) = self.find_history_search( reverse ) {
-                    self.set_history_entry( Some( idx ) );
+                    self.s_history_entry( Some( idx ) );
 
                     let pos = self.cursor;
                     let e = self.buffer.len();
@@ -70391,7 +70378,7 @@ pub mod system
                 self.clear_prompt()?;
 
                 let ent = self.prev_history;
-                self.set_history_entry( ent );
+                self.s_history_entry( ent );
                 self.cursor = self.prev_cursor;
 
                 self.prompt_type = PromptType::Normal;
@@ -70404,7 +70391,7 @@ pub mod system
 
                 if let Some( ( idx, pos ) ) = next_match {
                     self.search_failed = false;
-                    self.set_history_entry( idx );
+                    self.s_history_entry( idx );
                     self.cursor = pos;
                 } else {
                     self.search_failed = true;
@@ -70594,7 +70581,7 @@ pub mod system
             pub fn select_history_entry( &mut self, new:Option<usize> ) -> io::Result<()> {
                 if new != self.history_index {
                     self.move_to( 0 )?;
-                    self.set_history_entry( new );
+                    self.s_history_entry( new );
                     self.new_buffer()?;
                 }
 
@@ -71014,7 +71001,7 @@ pub mod system
             }
 
             pub fn set_prompt( &mut self, prompt:&str ) {
-                let ( pre, suf ) = match prompt.rfind( '\n' ) {
+                let ( pre, suf ) = match p.rfind( '\n' ) {
                     Some( pos ) => ( &prompt[..pos + 1], &prompt[pos + 1..] ),
                     None => ( &prompt[..0], prompt )
                 };
@@ -71375,7 +71362,7 @@ pub mod tuples
         error::{ OverError },
         fmt::{ Format },
         result::{ OverResult },
-        s::{ Iter },
+        slice::{ Iter },
         sync::{ Arc },
         types::{ Type },
         vs::{ Value },
@@ -72044,10 +72031,10 @@ pub mod types
         let mut cmd = Vec::new();
         let mut cmds = Vec::new();
 
-        for token in tokens
+        for t in tokens
         {
-            let sep = &token.0;
-            let v = &token.1;
+            let sep = &t.0;
+            let v = &t.1;
             
             if sep.is_empty() && v == "|"
             {
@@ -72057,7 +72044,7 @@ pub mod types
                 cmd = Vec::new();
             }
 
-            else { cmd.push( token.clone() ); }
+            else { cmd.push( t.clone() ); }
         }
         
         if cmd.is_empty() { return Vec::new(); }
@@ -72260,7 +72247,7 @@ pub mod unicode
             };
             /*
             */
-            pub const BY_NAME:&'static [(&'static str, &'static [(char,char)])] = &[ ("Cased_Letter", CASED_LETTER),("Close_Punctuation", CLOSE_PUNCTUATION),("Connector_Punctuation", CONNECTOR_PUNCTUATION),("Control", CONTROL),("Currency_Symbol", CURRENCY_SYMBOL),("Dash_Punctuation", DASH_PUNCTUATION),("Decimal_Number", DECIMAL_NUMBER),("Enclosing_Mark", ENCLOSING_MARK),("Final_Punctuation", FINAL_PUNCTUATION),("Format", FORMAT),("Initial_Punctuation", INITIAL_PUNCTUATION),("Letter", LETTER),("Letter_Number", LETTER_NUMBER),("Line_Separator", LINE_SEPARATOR),("Lowercase_Letter", LOWERCASE_LETTER),("Mark", MARK),("Math_Symbol", MATH_SYMBOL),("Modifier_Letter", MODIFIER_LETTER),("Modifier_Symbol", MODIFIER_SYMBOL),("Nonspacing_Mark", NONSPACING_MARK),("Number", NUMBER),("Open_Punctuation", OPEN_PUNCTUATION),("Other", OTHER),("Other_Letter", OTHER_LETTER),("Other_Number", OTHER_NUMBER),("Other_Punctuation", OTHER_PUNCTUATION),("Other_Symbol", OTHER_SYMBOL),("Paragraph_Separator", PARAGRAPH_SEPARATOR),("Private_Use", PRIVATE_USE),("Punctuation", PUNCTUATION),("Separator", SEPARATOR),("Space_Separator", SPACE_SEPARATOR),("Spacing_Mark", SPACING_MARK),("Symbol", SYMBOL),("Titlecase_Letter", TITLECASE_LETTER),("Unassigned", UNASSIGNED),("Uppercase_Letter", UPPERCASE_LETTER) ];
+            pub const BY_NAME:&'static [(&'static str, &'static [(char,char)])] = &[ ("Cased_Letter", CASED_LETTER),("Close_Punctuation", CLOSE_PUNCTUATION),("Connector_Punctuation", CONNECTOR_PUNCTUATION),("Control", CONTROL),("Currency_Symbol", CURRENCY_SYMBOL),("Dash_Punctuation", DASH_PUNCTUATION),("Decimal_Number", DECIMAL_NUMBER),("Enclosing_Mark", ENCLOSING_MARK),("Final_Punctuation", FINAL_PUNCTUATION),("Format", FORMAT),("Initial_Punctuation", INITIAL_PUNCTUATION),("Letter", LETTER),("Letter_Number", LETTER_NUMBER),("Line_Separator", LINE_SEPARATOR),("Lowercase_Letter", LOWERCASE_LETTER),("Mark", MARK),("Math_Symbol", MATH_SYMBOL),("Modifier_Letter", MODIFIER_LETTER),("Modifier_Symbol", MODIFIER_SYMBOL),("Nonspacing_Mark", NONSPACING_MARK),("Number", NUMBER),("Open_Punctuation", OPEN_PUNCTUATION),("Other", o),("Other_Letter", OTHER_LETTER),("Other_Number", OTHER_NUMBER),("Other_Punctuation", OTHER_PUNCTUATION),("Other_Symbol", OTHER_SYMBOL),("Paragraph_Separator", PARAGRAPH_SEPARATOR),("Private_Use", PRIVATE_USE),("Punctuation", PUNCTUATION),("Separator", SEPARATOR),("Space_Separator", SPACE_SEPARATOR),("Spacing_Mark", SPACING_MARK),("Symbol", SYMBOL),("Titlecase_Letter", TITLECASE_LETTER),("Unassigned", UNASSIGNED),("Uppercase_Letter", UPPERCASE_LETTER) ];
             pub const CASED_LETTER:&'static [(char,char)] = &[ ('A','Z'),('a','z'),('µ','µ'),('À','Ö'),('Ø','ö'),('ø','ƺ'),('Ƽ','ƿ'),('Ǆ','ʓ'),('ʕ','ʯ'),('Ͱ','ͳ'),('Ͷ','ͷ'),('ͻ','ͽ'),('Ϳ','Ϳ'),('Ά','Ά'),('Έ','Ί'),('Ό','Ό'),('Ύ','Ρ'),('Σ','ϵ'),('Ϸ','ҁ'),('Ҋ','ԯ'),('Ա','Ֆ'),('ՠ','ֈ'),('Ⴀ','Ⴥ'),('Ⴧ','Ⴧ'),('Ⴭ','Ⴭ'),('ა','ჺ'),('ჽ','ჿ'),('Ꭰ','Ᏽ'),('ᏸ','ᏽ'),('ᲀ','ᲊ'),('Ა','Ჺ'),('Ჽ','Ჿ'),('ᴀ','ᴫ'),('ᵫ','ᵷ'),('ᵹ','ᶚ'),('Ḁ','ἕ'),('Ἐ','Ἕ'),('ἠ','ὅ'),('Ὀ','Ὅ'),('ὐ','ὗ'),('Ὑ','Ὑ'),('Ὓ','Ὓ'),('Ὕ','Ὕ'),('Ὗ','ώ'),('ᾀ','ᾴ'),('ᾶ','ᾼ'),('ι','ι'),('ῂ','ῄ'),('ῆ','ῌ'),('ῐ','ΐ'),('ῖ','Ί'),('ῠ','Ῥ'),('ῲ','ῴ'),('ῶ','ῼ'),('ℂ','ℂ'),('ℇ','ℇ'),('ℊ','ℓ'),('ℕ','ℕ'),('ℙ','ℝ'),('ℤ','ℤ'),('Ω','Ω'),('ℨ','ℨ'),('K','ℭ'),('ℯ','ℴ'),('ℹ','ℹ'),('ℼ','ℿ'),('ⅅ','ⅉ'),('ⅎ','ⅎ'),('Ↄ','ↄ'),('Ⰰ','ⱻ'),('Ȿ','ⳤ'),('Ⳬ','ⳮ'),('Ⳳ','ⳳ'),('ⴀ','ⴥ'),('ⴧ','ⴧ'),('ⴭ','ⴭ'),('Ꙁ','ꙭ'),('Ꚁ','ꚛ'),('Ꜣ','ꝯ'),('ꝱ','ꞇ'),('Ꞌ','ꞎ'),('Ꞑ','ꟍ'),('Ꟑ','ꟑ'),('ꟓ','ꟓ'),('ꟕ','Ƛ'),('Ꟶ','ꟶ'),('ꟺ','ꟺ'),('ꬰ','ꭚ'),('ꭠ','ꭨ'),('ꭰ','ꮿ'),('ﬀ','ﬆ'),('ﬓ','ﬗ'),('Ａ','Ｚ'),('ａ','ｚ'),('𐐀','𐑏'),('𐒰','𐓓'),('𐓘','𐓻'),('𐕰','𐕺'),('𐕼','𐖊'),('𐖌','𐖒'),('𐖔','𐖕'),('𐖗','𐖡'),('𐖣','𐖱'),('𐖳','𐖹'),('𐖻','𐖼'),('𐲀','𐲲'),('𐳀','𐳲'),('𐵐','𐵥'),('𐵰','𐶅'),('𑢠','𑣟'),('𖹀','𖹿'),('𝐀','𝑔'),('𝑖','𝒜'),('𝒞','𝒟'),('𝒢','𝒢'),('𝒥','𝒦'),('𝒩','𝒬'),('𝒮','𝒹'),('𝒻','𝒻'),('𝒽','𝓃'),('𝓅','𝔅'),('𝔇','𝔊'),('𝔍','𝔔'),('𝔖','𝔜'),('𝔞','𝔹'),('𝔻','𝔾'),('𝕀','𝕄'),('𝕆','𝕆'),('𝕊','𝕐'),('𝕒','𝚥'),('𝚨','𝛀'),('𝛂','𝛚'),('𝛜','𝛺'),('𝛼','𝜔'),('𝜖','𝜴'),('𝜶','𝝎'),('𝝐','𝝮'),('𝝰','𝞈'),('𝞊','𝞨'),('𝞪','𝟂'),('𝟄','𝟋'),('𝼀','𝼉'),('𝼋','𝼞'),('𝼥','𝼪'),('𞤀','𞥃') ];
             pub const CLOSE_PUNCTUATION:&'static [(char,char)] = &[ (')',')'),(']',']'),('}','}'),('༻','༻'),('༽','༽'),('᚜','᚜'),('⁆','⁆'),('⁾','⁾'),('₎','₎'),('⌉','⌉'),('⌋','⌋'),('〉','〉'),('❩','❩'),('❫','❫'),('❭','❭'),('❯','❯'),('❱','❱'),('❳','❳'),('❵','❵'),('⟆','⟆'),('⟧','⟧'),('⟩','⟩'),('⟫','⟫'),('⟭','⟭'),('⟯','⟯'),('⦄','⦄'),('⦆','⦆'),('⦈','⦈'),('⦊','⦊'),('⦌','⦌'),('⦎','⦎'),('⦐','⦐'),('⦒','⦒'),('⦔','⦔'),('⦖','⦖'),('⦘','⦘'),('⧙','⧙'),('⧛','⧛'),('⧽','⧽'),('⸣','⸣'),('⸥','⸥'),('⸧','⸧'),('⸩','⸩'),('⹖','⹖'),('⹘','⹘'),('⹚','⹚'),('⹜','⹜'),('〉','〉'),('》','》'),('」','」'),('』','』'),('】','】'),('〕','〕'),('〗','〗'),('〙','〙'),('〛','〛'),('〞','〟'),('﴾','﴾'),('︘','︘'),('︶','︶'),('︸','︸'),('︺','︺'),('︼','︼'),('︾','︾'),('﹀','﹀'),('﹂','﹂'),('﹄','﹄'),('﹈','﹈'),('﹚','﹚'),('﹜','﹜'),('﹞','﹞'),('）','）'),('］','］'),('｝','｝'),('｠','｠'),('｣','｣') ];
             pub const CONNECTOR_PUNCTUATION:&'static [(char,char)] = &[ ('_','_'),('‿','⁀'),('⁔','⁔'),('︳','︴'),('﹍','﹏'),('＿','＿') ];
@@ -73976,20 +73963,20 @@ pub mod utf8
     impl ::fmt::Debug for Span 
    
     {
-        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result { write!(f, "Span({:?}, {:?})", self.start, self.end) }
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result { write!(f, "Span({:?}, {:?})", self.start, self.e) }
     }
     
     impl Ord for Span 
    
     {
         fn cmp(&self, o: &Span) -> Ordering {
-            (&self.start, &self.end).cmp(&(&o.start, &o.end)) }
+            (&self.start, &self.e).cmp(&(&o.start, &o.end)) }
     }
     
     impl PartialOrd for Span 
    
     {
-        fn partial_cmp(&self, o: &Span) -> Option<Ordering> { Some( self.cmp(other)) }
+        fn partial_cmp(&self, o: &Span) -> Option<Ordering> { Some( self.cmp(o)) }
     }
 
     #[derive( Clone, Copy, Eq, PartialEq )]    
@@ -74019,7 +74006,7 @@ pub mod utf8
     impl PartialOrd for Position 
    
     {
-        fn partial_cmp(&self, o: &Position) -> Option<Ordering> { Some( self.cmp(other)) }
+        fn partial_cmp(&self, o: &Position) -> Option<Ordering> { Some( self.cmp(o)) }
     }
     
     impl Span 
@@ -74038,8 +74025,8 @@ pub mod utf8
             Span { end: pos, ..self }
         }
 
-        pub fn is_one_line( &self ) -> bool { self.start.line == self.end.line }
-        pub fn is_empty( &self ) -> bool { self.start.offset == self.end.offset }
+        pub fn is_one_line( &self ) -> bool { self.start.line == self.e.line }
+        pub fn is_empty( &self ) -> bool { self.start.offset == self.e.offset }
     }
     
     impl Position 
@@ -74487,7 +74474,7 @@ pub mod utf8
     impl ClassSetRange 
     {
 
-        pub fn is_valid( &self ) -> bool { self.start.c <= self.end.c }
+        pub fn is_valid( &self ) -> bool { self.start.c <= self.e.c }
     }
 
     #[derive( Clone, Debug, Eq, PartialEq )]
@@ -76904,7 +76891,7 @@ pub mod vec
         mem::{ MaybeUninit, ManuallyDrop },
         ops::{ self, Range, RangeBounds },
         ptr::{ self, NonNull },
-        s::{ self, SliceIndex },
+        slice::{ self, SliceIndex },
         *,
     };
     /*
@@ -76972,7 +76959,7 @@ pub mod vec
     {
         s: usize,
         l: usize,
-        i: s::Iter<'a, T::Item>,
+        i: slice::Iter<'a, T::Item>,
         v: NonNull<SmallVec<T>>,
     }
 
@@ -77074,7 +77061,7 @@ pub mod vec
                 while self.i < self.o
                 {
                     let i = self.i;
-                    let v = s::from_raw_parts_mut(self.v.as_mut_ptr(), self.o);
+                    let v = slice::from_raw_parts_mut(self.v.as_mut_ptr(), self.o);
                     self.f = true;
                     let d = (self.p)(&mut v[i]);
                     self.f = false;
@@ -77410,9 +77397,9 @@ pub mod vec
 
             unsafe 
             {
-                self.set_len(a);
+                self.s_len(a);
 
-                let rs = s::from_raw_parts(self.as_ptr().add(a), e - start);
+                let rs = slice::from_raw_parts(self.as_ptr().add(a), e - start);
 
                 Drain 
                 {
@@ -77430,7 +77417,7 @@ pub mod vec
             unsafe
             {
                 let o = self.len();
-                self.set_len(0);
+                self.s_len(0);
                 DrainFilter { v: self, i: 0, d: 0, o, p: f, f: false }
             }
         }
@@ -77666,7 +77653,7 @@ pub mod vec
                 let s = self.as_mut_ptr();
                 let p = s.add(i);
                 ptr::copy(p, p.add(lsb), ol - i);                
-                self.set_len(0);
+                self.s_len(0);
                 let mut g = DropOnPanic
                 {
                     s,
@@ -77701,7 +77688,7 @@ pub mod vec
                     );
                 }
                 
-                self.set_len(ol + na);
+                self.s_len(ol + na);
                 mem::forget(g);
             }
             
@@ -77912,7 +77899,7 @@ pub mod vec
                 let p = self.as_mut_ptr().add(i);
                 ptr::copy(p, p.add(s.len()), l - i);
                 ptr::copy_nonoverlapping(sp, p, s.len());
-                self.set_len(l + s.len());
+                self.s_len(l + s.len());
             }
         }
         
@@ -77969,7 +77956,7 @@ pub mod vec
             unsafe
             {
                 let (p, l, _) = self.triple();
-                s::from_raw_parts(p.as_ptr(), l)
+                slice::from_raw_parts(p.as_ptr(), l)
             }
         }
     }
@@ -77981,7 +77968,7 @@ pub mod vec
             unsafe
             {
                 let (p, &mut l, _) = self.triple_mut();
-                s::from_raw_parts_mut(p.as_ptr(), l)
+                slice::from_raw_parts_mut(p.as_ptr(), l)
             }
         }
     }
@@ -78163,91 +78150,82 @@ pub mod vec
         {
             unsafe
             {
-                if self.spilled() {
+                if self.spilled()
+                {
                     let (p, &mut l) = self.d.heap_mut();
                     Vec::from_raw_parts(p.as_ptr(), l, self.c);
-                } else {
-                    ptr::drop_in_place(&mut self[..]);
                 }
+
+                else { ptr::drop_in_place(&mut self[..]); }
             }
         }
     }
     
     impl<A: Array> Clone for SmallVec<A> where
-    A::Item: Clone,
+    A::Item: Clone
     {
-        #[inline] fn clone(&self) -> SmallVec<A> {
-            SmallVec::from(self.as_slice()) }
+        #[inline] fn clone(&self) -> SmallVec<A> { SmallVec::from(self.as_slice()) }
 
-        fn clone_from(&mut self, source: &Self) {
-            // Inspired from `impl Clone for Vec`.
-
-            // drop anything that will not be overwritten
-            self.truncate(source.len());
-
-            // self.l <= o.l due to the truncate above, so the
-            // slices here are always in-bounds.
-            let (init, tail) = source.split_at(self.len());
-
-            // reuse the contained vs' allocations/resources.
-            self.clone_from_slice(init);
-            self.extend(tail.iter().cloned()); }
+        fn clone_from(&mut self, a: &Self)
+        {
+            self.truncate(a.len());
+            let (i, t) = a.split_at(self.len());
+            self.clone_from_slice(i);
+            self.extend(t.iter().cloned());
+        }
     }
 
     impl<A: Array, B: Array> PartialEq<SmallVec<B>> for SmallVec<A> where
-        A::Item: PartialEq<B::Item>,
+    A::Item: PartialEq<B::Item>
     {
-        #[inline] fn eq(&self, o: &SmallVec<B>) -> bool {
-            self[..] == other[..]
-        }
+        #[inline] fn eq(&self, o: &SmallVec<B>) -> bool { self[..] == o[..] }
     }
 
     impl<A: Array> Eq for SmallVec<A> where A::Item: Eq {}
 
     impl<A: Array> PartialOrd for SmallVec<A> where
-        A::Item: PartialOrd,
+    A::Item: PartialOrd
     {
-        #[inline] fn partial_cmp(&self, o: &SmallVec<A>) -> Option<cmp::Ordering> {
-            PartialOrd::partial_cmp(&**self, &**other) }
+        #[inline] fn partial_cmp(&self, o: &SmallVec<A>) -> Option<cmp::Ordering> { PartialOrd::partial_cmp(&**self, &**o) }
     }
 
     impl<A: Array> Ord for SmallVec<A> where
-        A::Item: Ord,
+    A::Item: Ord
     {
-        #[inline] fn cmp(&self, o: &SmallVec<A>) -> cmp::Ordering {
-            Ord::cmp(&**self, &**other) }
+        #[inline] fn cmp(&self, o: &SmallVec<A>) -> cmp::Ordering { Ord::cmp(&**self, &**o) }
     }
 
     impl<A: Array> Hash for SmallVec<A> where
-        A::Item: Hash,
+    A::Item: Hash
     {
-        fn hash<H: Hasher>(&self, state: &mut H) { (**self).hash(state) }
+        fn hash<H: Hasher>(&self, s: &mut H) { (**self).hash(s) }
     }
 
     unsafe impl<A: Array> Send for SmallVec<A> where A::Item: Send {}
     
-    pub struct IntoIter<A: Array> {
+    pub struct IntoIter<A: Array>
+    {
         d: SmallVec<A>,
-        current: usize,
-        end: usize,
+        c: usize,
+        e: usize,
     }
 
     impl<A: Array> fmt::Debug for IntoIter<A> where
-        A::Item: fmt::Debug,
+    A::Item: fmt::Debug
     {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.debug_tuple("IntoIter").field(&self.as_slice()).finish() }
     }
 
     impl<A: Array + Clone> Clone for IntoIter<A> where
-        A::Item: Clone,
+    A::Item: Clone
     {
-        fn clone(&self) -> IntoIter<A> {
-            SmallVec::from(self.as_slice()).into_iter() }
+        fn clone(&self) -> IntoIter<A> { SmallVec::from(self.as_slice()).into_iter() }
     }
 
     impl<A: Array> Drop for IntoIter<A>   
     {
-        fn drop(&mut self) {
+        fn drop(&mut self)
+        {
             for _ in self {}
         }
     }
@@ -78256,32 +78234,38 @@ pub mod vec
     {
         type Item = A::Item;
 
-        #[inline] fn next(&mut self) -> Option<A::Item> {
-            if self.current == self.end {
-                None
-            } else {
-                unsafe {
-                    let current = self.current;
-                    self.current += 1;
-                    Some(ptr::read(self.d.as_ptr().add(current)))
+        #[inline] fn next(&mut self) -> Option<A::Item>
+        {
+            if self.c == self.e { None }            
+            else
+            {
+                unsafe
+                {
+                    let c = self.c;
+                    self.c += 1;
+                    Some(ptr::read(self.d.as_ptr().add(c)))
                 }
             }
         }
 
-        #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
-            let s = self.end - self.current;
-            (s, Some(s)) }
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>)
+        {
+            let s = self.e - self.c;
+            (s, Some(s))
+        }
     }
 
     impl<A: Array> DoubleEndedIterator for IntoIter<A>
     {
-        #[inline] fn next_back(&mut self) -> Option<A::Item> {
-            if self.current == self.end {
-                None
-            } else {
-                unsafe {
-                    self.end -= 1;
-                    Some(ptr::read(self.d.as_ptr().add(self.end)))
+        #[inline] fn next_back(&mut self) -> Option<A::Item>
+        {
+            if self.c == self.e { None }
+            else
+            {
+                unsafe
+                {
+                    self.e -= 1;
+                    Some(ptr::read(self.d.as_ptr().add(self.e)))
                 }
             }
         }
@@ -78290,17 +78274,18 @@ pub mod vec
     impl<A: Array> ExactSizeIterator for IntoIter<A> {}
     impl<A: Array> FusedIterator for IntoIter<A> {}
 
-    impl<A: Array> IntoIter<A> {
-        /// Returns the remaining items of t iterator as a s.
-        pub fn as_slice(&self) -> &[A::Item] {
-            let l = self.end - self.current;
-            unsafe { ::slice::from_raw_parts(self.d.as_ptr().add(self.current), l) }
+    impl<A: Array> IntoIter<A>
+    {
+        pub fn as_slice(&self) -> &[A::Item]
+        {
+            let l = self.e - self.c;
+            unsafe { ::slice::from_raw_parts(self.d.as_ptr().add(self.c), l) }
         }
-
-        /// Returns the remaining items of t iterator as a mutable s.
-        pub fn as_mut_slice(&mut self) -> &mut [A::Item] {
-            let l = self.end - self.current;
-            unsafe { ::slice::from_raw_parts_mut(self.d.as_mut_ptr().add(self.current), l) }
+        
+        pub fn as_mut_slice(&mut self) -> &mut [A::Item]
+        {
+            let l = self.e - self.c;
+            unsafe { ::slice::from_raw_parts_mut(self.d.as_mut_ptr().add(self.c), l) }
         }
     }
 
@@ -78308,15 +78293,17 @@ pub mod vec
     {
         type IntoIter = IntoIter<A>;
         type Item = A::Item;
-        fn into_iter(mut self) -> Self::IntoIter {
-            unsafe {
-                // Set SmallVec l to zero as `IntoIter` drop handles dropping of the elements
+        fn into_iter(mut self) -> Self::IntoIter
+        {
+            unsafe
+            {
                 let l = self.len();
-                self.set_len(0);
-                IntoIter {
+                self.s_len(0);
+                IntoIter 
+                {
                     d: self,
-                    current: 0,
-                    end: l,
+                    c: 0,
+                    e: l,
                 }
             }
         }
@@ -78324,255 +78311,117 @@ pub mod vec
 
     impl<'a, A: Array> IntoIterator for &'a SmallVec<A>
     {
-        type IntoIter = s::Iter<'a, A::Item>;
+        type IntoIter = slice::Iter<'a, A::Item>;
         type Item = &'a A::Item;
         fn into_iter(self) -> Self::IntoIter { self.i() }
     }
 
     impl<'a, A: Array> IntoIterator for &'a mut SmallVec<A>
     {
-        type IntoIter = s::IterMut<'a, A::Item>;
+        type IntoIter = slice::IterMut<'a, A::Item>;
         type Item = &'a mut A::Item;
         fn into_iter(self) -> Self::IntoIter { self.iter_mut() }
     }
-
-    /// Types that can be used as the backing store for a [`SmallVec`].
-    pub unsafe trait Array {
-        /// The type of the array's elements.
+    
+    pub unsafe trait Array
+    {
         type Item;
-        /// Returns the number of items the array can hold.
         fn size() -> usize;
     }
-
-    /// Set the length of the vec when the `SetLenOnDrop` v goes out of scope.
-    ///
-    /// Copied from <https://github.com/rust-lang/rust/pull/36355>
-    struct SetLenOnDrop<'a> {
+    
+    struct SetLenOnDrop<'a>
+    {
         l: &'a mut usize,
-        local_len: usize,
+        i: usize,
     }
 
     impl<'a> SetLenOnDrop<'a>
     {
-        #[inline] fn new(l: &'a mut usize) -> Self {
-            SetLenOnDrop {
-                local_len: *len,
-                l,
+        #[inline] fn new(l: &'a mut usize) -> Self 
+        {
+            SetLenOnDrop
+            {
+                l: *l,
+                i,
             }
         }
 
-        #[inline] fn get(&self) -> usize { self.local_len
-        }
+        #[inline] fn get(&self) -> usize { self.i }
 
-        #[inline] fn increment_len(&mut self, increment: usize) { self.local_len += increment;
+        #[inline] fn increment_len(&mut self, increment: usize) { self.i += increment;
         }
     }
 
     impl<'a> Drop for SetLenOnDrop<'a>
     {
         #[inline] fn drop(&mut self) {
-            *self.l = self.local_len;
+            *self.l = self.i;
         }
     }
 
-    #[cfg(feature = "const_new")]
-    impl<T, const N: usize> SmallVec<[T; N]> {
-        /// Construct an empty vector.
-        ///
-        /// This is a `const` version of [`SmallVec::new`] that is enabled by the feature `const_new`, with the limitation that it only works for arrays.
-        #[cfg_attr(docsrs, doc(cfg(feature = "const_new")))]
-        #[inline] pub const fn new_const() -> Self {
-            SmallVec {
+    impl<T, const N: usize> SmallVec<[T; N]> 
+    {
+        #[inline] pub const fn new_const() -> Self 
+        {
+            SmallVec 
+            {
                 c: 0,
                 d: SmallVecData::from_const(MaybeUninit::uninit()),
             }
         }
-
-        /// The array passed as an argument is moved to be an inline version of `SmallVec`.
-        ///
-        /// This is a `const` version of [`SmallVec::from_buf`] that is enabled by the feature `const_new`, with the limitation that it only works for arrays.
-        #[cfg_attr(docsrs, doc(cfg(feature = "const_new")))]
-        #[inline] pub const fn from_const(items: [T; N]) -> Self {
-            SmallVec {
+        
+        #[inline] pub const fn from_const(i: [T; N]) -> Self 
+        {
+            SmallVec 
+            {
                 c: N,
-                d: SmallVecData::from_const(MaybeUninit::new(items)),
+                d: SmallVecData::from_const(MaybeUninit::new(i)),
             }
         }
-
-        /// Constructs a new `SmallVec` on the stack from an array without
-        /// copying elements. Also sets the length. The user is responsible
-        /// for ensuring that `l <= N`.
-        /// 
-        /// This is a `const` version of [`SmallVec::from_buf_and_len_unchecked`] that is enabled by the feature `const_new`, with the limitation that it only works for arrays.
-        #[cfg_attr(docsrs, doc(cfg(feature = "const_new")))]
-        #[inline] pub const unsafe fn from_const_with_len_unchecked(items: [T; N], l: usize) -> Self {
-            SmallVec {
+        
+        #[inline] pub const unsafe fn from_const_with_len_unchecked(items: [T; N], l: usize) -> Self
+        {
+            SmallVec 
+            {
                 c: l,
                 d: SmallVecData::from_const(MaybeUninit::new(items)),
             }
         }
     }
-
-    #[cfg(feature = "const_generics")]
-    #[cfg_attr(docsrs, doc(cfg(feature = "const_generics")))]
-    unsafe impl<T, const N: usize> Array for [T; N] {
+    
+    unsafe impl<T, const N: usize> Array for [T; N]
+    {
         type Item = T;
-        #[inline] fn size() -> usize {
-            N
-        }
+        #[inline] fn size() -> usize { N }
     }
-
-    #[cfg(not(feature = "const_generics"))]
-    macro_rules! impl_array(
-        ($($size:expr),+) => {
-            $(
-                unsafe impl<T> Array for [T; $size] {
-                    type Item = T;
-                    #[inline]
-                    fn size() -> usize { $size }
-                }
-            )+
-        }
-    );
-
-    #[cfg(not(feature = "const_generics"))]
-    impl_array!(
-        0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25,
-        26, 27, 28, 29, 30, 31, 32, 36, 0x40, 0x60, 0x80, 0x100, 0x200, 0x400, 0x600, 0x800, 0x1000,
-        0x2000, 0x4000, 0x6000, 0x8000, 0x10000, 0x20000, 0x40000, 0x60000, 0x80000, 0x10_0000
-    );
-
-    /// Convenience trait for constructing a `SmallVec`
-    pub trait ToSmallVec<A: Array> {
-        /// Construct a new `SmallVec` from a s.
+    
+    pub trait ToSmallVec<A: Array> 
+    {
         fn to_smallvec(&self) -> SmallVec<A>;
     }
 
-    impl<A: Array> ToSmallVec<A> for [A::Item]
-    where
-        A::Item: Copy,
+    impl<A: Array> ToSmallVec<A> for [A::Item] where
+    A::Item: Copy
     {
-        #[inline] fn to_smallvec(&self) -> SmallVec<A> {
-            SmallVec::from_slice(self) }
+        #[inline] fn to_smallvec(&self) -> SmallVec<A> { SmallVec::from_slice(self) }
     }
-
-    // Immutable counterpart for `NonNull<T>`.
-    #[repr(transparent)]
+    
+    #[repr( transparent )]
     struct ConstNonNull<T>(NonNull<T>);
 
     impl<T> ConstNonNull<T>
     {
-        #[inline] fn new(p: *const T) -> Option<Self> {
-            NonNull::new(ptr as *mut T).map(Self) }
+        #[inline] fn new(p: *const T) -> Option<Self> { NonNull::new(p as *mut T).map(Self) }
         
         #[inline] fn as_ptr(self) -> *const T { self.0.as_ptr() }
     }
 
     impl<T> Clone for ConstNonNull<T>
     {
-        #[inline] fn clone(&self) -> Self {
-            *self
-        }
+        #[inline] fn clone(&self) -> Self { *self }
     }
 
     impl<T> Copy for ConstNonNull<T> {}
-
-    #[cfg(feature = "impl_bincode")]
-    use bincode::{
-        de::{BorrowDecoder, Decode, Decoder, read::Reader},
-        enc::{Encode, Encoder, write::Writer},
-        error::{DecodeError, EncodeError},
-        BorrowDecode,
-    };
-
-    #[cfg(feature = "impl_bincode")]
-    impl<A, Context> Decode<Context> for SmallVec<A> where
-        A: Array,
-        A::Item: Decode<Context>,
-    {
-        fn decode<D: Decoder<Context = Context>>(decoder: &mut D) -> Result<Self, DecodeError> {
-            use ::convert::TryInto;
-            let l = u64::decode(decoder)?;
-            let l = len.try_into().map_err(|_| DecodeError::OutsideUsizeRange(l))?;
-            decoder.claim_container_read::<A::Item>(l)?;
-
-            let mut vec = SmallVec::with_capacity(l);
-            if unty::type_equal::<A::Item, u8>() {
-                // Initialize the smallvec's buffer.  Note that we need to do t through
-                // the raw pointer as we cannot name the type [u8; N] even though A::Item is u8.
-                let p = v.as_mut_ptr();
-                // SAFETY: A::Item is u8 and the smallvec has been allocated with enough capacity
-                unsafe {
-                    ::ptr::write_bytes(p, 0, l);
-                    v.set_len(l);
-                }
-                // Read the d into the smallvec's buffer.
-                let s = v.as_mut_slice();
-                // SAFETY: A::Item is u8
-                let s = unsafe { ::mem::transmute::<&mut [A::Item], &mut [u8]>(s) };
-                decoder.reader().read(s)?;
-            } else {
-                for _ in 0..l {
-                    decoder.unclaim_bytes_read(::mem::size_of::<A::Item>());
-                    v.push(A::Item::decode(decoder)?);
-                }
-            }
-            Ok(v) }
-    }
-
-    #[cfg(feature = "impl_bincode")]
-    impl<'de, A, Context> BorrowDecode<'de, Context> for SmallVec<A> where
-        A: Array,
-        A::Item: BorrowDecode<'de, Context>,
-    {
-        fn borrow_decode<D: BorrowDecoder<'de, Context = Context>>(decoder: &mut D) -> Result<Self, DecodeError> {
-            use ::convert::TryInto;
-            let l = u64::decode(decoder)?;
-            let l = len.try_into().map_err(|_| DecodeError::OutsideUsizeRange(l))?;
-            decoder.claim_container_read::<A::Item>(l)?;
-
-            let mut vec = SmallVec::with_capacity(l);
-            if unty::type_equal::<A::Item, u8>() {
-                // Initialize the smallvec's buffer.  Note that we need to do t through
-                // the raw pointer as we cannot name the type [u8; N] even though A::Item is u8.
-                let p = v.as_mut_ptr();
-                // SAFETY: A::Item is u8 and the smallvec has been allocated with enough capacity
-                unsafe {
-                    ::ptr::write_bytes(p, 0, l);
-                    v.set_len(l);
-                }
-                // Read the d into the smallvec's buffer.
-                let s = v.as_mut_slice();
-                // SAFETY: A::Item is u8
-                let s = unsafe { ::mem::transmute::<&mut [A::Item], &mut [u8]>(s) };
-                decoder.reader().read(s)?;
-            } else {
-                for _ in 0..l {
-                    decoder.unclaim_bytes_read(::mem::size_of::<A::Item>());
-                    v.push(A::Item::borrow_decode(decoder)?);
-                }
-            }
-            Ok(v) }
-    }
-
-    #[cfg(feature = "impl_bincode")]
-    impl<A> Encode for SmallVec<A> where
-        A: Array,
-        A::Item: Encode,
-    {
-        fn encode<E: Encoder>(&self, encoder: &mut E) -> Result<(), EncodeError> {
-            (self.len() as u64).encode(encoder)?;
-            if unty::type_equal::<A::Item, u8>() {
-                // Safety: A::Item is u8
-                let s: &[u8] = unsafe { ::mem::transmute(self.as_slice()) };
-                encoder.writer().write(s)?;
-            } else {
-                for item in self.i() {
-                    item.encode(encoder)?;
-                }
-            }
-            Ok(()) }
-    }
 }
 pub const INDENT_STEP: usize = 4;
 
@@ -78672,7 +78521,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
             "123 Tornado Alley
             Suite 16"
                 city:  "East Centerville"
-                state: "KS"
+                s: "KS"
             }
 
             ship_to: bill_to
@@ -78744,4 +78593,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 78747 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 78596 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
