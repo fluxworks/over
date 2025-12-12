@@ -5274,7 +5274,7 @@ pub mod char
             _ => return None
         };
 
-        let ch = match ( is_ctrl, is_meta ) {
+        let ch = match ( is::ctrl, is::meta ) {
             ( true,  true )  => meta( ctrl( ch ) ),
             ( true,  false ) => ctrl( ch ).to_string(),
             ( false, true )  => meta( ch ),
@@ -5297,7 +5297,7 @@ pub mod char
                 '\\' => res.push_str( r"\\" ),
                 '\'' => res.push_str( r"\'" ),
                 '"' => res.push_str( r#"\""# ),
-                ch if is_ctrl( ch ) => {
+                ch if is::ctrl( ch ) => {
                     res.push_str( r"\C-" );
                     res.push( unctrl_lower( ch ) );
                 }
@@ -6347,7 +6347,7 @@ pub mod expand
                                     if _basename.starts_with('.') && !show_hidden { continue; }
 
                                     result.push( file_path.to_string() );
-                                    is_empty = false;
+                                    is::empty = false;
                                 }
 
                                 Err( e ) =>
@@ -6379,10 +6379,7 @@ pub mod expand
             
             for (j, token ) in result.iter().enumerate()
             {
-                let sep = if token.contains(' ') { "\"" }
-            
-            else
-            { "" };
+                let sep = if token.contains(' ') { "\"" } else { "" };
                 tokens.insert(*i + j, ( sep.to_string(), token.clone() ) );
             }
         }
@@ -7123,8 +7120,8 @@ pub mod highlights
                         let (_sep, word ) = token;
                         let mut current_token_style = Style::Default;
 
-                        if is_start_of_segment && !word.is_empty() {
-                            if is_command(word ) {
+                        if is::start_of_segment && !word.is_empty() {
+                            if is::command(word) {
                                 current_token_style = Style::AnsiColor(GREEN.to_string() );
                             }
                             is_start_of_segment = false;
@@ -7286,7 +7283,7 @@ pub mod is
     #[inline] pub fn combining_mark( ch: char ) -> bool
     {
         use unicode_normalization::char::is_combining_mark;
-        is_combining_mark( ch )
+        is::combining_mark( ch )
     }
     /// Returns whether the given character is a control character.
     // #[inline] pub fn is_ctrl( ch: char ) -> bool
@@ -7542,12 +7539,10 @@ pub mod num
                 ( $t:ty, $min:expr, $max:expr ) =>
                 {
                     impl Bounded for $t {
-                        #[inline]
-                        fn min_value() -> $t {
+                        #[inline] fn min_value() -> $t {
                             $min
                         }
-                        #[inline]
-                        fn max_value() -> $t {
+                        #[inline] fn max_value() -> $t {
                             $max
                         }
                     }
@@ -7580,14 +7575,12 @@ pub mod num
             {
                 ( $t:ty, $min:expr, $max:expr ) => {
                     impl Bounded for $t {
-                        #[inline]
-                        fn min_value() -> $t {
+                        #[inline] fn min_value() -> $t {
                            
                             bounded_impl_nonzero_const!( $t, $min, MIN );
                             MIN
                         }
-                        #[inline]
-                        fn max_value() -> $t {
+                        #[inline] fn max_value() -> $t {
                            
                             bounded_impl_nonzero_const!( $t, $max, MAX );
                             MAX
@@ -7640,12 +7633,10 @@ pub mod num
             {
                 ( $( $name:ident )* ) => ( 
                     impl<$( $name: Bounded, )*> Bounded for ( $( $name, )* ) {
-                        #[inline]
-                        fn min_value() -> Self {
+                        #[inline] fn min_value() -> Self {
                             ( $( $name::min_value(), )* )
                         }
-                        #[inline]
-                        fn max_value() -> Self {
+                        #[inline] fn max_value() -> Self {
                             ( $( $name::max_value(), )* )
                         }
                     }
@@ -7762,12 +7753,10 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
-                        #[inline]
-                        fn to_f32( &self ) -> Option<f32> {
+                        #[inline] fn to_f32( &self ) -> Option<f32> {
                             Some( *self as f32 )
                         }
-                        #[inline]
-                        fn to_f64( &self ) -> Option<f64> {
+                        #[inline] fn to_f64( &self ) -> Option<f64> {
                             Some( *self as f64 )
                         }
                     }
@@ -7832,12 +7821,10 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
-                        #[inline]
-                        fn to_f32( &self ) -> Option<f32> {
+                        #[inline] fn to_f32( &self ) -> Option<f32> {
                             Some( *self as f32 )
                         }
-                        #[inline]
-                        fn to_f64( &self ) -> Option<f64> {
+                        #[inline] fn to_f64( &self ) -> Option<f64> {
                             Some( *self as f64 )
                         }
                     }
@@ -8081,60 +8068,46 @@ pub mod num
             {
                 ( $T:ty, $to_ty:ident ) => {
                     impl FromPrimitive for $T {
-                        #[inline]
-                        fn from_isize( n: isize ) -> Option<$T> {
+                        #[inline] fn from_isize( n: isize ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i8( n: i8 ) -> Option<$T> {
+                        #[inline] fn from_i8( n: i8 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i16( n: i16 ) -> Option<$T> {
+                        #[inline] fn from_i16( n: i16 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i32( n: i32 ) -> Option<$T> {
+                        #[inline] fn from_i32( n: i32 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i64( n: i64 ) -> Option<$T> {
+                        #[inline] fn from_i64( n: i64 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i128( n: i128 ) -> Option<$T> {
+                        #[inline] fn from_i128( n: i128 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_usize( n: usize ) -> Option<$T> {
+                        #[inline] fn from_usize( n: usize ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_u8( n: u8 ) -> Option<$T> {
+                        #[inline] fn from_u8( n: u8 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_u16( n: u16 ) -> Option<$T> {
+                        #[inline] fn from_u16( n: u16 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_u32( n: u32 ) -> Option<$T> {
+                        #[inline] fn from_u32( n: u32 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_u64( n: u64 ) -> Option<$T> {
+                        #[inline] fn from_u64( n: u64 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_u128( n: u128 ) -> Option<$T> {
+                        #[inline] fn from_u128( n: u128 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_f32( n: f32 ) -> Option<$T> {
+                        #[inline] fn from_f32( n: f32 ) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_f64( n: f64 ) -> Option<$T> {
+                        #[inline] fn from_f64( n: f64 ) -> Option<$T> {
                             n.$to_ty()
                         }
                     }
@@ -8159,60 +8132,46 @@ pub mod num
             {
                 ( $T:ty, $to_ty:ident ) => {
                     impl FromPrimitive for $T {
-                        #[inline]
-                        fn from_isize( n: isize ) -> Option<$T> {
+                        #[inline] fn from_isize( n: isize ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_i8( n: i8 ) -> Option<$T> {
+                        #[inline] fn from_i8( n: i8 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_i16( n: i16 ) -> Option<$T> {
+                        #[inline] fn from_i16( n: i16 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_i32( n: i32 ) -> Option<$T> {
+                        #[inline] fn from_i32( n: i32 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_i64( n: i64 ) -> Option<$T> {
+                        #[inline] fn from_i64( n: i64 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_i128( n: i128 ) -> Option<$T> {
+                        #[inline] fn from_i128( n: i128 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_usize( n: usize ) -> Option<$T> {
+                        #[inline] fn from_usize( n: usize ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_u8( n: u8 ) -> Option<$T> {
+                        #[inline] fn from_u8( n: u8 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_u16( n: u16 ) -> Option<$T> {
+                        #[inline] fn from_u16( n: u16 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_u32( n: u32 ) -> Option<$T> {
+                        #[inline] fn from_u32( n: u32 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_u64( n: u64 ) -> Option<$T> {
+                        #[inline] fn from_u64( n: u64 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_u128( n: u128 ) -> Option<$T> {
+                        #[inline] fn from_u128( n: u128 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_f32( n: f32 ) -> Option<$T> {
+                        #[inline] fn from_f32( n: f32 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
-                        #[inline]
-                        fn from_f64( n: f64 ) -> Option<$T> {
+                        #[inline] fn from_f64( n: f64 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
                     }
@@ -8308,8 +8267,7 @@ pub mod num
             {
                 ( $T:ty, $conv:ident ) => {
                     impl NumCast for $T {
-                        #[inline]
-                        fn from<N: ToPrimitive>( n: N ) -> Option<$T> {
+                        #[inline] fn from<N: ToPrimitive>( n: N ) -> Option<$T> {
                             n.$conv()
                         }
                     }
@@ -8333,8 +8291,7 @@ pub mod num
             macro_rules! impl_num_cast_nonzero {
                 ( $T:ty, $conv:ident ) => {
                     impl NumCast for $T {
-                        #[inline]
-                        fn from<N: ToPrimitive>( n: N ) -> Option<$T> {
+                        #[inline] fn from<N: ToPrimitive>( n: N ) -> Option<$T> {
                             n.$conv().and_then( Self::new )
                         }
                     }
@@ -8889,8 +8846,7 @@ pub mod num
                         fn abs_sub( self, other: Self ) -> Self {
                             <$T>::abs_sub( self, other )
                         }
-                        #[inline]
-                        fn integer_decode( self ) -> ( u64, i16, i8 ) {
+                        #[inline] fn integer_decode( self ) -> ( u64, i16, i8 ) {
                             $decode( self )
                         }
                         forward! {
@@ -8999,18 +8955,15 @@ pub mod num
                     pub trait FloatConst {
                         $( #[$doc] fn $constant() -> Self; )+
                         #[doc = "Return the full circle constant `τ`."]
-                        #[inline]
-                        fn TAU() -> Self where Self: Sized + Add<Self, Output = Self> {
+                        #[inline] fn TAU() -> Self where Self: Sized + Add<Self, Output = Self> {
                             Self::PI() + Self::PI()
                         }
                         #[doc = "Return `log10( 2.0 )`."]
-                        #[inline]
-                        fn LOG10_2() -> Self where Self: Sized + Div<Self, Output = Self> {
+                        #[inline] fn LOG10_2() -> Self where Self: Sized + Div<Self, Output = Self> {
                             Self::LN_2() / Self::LN_10()
                         }
                         #[doc = "Return `log2( 10.0 )`."]
-                        #[inline]
-                        fn LOG2_10() -> Self where Self: Sized + Div<Self, Output = Self> {
+                        #[inline] fn LOG2_10() -> Self where Self: Sized + Div<Self, Output = Self> {
                             Self::LN_10() / Self::LN_2()
                         }
                     }
@@ -9131,12 +9084,10 @@ pub mod num
             {
                 ( $t:ty, $v:expr ) => {
                     impl Zero for $t {
-                        #[inline]
-                        fn zero() -> $t {
+                        #[inline] fn zero() -> $t {
                             $v
                         }
-                        #[inline]
-                        fn is_zero( &self ) -> bool {
+                        #[inline] fn is_zero( &self ) -> bool {
                             *self == $v
                         }
                     }
@@ -9227,12 +9178,10 @@ pub mod num
             macro_rules! one_impl {
                 ( $t:ty, $v:expr ) => {
                     impl One for $t {
-                        #[inline]
-                        fn one() -> $t {
+                        #[inline] fn one() -> $t {
                             $v
                         }
-                        #[inline]
-                        fn is_one( &self ) -> bool {
+                        #[inline] fn is_one( &self ) -> bool {
                             *self == $v
                         }
                     }
@@ -9437,80 +9386,61 @@ pub mod num
             macro_rules! prim_int_impl {
                 ( $T:ty, $S:ty, $U:ty ) => {
                     impl PrimInt for $T {
-                        #[inline]
-                        fn count_ones( self ) -> u32 {
+                        #[inline] fn count_ones( self ) -> u32 {
                             <$T>::count_ones( self )
                         }
-                        #[inline]
-                        fn count_zeros( self ) -> u32 {
+                        #[inline] fn count_zeros( self ) -> u32 {
                             <$T>::count_zeros( self )
                         }
-                        #[inline]
-                        fn leading_ones( self ) -> u32 {
+                        #[inline] fn leading_ones( self ) -> u32 {
                             <$T>::leading_ones( self )
                         }
-                        #[inline]
-                        fn leading_zeros( self ) -> u32 {
+                        #[inline] fn leading_zeros( self ) -> u32 {
                             <$T>::leading_zeros( self )
                         }
-                        #[inline]
-                        fn trailing_ones( self ) -> u32 {
+                        #[inline] fn trailing_ones( self ) -> u32 {
                             <$T>::trailing_ones( self )
                         }
-                        #[inline]
-                        fn trailing_zeros( self ) -> u32 {
+                        #[inline] fn trailing_zeros( self ) -> u32 {
                             <$T>::trailing_zeros( self )
                         }
-                        #[inline]
-                        fn rotate_left( self, n: u32 ) -> Self {
+                        #[inline] fn rotate_left( self, n: u32 ) -> Self {
                             <$T>::rotate_left( self, n )
                         }
-                        #[inline]
-                        fn rotate_right( self, n: u32 ) -> Self {
+                        #[inline] fn rotate_right( self, n: u32 ) -> Self {
                             <$T>::rotate_right( self, n )
                         }
-                        #[inline]
-                        fn signed_shl( self, n: u32 ) -> Self {
+                        #[inline] fn signed_shl( self, n: u32 ) -> Self {
                             ( ( self as $S ) << n ) as $T
                         }
-                        #[inline]
-                        fn signed_shr( self, n: u32 ) -> Self {
+                        #[inline] fn signed_shr( self, n: u32 ) -> Self {
                             ( ( self as $S ) >> n ) as $T
                         }
-                        #[inline]
-                        fn unsigned_shl( self, n: u32 ) -> Self {
+                        #[inline] fn unsigned_shl( self, n: u32 ) -> Self {
                             ( ( self as $U ) << n ) as $T
                         }
-                        #[inline]
-                        fn unsigned_shr( self, n: u32 ) -> Self {
+                        #[inline] fn unsigned_shr( self, n: u32 ) -> Self {
                             ( ( self as $U ) >> n ) as $T
                         }
-                        #[inline]
-                        fn swap_bytes( self ) -> Self {
+                        #[inline] fn swap_bytes( self ) -> Self {
                             <$T>::swap_bytes( self )
                         }
-                        #[inline]
-                        fn reverse_bits( self ) -> Self {
+                        #[inline] fn reverse_bits( self ) -> Self {
                             <$T>::reverse_bits( self )
                         }
-                        #[inline]
-                        fn from_be( x: Self ) -> Self {
+                        #[inline] fn from_be( x: Self ) -> Self {
                             <$T>::from_be( x )
                         }
-                        #[inline]
-                        fn from_le( x: Self ) -> Self {
+                        #[inline] fn from_le( x: Self ) -> Self {
                             <$T>::from_le( x )
                         }
-                        #[inline]
-                        fn to_be( self ) -> Self {
+                        #[inline] fn to_be( self ) -> Self {
                             <$T>::to_be( self )
                         }
-                        #[inline]
-                        fn to_le( self ) -> Self {
+                        #[inline] fn to_le( self ) -> Self {
                             <$T>::to_le( self )
                         }
-                        #[inline]
-                        fn pow( self, exp: u32 ) -> Self {
+                        #[inline] fn pow( self, exp: u32 ) -> Self {
                             <$T>::pow( self, exp )
                         }
                     }
@@ -10573,29 +10503,25 @@ pub mod num
                 ( $t:ty, $rhs:ty, $desired_rhs:ty, $method:expr ) => {
                     impl Pow<$rhs> for $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow( self, rhs: $rhs ) -> $t {
+                        #[inline] fn pow( self, rhs: $rhs ) -> $t {
                             ( $method )( self, <$desired_rhs>::from( rhs ) )
                         }
                     }
                     impl<'a> Pow<&'a $rhs> for $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow( self, rhs:&'a $rhs ) -> $t {
+                        #[inline] fn pow( self, rhs:&'a $rhs ) -> $t {
                             ( $method )( self, <$desired_rhs>::from( *rhs ) )
                         }
                     }
                     impl<'a> Pow<$rhs> for &'a $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow( self, rhs: $rhs ) -> $t {
+                        #[inline] fn pow( self, rhs: $rhs ) -> $t {
                             ( $method )( *self, <$desired_rhs>::from( rhs ) )
                         }
                     }
                     impl<'a, 'b> Pow<&'a $rhs> for &'b $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow( self, rhs:&'a $rhs ) -> $t {
+                        #[inline] fn pow( self, rhs:&'a $rhs ) -> $t {
                             ( $method )( *self, <$desired_rhs>::from( *rhs ) )
                         }
                     }
@@ -10926,32 +10852,27 @@ pub mod num
             macro_rules! signed_impl {
                 ( $( $t:ty )* ) => ( $( 
                     impl Signed for $t {
-                        #[inline]
-                        fn abs( &self ) -> $t {
+                        #[inline] fn abs( &self ) -> $t {
                             if self.is_negative() { -*self }
             
             else
             { *self }
                         }
-                        #[inline]
-                        fn abs_sub( &self, other:&$t ) -> $t {
+                        #[inline] fn abs_sub( &self, other:&$t ) -> $t {
                             if *self <= *other { 0 }
             
             else
             { *self - *other }
                         }
-                        #[inline]
-                        fn signum( &self ) -> $t {
+                        #[inline] fn signum( &self ) -> $t {
                             match *self {
                                 n if n > 0 => 1,
                                 0 => 0,
                                 _ => -1,
                             }
                         }
-                        #[inline]
-                        fn is_positive( &self ) -> bool { *self > 0 }
-                        #[inline]
-                        fn is_negative( &self ) -> bool { *self < 0 }
+                        #[inline] fn is_positive( &self ) -> bool { *self > 0 }
+                        #[inline] fn is_negative( &self ) -> bool { *self < 0 }
                     }
                 )* )
             }
@@ -10980,15 +10901,13 @@ pub mod num
                 ( $t:ty ) => {
                     impl Signed for $t {
                         /// Computes the absolute value. Returns `NAN` if the number is `NAN`.
-                        #[inline]
-                        fn abs( &self ) -> $t {
+                        #[inline] fn abs( &self ) -> $t {
                             Float::abs( *self )
                         }
                         /// The positive difference of two numbers. Returns `0.0` if the number is
                         /// less than or equal to `other`, otherwise the difference between`self`
                         /// and `other` is returned.
-                        #[inline]
-                        fn abs_sub( &self, other:&$t ) -> $t {
+                        #[inline] fn abs_sub( &self, other:&$t ) -> $t {
                             if *self <= *other {
                                 0.
                             }
@@ -11003,18 +10922,15 @@ pub mod num
                         /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
                         /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
                         /// - `NAN` if the number is NaN
-                        #[inline]
-                        fn signum( &self ) -> $t {
+                        #[inline] fn signum( &self ) -> $t {
                             Float::signum( *self )
                         }
                         /// Returns `true` if the number is positive, including `+0.0` and `INFINITY`
-                        #[inline]
-                        fn is_positive( &self ) -> bool {
+                        #[inline] fn is_positive( &self ) -> bool {
                             Float::is_sign_positive( *self )
                         }
                         /// Returns `true` if the number is negative, including `-0.0` and `NEG_INFINITY`
-                        #[inline]
-                        fn is_negative( &self ) -> bool {
+                        #[inline] fn is_negative( &self ) -> bool {
                             Float::is_sign_negative( *self )
                         }
                     }
@@ -11194,7 +11110,7 @@ pub mod num
                             let mut chars = src.chars();
                             Some( ( chars.next()?, chars.as_str() ) )
                         }
-                        let ( is_positive, src ) =  match slice_shift_char( src ) {
+                        let ( is::positive, src ) =  match slice_shift_char( src ) {
                             None             => return Err( PFE { kind: Empty } ),
                             Some( ( '-', "" ) )  => return Err( PFE { kind: Empty } ),
                             Some( ( '-', src ) ) => ( false, src ),
@@ -11202,7 +11118,7 @@ pub mod num
                         };
 
                        
-                        let mut sig = if is_positive { 0.0 }
+                        let mut sig = if is::positive { 0.0 }
             
             else
             { -0.0 };
@@ -11220,7 +11136,7 @@ pub mod num
                                     sig *= radix as $t;
 
                                    
-                                    if is_positive {
+                                    if is::positive {
                                         sig += ( digit as isize ) as $t;
                                     }
             
@@ -11231,12 +11147,12 @@ pub mod num
                                    
                                    
                                     if prev_sig != 0.0 {
-                                        if is_positive && sig <= prev_sig
+                                        if is::positive && sig <= prev_sig
                                             { return Ok( ::$t::INFINITY ); }
                                         if !is_positive && sig >= prev_sig
                                             { return Ok( ::$t::NEG_INFINITY ); }
                                        
-                                        if is_positive && ( prev_sig != ( sig - digit as $t ) / radix as $t )
+                                        if is::positive && ( prev_sig != ( sig - digit as $t ) / radix as $t )
                                             { return Ok( ::$t::INFINITY ); }
                                         if !is_positive && ( prev_sig != ( sig + digit as $t ) / radix as $t )
                                             { return Ok( ::$t::NEG_INFINITY ); }
@@ -11267,7 +11183,7 @@ pub mod num
                                        
                                         power /= radix as $t;
                                        
-                                        sig = if is_positive {
+                                        sig = if is::positive {
                                             sig + ( digit as $t ) * power
                                         }
             
@@ -11276,7 +11192,7 @@ pub mod num
                                             sig - ( digit as $t ) * power
                                         };
                                        
-                                        if is_positive && sig < prev_sig
+                                        if is::positive && sig < prev_sig
                                             { return Ok( ::$t::INFINITY ); }
                                         if !is_positive && sig > prev_sig
                                             { return Ok( ::$t::NEG_INFINITY ); }
@@ -11305,7 +11221,7 @@ pub mod num
 
                                
                                 let src = &src[offset..];
-                                let ( is_positive, exp ) = match slice_shift_char( src ) {
+                                let ( is::positive, exp ) = match slice_shift_char( src ) {
                                     Some( ( '-', src ) ) => ( false, src.parse::<usize>() ),
                                     Some( ( '+', src ) ) => ( true,  src.parse::<usize>() ),
                                     Some( ( _, _ ) )     => ( true,  src.parse::<usize>() ),
@@ -11317,7 +11233,7 @@ pub mod num
                                 }
                                
 
-                                match ( is_positive, exp ) {
+                                match ( is::positive, exp ) {
                                     ( true,  Ok( exp ) ) => pow( base, exp ),
                                     ( false, Ok( exp ) ) => 1.0 / pow( base, exp ),
                                     ( _, Err( _ ) )      => return Err( PFE { kind: Invalid } ),
@@ -11449,117 +11365,45 @@ pub mod num
             };
             /*
             */
-            /// Provides methods to compute an integer's square root, cube root,
-            /// and arbitrary `n`th root.
-            pub trait Roots: Integer {
-                /// Returns the truncated principal `n`th root of an integer
-                /// -- `if x >= 0 { ⌊ⁿ√x⌋ }
-            
-            else
-            { ⌈ⁿ√x⌉ }`
-                fn nth_root( &self, n: u32 ) -> Self;
-                /// Returns the truncated principal square root of an integer -- `⌊√x⌋`
-                ///
-                /// This is solving for `r` in `r² = x`, rounding toward zero.
-                #[inline] fn sqrt( &self ) -> Self {
-                    self.nth_root( 2 )
-                }
-                /// Returns the truncated principal cube root of an integer --
-                /// `if x >= 0 { ⌊∛x⌋ }
-            
-            else
-            { ⌈∛x⌉ }`
-                ///
-                /// This is solving for `r` in `r³ = x`, rounding toward zero.
-                #[inline] fn cbrt( &self ) -> Self {
-                    self.nth_root( 3 )
-                }
-            }
-            /// Returns the truncated principal square root of an integer --
-            /// see [Roots::sqrt]( trait.Roots.html#method.sqrt ).
-            #[inline] pub fn sqrt<T: Roots>( x: T ) -> T {
-                x.sqrt()
-            }
-            /// Returns the truncated principal cube root of an integer --
-            /// see [Roots::cbrt]( trait.Roots.html#method.cbrt ).
-            #[inline] pub fn cbrt<T: Roots>( x: T ) -> T {
-                x.cbrt()
-            }
-            /// Returns the truncated principal `n`th root of an integer --
-            /// see [Roots::nth_root]( trait.Roots.html#tymethod.nth_root ).
-            #[inline] pub fn nth_root<T: Roots>( x: T, n: u32 ) -> T {
-                x.nth_root( n )
-            }
-            macro_rules! signed_roots {
-                ( $T:ty, $U:ty ) => {
-                    impl Roots for $T {
-                        #[inline]
-                        fn nth_root( &self, n: u32 ) -> Self {
+            macro_rules! signed_roots
+            {
+                ( $T:ty, $U:ty ) =>
+                {
+                    impl Roots for $T
+                    {
+                        #[inline] fn nth_root( &self, n: u32 ) -> Self
+                        {
                             if *self >= 0 {
                                 ( *self as $U ).nth_root( n ) as Self
                             }
             
-            else
-            {
+                            else
+                            {
                                 assert!( n.is_odd(), "even roots of a negative are imaginary" );
-                                -( ( self.wrapping_neg() as $U ).nth_root( n ) as Self )
+                                                -( ( self.wrapping_neg() as $U ).nth_root( n ) as Self )
                             }
                         }
-                        #[inline]
-                        fn sqrt( &self ) -> Self {
+                        
+                        #[inline] fn sqrt( &self ) -> Self
+                        {
                             assert!( *self >= 0, "the square root of a negative is imaginary" );
                             ( *self as $U ).sqrt() as Self
                         }
-                        #[inline]
-                        fn cbrt( &self ) -> Self {
-                            if *self >= 0 {
-                                ( *self as $U ).cbrt() as Self
-                            }
-            
-            else
-            {
-                                -( ( self.wrapping_neg() as $U ).cbrt() as Self )
-                            }
+                        
+                        #[inline] fn cbrt( &self ) -> Self
+                        {
+                            if *self >= 0 { ( *self as $U ).cbrt() as Self }                            
+                            else { -( ( self.wrapping_neg() as $U ).cbrt() as Self ) }
                         }
                     }
                 };
             }
-            signed_roots!( i8, u8 );
-            signed_roots!( i16, u16 );
-            signed_roots!( i32, u32 );
-            signed_roots!( i64, u64 );
-            signed_roots!( i128, u128 );
-            signed_roots!( isize, usize );
 
-            #[inline] fn fixpoint<T, F>( mut x: T, f: F ) -> T
-            where
-                T: Integer + Copy,
-                F: Fn( T ) -> T,
+            macro_rules! unsigned_roots 
             {
-                let mut xn = f( x );
-                while x < xn {
-                    x = xn;
-                    xn = f( x );
-                }
-                while x > xn {
-                    x = xn;
-                    xn = f( x );
-                }
-                x
-            }
-            #[inline] fn bits<T>() -> u32 {
-                8 * mem::size_of::<T>() as u32
-            }
-            #[inline] fn log2<T: PrimInt>( x: T ) -> u32
-            {
-                debug_assert!( x > T::zero() );
-                bits::<T>() - 1 - x.leading_zeros()
-            }
-            macro_rules! unsigned_roots {
                 ( $T:ident ) => {
                     impl Roots for $T {
-                        #[inline]
-                        fn nth_root( &self, n: u32 ) -> Self {
+                        #[inline] fn nth_root( &self, n: u32 ) -> Self {
                             fn go( a: $T, n: u32 ) -> $T {
                                
                                 match n {
@@ -11579,112 +11423,110 @@ pub mod num
                                         ( a as u64 ).nth_root( n ) as $T
                                     }
             
-            else
-            {
-                                        let lo = ( a >> n ).nth_root( n ) << 1;
-                                        let hi = lo + 1;
-                                       
-                                       
-                                        if hi.next_power_of_two().trailing_zeros() * n >= bits::<$T>() {
-                                            match checked_pow( hi, n as usize ) {
-                                                Some( x ) if x <= a => hi,
-                                                _ => lo,
-                                            }
-                                        }
-            
-            else
-            {
-                                            if hi.pow( n ) <= a {
-                                                hi
-                                            }
-            
-            else
-            {
-                                                lo
-                                            }
-                                        }
-                                    };
-                                }
+                                else
+                                {
+                                                            let lo = ( a >> n ).nth_root( n ) << 1;
+                                                            let hi = lo + 1;
+                                                        
+                                                        
+                                                            if hi.next_power_of_two().trailing_zeros() * n >= bits::<$T>() {
+                                                                match checked_pow( hi, n as usize ) {
+                                                                    Some( x ) if x <= a => hi,
+                                                                    _ => lo,
+                                                                }
+                                                            }
                                 
-                                #[inline] fn guess( x: $T, n: u32 ) -> $T {
-                                   
-                                    if bits::<$T>() <= 32 || x <= ::u32::MAX as $T {
-                                        1 << ( ( log2( x ) + n - 1 ) / n )
-                                    }
-            
-            else
-            {
-                                        ( ( x as f64 ).ln() / f64::from( n ) ).exp() as $T
-                                    }
-                                }
+                                else
+                                {
+                                                                if hi.pow( n ) <= a {
+                                                                    hi
+                                                                }
                                 
-                                let n1 = n - 1;
-                                let next = |x: $T| {
-                                    let y = match checked_pow( x, n1 as usize ) {
-                                        Some( ax ) => a / ax,
-                                        None => 0,
-                                    };
-                                    ( y + x * n1 as $T ) / n as $T
-                                };
-                                fixpoint( guess( a, n ), next )
-                            }
-                            go( *self, n )
-                        }
-                        #[inline]
-                        fn sqrt( &self ) -> Self {
-                            fn go( a: $T ) -> $T {
-                                if bits::<$T>() > 64 {
-                                   
-                                    return if a <= ::u64::MAX as $T {
-                                        ( a as u64 ).sqrt() as $T
-                                    }
-            
-            else
-            {
-                                        let lo = ( a >> 2u32 ).sqrt() << 1;
-                                        let hi = lo + 1;
-                                        if hi * hi <= a {
-                                            hi
-                                        }
-            
-            else
-            {
-                                            lo
-                                        }
-                                    };
-                                }
-                                if a < 4 {
-                                    return ( a > 0 ) as $T;
-                                }
-                                                    #[inline]
-                                fn guess( x: $T ) -> $T {
-                                    ( x as f64 ).sqrt() as $T
-                                }
+                                else
+                                {
+                                                                    lo
+                                                                }
+                                                            }
+                                                        };
+                                                    }
+                                                    
+                                                    #[inline] fn guess( x: $T, n: u32 ) -> $T {
+                                                    
+                                                        if bits::<$T>() <= 32 || x <= ::u32::MAX as $T {
+                                                            1 << ( ( log2( x ) + n - 1 ) / n )
+                                                        }
                                 
-                                let next = |x: $T| ( a / x + x ) >> 1;
-                                fixpoint( guess( a ), next )
-                            }
-                            go( *self )
-                        }
-                        #[inline]
-                        fn cbrt( &self ) -> Self {
-                            fn go( a: $T ) -> $T {
-                                if bits::<$T>() > 64 {
-                                   
-                                    return if a <= ::u64::MAX as $T {
-                                        ( a as u64 ).cbrt() as $T
-                                    }
-            
-            else
-            {
-                                        let lo = ( a >> 3u32 ).cbrt() << 1;
-                                        let hi = lo + 1;
-                                        if hi * hi * hi <= a {
-                                            hi
-                                        }
-            
-            else
-            {
+                                else
+                                {
+                                                            ( ( x as f64 ).ln() / f64::from( n ) ).exp() as $T
+                                                        }
+                                                    }
+                                                    
+                                                    let n1 = n - 1;
+                                                    let next = |x: $T| {
+                                                        let y = match checked_pow( x, n1 as usize ) {
+                                                            Some( ax ) => a / ax,
+                                                            None => 0,
+                                                        };
+                                                        ( y + x * n1 as $T ) / n as $T
+                                                    };
+                                                    fixpoint( guess( a, n ), next )
+                                                }
+                                                go( *self, n )
+                                            }
+                                            #[inline] fn sqrt( &self ) -> Self {
+                                                fn go( a: $T ) -> $T {
+                                                    if bits::<$T>() > 64 {
+                                                    
+                                                        return if a <= ::u64::MAX as $T {
+                                                            ( a as u64 ).sqrt() as $T
+                                                        }
+                                
+                                else
+                                {
+                                                            let lo = ( a >> 2u32 ).sqrt() << 1;
+                                                            let hi = lo + 1;
+                                                            if hi * hi <= a {
+                                                                hi
+                                                            }
+                                
+                                else
+                                {
+                                                                lo
+                                                            }
+                                                        };
+                                                    }
+                                                    if a < 4 {
+                                                        return ( a > 0 ) as $T;
+                                                    }
+                                                                        #[inline]
+                                                    fn guess( x: $T ) -> $T {
+                                                        ( x as f64 ).sqrt() as $T
+                                                    }
+                                                    
+                                                    let next = |x: $T| ( a / x + x ) >> 1;
+                                                    fixpoint( guess( a ), next )
+                                                }
+                                                go( *self )
+                                            }
+                                            #[inline] fn cbrt( &self ) -> Self {
+                                                fn go( a: $T ) -> $T {
+                                                    if bits::<$T>() > 64 {
+                                                    
+                                                        return if a <= ::u64::MAX as $T {
+                                                            ( a as u64 ).cbrt() as $T
+                                                        }
+                                
+                                else
+                                {
+                                                            let lo = ( a >> 3u32 ).cbrt() << 1;
+                                                            let hi = lo + 1;
+                                                            if hi * hi * hi <= a {
+                                                                hi
+                                                            }
+                                
+                                else
+                                {
                                             lo
                                         }
                                     };
@@ -11727,6 +11569,57 @@ pub mod num
                     }
                 };
             }
+
+            pub trait Roots: Integer
+            {
+                fn nth_root(&self, n: u32) -> Self;
+                #[inline] fn sqrt(&self) -> Self { self.nth_root(2) }
+                #[inline] fn cbrt(&self) -> Self { self.nth_root(3) }
+            }
+            
+            #[inline] pub fn sqrt<T: Roots>( x: T ) -> T { x.sqrt() }
+            
+            #[inline] pub fn cbrt<T: Roots>( x: T ) -> T { x.cbrt() }
+            
+            #[inline] pub fn nth_root<T: Roots>( x: T, n: u32 ) -> T 
+            {
+                x.nth_root( n )
+            }
+
+            signed_roots!( i8, u8 );
+            signed_roots!( i16, u16 );
+            signed_roots!( i32, u32 );
+            signed_roots!( i64, u64 );
+            signed_roots!( i128, u128 );
+            signed_roots!( isize, usize );
+
+            #[inline] fn fixpoint<T, F>( mut x: T, f: F ) -> T where
+            T: Integer + Copy,
+            F: Fn( T ) -> T
+            {
+                let mut xn = f( x );
+                while x < xn {
+                    x = xn;
+                    xn = f( x );
+                }
+                while x > xn {
+                    x = xn;
+                    xn = f( x );
+                }
+                x
+            }
+
+            #[inline] fn bits<T>() -> u32 
+            {
+                8 * mem::size_of::<T>() as u32
+            }
+
+            #[inline] fn log2<T: PrimInt>( x: T ) -> u32
+            {
+                debug_assert!( x > T::zero() );
+                bits::<T>() - 1 - x.leading_zeros()
+            }
+
             unsigned_roots!( u8 );
             unsigned_roots!( u16 );
             unsigned_roots!( u32 );
@@ -11807,7 +11700,7 @@ pub mod num
                 ( self.extended_gcd( other ), self.lcm( other ) )
             }
             /// Deprecated, use `is_multiple_of` instead.
-            #[deprecated( note = "Please use is_multiple_of instead" )]
+            #[deprecated( note = "Please use is::multiple_of instead" )]
             #[inline] fn divides( &self, other:&Self ) -> bool {
                 self.is_multiple_of( other )
             }
@@ -14999,8 +14892,7 @@ pub mod num
                     impl UnsignedAbs for $Signed {
                         type Unsigned = $Unsigned;
 
-                        #[inline]
-                        fn checked_uabs( self ) -> CheckedUnsignedAbs<Self::Unsigned> {
+                        #[inline] fn checked_uabs( self ) -> CheckedUnsignedAbs<Self::Unsigned> {
                             if self >= 0 {
                                 Positive( self as $Unsigned )
                             }
@@ -15961,8 +15853,7 @@ pub mod num
                 }
                 impl AddAssign<u64> for BigUint {
                     cfg_digit!( 
-                        #[inline]
-                        fn add_assign( &mut self, other: u64 ) {
+                        #[inline] fn add_assign( &mut self, other: u64 ) {
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             if hi == 0 {
                                 *self += lo;
@@ -15979,8 +15870,7 @@ pub mod num
                                 }
                             }
                         }
-                        #[inline]
-                        fn add_assign( &mut self, other: u64 ) {
+                        #[inline] fn add_assign( &mut self, other: u64 ) {
                             if other != 0 {
                                 if self.data.is_empty() {
                                     self.data.push( 0 );
@@ -16004,8 +15894,7 @@ pub mod num
                 }
                 impl AddAssign<u128> for BigUint {
                     cfg_digit!( 
-                        #[inline]
-                        fn add_assign( &mut self, other: u128 ) {
+                        #[inline] fn add_assign( &mut self, other: u128 ) {
                             if other <= u128::from( u64::MAX ) {
                                 *self += other as u64
                             }
@@ -16034,8 +15923,7 @@ pub mod num
                                 }
                             }
                         }
-                        #[inline]
-                        fn add_assign( &mut self, other: u128 ) {
+                        #[inline] fn add_assign( &mut self, other: u128 ) {
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             if hi == 0 {
                                 *self += lo;
@@ -16475,8 +16363,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline]
-                        fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, other: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
                                 1 => From::from( self / u64::from( other.data[0] ) ),
@@ -16484,8 +16371,7 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
-                        #[inline]
-                        fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, other: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
                                 1 => From::from( self / other.data[0] ),
@@ -16513,8 +16399,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline]
-                        fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, other: BigUint ) -> BigUint {
                             use super::u32_to_u128;
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
@@ -16529,8 +16414,7 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
-                        #[inline]
-                        fn div( self, other: BigUint ) -> BigUint {
+                        #[inline] fn div( self, other: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
                                 1 => From::from( self / other.data[0] as u128 ),
@@ -17287,8 +17171,7 @@ pub mod num
                 }
                 impl MulAssign<u64> for BigUint {
                     cfg_digit!( 
-                        #[inline]
-                        fn mul_assign( &mut self, other: u64 ) {
+                        #[inline] fn mul_assign( &mut self, other: u64 ) {
                             if let Some( other ) = BigDigit::from_u64( other ) {
                                 scalar_mul( self, other );
                             }
@@ -17299,8 +17182,7 @@ pub mod num
                                 *self = mul3( &self.data, &[lo, hi] );
                             }
                         }
-                        #[inline]
-                        fn mul_assign( &mut self, other: u64 ) {
+                        #[inline] fn mul_assign( &mut self, other: u64 ) {
                             scalar_mul( self, other );
                         }
                     );
@@ -17316,8 +17198,7 @@ pub mod num
                 }
                 impl MulAssign<u128> for BigUint {
                     cfg_digit!( 
-                        #[inline]
-                        fn mul_assign( &mut self, other: u128 ) {
+                        #[inline] fn mul_assign( &mut self, other: u128 ) {
                             if let Some( other ) = BigDigit::from_u128( other ) {
                                 scalar_mul( self, other );
                             }
@@ -17331,8 +17212,7 @@ pub mod num
                                 };
                             }
                         }
-                        #[inline]
-                        fn mul_assign( &mut self, other: u128 ) {
+                        #[inline] fn mul_assign( &mut self, other: u128 ) {
                             if let Some( other ) = BigDigit::from_u128( other ) {
                                 scalar_mul( self, other );
                             }
@@ -17513,8 +17393,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline]
-                        fn sub( self, mut other: BigUint ) -> BigUint {
+                        #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.len() == 0 {
                                 other.data.push( self );
                             }
@@ -17525,8 +17404,7 @@ pub mod num
                             }
                             other.normalized()
                         }
-                        #[inline]
-                        fn sub( self, mut other: BigUint ) -> BigUint {
+                        #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push( self as BigDigit );
                             }
@@ -17551,14 +17429,12 @@ pub mod num
                 impl SubAssign<u64> for BigUint 
                 {
                     cfg_digit!( 
-                        #[inline]
-                        fn sub_assign( &mut self, other: u64 ) {
+                        #[inline] fn sub_assign( &mut self, other: u64 ) {
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             sub2( &mut self.data[..], &[lo, hi] );
                             self.normalize();
                         }
-                        #[inline]
-                        fn sub_assign( &mut self, other: u64 ) {
+                        #[inline] fn sub_assign( &mut self, other: u64 ) {
                             sub2( &mut self.data[..], &[other as BigDigit] );
                             self.normalize();
                         }
@@ -17569,8 +17445,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline]
-                        fn sub( self, mut other: BigUint ) -> BigUint {
+                        #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             while other.data.len() < 2 {
                                 other.data.push( 0 );
                             }
@@ -17578,8 +17453,7 @@ pub mod num
                             sub2rev( &[lo, hi], &mut other.data[..] );
                             other.normalized()
                         }
-                        #[inline]
-                        fn sub( self, mut other: BigUint ) -> BigUint {
+                        #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push( self );
                             }
@@ -17604,14 +17478,12 @@ pub mod num
                 impl SubAssign<u128> for BigUint 
                 {
                     cfg_digit!( 
-                        #[inline]
-                        fn sub_assign( &mut self, other: u128 ) {
+                        #[inline] fn sub_assign( &mut self, other: u128 ) {
                             let ( a, b, c, d ) = super::u32_from_u128( other );
                             sub2( &mut self.data[..], &[d, c, b, a] );
                             self.normalize();
                         }
-                        #[inline]
-                        fn sub_assign( &mut self, other: u128 ) {
+                        #[inline] fn sub_assign( &mut self, other: u128 ) {
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             sub2( &mut self.data[..], &[lo, hi] );
                             self.normalize();
@@ -17623,8 +17495,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!( 
-                        #[inline]
-                        fn sub( self, mut other: BigUint ) -> BigUint {
+                        #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             while other.data.len() < 4 {
                                 other.data.push( 0 );
                             }
@@ -17632,8 +17503,7 @@ pub mod num
                             sub2rev( &[d, c, b, a], &mut other.data[..] );
                             other.normalized()
                         }
-                        #[inline]
-                        fn sub( self, mut other: BigUint ) -> BigUint {
+                        #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             while other.data.len() < 2 {
                                 other.data.push( 0 );
                             }
@@ -20483,8 +20353,7 @@ pub mod num
                     }
                     impl<'b, T: Clone + Integer + Pow<$exp, Output = T>> Pow<&'b $exp> for Ratio<T> {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow( self, expon:&'b $exp ) -> Ratio<T> {
+                        #[inline] fn pow( self, expon:&'b $exp ) -> Ratio<T> {
                             Pow::pow( self, *expon )
                         }
                     }
@@ -20493,8 +20362,7 @@ pub mod num
                         &'a T: Pow<$exp, Output = T>,
                     {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow( self, expon:&'b $exp ) -> Ratio<T> {
+                        #[inline] fn pow( self, expon:&'b $exp ) -> Ratio<T> {
                             Pow::pow( self, *expon )
                         }
                     }
@@ -20545,8 +20413,7 @@ pub mod num
                     }
                     impl<'b, T: Clone + Integer + Pow<$unsigned, Output = T>> Pow<&'b $exp> for Ratio<T> {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow( self, expon:&'b $exp ) -> Ratio<T> {
+                        #[inline] fn pow( self, expon:&'b $exp ) -> Ratio<T> {
                             Pow::pow( self, *expon )
                         }
                     }
@@ -20555,8 +20422,7 @@ pub mod num
                         &'a T: Pow<$unsigned, Output = T>,
                     {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow( self, expon:&'b $exp ) -> Ratio<T> {
+                        #[inline] fn pow( self, expon:&'b $exp ) -> Ratio<T> {
                             Pow::pow( self, *expon )
                         }
                     }
@@ -20680,7 +20546,8 @@ pub mod num
                 self.trunc().numer
             }
             /// Returns true if the rational number is an integer ( denominator is 1 ).
-            #[inline] pub fn is_integer( &self ) -> bool {
+            #[inline] pub fn is_integer( &self ) -> bool
+            {
                 self.denom.is_one()
             }
             /// Puts self into lowest terms, with `denom` > 0.
@@ -21165,14 +21032,12 @@ pub mod num
             macro_rules! forward_op_assign {
                 ( impl $imp:ident, $method:ident ) => {
                     impl<'a, T: Clone + Integer + NumAssign> $imp<&'a Ratio<T>> for Ratio<T> {
-                        #[inline]
-                        fn $method( &mut self, other:&Ratio<T> ) {
+                        #[inline] fn $method( &mut self, other:&Ratio<T> ) {
                             self.$method( other.clone() )
                         }
                     }
                     impl<'a, T: Clone + Integer + NumAssign> $imp<&'a T> for Ratio<T> {
-                        #[inline]
-                        fn $method( &mut self, other:&T ) {
+                        #[inline] fn $method( &mut self, other:&T ) {
                             self.$method( other.clone() )
                         }
                     }
@@ -21915,20 +21780,20 @@ pub mod num
            
             let mut numer = numer.abs();
             let mut denom = denom.abs();
-            let ( is_diff_positive, absolute_diff ) = match numer.bits().checked_sub( denom.bits() ) {
+            let ( is::diff_positive, absolute_diff ) = match numer.bits().checked_sub( denom.bits() ) {
                 Some( diff ) => ( true, diff ),
                 None => ( false, denom.bits() - numer.bits() ),
             };
 
            
            
-            if is_diff_positive && absolute_diff > MAX_EXP as u64 {
+            if is::diff_positive && absolute_diff > MAX_EXP as u64 {
                 return INFINITY * flo_sign;
             }
             if !is_diff_positive && absolute_diff > -MIN_EXP as u64 + MANTISSA_DIGITS as u64 + 1 {
                 return 0.0 * flo_sign;
             }
-            let diff = if is_diff_positive {
+            let diff = if is::diff_positive {
                 absolute_diff.to_isize().unwrap()
             }
             
@@ -23658,11 +23523,11 @@ pub mod parses
         let ( field_line, field_col ) = ( stream.line(), stream.col() );
 
        
-        let ( field, is_global, is_parent ) = parse_field( stream.clone(), field_line, field_col )?;
+        let ( field, is::global, is::parent ) = parse_field( stream.clone(), field_line, field_col )?;
 
         if !is_global && !is_parent && obj.contains_key( &field ) {
             return parse_err( stream.file(), DuplicateField( field, field_line, field_col ) );
-        } else if is_parent && parent.is_some() {
+        } else if is::parent && parent.is_some() {
             return parse_err( 
                 stream.file(),
                 DuplicateField( "^".into(), field_line, field_col ),
@@ -23688,12 +23553,12 @@ pub mod parses
             true,
         )?;
        
-        if is_global {
+        if is::global {
             if globals.contains_key( &field ) {
                 return parse_err( stream.file(), DuplicateGlobal( field, field_line, field_col ) );
             }
             globals.insert( field, value );
-        } else if is_parent {
+        } else if is::parent {
             let par = value
                 .get_obj()
                 .map_err( | e |ParseError::from_over( &e, stream.file(), value_line, value_col ) )?;
@@ -23971,7 +23836,7 @@ pub mod parses
         
         if ch == '@' {
             let ch = stream.next().unwrap();
-            is_global = true;
+            is::global = true;
             field.push( ch );
         }
 
@@ -24003,7 +23868,7 @@ pub mod parses
             {
                 parse_err( stream.file(), InvalidFieldName( field.clone(), line, col ) )
             }
-            _ => Ok( ( field.clone(), is_global, false ) ),
+            _ => Ok( ( field.clone(), is::global, false ) ),
         }
     }
    
@@ -24017,7 +23882,7 @@ pub mod parses
         col: usize,
         depth: usize,
         cur_brace: Option<char>,
-        is_first: bool,
+        is::first: bool,
     ) -> ParseResult<Value> 
     {
        
@@ -24058,7 +23923,7 @@ pub mod parses
             }
         };
        
-        if is_first 
+        if is::first 
         {
             let mut val_deque: VecDeque<( Value, usize, usize )> = VecDeque::new();
             let mut op_deque: VecDeque<char> = VecDeque::new();
@@ -24333,7 +24198,7 @@ pub mod parses
 
             var @ "@" => return parse_err( stream.file(), InvalidValue( var.into(), line, col ) ),
             
-            var if is_global => 
+            var if is::global => 
             {
                
                 match globals.get( var ) {
@@ -25160,7 +25025,7 @@ pub mod path
         let scope = PathWrapper::from_path( scope );
 
         let mut dir_patterns = Vec::new();
-        let components = pattern[cmp::min( root_len, pattern.len() )..].split_terminator( is_separator );
+        let components = pattern[cmp::min( root_len, pattern.len() )..].split_terminator( is::separator );
 
         for component in components
         {
@@ -25181,7 +25046,7 @@ pub mod path
            );
         }
 
-        let last_is_separator = pattern.chars().next_back().map( is_separator );
+        let last_is_separator = pattern.chars().next_back().map( is::separator );
         let require_dir = last_is_separator == Some( true );
         let todo = Vec::new();
 
@@ -25530,13 +25395,13 @@ pub mod path
                                     });
                                 };
 
-                                if is_valid
+                                if is::valid
                                 {
                                     let tokens_len = tokens.len();
 
                                     if !(tokens_len > 1 && tokens[tokens_len - 1] == AnyRecursiveSequence )
                                     {
-                                        is_recursive = true;
+                                        is::recursive = true;
                                         tokens.push(AnyRecursiveSequence );
                                     }
                                 }
@@ -25707,7 +25572,7 @@ pub mod path
                         {
                             AnyChar       |
                             AnyWithin(..) |
-                            AnyExcept(..) if (options.require_literal_separator && is_sep) ||
+                            AnyExcept(..) if (options.require_literal_separator && is::sep) ||
                             ( follows_separator && options.require_literal_leading_dot && c == '.' ) => { false }
                             AnyChar => true,
                             AnyWithin( ref specifiers ) => in_char_specifiers( specifiers, c, options ),
@@ -25717,7 +25582,7 @@ pub mod path
                         }
                         { return SubPatternDoesntMatch; }
 
-                        follows_separator = is_sep;
+                        follows_separator = is::sep;
                     }
                 }
             }
@@ -25746,7 +25611,7 @@ pub mod path
         let is_dir = path.is_directory;
         let curdir = path.as_ref() == Path::new( "." );
 
-        match ( pattern.has_metachars, is_dir )
+        match ( pattern.has_metachars, is::dir )
         {
             ( false, _ ) =>
             {
@@ -25767,7 +25632,7 @@ pub mod path
                 
                 let next_path = PathWrapper::from_path( next_path );
                 
-                if  ( special && is_dir ) ||
+                if  ( special && is::dir ) ||
                     (!special && ( fs::metadata( &next_path ).is_ok() || fs::symlink_metadata( &next_path ).is_ok() ) )
                     { add( todo, next_path ); }
             }
@@ -30507,7 +30372,7 @@ pub mod system
             };
             /*
             use crate::terminal::{Color, Cursor, Size, Style, Theme};
-            use crate::util::{char_width, is_combining_mark};
+            use crate::util::{char_width, is::combining_mark};
             */
             const TAB_STOP: usize = 8;
 
@@ -33563,7 +33428,7 @@ pub mod system
                     add!( cap::KeyF11,       Key::F( 11 ) );
                     add!( cap::KeyF12,       Key::F( 12 ) );
 
-                    if is_xterm( info.name() ) {
+                    if is::xterm( info.name() ) {
                         sequences.insert( XTERM_MOUSE_INTRO.into(), SeqData::XTermMouse );
                     }
 
@@ -33779,7 +33644,7 @@ pub mod system
                     input &= !XTERM_MODIFIER_MASK;
 
                     let input = match input {
-                        0 ..= 3 => mouse_button_event( input, is_pressed ),
+                        0 ..= 3 => mouse_button_event( input, is::pressed ),
                         64 => MouseInput::WheelUp,
                         65 => MouseInput::WheelDown,
                         _ => MouseInput::Motion,
@@ -33817,7 +33682,7 @@ pub mod system
                     None
                 }
 
-                fn mouse_button_event( input: u32, is_pressed: bool ) -> MouseInput {
+                fn mouse_button_event( input: u32, is::pressed: bool ) -> MouseInput {
                     let button = match input {
                         0 => MouseButton::Left,
                         1 => MouseButton::Middle,
@@ -33825,7 +33690,7 @@ pub mod system
                         _ => MouseButton::Other( input )
                     };
 
-                    if is_pressed {
+                    if is::pressed {
                         MouseInput::ButtonPressed( button )
                     }
             
@@ -34133,7 +33998,7 @@ pub mod system
         {
             borrow::Cow::{ self, Borrowed, Owned },
             fs::{ read_dir },
-            path::{ is_separator, MAIN_SEPARATOR },
+            path::{ is::separator, MAIN_SEPARATOR },
             system::
             {
                 prompter::{ Prompter },
@@ -34345,7 +34210,7 @@ pub mod system
                                 let is_dir = ent.metadata().ok()
                                     .map_or( false, |m| m.is_dir() );
 
-                                let suffix = if is_dir {
+                                let suffix = if is::dir {
                                     Suffix::Some( MAIN_SEPARATOR )
                                 }
             
@@ -34488,7 +34353,7 @@ pub mod system
 
         fn split_path( path:&str ) -> ( Option<&str>, &str ) 
         {
-            match path.rfind( is_separator ) {
+            match path.rfind( is::separator ) {
                 Some( pos ) => ( Some( &path[..pos] ), &path[pos + 1..] ),
                 None => ( None, path )
             }
@@ -35795,7 +35660,7 @@ pub mod system
         Provides access to prompt input state. */
         use ::
         {
-            char::{is_ctrl, is_printable, DELETE, EOF},
+            char::{is_ctrl, is::printable, DELETE, EOF},
             mem::replace,
             ops::Range,
             sync::Arc,
@@ -36161,7 +36026,7 @@ pub mod system
 
                 self.read.sequence.clear();
 
-                if is_printable( first ) {
+                if is::printable( first ) {
                     let n = self.write.input_arg.to_i32();
                     self.execute_command( Command::SelfInsert, n, first )?;
                 }
@@ -36209,7 +36074,7 @@ pub mod system
                     Complete => {
                         if !self.read.disable_completion {
                             self.complete_word()?;
-                        } else if is_printable( ch ) {
+                        } else if is::printable( ch ) {
                             self.execute_command( SelfInsert, n, ch )?;
                         }
                     }
@@ -43903,4 +43768,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 43906 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 43771 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
