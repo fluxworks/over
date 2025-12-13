@@ -58,7 +58,6 @@ pub mod parse;
 
 #[macro_use] pub mod macros
 {
-    /// Performs variable interpolation against the input and produces it as [`process::macros::TokenStream`].
     #[macro_export] macro_rules! quote
     {
         () =>
@@ -95,7 +94,7 @@ pub mod parse;
             _s
         }};
     }
-    /// Same as `quote!`, but applies a given span to all tokens originating within the macro invocation.
+    
     #[macro_export] macro_rules! quote_spanned
     {
         ( $span:expr=> ) => {{
@@ -1127,7 +1126,7 @@ pub mod parse;
             $vis fn $name $args -> $impl_trait $body
         };
     }
-    /// Parse a set of parentheses and expose their content to subsequent parsers.
+    
     #[macro_export] macro_rules! parenthesized
     {
         ( $content:ident in $cursor:expr ) => {
@@ -1142,7 +1141,7 @@ pub mod parse;
             }
         };
     }
-    /// Parse a set of curly braces and expose their content to subsequent parsers.
+    
     #[macro_export] macro_rules! braced
     {
         ( $content:ident in $cursor:expr ) => 
@@ -1158,7 +1157,7 @@ pub mod parse;
             }
         };
     }
-    /// Parse a set of square brackets and expose their content to subsequent parsers.
+    
     #[macro_export] macro_rules! bracketed
     {
         ( $content:ident in $cursor:expr ) =>
@@ -1183,7 +1182,7 @@ pub mod parse;
             ::syntax::__private::parse_quote( ::syntax::__private::quote::quote!( $( $tt )* ) )
         };
     }
-    /// This macro is [`parse_quote!`] + [`quote_spanned!`][quote::quote_spanned].
+    
     #[macro_export] macro_rules! parse_quote_spanned
     {
         ( $span:expr=> $( $tt:tt )* ) =>
@@ -1284,6 +1283,7 @@ pub mod parse;
     {
         ( $ident:ident, $( $tt:tt )+ ) => {
             impl ::syntax::__private::Copy for $ident {}
+            
             #[allow( clippy::expl_impl_clone_on_copy )]
             impl ::syntax::__private::Clone for $ident {
                 fn clone( &self ) -> Self {
@@ -1475,6 +1475,7 @@ pub mod parse;
     {
         ( $ident:ident ) => {
             impl ::syntax::__private::Copy for $ident {}
+            
             #[allow( clippy::expl_impl_clone_on_copy )]
             impl ::syntax::__private::Clone for $ident {
                 fn clone( &self ) -> Self {
@@ -1513,7 +1514,7 @@ pub mod parse;
             }
         };
     }
-    /// Forward a method to an inherent method or a base trait method.
+    
     #[macro_export] macro_rules! forward
     {
         ( $( Self :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )* )
@@ -1744,9 +1745,7 @@ pub mod parse;
             }
         };
     }
-    /*
-     */
-
+    
     #[macro_export] macro_rules! forward_ref_val_binop_commutative
     {
         ( impl $imp:ident for $res:ty, $method:ident ) => {
@@ -1760,10 +1759,7 @@ pub mod parse;
             }
         };
     }
-    /*
-
-     */
-
+    
     #[macro_export] macro_rules! forward_ref_ref_binop_commutative
     {
         ( impl $imp:ident for $res:ty, $method:ident ) => {
@@ -2145,7 +2141,7 @@ pub mod parse;
             }
         }
     }
-    /// Given an int, creates and returns a `BigInt`.
+    
     #[macro_export] macro_rules! int 
     {
         ( $int:expr ) => {{
@@ -2155,14 +2151,14 @@ pub mod parse;
             _b
         }};
     }
-    /// Given two ints, creates and returns a `BigRational`.
+    
     #[macro_export] macro_rules! frac 
     {
         ( $int1:expr, $int2:expr ) => {{
             ::num::rational::BigRational::new( $int1.into(), $int2.into() )
         }};
     }
-    /// With a list of items, converts each item to a `Value` and returns an `Arr` containing a vector of the values.
+    
     #[macro_export] macro_rules! arr 
     {
         [] => 
@@ -2181,7 +2177,7 @@ pub mod parse;
             try_arr![ $( $elem ),+ ].unwrap()
         };
     }
-    /// With a list of items, converts each item to a `Value` and returns an `Arr` containing a vector of the values.
+    
     #[macro_export] macro_rules! try_arr 
     {
         [ $( $elem:expr ),+ , ] => 
@@ -2195,7 +2191,7 @@ pub mod parse;
                 $crate::arrays::Arr::from_vec( vec![ $( $elem.into() ),+ ] )
         }};
     }
-    /// With a list of items, converts each item to `Value`s and returns a `Tup` containing a vector of the values.
+    
     #[macro_export] macro_rules! tup 
     {
         ( $( $elem:expr ),* , ) => {
@@ -2207,7 +2203,7 @@ pub mod parse;
             }
         };
     }
-    /// With a list of field/value pairs, returns an `Obj` containing each pair.
+    
     #[macro_export] macro_rules! obj 
     {
         {} => {
@@ -2221,7 +2217,7 @@ pub mod parse;
             try_obj!{ $( $field => $inner ),+ }.unwrap()
         };
     }
-    /// With a list of field to `Value` pairs, returns an `Obj` with the fields and values.
+    
     #[macro_export] macro_rules! try_obj
     {
         { $( $field:expr => $inner:expr ),+ , } =>
@@ -2555,8 +2551,7 @@ pub mod parse;
                 }
             }
         };
-
-        // Done accumulating.
+        
         ( @accumulate_entries
             name: $BitFlags:ident,
             {
@@ -2565,7 +2560,8 @@ pub mod parse;
             },
             $entries:tt,
             $try_froms:tt;
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @make_enum
                 name: $BitFlags,
@@ -2576,8 +2572,7 @@ pub mod parse;
                 }
             }
         };
-
-        // Done accumulating and want TryFrom
+        
         ( @accumulate_entries
             name: $BitFlags:ident,
             {
@@ -2587,7 +2582,8 @@ pub mod parse;
             },
             $entries:tt,
             $try_froms:tt;
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @make_enum
                 name: $BitFlags,
@@ -2600,15 +2596,15 @@ pub mod parse;
                 }
             }
         };
-
-        // Munch an attr.
+        
         ( @accumulate_entries
             name: $BitFlags:ident,
             $prefix:tt,
             [$( $entries:tt )*],
             [$( $try_froms:tt )*];
             #[$attr:meta] $( $tail:tt )*
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @accumulate_entries
                 name: $BitFlags,
@@ -2623,15 +2619,15 @@ pub mod parse;
                 $( $tail )*
             }
         };
-
-        // Munch last ident if not followed by a comma.
+        
         ( @accumulate_entries
             name: $BitFlags:ident,
             $prefix:tt,
             [$( $entries:tt )*],
             [$( $try_froms:tt )*];
             $entry:ident
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @accumulate_entries
                 name: $BitFlags,
@@ -2646,8 +2642,7 @@ pub mod parse;
                 ];
             }
         };
-
-        // Munch an ident; covers terminating comma case.
+        
         ( @accumulate_entries
             name: $BitFlags:ident,
             $prefix:tt,
@@ -2655,7 +2650,8 @@ pub mod parse;
             [$( $try_froms:tt )*];
             $entry:ident,
             $( $tail:tt )*
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @accumulate_entries
                 name: $BitFlags,
@@ -2671,8 +2667,7 @@ pub mod parse;
                 $( $tail )*
             }
         };
-
-        // Munch an ident and cast it to the given type; covers terminating comma.
+        
         ( @accumulate_entries
             name: $BitFlags:ident,
             $prefix:tt,
@@ -2680,7 +2675,8 @@ pub mod parse;
             [$( $try_froms:tt )*];
             $entry:ident as $ty:ty,
             $( $tail:tt )*
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @accumulate_entries
                 name: $BitFlags,
@@ -2696,14 +2692,14 @@ pub mod parse;
                 $( $tail )*
             }
         };
-
-        // Entry rule.
+        
         ( 
             $( #[$attr:meta] )*
             $v:vis enum $BitFlags:ident {
                 $( $vals:tt )*
             }
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @accumulate_entries
                 name: $BitFlags,
@@ -2716,15 +2712,15 @@ pub mod parse;
                 $( $vals )*
             }
         };
-
-        // Entry rule including TryFrom
+        
         ( 
             $( #[$attr:meta] )*
             $v:vis enum $BitFlags:ident {
                 $( $vals:tt )*
             }
             impl TryFrom<$repr:path>
-        ) => {
+        ) => 
+        {
             libc_enum! {
                 @accumulate_entries
                 name: $BitFlags,
@@ -2739,7 +2735,7 @@ pub mod parse;
             }
         };
     }
-    /// A macro for defining #[cfg] if-else statements.
+    
     #[macro_export] macro_rules! cfg_if
     {
         ( $( 
@@ -2809,40 +2805,29 @@ pub mod parse;
         );
     }
 
-    #[macro_export] macro_rules! define_uuid_macro
+    #[macro_export] macro_rules! uuid
     {
-        {$(#[$doc:meta] )*} =>
-        {
-            #[macro_export] macro_rules! uuid
+        ($uuid:expr) => 
+        {{
+            const OUTPUT: uuid::Uuid = match uuid::Uuid::try_parse($uuid)
             {
-                ($uuid:expr ) => 
-                {{
-                    const OUTPUT: $crate::Uuid = match $crate::Uuid::try_parse($uuid )
-                    {
-                        Ok(u ) => u,
-                        Err(_ ) => panic!( "invalid UUID" ),
-                    };
+                Ok(u) => u,
+                Err(_) => panic!( "invalid UUID" ),
+            };
 
-                    OUTPUT
-                }};
-            }
-        }
-    }
-
-    define_uuid_macro!
-    {
-        /// Parse [`Uuid`][uuid::Uuid]s from string literals at compile time.
+            OUTPUT
+        }};
     }
 
     #[macro_export] macro_rules! unsafe_transmute_ref
     (
-        ($e:expr ) => { unsafe { ::mem::transmute::<&_, &_>($e ) } }
-   );
+        ($e:expr) => { unsafe { ::mem::transmute::<&_, &_>($e ) } }
+    );
 
     #[macro_export] macro_rules! unsafe_transmute
     (
-        ($e:expr ) => { unsafe { ::mem::transmute::<_, _>($e ) } }
-   );
+        ($e:expr) => { unsafe { ::mem::transmute::<_, _>($e ) } }
+    );
     /*
     extern crate core;
     extern crate std;
@@ -2929,6 +2914,7 @@ pub mod parse;
             #[allow(dead_code )]
             $(#[$attr])*
             $($vis )* struct $N {__private_field: ()}
+            
             #[doc(hidden )]
             #[allow( non_upper_case_globals )]
             $($vis )* static $N: $N = $N {__private_field: ()};
@@ -2951,12 +2937,10 @@ pub mod parse;
         };
         () => ()
     }
-    /// Support trait for enabling a few common operations on lazy static values.
     pub trait LazyStatic
     {
         fn initialize(lazy: &Self);
     }
-    /// Takes a shared reference to a lazy static and initializes it if it has not been already.
     pub fn initialize<T: LazyStatic>(lazy: &T) {
         LazyStatic::initialize(lazy);
     }
@@ -3299,14 +3283,17 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let tokens = cmd.tokens.clone();
-
 		let re_name_ptn = Regex::new(r"^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$").unwrap();
-		for (_, text) in tokens.iter() {
-			if text == "export" {
+
+		for (_, text) in tokens.iter()
+        {
+			if text == "export"
+            {
 				continue;
 			}
 
-			if !::is::env(text) {
+			if !::is::env(text)
+            {
 				let mut info = String::new();
 				info.push_str("export: invalid command\n");
 				info.push_str("usage: export XXX=YYY");
@@ -3314,7 +3301,8 @@ pub mod api
 				return cr;
 			}
 
-			if !re_name_ptn.is_match(text) {
+			if !re_name_ptn.is_match(text)
+            {
 				let mut info = String::new();
 				info.push_str("export: invalid command\n");
 				info.push_str("usage: export XXX=YYY ZZ=123");
@@ -3322,13 +3310,15 @@ pub mod api
 				return cr;
 			}
 
-			for cap in re_name_ptn.captures_iter(text) {
+			for cap in re_name_ptn.captures_iter(text) 
+            {
 				let name = cap[1].to_string();
-				let token = parsers::line::unquote(&cap[2]);
-				let value = libs::path::expand_home(&token);
+				let token = parses::lines::unquote(&cap[2]);
+				let value = expand::home(&token);
 				env::set_var(name, &value);
 			}
 		}
+
 		cr
 	}
 
@@ -4276,7 +4266,7 @@ pub mod arrays
         vec: Vec<Value>,
         inner_t: Type,
     }
-    /// `Arr` struct.
+    
     #[derive( Clone, Debug )]
     pub struct Arr 
     {
@@ -4285,7 +4275,6 @@ pub mod arrays
 
     impl Arr 
     {
-        /// Returns a new `Arr` from the given vector of `Value`s.
         pub fn from_vec( vec: Vec<Value> ) -> OverResult<Arr> 
         {
             let mut tcur = Type::Any;
@@ -4310,20 +4299,19 @@ pub mod arrays
                 inner: Arc::new( ArrInner { vec, inner_t: tcur } ),
             } )
         }
-        /// Returns a new `Arr` from the given vector of `Value`s without checking 
-        /// whether every value in `vec` is the same type.
+        
         pub fn from_vec_unchecked( vec: Vec<Value>, inner_t: Type ) -> Arr 
         {
             Arr {
                 inner: Arc::new( ArrInner { vec, inner_t } ),
             }
         }
-        /// Returns a reference to the inner vec of this `Arr`.
+        
         pub fn vec_ref( &self ) -> &Vec<Value> 
         {
             &self.inner.vec
         }
-        /// Iterates over each `Value` in `self`, applying `Fn` `f`.
+        
         pub fn with_each<F>( &self, mut f: F ) where
             F: FnMut( &Value ),
         {
@@ -4331,7 +4319,7 @@ pub mod arrays
                 f( value )
             }
         }
-        /// Gets the value at `index`.
+        
         pub fn get( &self, index: usize ) -> OverResult<Value> 
         {
             if index >= self.inner.vec.len() {
@@ -4343,24 +4331,24 @@ pub mod arrays
                 Ok( self.inner.vec[index].clone() )
             }
         }
-        /// Returns the type of all elements in this `Arr`.
+        
         pub fn inner_type( &self ) -> Type {
             self.inner.inner_t.clone()
         }
-        /// Returns the length of this `Arr`.
+        
         pub fn len( &self ) -> usize {
             self.inner.vec.len()
         }
-        /// Returns whether this `Arr` is empty.
+        
         pub fn is_empty( &self ) -> bool {
             self.inner.vec.is_empty()
         }
-        /// Returns whether `self` and `other` point to the same data.
+        
         pub fn ptr_eq( &self, other:&Self ) -> bool 
         {
             Arc::ptr_eq( &self.inner, &other.inner )
         }
-        /// Returns an iterator over the Arr.
+        
         pub fn iter( &self ) -> Iter<Value> 
         {
             self.vec_ref().iter()
@@ -5223,34 +5211,26 @@ pub mod char
             ch => format!( "{}", ch ),
         }
     }
-    /// Returns the width of a character in the terminal.
     // #[inline] pub fn char_width( ch: char ) -> Option<usize>
     #[inline] pub fn width( ch: char ) -> Option<usize>
     {
         use unicode_width::UnicodeWidthChar;
         ch.width()
     }
-    /// Returns the control character corresponding to the given character.
+    
     #[inline] pub fn control( ch:char ) -> char { ( ( ch as u8 ) & 0x1f ) as char }
-    /// Returns the ASCII character corresponding to the given control character.
+    
     #[inline] pub fn unctrl_upper( ch:char ) -> char { ( ( ch as u8 ) | 0x40 ) as char }
-    /// Returns the lowercase ASCII character corresponding to the given control character.
+    
     #[inline] pub fn unctrl_lower( ch:char ) -> char { unctrl_upper( ch ).to_ascii_lowercase() }
-    /// Character value indicating end-of-file
     pub const EOF: char = '\x04';
-    /// Character value generated by the Escape key
     pub const ESCAPE: char = '\x1b';
-    /// Character value generated by the Backspace key
     ///
-    /// On Unix systems, this is equivalent to `RUBOUT`
     #[cfg( unix )]
     pub const DELETE: char = RUBOUT;
-    /// Character value generated by the Backspace key.
     #[cfg( windows )]
     pub const DELETE: char = '\x08';
-    /// Character value generated by the Backspace key on some systems
     pub const RUBOUT: char = '\x7f';
-    /// Returns a character name as a key sequence, e.g. `Control-x` or `Meta-x`.
     pub fn parse_char_name( name:&str ) -> Option<String>
     {
         let name_lc = name.to_lowercase();
@@ -5283,7 +5263,6 @@ pub mod char
 
         Some( ch )
     }
-    /// Returns a character sequence escaped for user-facing display.
     pub fn escape_sequence( s:&str ) -> String
     {
         let mut res = String::with_capacity( s.len() );
@@ -5307,7 +5286,6 @@ pub mod char
 
         res
     }
-    /// Returns a meta sequence for the given character.
     pub fn meta( ch: char ) -> String
     {
         let mut s = String::with_capacity( ch.len_utf8() + 1 );
@@ -5317,22 +5295,17 @@ pub mod char
     }
 
     fn contains_any( s:&str, strs:&[&str] ) -> bool { strs.iter().any( |a| s.contains( a ) ) }
-    /// Returns whether the character is printable.
     pub fn is_printable( c: char ) -> bool { c == '\t' || c == '\n' || !( c == '\0' || is::control( c ) ) }
 
     const CTRL_BIT: u8 = 0x40;
     const CTRL_MASK: u8 = 0x1f;
-    /// Returns whether the given character is a control character.
     pub fn is_ctrl( c: char ) -> bool
     {
         const CTRL_MAX: u32 = 0x1f;
         c != '\0' && c as u32 <= CTRL_MAX
     }
-    /// Returns a control character for the given character.
     pub fn ctrl( c: char ) -> char { ( ( c as u8 ) & CTRL_MASK ) as char }
-    /// Returns the printable character corresponding to the given control character.
     pub fn unctrl( c: char ) -> char { ( ( c as u8 ) | CTRL_BIT ) as char }
-    /// Returns a string consisting of a `char`, repeated `n` times.
     // pub fn repeat_char( ch:char, n: usize ) -> String
     pub fn repeat( ch:char, n: usize ) -> String
     {
@@ -5413,7 +5386,6 @@ pub mod char
 
         pos
     }
-    /// Returns the first character in the buffer, if it contains any valid characters.
     // pub fn first_char( buf:&[u8] ) -> io::Result<Option<char>>
     pub fn first( buf:&[u8] ) -> io::Result<Option<char>>
     {
@@ -5683,7 +5655,6 @@ pub mod error
     };
     /*
     */
-    /// The fabulous OVER error type.
     #[derive( Debug, PartialEq, Eq )]
     pub enum OverError
     {
@@ -5788,7 +5759,7 @@ pub mod error
         {
             Err( ParseError { file, kind } )
         }
-        /// Error kind.
+        
         #[derive( Debug )]
         pub enum ParseErrorKind
         {
@@ -5819,13 +5790,11 @@ pub mod error
             OverError( String ),
             ParseIntError( String ),
         }
-        /// Parse error.
+        
         #[derive( Debug )]
         pub struct ParseError 
         {
-            /// The file this error occurred in.
             pub file: Option<String>,
-            /// Error kind.
             pub kind: ParseErrorKind,
         }
 
@@ -6006,7 +5975,6 @@ pub mod error
 
         impl ParseError 
         {
-            /// Convert an `OverError` to a `ParseError` given line and column numbers.
             pub fn from_over( e:&OverError, file: Option<String>, line: usize, col: usize ) -> Self {
                 ParseError {
                     file,
@@ -6190,10 +6158,11 @@ pub mod error
                 /*
                 */
             }
+            
             #[cfg( unix )] pub use self::unix::{ * };
             #[cfg( windows )] pub use self::windows::{ * };
         }
-        /// Wraps a platform-specific error code.
+        
         #[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd, Hash )]
         pub struct Errno( pub i32);
 
@@ -6249,12 +6218,10 @@ pub mod error
             }
         }
 
-        /// Returns the platform-specific value of `errno`.
         pub fn errno() -> Errno {
             sys::errno()
         }
 
-        /// Sets the platform-specific value of `errno`.
         pub fn set_errno(err: Errno) {
             sys::set_errno(err )
         }
@@ -6394,6 +6361,7 @@ pub mod get
     use ::
     {
         fs::{ File },
+        os::{ unix::prelude::{ RawFd }, },
         path::{ Path, PathBuf },
         system::
         {
@@ -6402,9 +6370,7 @@ pub mod get
         types::{ * },
         *,
     };
-    /*
-    */
-    /// If `ch` preceded by a backslash together form an escape character, then return this char.
+    
     pub fn escaped_character( ch: char ) -> Option<char>
     {
         match ch
@@ -6590,7 +6556,7 @@ pub mod get
 	{
 		for id_ in name_list
         {
-			if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") { return Some(id_.to_string()); }
+			if !regex::contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") { return Some(id_.to_string()); }
 		}
 
 		None
@@ -6667,7 +6633,6 @@ pub mod fmt
 
         string
     }
-    /// Trait for formatting a .over representation of an object.
     pub trait Format 
     {
         fn format( &self, full: bool, indent_amt: usize ) -> String;
@@ -6954,9 +6919,8 @@ pub mod highlights
         *,
     };
     /*
-    use crate::parsers::parser_line;
+    use crate::parses::lines;
     */
-    /// Style reset sequence
     pub const RESET_STYLE: &str = "\x1b[0m";
     pub const GREEN: &str = "\x1b[0;32m";
 
@@ -6965,31 +6929,24 @@ pub mod highlights
         pub static ref AVAILABLE_COMMANDS: Mutex<HashSet<String>> = Mutex::new(HashSet::new() );
         pub static ref ALIASES: Mutex<HashSet<String>> = Mutex::new(HashSet::new() );
     }
-    /// Provides style information for a line of text.
+    
     #[derive( Clone )]
     pub struct CicadaHighlighter;
-    /// Represents a style to be applied to a text range.
     #[derive(Debug, Clone, PartialEq, Eq)]
     pub enum Style 
     {
-        /// A style using raw ANSI color codes
         AnsiColor(String),
-        /// The default terminal style
         Default,
     }
-    /// A trait for providing style information for a line of text.
     pub trait Highlighter
     {
-        /// Takes the current line buffer and returns a list of styled ranges.
         fn highlight( &self, line:&str ) -> Vec<(Range<usize>, Style )>;
     }
-    /// Initialize the available commands cache by scanning PATH directories
     pub fn initialize()
     {
         let commands = scan_available_commands();
         if let Ok( mut cache ) = AVAILABLE_COMMANDS.lock() { *cache = commands; }
     }
-    /// Update aliases in the highlighter's cache
     pub fn update( sh: &shell::Shell) 
     {
         if let Ok( mut aliases ) = ALIASES.lock()
@@ -7186,12 +7143,10 @@ pub mod is
     };
     /*
     */
-    /// Returns true if this character signifies the legal end of a value.
     pub fn value_end_char( ch: char ) -> bool 
     {
         whitespace( ch ) || end_delimiter( ch ) || operator( ch )
     }
-    /// Returns true if the character is either whitespace or '#' ( start of a comment ).   
     pub fn whitespace( ch: char ) -> bool 
     {
         ch.is_whitespace() || ch == '#'
@@ -7229,7 +7184,6 @@ pub mod is
             _ => false,
         }
     }
-    /// Returns true if `ch` is an ASCII decimal digit.
     //pub fn is_digit( ch: char ) -> bool {
     pub fn digit( ch: char ) -> bool 
     {
@@ -7246,7 +7200,6 @@ pub mod is
             _ => false,
         }
     }
-    /// Whether the character has the Unicode property XID\_Start.
     /*
     pub fn is_xid_start( ... ) -> bool*/
     pub fn xid_start( ch:char ) -> bool
@@ -7256,7 +7209,6 @@ pub mod is
         let offset = chunk as usize *  ::ascii::CHUNK / 2 + ch as usize / 8 %  ::ascii::CHUNK;
         unsafe {  ::ascii::LEAF.0.get_unchecked( offset ) }.wrapping_shr( ch as u32 % 8 ) & 1 != 0
     }
-    /// Whether the character has the Unicode property XID\_Continue.
     /*
     pub fn is_xid_continue( ch: char ) -> bool */
     pub fn xid_continue( ch: char ) -> bool
@@ -7278,14 +7230,12 @@ pub mod is
     {
         xid_continue( c )
     }
-    /// Returns whether the given character is a combining mark.
     // #[inline] pub fn is_combining_mark( ch: char ) -> bool
     #[inline] pub fn combining_mark( ch: char ) -> bool
     {
         use unicode_normalization::char::is_combining_mark;
         is::combining_mark( ch )
     }
-    /// Returns whether the given character is a control character.
     // #[inline] pub fn is_ctrl( ch: char ) -> bool
     #[inline] pub fn control( ch:char ) -> bool
     {
@@ -7456,10 +7406,9 @@ pub mod marker
         panic::{ RefUnwindSafe, UnwindSafe },
         *,
     };
-    /*
-    */
+
     pub const MARKER: ProcMacroAutoTraits = ProcMacroAutoTraits( PhantomData );
-    /// Zero sized marker with the correct set of autotrait impls we want all proc macro types to have.
+
     #[derive( Copy, Clone, PartialEq, Eq )]
     pub struct ProcMacroAutoTraits( pub PhantomData<Rc<()>> );
     impl UnwindSafe for ProcMacroAutoTraits {}
@@ -7499,19 +7448,15 @@ pub mod num
             };
             /*
             */
-            /// Numbers which have upper and lower bounds
             pub trait Bounded
             {
                
-                /// Returns the smallest finite number this type can represent
                 fn min_value() -> Self;
-                /// Returns the largest finite number this type can represent
                 fn max_value() -> Self;
             }
-            /// Numbers which have lower bounds
+            
             pub trait LowerBounded
             {
-                /// Returns the smallest finite number this type can represent
                 fn min_value() -> Self;
             }
            
@@ -7521,10 +7466,9 @@ pub mod num
                     Bounded::min_value()
                 }
             }
-            /// Numbers which have upper bounds
+            
             pub trait UpperBounded
             {
-                /// Returns the largest finite number this type can represent
                 fn max_value() -> Self;
             }
            
@@ -7660,39 +7604,23 @@ pub mod num
             };
             /*
             */
-            /// A generic trait for converting a value to a number.
             pub trait ToPrimitive
             {
-                /// Converts the value of `self` to an `isize`.
                 #[inline] fn to_isize( &self ) -> Option<isize> { self.to_i64().as_ref().and_then( ToPrimitive::to_isize ) }
-                /// Converts the value of `self` to an `i8`.
                 #[inline] fn to_i8( &self ) -> Option<i8> { self.to_i64().as_ref().and_then( ToPrimitive::to_i8 ) }
-                /// Converts the value of `self` to an `i16`.
                 #[inline] fn to_i16( &self ) -> Option<i16> { self.to_i64().as_ref().and_then( ToPrimitive::to_i16 ) }
-                /// Converts the value of `self` to an `i32`.
                 #[inline] fn to_i32( &self ) -> Option<i32> { self.to_i64().as_ref().and_then( ToPrimitive::to_i32 ) }
-                /// Converts the value of `self` to an `i64`.
                 fn to_i64( &self ) -> Option<i64>;
-                /// Converts the value of `self` to an `i128`.
                 #[inline] fn to_i128( &self ) -> Option<i128> { self.to_i64().map( From::from ) }
-                /// Converts the value of `self` to a `usize`.
                 #[inline] fn to_usize( &self ) -> Option<usize> { self.to_u64().as_ref().and_then( ToPrimitive::to_usize ) }
-                /// Converts the value of `self` to a `u8`.
                 #[inline] fn to_u8( &self ) -> Option<u8> { self.to_u64().as_ref().and_then( ToPrimitive::to_u8 ) }
-                /// Converts the value of `self` to a `u16`.
                 #[inline] fn to_u16( &self ) -> Option<u16> { self.to_u64().as_ref().and_then( ToPrimitive::to_u16 ) }
-                /// Converts the value of `self` to a `u32`.
                 #[inline] fn to_u32( &self ) -> Option<u32> { self.to_u64().as_ref().and_then( ToPrimitive::to_u32 ) }
-                /// Converts the value of `self` to a `u64`.
                 fn to_u64( &self ) -> Option<u64>;
-                /// Converts the value of `self` to a `u128`.
                 #[inline] fn to_u128( &self ) -> Option<u128> { self.to_u64().map( From::from ) }
-                /// Converts the value of `self` to an `f32`.
                 #[inline] fn to_f32( &self ) -> Option<f32> { self.to_f64().as_ref().and_then( ToPrimitive::to_f32 ) }
-                /// Converts the value of `self` to an `f64`. Overflows may map to positive
-                /// or negative inifinity, otherwise `None` is returned if the value cannot
-                /// be represented by an `f64`.
-                /// override this method if they can represent a greater range.
+                
+            
                 #[inline] fn to_f64( &self ) -> Option<f64> {
                     match self.to_i64() {
                         Some( i ) => i.to_f64(),
@@ -7990,73 +7918,49 @@ pub mod num
             }
             impl_to_primitive_float!( f32 );
             impl_to_primitive_float!( f64 );
-            /// A generic trait for converting a number to a value.
             pub trait FromPrimitive: Sized
             {
-                /// Converts an `isize` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_isize( n: isize ) -> Option<Self> {
                     n.to_i64().and_then( FromPrimitive::from_i64 )
                 }
-                /// Converts an `i8` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_i8( n: i8 ) -> Option<Self> {
                     FromPrimitive::from_i64( From::from( n ) )
                 }
-                /// Converts an `i16` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_i16( n: i16 ) -> Option<Self> {
                     FromPrimitive::from_i64( From::from( n ) )
                 }
-                /// Converts an `i32` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_i32( n: i32 ) -> Option<Self> {
                     FromPrimitive::from_i64( From::from( n ) )
                 }
-                /// Converts an `i64` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
+                
+            
                 fn from_i64( n: i64 ) -> Option<Self>;
-                /// Converts an `i128` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_i128( n: i128 ) -> Option<Self> {
                     n.to_i64().and_then( FromPrimitive::from_i64 )
                 }
-                /// Converts a `usize` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_usize( n: usize ) -> Option<Self> {
                     n.to_u64().and_then( FromPrimitive::from_u64 )
                 }
-                /// Converts an `u8` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_u8( n: u8 ) -> Option<Self> {
                     FromPrimitive::from_u64( From::from( n ) )
                 }
-                /// Converts an `u16` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_u16( n: u16 ) -> Option<Self> {
                     FromPrimitive::from_u64( From::from( n ) )
                 }
-                /// Converts an `u32` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_u32( n: u32 ) -> Option<Self> {
                     FromPrimitive::from_u64( From::from( n ) )
                 }
-                /// Converts an `u64` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
+                
+            
                 fn from_u64( n: u64 ) -> Option<Self>;
-                /// Converts an `u128` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_u128( n: u128 ) -> Option<Self> {
                     n.to_u64().and_then( FromPrimitive::from_u64 )
                 }
-                /// Converts a `f32` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
                 #[inline] fn from_f32( n: f32 ) -> Option<Self> {
                     FromPrimitive::from_f64( From::from( n ) )
                 }
-                /// Converts a `f64` to return an optional value of this type. If the
-                /// value cannot be represented by this type, then `None` is returned.
-                /// override this method if they can represent a greater range.
+                
+            
                 #[inline] fn from_f64( n: f64 ) -> Option<Self> {
                     match n.to_i64() {
                         Some( i ) => FromPrimitive::from_i64( i ),
@@ -8250,17 +8154,16 @@ pub mod num
                     fn from_f64( f64 );
                 }
             }
-            /// Cast from one machine scalar to another.
+            
             #[inline] pub fn cast<T: NumCast, U: NumCast>( n: T ) -> Option<U>
             {
                 NumCast::from( n )
             }
-            /// An interface for casting between machine scalars.
+            
             pub trait NumCast: Sized + ToPrimitive
             {
-                /// Creates a number from another value that can be converted into
-                /// a primitive via the `ToPrimitive` trait. If the source value cannot be
-                /// represented by the target type, then `None` is returned.
+                
+            
                 fn from<T: ToPrimitive>( n: T ) -> Option<Self>;
             }
             macro_rules! impl_num_cast
@@ -8317,12 +8220,10 @@ pub mod num
                     T::from( n ).map( Wrapping )
                 }
             }
-            /// Generic interface for casting between machine scalars with the `as` operator, 
-            /// which admits narrowing and precision loss.
+            
             pub trait AsPrimitive<T>: 'static + Copy where
             T: 'static + Copy,
             {
-                /// Convert a value to another, using the `as` operator.
                 fn as_( self ) -> T;
             }
             macro_rules! impl_as_primitive
@@ -8375,48 +8276,32 @@ pub mod num
             };
             /*
             */
-            /// Generic trait for floating point numbers that works with `no_std`.
             pub trait FloatCore: Num + NumCast + Neg<Output = Self> + PartialOrd + Copy
             {
-                /// Returns positive infinity.
                 fn infinity() -> Self;
-                /// Returns negative infinity.
                 fn neg_infinity() -> Self;
-                /// Returns NaN.
                 fn nan() -> Self;
-                /// Returns `-0.0`.
                 fn neg_zero() -> Self;
-                /// Returns the smallest finite value that this type can represent.
                 fn min_value() -> Self;
-                /// Returns the smallest positive, normalized value that this type can represent.
                 fn min_positive_value() -> Self;
-                /// Returns epsilon, a small positive value.
                 fn epsilon() -> Self;
-                /// Returns the largest finite value that this type can represent.
                 fn max_value() -> Self;
-                /// Returns `true` if the number is NaN.
                 #[inline] fn is_nan( self ) -> bool {
                     self != self
                 }
-                /// Returns `true` if the number is infinite.
                 #[inline] fn is_infinite( self ) -> bool {
                     self == Self::infinity() || self == Self::neg_infinity()
                 }
-                /// Returns `true` if the number is neither infinite or NaN.
                 #[inline] fn is_finite( self ) -> bool {
                     !( self.is_nan() || self.is_infinite() )
                 }
-                /// Returns `true` if the number is neither zero, infinite, subnormal or NaN.
                 #[inline] fn is_normal( self ) -> bool {
                     self.classify() == FpCategory::Normal
                 }
-                /// Returns `true` if the number is [subnormal].
                 #[inline] fn is_subnormal( self ) -> bool {
                     self.classify() == FpCategory::Subnormal
                 }
-                /// Returns the floating point category of the number.
                 fn classify( self ) -> FpCategory;
-                /// Returns the largest integer less than or equal to a number.
                 #[inline] fn floor( self ) -> Self {
                     let f = self.fract();
                     if f.is_nan() || f.is_zero() {
@@ -8430,7 +8315,6 @@ pub mod num
                         self - f
                     }
                 }
-                /// Returns the smallest integer greater than or equal to a number.
                 #[inline] fn ceil( self ) -> Self {
                     let f = self.fract();
                     if f.is_nan() || f.is_zero() {
@@ -8444,7 +8328,6 @@ pub mod num
                         self - f
                     }
                 }
-                /// Returns the nearest integer to a number. Round half-way cases away from `0.0`.
                 #[inline] fn round( self ) -> Self {
                     let one = Self::one();
                     let h = Self::from( 0.5 ).expect( "Unable to cast from 0.5" );
@@ -8469,7 +8352,6 @@ pub mod num
                         self - f - one
                     }
                 }
-                /// Return the integer part of a number.
                 #[inline] fn trunc( self ) -> Self {
                     let f = self.fract();
                     if f.is_nan() {
@@ -8481,7 +8363,6 @@ pub mod num
                         self - f
                     }
                 }
-                /// Returns the fractional part of a number.
                 #[inline] fn fract( self ) -> Self {
                     if self.is_zero() {
                         Self::zero()
@@ -8492,7 +8373,6 @@ pub mod num
                         self % Self::one()
                     }
                 }
-                /// Computes the absolute value of `self`. Returns `Float::nan()` if the number is `Float::nan()`.
                 #[inline] fn abs( self ) -> Self {
                     if self.is_sign_positive() {
                         return self;
@@ -8502,7 +8382,6 @@ pub mod num
                     }
                     Self::nan()
                 }
-                /// Returns a number that represents the sign of `self`.
                 #[inline] fn signum( self ) -> Self {
                     if self.is_nan() {
                         Self::nan()
@@ -8515,16 +8394,13 @@ pub mod num
                         Self::one()
                     }
                 }
-                /// Returns `true` if `self` is positive, including `+0.0`, `Float::infinity()`, and `Float::nan()`.
                 #[inline] fn is_sign_positive( self ) -> bool {
                     !self.is_sign_negative()
                 }
-                /// Returns `true` if `self` is negative, including `-0.0`, `Float::neg_infinity()`, and `-Float::nan()`.
                 #[inline] fn is_sign_negative( self ) -> bool {
                     let ( _, _, sign ) = self.integer_decode();
                     sign < 0
                 }
-                /// Returns the minimum of the two numbers.
                 #[inline] fn min( self, other: Self ) -> Self {
                     if self.is_nan() {
                         return other;
@@ -8541,7 +8417,6 @@ pub mod num
                         other
                     }
                 }
-                /// Returns the maximum of the two numbers.
                 #[inline] fn max( self, other: Self ) -> Self {
                     if self.is_nan() {
                         return other;
@@ -8558,15 +8433,12 @@ pub mod num
                         other
                     }
                 }
-                /// A value bounded by a minimum and a maximum.
                 fn clamp( self, min: Self, max: Self ) -> Self {
                     ::num::traits::clamp( self, min, max )
                 }
-                /// Returns the reciprocal ( multiplicative inverse ) of the number.
                 #[inline] fn recip( self ) -> Self {
                     Self::one() / self
                 }
-                /// Raise a number to an integer power.
                 #[inline] fn powi( mut self, mut exp: i32 ) -> Self {
                     if exp < 0 {
                         exp = exp.wrapping_neg();
@@ -8577,11 +8449,8 @@ pub mod num
                    
                     super::pow( self, ( exp as u32 ).to_usize().unwrap() )
                 }
-                /// Converts to degrees, assuming the number is in radians.
                 fn to_degrees( self ) -> Self;
-                /// Converts to radians, assuming the number is in degrees.
                 fn to_radians( self ) -> Self;
-                /// Returns the mantissa, base 2 exponent, and sign as integers, respectively.
                 fn integer_decode( self ) -> ( u64, i16, i8 );
             }
             
@@ -8680,142 +8549,82 @@ pub mod num
                     Self::powi( self, n: i32 ) -> Self;
                 }
             }
-            /// Generic trait for floating point numbers
+            
             pub trait Float: Num + Copy + NumCast + PartialOrd + Neg<Output = Self>
             {
-                /// Returns the `NaN` value.
                 fn nan() -> Self;
-                /// Returns the infinite value.
                 fn infinity() -> Self;
-                /// Returns the negative infinite value.
                 fn neg_infinity() -> Self;
-                /// Returns `-0.0`.
                 fn neg_zero() -> Self;
-                /// Returns the smallest finite value that this type can represent.
                 fn min_value() -> Self;
-                /// Returns the smallest positive, normalized value that this type can represent.
                 fn min_positive_value() -> Self;
-                /// Returns epsilon, a small positive value.
                 fn epsilon() -> Self {
                     Self::from( f32::EPSILON ).expect( "Unable to cast from f32::EPSILON" )
                 }
-                /// Returns the largest finite value that this type can represent.
                 fn max_value() -> Self;
-                /// Returns `true` if this value is `NaN` and false otherwise.
                 fn is_nan( self ) -> bool;
-                /// Returns `true` if this value is positive infinity or negative infinity and false otherwise.
                 fn is_infinite( self ) -> bool;
-                /// Returns `true` if this number is neither infinite nor `NaN`.
                 fn is_finite( self ) -> bool;
-                /// Returns `true` if the number is neither zero, infinite, subnormal, or `NaN`.
                 fn is_normal( self ) -> bool;
-                /// Returns `true` if the number is [subnormal].
                 #[inline] fn is_subnormal( self ) -> bool {
                     self.classify() == FpCategory::Subnormal
                 }
-                /// Returns the floating point category of the number.
                 fn classify( self ) -> FpCategory;
-                /// Returns the largest integer less than or equal to a number.
                 fn floor( self ) -> Self;
-                /// Returns the smallest integer greater than or equal to a number.
                 fn ceil( self ) -> Self;
-                /// Returns the nearest integer to a number. Round half-way cases away from `0.0`.
                 fn round( self ) -> Self;
-                /// Return the integer part of a number.
                 fn trunc( self ) -> Self;
-                /// Returns the fractional part of a number.
                 fn fract( self ) -> Self;
-                /// Computes the absolute value of `self`. Returns `Float::nan()` if the number is `Float::nan()`.
                 fn abs( self ) -> Self;
-                /// Returns a number that represents the sign of `self`.
                 fn signum( self ) -> Self;
-                /// Returns `true` if `self` is positive, including `+0.0`, `Float::infinity()`, `Float::nan()`.
                 fn is_sign_positive( self ) -> bool;
-                /// Returns `true` if `self` is negative, including `-0.0`, `Float::neg_infinity()`, `-Float::nan()`.
                 fn is_sign_negative( self ) -> bool;
-                /// Fused multiply-add.
                 fn mul_add( self, a: Self, b: Self ) -> Self;
-                /// Take the reciprocal ( inverse ) of a number, `1/x`.
                 fn recip( self ) -> Self;
-                /// Raise a number to an integer power.
                 fn powi( self, n: i32 ) -> Self;
-                /// Raise a number to a floating point power.
                 fn powf( self, n: Self ) -> Self;
-                /// Take the square root of a number.
                 fn sqrt( self ) -> Self;
-                /// Returns `e^( self )`, ( the exponential function ).
                 fn exp( self ) -> Self;
-                /// Returns `2^( self )`.
                 fn exp2( self ) -> Self;
-                /// Returns the natural logarithm of the number.
                 fn ln( self ) -> Self;
-                /// Returns the logarithm of the number with respect to an arbitrary base.
                 fn log( self, base: Self ) -> Self;
-                /// Returns the base 2 logarithm of the number.
                 fn log2( self ) -> Self;
-                /// Returns the base 10 logarithm of the number.
                 fn log10( self ) -> Self;
-                /// Converts radians to degrees.
                 #[inline] fn to_degrees( self ) -> Self {
                     let halfpi = Self::zero().acos();
                     let ninety = Self::from( 90u8 ).unwrap();
                     self * ninety / halfpi
                 }
-                /// Converts degrees to radians.
                 #[inline] fn to_radians( self ) -> Self {
                     let halfpi = Self::zero().acos();
                     let ninety = Self::from( 90u8 ).unwrap();
                     self * halfpi / ninety
                 }
-                /// Returns the maximum of the two numbers.
                 fn max( self, other: Self ) -> Self;
-                /// Returns the minimum of the two numbers.
                 fn min( self, other: Self ) -> Self;
-                /// Clamps a value between a min and max.
                 fn clamp( self, min: Self, max: Self ) -> Self {
                     num::traits::clamp( self, min, max )
                 }
-                /// The positive difference of two numbers.
                 fn abs_sub( self, other: Self ) -> Self;
-                /// Take the cubic root of a number.
                 fn cbrt( self ) -> Self;
-                /// Calculate the length of the hypotenuse of a right-angle triangle, legs of length `x` and `y`.
                 fn hypot( self, other: Self ) -> Self;
-                /// Computes the sine of a number ( in radians ).
                 fn sin( self ) -> Self;
-                /// Computes the cosine of a number ( in radians ).
                 fn cos( self ) -> Self;
-                /// Computes the tangent of a number ( in radians ).
                 fn tan( self ) -> Self;
-                /// Computes the arcsine of a number.
                 fn asin( self ) -> Self;
-                /// Computes the arccosine of a number.
                 fn acos( self ) -> Self;
-                /// Computes the arctangent of a number.
                 fn atan( self ) -> Self;
-                /// Computes the four quadrant arctangent of `self` ( `y` ) and `other` ( `x` ).
                 fn atan2( self, other: Self ) -> Self;
-                /// Simultaneously computes the sine and cosine of the number, `x`.
                 fn sin_cos( self ) -> ( Self, Self );
-                /// Returns `e^( self ) - 1` in a way that is accurate even if the number is close to zero.
                 fn exp_m1( self ) -> Self;
-                /// Returns `ln( 1+n )` more accurately than if the operations were performed separately.
                 fn ln_1p( self ) -> Self;
-                /// Hyperbolic sine function.
                 fn sinh( self ) -> Self;
-                /// Hyperbolic cosine function.
                 fn cosh( self ) -> Self;
-                /// Hyperbolic tangent function.
                 fn tanh( self ) -> Self;
-                /// Inverse hyperbolic sine function.
                 fn asinh( self ) -> Self;
-                /// Inverse hyperbolic cosine function.
                 fn acosh( self ) -> Self;
-                /// Inverse hyperbolic tangent function.
                 fn atanh( self ) -> Self;
-                /// Returns the mantissa, base 2 exponent, and sign as integers, respectively.
                 fn integer_decode( self ) -> ( u64, i16, i8 );
-                /// Returns a number composed of the magnitude of `self` and the sign of `sign`.
                 fn copysign( self, sign: Self ) -> Self {
                     if self.is_sign_negative() == sign.is_sign_negative() {
                         self
@@ -8925,6 +8734,7 @@ pub mod num
                 exponent -= 127 + 23;
                 ( mantissa as u64, exponent, sign )
             }
+            
             fn integer_decode_f64( f: f64 ) -> ( u64, i16, i8 )
             {
                 let bits: u64 = f.to_bits();
@@ -9016,10 +8826,9 @@ pub mod num
                 #[doc = "Return `sqrt( 2.0 )`."]
                 SQRT_2,
             }
-            /// Trait for floating point numbers that provide an implementation of the `totalOrder` predicate.
+            
             pub trait TotalOrder
             {
-                /// Return the ordering between `self` and `other`.
                 fn total_cmp( &self, other:&Self ) -> Ordering;
             }
             macro_rules! totalorder_impl
@@ -9061,23 +8870,17 @@ pub mod num
             };
             /*
             */
-            /// Defines an additive identity element for `Self`.
             pub trait Zero: Sized + Add<Self, Output = Self>
             {
-                /// Returns the additive identity element of `Self`, `0`.
-               
                 fn zero() -> Self;
-                /// Sets `self` to the additive identity element of `Self`, `0`.
                 fn set_zero( &mut self ) {
                     *self = Zero::zero();
                 }
-                /// Returns `true` if `self` is equal to the additive identity.
                 fn is_zero( &self ) -> bool;
             }
-            /// Defines an associated constant representing the additive identity element for `Self`.
+            
             pub trait ConstZero: Zero
             {
-                /// The additive identity element of `Self`, `0`.
                 const ZERO: Self;
             }
             macro_rules! zero_impl
@@ -9132,6 +8935,7 @@ pub mod num
             {
                 const ZERO: Self = Wrapping( T::ZERO );
             }
+            
             #[cfg( has_num_saturating )]
             impl<T: Zero> Zero for Saturating<T> where
                 Saturating<T>: Add<Output = Saturating<T>>,
@@ -9146,22 +8950,19 @@ pub mod num
                     Saturating( T::zero() )
                 }
             }
+            
             #[cfg( has_num_saturating )]
             impl<T: ConstZero> ConstZero for Saturating<T> where
                 Saturating<T>: Add<Output = Saturating<T>>,
             {
                 const ZERO: Self = Saturating( T::ZERO );
             }
-            /// Defines a multiplicative identity element for `Self`.
+            
             pub trait One: Sized + Mul<Self, Output = Self> {
-                /// Returns the multiplicative identity element of `Self`, `1`.
-               
                 fn one() -> Self;
-                /// Sets `self` to the multiplicative identity element of `Self`, `1`.
                 fn set_one( &mut self ) {
                     *self = One::one();
                 }
-                /// Returns `true` if `self` is equal to the multiplicative identity.
                 #[inline] fn is_one( &self ) -> bool
                 where
                     Self: PartialEq,
@@ -9169,9 +8970,8 @@ pub mod num
                     *self == Self::one()
                 }
             }
-            /// Defines an associated constant representing the multiplicative identity element for `Self`.
+            
             pub trait ConstOne: One {
-                /// The multiplicative identity element of `Self`, `1`.
                 const ONE: Self;
             }
 
@@ -9224,6 +9024,7 @@ pub mod num
             {
                 const ONE: Self = Wrapping( T::ONE );
             }
+            
             #[cfg( has_num_saturating )]
             impl<T: One> One for Saturating<T> where
                 Saturating<T>: Mul<Output = Saturating<T>>,
@@ -9235,6 +9036,7 @@ pub mod num
                     Saturating( T::one() )
                 }
             }
+            
             #[cfg( has_num_saturating )]
             impl<T: ConstOne> ConstOne for Saturating<T> where
                 Saturating<T>: Mul<Output = Saturating<T>>,
@@ -9243,11 +9045,10 @@ pub mod num
             }
            
 
-            /// Returns the additive identity, `0`.
             #[inline( always )] pub fn zero<T: Zero>() -> T {
                 Zero::zero()
             }
-            /// Returns the multiplicative identity, `1`.
+            
             #[inline( always )] pub fn one<T: One>() -> T {
                 One::one()
             }
@@ -9275,7 +9076,6 @@ pub mod num
             };
             /*
             */
-            /// Generic trait for primitive integers.
             pub trait PrimInt:
                 Sized
                 + Copy
@@ -9297,61 +9097,53 @@ pub mod num
                 + CheckedDiv<Output = Self>
                 + Saturating
             {
-                /// Returns the number of ones in the binary representation of `self`.
                 fn count_ones( self ) -> u32;
-                /// Returns the number of zeros in the binary representation of `self`.
                 fn count_zeros( self ) -> u32;
-                /// Returns the number of leading ones in the binary representation
-                /// of `self`.
+                
+            
                 fn leading_ones( self ) -> u32 {
                     ( !self ).leading_zeros()
                 }
-                /// Returns the number of leading zeros in the binary representation
-                /// of `self`.
+                
+            
                 fn leading_zeros( self ) -> u32;
-                /// Returns the number of trailing ones in the binary representation
-                /// of `self`.
+                
+            
                 fn trailing_ones( self ) -> u32 {
                     ( !self ).trailing_zeros()
                 }
-                /// Returns the number of trailing zeros in the binary representation
-                /// of `self`.
+                
+            
                 fn trailing_zeros( self ) -> u32;
-                /// Shifts the bits to the left by a specified amount, `n`, wrapping
-                /// the truncated bits to the end of the resulting integer.
+                
+            
                 fn rotate_left( self, n: u32 ) -> Self;
-                /// Shifts the bits to the right by a specified amount, `n`, wrapping
-                /// the truncated bits to the beginning of the resulting integer.
+                
+            
                 fn rotate_right( self, n: u32 ) -> Self;
-                /// Shifts the bits to the left by a specified amount, `n`, filling
-                /// zeros in the least significant bits.
+                
+            
                 fn signed_shl( self, n: u32 ) -> Self;
-                /// Shifts the bits to the right by a specified amount, `n`, copying
-                /// the "sign bit" in the most significant bits even for unsigned types.
+                
+            
                 fn signed_shr( self, n: u32 ) -> Self;
-                /// Shifts the bits to the left by a specified amount, `n`, filling
-                /// zeros in the least significant bits.
+                
+            
                 fn unsigned_shl( self, n: u32 ) -> Self;
-                /// Shifts the bits to the right by a specified amount, `n`, filling
-                /// zeros in the most significant bits.
+                
+            
                 fn unsigned_shr( self, n: u32 ) -> Self;
-                /// Reverses the byte order of the integer.
                 fn swap_bytes( self ) -> Self;
-                /// Reverses the order of bits in the integer.
                 fn reverse_bits( self ) -> Self {
                     reverse_bits_fallback( self )
                 }
-                /// Convert an integer from big endian to the target's endianness.
                 fn from_be( x: Self ) -> Self;
-                /// Convert an integer from little endian to the target's endianness.
                 fn from_le( x: Self ) -> Self;
-                /// Convert `self` to big endian from the target's endianness.
                 fn to_be( self ) -> Self;
-                /// Convert `self` to little endian from the target's endianness.
                 fn to_le( self ) -> Self;
-                /// Raises self to the power of `exp`, using exponentiation by squaring.
                 fn pow( self, exp: u32 ) -> Self;
             }
+            
             fn one_per_byte<P: PrimInt>() -> P {
                
                
@@ -9367,6 +9159,7 @@ pub mod num
                 }
                 ret
             }
+            
             fn reverse_bits_fallback<P: PrimInt>( i: P ) -> P {
                 let rep_01: P = one_per_byte();
                 let rep_03 = ( rep_01 << 1 ) | rep_01;
@@ -9513,13 +9306,10 @@ pub mod num
                 pub trait ToBytes {
                     type Bytes: NumBytes;
 
-                    /// Return the memory representation of this number as a byte array in big-endian byte order.
                     fn to_be_bytes( &self ) -> Self::Bytes;
 
-                    /// Return the memory representation of this number as a byte array in little-endian byte order.
                     fn to_le_bytes( &self ) -> Self::Bytes;
 
-                    /// Return the memory representation of this number as a byte array in native byte order.
                     fn to_ne_bytes( &self ) -> Self::Bytes {
                         #[cfg( target_endian = "big" )]
                         let bytes = self.to_be_bytes();
@@ -9531,13 +9321,10 @@ pub mod num
                 pub trait FromBytes: Sized {
                     type Bytes: NumBytes + ?Sized;
 
-                    /// Create a number from its representation as a byte array in big endian.
                     fn from_be_bytes( bytes:&Self::Bytes ) -> Self;
 
-                    /// Create a number from its representation as a byte array in little endian.
                     fn from_le_bytes( bytes:&Self::Bytes ) -> Self;
 
-                    /// Create a number from its memory representation as a byte array in native endianness.
                     fn from_ne_bytes( bytes:&Self::Bytes ) -> Self {
                         #[cfg( target_endian = "big" )]
                         let this = Self::from_be_bytes( bytes );
@@ -9653,10 +9440,9 @@ pub mod num
                 };
                 /*
                 */
-                /// Performs addition, returning `None` if overflow occurred.
                 pub trait CheckedAdd: Sized + Add<Self, Output = Self> {
-                    /// Adds two numbers, checking for overflow. If overflow happens, `None` is
-                    /// returned.
+                    
+            
                     fn checked_add( &self, v:&Self ) -> Option<Self>;
                 }
                 macro_rules! checked_impl {
@@ -9682,10 +9468,9 @@ pub mod num
                 checked_impl!( CheckedAdd, checked_add, i64 );
                 checked_impl!( CheckedAdd, checked_add, isize );
                 checked_impl!( CheckedAdd, checked_add, i128 );
-                /// Performs subtraction, returning `None` if overflow occurred.
                 pub trait CheckedSub: Sized + Sub<Self, Output = Self> {
-                    /// Subtracts two numbers, checking for overflow. If overflow happens,
-                    /// `None` is returned.
+                    
+            
                     fn checked_sub( &self, v:&Self ) -> Option<Self>;
                 }
                 checked_impl!( CheckedSub, checked_sub, u8 );
@@ -9701,10 +9486,9 @@ pub mod num
                 checked_impl!( CheckedSub, checked_sub, i64 );
                 checked_impl!( CheckedSub, checked_sub, isize );
                 checked_impl!( CheckedSub, checked_sub, i128 );
-                /// Performs multiplication, returning `None` if overflow occurred.
                 pub trait CheckedMul: Sized + Mul<Self, Output = Self> {
-                    /// Multiplies two numbers, checking for overflow. If overflow happens,
-                    /// `None` is returned.
+                    
+            
                     fn checked_mul( &self, v:&Self ) -> Option<Self>;
                 }
                 checked_impl!( CheckedMul, checked_mul, u8 );
@@ -9720,11 +9504,9 @@ pub mod num
                 checked_impl!( CheckedMul, checked_mul, i64 );
                 checked_impl!( CheckedMul, checked_mul, isize );
                 checked_impl!( CheckedMul, checked_mul, i128 );
-                /// Performs division, returning `None` on division by zero or if overflow
-                /// occurred.
                 pub trait CheckedDiv: Sized + Div<Self, Output = Self> {
-                    /// Divides two numbers, checking for overflow and division by
-                    /// zero. If any of that happens, `None` is returned.
+                    
+            
                     fn checked_div( &self, v:&Self ) -> Option<Self>;
                 }
                 checked_impl!( CheckedDiv, checked_div, u8 );
@@ -9740,9 +9522,7 @@ pub mod num
                 checked_impl!( CheckedDiv, checked_div, i64 );
                 checked_impl!( CheckedDiv, checked_div, isize );
                 checked_impl!( CheckedDiv, checked_div, i128 );
-                /// Performs integral remainder, returning `None` on division by zero or if overflow occurred.
                 pub trait CheckedRem: Sized + Rem<Self, Output = Self> {
-                    /// Finds the remainder of dividing two numbers, checking for overflow and division by zero.
                     fn checked_rem( &self, v:&Self ) -> Option<Self>;
                 }
                 checked_impl!( CheckedRem, checked_rem, u8 );
@@ -9769,10 +9549,9 @@ pub mod num
                         }
                     };
                 }
-                /// Performs negation, returning `None` if the result can't be represented.
                 pub trait CheckedNeg: Sized {
-                    /// Negates a number, returning `None` for results that can't be represented, like signed `MIN`
-                    /// values that can't be positive, or non-zero unsigned values that can't be negative.
+                    
+            
                     fn checked_neg( &self ) -> Option<Self>;
                 }
                 checked_impl_unary!( CheckedNeg, checked_neg, u8 );
@@ -9788,10 +9567,9 @@ pub mod num
                 checked_impl_unary!( CheckedNeg, checked_neg, i64 );
                 checked_impl_unary!( CheckedNeg, checked_neg, isize );
                 checked_impl_unary!( CheckedNeg, checked_neg, i128 );
-                /// Performs shift left, returning `None` on shifts larger than or equal to the type width.
                 pub trait CheckedShl: Sized + Shl<u32, Output = Self> {
-                    /// Checked shift left. Computes `self << rhs`, returning `None`
-                    /// if `rhs` is larger than or equal to the number of bits in `self`.
+                    
+            
                     fn checked_shl( &self, rhs: u32 ) -> Option<Self>;
                 }
                 macro_rules! checked_shift_impl {
@@ -9817,9 +9595,7 @@ pub mod num
                 checked_shift_impl!( CheckedShl, checked_shl, i64 );
                 checked_shift_impl!( CheckedShl, checked_shl, isize );
                 checked_shift_impl!( CheckedShl, checked_shl, i128 );
-                /// Performs shift right, returning `None` on shifts larger than or equal to the type width.
                 pub trait CheckedShr: Sized + Shr<u32, Output = Self> {
-                    /// Checked shift right.
                     fn checked_shr( &self, rhs: u32 ) -> Option<Self>;
                 }
                 checked_shift_impl!( CheckedShr, checked_shr, u8 );
@@ -9850,13 +9626,10 @@ pub mod num
                 /*
                 */
                 pub trait Euclid: Sized + Div<Self, Output = Self> + Rem<Self, Output = Self> {
-                    /// Calculates Euclidean division, the matching method for `rem_euclid`.
                     fn div_euclid( &self, v:&Self ) -> Self;
 
-                    /// Calculates the least nonnegative remainder of `self ( mod v )`.
                     fn rem_euclid( &self, v:&Self ) -> Self;
 
-                    /// Returns both the quotient and remainder from Euclidean division.
                     fn div_rem_euclid( &self, v:&Self ) -> ( Self, Self ) {
                         ( self.div_euclid( v ), self.rem_euclid( v ) )
                     }
@@ -9882,15 +9655,14 @@ pub mod num
 
                 pub trait CheckedEuclid: Euclid
                 {
-                    /// Performs euclid division, returning `None` on division by zero or if overflow occurred.
                     fn checked_div_euclid( &self, v:&Self ) -> Option<Self>;
 
-                    /// Finds the euclid remainder of dividing two numbers, returning `None` on
-                    /// division by zero or if overflow occurred.
+                    
+            
                     fn checked_rem_euclid( &self, v:&Self ) -> Option<Self>;
 
-                    /// Returns both the quotient and remainder from checked Euclidean division,
-                    /// returning `None` on division by zero or if overflow occurred.
+                    
+            
                     fn checked_div_rem_euclid( &self, v:&Self ) -> Option<( Self, Self )> {
                         Some( ( self.checked_div_euclid( v )?, self.checked_rem_euclid( v )? ) )
                     }
@@ -9924,12 +9696,9 @@ pub mod num
                 };
                 /*
                 */
-                /// Unary operator for retrieving the multiplicative inverse, or reciprocal, of a value.
                 pub trait Inv {
-                    /// The result after applying the operator.
                     type Output;
 
-                    /// Returns the multiplicative inverse of `self`.
                     fn inv( self ) -> Self::Output;
                 }
                 impl Inv for f32 {
@@ -9968,19 +9737,14 @@ pub mod num
                 };
                 /*
                 */
-                /// Fused multiply-add.
                 pub trait MulAdd<A = Self, B = Self> 
                 {
-                    /// The resulting type after applying the fused multiply-add.
                     type Output;
 
-                    /// Performs the fused multiply-add operation `( self * a ) + b`
                     fn mul_add( self, a: A, b: B ) -> Self::Output;
                 }
-                /// The fused multiply-add assignment operation `*self = ( *self * a ) + b`
                 pub trait MulAddAssign<A = Self, B = Self> 
                 {
-                    /// Performs the fused multiply-add assignment operation `*self = ( *self * a ) + b`
                     fn mul_add_assign( &mut self, a: A, b: B );
                 }
                 
@@ -10066,10 +9830,9 @@ pub mod num
                         }
                     };
                 }
-                /// Performs addition with a flag for overflow.
                 pub trait OverflowingAdd: Sized + Add<Self, Output = Self> {
-                    /// Returns a tuple of the sum along with a boolean indicating whether an arithmetic overflow would occur.
-                    /// If an overflow would have occurred then the wrapped value is returned.
+                    
+            
                     fn overflowing_add( &self, v:&Self ) -> ( Self, bool );
                 }
                 overflowing_impl!( OverflowingAdd, overflowing_add, u8 );
@@ -10085,10 +9848,9 @@ pub mod num
                 overflowing_impl!( OverflowingAdd, overflowing_add, i64 );
                 overflowing_impl!( OverflowingAdd, overflowing_add, isize );
                 overflowing_impl!( OverflowingAdd, overflowing_add, i128 );
-                /// Performs substraction with a flag for overflow.
                 pub trait OverflowingSub: Sized + Sub<Self, Output = Self> {
-                    /// Returns a tuple of the difference along with a boolean indicating whether an arithmetic overflow would occur.
-                    /// If an overflow would have occurred then the wrapped value is returned.
+                    
+            
                     fn overflowing_sub( &self, v:&Self ) -> ( Self, bool );
                 }
                 overflowing_impl!( OverflowingSub, overflowing_sub, u8 );
@@ -10104,10 +9866,9 @@ pub mod num
                 overflowing_impl!( OverflowingSub, overflowing_sub, i64 );
                 overflowing_impl!( OverflowingSub, overflowing_sub, isize );
                 overflowing_impl!( OverflowingSub, overflowing_sub, i128 );
-                /// Performs multiplication with a flag for overflow.
                 pub trait OverflowingMul: Sized + Mul<Self, Output = Self> {
-                    /// Returns a tuple of the product along with a boolean indicating whether an arithmetic overflow would occur.
-                    /// If an overflow would have occurred then the wrapped value is returned.
+                    
+            
                     fn overflowing_mul( &self, v:&Self ) -> ( Self, bool );
                 }
                 overflowing_impl!( OverflowingMul, overflowing_mul, u8 );
@@ -10136,15 +9897,14 @@ pub mod num
                 };
                 /*
                 */
-                /// Saturating math operations. Deprecated.
                 pub trait Saturating
                 {
-                    /// Saturating addition operator.
-                    /// Returns a+b, saturating at the numeric bounds instead of overflowing.
+                    
+            
                     fn saturating_add( self, v: Self ) -> Self;
 
-                    /// Saturating subtraction operator.
-                    /// Returns a-b, saturating at the numeric bounds instead of overflowing.
+                    
+            
                     fn saturating_sub( self, v: Self ) -> Self;
                 }
                 macro_rules! deprecated_saturating_impl
@@ -10176,11 +9936,10 @@ pub mod num
                         }
                     };
                 }
-                /// Performs addition that saturates at the numeric bounds instead of overflowing.
                 pub trait SaturatingAdd: Sized + Add<Self, Output = Self>
                 {
-                    /// Saturating addition. Computes `self + other`, saturating at the relevant high or low boundary of
-                    /// the type.
+                    
+            
                     fn saturating_add( &self, v:&Self ) -> Self;
                 }
                 saturating_impl!( SaturatingAdd, saturating_add, u8 );
@@ -10196,11 +9955,10 @@ pub mod num
                 saturating_impl!( SaturatingAdd, saturating_add, i64 );
                 saturating_impl!( SaturatingAdd, saturating_add, isize );
                 saturating_impl!( SaturatingAdd, saturating_add, i128 );
-                /// Performs subtraction that saturates at the numeric bounds instead of overflowing.
                 pub trait SaturatingSub: Sized + Sub<Self, Output = Self> 
                 {
-                    /// Saturating subtraction. Computes `self - other`, saturating at the relevant high or low boundary of
-                    /// the type.
+                    
+            
                     fn saturating_sub( &self, v:&Self ) -> Self;
                 }
                 saturating_impl!( SaturatingSub, saturating_sub, u8 );
@@ -10216,11 +9974,10 @@ pub mod num
                 saturating_impl!( SaturatingSub, saturating_sub, i64 );
                 saturating_impl!( SaturatingSub, saturating_sub, isize );
                 saturating_impl!( SaturatingSub, saturating_sub, i128 );
-                /// Performs multiplication that saturates at the numeric bounds instead of overflowing.
                 pub trait SaturatingMul: Sized + Mul<Self, Output = Self> 
                 {
-                    /// Saturating multiplication. Computes `self * other`, saturating at the relevant high or low boundary of
-                    /// the type.
+                    
+            
                     fn saturating_mul( &self, v:&Self ) -> Self;
                 }
                 saturating_impl!( SaturatingMul, saturating_mul, u8 );
@@ -10269,11 +10026,10 @@ pub mod num
                         }
                     };
                 }
-                /// Performs addition that wraps around on overflow.
                 pub trait WrappingAdd: Sized + Add<Self, Output = Self>
                 {
-                    /// Wrapping ( modular ) addition. Computes `self + other`, wrapping around at the boundary of
-                    /// the type.
+                    
+            
                     fn wrapping_add( &self, v:&Self ) -> Self;
                 }
                 wrapping_impl!( WrappingAdd, wrapping_add, u8 );
@@ -10289,11 +10045,10 @@ pub mod num
                 wrapping_impl!( WrappingAdd, wrapping_add, i64 );
                 wrapping_impl!( WrappingAdd, wrapping_add, isize );
                 wrapping_impl!( WrappingAdd, wrapping_add, i128 );
-                /// Performs subtraction that wraps around on overflow.
                 pub trait WrappingSub: Sized + Sub<Self, Output = Self>
                 {
-                    /// Wrapping ( modular ) subtraction. Computes `self - other`, wrapping around at the boundary
-                    /// of the type.
+                    
+            
                     fn wrapping_sub( &self, v:&Self ) -> Self;
                 }
                 wrapping_impl!( WrappingSub, wrapping_sub, u8 );
@@ -10309,11 +10064,10 @@ pub mod num
                 wrapping_impl!( WrappingSub, wrapping_sub, i64 );
                 wrapping_impl!( WrappingSub, wrapping_sub, isize );
                 wrapping_impl!( WrappingSub, wrapping_sub, i128 );
-                /// Performs multiplication that wraps around on overflow.
                 pub trait WrappingMul: Sized + Mul<Self, Output = Self>
                 {
-                    /// Wrapping ( modular ) multiplication. Computes `self * other`, wrapping around at the boundary
-                    /// of the type.
+                    
+            
                     fn wrapping_mul( &self, v:&Self ) -> Self;
                 }
                 wrapping_impl!( WrappingMul, wrapping_mul, u8 );
@@ -10341,11 +10095,10 @@ pub mod num
                         }
                     };
                 }
-                /// Performs a negation that does not panic.
                 pub trait WrappingNeg: Sized 
                 {
-                    /// Wrapping ( modular ) negation. Computes `-self`,
-                    /// wrapping around at the boundary of the type.
+                    
+            
                     fn wrapping_neg( &self ) -> Self;
                 }
                 wrapping_unary_impl!( WrappingNeg, wrapping_neg, u8 );
@@ -10372,12 +10125,10 @@ pub mod num
                         }
                     };
                 }
-                /// Performs a left shift that does not panic.
                 pub trait WrappingShl: Sized + Shl<usize, Output = Self> 
                 {
-                    /// Panic-free bitwise shift-left; yields `self << mask( rhs )`,
-                    /// where `mask` removes any high order bits of `rhs` that would
-                    /// cause the shift to exceed the bitwidth of the type.
+                    
+            
                     fn wrapping_shl( &self, rhs: u32 ) -> Self;
                 }
                 wrapping_shift_impl!( WrappingShl, wrapping_shl, u8 );
@@ -10393,12 +10144,10 @@ pub mod num
                 wrapping_shift_impl!( WrappingShl, wrapping_shl, i64 );
                 wrapping_shift_impl!( WrappingShl, wrapping_shl, isize );
                 wrapping_shift_impl!( WrappingShl, wrapping_shl, i128 );
-                /// Performs a right shift that does not panic.
                 pub trait WrappingShr: Sized + Shr<usize, Output = Self> 
                 {
-                    /// Panic-free bitwise shift-right; yields `self >> mask( rhs )`,
-                    /// where `mask` removes any high order bits of `rhs` that would
-                    /// cause the shift to exceed the bitwidth of the type.
+                    
+            
                     fn wrapping_shr( &self, rhs: u32 ) -> Self;
                 }
                 wrapping_shift_impl!( WrappingShr, wrapping_shr, u8 );
@@ -10483,12 +10232,9 @@ pub mod num
             };
             /*
             */
-            /// Binary operator for raising a value to a power.
             pub trait Pow<RHS>
             {
-                /// The result after applying the operator.
                 type Output;
-                /// Returns `self` to the power `rhs`.
                 fn pow( self, rhs: RHS ) -> Self::Output;
             }
             macro_rules! pow_impl {
@@ -10604,7 +10350,6 @@ pub mod num
             pow_impl!( f32, f32, f32, <f32 as Float>::powf );
             pow_impl!( f64, f32, f64, <f64 as Float>::powf );
             pow_impl!( f64, f64, f64, <f64 as Float>::powf );            
-            /// Raises a value to the power of exp, using exponentiation by squaring.
             #[inline] pub fn pow<T: Clone + One + Mul<T, Output = T>>( mut base: T, mut exp: usize ) -> T 
             {
                 if exp == 0 {
@@ -10627,7 +10372,7 @@ pub mod num
                 }
                 acc
             }
-            /// Raises a value to the power of exp, returning `None` if an overflow occurred.
+            
             #[inline] pub fn checked_pow<T: Clone + One + CheckedMul>( mut base: T, mut exp: usize ) -> Option<T> 
             {
                 if exp == 0 {
@@ -10663,105 +10408,58 @@ pub mod num
             };
             /*
             */
-            /// A trait for real number types that do not necessarily have
-            /// floating-point-specific characteristics such as NaN and infinity.
             pub trait Real: Num + Copy + NumCast + PartialOrd + Neg<Output = Self>
             {
-                /// Returns the smallest finite value that this type can represent.
                 fn min_value() -> Self;
-                /// Returns the smallest positive, normalized value that this type can represent.
                 fn min_positive_value() -> Self;
-                /// Returns epsilon, a small positive value.
                 fn epsilon() -> Self;
-                /// Returns the largest finite value that this type can represent.
                 fn max_value() -> Self;
-                /// Returns the largest integer less than or equal to a number.
                 fn floor( self ) -> Self;
-                /// Returns the smallest integer greater than or equal to a number.
                 fn ceil( self ) -> Self;
-                /// Returns the nearest integer to a number.
                 fn round( self ) -> Self;
-                /// Return the integer part of a number.
                 fn trunc( self ) -> Self;
-                /// Returns the fractional part of a number.
                 fn fract( self ) -> Self;
-                /// Computes the absolute value of `self`.
                 fn abs( self ) -> Self;
-                /// Returns a number that represents the sign of `self`.
                 fn signum( self ) -> Self;
-                /// Returns `true` if `self` is positive, including `+0.0`,
-                /// `Float::infinity()`, and with newer versions of Rust `f64::NAN`.
+                
+            
                 fn is_sign_positive( self ) -> bool;
-                /// Returns `true` if `self` is negative, including `-0.0`,
-                /// `Float::neg_infinity()`, and with newer versions of Rust `-f64::NAN`.
+                
+            
                 fn is_sign_negative( self ) -> bool;
-                /// Fused multiply-add.
                 fn mul_add( self, a: Self, b: Self ) -> Self;
-                /// Take the reciprocal ( inverse ) of a number, `1/x`.
                 fn recip( self ) -> Self;
-                /// Raise a number to an integer power.
                 fn powi( self, n: i32 ) -> Self;
-                /// Raise a number to a real number power.
                 fn powf( self, n: Self ) -> Self;
-                /// Take the square root of a number.
                 fn sqrt( self ) -> Self;
-                /// Returns `e^( self )`, ( the exponential function ).
                 fn exp( self ) -> Self;
-                /// Returns `2^( self )`.
                 fn exp2( self ) -> Self;
-                /// Returns the natural logarithm of the number.
                 fn ln( self ) -> Self;
-                /// Returns the logarithm of the number with respect to an arbitrary base.
                 fn log( self, base: Self ) -> Self;
-                /// Returns the base 2 logarithm of the number.
                 fn log2( self ) -> Self;
-                /// Returns the base 10 logarithm of the number.
                 fn log10( self ) -> Self;
-                /// Converts radians to degrees.
                 fn to_degrees( self ) -> Self;
-                /// Converts degrees to radians.
                 fn to_radians( self ) -> Self;
-                /// Returns the maximum of the two numbers.
                 fn max( self, other: Self ) -> Self;
-                /// Returns the minimum of the two numbers.
                 fn min( self, other: Self ) -> Self;
-                /// The positive difference of two numbers.
                 fn abs_sub( self, other: Self ) -> Self;
-                /// Take the cubic root of a number.
                 fn cbrt( self ) -> Self;
-                /// Calculate the length of the hypotenuse of a right-angle triangle given legs of length `x` and `y`.
                 fn hypot( self, other: Self ) -> Self;
-                /// Computes the sine of a number ( in radians ).
                 fn sin( self ) -> Self;
-                /// Computes the cosine of a number ( in radians ).
                 fn cos( self ) -> Self;
-                /// Computes the tangent of a number ( in radians ).
                 fn tan( self ) -> Self;
-                /// Computes the arcsine of a number.
                 fn asin( self ) -> Self;
-                /// Computes the arccosine of a number.
                 fn acos( self ) -> Self;
-                /// Computes the arctangent of a number.
                 fn atan( self ) -> Self;
-                /// Computes the four quadrant arctangent of `self` ( `y` ) and `other` ( `x` ).
                 fn atan2( self, other: Self ) -> Self;
-                /// Simultaneously computes the sine and cosine of the number, `x`.
                 fn sin_cos( self ) -> ( Self, Self );
-                /// Returns `e^( self ) - 1` in a way that is accurate even if the number is close to zero.
                 fn exp_m1( self ) -> Self;
-                /// Returns `ln( 1+n )` more accurately than if the operations were performed separately.
                 fn ln_1p( self ) -> Self;
-                /// Hyperbolic sine function.
                 fn sinh( self ) -> Self;
-                /// Hyperbolic cosine function.
                 fn cosh( self ) -> Self;
-                /// Hyperbolic tangent function.
                 fn tanh( self ) -> Self;
-                /// Inverse hyperbolic sine function.
                 fn asinh( self ) -> Self;
-                /// Inverse hyperbolic cosine function.
                 fn acosh( self ) -> Self;
-                /// Inverse hyperbolic tangent function.
                 fn atanh( self ) -> Self;
             }
             
@@ -10834,19 +10532,14 @@ pub mod num
             };
             /*
             */
-            /// Useful functions for signed numbers ( i.e. numbers that can be negative ).
             pub trait Signed: Sized + Num + Neg<Output = Self>
             {
-                /// Computes the absolute value.
                 fn abs( &self ) -> Self;
-                /// The positive difference of two numbers.
                 fn abs_sub( &self, other:&Self ) -> Self;
-                /// Returns the sign of the number.
-                /// * `-1` if the number is negative
+                
+            
                 fn signum( &self ) -> Self;
-                /// Returns true if the number is positive and false if the number is zero or negative.
                 fn is_positive( &self ) -> bool;
-                /// Returns true if the number is negative and false if the number is zero or positive.
                 fn is_negative( &self ) -> bool;
             }
             macro_rules! signed_impl {
@@ -10900,13 +10593,11 @@ pub mod num
             macro_rules! signed_float_impl {
                 ( $t:ty ) => {
                     impl Signed for $t {
-                        /// Computes the absolute value. Returns `NAN` if the number is `NAN`.
                         #[inline] fn abs( &self ) -> $t {
                             Float::abs( *self )
                         }
-                        /// The positive difference of two numbers. Returns `0.0` if the number is
-                        /// less than or equal to `other`, otherwise the difference between`self`
-                        /// and `other` is returned.
+                        
+            
                         #[inline] fn abs_sub( &self, other:&$t ) -> $t {
                             if *self <= *other {
                                 0.
@@ -10917,19 +10608,15 @@ pub mod num
                                 *self - *other
                             }
                         }
-                        /// # Returns
                         ///
-                        /// - `1.0` if the number is positive, `+0.0` or `INFINITY`
-                        /// - `-1.0` if the number is negative, `-0.0` or `NEG_INFINITY`
-                        /// - `NAN` if the number is NaN
+                        
+            
                         #[inline] fn signum( &self ) -> $t {
                             Float::signum( *self )
                         }
-                        /// Returns `true` if the number is positive, including `+0.0` and `INFINITY`
                         #[inline] fn is_positive( &self ) -> bool {
                             Float::is_sign_positive( *self )
                         }
-                        /// Returns `true` if the number is negative, including `-0.0` and `NEG_INFINITY`
                         #[inline] fn is_negative( &self ) -> bool {
                             Float::is_sign_negative( *self )
                         }
@@ -10938,19 +10625,18 @@ pub mod num
             }
             signed_float_impl!( f32 );
             signed_float_impl!( f64 );
-            /// Computes the absolute value.
             #[inline( always )] pub fn abs<T: Signed>( value: T ) -> T {
                 value.abs()
             }
-            /// The positive difference of two numbers.
+            
             #[inline( always )] pub fn abs_sub<T: Signed>( x: T, y: T ) -> T {
                 x.abs_sub( &y )
             }
-            /// Returns the sign of the number.
+            
             #[inline( always )] pub fn signum<T: Signed>( value: T ) -> T {
                 value.signum()
             }
-            /// A trait for values which cannot be negative
+            
             pub trait Unsigned: Num {}
             macro_rules! empty_trait_impl
             {
@@ -10962,15 +10648,12 @@ pub mod num
 
             impl<T: Unsigned> Unsigned for Wrapping<T> where Wrapping<T>: Num {}
         } pub use self::sign::{abs, abs_sub, signum, Signed, Unsigned};
-        /// The base trait for numeric types, covering `0` and `1` values,
-        /// comparisons, basic numeric operations, and string conversion.
         pub trait Num: PartialEq + Zero + One + NumOps
         {
             type FromStrRadixErr;
-            /// Convert from a string and radix ( typically `2..=36` ).
             fn from_str_radix( str:&str, radix: u32 ) -> Result<Self, Self::FromStrRadixErr>;
         }
-        /// Generic trait for types implementing basic numeric operations.
+        
         pub trait NumOps<Rhs = Self, Output = Self>:
             Add<Rhs, Output = Output>
             + Sub<Rhs, Output = Output>
@@ -10988,13 +10671,13 @@ pub mod num
                 + Rem<Rhs, Output = Output>
         {
         }
-        /// The trait for `Num` types which also implement numeric operations taking the second operand by reference.
+        
         pub trait NumRef: Num + for<'r> NumOps<&'r Self> {}
         impl<T> NumRef for T where T: Num + for<'r> NumOps<&'r T> {}
-        /// Trait for `Num` references which implement numeric operations, taking the second operand either by value or by reference.
+        
         pub trait RefNum<Base>: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
         impl<T, Base> RefNum<Base> for T where T: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
-        /// Generic trait for types implementing numeric assignment operators ( like `+=` ).
+        
         pub trait NumAssignOps<Rhs = Self>:
         AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
         {
@@ -11004,10 +10687,10 @@ pub mod num
             T: AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
         {
         }
-        /// The trait for `Num` types which also implement assignment operators.
+        
         pub trait NumAssign: Num + NumAssignOps {}
         impl<T> NumAssign for T where T: Num + NumAssignOps {}
-        /// Trait for `NumAssign` types which also implement assignment operations taking the second operand by reference.
+        
         pub trait NumAssignRef: NumAssign + for<'r> NumAssignOps<&'r Self> {}
         impl<T> NumAssignRef for T where T: NumAssign + for<'r> NumAssignOps<&'r T> {}
 
@@ -11249,7 +10932,7 @@ pub mod num
         }
         
         float_trait_impl!( Num for f32 f64 );
-        /// A value bounded by a minimum and a maximum
+        
         #[inline] pub fn clamp<T: PartialOrd>( input: T, min: T, max: T ) -> T
         {
             debug_assert!( min <= max, "min must be less than or equal to max" );
@@ -11264,7 +10947,7 @@ pub mod num
                 input
             }
         }
-        /// A value bounded by a minimum value
+        
         #[inline] pub fn clamp_min<T: PartialOrd>( input: T, min: T ) -> T
         {
             debug_assert!( min == min, "min must not be NAN" );
@@ -11277,7 +10960,7 @@ pub mod num
                 input
             }
         }
-        /// A value bounded by a maximum value
+        
         #[inline] pub fn clamp_max<T: PartialOrd>( input: T, max: T ) -> T
         {
             debug_assert!( max == max, "max must not be NAN" );
@@ -11316,9 +10999,7 @@ pub mod num
             };
             /*
             */
-            /// Provides methods to compute the average of two integers, without overflows.
             pub trait Average: Integer {
-                /// Returns the ceiling value of the average of `self` and `other`.
                 fn average_floor( &self, other:&Self ) -> Self;
                 fn average_ceil( &self, other:&Self ) -> Self;
             }
@@ -11329,22 +11010,18 @@ pub mod num
             + BitOr<&'b I, Output = I> 
             + BitXor<&'b I, Output = I>,
             {
-                /// Returns the floor value of the average of `self` and `other`.
                 #[inline] fn average_floor( &self, other:&I ) -> I {
                     ( self & other ) + ( ( self ^ other ) >> 1 )
                 }
-                /// Returns the ceil value of the average of `self` and `other`.
                 #[inline] fn average_ceil( &self, other:&I ) -> I {
                     ( self | other ) - ( ( self ^ other ) >> 1 )
                 }
             }
-            /// Returns the floor value of the average of `x` and `y` --
-            /// see [Average::average_floor]( trait.Average.html#tymethod.average_floor ).
+            
             #[inline] pub fn average_floor<T: Average>( x: T, y: T ) -> T {
                 x.average_floor( &y )
             }
-            /// Returns the ceiling value of the average of `x` and `y` --
-            /// see [Average::average_ceil]( trait.Average.html#tymethod.average_ceil ).
+            
             #[inline] pub fn average_ceil<T: Average>( x: T, y: T ) -> T {
                 x.average_ceil( &y )
             }
@@ -11630,11 +11307,8 @@ pub mod num
 
         pub trait Integer: Sized + Num + PartialOrd + Ord + Eq 
         {
-            /// Floored integer division.
             fn div_floor( &self, other:&Self ) -> Self;
-            /// Floored integer modulo.
             fn mod_floor( &self, other:&Self ) -> Self;
-            /// Ceiled integer division.
             fn div_ceil( &self, other:&Self ) -> Self {
                 let ( q, r ) = self.div_mod_floor( other );
                 if r.is_zero() {
@@ -11646,17 +11320,15 @@ pub mod num
                     q + Self::one()
                 }
             }
-            /// Greatest Common Divisor ( GCD ).
+            
             fn gcd( &self, other:&Self ) -> Self;
-            /// Lowest Common Multiple ( LCM ).
-            /// ~~~
+            
+            
             fn lcm( &self, other:&Self ) -> Self;
-            /// Greatest Common Divisor ( GCD ) and
-            /// Lowest Common Multiple ( LCM ) together.
             #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self ) {
                 ( self.gcd( other ), self.lcm( other ) )
             }
-            /// Greatest common divisor and Bézout coefficients.
+            
             #[inline] fn extended_gcd( &self, other:&Self ) -> ExtendedGcd<Self> where
                 Self: Clone,
             {
@@ -11692,31 +11364,27 @@ pub mod num
                     }
                 }
             }
-            /// Greatest common divisor, least common multiple, and Bézout coefficients.
+            
             #[inline] fn extended_gcd_lcm( &self, other:&Self ) -> ( ExtendedGcd<Self>, Self )
             where
                 Self: Clone + Signed,
             {
                 ( self.extended_gcd( other ), self.lcm( other ) )
             }
-            /// Deprecated, use `is_multiple_of` instead.
+            
             #[deprecated( note = "Please use is::multiple_of instead" )]
             #[inline] fn divides( &self, other:&Self ) -> bool {
                 self.is_multiple_of( other )
             }
-            /// Returns `true` if `self` is a multiple of `other`.
+            
             fn is_multiple_of( &self, other:&Self ) -> bool;
-            /// Returns `true` if the number is even.
             fn is_even( &self ) -> bool;
-            /// Returns `true` if the number is odd.
             fn is_odd( &self ) -> bool;
-            /// Simultaneous truncated integer division and modulus.
             fn div_rem( &self, other:&Self ) -> ( Self, Self );
-            /// Simultaneous floored integer division and modulus.
             fn div_mod_floor( &self, other:&Self ) -> ( Self, Self ) {
                 ( self.div_floor( other ), self.mod_floor( other ) )
             }
-            /// Rounds up to nearest multiple of argument.
+            
             #[inline] fn next_multiple_of( &self, other:&Self ) -> Self
             where
                 Self: Clone,
@@ -11732,23 +11400,23 @@ pub mod num
                         other.clone() - m
                     }
             }
-            /// Rounds down to nearest multiple of argument.
+            
             #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self
             where
                 Self: Clone,
             {
                 self.clone() - self.mod_floor( other )
             }
-            /// Decrements self by one.
-            /// ~~~
+            
+            
             fn dec( &mut self )
             where
                 Self: Clone,
             {
                 *self = self.clone() - Self::one()
             }
-            /// Increments self by one.
-            /// ~~~
+            
+            
             fn inc( &mut self )
             where
                 Self: Clone,
@@ -11756,7 +11424,7 @@ pub mod num
                 *self = self.clone() + Self::one()
             }
         }
-        /// Greatest common divisor and Bézout coefficients.
+        
         #[derive( Debug, Clone, Copy, PartialEq, Eq )]
         pub struct ExtendedGcd<A> 
         {
@@ -11764,42 +11432,42 @@ pub mod num
             pub x: A,
             pub y: A,
         }
-        /// Simultaneous integer division and modulus
+        
         #[inline] pub fn div_rem<T: Integer>( x: T, y: T ) -> ( T, T ) 
         {
             x.div_rem( &y )
         }
-        /// Floored integer division
+        
         #[inline] pub fn div_floor<T: Integer>( x: T, y: T ) -> T 
         {
             x.div_floor( &y )
         }
-        /// Floored integer modulus
+        
         #[inline] pub fn mod_floor<T: Integer>( x: T, y: T ) -> T 
         {
             x.mod_floor( &y )
         }
-        /// Simultaneous floored integer division and modulus
+        
         #[inline] pub fn div_mod_floor<T: Integer>( x: T, y: T ) -> ( T, T ) 
         {
             x.div_mod_floor( &y )
         }
-        /// Ceiled integer division
+        
         #[inline] pub fn div_ceil<T: Integer>( x: T, y: T ) -> T 
         {
             x.div_ceil( &y )
         }
-        /// Calculates the Greatest Common Divisor ( GCD ) of the number and `other`.
+        
         #[inline( always )] pub fn gcd<T: Integer>( x: T, y: T ) -> T 
         {
             x.gcd( &y )
         }
-        /// Calculates the Lowest Common Multiple ( LCM ) of the number and `other`.
+        
         #[inline( always )] pub fn lcm<T: Integer>( x: T, y: T ) -> T 
         {
             x.lcm( &y )
         }
-        /// Calculates the Greatest Common Divisor ( GCD ) and Lowest Common Multiple ( LCM ) of the number and `other`.
+        
         #[inline( always )] pub fn gcd_lcm<T: Integer>( x: T, y: T ) -> ( T, T ) 
         {
             x.gcd_lcm( &y )
@@ -11809,7 +11477,6 @@ pub mod num
         {
             ( $T:ty, $test_mod:ident ) => {
                 impl Integer for $T {
-                    /// Floored integer division
                     #[inline] fn div_floor( &self, other:&Self ) -> Self {
                        
                        
@@ -11823,7 +11490,6 @@ pub mod num
                             d
                         }
                     }
-                    /// Floored integer modulo
                     #[inline] fn mod_floor( &self, other:&Self ) -> Self {
                        
                        
@@ -11837,7 +11503,6 @@ pub mod num
                             r
                         }
                     }
-                    /// Calculates `div_floor` and `mod_floor` simultaneously
                     #[inline] fn div_mod_floor( &self, other:&Self ) -> ( Self, Self ) {
                        
                        
@@ -11862,8 +11527,6 @@ pub mod num
                             d
                         }
                     }
-                    /// Calculates the Greatest Common Divisor ( GCD ) of the number and
-                    /// `other`. The result is always non-negative.
                     #[inline] fn gcd( &self, other:&Self ) -> Self {
                        
                         let mut m = *self;
@@ -11920,13 +11583,9 @@ pub mod num
                         };
                         ( egcd, lcm )
                     }
-                    /// Calculates the Lowest Common Multiple ( LCM ) of the number and
-                    /// `other`.
                     #[inline] fn lcm( &self, other:&Self ) -> Self {
                         self.gcd_lcm( other ).1
                     }
-                    /// Calculates the Greatest Common Divisor ( GCD ) and
-                    /// Lowest Common Multiple ( LCM ) of the number and `other`.
                     #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self ) {
                         if self.is_zero() && other.is_zero() {
                             return ( Self::zero(), Self::zero() );
@@ -11936,26 +11595,21 @@ pub mod num
                         let lcm = ( *self * ( *other / gcd ) ).abs();
                         ( gcd, lcm )
                     }
-                    /// Returns `true` if the number is a multiple of `other`.
                     #[inline] fn is_multiple_of( &self, other:&Self ) -> bool {
                         if other.is_zero() {
                             return self.is_zero();
                         }
                         *self % *other == 0
                     }
-                    /// Returns `true` if the number is divisible by `2`
                     #[inline] fn is_even( &self ) -> bool {
                         ( *self ) & 1 == 0
                     }
-                    /// Returns `true` if the number is not divisible by `2`
                     #[inline] fn is_odd( &self ) -> bool {
                         !self.is_even()
                     }
-                    /// Simultaneous truncated integer division and modulus.
                     #[inline] fn div_rem( &self, other:&Self ) -> ( Self, Self ) {
                         ( *self / *other, *self % *other )
                     }
-                    /// Rounds up to nearest multiple of argument.
                     #[inline] fn next_multiple_of( &self, other:&Self ) -> Self {
                        
                         if *other == -1 {
@@ -11967,7 +11621,6 @@ pub mod num
             else
             { other - m }
                     }
-                    /// Rounds down to nearest multiple of argument.
                     #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self {
                        
                         if *other == -1 {
@@ -11990,18 +11643,15 @@ pub mod num
         {
             ( $T:ty, $test_mod:ident ) => {
                 impl Integer for $T {
-                    /// Unsigned integer division. Returns the same result as `div` ( `/` ).
                     #[inline] fn div_floor( &self, other:&Self ) -> Self {
                         *self / *other
                     }
-                    /// Unsigned integer modulo operation. Returns the same result as `rem` ( `%` ).
                     #[inline] fn mod_floor( &self, other:&Self ) -> Self {
                         *self % *other
                     }
                     #[inline] fn div_ceil( &self, other:&Self ) -> Self {
                         *self / *other + ( 0 != *self % *other ) as Self
                     }
-                    /// Calculates the Greatest Common Divisor ( GCD ) of the number and `other`
                     #[inline] fn gcd( &self, other:&Self ) -> Self {
                        
                         let mut m = *self;
@@ -12043,12 +11693,9 @@ pub mod num
                         };
                         ( egcd, lcm )
                     }
-                    /// Calculates the Lowest Common Multiple ( LCM ) of the number and `other`.
                     #[inline] fn lcm( &self, other:&Self ) -> Self {
                         self.gcd_lcm( other ).1
                     }
-                    /// Calculates the Greatest Common Divisor ( GCD ) and
-                    /// Lowest Common Multiple ( LCM ) of the number and `other`.
                     #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self ) {
                         if self.is_zero() && other.is_zero() {
                             return ( Self::zero(), Self::zero() );
@@ -12057,22 +11704,18 @@ pub mod num
                         let lcm = *self * ( *other / gcd );
                         ( gcd, lcm )
                     }
-                    /// Returns `true` if the number is a multiple of `other`.
                     #[inline] fn is_multiple_of( &self, other:&Self ) -> bool {
                         if other.is_zero() {
                             return self.is_zero();
                         }
                         *self % *other == 0
                     }
-                    /// Returns `true` if the number is divisible by `2`.
                     #[inline] fn is_even( &self ) -> bool {
                         *self % 2 == 0
                     }
-                    /// Returns `true` if the number is not divisible by `2`.
                     #[inline] fn is_odd( &self ) -> bool {
                         !self.is_even()
                     }
-                    /// Simultaneous truncated integer division and modulus.
                     #[inline] fn div_rem( &self, other:&Self ) -> ( Self, Self ) {
                         ( *self / *other, *self % *other )
                     }
@@ -12086,7 +11729,6 @@ pub mod num
         impl_integer_for_usize!( u64, test_integer_u64 );
         impl_integer_for_usize!( u128, test_integer_u128 );
         impl_integer_for_usize!( usize, test_integer_usize );
-        /// An iterator over binomial coefficients.
         pub struct IterBinomial<T> 
         {
             a: T,
@@ -12097,21 +11739,20 @@ pub mod num
         impl<T> IterBinomial<T> where
             T: Integer,
         {
-            /// For a given n, iterate over all binomial coefficients binomial( n, k ), for k=0...n.
-            /// be no overflow:
+            
+            
             ///
-            /// type | n
-            /// -----|---
-            /// u8   | 10
-            /// i8   |  9
-            /// u16  | 18
-            /// i16  | 17
-            /// u32  | 34
-            /// i32  | 33
-            /// u64  | 67
-            /// i64  | 66
+            
+            
+            
+            
+            
+            
+            
+            
+            
+            
             ///
-            /// For larger n, `T` should be a bigint type.
             pub fn new( n: T ) -> IterBinomial<T> {
                 IterBinomial {
                     k: T::zero(),
@@ -12146,14 +11787,13 @@ pub mod num
                 Some( self.a.clone() )
             }
         }
-        /// Calculate r * a / b, avoiding overflows and fractions.
         fn multiply_and_divide<T: Integer + Clone>( r: T, a: T, b: T ) -> T
         {
            
             let g = gcd( r.clone(), b.clone() );
             r / g.clone() * ( a / ( b / g ) )
         }
-        /// Calculate the binomial coefficient.
+        
         pub fn binomial<T: Integer + Clone>( mut n: T, k: T ) -> T
         {
            
@@ -12175,7 +11815,7 @@ pub mod num
             }
             r
         }
-        /// Calculate the multinomial coefficient.
+        
         pub fn multinomial<T: Integer + Clone>( k:&[T] ) -> T where
             for<'a> T: Add<&'a T, Output = T>,
         {
@@ -12455,6 +12095,7 @@ pub mod num
                 }
                 impl_sum_iter_type!( BigInt );
             }
+            
             pub mod division
             {
                 use ::
@@ -13154,6 +12795,7 @@ pub mod num
                 impl_product_iter_type!( BigInt );
 
             }
+            
             pub mod subtraction
             {
                 use ::
@@ -13430,6 +13072,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod bits
             {
                 use ::
@@ -13933,6 +13576,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod convert
             {
                 use ::
@@ -13964,7 +13608,6 @@ pub mod num
                 {
                     type FromStrRadixErr = ParseBigIntError;
 
-                    /// Creates and initializes a [`BigInt`].
                     #[inline] fn from_str_radix( mut s:&str, radix: u32 ) -> Result<BigInt, ParseBigIntError> {
                         let sign = if let Some( tail ) = s.strip_prefix( '-' ) {
                             if !tail.starts_with( '+' ) {
@@ -14387,17 +14030,14 @@ pub mod num
                     }
                     bytes
                 }
-                /// Perform in-place two's complement of the given binary representation, in little-endian byte order.
                 #[inline] fn twos_complement_le( digits:&mut [u8] )
                 {
                     twos_complement( digits )
                 }
-                /// Perform in-place two's complement of the given binary representation in big-endian byte order.
                 #[inline] fn twos_complement_be( digits:&mut [u8] )
                 {
                     twos_complement( digits.iter_mut().rev() )
                 }
-                /// Perform in-place two's complement of the given digit iterator starting from the least significant byte.
                 #[inline] fn twos_complement<'a, I>( digits: I ) where
                 I: IntoIterator<Item = &'a mut u8>
                 {
@@ -14411,6 +14051,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod power
             {
                 use ::
@@ -14427,9 +14068,7 @@ pub mod num
                 use super::Sign::{self, Minus, Plus};
                 /*
                 */
-                /// Help function for pow
                 ///
-                /// Computes the effect of the exponent on the sign.
                 #[inline] fn powsign<T: Integer>( sign: Sign, other:&T ) -> Sign {
                     if other.is_zero() {
                         Plus
@@ -14510,6 +14149,7 @@ pub mod num
                     BigInt::from_biguint( sign, mag )
                 }
             }
+            
             pub mod shift
             {
                 use ::
@@ -14631,7 +14271,7 @@ pub mod num
                     }
                 }
             }
-            /// A `Sign` is a [`BigInt`]'s composing element.
+            
             #[derive( PartialEq, PartialOrd, Eq, Ord, Copy, Clone, Debug, Hash )]
             pub enum Sign 
             {
@@ -14643,7 +14283,6 @@ pub mod num
             impl Neg for Sign 
             {
                 type Output = Sign;
-                /// Negate `Sign` value.
                 #[inline] fn neg( self ) -> Sign {
                     match self {
                         Minus => Plus,
@@ -14652,7 +14291,7 @@ pub mod num
                     }
                 }
             }
-            /// A big signed integer type.
+            
             pub struct BigInt 
             {
                 sign: Sign,
@@ -15023,21 +14662,16 @@ pub mod num
                         ( _, NoSign ) => unreachable!(),
                     }
                 }
-                /// Calculates the Greatest Common Divisor ( GCD ) of the number and `other`.
                 #[inline] fn gcd( &self, other:&BigInt ) -> BigInt {
                     BigInt::from( self.data.gcd( &other.data ) )
                 }
-                /// Calculates the Lowest Common Multiple ( LCM ) of the number and `other`.
                 #[inline] fn lcm( &self, other:&BigInt ) -> BigInt {
                     BigInt::from( self.data.lcm( &other.data ) )
                 }
-                /// Calculates the Greatest Common Divisor ( GCD ) and
-                /// Lowest Common Multiple ( LCM ) together.
                 #[inline] fn gcd_lcm( &self, other:&BigInt ) -> ( BigInt, BigInt ) {
                     let ( gcd, lcm ) = self.data.gcd_lcm( &other.data );
                     ( BigInt::from( gcd ), BigInt::from( lcm ) )
                 }
-                /// Greatest common divisor, least common multiple, and Bézout coefficients.
                 #[inline] fn extended_gcd_lcm( &self, other:&BigInt ) -> ( ::num::integers::ExtendedGcd<BigInt>, BigInt ) {
                     let egcd = self.extended_gcd( other );
                     let lcm = if egcd.gcd.is_zero() {
@@ -15050,23 +14684,18 @@ pub mod num
                     };
                     ( egcd, lcm )
                 }
-                /// Deprecated, use `is_multiple_of` instead.
                 #[inline] fn divides( &self, other:&BigInt ) -> bool {
                     self.is_multiple_of( other )
                 }
-                /// Returns `true` if the number is a multiple of `other`.
                 #[inline] fn is_multiple_of( &self, other:&BigInt ) -> bool {
                     self.data.is_multiple_of( &other.data )
                 }
-                /// Returns `true` if the number is divisible by `2`.
                 #[inline] fn is_even( &self ) -> bool {
                     self.data.is_even()
                 }
-                /// Returns `true` if the number is not divisible by `2`.
                 #[inline] fn is_odd( &self ) -> bool {
                     self.data.is_odd()
                 }
-                /// Rounds up to nearest multiple of argument.
                 #[inline] fn next_multiple_of( &self, other:&Self ) -> Self {
                     let m = self.mod_floor( other );
                     if m.is_zero() {
@@ -15078,7 +14707,6 @@ pub mod num
                         self + ( other - m )
                     }
                 }
-                /// Rounds down to nearest multiple of argument.
                 #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self {
                     self - self.mod_floor( other )
                 }
@@ -15126,25 +14754,21 @@ pub mod num
                 #[inline] fn capacity( &self ) -> usize { self.data.capacity() }
                 #[inline] fn len( &self ) -> usize { self.data.len() }
             }
-            /// A generic trait for converting a value to a [`BigInt`].
+            
             pub trait ToBigInt
             {
-                /// Converts the value of `self` to a [`BigInt`].
                 fn to_bigint( &self ) -> Option<BigInt>;
             }
             
             impl BigInt
             {
-                /// A constant `BigInt` with value 0, useful for static initialization.
                 pub const ZERO: Self = BigInt {
                     sign: NoSign,
                     data: BigUint::ZERO,
                 };
-                /// Creates and initializes a [`BigInt`].
                 #[inline] pub fn new( sign: Sign, digits: Vec<u32> ) -> BigInt {
                     BigInt::from_biguint( sign, BigUint::new( digits ) )
                 }
-                /// Creates and initializes a [`BigInt`].
                 #[inline] pub fn from_biguint( mut sign: Sign, mut data: BigUint ) -> BigInt {
                     if sign == NoSign {
                         data.assign_from_slice( &[] );
@@ -15153,11 +14777,9 @@ pub mod num
                     }
                     BigInt { sign, data }
                 }
-                /// Creates and initializes a [`BigInt`].
                 #[inline] pub fn from_slice( sign: Sign, slice:&[u32] ) -> BigInt {
                     BigInt::from_biguint( sign, BigUint::from_slice( slice ) )
                 }
-                /// Reinitializes a [`BigInt`].
                 #[inline] pub fn assign_from_slice( &mut self, sign: Sign, slice:&[u32] ) {
                     if sign == NoSign {
                         self.set_zero();
@@ -15172,79 +14794,58 @@ pub mod num
             { sign };
                     }
                 }
-                /// Creates and initializes a [`BigInt`].
                 #[inline] pub fn from_bytes_be( sign: Sign, bytes:&[u8] ) -> BigInt {
                     BigInt::from_biguint( sign, BigUint::from_bytes_be( bytes ) )
                 }
-                /// Creates and initializes a [`BigInt`].
                 #[inline] pub fn from_bytes_le( sign: Sign, bytes:&[u8] ) -> BigInt {
                     BigInt::from_biguint( sign, BigUint::from_bytes_le( bytes ) )
                 }
-                /// Creates and initializes a [`BigInt`] from an array of bytes in
-                /// two's complement binary representation.
                 #[inline] pub fn from_signed_bytes_be( digits:&[u8] ) -> BigInt {
                     convert::from_signed_bytes_be( digits )
                 }
-                /// Creates and initializes a [`BigInt`] from an array of bytes in two's complement.
                 #[inline] pub fn from_signed_bytes_le( digits:&[u8] ) -> BigInt {
                     convert::from_signed_bytes_le( digits )
                 }
-                /// Creates and initializes a [`BigInt`].
                 #[inline] pub fn parse_bytes( buf:&[u8], radix: u32 ) -> Option<BigInt> {
                     let s = str::from_utf8( buf ).ok()?;
                     BigInt::from_str_radix( s, radix ).ok()
                 }
-                /// Creates and initializes a [`BigInt`]. Each `u8` of the input slice is
-                /// interpreted as one digit of the number
-                /// and must therefore be less than `radix`.
+                
+            
                 pub fn from_radix_be( sign: Sign, buf:&[u8], radix: u32 ) -> Option<BigInt> {
                     let u = BigUint::from_radix_be( buf, radix )?;
                     Some( BigInt::from_biguint( sign, u ) )
                 }
-                /// Creates and initializes a [`BigInt`]. Each `u8` of the input slice is
-                /// interpreted as one digit of the number
-                /// and must therefore be less than `radix`.
+                
+            
                 pub fn from_radix_le( sign: Sign, buf:&[u8], radix: u32 ) -> Option<BigInt> {
                     let u = BigUint::from_radix_le( buf, radix )?;
                     Some( BigInt::from_biguint( sign, u ) )
                 }
-                /// Returns the sign and the byte representation of the [`BigInt`] in big-endian byte order.
                 #[inline] pub fn to_bytes_be( &self ) -> ( Sign, Vec<u8> ) {
                     ( self.sign, self.data.to_bytes_be() )
                 }
-                /// Returns the sign and the byte representation of the [`BigInt`] in little-endian byte order.
                 #[inline] pub fn to_bytes_le( &self ) -> ( Sign, Vec<u8> ) {
                     ( self.sign, self.data.to_bytes_le() )
                 }
-                /// Returns the sign and the `u32` digits representation of the [`BigInt`] ordered least
-                /// significant digit first.
                 #[inline] pub fn to_u32_digits( &self ) -> ( Sign, Vec<u32> ) {
                     ( self.sign, self.data.to_u32_digits() )
                 }
-                /// Returns the sign and the `u64` digits representation of the [`BigInt`] ordered least
-                /// significant digit first.
                 #[inline] pub fn to_u64_digits( &self ) -> ( Sign, Vec<u64> ) {
                     ( self.sign, self.data.to_u64_digits() )
                 }
-                /// Returns an iterator of `u32` digits representation of the [`BigInt`] ordered least
-                /// significant digit first.
                 #[inline] pub fn iter_u32_digits( &self ) -> U32Digits<'_> {
                     self.data.iter_u32_digits()
                 }
-                /// Returns an iterator of `u64` digits representation of the [`BigInt`] ordered least
-                /// significant digit first.
                 #[inline] pub fn iter_u64_digits( &self ) -> U64Digits<'_> {
                     self.data.iter_u64_digits()
                 }
-                /// Returns the two's-complement byte representation of the [`BigInt`] in big-endian byte order.
                 #[inline] pub fn to_signed_bytes_be( &self ) -> Vec<u8> {
                     convert::to_signed_bytes_be( self )
                 }
-                /// Returns the two's-complement byte representation of the [`BigInt`] in little-endian byte order.
                 #[inline] pub fn to_signed_bytes_le( &self ) -> Vec<u8> {
                     convert::to_signed_bytes_le( self )
                 }
-                /// Returns the integer formatted as a string in the given radix.
                 #[inline] pub fn to_str_radix( &self, radix: u32 ) -> String {
                     let mut v = to_str_radix_reversed( &self.data, radix );
 
@@ -15254,33 +14855,24 @@ pub mod num
                     v.reverse();
                     unsafe { String::from_utf8_unchecked( v ) }
                 }
-                /// Returns the integer in the requested base in big-endian digit order.
                 #[inline] pub fn to_radix_be( &self, radix: u32 ) -> ( Sign, Vec<u8> ) {
                     ( self.sign, self.data.to_radix_be( radix ) )
                 }
-                /// Returns the integer in the requested base in little-endian digit order.
                 #[inline] pub fn to_radix_le( &self, radix: u32 ) -> ( Sign, Vec<u8> ) {
                     ( self.sign, self.data.to_radix_le( radix ) )
                 }
-                /// Returns the sign of the [`BigInt`] as a [`Sign`].
                 #[inline] pub fn sign( &self ) -> Sign {
                     self.sign
                 }
-                /// Returns the magnitude of the [`BigInt`] as a [`BigUint`].
                 #[inline] pub fn magnitude( &self ) -> &BigUint {
                     &self.data
                 }
-                /// Convert this [`BigInt`] into its [`Sign`] and [`BigUint`] magnitude,
-                /// the reverse of [`BigInt::from_biguint()`].
                 #[inline] pub fn into_parts( self ) -> ( Sign, BigUint ) {
                     ( self.sign, self.data )
                 }
-                /// Determines the fewest bits necessary to express the [`BigInt`],
-                /// not including the sign.
                 #[inline] pub fn bits( &self ) -> u64 {
                     self.data.bits()
                 }
-                /// Converts this [`BigInt`] into a [`BigUint`], if it's not negative.
                 #[inline] pub fn to_biguint( &self ) -> Option<BigUint> {
                     match self.sign {
                         Plus => Some( self.data.clone() ),
@@ -15303,15 +14895,12 @@ pub mod num
                     }
                     Some( self / v )
                 }
-                /// Returns `self ^ exponent`.
                 pub fn pow( &self, exponent: u32 ) -> Self {
                     Pow::pow( self, exponent )
                 }
-                /// Returns `( self ^ exponent ) mod modulus`
                 pub fn modpow( &self, exponent:&Self, modulus:&Self ) -> Self {
                     power::modpow( self, exponent, modulus )
                 }
-                /// Returns the modular multiplicative inverse if it exists, otherwise `None`.
                 pub fn modinv( &self, modulus:&Self ) -> Option<Self> {
                     let result = self.data.modinv( &modulus.data )?;
                    
@@ -15323,28 +14912,18 @@ pub mod num
                     };
                     Some( BigInt::from_biguint( sign, mag ) )
                 }
-                /// Returns the truncated principal square root of `self` --
-                /// see [`::num::integers::Roots::sqrt()`].
                 pub fn sqrt( &self ) -> Self {
                     Roots::sqrt( self )
                 }
-                /// Returns the truncated principal cube root of `self` --
-                /// see [`::num::integers::Roots::cbrt()`].
                 pub fn cbrt( &self ) -> Self {
                     Roots::cbrt( self )
                 }
-                /// Returns the truncated principal `n`th root of `self` --
-                /// See [`::num::integers::Roots::nth_root()`].
                 pub fn nth_root( &self, n: u32 ) -> Self {
                     Roots::nth_root( self, n )
                 }
-                /// Returns the number of least-significant bits that are zero,
-                /// or `None` if the entire number is zero.
                 pub fn trailing_zeros( &self ) -> Option<u64> {
                     self.data.trailing_zeros()
                 }
-                /// Returns whether the bit in position `bit` is set,
-                /// using the two's complement for negative numbers
                 pub fn bit( &self, bit: u64 ) -> bool
                 {
                     if self.is_negative()
@@ -15370,7 +14949,6 @@ pub mod num
                         self.data.bit( bit )
                     }
                 }
-                /// Sets or clears the bit in the given position, using the two's complement for negative numbers.
                 pub fn set_bit( &mut self, bit: u64, value: bool )
                 {
                     match self.sign {
@@ -15439,25 +15017,21 @@ pub mod num
             };
             /*
             */
-            /// A trait for sampling random big integers.
             pub trait RandBigInt
             {
-                /// Generate a random [`BigUint`] of the given bit size.
                 fn gen_biguint( &mut self, bit_size: u64 ) -> BigUint;
-                /// Generate a random [ BigInt`] of the given bit size.
                 fn gen_bigint( &mut self, bit_size: u64 ) -> BigInt;
-                /// Generate a random [`BigUint`] less than the given bound. Fails
-                /// when the bound is zero.
+                
+            
                 fn gen_biguint_below( &mut self, bound:&BigUint ) -> BigUint;
-                /// Generate a random [`BigUint`] within the given range. The lower
-                /// bound is inclusive; the upper bound is exclusive. Fails when
-                /// the upper bound is not greater than the lower bound.
+                
+            
                 fn gen_biguint_range( &mut self, lbound:&BigUint, ubound:&BigUint ) -> BigUint;
-                /// Generate a random [`BigInt`] within the given range. The lower
-                /// bound is inclusive; the upper bound is exclusive. Fails when
-                /// the upper bound is not greater than the lower bound.
+                
+            
                 fn gen_bigint_range( &mut self, lbound:&BigInt, ubound:&BigInt ) -> BigInt;
             }
+            
             fn gen_bits<R: Rng + ?Sized>( rng:&mut R, data:&mut [u32], rem: u64 ) 
             {
                
@@ -15571,7 +15145,7 @@ pub mod num
                     }
                 }
             }
-            /// The back-end implementing rand's [`UniformSampler`] for [`BigUint`].
+            
             #[derive( Clone, Debug )]
             pub struct UniformBigUint 
             {
@@ -15622,7 +15196,7 @@ pub mod num
             {
                 type Sampler = UniformBigUint;
             }
-            /// The back-end implementing rand's [`UniformSampler`] for [`BigInt`].
+            
             #[derive( Clone, Debug )]
             pub struct UniformBigInt 
             {
@@ -15674,7 +15248,7 @@ pub mod num
             {
                 type Sampler = UniformBigInt;
             }
-            /// A random distribution for [`BigUint`] and [`BigInt`] values of a particular bit size.
+            
             #[derive( Clone, Copy, Debug )]
             pub struct RandomBits 
             {
@@ -15752,7 +15326,6 @@ pub mod num
                         unsafe { arch::_addcarry_u64( carry, a, b, out ) }
                     }
                 );
-                /// Two argument addition of raw slices, `a += b`, returning the carry.
                 #[inline] pub fn __add2( a:&mut [BigDigit], b:&[BigDigit] ) -> BigDigit {
                     debug_assert!( a.len() >= b.len() );
 
@@ -15772,11 +15345,11 @@ pub mod num
                     }
                     carry as BigDigit
                 }
-                /// Two argument addition of raw slices:
-                /// a += b
+                
+            
                 ///
-                /// The caller _must_ ensure that a is big enough to store the result - typically this means
-                /// resizing a to max( a.len(), b.len() ) + 1, to fit a possible carry.
+                
+            
                 pub( super ) fn add2( a:&mut [BigDigit], b:&[BigDigit] ) {
                     let carry = __add2( a, b );
 
@@ -15951,6 +15524,7 @@ pub mod num
                 impl_sum_iter_type!( BigUint );
 
             }
+            
             pub mod division
             {
                 /*!
@@ -15976,7 +15550,6 @@ pub mod num
                 /*
                 */
                 pub const FAST_DIV_WIDE: bool = true;
-                /// Divide a two digit numerator by a one digit divisor, returns quotient and remainder.
                 #[inline] fn div_wide( hi: BigDigit, lo: BigDigit, divisor: BigDigit ) -> ( BigDigit, BigDigit )
                 {
                    
@@ -16015,8 +15588,6 @@ pub mod num
                         ( div, rem )
                     }
                 }
-                /// For small divisors, we can divide without promoting to `DoubleBigDigit`
-                /// by using half-size pieces of digit, like long-division.
                 #[inline] fn div_half( rem: BigDigit, digit: BigDigit, divisor: BigDigit ) -> ( BigDigit, BigDigit )
                 {
                     use ::num::big::digit::{HALF, HALF_BITS};
@@ -16073,7 +15644,6 @@ pub mod num
                     }
                     rem
                 }
-                /// Subtract a multiple.
                 fn sub_mul_digit_same_len( a:&mut [BigDigit], b:&[BigDigit], c: BigDigit ) -> BigDigit
                 {
                     debug_assert!( a.len() == b.len() );
@@ -16187,7 +15757,6 @@ pub mod num
                         ( q, r >> shift )
                     }
                 }
-                /// An implementation of the base division algorithm.
                 fn div_rem_core( mut a: BigUint, b:&[BigDigit] ) -> ( BigUint, BigUint )
                 {
                     debug_assert!( a.data.len() >= b.len() && b.len() > 1 );
@@ -16612,6 +16181,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod multiplication
             {
                 /*!
@@ -16656,8 +16226,8 @@ pub mod num
                     *acc >>= ::num::big::digit::BITS;
                     lo
                 }
-                /// Three argument multiply accumulate:
-                /// acc += b * c
+                
+            
                 fn mac_digit( acc:&mut [BigDigit], b:&[BigDigit], c: BigDigit ) {
                     if c == 0 {
                         return;
@@ -16683,8 +16253,6 @@ pub mod num
                 fn bigint_from_slice( slice:&[BigDigit] ) -> BigInt {
                     BigInt::from( biguint_from_vec( slice.to_vec() ) )
                 }
-                /// Three argument multiply accumulate:
-                /// acc += b * c
                 #[allow( clippy::many_single_char_names )]
                 fn mac3( mut acc:&mut [BigDigit], mut b:&[BigDigit], mut c:&[BigDigit] ) {
                    
@@ -17233,6 +16801,7 @@ pub mod num
                 }
                 impl_product_iter_type!( BigUint );
             }
+            
             pub mod subtraction
             {
                 /*!
@@ -17524,6 +17093,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod bits
             {
                 /*!
@@ -17626,6 +17196,7 @@ pub mod num
                     }
                 }
             }
+            
             pub mod convert
             {
                 /*!
@@ -17657,8 +17228,8 @@ pub mod num
                 use super::multiplication::mac_with_carry;
                 /*
                 */
-                /// Find last set bit
-                /// fls( 0 ) == 0, fls( u32::MAX ) == 32
+                
+            
                 fn fls<T: PrimInt>( v: T ) -> u8 {
                     mem::size_of::<T>() as u8 * 8 - v.leading_zeros() as u8
                 }
@@ -17846,7 +17417,6 @@ pub mod num
                 {
                     type FromStrRadixErr = ParseBigIntError;
 
-                    /// Creates and initializes a `BigUint`.
                     fn from_str_radix( s:&str, radix: u32 ) -> Result<BigUint, ParseBigIntError> {
                         assert!( 2 <= radix && radix <= 36, "The radix must be within 2...36" );
                         let mut s = s;
@@ -18383,23 +17953,20 @@ pub mod num
                     }
                     res
                 }
-                /// Returns the greatest power of the radix for the `BigDigit` bit size
                 #[inline] fn get_radix_base( radix: u32 ) -> ( BigDigit, usize ) {
                     static BASES: [( BigDigit, usize ); 257] = generate_radix_bases( ::num::big::digit::MAX );
                     debug_assert!( !radix.is_power_of_two() );
                     debug_assert!( ( 3..256 ).contains( &radix ) );
                     BASES[radix as usize]
                 }
-                /// Returns the greatest power of the radix for half the `BigDigit` bit size
                 #[inline] fn get_half_radix_base( radix: u32 ) -> ( BigDigit, usize ) {
                     static BASES: [( BigDigit, usize ); 257] = generate_radix_bases( ::num::big::digit::HALF );
                     debug_assert!( !radix.is_power_of_two() );
                     debug_assert!( ( 3..256 ).contains( &radix ) );
                     BASES[radix as usize]
                 }
-                /// Generate tables of the greatest power of each radix that is less that the given maximum. These
-                /// are returned from `get_radix_base` to batch the multiplication/division of radix conversions on
-                /// full `BigUint` values, operating on primitive integers as much as possible. Powers of two are not included, just zeroed, as they're implemented with shifts.
+                
+            
                 const fn generate_radix_bases( max: BigDigit ) -> [( BigDigit, usize ); 257] {
                     let mut bases = [( 0, 0 ); 257];
 
@@ -18438,13 +18005,9 @@ pub mod num
                 */
                 cfg_digit!
                 ( 
-                    /// An iterator of `u32` digits representation of a `BigUint` or `BigInt`,
-                    /// ordered least significant digit first.
                     pub struct U32Digits<'a> {
                         it: ::slice::Iter<'a, u32>,
                     }
-                    /// An iterator of `u32` digits representation of a `BigUint` or `BigInt`,
-                    /// ordered least significant digit first.
                     pub struct U32Digits<'a> {
                         data:&'a [u64],
                         next_is_lo: bool,
@@ -18609,13 +18172,9 @@ pub mod num
                 impl FusedIterator for U32Digits<'_> {}
                 cfg_digit!
                 ( 
-                    /// An iterator of `u64` digits representation of a `BigUint` or `BigInt`,
-                    /// ordered least significant digit first.
                     pub struct U64Digits<'a> {
                         it: ::slice::Chunks<'a, u32>,
                     }
-                    /// An iterator of `u64` digits representation of a `BigUint` or `BigInt`,
-                    /// ordered least significant digit first.
                     pub struct U64Digits<'a> {
                         it: ::slice::Iter<'a, u64>,
                     }
@@ -18703,6 +18262,7 @@ pub mod num
                 }
                 impl FusedIterator for U64Digits<'_> {}
             }
+            
             pub mod monty
             {
                 /*!
@@ -18750,9 +18310,8 @@ pub mod num
                         MontyReducer { n0inv }
                     }
                 }
-                /// Computes z mod m = x * y * 2 ** ( -n*_W ) mod m
-                /// assuming k = -1/m mod 2**_W
-                /// See Gueron, "Efficient Software Implementations of Modular Exponentiation".
+                
+            
                 #[allow( clippy::many_single_char_names )]
                 fn montgomery( x:&BigUint, y:&BigUint, m:&BigUint, k: BigDigit, n: usize ) -> BigUint {
                    
@@ -18812,7 +18371,6 @@ pub mod num
                     }
                     c
                 }
-                /// The resulting carry c is either 0 or 1.
                 #[inline( always )] fn sub_vv( z:&mut [BigDigit], x:&[BigDigit], y:&[BigDigit] ) -> BigDigit {
                     let mut c = 0;
                     for ( i, ( xi, yi ) ) in x.iter().zip( y.iter() ).enumerate().take( z.len() ) {
@@ -18823,7 +18381,6 @@ pub mod num
                     }
                     c
                 }
-                /// z1<<_W + z0 = x+y+c, with c == 0 or 1
                 #[inline( always )] fn add_ww( x: BigDigit, y: BigDigit, c: BigDigit ) -> ( BigDigit, BigDigit ) {
                     let yc = y.wrapping_add( c );
                     let z0 = x.wrapping_add( yc );
@@ -18834,12 +18391,10 @@ pub mod num
 
                     ( z1, z0 )
                 }
-                /// z1 << _W + z0 = x * y + c
                 #[inline( always )] fn mul_add_www( x: BigDigit, y: BigDigit, c: BigDigit ) -> ( BigDigit, BigDigit ) {
                     let z = x as DoubleBigDigit * y as DoubleBigDigit + c as DoubleBigDigit;
                     ( ( z >> ::num::big::digit::BITS ) as BigDigit, z as BigDigit )
                 }
-                /// Calculates x ** y mod m using a fixed, 4-bit window.
                 #[allow( clippy::many_single_char_names )]
                 pub( super ) fn monty_modpow( x:&BigUint, y:&BigUint, m:&BigUint ) -> BigUint {
                     assert!( m.data[0] & 1 == 1 );
@@ -19154,6 +18709,7 @@ pub mod num
                     acc
                 }
             }
+            
             pub mod shift
             {
                 /*!
@@ -19328,7 +18884,7 @@ pub mod num
                 impl_shift! { u8, u16, u32, u64, u128, usize }
                 impl_shift! { i8, i16, i32, i64, i128, isize }
             }
-            /// A big unsigned integer type.
+            
             pub struct BigUint
             {
                 data: Vec<BigDigit>,
@@ -19378,6 +18934,7 @@ pub mod num
                     cmp_slice( &self.data[..], &other.data[..] )
                 }
             }
+            
             #[inline] fn cmp_slice( a:&[BigDigit], b:&[BigDigit] ) -> Ordering
             {
                 debug_assert!( a.last() != Some( &0 ) );
@@ -19495,7 +19052,6 @@ pub mod num
                         d + 1u32
                     }
                 }
-                /// Calculates the Greatest Common Divisor ( GCD ) of the number and `other`.
                 #[inline] fn gcd( &self, other:&Self ) -> Self
                 {
                     #[inline] fn twos( x:&BigUint ) -> u64 {
@@ -19527,7 +19083,6 @@ pub mod num
                     }
                     n << shift
                 }
-                /// Calculates the Lowest Common Multiple ( LCM ) of the number and `other`.
                 #[inline] fn lcm( &self, other:&BigUint ) -> BigUint
                 {
                     if self.is_zero() && other.is_zero() {
@@ -19539,7 +19094,6 @@ pub mod num
                         self / self.gcd( other ) * other
                     }
                 }
-                /// Calculates the Greatest Common Divisor ( GCD ) and Lowest Common Multiple ( LCM ) together.
                 #[inline] fn gcd_lcm( &self, other:&Self ) -> ( Self, Self )
                 {
                     let gcd = self.gcd( other );
@@ -19553,18 +19107,15 @@ pub mod num
                     };
                     ( gcd, lcm )
                 }
-                /// Deprecated, use `is_multiple_of` instead.
                 #[inline] fn divides( &self, other:&BigUint ) -> bool {
                     self.is_multiple_of( other )
                 }
-                /// Returns `true` if the number is a multiple of `other`.
                 #[inline] fn is_multiple_of( &self, other:&BigUint ) -> bool {
                     if other.is_zero() {
                         return self.is_zero();
                     }
                     ( self % other ).is_zero()
                 }
-                /// Returns `true` if the number is divisible by `2`.
                 #[inline] fn is_even( &self ) -> bool
                 {                   
                     match self.data.first() {
@@ -19572,11 +19123,9 @@ pub mod num
                         None => true,
                     }
                 }
-                /// Returns `true` if the number is not divisible by `2`.
                 #[inline] fn is_odd( &self ) -> bool {
                     !self.is_even()
                 }
-                /// Rounds up to nearest multiple of argument.
                 #[inline] fn next_multiple_of( &self, other:&Self ) -> Self {
                     let m = self.mod_floor( other );
                     if m.is_zero() {
@@ -19588,7 +19137,6 @@ pub mod num
                         self + ( other - m )
                     }
                 }
-                /// Rounds down to nearest multiple of argument.
                 #[inline] fn prev_multiple_of( &self, other:&Self ) -> Self {
                     self - self.mod_floor( other )
                 }
@@ -19599,6 +19147,7 @@ pub mod num
                     *self += 1u32;
                 }
             }
+            
             #[inline] fn fixpoint<F>( mut x: BigUint, max_bits: u64, f: F ) -> BigUint where
                 F: Fn( &BigUint ) -> BigUint,
             {
@@ -19769,13 +19318,12 @@ pub mod num
                     } )
                 }
             }
-            /// A generic trait for converting a value to a [`BigUint`].
+            
             pub trait ToBigUint
             {
-                /// Converts the value of `self` to a [`BigUint`].
                 fn to_biguint( &self ) -> Option<BigUint>;
             }
-            /// Creates and initializes a [`BigUint`].
+            
             #[inline] pub fn biguint_from_vec( digits: Vec<BigDigit> ) -> BigUint
             {
                 BigUint { data: digits }.normalized()
@@ -19783,9 +19331,7 @@ pub mod num
             
             impl BigUint
             {
-                /// A constant `BigUint` with value 0, useful for static initialization.
                 pub const ZERO: Self = BigUint { data: Vec::new() };
-                /// Creates and initializes a [`BigUint`].
                 #[inline] pub fn new( digits: Vec<u32> ) -> BigUint
                 {
                     let mut big = Self::ZERO;
@@ -19800,14 +19346,12 @@ pub mod num
 
                     big
                 }
-                /// Creates and initializes a [`BigUint`].
                 #[inline] pub fn from_slice( slice:&[u32] ) -> BigUint
                 {
                     let mut big = Self::ZERO;
                     big.assign_from_slice( slice );
                     big
                 }
-                /// Assign a value to a [`BigUint`].
                 #[inline] pub fn assign_from_slice( &mut self, slice:&[u32] )
                 {
                     self.data.clear();
@@ -19819,7 +19363,6 @@ pub mod num
 
                     self.normalize();
                 }
-                /// Creates and initializes a [`BigUint`].
                 #[inline] pub fn from_bytes_be( bytes:&[u8] ) -> BigUint
                 {
                     if bytes.is_empty() {
@@ -19833,7 +19376,6 @@ pub mod num
                         BigUint::from_bytes_le( &v )
                     }
                 }
-                /// Creates and initializes a [`BigUint`].
                 #[inline] pub fn from_bytes_le( bytes:&[u8] ) -> BigUint
                 {
                     if bytes.is_empty() {
@@ -19845,29 +19387,24 @@ pub mod num
                         convert::from_bitwise_digits_le( bytes, 8 )
                     }
                 }
-                /// Creates and initializes a [`BigUint`].
                 #[inline] pub fn parse_bytes( buf:&[u8], radix: u32 ) -> Option<BigUint>
                 {
                     let s = str::from_utf8( buf ).ok()?;
                     BigUint::from_str_radix( s, radix ).ok()
                 }
-                /// Creates and initializes a [`BigUint`].
                 pub fn from_radix_be( buf:&[u8], radix: u32 ) -> Option<BigUint>
                 {
                     convert::from_radix_be( buf, radix )
                 }
-                /// Creates and initializes a [`BigUint`].
                 pub fn from_radix_le( buf:&[u8], radix: u32 ) -> Option<BigUint>
                 {
                     convert::from_radix_le( buf, radix )
                 }
-                /// Returns the byte representation of the [`BigUint`] in big-endian byte order.
                 #[inline] pub fn to_bytes_be( &self ) -> Vec<u8> {
                     let mut v = self.to_bytes_le();
                     v.reverse();
                     v
                 }
-                /// Returns the byte representation of the [`BigUint`] in little-endian byte order.
                 #[inline] pub fn to_bytes_le( &self ) -> Vec<u8> {
                     if self.is_zero() {
                         vec![0]
@@ -19878,41 +19415,31 @@ pub mod num
                         convert::to_bitwise_digits_le( self, 8 )
                     }
                 }
-                /// Returns the `u32` digits representation of the [`BigUint`] ordered least significant digit first.
                 #[inline] pub fn to_u32_digits( &self ) -> Vec<u32> {
                     self.iter_u32_digits().collect()
                 }
-                /// Returns the `u64` digits representation of the [`BigUint`] ordered least significant digit first.
                 #[inline] pub fn to_u64_digits( &self ) -> Vec<u64> {
                     self.iter_u64_digits().collect()
                 }
-                /// Returns an iterator of `u32` digits representation of the 
-                /// [`BigUint`] ordered least significant digit first.
                 #[inline] pub fn iter_u32_digits( &self ) -> U32Digits<'_> {
                     U32Digits::new( self.data.as_slice() )
                 }
-                /// Returns an iterator of `u64` digits representation of the
-                /// [`BigUint`] ordered least significant digit first.
                 #[inline] pub fn iter_u64_digits( &self ) -> U64Digits<'_> {
                     U64Digits::new( self.data.as_slice() )
                 }
-                /// Returns the integer formatted as a string in the given radix.
                 #[inline] pub fn to_str_radix( &self, radix: u32 ) -> String {
                     let mut v = to_str_radix_reversed( self, radix );
                     v.reverse();
                     unsafe { String::from_utf8_unchecked( v ) }
                 }
-                /// Returns the integer in the requested base in big-endian digit order.
                 #[inline] pub fn to_radix_be( &self, radix: u32 ) -> Vec<u8> {
                     let mut v = convert::to_radix_le( self, radix );
                     v.reverse();
                     v
                 }
-                /// Returns the integer in the requested base in little-endian digit order.
                 #[inline] pub fn to_radix_le( &self, radix: u32 ) -> Vec<u8> {
                     convert::to_radix_le( self, radix )
                 }
-                /// Determines the fewest bits necessary to express the [`BigUint`].
                 #[inline] pub fn bits( &self ) -> u64 {
                     if self.is_zero() {
                         return 0;
@@ -19920,7 +19447,6 @@ pub mod num
                     let zeros: u64 = self.data.last().unwrap().leading_zeros().into();
                     self.data.len() as u64 * u64::from( ::num::big::digit::BITS ) - zeros
                 }
-                /// Strips off trailing zero bigdigits.
                 #[inline] fn normalize( &mut self ) {
                     if let Some( &0 ) = self.data.last() {
                         let len = self.data.iter().rposition( |&d| d != 0 ).map_or( 0, |i| i + 1 );
@@ -19930,20 +19456,16 @@ pub mod num
                         self.data.shrink_to_fit();
                     }
                 }
-                /// Returns a normalized [`BigUint`].
                 #[inline] fn normalized( mut self ) -> BigUint {
                     self.normalize();
                     self
                 }
-                /// Returns `self ^ exponent`.
                 pub fn pow( &self, exponent: u32 ) -> Self {
                     Pow::pow( self, exponent )
                 }
-                /// Returns `( self ^ exponent ) % modulus`.
                 pub fn modpow( &self, exponent:&Self, modulus:&Self ) -> Self {
                     power::modpow( self, exponent, modulus )
                 }
-                /// Returns the modular multiplicative inverse if it exists, otherwise `None`.
                 pub fn modinv( &self, modulus:&Self ) -> Option<Self> {
                    
                    
@@ -20006,26 +19528,20 @@ pub mod num
                         None
                     }
                 }
-                /// Returns the truncated principal square root of `self`
                 pub fn sqrt( &self ) -> Self {
                     Roots::sqrt( self )
                 }
-                /// Returns the truncated principal cube root of `self`
                 pub fn cbrt( &self ) -> Self {
                     Roots::cbrt( self )
                 }
-                /// Returns the truncated principal `n`th root of `self`
                 pub fn nth_root( &self, n: u32 ) -> Self {
                     Roots::nth_root( self, n )
                 }
-                /// Returns the number of least-significant bits that are zero, 
-                /// or `None` if the entire number is zero.
                 pub fn trailing_zeros( &self ) -> Option<u64> {
                     let i = self.data.iter().position( |&digit| digit != 0 )?;
                     let zeros: u64 = self.data[i].trailing_zeros().into();
                     Some( i as u64 * u64::from( ::num::big::digit::BITS ) + zeros )
                 }
-                /// Returns the number of least-significant bits that are ones.
                 pub fn trailing_ones( &self ) -> u64 {
                     if let Some( i ) = self.data.iter().position( |&digit| !digit != 0 ) {
                         let ones: u64 = self.data[i].trailing_ones().into();
@@ -20037,11 +19553,9 @@ pub mod num
                         self.data.len() as u64 * u64::from( ::num::big::digit::BITS )
                     }
                 }
-                /// Returns the number of one bits.
                 pub fn count_ones( &self ) -> u64 {
                     self.data.iter().map( |&d| u64::from( d.count_ones() ) ).sum()
                 }
-                /// Returns whether the bit in the given position is set
                 pub fn bit( &self, bit: u64 ) -> bool
                 {
                     let bits_per_digit = u64::from( ::num::big::digit::BITS );
@@ -20053,7 +19567,6 @@ pub mod num
                     }
                     false
                 }
-                /// Sets or clears the bit in the given position.
                 pub fn set_bit( &mut self, bit: u64, value: bool )
                 {
                     let bits_per_digit = u64::from( ::num::big::digit::BITS );
@@ -20094,6 +19607,7 @@ pub mod num
                     self.to_bytes_le()
                 }
             }
+            
             pub trait IntDigits {
                 fn digits( &self ) -> &[BigDigit];
                 fn digits_mut( &mut self ) -> &mut Vec<BigDigit>;
@@ -20120,7 +19634,7 @@ pub mod num
                     self.data.len()
                 }
             }
-            /// Convert a `u32` chunk ( len is either 1 or 2 ) to a single `u64` digit
+            
             #[inline] fn u32_chunk_to_u64( chunk:&[u32] ) -> u64 {
                
                 let mut digit = chunk[0] as u64;
@@ -20130,14 +19644,12 @@ pub mod num
                 digit
             }
             cfg_32_or_test!( 
-                /// Combine four `u32`s into a single `u128`.
                 #[inline] fn u32_to_u128( a: u32, b: u32, c: u32, d: u32 ) -> u128 {
                     u128::from( d ) | ( u128::from( c ) << 32 ) | ( u128::from( b ) << 64 ) | ( u128::from( a ) << 96 )
                 }
             );
 
             cfg_32_or_test!( 
-                /// Split a single `u128` into four `u32`.
                 #[inline] fn u32_from_u128( n: u128 ) -> ( u32, u32, u32, u32 ) {
                     ( 
                         ( n >> 96 ) as u32,
@@ -20181,11 +19693,13 @@ pub mod num
                     InvalidDigit => "invalid digit found in string",
                 }
             }
+            
             fn empty() -> Self {
                 ParseBigIntError {
                     kind: BigIntErrorKind::Empty,
                 }
             }
+            
             fn invalid() -> Self {
                 ParseBigIntError {
                     kind: BigIntErrorKind::InvalidDigit,
@@ -20206,7 +19720,7 @@ pub mod num
                 self.__description()
             }
         }
-        /// The error type returned when a checked conversion regarding big integer fails.
+        
         #[derive( Debug, Copy, Clone, PartialEq, Eq )]
         pub struct TryFromBigIntError<T>
         {
@@ -20218,11 +19732,11 @@ pub mod num
             fn new( original: T ) -> Self {
                 TryFromBigIntError { original }
             }
+            
             fn __description( &self ) -> &str {
                 "out of range conversion regarding big integer attempted"
             }
-            /// Extract the original value, if available. The value will be available
-            /// if the type before conversion was either [`BigInt`] or [`BigUint`].
+            
             pub fn into_original( self ) -> T {
                 self.original
             }
@@ -20277,16 +19791,17 @@ pub mod num
             {
                 ( n >> BITS ) as BigDigit
             }
+            
             #[inline] fn get_lo( n: DoubleBigDigit ) -> BigDigit 
             {
                 ( n & LO_MASK ) as BigDigit
             }
-            /// Split one [`DoubleBigDigit`] into two [`BigDigit`]s.
+            
             #[inline] pub fn from_doublebigdigit( n: DoubleBigDigit ) -> ( BigDigit, BigDigit ) 
             {
                 ( get_hi( n ), get_lo( n ) )
             }
-            /// Join two [`BigDigit`]s into one [`DoubleBigDigit`].
+            
             #[inline] pub fn to_doublebigdigit( hi: BigDigit, lo: BigDigit ) -> DoubleBigDigit 
             {
                 DoubleBigDigit::from( lo ) | ( DoubleBigDigit::from( hi ) << BITS )
@@ -20487,43 +20002,36 @@ pub mod num
             }
 
         }
-        /// Represents the ratio between two numbers.
+        
         #[derive( Copy, Clone, Debug )]
         #[allow( missing_docs )]
         pub struct Ratio<T> {
-            /// Numerator.
             numer: T,
-            /// Denominator.
             denom: T,
         }
-        /// Alias for a `Ratio` of machine-sized integers.
+        
         #[deprecated( 
             since = "0.4.0",
             note = "it's better to use a specific size, like `Rational32` or `Rational64`"
         )]
         pub type Rational = Ratio<isize>;
-        /// Alias for a `Ratio` of 32-bit-sized integers.
         pub type Rational32 = Ratio<i32>;
-        /// Alias for a `Ratio` of 64-bit-sized integers.
         pub type Rational64 = Ratio<i64>;
-        /// Alias for arbitrary precision rationals.
         pub type BigRational = Ratio<BigInt>;
-        /// These method are `const`.
         impl<T> Ratio<T>
         {
-            /// Creates a `Ratio` without checking for `denom == 0` or reducing.
             #[inline] pub const fn new_raw( numer: T, denom: T ) -> Ratio<T> {
                 Ratio { numer, denom }
             }
-            /// Deconstructs a `Ratio` into its numerator and denominator.
+            
             #[inline] pub fn into_raw( self ) -> ( T, T ) {
                 ( self.numer, self.denom )
             }
-            /// Gets an immutable reference to the numerator.
+            
             #[inline] pub const fn numer( &self ) -> &T {
                 &self.numer
             }
-            /// Gets an immutable reference to the denominator.
+            
             #[inline] pub const fn denom( &self ) -> &T {
                 &self.denom
             }
@@ -20531,26 +20039,25 @@ pub mod num
 
         impl<T: Clone + Integer> Ratio<T>
         {
-            /// Creates a new `Ratio`.
             #[inline] pub fn new( numer: T, denom: T ) -> Ratio<T> {
                 let mut ret = Ratio::new_raw( numer, denom );
                 ret.reduce();
                 ret
             }
-            /// Creates a `Ratio` representing the integer `t`.
+            
             #[inline] pub fn from_integer( t: T ) -> Ratio<T> {
                 Ratio::new_raw( t, One::one() )
             }
-            /// Converts to an integer, rounding towards zero.
+            
             #[inline] pub fn to_integer( &self ) -> T {
                 self.trunc().numer
             }
-            /// Returns true if the rational number is an integer ( denominator is 1 ).
+            
             #[inline] pub fn is_integer( &self ) -> bool
             {
                 self.denom.is_one()
             }
-            /// Puts self into lowest terms, with `denom` > 0.
+            
             fn reduce( &mut self ) {
                 if self.denom.is_zero() {
                     panic!( "denominator == 0" );
@@ -20584,16 +20091,17 @@ pub mod num
                     replace_with( &mut self.denom, |x| T::zero() - x );
                 }
             }
-            /// Returns a reduced copy of self.
+            
             pub fn reduced( &self ) -> Ratio<T> {
                 let mut ret = self.clone();
                 ret.reduce();
                 ret
             }
-            /// Returns the reciprocal.
+            
             #[inline] pub fn recip( &self ) -> Ratio<T> {
                 self.clone().into_recip()
             }
+            
             #[inline] fn into_recip( self ) -> Ratio<T> {
                 match self.numer.cmp( &T::zero() ) {
                     cmp::Ordering::Equal => panic!( "division by zero" ),
@@ -20601,7 +20109,7 @@ pub mod num
                     cmp::Ordering::Less => Ratio::new_raw( T::zero() - self.denom, T::zero() - self.numer ),
                 }
             }
-            /// Rounds towards minus infinity.
+            
             #[inline] pub fn floor( &self ) -> Ratio<T> {
                 if *self < Zero::zero() {
                     let one: T = One::one();
@@ -20615,7 +20123,7 @@ pub mod num
                     Ratio::from_integer( self.numer.clone() / self.denom.clone() )
                 }
             }
-            /// Rounds towards plus infinity.
+            
             #[inline] pub fn ceil( &self ) -> Ratio<T> {
                 if *self < Zero::zero() {
                     Ratio::from_integer( self.numer.clone() / self.denom.clone() )
@@ -20629,7 +20137,7 @@ pub mod num
                     )
                 }
             }
-            /// Rounds to the nearest integer. Rounds half-way cases away from zero.
+            
             #[inline] pub fn round( &self ) -> Ratio<T> {
                 let zero: Ratio<T> = Zero::zero();
                 let one: T = One::one();
@@ -20670,15 +20178,15 @@ pub mod num
                     self.trunc()
                 }
             }
-            /// Rounds towards zero.
+            
             #[inline] pub fn trunc( &self ) -> Ratio<T> {
                 Ratio::from_integer( self.numer.clone() / self.denom.clone() )
             }
-            /// Returns the fractional part of a number, with division rounded towards zero.
+            
             #[inline] pub fn fract( &self ) -> Ratio<T> {
                 Ratio::new_raw( self.numer.clone() % self.denom.clone(), self.denom.clone() )
             }
-            /// Raises the `Ratio` to the power of an exponent.
+            
             #[inline] pub fn pow( &self, expon: i32 ) -> Ratio<T> where
                 for<'a> &'a T: Pow<u32, Output = T>,
             {
@@ -20688,7 +20196,6 @@ pub mod num
         
         impl Ratio<BigInt>
         {
-            /// Converts a float into a rational number.
             pub fn from_float<T: FloatCore>( f: T ) -> Option<BigRational> {
                 if !f.is_finite() {
                     return None;
@@ -20719,7 +20226,6 @@ pub mod num
 
         impl<T: Clone + Integer> Default for Ratio<T>
         {
-            /// Returns zero
             fn default() -> Self {
                 Ratio::zero()
             }
@@ -21263,7 +20769,6 @@ pub mod num
         
         impl<T: ConstZero + ConstOne> Ratio<T>
         {
-            /// A constant `Ratio` 0/1.
             pub const ZERO: Self = Self::new_raw( T::ZERO, T::ONE );
         }
 
@@ -21277,9 +20782,11 @@ pub mod num
             #[inline] fn zero() -> Ratio<T> {
                 Ratio::new_raw( Zero::zero(), One::one() )
             }
+            
             #[inline] fn is_zero( &self ) -> bool {
                 self.numer.is_zero()
             }
+            
             #[inline] fn set_zero( &mut self ) {
                 self.numer.set_zero();
                 self.denom.set_one();
@@ -21288,7 +20795,6 @@ pub mod num
 
         impl<T: ConstOne> Ratio<T> 
         {
-            /// A constant `Ratio` 1/1.
             pub const ONE: Self = Self::new_raw( T::ONE, T::ONE );
         }
 
@@ -21302,9 +20808,11 @@ pub mod num
             #[inline] fn one() -> Ratio<T> {
                 Ratio::new_raw( One::one(), One::one() )
             }
+            
             #[inline] fn is_one( &self ) -> bool {
                 self.numer == self.denom
             }
+            
             #[inline] fn set_one( &mut self ) {
                 self.numer.set_one();
                 self.denom.set_one();
@@ -21314,7 +20822,6 @@ pub mod num
         impl<T: Clone + Integer> Num for Ratio<T>
         {
             type FromStrRadixErr = ParseRatioError;
-            /// Parses `numer/denom` where the numbers are in base `radix`.
             fn from_str_radix( s:&str, radix: u32 ) -> Result<Ratio<T>, ParseRatioError> {
                 if s.splitn( 2, '/' ).count() == 2 {
                     let mut parts = s.splitn( 2, '/' ).map( |ss| {
@@ -21357,6 +20864,7 @@ pub mod num
                     self.clone()
                 }
             }
+            
             #[inline] fn abs_sub( &self, other:&Ratio<T> ) -> Ratio<T> {
                 if *self <= *other {
                     Zero::zero()
@@ -21367,6 +20875,7 @@ pub mod num
                     self - other
                 }
             }
+            
             #[inline] fn signum( &self ) -> Ratio<T> {
                 if self.is_positive() {
                     Self::one()
@@ -21379,10 +20888,12 @@ pub mod num
                     -Self::one()
                 }
             }
+            
             #[inline] fn is_positive( &self ) -> bool {
                 ( self.numer.is_positive() && self.denom.is_positive() )
                     || ( self.numer.is_negative() && self.denom.is_negative() )
             }
+            
             #[inline] fn is_negative( &self ) -> bool {
                 ( self.numer.is_negative() && self.denom.is_positive() )
                     || ( self.numer.is_positive() && self.denom.is_negative() )
@@ -21433,7 +20944,6 @@ pub mod num
         impl<T: FromStr + Clone + Integer> FromStr for Ratio<T>
         {
             type Err = ParseRatioError;
-            /// Parses `numer/denom` or just `numer`.
             fn from_str( s:&str ) -> Result<Ratio<T>, ParseRatioError> {
                 let mut split = s.splitn( 2, '/' );
 
@@ -21512,18 +21022,23 @@ pub mod num
             fn from_i64( n: i64 ) -> Option<Self> {
                 Some( Ratio::from_integer( n.into() ) )
             }
+            
             fn from_i128( n: i128 ) -> Option<Self> {
                 Some( Ratio::from_integer( n.into() ) )
             }
+            
             fn from_u64( n: u64 ) -> Option<Self> {
                 Some( Ratio::from_integer( n.into() ) )
             }
+            
             fn from_u128( n: u128 ) -> Option<Self> {
                 Some( Ratio::from_integer( n.into() ) )
             }
+            
             fn from_f32( n: f32 ) -> Option<Self> {
                 Ratio::from_float( n )
             }
+            
             fn from_f64( n: f64 ) -> Option<Self> {
                 Ratio::from_float( n )
             }
@@ -21695,15 +21210,19 @@ pub mod num
             fn to_i64( &self ) -> Option<i64> {
                 self.to_integer().to_i64()
             }
+            
             fn to_i128( &self ) -> Option<i128> {
                 self.to_integer().to_i128()
             }
+            
             fn to_u64( &self ) -> Option<u64> {
                 self.to_integer().to_u64()
             }
+            
             fn to_u128( &self ) -> Option<u128> {
                 self.to_integer().to_u128()
             }
+            
             fn to_f64( &self ) -> Option<f64> {
                 let float = match ( self.numer.to_i64(), self.denom.to_i64() ) {
                     ( Some( numer ), Some( denom ) ) => ratio_to_f64( 
@@ -21745,7 +21264,6 @@ pub mod num
                 ( 128 - self.wrapping_abs().leading_zeros() ).into()
             }
         }
-        /// Converts a ratio of `T` to an f64.
         fn ratio_to_f64<T: Bits + Clone + Integer + Signed + ShlAssign<usize> + ToPrimitive>( 
             numer: T,
             denom: T,
@@ -21841,7 +21359,6 @@ pub mod num
             let q_float = quotient as f64 * flo_sign;
             ldexp( q_float, shift as i32 )
         }
-        /// Multiply `x` by 2 to the power of `exp`. Returns an accurate result even if `2^exp` is not representable.
         fn ldexp( x: f64, exp: i32 ) -> f64
         {
             use ::f64::{INFINITY, MANTISSA_DIGITS, MAX_EXP, RADIX};
@@ -22017,7 +21534,6 @@ pub mod now
     };
     /*
     */
-    /// Entry point for non-ttys ( e.g. Cmd-N on MacVim)
     pub fn run_procs_for_non_tty( sh: &mut Shell)
     {
         let mut buffer = String::new();
@@ -22042,7 +21558,7 @@ pub mod now
         let mut status = 0;
         let mut sep = String::new();
 
-        for token in parsers::parser_line::line_to_cmds(line )
+        for token in parses::lines::line_to_cmds(line )
         {
             if token == ";" || token == "&&" || token == "||"
             {
@@ -22066,7 +21582,7 @@ pub mod now
 
     fn line_to_tokens( sh: &mut Shell, line: &str ) -> ( Tokens, HashMap<String, String> )
     {
-        let linfo = parsers::parser_line::parse_line(line );
+        let linfo = parses::lines::parse_line(line );
         let mut tokens = linfo.tokens;
         shell::do_expansion( sh, &mut tokens );
         let envs = drain_env_tokens( &mut tokens );
@@ -22080,7 +21596,6 @@ pub mod now
             sh.set_env( name, value );
         }
     }
-    /// Run simple command or pipeline without using `&&`, `||`, `;`.
     fn run_proc( sh: &mut Shell, line: &str, tty: bool, capture:bool ) -> CommandResult
     {
         let log_cmd = !sh.cmd.starts_with(' ');
@@ -22306,7 +21821,6 @@ pub mod now
 
         None
     }
-    /// Run a pipeline ( e.g. `echo hi | wc -l`).
     pub fn run_pipeline
     (
         sh: &mut shell::Shell,
@@ -22454,7 +21968,6 @@ pub mod now
         
         (term_given, cmd_result)
     }
-    /// Run a single command.
     fn run_single_program
     (
         sh: &mut shell::Shell,
@@ -22778,7 +22291,7 @@ pub mod now
                 }
 
                 if options.isatty && !options.capture_output {
-                    let _cmd = parsers::parser_line::tokens_to_line( &cmd.tokens );
+                    let _cmd = parses::lines::tokens_to_line( &cmd.tokens );
                     sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background );
                 }
 
@@ -22946,7 +22459,7 @@ pub mod objects
         parent: Option<Obj>,
         id: usize,
     }
-    /// `Obj` struct.
+    
     #[derive( Clone, Debug )]
     pub struct Obj 
     {
@@ -22973,7 +22486,6 @@ pub mod objects
 
     impl Obj 
     {
-        /// Gets the `Value` associated with `field`.
         pub fn read( &self, field:&str ) -> Result<Value, ()> 
         {
             match self.inner.map.get( field )
@@ -22986,7 +22498,7 @@ pub mod objects
                 },
             }
         }
-        /// Returns a new `Obj` created from the given `HashMap`.
+        
         pub fn from_map( obj_map: HashMap<String, Value> ) -> OverResult<Obj> 
         {
             for field in obj_map.keys() {
@@ -23004,7 +22516,7 @@ pub mod objects
                 } ),
             } )
         }
-        /// Returns a new `Obj` created from the given `HashMap` with given `parent`.
+        
         pub fn from_map_with_parent( obj_map: HashMap<String, Value>, parent: Obj ) -> OverResult<Obj> 
         {
             for field in obj_map.keys() {
@@ -23022,7 +22534,7 @@ pub mod objects
                 } ),
             } )
         }
-        /// Returns a new `Obj` created from the given `HashMap`.
+        
         pub fn from_map_unchecked( obj_map: HashMap<String, Value> ) -> Obj 
         {
             let id = get_id();
@@ -23035,7 +22547,7 @@ pub mod objects
                 } ),
             }
         }
-        /// Returns a new `Obj` created from the given `HashMap` with given `parent`.
+        
         pub fn from_map_with_parent_unchecked( obj_map: HashMap<String, Value>, parent: Obj ) -> Obj 
         {
             let id = get_id();
@@ -23048,33 +22560,33 @@ pub mod objects
                 } ),
             }
         }
-        /// Returns the ID of this `Obj`.
+        
         pub fn id( &self ) -> usize 
         {
             self.inner.id
         }
-        /// Returns a reference to the inner map of this `Obj`.
+        
         pub fn map_ref( &self ) -> &HashMap<String, Value> 
         {
             &self.inner.map
         }
-        /// Returns a new `Obj` loaded from a file.
+        
         pub fn from_file( path:&str ) -> OverResult<Obj> 
         {
             Ok( parses::load_from_file( path )? )
         }
-        /// Writes this `Obj` to given file in `.over` representation.
+        
         pub fn write_to_file( &self, path:&str ) -> OverResult<()>
         {
             str::write_file_from( path, &self.write_str() )?;
             Ok( () )
         }
-        /// Writes this `Obj` to a `String`.
+        
         pub fn write_str( &self ) -> String 
         {
             self.format( false, 0 )
         }
-        /// Iterates over each `( String, Value )` pair in `self`, applying `f`.
+        
         pub fn with_each<F>( &self, mut f: F ) where
         F: FnMut( &String, &Value ),
         {
@@ -23082,27 +22594,27 @@ pub mod objects
                 f( field, value )
             }
         }
-        /// Returns the number of fields for this `Obj` ( parent fields not included ).
+        
         pub fn len( &self ) -> usize 
         {
             self.inner.map.len()
         }
-        /// Returns whether this `Obj` is empty.
+        
         pub fn is_empty( &self ) -> bool 
         {
             self.inner.map.is_empty()
         }
-        /// Returns whether `self` and `other` point to the same data.
+        
         pub fn ptr_eq( &self, other:&Self ) -> bool 
         {
             Arc::ptr_eq( &self.inner, &other.inner )
         }
-        /// Returns true if this `Obj` contains `field`.
+        
         pub fn contains( &self, field:&str ) -> bool 
         {
             self.inner.map.contains_key( field )
         }
-        /// Gets the `Value` associated with `field`.
+        
         pub fn get( &self, field:&str ) -> Option<Value> 
         {
             match self.inner.map.get( field ) {
@@ -23113,7 +22625,7 @@ pub mod objects
                 },
             }
         }
-        /// Gets the `Value` associated with `field` and the `Obj` where it was found.
+        
         pub fn get_with_source( &self, field:&str ) -> Option<( Value, Obj )> 
         {
             match self.inner.map.get( field ) {
@@ -23196,12 +22708,11 @@ pub mod objects
             get_obj,
             Obj
         );
-        /// Returns whether this `Obj` has a parent.
         pub fn has_parent( &self ) -> bool 
         {
             self.inner.parent.is_some()
         }
-        /// Returns the parent for this `Obj`.
+        
         pub fn get_parent( &self ) -> Option<Obj> 
         {
             match self.inner.parent {
@@ -23209,7 +22720,7 @@ pub mod objects
                 None => None,
             }
         }
-        /// Returns true if `field` is a valid field name for an `Obj`.
+        
         pub fn is_valid_field( field:&str ) -> bool 
         {
             let mut first = true;
@@ -23226,7 +22737,7 @@ pub mod objects
             }
             true
         }
-        /// Returns true if the given char is valid for a field, depending on whether it is the first char or not.
+        
         pub fn is_valid_field_char( ch:char, first: bool ) -> bool 
         {
             match ch 
@@ -23238,17 +22749,17 @@ pub mod objects
                 _ => false,
             }
         }
-        /// An iterator visiting all fields ( keys ) in arbitrary order.
+        
         pub fn keys( &self ) -> Keys<String, Value> 
         {
             self.map_ref().keys()
         }
-        /// An iterator visiting all values in arbitrary order.
+        
         pub fn values( &self ) -> Values<String, Value> 
         {
             self.map_ref().values()
         }
-        /// An iterator visiting all field-value pairs in arbitrary order.
+        
         pub fn iter( &self ) -> Iter<String, Value> 
         {
             self.map_ref().iter()
@@ -23278,9 +22789,8 @@ pub mod objects
             Ok( parses::load_from_str( s )? )
         }
     }
-    /// For two Objs to be equal, the following two checks must pass:
-    /// 1. If either Obj has a parent, then both must have parents and the parents must be equal.
-    /// 2. The two Objs must have all the same fields pointing to the same values.
+    
+            
     impl PartialEq for Obj 
     {
         fn eq( &self, other:&Self ) -> bool {
@@ -23307,12 +22817,9 @@ pub mod ops
 {
     pub use std::ops::{ * };
 
-    /// Implemented for built-in range types
     pub trait RangeArgument<T>
     {
-        /// Returns the start of range, if present.
         fn start( &self ) -> Option<&T> { None }
-        /// Returns the end of range, if present.
         fn end( &self ) -> Option<&T> { None }
     }
 
@@ -23389,18 +22896,14 @@ pub mod parses
         static ref TUP_SENTINEL: Obj = Obj::from_map_unchecked( HashMap::new() );
     }
     pub const MAX_DEPTH: usize = 64;
-    /// Load an `Obj` from a file.
     pub fn load_from_file( path:&str ) -> ParseResult<Obj>
     {
         object_file( path )
     }
-    /// Load an `Obj` from a &str.
     pub fn load_from_str( contents:&str ) -> ParseResult<Obj>
     {
         object_from_str( contents )
     }
-    /// Parses given file as an `Obj`.
-   
     pub fn object_file( path:&str ) -> ParseResult<Obj>
     {
         let stream = CharStream::from_file( path )?;
@@ -23411,15 +22914,13 @@ pub mod parses
         let stream = CharStream::from_file( path )?;
         parse_obj_stream( stream, included )
     }
-    /// Parses given &str as an `Obj`.
-   
     pub fn object_from_str( contents:&str ) -> ParseResult<Obj>
     {
         let contents = String::from( contents );
         let stream = CharStream::from_string( contents )?;
         parse_obj_stream( stream, &mut ( HashMap::new(), HashSet::new() ) )
     }
-    /// Parses an Obj given a character stream.
+    
     #[inline] fn parse_obj_stream( mut stream: CharStream, mut included:&mut IncludedMap ) -> ParseResult<Obj> {
         let mut obj: ObjMap = HashMap::new();
        
@@ -23490,7 +22991,7 @@ pub mod parses
         };
         Ok( obj.into() )
     }
-    /// Parses a field/value pair.
+    
     #[inline] pub fn parse_field_value_pair
     ( 
         mut stream:&mut CharStream,
@@ -24947,8 +24448,7 @@ pub mod path
 
         current_dir.to_string()
     }
-    // Support for matching file paths against Unix shell style patterns.
-    /// An iterator that yields `Path`s from the filesystem that match a particular pattern.
+    
     #[derive( Debug )]
     pub struct Paths
     {
@@ -24958,9 +24458,9 @@ pub mod path
         todo: Vec<Result<( PathWrapper, usize ), GlobError>>,
         scope: Option<PathWrapper>,
     }
-    /// Return an iterator for all the `Path`s that match the given pattern using default match options.
+    
     pub fn glob( pattern:&str ) -> Result<Paths, PatternError> { glob_with( pattern, MatchOptions::new() ) }
-    /// Return an iterator that produces all the `Path`s that match the given pattern using specified match options.
+    
     pub fn glob_with( pattern:&str, options:MatchOptions ) -> Result<Paths, PatternError>
     {
         #[cfg( windows )]
@@ -25062,7 +24562,7 @@ pub mod path
             }
         )
     }
-    /// A glob iteration error.
+    
     #[derive( Debug )]
     pub struct GlobError
     {
@@ -25072,11 +24572,10 @@ pub mod path
 
     impl GlobError
     {
-        /// The Path that the error corresponds to.
         pub fn path( &self ) -> &Path { &self.path }
-        /// The error in question.
+        
         pub fn error( &self ) -> &io::Error { &self.error }
-        /// Consumes self, returning the _raw_ underlying `io::Error`
+        
         #[deprecated( note = "use `.into` instead" )]
         pub fn into_error( self ) -> io::Error { self.error }
     }
@@ -25156,7 +24655,6 @@ pub mod path
         }
     }
     
-    /// An alias for a glob iteration result.
     pub type GlobResult = Result<PathBuf, GlobError>;
 
     impl Iterator for Paths
@@ -25249,13 +24747,11 @@ pub mod path
             }
         }
     }
-    /// A pattern parsing error.
+    
     #[derive( Debug )]
     pub struct PatternError
     {
-        /// The approximate character index of where the error occurred.
         pub pos: usize,
-        /// A message describing the error.
         pub msg: &'static str,
     }
 
@@ -25276,7 +24772,7 @@ pub mod path
             )
         }
     }
-    /// A compiled Unix shell style pattern.
+    
     #[derive( Clone, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
     pub struct Pattern
     {
@@ -25285,7 +24781,7 @@ pub mod path
         is_recursive: bool,
         has_metachars: bool,
     }
-    /// Show the original glob pattern.
+    
     impl fmt::Display for Pattern
     {
         fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result { self.original.fmt( f) }
@@ -25325,7 +24821,6 @@ pub mod path
 
     impl Pattern
     {
-        /// This function compiles Unix shell style patterns.
         pub fn new( pattern:&str ) -> Result<Self, PatternError>
         {
             let chars = pattern.chars().collect::<Vec<_>>();
@@ -25466,7 +24961,7 @@ pub mod path
                 has_metachars,
             })
         }
-        /// Escape metacharacters within the given string by surrounding them in brackets.
+        
         pub fn escape( s:&str ) -> String
         {
             let mut escaped = String::new();
@@ -25486,20 +24981,19 @@ pub mod path
             }
             escaped
         }
-        /// Return if the given `str` matches this `Pattern` using the default match options.
+        
         pub fn matches( &self, str:&str ) -> bool { self.matches_with( str, MatchOptions::new() ) }
-        /// Return if the given `Path`, when converted to a `str`, matches this
-        /// `Pattern` using the default match options (i.e. `MatchOptions::new()`).
+        
         pub fn matches_path( &self, path:&Path ) -> bool { path.to_str().map_or( false, |s| self.matches( s ) ) }
-        /// Return if the given `str` matches this `Pattern` using the specified match options.
+        
         pub fn matches_with( &self, str: &str, options:MatchOptions ) -> bool
         { self.matches_from( true, str.chars(), 0, options ) == Match }
-        /// Return if the given `Path` matches this `Pattern` using the specified match options.
+        
         pub fn matches_path_with( &self, path: &Path, options: MatchOptions ) -> bool
         {
             path.to_str().map_or( false, |s| self.matches_with( s, options ) )
         }
-        /// Access the original glob pattern.
+        
         pub fn as_str( &self ) -> &str { &self.original }
 
         fn matches_from
@@ -25757,7 +25251,7 @@ pub mod path
 
         false
     }
-    /// A helper function to determine if two chars are ( possibly case-insensitively) equal.
+    
     fn chars_eq( a:char, b:char, case_sensitive:bool ) -> bool 
     {
         if cfg!( windows ) && path::is_separator( a ) && path::is_separator( b ) { true }
@@ -25766,23 +25260,17 @@ pub mod path
 
         else { a == b }
     }
-    /// Configuration options to modify the behaviour of `Pattern::matches_with(..)`.
+    
     #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
     pub struct MatchOptions
     {
-        /// Whether or not patterns should be matched in a case-sensitive manner.
         pub case_sensitive: bool,
-        /// Whether path-component separator characters must be matched by a literal `/`
-        /// rather than by `*` or `?` or `[...]`.
         pub require_literal_separator: bool,
-        /// Whether path-components that start with a `.` will require that `.` appears literally in the pattern;
-        /// `*`, `?`, `**`, or `[...]` will not match.
         pub require_literal_leading_dot: bool,
     }
 
     impl MatchOptions 
     {
-        /// Constructs a new `MatchOptions` with default field values.
         pub fn new() -> Self
         {
             Self
@@ -25819,7 +25307,6 @@ pub mod process
     };
     /*
     */
-    /// Create a new child process duplicating the parent process.
     #[inline] pub unsafe fn fork() -> Result<ForkResult>
     {
         use self::ForkResult::*;
@@ -26023,7 +25510,7 @@ pub mod prompts
         };
         /*
         use std::io;
-        use crate::parsers::parser_line;
+        use crate::parses::lines;
         */
         pub struct EnterFunction;
 
@@ -26630,7 +26117,6 @@ pub mod regex
     };
     /*
     */
-    /// Returns the longest common prefix of a set of strings.
     pub fn longest_common_prefix<'a, I, S>( iter: I ) -> Option<&'a str> where
     I: IntoIterator<Item=&'a S>,
     S: 'a + ?Sized + AsRef<str>
@@ -26881,11 +26367,546 @@ pub mod result
         error::{ OverError, ParseError },
         *,
     };
-    /// Result type for this crate.
     pub type OverResult<T> = Result<T, OverError>;    
     /*
     */
     pub type ParseResult<T> = Result<T, ParseError>;
+}
+
+pub mod scripts
+{
+    /*!
+    */
+    use ::
+    {
+        fs::{ File },
+        io::{ ErrorKind, Read, Write },
+        path::{ Path },
+        types::{ self, * },
+        *,
+    };
+    /*
+    use pest::iterators::Pair;
+    use regex::{Regex, RegexBuilder};
+
+    use crate::execute;
+    use crate::libs;
+    use crate::parsers;
+    use crate::shell;
+    */
+    // pub fn run_script(sh: &mut shell::Shell, args: &Vec<String>) -> i32
+    pub fn run(sh: &mut shell::Shell, args: &Vec<String>) -> i32
+    {
+        let src_file = &args[1];
+        let full_src_file: String;
+
+        if src_file.contains('/') { full_src_file = src_file.clone(); }
+        else
+        {
+            let full_path = path::find_file(src_file, false);
+
+            if full_path.is_empty()
+            {
+                if !Path::new(src_file).exists()
+                {
+                    println_stderr!("cicada: {}: no such file", src_file);
+                    return 1;
+                }
+
+                full_src_file = format!("./{}", src_file);
+            }
+
+            else { full_src_file = full_path.clone(); }
+        }
+
+        if !Path::new(&full_src_file).exists()
+        {
+            println_stderr!("cicada: {}: no such file", src_file);
+            return 1;
+        }
+
+        if Path::new(&full_src_file).is_dir()
+        {
+            println_stderr!("cicada: {}: is a directory", src_file);
+            return 1;
+        }
+
+        let mut file;
+        match File::open(&full_src_file)
+        {
+            Ok(x) => file = x,
+            Err(e) => 
+            {
+                println_stderr!
+                (
+                    "cicada: {}: failed to open file - {:?}",
+                    &full_src_file,
+                    e.kind()
+                );
+
+                return 1;
+            }
+        }
+
+        let mut text = String::new();
+        match file.read_to_string(&mut text)
+        {
+            Ok(_) => {}
+            Err(e) => 
+            {
+                match e.kind() 
+                {
+                    ErrorKind::InvalidData => { println_stderr!("cicada: {}: not a valid script file", &full_src_file); }
+                    _ => { println_stderr!("cicada: {}: error: {:?}", &full_src_file, e); }
+                }
+
+                return 1;
+            }
+        }
+
+        if text.contains("\\\n") 
+        {
+            let re = RegexBuilder::new(r#"([ \t]*\\\n[ \t]+)|([ \t]+\\\n[ \t]*)"#)
+            .multi_line(true)
+            .build()
+            .unwrap();
+
+            text = re.replace_all(&text, " ").to_string();
+
+            let re = RegexBuilder::new(r#"\\\n"#)
+            .multi_line(true)
+            .build()
+            .unwrap();
+
+            text = re.replace_all(&text, "").to_string();
+        }
+
+        let re_func_head = Regex::new(r"^function ([a-zA-Z_-][a-zA-Z0-9_-]*) *(?:\(\))? *\{$").unwrap();
+        let re_func_tail = Regex::new(r"^\}$").unwrap();
+        let mut text_new = String::new();
+        let mut enter_func = false;
+        let mut func_name = String::new();
+        let mut func_body = String::new();
+
+        for line in text.clone().lines()
+        {
+            if re_func_head.is_match(line.trim())
+            {
+                enter_func = true;
+                let cap = re_func_head.captures(line.trim()).unwrap();
+                func_name = cap[1].to_string();
+                func_body = String::new();
+                continue;
+            }
+
+            if re_func_tail.is_match(line.trim())
+            {
+                sh.set_func(&func_name, &func_body);
+                enter_func = false;
+                continue;
+            }
+
+            if enter_func
+            {
+                func_body.push_str(line);
+                func_body.push('\n');
+            }
+            
+            else
+            {
+                text_new.push_str(line);
+                text_new.push('\n');
+            }
+        }
+
+        let mut status = 0;
+        let cr_list = run_lines(sh, &text_new, args, false);
+
+        if let Some(last) = cr_list.last() { status = last.status; }
+        
+        sh.exit_on_error = false;
+        status
+    }
+
+    pub fn run_lines
+    (
+        sh: &mut shell::Shell,
+        lines: &str,
+        args: &Vec<String>,
+        capture: bool,
+    ) -> Vec<CommandResult> 
+    {
+        let mut cr_list = Vec::new();
+        /*
+        match parsers::locust::parse_lines(lines) {
+            Ok(pairs_exp) => {
+                for pair in pairs_exp {
+                    let (mut _cr_list, _cont, _brk) = run_exp(sh, pair, args, false, capture);
+                    cr_list.append(&mut _cr_list);
+                }
+            }
+            Err(e) => {
+                println_stderr!("syntax error: {:?}", e);
+                return cr_list;
+            }
+        }*/
+        cr_list
+    }
+
+    fn expand_args(line: &str, args: &[String]) -> String 
+    {
+        let linfo = parses::lines::parse_line(line);
+        let mut tokens = linfo.tokens;
+        expand_args_in_tokens(&mut tokens, args);
+        parses::lines::tokens_to_line(&tokens)
+    }
+
+    fn expand_line_to_toknes(line: &str, args: &[String], sh: &mut shell::Shell) -> types::Tokens 
+    {
+        let linfo = parses::lines::parse_line(line);
+        let mut tokens = linfo.tokens;
+        expand_args_in_tokens(&mut tokens, args);
+        shell::do_expansion(sh, &mut tokens);
+        tokens
+    }
+
+    fn is_args_in_token(token: &str) -> bool { regex::contains(token, r"\$\{?[0-9@]+\}?") }
+
+    fn expand_args_for_single_token(token: &str, args: &[String]) -> String
+    {
+        let re = Regex::new(r"^(.*?)\$\{?([0-9]+|@)\}?(.*)$").unwrap();
+
+        if !re.is_match(token) { return token.to_string(); }
+
+        let mut result = String::new();
+        let mut _token = token.to_string();
+        let mut _head = String::new();
+        let mut _output = String::new();
+        let mut _tail = String::new();
+
+        loop
+        {
+            if !re.is_match(&_token)
+            {
+                if !_token.is_empty() { result.push_str(&_token); }
+                break;
+            }
+
+            for cap in re.captures_iter(&_token)
+            {
+                _head = cap[1].to_string();
+                _tail = cap[3].to_string();
+                let _key = cap[2].to_string();
+
+                if _key == "@" { result.push_str(format!("{}{}", _head, args[1..].join(" ")).as_str()); }
+
+                else if let Ok(arg_idx) = _key.parse::<usize>()
+                {
+                    if arg_idx < args.len() { result.push_str(format!("{}{}", _head, args[arg_idx]).as_str()); }
+                    else { result.push_str(&_head); }
+                }
+
+                else { result.push_str(&_head); }
+            }
+
+            if _tail.is_empty() { break; }
+
+            _token = _tail.clone();
+        }
+
+        result
+    }
+
+    fn expand_args_in_tokens(tokens: &mut types::Tokens, args: &[String])
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for (sep, token) in tokens.iter()
+        {
+            if sep == "`" || sep == "'" || !is_args_in_token(token)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let _token = expand_args_for_single_token(token, args);
+            buff.push((idx, _token));
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter().rev()
+        {
+            tokens[*i].1 = text.to_string();
+        }
+    }
+
+    fn run_exp_test_br
+    (
+        sh: &mut shell::Shell,
+        pair_br: Pair<parsers::locust::Rule>,
+        args: &Vec<String>,
+        in_loop: bool,
+        capture: bool,
+    ) -> (Vec<CommandResult>, bool, bool, bool)
+    {
+        let mut cr_list = Vec::new();
+        let mut test_pass = false;
+        /*
+        let pairs = pair_br.into_inner();
+        let mut test_pass = false;
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::IF_HEAD
+                || rule == parsers::locust::Rule::IF_ELSEIF_HEAD
+                || rule == parsers::locust::Rule::WHILE_HEAD
+            {
+                let pairs_test: Vec<Pair<parsers::locust::Rule>> = pair.into_inner().collect();
+                let pair_test = &pairs_test[0];
+                let line = pair_test.as_str().trim();
+                let line_new = expand_args(line, &args[1..]);
+                let mut _cr_list = execute::run_command_line(sh, &line_new, true, capture);
+                if let Some(last) = _cr_list.last() {
+                    if last.status == 0 {
+                        test_pass = true;
+                    }
+                }
+                continue;
+            }
+
+            if rule == parsers::locust::Rule::KW_ELSE {
+                test_pass = true;
+                continue;
+            }
+
+            if rule == parsers::locust::Rule::EXP_BODY {
+                if !test_pass {
+                    return (cr_list, false, false, false);
+                }
+                let (mut _cr_list, _cont, _brk) = run_exp(sh, pair, args, in_loop, capture);
+                cr_list.append(&mut _cr_list);
+                // branch executed successfully
+                return (cr_list, true, _cont, _brk);
+            }
+
+            unreachable!();
+        }*/
+        (cr_list, test_pass, false, false)
+    }
+
+    fn run_exp_if
+    (
+        sh: &mut shell::Shell,
+        pair_if: Pair<parsers::locust::Rule>,
+        args: &Vec<String>,
+        in_loop: bool,
+        capture: bool,
+    ) -> (Vec<CommandResult>, bool, bool) 
+    {
+        let mut cr_list = Vec::new();
+        let mut met_continue = false;
+        let mut met_break = false;
+        /*let pairs = pair_if.into_inner();
+        let mut met_continue = false;
+        let mut met_break = false;
+        for pair in pairs {
+            let (mut _cr_list, passed, _cont, _brk) =
+                run_exp_test_br(sh, pair, args, in_loop, capture);
+            met_continue = _cont;
+            met_break = _brk;
+            cr_list.append(&mut _cr_list);
+            // break at first successful branch
+            if passed {
+                break;
+            }
+        }*/
+        (cr_list, met_continue, met_break)
+    }
+
+    fn get_for_result_from_init
+    (
+        sh: &mut shell::Shell,
+        pair_init: Pair<parsers::locust::Rule>,
+        args: &[String],
+    ) -> Vec<String> 
+    {
+        let mut result: Vec<String> = Vec::new();
+        /*let pairs = pair_init.into_inner();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::TEST {
+                let line = pair.as_str().trim();
+                let tokens = expand_line_to_toknes(line, &args[1..], sh);
+                for (sep, token) in tokens {
+                    if sep.is_empty() {
+                        for x in token.split_whitespace() {
+                            result.push(x.to_string());
+                        }
+                    } else {
+                        result.push(token.clone());
+                    }
+                }
+            }
+        }*/
+        result
+    }
+
+    fn get_for_result_list
+    (
+        sh: &mut shell::Shell,
+        pair_head: Pair<parsers::locust::Rule>,
+        args: &[String],
+    ) -> Vec<String> 
+    {
+        /*
+        let pairs = pair_head.into_inner();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::FOR_INIT {
+                return get_for_result_from_init(sh, pair, args);
+            }
+        }*/
+        Vec::new()
+    }
+
+    fn get_for_var_name(pair_head: Pair<parsers::locust::Rule>) -> String
+    {
+        /*
+        let pairs = pair_head.into_inner();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::FOR_INIT {
+                let pairs_init = pair.into_inner();
+                for pair_init in pairs_init {
+                    let rule_init = pair_init.as_rule();
+                    if rule_init == parsers::locust::Rule::FOR_VAR {
+                        let line = pair_init.as_str().trim();
+                        return line.to_string();
+                    }
+                }
+            }
+        }*/
+        String::new()
+    }
+
+    fn run_exp_for
+    (
+        sh: &mut shell::Shell,
+        pair_for: Pair<parsers::locust::Rule>,
+        args: &Vec<String>,
+        capture: bool,
+    ) -> Vec<CommandResult>
+    {
+        let mut cr_list = Vec::new();
+        /*let pairs = pair_for.into_inner();
+        let mut result_list: Vec<String> = Vec::new();
+        let mut var_name: String = String::new();
+        for pair in pairs {
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::FOR_HEAD {
+                var_name = get_for_var_name(pair.clone());
+                result_list = get_for_result_list(sh, pair.clone(), args);
+                continue;
+            }
+            if rule == parsers::locust::Rule::EXP_BODY {
+                for value in &result_list {
+                    sh.set_env(&var_name, value);
+                    let (mut _cr_list, _cont, _brk) = run_exp(sh, pair.clone(), args, true, capture);
+                    cr_list.append(&mut _cr_list);
+                    if _brk {
+                        break;
+                    }
+                }
+            }
+        } */
+        cr_list
+    }
+
+    fn run_exp_while
+    (
+        sh: &mut shell::Shell,
+        pair_while: Pair<parsers::locust::Rule>,
+        args: &Vec<String>,
+        capture: bool,
+    ) -> Vec<CommandResult>
+    {
+        let mut cr_list = Vec::new();
+        /*loop {
+            let (mut _cr_list, passed, _cont, _brk) =
+                run_exp_test_br(sh, pair_while.clone(), args, true, capture);
+            cr_list.append(&mut _cr_list);
+            if !passed || _brk {
+                break;
+            }
+        }*/
+        cr_list
+    }
+
+    fn run_exp
+    (
+        sh: &mut shell::Shell,
+        pair_in: Pair<parsers::locust::Rule>,
+        args: &Vec<String>,
+        in_loop: bool,
+        capture: bool,
+    ) -> (Vec<CommandResult>, bool, bool) 
+    {
+        let mut cr_list = Vec::new();
+        /*let pairs = pair_in.into_inner();
+        for pair in pairs
+        {
+            let line = pair.as_str().trim();
+            if line.is_empty() {
+                continue;
+            }
+
+            let rule = pair.as_rule();
+            if rule == parsers::locust::Rule::CMD {
+                if line == "continue" {
+                    if in_loop {
+                        return (cr_list, true, false);
+                    } else {
+                        println_stderr!("cicada: continue: only meaningful in loops");
+                        continue;
+                    }
+                }
+                if line == "break" {
+                    if in_loop {
+                        return (cr_list, false, true);
+                    } else {
+                        println_stderr!("cicada: break: only meaningful in loops");
+                        continue;
+                    }
+                }
+
+                let line_new = expand_args(line, &args[1..]);
+                let mut _cr_list = execute::run_command_line(sh, &line_new, true, capture);
+                cr_list.append(&mut _cr_list);
+                if let Some(last) = cr_list.last() {
+                    let status = last.status;
+                    if status != 0 && sh.exit_on_error {
+                        return (cr_list, false, false);
+                    }
+                }
+            } else if rule == parsers::locust::Rule::EXP_IF {
+                let (mut _cr_list, _cont, _brk) = run_exp_if(sh, pair, args, in_loop, capture);
+                cr_list.append(&mut _cr_list);
+                if _cont {
+                    return (cr_list, true, false);
+                }
+                if _brk {
+                    return (cr_list, false, true);
+                }
+            } else if rule == parsers::locust::Rule::EXP_FOR {
+                let mut _cr_list = run_exp_for(sh, pair, args, capture);
+                cr_list.append(&mut _cr_list);
+            } else if rule == parsers::locust::Rule::EXP_WHILE {
+                let mut _cr_list = run_exp_while(sh, pair, args, capture);
+                cr_list.append(&mut _cr_list);
+            }
+        }*/
+        (cr_list, false, false)
+    }
 }
 
 pub mod shell
@@ -27011,13 +27032,12 @@ pub mod str
             }
         };
     }
-    /// Iterator over string prefixes.
     pub struct Prefixes<'a>
     {
         s:&'a str,
         iter: CharIndices<'a>,
     }
-    /// Returns an iterator over all non-empty prefixes of `s`, beginning with the shortest.
+    
     #[inline] pub fn prefixes( s:&str ) -> Prefixes
     {
         Prefixes
@@ -27033,7 +27053,6 @@ pub mod str
 
         fn next( &mut self ) -> Option<&'a str> { self.iter.next().map( |( idx, ch )| &self.s[..idx + ch.len_utf8()] ) }
     }
-    /// Reads a file and returns its contents in a string.   
     pub fn read_from_file( fname:&str ) -> io::Result<String>
     {
         let mut file = File::open( fname )?;
@@ -27043,7 +27062,6 @@ pub mod str
 
         Ok( contents )
     }
-    /// Writes a string to a file.
     //pub fn write_file_str( fname:&str, contents:&str ) -> io::Result<()>
     pub fn write_file_from( fname:&str, contents:&str ) -> io::Result<()>
     {
@@ -27054,40 +27072,38 @@ pub mod str
 
         Ok( () )
     }
-    /// A `String`-like container that can store a small number of bytes inline.
+    
     #[derive( Clone, Default )]
     pub struct SmallString<A: Array<Item = u8>> {
         data: SmallVec<A>,
     }
 
     impl<A: Array<Item = u8>> SmallString<A> {
-        /// Construct an empty string.
         #[inline] pub fn new() -> SmallString<A> {
             SmallString {
                 data: SmallVec::new(),
             }
         }
-        /// Construct an empty string with enough capacity pre-allocated to store
-        /// at least `n` bytes.
+        
         #[inline] pub fn with_capacity( n: usize ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::with_capacity( n ),
             }
         }
-        /// Construct a `SmallString` by copying data from a `&str`.
+        
         #[allow( clippy::should_implement_trait )]
         #[inline] pub fn from_str( s:&str ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::from_slice( s.as_bytes() ),
             }
         }
-        /// Construct a `SmallString` by using an existing allocation.
+        
         #[inline] pub fn from_string( s: String ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::from_vec( s.into_bytes() ),
             }
         }
-        /// Constructs a new `SmallString` on the stack using UTF-8 bytes.
+        
         #[inline] pub fn from_buf( buf: A ) -> Result<SmallString<A>, FromUtf8Error<A>>
         {
             let data = SmallVec::from_buf( buf );
@@ -27101,34 +27117,33 @@ pub mod str
                 }
             }
         }
-        /// Constructs a new `SmallString` on the stack using the provided byte array
-        /// without checking that the array contains valid UTF-8.
+        
         #[inline] pub unsafe fn from_buf_unchecked( buf: A ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::from_buf( buf ),
             }
         }
-        /// The maximum number of bytes this string can hold inline.
+        
         #[inline] pub fn inline_size( &self ) -> usize {
             A::size()
         }
-        /// Returns the length of this string, in bytes.
+        
         #[inline] pub fn len( &self ) -> usize {
             self.data.len()
         }
-        /// Returns `true` if this string is empty.
+        
         #[inline] pub fn is_empty( &self ) -> bool {
             self.data.is_empty()
         }
-        /// Returns the number of bytes this string can hold without reallocating.
+        
         #[inline] pub fn capacity( &self ) -> usize {
             self.data.capacity()
         }
-        /// Returns `true` if the data has spilled into a separate heap-allocated buffer.
+        
         #[inline] pub fn spilled( &self ) -> bool {
             self.data.spilled()
         }
-        /// Empties the string and returns an iterator over its former contents.
+        
         pub fn drain( &mut self ) -> Drain<'_> {
             unsafe {
                 let len = self.len();
@@ -27143,7 +27158,7 @@ pub mod str
                 Drain { iter: s.chars() }
             }
         }
-        /// Empties the sub string and returns an iterator over its former contents.
+        
         pub fn drain_range<R>( &mut self, range: R ) -> DrainRange<'_, A>
         where
             R: ops::RangeBounds<usize>,
@@ -27152,18 +27167,18 @@ pub mod str
                 drain: self.data.drain( range ),
             }
         }
-        /// Appends the given `char` to the end of this string.
+        
         #[inline] pub fn push( &mut self, ch: char ) {
             match ch.len_utf8() {
                 1 => self.data.push( ch as u8 ),
                 _ => self.push_str( ch.encode_utf8( &mut [0; 4] ) ),
             }
         }
-        /// Appends the given string slice to the end of this string.
+        
         #[inline] pub fn push_str( &mut self, s:&str ) {
             self.data.extend_from_slice( s.as_bytes() );
         }
-        /// Removes the last character from this string and returns it.
+        
         #[inline] pub fn pop( &mut self ) -> Option<char> {
             match self.chars().next_back() {
                 Some( ch ) => unsafe {
@@ -27174,38 +27189,36 @@ pub mod str
                 None => None,
             }
         }
-        /// Reallocates to set the new capacity to `new_cap`.
+        
         #[inline] pub fn grow( &mut self, new_cap: usize ) {
             self.data.grow( new_cap );
         }
-        /// Ensures that this string's capacity is at least `additional` bytes larger
-        /// than its length.
+        
         #[inline] pub fn reserve( &mut self, additional: usize ) {
             self.data.reserve( additional );
         }
-        /// Ensures that this string's capacity is `additional` bytes larger than
-        /// its length.
+        
         #[inline] pub fn reserve_exact( &mut self, additional: usize ) {
             self.data.reserve( additional );
         }
-        /// Shrink the capacity of the string as much as possible.
+        
         #[inline] pub fn shrink_to_fit( &mut self ) {
             self.data.shrink_to_fit();
         }
-        /// Shorten the string, keeping the first `len` bytes.
+        
         #[inline] pub fn truncate( &mut self, len: usize ) {
             assert!( self.is_char_boundary( len ) );
             self.data.truncate( len );
         }
-        /// Extracts a string slice containing the entire string.
+        
         #[inline] pub fn as_str( &self ) -> &str { self }
-        /// Extracts a string slice containing the entire string.
+        
         #[inline] pub fn as_mut_str( &mut self ) -> &mut str { self }
-        /// Removes all contents of the string.
+        
         #[inline] pub fn clear( &mut self ) {
             self.data.clear();
         }
-        /// Removes a `char` from this string at a byte position and returns it.
+        
         #[inline] pub fn remove( &mut self, idx: usize ) -> char {
             let ch = match self[idx..].chars().next() {
                 Some( ch ) => ch,
@@ -27225,7 +27238,7 @@ pub mod str
 
             ch
         }
-        /// Inserts a `char` into this string at the given byte position.
+        
         #[inline] pub fn insert( &mut self, idx: usize, ch: char ) {
             assert!( self.is_char_boundary( idx ) );
 
@@ -27234,7 +27247,7 @@ pub mod str
                 _ => self.insert_str( idx, ch.encode_utf8( &mut [0; 4] ) ),
             }
         }
-        /// Inserts a `&str` into this string at the given byte position.
+        
         #[inline] pub fn insert_str( &mut self, idx: usize, s:&str ) {
             assert!( self.is_char_boundary( idx ) );
 
@@ -27251,25 +27264,23 @@ pub mod str
                 self.data.set_len( len + amt );
             }
         }
-        /// Returns a mutable reference to the contents of the `SmallString`.
+        
         #[inline] pub unsafe fn as_mut_vec( &mut self ) -> &mut SmallVec<A> {
             &mut self.data
         }
-        /// Converts the `SmallString` into a `String`, without reallocating if the
-        /// `SmallString` has already spilled onto the heap.
+        
         #[inline] pub fn into_string( self ) -> String {
             unsafe { String::from_utf8_unchecked( self.data.into_vec() ) }
         }
-        /// Converts the `SmallString` into a `Box<str>`, without reallocating if the
-        /// `SmallString` has already spilled onto the heap.
+        
         #[inline] pub fn into_boxed_str( self ) -> Box<str> {
             self.into_string().into_boxed_str()
         }
-        /// Convert the `SmallString` into `A`, if possible. Otherwise, return `Err( self )`.
+        
         #[inline] pub fn into_inner( self ) -> Result<A, Self> {
             self.data.into_inner().map_err( |data| SmallString { data } )
         }
-        /// Retains only the characters specified by the predicate.
+        
         #[inline] pub fn retain<F: FnMut( char ) -> bool>( &mut self, mut f: F ) {
             struct SetLenOnDrop<'a, A: Array<Item = u8>> {
                 s:&'a mut SmallString<A>,
@@ -27610,7 +27621,6 @@ pub mod str
             self[..].hash( state )
         }
     }
-    /// A draining iterator for `SmallString`.
     pub struct Drain<'a> {
         iter: Chars<'a>,
     }
@@ -27634,7 +27644,6 @@ pub mod str
             self.iter.next_back()
         }
     }
-    /// A range draining iterator for `SmallString`.
     pub struct DrainRange<'a, A: Array<Item = u8>> 
     {
         drain: smallvec::Drain<'a, A>,
@@ -27693,7 +27702,7 @@ pub mod str
         }
     }
     impl<A: Array<Item = u8>> FusedIterator for DrainRange<'_, A> {}
-    /// A possible error value when creating a `SmallString` from a byte array.
+    
     #[derive( Debug )]
     pub struct FromUtf8Error<A: Array<Item = u8>> 
     {
@@ -27703,16 +27712,15 @@ pub mod str
 
     impl<A: Array<Item = u8>> FromUtf8Error<A> 
     {
-        /// Returns the slice of `[u8]` bytes that were attempted to convert to a `SmallString`.
         #[inline] pub fn as_bytes( &self ) -> &[u8] {
             let ptr = &self.buf as *const _ as *const u8;
             unsafe { slice::from_raw_parts( ptr, A::size() ) }
         }
-        /// Returns the byte array that was attempted to convert into a `SmallString`.
+        
         #[inline] pub fn into_buf( self ) -> A {
             self.buf
         }
-        /// Returns the `Utf8Error` to get more details about the conversion failure.
+        
         #[inline] pub fn utf8_error( &self ) -> Utf8Error {
             self.error
         }
@@ -27947,30 +27955,25 @@ pub mod system
         // Controls the behavior of a [`SigAction`]
         libc_bitflags!
         {
-            /// Controls the behavior of a [`SigAction`]
             #[cfg_attr( docsrs, doc( cfg( feature = "signal" ) ) )]
             pub struct SaFlags: SaFlags_t {
-                /// When catching a [`Signal::SIGCHLD`] signal, the signal will be
-                /// generated only when a child process exits, not when a child process
-                /// stops.
+                
+            
                 SA_NOCLDSTOP;
-                /// When catching a [`Signal::SIGCHLD`] signal, the system will not
-                /// create zombie processes when children of the calling process exit.
                 #[cfg( not( target_os = "hurd" ) )]
                 SA_NOCLDWAIT;
-                /// Further occurrences of the delivered signal are not masked during
-                /// the execution of the handler.
+                
+            
                 SA_NODEFER;
-                /// The system will deliver the signal to the process on a signal stack,
-                /// specified by each thread with sigaltstack( 2 ).
+                
+            
                 SA_ONSTACK;
-                /// The handler is reset back to the default at the moment the signal is
-                /// delivered.
+                
+            
                 SA_RESETHAND;
-                /// Requests that certain system calls restart if interrupted by this
-                /// signal.  See the man page for complete details.
+                
+            
                 SA_RESTART;
-                /// This flag is controlled internally by Nix.
                 SA_SIGINFO;
             }
         }
@@ -27983,7 +27986,6 @@ pub mod system
             SIGSTOP, SIGTSTP, SIGTTIN, SIGTTOU, SIGURG, SIGXCPU, SIGXFSZ, SIGVTALRM,
             SIGPROF, SIGWINCH, SIGIO, SIGSYS
         ];
-        /// Iterate through all signals defined by this operating system
         #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SignalIterator
         {
@@ -28011,7 +28013,6 @@ pub mod system
 
         impl Signal
         {
-            /// Iterate through all signals defined by this OS
             pub const fn iterator() -> SignalIterator { SignalIterator{ next:0 } }
         }
 
@@ -28023,7 +28024,7 @@ pub mod system
             #[cfg( target_pointer_width = "64" )]
             pub __val: [u64; 16],
         }
-        /// Specifies a set of [`Signal`]s that may be blocked, waited for, etc.
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SigSet
         {
@@ -28032,9 +28033,8 @@ pub mod system
 
         impl SigSet
         {
-            /// Add the specified signal to the set.
             pub fn add( &mut self, signal: Signal ) { unsafe { sigaddset( &mut self.sigset, signal as c_int ) }; }
-            /// Initialize to include all signals.
+            
             pub fn all() -> SigSet
             {
                 let mut sigset = mem::MaybeUninit::uninit();
@@ -28042,7 +28042,7 @@ pub mod system
 
                 unsafe{ SigSet { sigset: sigset.assume_init() } }
             }
-            /// Return whether this set includes the specified signal.
+            
             pub fn contains( &self, signal: Signal ) -> bool
             {
                 let res = unsafe { sigismember( &self.sigset, signal as c_int ) };
@@ -28054,14 +28054,14 @@ pub mod system
                     _ => unreachable!( "unexpected value from sigismember" ),
                 }
             }
-            /// Initialize to include nothing.
+            
             pub fn empty() -> SigSet
             {
                 let mut sigset = mem::MaybeUninit::uninit();
                 let _ = unsafe { sigemptyset( sigset.as_mut_ptr() ) };
                 unsafe{ SigSet { sigset: sigset.assume_init() } }
             }
-            /// Returns an iterator that yields the signals contained in this set.
+            
             pub fn iter( &self ) -> SigSetIter<'_> { self.into_iter() }
         }
 
@@ -28142,7 +28142,7 @@ pub mod system
                 sigset
             }
         }
-        /// Iterator for a [`SigSet`].
+        
         #[derive( Clone, Debug )]
         pub struct SigSetIter<'a>
         {
@@ -28183,18 +28183,12 @@ pub mod system
             _align: [u64; 0],
         }
 
-        /// A signal handler.
         #[derive( Clone, Copy, Debug, Hash )]
         pub enum SigHandler 
         {
-            /// Default signal handling.
             SigDfl,
-            /// Request that the signal be ignored.
             SigIgn,
-            /// Use the given signal-catching function, which takes in the signal.
             Handler( extern "C" fn( c_int ) ),
-            /// Use the given signal-catching function, which takes in the signal, information about how
-            /// the signal was generated, and a pointer to the threads `ucontext_t`.
             #[cfg( not( target_os = "redox" ) )]
             SigAction( extern "C" fn( c_int, *mut SignalInformation, *mut c_void ) )
         }
@@ -28209,7 +28203,7 @@ pub mod system
             pub sa_flags: c_int,
             pub sa_restorer: Option<extern "C" fn()>,
         }
-        /// Action to take on receipt of a signal. Corresponds to `sigaction`.
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SigAction
         {
@@ -28218,7 +28212,6 @@ pub mod system
 
         impl SigAction
         {
-            /// Creates a new action.
             pub fn new( handler:SigHandler, flags:SaFlags, mask:SigSet ) -> SigAction
             {
                 unsafe fn install_sig( p: *mut SignalAction, handler: SigHandler ) 
@@ -28262,67 +28255,37 @@ pub mod system
         // Types of operating system signals
         libc_enum!
         {
-            /// Types of operating system signals
             #[repr( i32 )] #[non_exhaustive]
             pub enum Signal {
-                /// Hangup
                 SIGHUP,
-                /// Interrupt
                 SIGINT,
-                /// Quit
                 SIGQUIT,
-                /// Illegal instruction ( not reset when caught )
                 SIGILL,
-                /// Trace trap ( not reset when caught )
                 SIGTRAP,
-                /// Abort
                 SIGABRT,
-                /// Bus error
                 SIGBUS,
-                /// Floating point exception
                 SIGFPE,
-                /// Kill ( cannot be caught or ignored )
                 SIGKILL,
-                /// User defined signal 1
                 SIGUSR1,
-                /// Segmentation violation
                 SIGSEGV,
-                /// User defined signal 2
                 SIGUSR2,
-                /// Write on a pipe with no one to read it
                 SIGPIPE,
-                /// Alarm clock
                 SIGALRM,
-                /// Software termination signal from kill
                 SIGTERM,
-                /// To parent on child stop or exit
                 SIGCHLD,
-                /// Continue a stopped process
                 SIGCONT,
-                /// Sendable stop signal not from tty
                 SIGSTOP,
-                /// Stop signal from tty
                 SIGTSTP,
-                /// To readers pgrp upon background tty read
                 SIGTTIN,
-                /// Like TTIN if ( tp->t_local&LTOSTOP )
                 SIGTTOU,
-                /// Urgent condition on IO channel
                 SIGURG,
-                /// Exceeded CPU time limit
                 SIGXCPU,
-                /// Exceeded file size limit
                 SIGXFSZ,
-                /// Virtual time alarm
                 SIGVTALRM,
-                /// Profiling time alarm
                 SIGPROF,
-                /// Window size changes
                 SIGWINCH,
-                /// Input/output possible signal
                 #[cfg( not( target_os = "haiku" ) )]
                 SIGIO,
-                /// Bad system call
                 SIGSYS,
             }
             impl TryFrom<i32>
@@ -28347,7 +28310,7 @@ pub mod system
         {
             pub fds_bits: [c_ulong; FD_SETSIZE as usize / ULONG_SIZE],
         }
-        /// Contains a set of file descriptors used by [`select`]
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct FdSet<'fd> 
         {
@@ -28357,7 +28320,6 @@ pub mod system
 
         impl <'fd> FdSet<'fd>
         {        
-            /// Create an empty `FdSet`
             pub fn new() -> FdSet<'fd>
             {
                 let mut fdset = mem::MaybeUninit::uninit();
@@ -28371,23 +28333,23 @@ pub mod system
                     }
                 }
             }
-            /// Add a file descriptor to an `FdSet`
+            
             pub fn insert( &mut self, fd:RawFd )
             {
                 assert_fd_valid( fd );
                 FD_SET( fd.into(), &mut self.set );
             }
-            /// Test an `FdSet` for the presence of a certain file descriptor.
+            
             pub fn contains( &self, fd: BorrowedFd<'fd> ) -> bool
             {
                 assert_fd_valid( fd.as_raw_fd() );
                 FD_ISSET( fd.as_raw_fd(), &self.set )
             }
-            /// Finds the highest file descriptor in the set.
+            
             pub fn highest( &self ) -> Option<BorrowedFd<'_>> {
                 self.fds( None ).next_back()
             }
-            /// Returns an iterator over the file descriptors in the set.
+            
             #[inline] pub fn fds( &self, highest: Option<RawFd> ) -> Fds<'_, '_> {
                 Fds {
                     set: self,
@@ -28395,7 +28357,7 @@ pub mod system
                 }
             }
         }
-        /// Iterator over `FdSet`.
+        
         #[derive( Debug )]
         pub struct Fds<'a, 'fd> 
         {
@@ -28507,7 +28469,6 @@ pub mod system
         pub struct TimeVal( TimeValue );
         impl TimeVal
         {
-            /// Makes a new `TimeVal` with given number of microseconds.
             #[inline] fn microseconds( microseconds: i64 ) -> TimeVal {
                 let ( secs, micros ) = div_mod_floor_64( microseconds, MICROS_PER_SEC );
                 assert!( 
@@ -28533,7 +28494,7 @@ pub mod system
                 TimeVal::microseconds( microseconds )
             }
         }
-        /// Monitors file descriptors for readiness.
+        
         pub fn selects<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int>
         where
         'fd: 'a,
@@ -28588,7 +28549,6 @@ pub mod system
         
         libc_bitflags!
         {
-            /// Flags for configuring the input mode of a terminal
             pub struct InputFlags: tcflag_t {
                 IGNBRK;
                 BRKINT;
@@ -28612,7 +28572,6 @@ pub mod system
 
         libc_bitflags! 
         {
-            /// Flags for configuring the output mode of a terminal
             pub struct OutputFlags: tcflag_t {
                 OPOST;
                 #[cfg( any( linux_android,
@@ -28734,7 +28693,6 @@ pub mod system
 
         libc_bitflags! 
         {
-            /// Flags for setting the control mode of a terminal
             pub struct ControlFlags: tcflag_t {
                 #[cfg( bsd )]
                 CIGNORE;
@@ -28780,7 +28738,6 @@ pub mod system
 
         libc_bitflags! 
         {
-            /// Flags for setting any local modes
             pub struct LocalFlags: tcflag_t {
                 #[cfg( not( target_os = "redox" ) )]
                 ECHOKE;
@@ -28840,20 +28797,15 @@ pub mod system
             ) ) )]
             pub c_ospeed:speed_t,
         }
-        /// Stores settings for the termios API
+        
         #[derive( Clone, Debug, Eq, PartialEq )]
         pub struct Termios 
         {
             inner: RefCell<AsynchronousTerminalInterface>,
-            /// Input mode flags ( see `termios.c_iflag` documentation )
             pub input_flags: InputFlags,
-            /// Output mode flags ( see `termios.c_oflag` documentation )
             pub output_flags: OutputFlags,
-            /// Control mode flags ( see `termios.c_cflag` documentation )
             pub control_flags: ControlFlags,
-            /// Local mode flags ( see `termios.c_lflag` documentation )
             pub local_flags: LocalFlags,
-            /// Control characters ( see `termios.c_cc` documentation )
             pub control_chars: [cc_t; NCCS],
         }
 
@@ -28879,7 +28831,7 @@ pub mod system
                     control_chars,
                 }
             }
-            /// Exposes an immutable reference to the underlying `AsynchronousTerminalInterface` data structure.
+            
             pub fn get_libc_termios( &self ) -> Ref<'_, AsynchronousTerminalInterface> 
             {
                 {
@@ -28896,7 +28848,7 @@ pub mod system
                 }
                 self.inner.borrow()
             }
-            /// Exposes the inner `AsynchronousTerminalInterface` datastore within `Termios`.
+            
             pub unsafe fn get_libc_termios_mut( &mut self ) -> *mut AsynchronousTerminalInterface
             {
                 {
@@ -28949,7 +28901,7 @@ pub mod system
         {
             fn from( termios: Termios ) -> Self { termios.inner.into_inner() }
         }
-        /// Indices into the `termios.c_cc` array for special characters.
+        
         #[repr( usize )] #[non_exhaustive]
         #[derive( Clone, Copy, Debug, Eq, PartialEq )]
         pub enum SpecialCharacterIndices 
@@ -28974,17 +28926,12 @@ pub mod system
         // Specify when a port configuration change should occur.
         libc_enum! 
         {
-            /// Specify when a port configuration change should occur.
             ///
-            /// Used as an argument to `tcsetattr()`
             #[repr( i32 )]
             #[non_exhaustive]
             pub enum SetArg {
-                /// The change will occur immediately
                 TCSANOW,
-                /// The change occurs after all output has been written
                 TCSADRAIN,
-                /// Same as `TCSADRAIN`, but will also flush the input buffer
                 TCSAFLUSH,
             }
         }
@@ -29066,290 +29013,159 @@ pub mod system
                 self.0.tv_sec.hash( state )
             }
         }
-        /// Nix's main error type.
+        
         #[repr( i32 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, Eq, PartialEq )]
         pub enum Errno
         {
             EUN = -1,
-            /// Operation not permitted
             EPERM = 1,
-            /// No such file or directory
             ENOENT = 2,
-            /// No such process
             ESRCH = 3,
-            /// Interrupted system call
             EINTR = 4,
-            /// I/O error
             EIO = 5,
-            /// No such device or address
             ENXIO = 6,
-            /// Argument list too long
             E2BIG = 7,
-            /// Exec format error
             ENOEXEC = 8,
-            /// Bad file number
             EBADF = 9,
-            /// No child processes
             ECHILD = 10,
-            /// Try again
             EAGAIN = 11,
-            /// Out of memory
             ENOMEM = 12,
-            /// Permission denied
             EACCES = 13,
-            /// Bad address
             EFAULT = 14,
-            /// Block device required
             ENOTBLK = 15,
-            /// Device or resource busy
             EBUSY = 16,
-            /// File exists
             EEXIST = 17,
-            /// Cross-device link
             EXDEV = 18,
-            /// No such device
             ENODEV = 19,
-            /// Not a directory
             ENOTDIR = 20,
-            /// Is a directory
             EISDIR = 21,
-            /// Invalid argument
             EINVAL = 22,
-            /// File table overflow
             ENFILE = 23,
-            /// Too many open files
             EMFILE = 24,
-            /// Not a typewriter
             ENOTTY = 25,
-            /// Text file busy
             ETXTBSY = 26,
-            /// File too large
             EFBIG = 27,
-            /// No space left on device
             ENOSPC = 28,
-            /// Illegal seek
             ESPIPE = 29,
-            /// Read-only file system
             EROFS = 30,
-            /// Too many links
             EMLINK = 31,
-            /// Broken pipe
             EPIPE = 32,
-            /// Math argument out of domain of func
             EDOM = 33,
-            /// Math result not representable
             ERANGE = 34,
-            /// Resource deadlock would occur
             EDEADLK = 35,
-            /// File name too long
             ENAMETOOLONG = 36,
-            /// No record locks available
             ENOLCK = 37,
-            /// Invalid system call number
             ENOSYS = 38,
-            /// Directory not empty
             ENOTEMPTY = 39,
-            /// Too many symbolic links encountered
             ELOOP = 40,
-            /// No message of desired type
             ENOMSG = 42,
-            /// Identifier removed
             EIDRM = 43,
-            /// Channel number out of range
             ECHRNG = 44,
-            /// Level 2 not synchronized
             EL2NSYNC = 45,
-            /// Level 3 halted
             EL3HLT = 46,
-            /// Level 3 reset
             EL3RST = 47,
-            /// Link number out of range
             ELNRNG = 48,
-            /// Protocol driver not attached
             EUNATCH = 49,
-            /// No CSI structure available
             ENOCSI = 50,
-            /// Level 2 halted
             EL2HLT = 51,
-            /// Invalid exchange
             EBADE = 52,
-            /// Invalid request descriptor
             EBADR = 53,
-            /// Exchange full
             EXFULL = 54,
-            /// No anode
             ENOANO = 55,
-            /// Invalid request code
             EBADRQC = 56,
-            /// Invalid slot
             EBADSLT = 57,
-            /// Bad font file format
             EBFONT = 59,
-            /// Device not a stream
             ENOSTR = 60,
-            /// No data available
             ENODATA = 61,
-            /// Timer expired
             ETIME = 62,
-            /// Out of streams resources
             ENOSR = 63,
-            /// Machine is not on the network
             ENONET = 64,
-            /// Package not installed
             ENOPKG = 65,
-            /// Object is remote
             EREMOTE = 66,
-            /// Link has been severed
             ENOLINK = 67,
-            /// Advertise error
             EADV = 68,
-            /// Srmount error
             ESRMNT = 69,
-            /// Communication error on send
             ECOMM = 70,
-            /// Protocol error
             EPROTO = 71,
-            /// Multihop attempted
             EMULTIHOP = 72,
-            /// RFS specific error
             EDOTDOT = 73,
-            /// Not a data message
             EBADMSG = 74,
-            /// Value too large for defined data type
             EOVERFLOW = 75,
-            /// Name not unique on network
             ENOTUNIQ = 76,
-            /// File descriptor in bad state
             EBADFD = 77,
-            /// Remote address changed
             EREMCHG = 78,
-            /// Can not access a needed shared library
             ELIBACC = 79,
-            /// Accessing a corrupted shared library
             ELIBBAD = 80,
-            /// .lib section in a.out corrupted
             ELIBSCN = 81,
-            /// Attempting to link in too many shared libraries
             ELIBMAX = 82,
-            /// Cannot exec a shared library directly
             ELIBEXEC = 83,
-            /// Illegal byte sequence
             EILSEQ = 84,
-            /// Interrupted system call should be restarted
             ERESTART = 85,
-            /// Streams pipe error
             ESTRPIPE = 86,
-            /// Too many users
             EUSERS = 87,
-            /// Socket operation on non-socket
             ENOTSOCK = 88,
-            /// Destination address required
             EDESTADDRREQ = 89,
-            /// Message too long
             EMSGSIZE = 90,
-            /// Protocol wrong type for socket
             EPROTOTYPE = 91,
-            /// Protocol not available
             ENOPROTOOPT = 92,
-            /// Protocol not supported
             EPROTONOSUPPORT = 93,
-            /// Socket type not supported
             ESOCKTNOSUPPORT = 94,
-            /// Operation not supported on transport endpoint
             EOPNOTSUPP = 95,
-            /// Protocol family not supported
             EPFNOSUPPORT = 96,
-            /// Address family not supported by protocol
             EAFNOSUPPORT = 97,
-            /// Address already in use
             EADDRINUSE = 98,
-            /// Cannot assign requested address
             EADDRNOTAVAIL = 99,
-            /// Network is down
             ENETDOWN = 100,
-            /// Network is unreachable
             ENETUNREACH = 101,
-            /// Network dropped connection because of reset
             ENETRESET = 102,
-            /// Software caused connection abort
             ECONNABORTED = 103,
-            /// Connection reset by peer
             ECONNRESET = 104,
-            /// No buffer space available
             ENOBUFS = 105,
-            /// Transport endpoint is already connected
             EISCONN = 106,
-            /// Transport endpoint is not connected
             ENOTCONN = 107,
-            /// Cannot send after transport endpoint shutdown
             ESHUTDOWN = 108,
-            /// Too many references: cannot splice
             ETOOMANYREFS = 109,
-            /// Connection timed out
             ETIMEDOUT = 110,
-            /// Connection refused
             ECONNREFUSED = 111,
-            /// Host is down
             EHOSTDOWN = 112,
-            /// No route to host
             EHOSTUNREACH = 113,
-            /// Operation already in progress
             EALREADY = 114,
-            /// Operation now in progress
             EINPROGRESS = 115,
-            /// Stale file handle
             ESTALE = 116,
-            /// Structure needs cleaning
             EUCLEAN = 117,
-            /// Not a XENIX named type file
             ENOTNAM = 118,
-            /// No XENIX semaphores available
             ENAVAIL = 119,
-            /// Is a named type file
             EISNAM = 120,
-            /// Remote I/O error
             EREMOTEIO = 121,
-            /// Quota exceeded
             EDQUOT = 122,
-            /// No medium found
             ENOMEDIUM = 123,
-            /// Wrong medium type
             EMEDIUMTYPE = 124,
-            /// Operation Canceled
             ECANCELED = 125,
-            /// Required key not available
             ENOKEY = 126,
-            /// Key has expired
             EKEYEXPIRED = 127,
-            /// Key has been revoked
             EKEYREVOKED = 128,
-            /// Key was rejected by service
             EKEYREJECTED = 129,
-            /// Owner died
             EOWNERDEAD = 130,
-            /// State not recoverable
             ENOTRECOVERABLE = 131,
-            /// Operation not possible due to RF-kill
             ERFKILL = 132,
-            /// Memory page has hardware error
             EHWPOISON = 133,
         }
 
         impl Errno
         {
             pub const fn from_raw( err: i32 ) -> Errno { from_i32( err ) }
-            /// Returns the current raw i32 value of errno
+            
             pub fn last_raw() -> i32 { unsafe { *errno_location() } }
-            /// Returns the current value of errno
+            
             pub fn last() -> Self { Self::from_raw( Self::last_raw() ) }
-            /// Returns `Ok( value )` if it does not contain the sentinel value.
+            
             #[inline] pub fn result<S: ErrnoSentinel + PartialEq<S>>( value: S ) -> Result<S>
             {
                 if value == S::sentinel() { Err( Self::last() ) }
                 else { Ok( value ) }
             }
         }
-        /// Indicates that a function failed and more detailed information about the error can be found in `errno`.
+        
         pub trait ErrnoSentinel:Sized
         {
             fn sentinel() -> Self;
@@ -29385,20 +29201,17 @@ pub mod system
                 libc::SIG_ERR
             }
         }
-        /// Process identifier
+        
         #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
         pub struct Pid( pid_t);
-        /// Represents the successful result of calling `fork`
+        
         #[derive(Clone, Copy, Debug)]
         pub enum ForkResult
         {
-            /// This is the parent process of the fork.
             Parent
             {
-                /// The PID of the fork's child process
                 child: Pid
             },
-            /// This is the child process of the fork.
             Child,
         }
 
@@ -29411,7 +29224,7 @@ pub mod system
                 "fd must be in the range 0..FD_SETSIZE",
             );
         }
-        /// Return the configuration of a port.
+        
         pub fn tcgetattraw( d:RawFd ) -> Result<Termios> 
         {
             unsafe
@@ -29440,7 +29253,7 @@ pub mod system
                 Ok( ::mem::transmute::<libc::termios, Termios>( t.assume_init() ) )*/
             }
         }
-        /// Set the configuration for a terminal.
+        
         pub fn tcsetattraw
         ( 
             fd: RawFd,
@@ -29591,7 +29404,7 @@ pub mod system
         }
 
         unsafe fn errno_location() -> *mut c_int { unsafe { libc::__errno_location() } }
-        /// Read from a raw file descriptor.
+        
         pub fn read( fd:RawFd, buf:&mut [u8] ) -> Result<usize> 
         {
             let res = unsafe {
@@ -29604,7 +29417,7 @@ pub mod system
 
             Errno::result( res ).map( |r| r as usize )
         }
-        /// Write to a raw file descriptor.
+        
         pub fn write( fd:RawFd, buf:&[u8] ) -> Result<usize> 
         {
             let res = unsafe {
@@ -29651,7 +29464,7 @@ pub mod system
         {
             ( div_floor_64( this, other ), mod_floor_64( this, other ) )
         }
-        /// Makes a new `TimeVal` with given number of nanoseconds.
+        
         #[inline] pub fn nanoseconds( nanoseconds: i64 ) -> TimeVal 
         {
             let microseconds = nanoseconds / 1000;
@@ -29681,7 +29494,6 @@ pub mod system
                 return ( ( *set ).fds_bits[fd / size] & ( 1 << ( fd % size ) ) ) != 0;
             }
         }
-        /// Changes the action taken by a process on receipt of a specific signal.
         //pub unsafe fn sigaction( signal: Signal, sigaction:&SigAction ) -> Result<SigAction> 
         pub unsafe fn react( s: Signal, a:&SigAction ) -> Result<SigAction>
         {
@@ -30752,124 +30564,91 @@ pub mod system
             use super::sys;
             /*
             */
-            /// Provides operations on an underlying terminal device in screen mode.
             pub struct Screen( sys::Screen );
-            /// Holds an exclusive lock for read operations on a `Screen`.
             pub struct ScreenReadGuard<'a>( sys::ScreenReadGuard<'a> );
-            /// Holds an exclusive lock for write operations on a `Screen`.
             pub struct ScreenWriteGuard<'a>( sys::ScreenWriteGuard<'a> );
 
             impl Screen
             {
-                /// Opens a new screen interface on `stdout`.
                 pub fn new( config: PrepareConfig ) -> io::Result<Screen>
                 { sys::Screen::stdout( config ).map( Screen ) }
-                /// Opens a new screen interface on `stderr`.
                 pub fn stderr( config: PrepareConfig ) -> io::Result<Screen>
                 { sys::Screen::stderr( config ).map( Screen ) }
-                /// Begins a new screen session using the given `Terminal` instance.
                 pub fn with_terminal( term: Terminal, config: PrepareConfig ) -> io::Result<Screen>
                 { sys::Screen::new( term.0, config ).map( Screen ) }
-                /// Returns the name of the terminal.
                 #[inline] pub fn name( &self ) -> &str { self.0.name() }
-                /// Attempts to acquire an exclusive lock on terminal read operations.
                 #[inline] pub fn lock_read( &self ) -> LockResult<ScreenReadGuard>
                 { map_lock_result( self.0.lock_read(), ScreenReadGuard ) }
-                /// Attempts to acquire an exclusive lock on terminal write operations.
                 #[inline] pub fn lock_write( &self ) -> LockResult<ScreenWriteGuard>
                 { map_lock_result( self.0.lock_write(), ScreenWriteGuard ) }
-                /// Attempts to acquire an exclusive lock on terminal read operations.
                 #[inline] pub fn try_lock_read( &self ) -> TryLockResult<ScreenReadGuard>
                 { map_try_lock_result( self.0.try_lock_read(), ScreenReadGuard ) }
-                /// Attempts to acquire an exclusive lock on terminal write operations.
                 #[inline] pub fn try_lock_write( &self ) -> TryLockResult<ScreenWriteGuard>
                 { map_try_lock_result( self.0.try_lock_write(), ScreenWriteGuard ) }
-                /// Waits for an event from the terminal.
                 pub fn wait_event( &self, timeout: Option<Duration> ) -> io::Result<bool> {
                     self.0.wait_event( timeout )
                 }
-                /// Reads an event from the terminal.
                 pub fn read_event( &self, timeout: Option<Duration> ) -> io::Result<Option<Event>>  {
                     self.0.read_event( timeout )
                 }
-                /// Returns the current size of the terminal screen.
                 #[inline] pub fn size( &self ) -> Size {
                     self.0.size()
                 }
-                /// Returns the current cursor position.
                 #[inline] pub fn cursor( &self ) -> Cursor {
                     self.0.cursor()
                 }
-                /// Sets the cursor position.
                 #[inline] pub fn set_cursor<C: Into<Cursor>>( &self, pos: C ) {
                     self.0.set_cursor( pos.into() );
                 }
-                /// Moves the cursor to the given column on the next line.
                 #[inline] pub fn next_line( &self, column: usize ) {
                     self.0.next_line( column );
                 }
-                /// Set the current cursor mode.
                 pub fn set_cursor_mode( &self, mode: CursorMode ) -> io::Result<()> {
                     self.0.set_cursor_mode( mode )
                 }
-                /// Clears the internal screen buffer.
                 pub fn clear_screen( &self ) {
                     self.0.clear_screen();
                 }
-                /// Adds a set of `Style` flags to the current style setting.
                 #[inline] pub fn add_style( &self, style: Style ) {
                     self.0.add_style( style );
                 }
-                /// Removes a set of `Style` flags to the current style setting.
                 #[inline] pub fn remove_style( &self, style: Style ) {
                     self.0.remove_style( style );
                 }
-                /// Sets the current style setting to the given set of flags.
                 #[inline] pub fn set_style<S: Into<Option<Style>>>( &self, style: S ) {
                     self.0.set_style( style.into().unwrap_or_default() );
                 }
-                /// Sets or removes foreground text color.
                 #[inline] pub fn set_fg<C: Into<Option<Color>>>( &self, fg: C ) {
                     self.0.set_fg( fg.into() );
                 }
-                /// Sets or removes background text color.
                 #[inline] pub fn set_bg<C: Into<Option<Color>>>( &self, bg: C ) {
                     self.0.set_bg( bg.into() );
                 }
-                /// Sets all attributes for the screen.
                 #[inline] pub fn set_theme( &self, theme: Theme ) {
                     self.0.set_theme( theme )
                 }
-                /// Removes color and style attributes.
                 #[inline] pub fn clear_attributes( &self ) {
                     self.0.clear_attributes();
                 }
-                /// Adds bold to the current style setting.
                 #[inline] pub fn bold( &self ) {
                     self.add_style( Style::BOLD );
                 }
-                /// Adds italic to the current style setting.
                 #[inline] pub fn italic( &self ) {
                     self.add_style( Style::ITALIC );
                 }
-                /// Adds underline to the current style setting.
                 #[inline] pub fn underline( &self ) {
                     self.add_style( Style::UNDERLINE );
                 }
-                /// Adds reverse to the current style setting.
                 #[inline] pub fn reverse( &self ) {
                     self.add_style( Style::REVERSE );
                 }
-                /// Renders the internal buffer to the terminal screen.
                 pub fn refresh( &self ) -> io::Result<()> {
                     self.0.refresh()
                 }
-                /// Writes text at the given position within the screen buffer.
                 pub fn write_at<C>( &self, position: C, text:&str )
                         where C: Into<Cursor> {
                     self.0.write_at( position.into(), text );
                 }
-                /// Writes text with the given attributes at the current cursor position.
                 pub fn write_styled<F, B, S>( &self, fg: F, bg: B, style: S, text:&str ) where
                         F: Into<Option<Color>>,
                         B: Into<Option<Color>>,
@@ -30877,8 +30656,6 @@ pub mod system
                         {
                     self.0.write_styled( fg.into(), bg.into(), style.into().unwrap_or_default(), text );
                 }
-                /// Writes text with the given attributes at the given position within
-                /// the screen buffer.
                 pub fn write_styled_at<C, F, B, S>( &self, position: C,
                         fg: F, bg: B, style: S, text:&str ) where
                         C: Into<Cursor>,
@@ -30889,18 +30666,12 @@ pub mod system
                     self.0.write_styled_at( position.into(),
                         fg.into(), bg.into(), style.into().unwrap_or_default(), text );
                 }
-                /// Writes a single character at the cursor position
-                /// using the current style and color settings.
                 pub fn write_char( &self, ch: char ) {
                     self.0.write_char( ch );
                 }
-                /// Writes a string at the cursor position
-                /// using the current style and color settings.
                 pub fn write_str( &self, s:&str ) {
                     self.0.write_str( s );
                 }
-                /// Writes formatted text at the cursor position
-                /// using the current style and color settings.
                 pub fn write_fmt( &self, args: fmt::Arguments ) {
                     let s = args.to_string();
                     self.write_str( &s )
@@ -30914,63 +30685,40 @@ pub mod system
 
             impl<'a> ScreenReadGuard<'a>
             {
-                /// Waits for an event from the terminal.
                 pub fn wait_event( &mut self, timeout: Option<Duration> ) -> io::Result<bool>
                 { self.0.wait_event( timeout ) }
-                /// Reads an event from the terminal.
                 pub fn read_event( &mut self, timeout: Option<Duration> ) -> io::Result<Option<Event>>
                 { self.0.read_event( timeout ) }
             }
 
             impl<'a> ScreenWriteGuard<'a>
             {
-                /// Returns the current size of the terminal screen.
                 #[inline] pub fn size( &self ) -> Size { self.0.size() }
-                /// Sets the cursor position.
                 #[inline] pub fn cursor( &self ) -> Cursor { self.0.cursor() }
-                /// Moves the cursor to the given column on the next line.
                 #[inline] pub fn set_cursor<C: Into<Cursor>>( &mut self, pos: C ) 
                 { self.0.set_cursor( pos.into() ); }
-                /// Set the current cursor mode.
                 #[inline] pub fn next_line( &mut self, column: usize ) { self.0.next_line( column ); }
-                /// Set the current cursor mode.
                 pub fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()> 
                 { self.0.set_cursor_mode( mode ) }
-                /// Adds a set of `Style` flags to the current style setting.
                 pub fn clear_screen( &mut self ) { self.0.clear_screen(); }
-                /// Removes a set of `Style` flags to the current style setting.
-                /// Adds a set of `Style` flags to the current style setting.
                 #[inline] pub fn add_style( &mut self, style: Style ) { self.0.add_style( style ) }
-                /// Sets the current style setting to the given set of flags.
                 #[inline] pub fn remove_style( &mut self, style:Style ) { self.0.remove_style( style ) }
-                /// Sets or removes foreground text color.
                 #[inline] pub fn set_style<S: Into<Option<Style>>>( &mut self, style: S ) 
                 { self.0.set_style( style.into().unwrap_or_default() ) }
-                /// Sets or removes background text color.
                 #[inline] pub fn set_fg<C: Into<Option<Color>>>( &mut self, fg: C ) 
                 { self.0.set_fg( fg.into() ) }
-                /// Removes color and style attributes.
                 #[inline] pub fn set_bg<C: Into<Option<Color>>>( &mut self, bg: C ) 
                 { self.0.set_bg( bg.into() ) }
-                /// Sets all attributes for the screen.
                 #[inline] pub fn set_theme( &mut self, theme: Theme ) { self.0.set_theme( theme ) }
-                /// Adds bold to the current style setting.
                 #[inline] pub fn clear_attributes( &mut self ) { self.0.clear_attributes() }
-                /// Adds bold to the current style setting.
                 #[inline] pub fn bold( &mut self ) { self.add_style( Style::BOLD ) }
-                /// Adds italic to the current style setting.
                 #[inline] pub fn italic( &mut self ) { self.add_style( Style::ITALIC ); }
-                /// Adds underline to the current style setting.
                 #[inline] pub fn underline( &mut self ) { self.add_style( Style::UNDERLINE ) }
-                /// Adds reverse to the current style setting.
                 #[inline] pub fn reverse( &mut self ) { self.add_style( Style::REVERSE ) }
-                /// Renders the internal buffer to the terminal screen.
                 pub fn refresh( &mut self ) -> io::Result<()> { self.0.refresh() }
-                /// Writes text at the given position within the screen buffer.
                 pub fn write_at<C>( &mut self, position: C, text:&str ) where 
                 C: Into<Cursor>
                 { self.0.write_at( position.into(), text ) }
-                /// Writes text with the given attributes at the current cursor position.
                 pub fn write_styled<F,B,S>( &mut self, fg: F, bg: B, style: S, text:&str ) where
                 F: Into<Option<Color>>,
                 B: Into<Option<Color>>,
@@ -30978,8 +30726,6 @@ pub mod system
                 {
                     self.0.write_styled( fg.into(), bg.into(), style.into().unwrap_or_default(), text )
                 }
-                /// Writes text with the given attributes at the given position within
-                /// the screen buffer.
                 pub fn write_styled_at<C,F,B,S>
                 ( 
                     &mut self,
@@ -30997,14 +30743,8 @@ pub mod system
                     self.0.write_styled_at
                     ( position.into(), fg.into(), bg.into(), style.into().unwrap_or_default(), text )
                 }
-                /// Writes a single character at the cursor position
-                /// using the current style and color settings.
                 pub fn write_char( &mut self, ch: char ) { self.0.write_char( ch ) }
-                /// Writes a string at the cursor position
-                /// using the current style and color settings.
                 pub fn write_str( &mut self, s:&str ) { self.0.write_str( s ) }
-                /// Writes formatted text at the cursor position
-                /// using the current style and color settings.
                 pub fn write_fmt( &mut self, args: fmt::Arguments )
                 {
                     let s = args.to_string();
@@ -31100,21 +30840,15 @@ pub mod system
                     }
                 }
             }
-            /// Signal received through a terminal device
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum Signal
             {
-                /// Break signal ( `CTRL_BREAK_EVENT` ); Windows only
                 Break,
-                /// Continue signal ( `SIGCONT` ); Unix only
                 Continue,
-                /// Interrupt signal ( `SIGINT` on Unix, `CTRL_C_EVENT` on Windows )
                 Interrupt,
-                /// Terminal resize ( `SIGWINCH` on Unix, `WINDOW_BUFFER_SIZE_EVENT` on Windows )
                 Resize,
-                /// Suspend signal ( `SIGTSTP` ); Unix only
                 Suspend,
-                /// Quit signal ( `SIGQUIT` ); Unix only
                 Quit,
             }
             
@@ -31141,46 +30875,32 @@ pub mod system
                 type Output = SignalSet;
                 fn not( self ) -> SignalSet { !SignalSet::from( self ) }
             }
-            /// Represents a set of `Signal` values
+            
             #[derive( Copy, Clone, Default, Eq, PartialEq )]
             pub struct SignalSet( u8 );
 
             impl SignalSet
             {
-                /// Returns an empty `SignalSet`.
                 pub fn new() -> SignalSet { SignalSet( 0 ) }
-                /// Returns a `SignalSet` containing all available signals.
                 pub fn all() -> SignalSet { SignalSet( Signal::all_bits() ) }
-                /// Returns whether this set contains the given `Signal`.
                 pub fn contains( &self, sig: Signal ) -> bool { self.0 & sig.as_bit() != 0 }
-                /// Returns whether this set contains all signals present in another set.
                 pub fn contains_all( &self, other: SignalSet ) -> bool { self.0 & other.0 == other.0 }
-                /// Returns whether this set contains any signals present in another set.
                 pub fn intersects( &self, other: SignalSet ) -> bool { self.0 & other.0 != 0 }
-                /// Returns whether this set contains any signals.
                 pub fn is_empty( &self ) -> bool { self.0 == 0 }
-                /// Inserts a `Signal` into this set.
                 pub fn insert( &mut self, sig: Signal ) { self.0 |= sig.as_bit(); }
-                /// Removes a `Signal` from this set.
                 pub fn remove( &mut self, sig: Signal ) { self.0 &= !sig.as_bit(); }
-                /// Sets whether this set contains the given `Signal`.
                 pub fn set( &mut self, sig: Signal, set: bool )
                 {
                     if set { self.insert( sig ); }
                     else { self.remove( sig ); }
                 }
-                /// Returns the difference of two sets.
                 pub fn difference( &self, other: SignalSet ) -> SignalSet
                 { SignalSet( self.0 & !other.0 ) }
-                /// Returns the symmetric difference of two sets.
                 pub fn symmetric_difference( &self, other: SignalSet ) -> SignalSet
                 { SignalSet( self.0 ^ other.0 ) }
-                /// Returns the intersection of two sets.
                 pub fn intersection( &self, other: SignalSet ) -> SignalSet
                 { SignalSet( self.0 & other.0 ) }
-                /// Returns the union of two sets.
                 pub fn union( &self, other: SignalSet ) -> SignalSet { SignalSet( self.0 | other.0 ) }
-                /// Returns the inverse of the set.
                 pub fn inverse( &self ) -> SignalSet { SignalSet( !self.0 & Signal::all_bits() ) }
             }
 
@@ -31273,59 +30993,41 @@ pub mod system
             use super::{ sys, Signal, SignalSet };
             /*
             */
-            /// Represents a color attribute applied to text foreground or background.
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum Color
             {
-                /// Black
                 Black,
-                /// Blue
                 Blue,
-                /// Cyan
                 Cyan,
-                /// Green
                 Green,
-                /// Magenta
                 Magenta,
-                /// Red
                 Red,
-                /// White
                 White,
-                /// Yellow
                 Yellow,
             }
 
             bitflags!
             {
-                /// Represents a set of style attributes applied to text.
                 #[derive( Copy, Clone, Debug, Default, Eq, PartialEq, Hash )]
                 pub struct Style: u8
                 {
-                    /// Bold
                     const BOLD      = 1 << 0;
-                    /// Italic
                     const ITALIC    = 1 << 1;
-                    /// Reverse; foreground and background color swapped
                     const REVERSE   = 1 << 2;
-                    /// Underline
                     const UNDERLINE = 1 << 3;
                 }
             }
-            /// Represents a terminal output theme.
+            
             #[derive( Copy, Clone, Debug, Default )]
             pub struct Theme
             {
-                /// Foreground color
                 pub fg: Option<Color>,
-                /// Background color
                 pub bg: Option<Color>,
-                /// Style
                 pub style: Style,
             }
 
             impl Theme
             {
-                /// Creates a new theme with given values.
                 pub fn new<F,B,S>( fg: F, bg: B, style: S ) -> Theme where
                 F: Into<Option<Color>>,
                 B: Into<Option<Color>>,
@@ -31338,21 +31040,18 @@ pub mod system
                         style: style.into().unwrap_or_default(),
                     }
                 }
-                /// Sets the foreground color on the given Theme and returns the new.
                 pub fn fg<F>( mut self, fg: F ) -> Theme where
                 F: Into<Option<Color>>
                 {
                     self.fg = fg.into();
                     self
                 }
-                /// Sets the background color on the given Theme and returns the new.
                 pub fn bg<B>( mut self, bg: B ) -> Theme where
                 B: Into<Option<Color>>
                 {
                     self.bg = bg.into();
                     self
                 }
-                /// Sets the style on the given Theme and returns the new.
                 pub fn style<S>( mut self, style: S ) -> Theme where
                 S:Into<Option<Style>>
                 {
@@ -31360,19 +31059,16 @@ pub mod system
                     self
                 }
             }
-            /// Represents the cursor position in a terminal device
+            
             #[derive( Copy, Clone, Debug, Default, Eq, PartialEq )]
             pub struct Cursor
             {
-                /// Index of line in terminal, beginning at `0`.
                 pub line: usize,
-                /// Index of column in terminal, beginning at `0`.
                 pub column: usize,
             }
 
             impl Cursor
             {
-                /// Returns the position of the next cell within a terminal of the given size.
                 #[inline] pub fn next( &self, size: Size ) -> Option<Cursor>
                 {
                     let mut line = self.line;
@@ -31387,7 +31083,6 @@ pub mod system
                     if line >= size.lines { None }
                     else { Some( Cursor{line, column} ) }
                 }
-                /// Returns the position of the previous cell within a terminal of the given size.
                 #[inline] pub fn previous( &self, size: Size ) -> Option<Cursor>
                 {
                     if self.column == 0
@@ -31398,7 +31093,6 @@ pub mod system
 
                     else { Some( Cursor{line: self.line, column: self.column - 1} ) }
                 }
-                /// Returns a `Cursor` pointing to the first cell, i.e. `( 0, 0 )`.
                 #[inline] pub fn first() -> Cursor
                 {
                     Cursor
@@ -31407,7 +31101,6 @@ pub mod system
                         column: 0,
                     }
                 }
-                /// Returns a `Cursor` pointing to the last cell of a screen of the given size.
                 #[inline] pub fn last( size: Size ) -> Cursor
                 {
                     Cursor
@@ -31416,87 +31109,57 @@ pub mod system
                         column: size.columns - 1,
                     }
                 }
-                /// Returns whether the cursor is out of bounds of the given size.
                 #[inline] pub fn is_out_of_bounds( &self, size: Size ) -> bool 
                 {
                     self.line >= size.lines || self.column >= size.columns
                 }
-                /// Returns index of the cursor position within a one-dimensional array
-                /// of the given size.
                 pub fn as_index( &self, size: Size ) -> usize 
                 { self.line * size.columns + self.column }
             }
 
             impl From<( usize, usize )> for Cursor
             {
-                /// Returns a `Cursor` value from a `( line, column )` or `( y, x )` tuple.
                 fn from( ( line, column ): ( usize, usize ) ) -> Cursor { Cursor{line, column} }
             }
-            /// Represents the visual appearance of the cursor in the terminal
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum CursorMode
             {
-                /// Normal mode
                 Normal,
-                /// Invisible mode
                 Invisible,
-                /// Overwrite mode
                 Overwrite,
             }
-            /// Represents an event generated from a terminal interface
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum Event
             {
-                /// Keyboard event
                 Key( Key ),
-                /// Mouse event
                 Mouse( MouseEvent ),
-                /// Raw data read
                 Raw( usize ),
-                /// Terminal window size changed; contained value is the new size.
                 Resize( Size ),
-                /// Terminal signal received
                 Signal( Signal ),
-                /// No event.
                 NoEvent,
             }
-            /// Represents a keyboard key press event
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum Key
             {
-                /// Backspace
                 Backspace,
-                /// Enter
                 Enter,
-                /// Escape
                 Escape,
-                /// Tab
                 Tab,
-                /// Up arrow
                 Up,
-                /// Down arrow
                 Down,
-                /// Left arrow
                 Left,
-                /// Right arrow
                 Right,
-                /// Delete
                 Delete,
-                /// Insert
                 Insert,
-                /// Home
                 Home,
-                /// End
                 End,
-                /// PageUp
                 PageUp,
-                /// PageDown
                 PageDown,
-                /// Character key
                 Char( char ),
-                /// Control character
                 Ctrl( char ),
-                /// Function `n` key; e.g. F1, F2, ...
                 F( u32 ),
             }
 
@@ -31516,79 +31179,55 @@ pub mod system
                     }
                 }
             }
-            /// Represents a mouse event
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub struct MouseEvent
             {
-                /// The position of the mouse within the terminal when the event occurred
                 pub position: Cursor,
-                /// The input event that occurred
                 pub input: MouseInput,
-                /// Modifier keys held when the input event occurred.
                 pub modifiers: ModifierState,
             }
-            /// Represents the type of mouse input event
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum MouseInput
             {
-                /// The mouse cursor was moved
                 Motion,
-                /// A mouse button was pressed
                 ButtonPressed( MouseButton ),
-                /// A mouse button was released
                 ButtonReleased( MouseButton ),
-                /// The mouse wheel was scrolled up
                 WheelUp,
-                /// The mouse wheel was scrolled down
                 WheelDown,
             }
-            /// Represents a button on a mouse device
+            
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub enum MouseButton
             {
-                /// Left mouse button
                 Left,
-                /// Right mouse button
                 Right,
-                /// Middle mouse button
                 Middle,
-                /// Other mouse button
                 Other( u32 ),
             }
 
             bitflags!
             {
-                /// Represents a set of modifier keys
                 #[derive( Copy, Clone, Debug, Eq, PartialEq, Hash )]
                 pub struct ModifierState: u8
                 {
-                    /// Alt key
                     const ALT   = 1 << 0;
-                    /// Ctrl key
                     const CTRL  = 1 << 1;
-                    /// Shift key
                     const SHIFT = 1 << 2;
                 }
             }
-            /// Configures a [`Terminal`] or [`Screen`] instance to read special input.
+            
             #[derive( Copy, Clone, Debug )]
             pub struct PrepareConfig
             {
-                /// Whether to block signals that result from user input.
                 pub block_signals: bool,
-                /// Whether to enable control flow characters.
                 pub enable_control_flow: bool,
-                /// If `true`, terminal will be configured to generate events from function keys.
                 pub enable_keypad: bool,
-                /// If `true`, the terminal will be configured to generate events for
-                /// mouse input, if supported, and `read_event` may return `Event::Mouse( _ )`.
                 pub enable_mouse: bool,
-                /// If `true`, mouse motion events will always be reported.
-                /// If `false`, such events will only be reported while at least one mouse
-                /// button is pressed.
+                
+            
                 pub always_track_motion: bool,
-                /// For each signal in the set, a signal handler will intercept the signal
-                /// and report it by returning an `Event::Signal( _ )` value.
                 pub report_signals: SignalSet,
             }
 
@@ -31607,135 +31246,89 @@ pub mod system
                     }
                 }
             }
-            /// Represents a previous device state of a [`Terminal`].
+            
             #[must_use = "the result of `terminal.prepare()` should be passed to \
             `terminal.restore()` to restore terminal to its original state"]
             pub struct PrepareState( sys::PrepareState );
-            /// Represents the size of a terminal window.
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub struct Size
             {
-                /// Number of lines in the terminal
                 pub lines: usize,
-                /// Number of columns in the terminal
                 pub columns: usize,
             }
 
             impl Size
             {
-                /// Returns the total number of cells in a terminal of the given size.
                 #[inline] pub fn area( &self ) -> usize
                 {
                     self.checked_area()
                         .unwrap_or_else( || panic!( "overflow in Size::area {:?}", self ) )
                 }
-                /// Returns the total number of cells in a terminal of the given size.
                 #[inline] pub fn checked_area( &self ) -> Option<usize>
                 { self.lines.checked_mul( self.columns ) }
             }
-            /// Provides concurrent read and write access to a terminal device.
+            
             pub struct Terminal( pub sys::Terminus );
-            /// Holds an exclusive lock for read operations on a `Terminal`.
             pub struct TerminalReadGuard<'a>( sys::TerminalReadGuard<'a> );
-            /// Holds an exclusive lock for write operations on a `Terminal`.
             pub struct TerminalWriteGuard<'a>( sys::TerminalWriteGuard<'a> );
 
             impl Terminal
             {
-                /// Opens a new interface to the terminal on `stdout`.
                 pub fn new() -> io::Result<Terminal>{ Ok( Terminal( sys::Terminus::stdout()? ) ) }
-                /// Opens a new interface to the terminal on `stderr`.
                 pub fn stderr() -> io::Result<Terminal> {Ok( Terminal( sys::Terminus::stderr()? ) )}
-                /// Returns the name of the terminal.
                 #[inline] pub fn name( &self ) -> &str { self.0.name() }
-                /// Attempts to acquire an exclusive lock on terminal read operations.
                 #[inline] pub fn lock_read( &self ) -> LockResult<TerminalReadGuard>
                 { map_lock_result( self.0.lock_read(), TerminalReadGuard ) }
-                /// Attempts to acquire an exclusive lock on terminal write operations.
                 #[inline] pub fn lock_write( &self ) -> LockResult<TerminalWriteGuard>
                 { map_lock_result( self.0.lock_write(), TerminalWriteGuard ) }
-                /// Attempts to acquire an exclusive lock on terminal read operations.
                 #[inline] pub fn try_lock_read( &self ) -> TryLockResult<TerminalReadGuard>
                 { map_try_lock_result( self.0.try_lock_read(), TerminalReadGuard ) }
-                /// Attempts to acquire an exclusive lock on terminal write operations.
                 #[inline] pub fn try_lock_write( &self ) -> TryLockResult<TerminalWriteGuard>
                 { map_try_lock_result( self.0.try_lock_write(), TerminalWriteGuard ) }
-                /// Prepares the terminal to read input.
                 pub fn prepare( &self, config: PrepareConfig ) -> io::Result<PrepareState>
                 { self.0.prepare( config ).map( PrepareState ) }
-                /// Restores the terminal to its previous state.
                 pub fn restore( &self, state: PrepareState ) -> io::Result<()>
                 { self.0.restore( state.0 ) }
-                /// Waits for an event from the terminal.
                 pub fn wait_event( &self, timeout: Option<Duration> ) -> io::Result<bool>
                 { self.0.wait_event( timeout ) }
-                /// Waits for input and reads an event from the terminal.
                 pub fn read_event( &self, timeout: Option<Duration> ) -> io::Result<Option<Event>>
                 { self.0.read_event( timeout ) }
-                /// Returns the size of the terminal.
                 #[inline] pub fn size( &self ) -> io::Result<Size> { self.0.size() }
-                /// Clears the terminal screen, placing the cursor at the first line and column.
                 pub fn clear_screen( &self ) -> io::Result<()> { self.0.clear_screen() }
-                /// Clears the current line, starting at cursor position.
                 pub fn clear_to_line_end( &self ) -> io::Result<()> { self.0.clear_to_line_end() }
-                /// Clears the screen, starting at cursor position.
                 pub fn clear_to_screen_end( &self ) -> io::Result<()> { self.0.clear_to_screen_end() }
-                /// Moves the cursor up `n` lines.
                 pub fn move_up( &self, n: usize ) -> io::Result<()> { self.0.move_up( n ) }
-                /// Moves the cursor down `n` lines.
                 pub fn move_down( &self, n: usize ) -> io::Result<()> { self.0.move_down( n ) }
-                /// Moves the cursor left `n` columns.
                 pub fn move_left( &self, n: usize ) -> io::Result<()> { self.0.move_left( n ) }
-                /// Moves the cursor right `n` columns.
                 pub fn move_right( &self, n: usize ) -> io::Result<()> { self.0.move_right( n ) }
-                /// Moves the cursor to the first column of the current line
                 pub fn move_to_first_column( &self ) -> io::Result<()> { self.0.move_to_first_column() }
-                /// Set the current cursor mode.
                 pub fn set_cursor_mode( &self, mode: CursorMode ) -> io::Result<()>
                 { self.0.set_cursor_mode( mode ) }
-                /// Adds a set of `Style` flags to the current style setting.
                 pub fn add_style( &self, style: Style ) -> io::Result<()>
                 { self.0.add_style( style ) }
-                /// Removes a set of `Style` flags from the current style setting.
                 pub fn remove_style( &self, style: Style ) -> io::Result<()>
                 { self.0.remove_style( style ) }
-                /// Sets the current style to the given set of flags.
                 pub fn set_style<S>( &self, style: S ) -> io::Result<()> where 
                 S:Into<Option<Style>>
                 { self.0.set_style( style.into().unwrap_or_default() ) }
-                /// Sets all attributes for the terminal.
                 pub fn set_theme( &self, theme: Theme ) -> io::Result<()> { self.0.set_theme( theme ) }
-                /// Sets the foreground text color.
                 pub fn set_fg<C: Into<Option<Color>>>( &self, fg: C ) -> io::Result<()>
                 { self.0.set_fg( fg.into() ) }
-                /// Sets the background text color.
                 pub fn set_bg<C: Into<Option<Color>>>( &self, bg: C ) -> io::Result<()>
                 { self.0.set_bg( bg.into() ) }
-                /// Removes color and style attributes.
                 pub fn clear_attributes( &self ) -> io::Result<()> { self.0.clear_attributes() }
-                /// Adds bold to the current style setting.
                 pub fn bold( &self ) -> io::Result<()> { self.add_style( Style::BOLD ) }
-                /// Adds italic to the current style setting.
                 pub fn italic( &self ) -> io::Result<()> { self.add_style( Style::ITALIC ) }
-                /// Adds underline to the current style setting.
                 pub fn underline( &self ) -> io::Result<()> { self.add_style( Style::UNDERLINE ) }
-                /// Adds reverse to the current style setting.
                 pub fn reverse( &self ) -> io::Result<()> { self.add_style( Style::REVERSE ) }
-                /// Writes output to the terminal with the given color and style.
                 pub fn write_styled<F,B,S>( &self, fg:F, bg:B, style:S, s:&str ) -> io::Result<()>
                 where
                 F: Into<Option<Color>>,
                 B: Into<Option<Color>>,
                 S: Into<Option<Style>>
                 { self.0.write_styled( fg.into(), bg.into(), style.into().unwrap_or_default(), s ) }
-                /// Writes a single character to the terminal
-                /// using the current style and color settings.
                 pub fn write_char( &self, ch: char ) -> io::Result<()> { self.0.write_char( ch ) }
-                /// Writes a string to the terminal
-                /// using the current style and color settings.
                 pub fn write_str( &self, s:&str ) -> io::Result<()> { self.0.write_str( s ) }
-                /// Writes formatted text to the terminal
-                /// using the current style and color settings.
                 pub fn write_fmt( &self, args: fmt::Arguments ) -> io::Result<()>
                 {
                     let s = args.to_string();
@@ -31748,10 +31341,8 @@ pub mod system
 
             impl<'a> TerminalReadGuard<'a> 
             {
-                /// Prepares the terminal to read input.
                 pub fn prepare( &mut self, config: PrepareConfig ) -> io::Result<PrepareState>
                 { self.0.prepare( config ).map( PrepareState ) }
-                /// Performs terminal preparation using both [`Terminal`] locks.
                 pub fn prepare_with_lock
                 ( 
                     &mut self,
@@ -31759,10 +31350,8 @@ pub mod system
                     config:PrepareConfig
                 ) -> io::Result<PrepareState>
                 { self.0.prepare_with_lock( &mut writer.0, config ).map( PrepareState ) }
-                /// Restores the terminal to its previous state.
                 pub fn restore( &mut self, state: PrepareState ) -> io::Result<()>
                 { self.0.restore( state.0 ) }
-                /// Performs terminal state restoration using both [`Terminal`] locks.
                 pub fn restore_with_lock
                 ( 
                     &mut self,
@@ -31770,84 +31359,53 @@ pub mod system
                     state:PrepareState
                 ) -> io::Result<()>
                 { self.0.restore_with_lock( &mut writer.0, state.0 ) }
-                /// Waits for an event from the terminal.
                 pub fn wait_event( &mut self, timeout: Option<Duration> ) -> io::Result<bool>
                 { self.0.wait_event( timeout ) }
-                /// Waits for input and reads an event from the terminal.
                 pub fn read_event( &mut self, timeout: Option<Duration> ) -> io::Result<Option<Event>>
                 { self.0.read_event( timeout ) }
             }
 
             impl<'a> TerminalWriteGuard<'a>
             {
-                /// Flush all output to the terminal device.
                 pub fn flush( &mut self ) -> io::Result<()> { self.0.flush() }
-                /// Returns the size of the terminal.
                 #[inline] pub fn size( &self ) -> io::Result<Size> { self.0.size() }
-                /// Clears the terminal screen, placing the cursor at the first line and column.
                 pub fn clear_screen( &mut self ) -> io::Result<()> { self.0.clear_screen() }
-                /// Clears the current line, starting at cursor position.
                 pub fn clear_to_line_end( &mut self ) -> io::Result<()> { self.0.clear_to_line_end() }
-                /// Clears the screen, starting at cursor position.
                 pub fn clear_to_screen_end( &mut self ) -> io::Result<()>
                 { self.0.clear_to_screen_end() }
-                /// Moves the cursor up `n` lines.
                 pub fn move_up( &mut self, n: usize ) -> io::Result<()> { self.0.move_up( n ) }
-                /// Moves the cursor down `n` lines.
                 pub fn move_down( &mut self, n: usize ) -> io::Result<()> { self.0.move_down( n ) }
-                /// Moves the cursor left `n` columns.
                 pub fn move_left( &mut self, n: usize ) -> io::Result<()> { self.0.move_left( n ) }
-                /// Moves the cursor right `n` columns.
                 pub fn move_right( &mut self, n: usize ) -> io::Result<()> { self.0.move_right( n ) }
-                /// Moves the cursor to the first column of the current line
                 pub fn move_to_first_column( &mut self ) -> io::Result<()>
                 { self.0.move_to_first_column() }
-                /// Set the current cursor mode.
                 pub fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()>
                 { self.0.set_cursor_mode( mode ) }
-                /// Adds a set of `Style` flags to the current style setting.
                 pub fn add_style( &mut self, style: Style ) -> io::Result<()>
                 { self.0.add_style( style ) }
-                /// Removes a set of `Style` flags from the current style setting.
                 pub fn remove_style( &mut self, style: Style ) -> io::Result<()>
                 { self.0.remove_style( style ) }
-                /// Sets the current style to the given set of flags.
                 pub fn set_style<S>( &mut self, style: S ) -> io::Result<()> where 
                 S:Into<Option<Style>>
                 { self.0.set_style( style.into().unwrap_or_default() ) }
-                /// Sets all attributes for the terminal.
                 pub fn set_theme( &mut self, theme: Theme ) -> io::Result<()> { self.0.set_theme( theme ) }
-                /// Sets the background text color.
                 pub fn set_fg<C: Into<Option<Color>>>( &mut self, fg: C ) -> io::Result<()>
                 { self.0.set_fg( fg.into() ) }
-                /// Removes color and style attributes.
                 pub fn set_bg<C: Into<Option<Color>>>( &mut self, bg: C ) -> io::Result<()>
                 { self.0.set_bg( bg.into() ) }
-                /// Adds bold to the current style setting.
                 pub fn clear_attributes( &mut self ) -> io::Result<()> { self.0.clear_attributes() }
-                /// Adds bold to the current style setting.
                 pub fn bold( &mut self ) -> io::Result<()> { self.add_style( Style::BOLD ) }
-                /// Adds italic to the current style setting.
                 pub fn italic( &mut self ) -> io::Result<()> { self.add_style( Style::ITALIC ) }
-                /// Adds underline to the current style setting.
                 pub fn underline( &mut self ) -> io::Result<()> { self.add_style( Style::UNDERLINE ) }
-                /// Adds reverse to the current style setting.
                 pub fn reverse( &mut self ) -> io::Result<()> { self.add_style( Style::REVERSE ) }
-                /// Writes output to the terminal with the given color and style added.
                 pub fn write_styled<F,B,S>( &mut self, fg:F, bg:B, style:S, s:&str ) -> io::Result<()>
                 where
                 F: Into<Option<Color>>,
                 B: Into<Option<Color>>,
                 S: Into<Option<Style>>
                 { self.0.write_styled( fg.into(), bg.into(), style.into().unwrap_or_default(), s ) }
-                /// Writes a single character to the terminal
-                /// using the current style and color settings.
                 pub fn write_char( &mut self, ch: char ) -> io::Result<()> { self.0.write_char( ch ) }
-                /// Writes a string to the terminal
-                /// using the current style and color settings.
                 pub fn write_str( &mut self, s:&str ) -> io::Result<()> { self.0.write_str( s ) }
-                /// Writes formatted text to the terminal
-                /// using the current style and color settings.
                 pub fn write_fmt( &mut self, args: fmt::Arguments ) -> io::Result<()>
                 {
                     let s = args.to_string();
@@ -31936,16 +31494,12 @@ pub mod system
                 };
                 /*
                 */
-                /// Implements Unix-only extensions for terminal interfaces.
                 pub trait OpenTerminalExt:Sized
                 {
-                    /// Opens a terminal interface on the device at the given path.
                     fn from_path<P:AsRef<Path>>( path:P ) -> io::Result<Self>;
                 }
-                /// Implements Unix-only extensions for terminal interfaces.
                 pub trait TerminalExt
                 {
-                    /// Reads raw data from the terminal.
                     fn read_raw( &mut self, buf:&mut [u8], timeout:Option<Duration> ) -> io::Result<Option<Event>>;
                 }
             } pub use self::ext::{ * };
@@ -33797,6 +33351,7 @@ pub mod system
             /*
             */
         }
+        
         #[cfg( unix   )] pub use self::unix as sys;
         #[cfg( windows )] pub use self::windows as sys;
     }
@@ -33815,23 +33370,24 @@ pub mod system
         */
         macro_rules! define_commands
         {
-            ( $( #[$meta:meta] $name:ident => $str:expr , )+ ) => 
+            ( $($name:ident => $str:expr , )+ ) => 
             {
-                /// Represents a command to modify `Reader` state
                 #[derive( Clone, Debug, Eq, PartialEq )]
-                pub enum Command {
-                    $( #[$meta] $name , )+
-                    /// Custom application-defined command
+                pub enum Command 
+                {
+                    $( $name , )+
                     Custom( Cow<'static, str> ),
-                    /// Execute a given key sequence
                     Macro( Cow<'static, str> ),
                 }
-                /// List of all command names
+
                 pub static COMMANDS:&[&str] = &[ $( $str ),+ ];
 
-                impl fmt::Display for Command {
-                    fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result {
-                        match *self {
+                impl fmt::Display for Command 
+                {
+                    fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result 
+                    {
+                        match *self 
+                        {
                             $( Command::$name => f.write_str( $str ) , )+
                             Command::Custom( ref s ) => f.write_str( s ),
                             Command::Macro( ref s ) => write!( f, "\"{}\"",
@@ -33841,12 +33397,10 @@ pub mod system
                 }
 
                 impl Command {
-                    /// Constructs a command from a `'static str` reference.
                     pub fn from_str( name:&'static str ) -> Command {
                         Command::opt_from_str( name )
                             .unwrap_or_else( || Command::Custom( Borrowed( name ) ) )
                     }
-                    /// Constructs a command from a non-`'static` string-like type.
                     pub fn from_string<T>( name: T ) -> Command
                             where T: AsRef<str> + Into<String> {
                         Command::opt_from_str( name.as_ref() )
@@ -33865,112 +33419,63 @@ pub mod system
 
         define_commands!
         {
-            /// Abort history search
             Abort => "abort",
-            /// Accepts the current input line
             AcceptLine => "accept-line",
-            /// Perform completion
             Complete => "complete",
-            /// Insert all completions into the input buffer
             InsertCompletions => "insert-completions",
-            /// Show possible completions
             PossibleCompletions => "possible-completions",
-            /// Insert the next possible completion
             MenuComplete => "menu-complete",
-            /// Insert the previous possible completion
             MenuCompleteBackward => "menu-complete-backward",
-            /// Begin numeric argument input
             DigitArgument => "digit-argument",
-            /// Insert character or sequence at the cursor
             SelfInsert => "self-insert",
-            /// Inserts a tab character
             TabInsert => "tab-insert",
-            /// Toggles insert/overwrite mode
             OverwriteMode => "overwrite-mode",
-            /// Insert a comment and accept input
             InsertComment => "insert-comment",
-            /// Move the cursor backward one character
             BackwardChar => "backward-char",
-            /// Move the cursor forward one character
             ForwardChar => "forward-char",
-            /// Search for a given character
             CharacterSearch => "character-search",
-            /// Search backward for a given character
             CharacterSearchBackward => "character-search-backward",
-            /// Move the cursor backward one word
             BackwardWord => "backward-word",
-            /// Move the cursor forward one word
             ForwardWord => "forward-word",
-            /// Kill all characters before the cursor
             BackwardKillLine => "backward-kill-line",
-            /// Kill all characters after the cursor
             KillLine => "kill-line",
-            /// Kill a word before the cursor
             BackwardKillWord => "backward-kill-word",
-            /// Kill a word after the cursor
             KillWord => "kill-word",
-            /// Kill a word before the cursor, delimited by whitespace
             UnixWordRubout => "unix-word-rubout",
-            /// Clear the screen
             ClearScreen => "clear-screen",
-            /// Move the cursor to the beginning of the line
             BeginningOfLine => "beginning-of-line",
-            /// Move the cursor to the end of the line
             EndOfLine => "end-of-line",
-            /// Delete one character before the cursor
             BackwardDeleteChar => "backward-delete-char",
-            /// Delete one character after the cursor
             DeleteChar => "delete-char",
-            /// Drag the character before the cursor forward
             TransposeChars => "transpose-chars",
-            /// Drag the word before the cursor forward
             TransposeWords => "transpose-words",
-            /// Move to the first line of history
             BeginningOfHistory => "beginning-of-history",
-            /// Move to the last line of history
             EndOfHistory => "end-of-history",
-            /// Select next line in history
             NextHistory => "next-history",
-            /// Select previous line in history
             PreviousHistory => "previous-history",
-            /// Incremental search in history
             ForwardSearchHistory => "forward-search-history",
-            /// Incremental reverse search in history
             ReverseSearchHistory => "reverse-search-history",
-            /// Non-incremental forward history search using input up to the cursor
             HistorySearchForward => "history-search-forward",
-            /// Non-incremental backward history search using input up to the cursor
             HistorySearchBackward => "history-search-backward",
-            /// Insert literal character
             QuotedInsert => "quoted-insert",
-            /// Insert text into buffer from the kill ring
             Yank => "yank",
-            /// Rotate the kill ring and yank the new top
             YankPop => "yank-pop",
         }
-        /// Describes the category of a command.
+        
         #[derive( Copy, Clone, Debug, Eq, PartialEq )]
         pub enum Category
         {
-            /// Completion command
             Complete,
-            /// Kill command
             Kill,
-            /// Non-incremental search command
             Search,
-            /// Incremental search command
             IncrementalSearch,
-            /// Yank command
             Yank,
-            /// Digit argument command
             Digit,
-            /// Other command
             Other,
         }
 
         impl Command
         {
-            /// Returns the category of the command
             pub fn category( &self ) -> Category
             {
                 use self::Command::*;
@@ -34009,33 +33514,24 @@ pub mod system
         /*
         use crate::prompter::Prompter;
         */
-        /// Represents a single possible completion
         #[derive( Clone, Debug )]
         pub struct Completion
         {
-            /// Whole completion text
             pub completion: String,
-            /// Listing display string; `None` if matches completion
             pub display: Option<String>,
-            /// Completion suffix; replaces append character
             pub suffix: Suffix,
         }
-        /// Specifies an optional suffix to override the default value
+        
         #[derive( Copy, Clone, Debug, Eq, PartialEq )]
         pub enum Suffix 
         {
-            /// Use the default suffix
             Default,
-            /// Use no suffix
             None,
-            /// Use the given suffix
             Some( char ),
         }
 
         impl Completion
         {
-            /// Returns a simple `Completion` value, with display string matching
-            /// completion and using the default completion suffix.
             pub fn simple( s: String ) -> Completion 
             {
                 Completion{
@@ -34044,8 +33540,7 @@ pub mod system
                     suffix: Suffix::default(),
                 }
             }
-            /// Returns the full completion string, including suffix, using the given
-            /// default suffix if one is not assigned to this completion.
+            
             pub fn completion( &self, def_suffix: Option<char> ) -> Cow<str> 
             {
                 let mut s = Borrowed( &self.completion[..] );
@@ -34056,7 +33551,7 @@ pub mod system
 
                 s
             }
-            /// Returns the display string, including suffix
+            
             pub fn display( &self ) -> Cow<str> 
             {
                 let mut s = Borrowed( self.display_str() );
@@ -34067,7 +33562,7 @@ pub mod system
 
                 s
             }
-            /// Returns the number of characters displayed
+            
             pub fn display_chars( &self ) -> usize 
             {
                 let n = self.display_str().chars().count();
@@ -34088,7 +33583,6 @@ pub mod system
 
         impl Suffix 
         {
-            /// Returns whether the `Suffix` value is the `Default` variant.
             pub fn is_default( &self ) -> bool 
             {
                 match *self {
@@ -34096,7 +33590,7 @@ pub mod system
                     _ => false
                 }
             }
-            /// Returns whether the `Suffix` value is the `Some( _ )` variant.
+            
             pub fn is_some( &self ) -> bool 
             {
                 match *self {
@@ -34104,7 +33598,7 @@ pub mod system
                     _ => false
                 }
             }
-            /// Returns whether the `Suffix` value is the `None` variant.
+            
             pub fn is_none( &self ) -> bool 
             {
                 match *self {
@@ -34112,7 +33606,7 @@ pub mod system
                     _ => false
                 }
             }
-            /// Returns an `Option<char>`, using the given value in place of `Default`.
+            
             pub fn with_default( self, default: Option<char> ) -> Option<char> 
             {
                 match self 
@@ -34131,22 +33625,20 @@ pub mod system
                 Suffix::Default
             }
         }
-        /// Performs completion for `Prompter` when triggered by a user input sequence
+        
         pub trait Completer<Term: Terminal>: Send + Sync 
         {
-            /// Returns the set of possible completions for the prefix `word`.
             fn complete( &self, word:&str, prompter:&Prompter<Term>, start:usize, end:usize ) -> Option<Vec<Completion>>;
-            /// Returns the starting position of the word under the cursor.
             fn word_start( &self, line:&str, end: usize, prompter:&Prompter<Term> ) -> usize
             {
                 word_break_start( &line[..end], prompter.word_break_chars() )
             }
-            /// Quotes a possible completion for insertion into input.
+            
             fn quote<'a>( &self, word:&'a str ) -> Cow<'a, str> { Borrowed( word ) }
-            /// Unquotes a piece of user input before searching for completions.
+            
             fn unquote<'a>( &self, word:&'a str ) -> Cow<'a, str> { Borrowed( word ) }
         }
-        /// `Completer` type that performs no completion.
+        
         pub struct DummyCompleter;
 
         impl<Term: Terminal> Completer<Term> for DummyCompleter
@@ -34160,7 +33652,7 @@ pub mod system
                 _end: usize
             ) -> Option<Vec<Completion>> { None }
         }
-        /// Performs completion by searching for filenames matching the word prefix.
+        
         pub struct PathCompleter;
 
         impl<Term: Terminal> Completer<Term> for PathCompleter 
@@ -34182,7 +33674,7 @@ pub mod system
                 unescape( word )
             }
         }
-        /// Returns a sorted list of paths whose prefix matches the given path.
+        
         pub fn complete_path( path:&str ) -> Vec<Completion> 
         {
             let ( base_dir, fname ) = split_path( path );
@@ -34233,7 +33725,7 @@ pub mod system
             res.sort_by( |a, b| a.display_str().cmp( b.display_str() ) );
             res
         }
-        /// Returns the start position of the word that ends at the end of the string.
+        
         pub fn word_break_start( s:&str, word_break:&str ) -> usize 
         {
             let mut start = s.len();
@@ -34247,8 +33739,7 @@ pub mod system
 
             start
         }
-        /// Returns the start position of a word with non-word characters escaped by
-        /// backslash ( `\\` ).
+        
         pub fn escaped_word_start( s:&str ) -> usize 
         {
             let mut chars = s.char_indices().rev();
@@ -34291,7 +33782,7 @@ pub mod system
 
             start
         }
-        /// Escapes a word by prefixing a backslash ( `\\` ) to non-word characters.
+        
         pub fn escape( s:&str ) -> Cow<str> 
         {
             let n = s.chars().filter( |&ch| needs_escape( ch ) ).count();
@@ -34314,7 +33805,7 @@ pub mod system
                 Owned( res )
             }
         }
-        /// Unescapes a word by removing the backslash ( `\\` ) from escaped characters.
+        
         pub fn unescape( s:&str ) -> Cow<str> 
         {
             if s.contains( '\\' ) {
@@ -34376,12 +33867,9 @@ pub mod system
         };
         /*
         */
-        /// Implements custom functionality for a `Prompter` command
         pub trait Function<Term: Terminal>: Send + Sync
         {
-            /// Executes the function.
             fn execute( &self, prompter:&mut Prompter<Term>, count: i32, ch: char ) -> io::Result<()>;
-            /// Returns the command category.
             fn category( &self ) -> Category { Category::Other }
         }
 
@@ -34410,27 +33898,19 @@ pub mod system
         };
         /*
         */
-        /// Parsed configuration directive
         #[derive( Clone, Debug )]
         pub enum Directive 
         {
-            /// Bind construct; `"input-sequence": command-or-macro`
             Bind( String, Command ),
-            /// Conditional construct;
             Conditional{
-                /// Value name; if `None`, value refers to application name
                 name: Option<String>,
-                /// Value to compare
                 value: String,
-                /// Group of directives evaluated when condition is true
                 then_group: Vec<Directive>,
-                /// Group of directives evaluated when condition is false
                 else_group: Vec<Directive>,
             },
-            /// Set variable; `set name value`
             SetVariable( String, String ),
         }
-        /// Parses the named file and returns contained directives.
+        
         pub fn parse_file<P: ?Sized>( filename:&P ) -> Option<Vec<Directive>> where
         P: AsRef<Path>
         {
@@ -34454,7 +33934,7 @@ pub mod system
 
             Some( parse_text( filename, &buf ) )
         }
-        /// Parses some text and returns contained directives.
+        
         pub fn parse_text<P: ?Sized>( name:&P, line:&str ) -> Vec<Directive> where
         P: AsRef<Path>
         {
@@ -34471,17 +33951,11 @@ pub mod system
 
         enum Token<'a> 
         {
-            /// Colon; `:`
             Colon,
-            /// Equal; `=`
             Equal,
-            /// Conditional or other special directive; `$word`
             SpecialWord( &'a str ),
-            /// Double-quoted string; `"foo"`
             String( String ),
-            /// Bare word; `foo`
             Word( &'a str ),
-            /// Invalid token
             Invalid,
         }
 
@@ -34954,7 +34428,6 @@ pub mod system
         };
         /*
         */
-        /// The main interface to input reading and other terminal operations.
         pub struct Interface<Term: Terminal> 
         {
             term: Term,
@@ -34964,7 +34437,6 @@ pub mod system
 
         impl Interface<DefaultTerminal> 
         {
-            /// Creates a new `Interface` with the given application name.
             pub fn new<T>( application: T ) -> io::Result<Interface<DefaultTerminal>> where
             T: Into<Cow<'static, str>>
             {
@@ -34975,7 +34447,6 @@ pub mod system
 
         impl<Term: Terminal> Interface<Term>
         {
-            /// Creates a new `Interface` instance with a particular terminal implementation.
             pub fn with_term<T>( application: T, term: Term ) -> io::Result<Interface<Term>> where
             T: Into<Cow<'static, str>>
             {
@@ -34988,17 +34459,17 @@ pub mod system
                     read: Mutex::new( read ),
                 } )
             }
-            /// Acquires the read lock and returns a `Reader` instance.
+            
             pub fn lock_reader( &self ) -> Reader<Term> 
             {
                 Reader::new( self, self.lock_read() )
             }
-            /// Acquires the write lock and returns a `Writer` instance.
+            
             pub fn lock_writer_append( &self ) -> io::Result<Writer<Term>> 
             {
                 Writer::with_lock( self.lock_write(), false )
             }
-            /// Acquires the write lock and returns a `Writer` instance.
+            
             pub fn lock_writer_erase( &self ) -> io::Result<Writer<Term>> 
             {
                 Writer::with_lock( self.lock_write(), true )
@@ -35024,62 +34495,62 @@ pub mod system
 
             pub fn lock_write_data( &self ) -> MutexGuard<Write>
             { self.write.lock().expect( "Interface::lock_write_data" ) }
-            /// Interactively reads a line from the terminal device.
+            
             pub fn read_line( &self ) -> io::Result<ReadResult> { self.lock_reader().read_line() }
-            /// Performs one step of the interactive `read_line` loop.
+            
             pub fn read_line_step( &self, timeout: Option<Duration> ) -> io::Result<Option<ReadResult>>
             { self.lock_reader().read_line_step( timeout ) }
-            /// Cancels an in-progress `read_line` operation.
+            
             pub fn cancel_read_line( &self ) -> io::Result<()> { self.lock_reader().cancel_read_line() }
-            /// Returns a clone of the current completer instance.
+            
             pub fn completer( &self ) -> Arc<dyn Completer<Term>> { self.lock_reader().completer().clone() }
-            /// Replaces the current completer, returning the previous instance.
+            
             pub fn set_completer( &self, completer: Arc<dyn Completer<Term>> ) -> Arc<dyn Completer<Term>>
             { self.lock_reader().set_completer( completer ) }
-            /// Returns the value of the named variable or `None` if no such variable exists.
+            
             pub fn get_variable( &self, name:&str ) -> Option<Variable> { self.lock_reader().get_variable( name ) }
-            /// Sets the value of the named variable and returns the previous value.
+            
             pub fn set_variable( &self, name:&str, value:&str ) -> Option<Variable>
             { self.lock_reader().set_variable( name, value ) }
-            /// Returns whether the given `Signal` is ignored.
+            
             pub fn ignore_signal( &self, signal: system::terminal::Signal ) -> bool { self.lock_reader().ignore_signal( signal ) }
-            /// Sets whether the given `Signal` will be ignored.
+            
             pub fn set_ignore_signal( &self, signal: system::terminal::Signal, set: bool )
             { self.lock_reader().set_ignore_signal( signal, set ) }
-            /// Returns whether the given `Signal` is reported.
+            
             pub fn report_signal( &self, signal: system::terminal::Signal ) -> bool { self.lock_reader().report_signal( signal ) }
-            /// Sets whether the given `Signal` is reported.
+            
             pub fn set_report_signal( &self, signal: system::terminal::Signal, set: bool )
             { self.lock_reader().set_report_signal( signal, set ) }
-            /// Binds a sequence to a command.
+            
             pub fn bind_sequence<T>( &self, seq: T, dir:types::Directive ) -> Option<types::Directive> where 
             T: Into<Cow<'static, str>>
             { self.lock_reader().bind_sequence( seq, dir ) }
-            /// Binds a sequence to a command, if and only if the given sequence is not already bound to a command.
+            
             pub fn bind_sequence_if_unbound<T>( &self, seq: T, cmd: Command ) -> bool where
             T: Into<Cow<'static, str>>
             { self.lock_reader().bind_sequence_if_unbound( seq, cmd ) }
-            /// Removes a binding for the given sequence.
+            
             pub fn unbind_sequence( &self, seq:&str ) -> Option<Command> { self.lock_reader().unbind_sequence( seq ) }
-            /// Defines a named function to which sequences may be bound.
+            
             pub fn define_function<T>( &self, t:T, c:Arc<dyn Function<Term>> ) -> Option<Arc<dyn Function<Term>>> where
             T: Into<Cow<'static, str>>
             { self.lock_reader().define_function( t, c ) }
-            /// Removes a function defined with the given name.
+            
             pub fn remove_function( &self, name:&str ) -> Option<Arc<dyn Function<Term>>>
             { self.lock_reader().remove_function( name ) }
-            /// Evaluates a series of configuration directives.
+            
             pub fn evaluate_directives( &self, dirs: Vec<Directive> )
             { self.lock_reader().evaluate_directives( &self.term, dirs ) }
-            /// Evaluates a single configuration directive.
+            
             pub fn evaluate_directive( &self, d:Directive  ) { self.lock_reader().evaluate_directive( &self.term, d ) }
-            /// Returns the current input buffer.
+            
             pub fn buffer( &self ) -> String { self.lock_write().buffer.to_owned() }
-            /// Returns the current number of history entries.
+            
             pub fn history_len( &self ) -> usize { self.lock_write().history_len() }
-            /// Returns the maximum number of history entries.
+            
             pub fn history_size( &self ) -> usize { self.lock_write().history_size() }
-            /// Save history entries to the specified file.
+            
             pub fn save_history<P: AsRef<Path>>( &self, path: P ) -> io::Result<()>
             {
                 let path = path.as_ref();
@@ -35156,7 +34627,7 @@ pub mod system
 
                 self.append_history_to( &file, w )
             }
-            /// Load history entries from the specified file.
+            
             pub fn load_history<P: AsRef<Path>>( &self, path: P ) -> io::Result<()>
             {
                 let mut writer = self.lock_write();
@@ -35172,7 +34643,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Writes formatted text to the terminal display.
+            
             pub fn write_fmt( &self, args: fmt::Arguments ) -> io::Result<()>
             {
                 let s = args.to_string();
@@ -35180,24 +34651,24 @@ pub mod system
             }
 
             fn write_str( &self, line:&str ) -> io::Result<()> { self.lock_writer_erase()?.write_str( line ) }
-            /// Sets the prompt that will be displayed when `read_line` is called.
+            
             pub fn set_prompt( &self, prompt:&str ) -> io::Result<()>
             { self.lock_reader().set_prompt( prompt ) }
-            /// Sets the input buffer to the given string.
+            
             pub fn set_buffer( &self, buf:&str ) -> io::Result<()> { self.lock_reader().set_buffer( buf ) }
-            /// Sets the cursor position in the input buffer.
+            
             pub fn set_cursor( &self, pos: usize ) -> io::Result<()> { self.lock_reader().set_cursor( pos ) }
-            /// Adds a line to history.
+            
             pub fn add_history( &self, line: String ) { self.lock_reader().add_history( line ); }
-            /// Adds a line to history, unless it is identical to the most recent entry.
+            
             pub fn add_history_unique( &self, line: String ) { self.lock_reader().add_history_unique( line ); }
-            /// Removes all history entries.
+            
             pub fn clear_history( &self  ) { self.lock_reader().clear_history(); }
-            /// Removes the history entry at the given index.
+            
             pub fn remove_history( &self, idx: usize ) { self.lock_reader().remove_history( idx ); }
-            /// Sets the maximum number of history entries.
+            
             pub fn set_history_size( &self, n: usize ) { self.lock_reader().set_history_size( n ); }
-            /// Truncates history to the only the most recent `n` entries.
+            
             pub fn truncate_history( &self, n: usize ) { self.lock_reader().truncate_history( n ); }
         }
     }
@@ -35219,13 +34690,11 @@ pub mod system
             *,
         };
         /*
-        *//// Default size of a `MemoryTerminal` buffer
-        pub const DEFAULT_SIZE: Size = Size
+        */pub const DEFAULT_SIZE: Size = Size
         {
             columns: 80,
             lines: 24,
         };
-        /// Implements an in-memory `Terminal` interface.
         #[derive( Clone, Debug )]
         pub struct MemoryTerminal 
         {
@@ -35250,16 +34719,14 @@ pub mod system
             input: Vec<u8>,
             resize: Option<Size>,
         }
-        /// Holds the lock on read operations of a `MemoryTerminal`.
+        
         pub struct MemoryReadGuard<'a>( MutexGuard<'a, Reader> );
-        /// Holds the lock on write operations of a `MemoryTerminal`.
         pub struct MemoryWriteGuard<'a>( MutexGuard<'a, Writer> );
 
         impl MemoryTerminal
         {
-            /// Returns a new `MemoryTerminal` with the default buffer size.
             pub fn new() -> MemoryTerminal { MemoryTerminal::default() }
-            /// Returns a new `MemoryTerminal` with the given buffer size.
+            
             pub fn with_size( size: Size ) -> MemoryTerminal
             {
                 MemoryTerminal
@@ -35268,15 +34735,15 @@ pub mod system
                     write: Arc::new( Mutex::new( Writer::new( size ) ) ),
                 }
             }
-            /// Clears the terminal buffer and places the cursor at `( 0, 0 )`.
+            
             pub fn clear_all( &self  ) { self.lock_writer().clear_all(); }
-            /// Clears all characters beginning at the cursor and ending at buffer end.
+            
             pub fn clear_to_end( &self  ) { self.lock_writer().clear_to_end(); }
-            /// Clears the input buffer.
+            
             pub fn clear_input( &self  ) { self.lock_reader().clear_input(); }
-            /// Returns whether any input remains to be read.
+            
             pub fn has_input( &self ) -> bool { self.lock_reader().has_input() }
-            /// Returns an iterator over lines in the buffer.
+            
             pub fn lines( &self ) -> Lines 
             {
                 Lines
@@ -35285,41 +34752,41 @@ pub mod system
                     line: 0,
                 }
             }
-            /// Moves the cursor up `n` cells.
+            
             pub fn move_up( &self, n: usize ) { self.lock_writer().move_up( n ); }
-            /// Moves the cursor down `n` cells.
+            
             pub fn move_down( &self, n: usize ) { self.lock_writer().move_down( n ); }
-            /// Moves the cursor left `n` cells.
+            
             pub fn move_left( &self, n: usize ) { self.lock_writer().move_left( n ); }
-            /// Moves the cursor right `n` cells.
+            
             pub fn move_right( &self, n: usize ) { self.lock_writer().move_right( n ); }
-            /// Moves the cursor to the first column of the current line.
+            
             pub fn move_to_first_column( &self  ) { self.lock_writer().move_to_first_column() }
-            /// Pushes a character sequence to the back of the input queue.
+            
             pub fn push_input( &self, s:&str ) { self.lock_reader().push_input( s.as_bytes() ); }
-            /// Reads some input from the input buffer.
+            
             pub fn read_input( &self, buf:&mut [u8] ) -> usize { self.lock_reader().read_input( buf ) }
-            /// Changes the size of the terminal buffer.
+            
             pub fn resize( &self, new_size: Size ) 
             {
                 self.lock_writer().resize( new_size );
                 self.lock_reader().resize( new_size );
             }
-            /// Moves the contents of the buffer up `n` lines.
+            
             pub fn scroll_up( &self, n: usize ) { self.lock_writer().scroll_up( n ); }
-            /// Returns the `( line, column )` position of the cursor.
+            
             pub fn cursor( &self ) -> ( usize, usize ) 
             {
                 let r = self.lock_writer();
                 ( r.line, r.col )
             }
-            /// Sets the cursor mode.
+            
             pub fn set_cursor_mode( &self, mode: CursorMode ) { self.lock_writer().set_cursor_mode( mode ); }
-            /// Returns the cursor mode.
+            
             pub fn cursor_mode( &self ) -> CursorMode { self.lock_writer().cursor_mode() }
-            /// Returns the size of the terminal buffer.
+            
             pub fn size( &self ) -> Size { self.lock_writer().size }
-            /// Writes some text into the buffer.
+            
             pub fn write( &self, s:&str ) { self.lock_writer().write( s ); }
 
             fn lock_reader( &self ) -> MutexGuard<Reader> { self.read.lock().unwrap() }
@@ -35506,7 +34973,7 @@ pub mod system
                 self.line * self.size.columns + self.col
             }
         }
-        /// Iterator over lines in a `MemoryTerminal` buffer.
+        
         pub struct Lines<'a>
         {
             writer: MutexGuard<'a, Writer>,
@@ -35515,7 +34982,6 @@ pub mod system
 
         impl<'a> Lines<'a>
         {
-            /// Returns the next line in the buffer.
             pub fn next( &mut self ) -> Option<&[char]> {
                 if self.line >= self.writer.size.lines {
                     None
@@ -35530,7 +34996,7 @@ pub mod system
                     Some( &self.writer.memory[start..end] )
                 }
             }
-            /// Returns the number of lines remaining in the iterator.
+            
             pub fn lines_remaining( &self ) -> usize {
                 self.writer.size.lines - self.line
             }
@@ -35684,8 +35150,8 @@ pub mod system
         };
         /*
         */
-        /// Provides access to the current state of input while a `read_line` call is in progress.
-        pub struct Prompter<'a, 'b: 'a, Term: 'b + Terminal> {
+        pub struct Prompter<'a, 'b: 'a, Term: 'b + Terminal>
+        {
             pub read:&'a mut ReadLock<'b, Term>,
             write: WriteLock<'b, Term>,
         }
@@ -35696,15 +35162,15 @@ pub mod system
                     -> Prompter<'a, 'b, Term> {
                 Prompter{read, write}
             }
-            /// Returns a `Writer` instance using the currently held write lock.
+            
             pub fn writer_append<'c>( &'c mut self ) -> io::Result<Writer<'c, 'b, Term>> {
                 Writer::with_ref( &mut self.write, false )
             }
-            /// Returns a `Writer` instance using the currently held write lock.
+            
             pub fn writer_erase<'c>( &'c mut self ) -> io::Result<Writer<'c, 'b, Term>> {
                 Writer::with_ref( &mut self.write, true )
             }
-            /// Resets input state at the start of `read_line`
+            
             fn reset_input( &mut self ) {
                 self.read.reset_data();
                 self.write.reset_data();
@@ -35880,67 +35346,65 @@ pub mod system
 
                 Ok( None )
             }
-            /// Returns the current buffer.
+            
             pub fn buffer( &self ) -> &str {
                 &self.write.buffer
             }
-            /// Returns the "backup" buffer.
+            
             pub fn backup_buffer( &self ) -> &str {
                 &self.write.backup_buffer
             }
-            /// Returns the command `Category` of the most recently executed command.
+            
             pub fn last_command_category( &self ) -> Category {
                 self.read.last_cmd
             }
-            /// Returns the set of characters that indicate a word break.
+            
             pub fn word_break_chars( &self ) -> &str {
                 &self.read.word_break
             }
-            /// Sets the buffer to the given value.
+            
             pub fn set_buffer( &mut self, buf:&str ) -> io::Result<()> {
                 self.write.set_buffer( buf )
             }
-            /// Returns the current position of the cursor.
+            
             pub fn cursor( &self ) -> usize {
                 self.write.cursor
             }
-            /// Sets the cursor to the given position within the buffer.
+            
             pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> {
                 self.write.set_cursor( pos )
             }
-            /// Sets the prompt that will be displayed when `read_line` is called.
+            
             pub fn set_prompt( &mut self, prompt:&str ) -> io::Result<()> {
                 self.write.set_prompt( prompt )
             }
-            /// Returns the size of the terminal at the last draw operation.
+            
             pub fn screen_size( &self ) -> Size {
                 self.write.screen_size
             }
-            /// Returns whether a numerical argument was explicitly supplied by the user.
+            
             pub fn explicit_arg( &self ) -> bool {
                 self.write.explicit_arg
             }
-            /// Returns the current input sequence.
+            
             pub fn sequence( &self ) -> &str {
                 &self.read.sequence
             }
-            /// Returns an iterator over bound sequences
             /*pub fn bindings( &self ) -> BindingIter {
                 self.read.bindings()
             }*/
-            /// Returns an iterator over variable values.
             pub fn variables( &self ) -> VariableIter {
                 self.read.variables()
             }
-            /// Returns an iterator over history entries
+            
             pub fn history( &self ) -> HistoryIter {
                 self.write.history()
             }
-            /// Returns the index into history currently being edited.
+            
             pub fn history_index( &self ) -> Option<usize> {
                 self.write.history_index
             }
-            /// Returns the current number of history entries.
+            
             pub fn history_len( &self ) -> usize {
                 self.write.history.len()
             }
@@ -35952,19 +35416,19 @@ pub mod system
             fn prev_history( &mut self, n: usize ) -> io::Result<()> {
                 self.write.prev_history( n )
             }
-            /// Selects the history entry currently being edited by the user.
+            
             pub fn select_history_entry( &mut self, new: Option<usize> ) -> io::Result<()> {
                 self.write.select_history_entry( new )
             }
-            /// Returns the current set of completions.
+            
             pub fn completions( &self ) -> Option<&[Completion]> {
                 self.read.completions.as_ref().map( |v| &v[..] )
             }
-            /// Sets the current set of completions.
+            
             pub fn set_completions( &mut self, completions: Option<Vec<Completion>> ) {
                 self.read.completions = completions;
             }
-            /// Attempts to execute the current sequence.
+            
             fn execute_sequence( &mut self ) -> io::Result<()>
             {
                 /*
@@ -36016,7 +35480,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Execute the command `SelfInsert` on the first character in the input sequence, if it is printable.
+            
             fn insert_first_char( &mut self ) -> io::Result<()> {
                 let ( first, rest ) = {
                     let mut chars = self.read.sequence.chars();
@@ -36525,7 +35989,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Accepts the current input buffer as user input.
+            
             pub fn accept_input( &mut self ) -> io::Result<()> {
                 self.write.move_to_end()?;
                 self.write.write_str( "\n" )?;
@@ -36533,7 +35997,7 @@ pub mod system
                 self.write.is_prompt_drawn = false;
                 Ok( () )
             }
-            /// Moves cursor to the position, waits for 500ms, user input, then restores the original cursor position.
+            
             pub fn blink( &mut self, pos: usize ) -> io::Result<()> {
                 self.write.blink( pos )?;
 
@@ -36936,12 +36400,11 @@ pub mod system
                     &self.write.buffer, self.write.cursor, &self.read.word_break );
                 self.write.move_to( pos )
             }
-            /// Deletes a range of text from the input buffer.
+            
             pub fn delete_range<R: ops::RangeArgument<usize>>( &mut self, range: R ) -> io::Result<()> {
                 self.write.delete_range( range )
             }
-            /// Deletes a range from the buffer and adds the removed text to the
-            /// kill ring.
+            
             pub fn kill_range<R: ops::RangeArgument<usize>>( &mut self, range: R ) -> io::Result<()> {
                 let start = range.start().cloned().unwrap_or( 0 );
                 let end = range.end().cloned().unwrap_or_else( || self.write.buffer.len() );
@@ -36995,12 +36458,12 @@ pub mod system
                 }
                 self.push_kill_ring( s );
             }
-            /// Transposes two regions of the buffer, `src` and `dest`.
+            
             pub fn transpose_range( &mut self, src: Range<usize>, dest: Range<usize> )
                     -> io::Result<()> {
                 self.write.transpose_range( src, dest )
             }
-            /// Insert text from the front of the kill ring at the current cursor position.
+            
             pub fn yank( &mut self ) -> io::Result<()> {
                 if let Some( kill ) = self.read.kill_ring.front().cloned() {
                     let start = self.write.cursor;
@@ -37011,7 +36474,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Rotates the kill ring and replaces yanked text with the new front.
+            
             pub fn yank_pop( &mut self ) -> io::Result<()> {
                 if let Some( ( start, end ) ) = self.read.last_yank {
                     self.rotate_kill_ring();
@@ -37026,7 +36489,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Overwrite `n` characters; assumes `n >= 1`
+            
             fn overwrite( &mut self, n: usize, ch: char ) -> io::Result<()> {
                 let start = self.write.cursor;
                 let end = char::forward( n, &self.write.buffer, start );
@@ -37082,7 +36545,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Insert a given character at the current cursor position `n` times.
+            
             pub fn insert( &mut self, n: usize, ch: char ) -> io::Result<()> {
                 if n != 0 {
                     let s = char::repeat( ch, n );
@@ -37091,18 +36554,18 @@ pub mod system
 
                 Ok( () )
             }
-            /// Insert a string at the current cursor position.
+            
             pub fn insert_str( &mut self, s:&str ) -> io::Result<()> {
                 self.write.insert_str( s )
             }
-            /// Replaces a range in the buffer and redraws.
+            
             pub fn replace_str_backward<R: ops::RangeArgument<usize>>( &mut self,
                     range: R, s:&str ) -> io::Result<()> {
                 self.replace_str_impl( range, s )?;
                 let len = self.write.buffer.len();
                 self.write.move_from( len )
             }
-            /// Replaces a range in the buffer and redraws.
+            
             pub fn replace_str_forward<R: ops::RangeArgument<usize>>( &mut self,
                     range: R, s:&str ) -> io::Result<()> {
                 self.replace_str_impl( range, s )?;
@@ -37110,7 +36573,7 @@ pub mod system
                 let len = self.write.buffer.len();
                 self.write.move_from( len )
             }
-            /// Replaces a range in the buffer and redraws.
+            
             fn replace_str_impl<R: ops::RangeArgument<usize>>( &mut self,
                     range: R, s:&str ) -> io::Result<()> {
                 let start = range.start().cloned().unwrap_or( 0 );
@@ -37163,17 +36626,11 @@ pub mod system
             use mortal::SequenceMap;
             use crate::util::{first_char, match_name};
         */
-        /// Default set of string characters
         pub const STRING_CHARS:&str = "\"'";
-        /// Default set of word break characters
         pub const WORD_BREAK_CHARS:&str = " \t\n\"\\'`@$><=;|&{( ";
-        /// Indicates the start of a series of invisible characters in the prompt
         pub const START_INVISIBLE: char = '\x01';
-        /// Indicates the end of a series of invisible characters in the prompt
         pub const END_INVISIBLE: char = '\x02';
-        /// Maximum size of kill ring
         const MAX_KILLS: usize = 10;
-        /// Provides access to data related to reading and processing user input.
         pub struct Reader<'a, Term: 'a + Terminal>
         {
             iface:&'a Interface<Term>,
@@ -37182,35 +36639,21 @@ pub mod system
 
         pub struct Read<Term: Terminal> 
         {
-            /// Application name
             pub application: Cow<'static, str>,
-            /// Pending input
             pub input_buffer: Vec<u8>,
-            /// Pending macro sequence
             pub macro_buffer: String,
             //pub bindings: Option<SequenceMap<Cow<'static, str>, Command>>,
             pub functions: HashMap<Cow<'static, str>, Arc<dyn Function<Term>>>,
-            /// Current input sequence
             pub sequence: String,
-            /// Whether newline has been received
             pub input_accepted: bool,
-            /// Whether overwrite mode is currently active
             pub overwrite_mode: bool,
-            /// Characters appended while in overwrite mode
             pub overwritten_append: usize,
-            /// Characters overwritten in overwrite mode
             pub overwritten_chars: String,
-            /// Configured completer
             pub completer: Arc<dyn Completer<Term>>,
-            /// Character appended to completions
             pub completion_append_character: Option<char>,
-            /// Current set of possible completions
             pub completions: Option<Vec<Completion>>,
-            /// Current "menu-complete" entry being viewed:
             pub completion_index: usize,
-            /// Start of the completed word
             pub completion_start: usize,
-            /// Start of the inserted prefix of a completed word
             pub completion_prefix: usize,
 
             pub string_chars: Cow<'static, str>,
@@ -37237,15 +36680,12 @@ pub mod system
             term: Box<dyn TerminalReader<Term> + 'a>,
             data: MutexGuard<'a, Read<Term>>,
         }
-        /// Returned from [`read_line`] to indicate user input
+        
         #[derive( Debug )]
         pub enum ReadResult
         {
-            /// User issued end-of-file.
             Eof,
-            /// User input received.
             Input( String ),
-            /// Reported signal was received.
             Signal( system::terminal::Signal ),
         }
 
@@ -37272,7 +36712,7 @@ pub mod system
                     -> Reader<'a, Term> {
                 Reader{iface, lock}
             }
-            /// Interactively reads a line from the terminal device.
+            
             pub fn read_line( &mut self ) -> io::Result<ReadResult> {
                 loop {
                     if let Some( res ) = self.read_line_step( None )? {
@@ -37280,7 +36720,7 @@ pub mod system
                     }
                 }
             }
-            /// Performs one step of the interactive `read_line` loop.
+            
             pub fn read_line_step( &mut self, timeout: Option<Duration> )
                     -> io::Result<Option<ReadResult>> {
                 self.initialize_read_line()?;
@@ -37291,7 +36731,7 @@ pub mod system
 
                 res
             }
-            /// Cancels an in-progress `read_line` operation.
+            
             pub fn cancel_read_line( &mut self ) -> io::Result<()> {
                 self.end_read_line()
             }
@@ -37396,7 +36836,7 @@ pub mod system
                     _ => false
                 }
             }
-            /// Sets the input buffer to the given string.
+            
             pub fn set_buffer( &mut self, buf:&str ) -> io::Result<()> {
                 if self.lock.is_active() {
                     self.prompter().set_buffer( buf )
@@ -37408,7 +36848,7 @@ pub mod system
                     Ok( () )
                 }
             }
-            /// Sets the cursor position in the input buffer.
+            
             pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> {
                 if self.lock.is_active() {
                     self.prompter().set_cursor( pos )
@@ -37420,100 +36860,97 @@ pub mod system
                     Ok( () )
                 }
             }
-            /// Sets the prompt that will be displayed when `read_line` is called.
+            
             pub fn set_prompt( &mut self, prompt:&str ) -> io::Result<()> {
                 self.prompter().set_prompt( prompt )
             }
-            /// Adds a line to history.
+            
             pub fn add_history( &self, line: String ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().add_history( line );
                 }
             }
-            /// Adds a line to history, unless it is identical to the most recent entry.
+            
             pub fn add_history_unique( &self, line: String ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().add_history_unique( line );
                 }
             }
-            /// Removes all history entries.
+            
             pub fn clear_history( &self ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().clear_history();
                 }
             }
-            /// Removes the history entry at the given index.
+            
             pub fn remove_history( &self, idx: usize ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().remove_history( idx );
                 }
             }
-            /// Sets the maximum number of history entries.
+            
             pub fn set_history_size( &self, n: usize ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().set_history_size( n );
                 }
             }
-            /// Truncates history to the only the most recent `n` entries.
+            
             pub fn truncate_history( &self, n: usize ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().truncate_history( n );
                 }
             }
-            /// Returns the application name
+            
             pub fn application( &self ) -> &str {
                 &self.lock.application
             }
-            /// Sets the application name
+            
             pub fn set_application<T>( &mut self, application: T )
                     where T: Into<Cow<'static, str>> {
                 self.lock.application = application.into();
             }
-            /// Returns a reference to the current completer instance.
+            
             pub fn completer( &self ) -> &Arc<dyn Completer<Term>> {
                 &self.lock.completer
             }
-            /// Replaces the current completer, returning the previous instance.
+            
             pub fn set_completer( &mut self, completer: Arc<dyn Completer<Term>> )
                     -> Arc<dyn Completer<Term>> {
                 replace( &mut self.lock.completer, completer )
             }
-            /// Returns the value of the named variable or `None`
-            /// if no such variable exists.
+            
             pub fn get_variable( &self, name:&str ) -> Option<Variable> {
                 self.lock.get_variable( name )
             }
-            /// Sets the value of the named variable and returns the previous
-            /// value.
+            
             pub fn set_variable( &mut self, name:&str, value:&str ) -> Option<Variable> {
                 self.lock.set_variable( name, value )
             }
-            /// Returns an iterator over stored variables.
+            
             pub fn variables( &self ) -> VariableIter {
                 self.lock.variables.iter()
             }
-            /// Returns whether to "blink" matching opening parenthesis character
-            /// when a closing parenthesis character is entered.
+            
             pub fn blink_matching_paren( &self ) -> bool {
                 self.lock.blink_matching_paren
             }
-            /// Sets the `blink-matching-paren` variable.
+            
             pub fn set_blink_matching_paren( &mut self, set: bool ) {
                 self.lock.blink_matching_paren = set;
             }
-            /// Returns whether `linefeed` will catch certain signals.
+            
             pub fn catch_signals( &self ) -> bool {
                 self.lock.catch_signals
             }
-            /// Sets whether `linefeed` will catch certain signals.
+            
             pub fn set_catch_signals( &mut self, enabled: bool ) {
                 self.lock.catch_signals = enabled;
             }
-            /// Returns whether the given `Signal` is ignored.
+            
             pub fn ignore_signal( &self, signal: system::terminal::Signal ) -> bool {
                 self.lock.ignore_signals.contains( signal )
             }
-            /// Sets whether the given `Signal` will be ignored.
+            
             pub fn set_ignore_signal( &mut self, signal: system::terminal::Signal, set: bool ) {
                 if set {
                     self.lock.ignore_signals.insert( signal );
@@ -37525,11 +36962,11 @@ pub mod system
                     self.lock.ignore_signals.remove( signal );
                 }
             }
-            /// Returns whether the given `Signal` is to be reported.
+            
             pub fn report_signal( &self, signal: system::terminal::Signal ) -> bool {
                 self.lock.report_signals.contains( signal )
             }
-            /// Sets whether to report the given `Signal`.
+            
             pub fn set_report_signal( &mut self, signal: system::terminal::Signal, set: bool ) {
                 if set {
                     self.lock.report_signals.insert( signal );
@@ -37541,115 +36978,109 @@ pub mod system
                     self.lock.report_signals.remove( signal );
                 }
             }
-            /// Returns whether Tab completion is disabled.
+            
             pub fn disable_completion( &self ) -> bool {
                 self.lock.disable_completion
             }
-            /// Sets the `disable-completion` variable.
+            
             pub fn set_disable_completion( &mut self, disable: bool ) {
                 self.lock.disable_completion = disable;
             }
-            /// When certain control characters are pressed, a character sequence
-            /// equivalent to this character will be echoed.
+            
             pub fn echo_control_characters( &self ) -> bool {
                 self.lock.echo_control_characters
             }
-            /// Sets the `echo-control-characters` variable.
+            
             pub fn set_echo_control_characters( &mut self, echo: bool ) {
                 self.lock.echo_control_characters = echo;
             }
-            /// Returns the character, if any, that is appended to a successful completion.
+            
             pub fn completion_append_character( &self ) -> Option<char> {
                 self.lock.completion_append_character
             }
-            /// Sets the character, if any, that is appended to a successful completion.
+            
             pub fn set_completion_append_character( &mut self, ch: Option<char> ) {
                 self.lock.completion_append_character = ch;
             }
-            /// Returns the width of completion listing display.
+            
             pub fn completion_display_width( &self ) -> usize {
                 self.lock.completion_display_width
             }
-            /// Sets the `completion-display-width` variable.
+            
             pub fn set_completion_display_width( &mut self, n: usize ) {
                 self.lock.completion_display_width = n;
             }
-            /// Returns the minimum number of completion items that require user
-            /// confirmation before listing.
+            
             pub fn completion_query_items( &self ) -> usize {
                 self.lock.completion_query_items
             }
-            /// Sets the `completion-query-items` variable.
+            
             pub fn set_completion_query_items( &mut self, n: usize ) {
                 self.lock.completion_query_items = n;
             }
-            /// Returns timeout to wait for user input when an ambiguous sequence has been entered.
+            
             pub fn keyseq_timeout( &self ) -> Option<Duration> {
                 self.lock.keyseq_timeout
             }
-            /// Sets the `keyseq-timeout` variable.
+            
             pub fn set_keyseq_timeout( &mut self, timeout: Option<Duration> ) {
                 self.lock.keyseq_timeout = timeout;
             }
-            /// Returns whether to list possible completions one page at a time.
+            
             pub fn page_completions( &self ) -> bool {
                 self.lock.page_completions
             }
-            /// Sets the `page-completions` variable.
+            
             pub fn set_page_completions( &mut self, set: bool ) {
                 self.lock.page_completions = set;
             }
-            /// Returns whether to list completions horizontally, rather than down
-            /// the screen.
+            
             pub fn print_completions_horizontally( &self ) -> bool {
                 self.lock.print_completions_horizontally
             }
-            /// Sets the `print-completions-horizontally` variable.
+            
             pub fn set_print_completions_horizontally( &mut self, set: bool ) {
                 self.lock.print_completions_horizontally = set;
             }
-            /// Returns the set of characters that delimit strings.
+            
             pub fn string_chars( &self ) -> &str {
                 &self.lock.string_chars
             }
-            /// Sets the set of characters that delimit strings.
+            
             pub fn set_string_chars<T>( &mut self, chars: T )
                     where T: Into<Cow<'static, str>> {
                 self.lock.string_chars = chars.into();
             }
-            /// Returns the set of characters that indicate a word break.
+            
             pub fn word_break_chars( &self ) -> &str {
                 &self.lock.word_break
             }
-            /// Sets the set of characters that indicate a word break.
+            
             pub fn set_word_break_chars<T>( &mut self, chars: T )
                     where T: Into<Cow<'static, str>> {
                 self.lock.word_break = chars.into();
             }
-            /// Returns an iterator over bound sequences
             /* pub fn bindings( &self ) -> BindingIter {
                 self.lock.bindings()
             } */
-            /// Binds a sequence to a command.
             pub fn bind_sequence<T>( &mut self, seq: T, cmd: Command ) -> Option<Command>
                     where T: Into<Cow<'static, str>> {
                 self.lock.bind_sequence( seq, cmd )
             }
-            /// Binds a sequence to a command, if and only if the given sequence
-            /// is not already bound to a command.
+            
             pub fn bind_sequence_if_unbound<T>( &mut self, seq: T, cmd: Command ) -> bool where
             T:Into<Cow<'static, str>>
             { self.lock.bind_sequence_if_unbound( seq, cmd ) }
-            /// Removes a binding for the given sequence.
+            
             pub fn unbind_sequence( &mut self, seq:&str ) -> Option<Command> {
                 self.lock.unbind_sequence( seq )
             }
-            /// Defines a named function to which sequences may be bound.
+            
             pub fn define_function<T>( &mut self, name: T, cmd: Arc<dyn Function<Term>> )
                     -> Option<Arc<dyn Function<Term>>> where T: Into<Cow<'static, str>> {
                 self.lock.define_function( name, cmd )
             }
-            /// Removes a function defined with the given name.
+            
             pub fn remove_function( &mut self, name:&str ) -> Option<Arc<dyn Function<Term>>> {
                 self.lock.remove_function( name )
             }
@@ -37682,7 +37113,7 @@ pub mod system
                     -> ReadLock<'a, Term> {
                 ReadLock{term, data}
             }
-            /// Reads the next character of input.
+            
             pub fn read_char( &mut self ) -> io::Result<Option<char>> {
                 if let Some( ch ) = self.macro_pop() {
                     Ok( Some( ch ) )
@@ -37943,14 +37374,14 @@ pub mod system
                     self.evaluate_directives( term, dirs );
                 }
             }
-            /// Evaluates a series of configuration directives.
+            
             pub fn evaluate_directives( &mut self, term:&Term, dirs: Vec<Directive> )
             {
                 for dir in dirs {
                     self.evaluate_directive( term, dir );
                 }
             }
-            /// Evaluates a single configuration directive.
+            
             pub fn evaluate_directive( &mut self, term:&Term, dir: Directive )
             {
                 match dir 
@@ -37991,7 +37422,7 @@ pub mod system
             fn term_matches( &self, term:&Term, value:&str ) -> bool
             { match_name( term.name(), value ) }
         }
-        /// Iterator over `Reader` bindings
+        
         pub struct BindingIter<'a>( slice::Iter<'a, ( Cow<'static, str>, Command )> );
 
         impl<'a> ExactSizeIterator for BindingIter<'a> {}
@@ -38001,7 +37432,9 @@ pub mod system
             type Item = ( &'a str, &'a Command );
 
             #[inline] fn next( &mut self ) -> Option<Self::Item> { self.0.next().map( |&( ref s, ref cmd )| ( &s[..], cmd ) ) }
+            
             #[inline] fn nth( &mut self, n: usize ) -> Option<Self::Item> { self.0.nth( n ).map( |&( ref s, ref cmd )| ( &s[..], cmd ) ) }
+            
             #[inline] fn size_hint( &self ) -> ( usize, Option<usize> ) { self.0.size_hint() }
         }
 
@@ -38113,7 +37546,6 @@ pub mod system
         /*
         */
         const COL_SPACE: usize = 2;
-        /// Represents a table of strings, formatted into rows and columns.
         pub struct Table<'a, S: 'a> {
             strings:&'a [S],
             sizes: Option<&'a [usize]>,
@@ -38124,7 +37556,6 @@ pub mod system
         }
 
         impl<'a, S: 'a + AsRef<str>> Table<'a, S> {
-            /// Constructs a new table from the given set of strings, using the given column sizes.
             pub fn new( strs:&'a [S], mut sizes: Option<&'a [usize]>,
                     horizontal: bool ) -> Table<'a, S> {
                 if let Some( sz ) = sizes {
@@ -38147,7 +37578,7 @@ pub mod system
                     horizontal: horizontal,
                 }
             }
-            /// Returns whether more lines are present in the table.
+            
             pub fn has_more( &self ) -> bool {
                 self.offset < self.rows
             }
@@ -38190,7 +37621,7 @@ pub mod system
                 } )
             }
         }
-        /// Represents a single line of the table.
+        
         pub struct Line<'a, S: 'a> 
         {
             strings:&'a [S],
@@ -38214,7 +37645,7 @@ pub mod system
                 Some( ( width, s ) )
             }
         }
-        /// Formats a series of strings into columns, fitting within a given screen width.
+        
         pub fn format_columns<S: AsRef<str>>( strs:&[S], screen_width: usize, horizontal: bool )
         -> Option<Vec<usize>>
         {
@@ -38322,44 +37753,33 @@ pub mod system
         pub use system::common::{ * };
         /*
         */
-        /// Default `Terminal` interface
         pub struct DefaultTerminal( system::common::Terminal );
-        /// Represents the result of a `Terminal` read operation
         pub enum RawRead
         {
-            /// `n` bytes were read from the device
             Bytes( usize ),
-            /// The terminal window was resized
             Resize( Size ),
-            /// A signal was received while waiting for input
             Signal( Signal ),
         }
-        /// Defines a low-level interface to the terminal
+        
         pub trait Terminal: Sized + Send + Sync
         {
-            /// Returned by `prepare`; passed to `restore` to restore state.
             type PrepareState;
             /*
-            /// Holds an exclusive read lock and provides read operations
             type Reader: TerminalReader;
-            /// Holds an exclusive write lock and provides write operations
             type Writer: TerminalWriter;
             */
-            /// Returns the name of the terminal.
             fn name( &self ) -> &str;
-            /// Acquires a lock on terminal read operations and returns a value holding
-            /// that lock and granting access to such operations.
+            
+            
             fn lock_read<'a>( &'a self ) -> Box<dyn TerminalReader<Self> + 'a>;
-            /// Acquires a lock on terminal write operations and returns a value holding
-            /// that lock and granting access to such operations.
+            
+            
             fn lock_write<'a>( &'a self ) -> Box<dyn TerminalWriter<Self> + 'a>;
         }
-        /// Holds a lock on `Terminal` read operations
+        
         pub trait TerminalReader<Term: Terminal>
         {
-            /// Prepares the terminal for line reading and editing operations.
             fn prepare( &mut self, block_signals: bool, report_signals: SignalSet ) -> io::Result<Term::PrepareState>;
-            /// Like `prepare`, but called when the write lock is already held.
             unsafe fn prepare_with_lock
             ( 
                 &mut self,
@@ -38367,49 +37787,34 @@ pub mod system
                 block_signals: bool,
                 report_signals: SignalSet
             ) -> io::Result<Term::PrepareState>;
-            /// Restores the terminal state using the given state data.
             fn restore( &mut self, state: Term::PrepareState ) -> io::Result<()>;
-            /// Like `restore`, but called when the write lock is already held.
             unsafe fn restore_with_lock( &mut self, lock:&mut dyn TerminalWriter<Term>, state: Term::PrepareState )
             -> io::Result<()>;
-            /// Reads some input from the terminal and appends it to the given buffer.
             fn read( &mut self, buf:&mut Vec<u8> ) -> io::Result<Option<RawRead>>;
-            /// Waits `timeout` for user input. If `timeout` is `None`, waits indefinitely.
             fn wait_for_input( &mut self, timeout: Option<Duration> ) -> io::Result<bool>;
         }
-        /// Holds a lock on `Terminal` write operations
+        
         pub trait TerminalWriter<Term: Terminal>
         {
-            /// Returns the size of the terminal window
             fn size( &self ) -> io::Result<Size>;
-            /// Presents a clear terminal screen, with cursor at first row, first column.
             fn clear_screen( &mut self ) -> io::Result<()>;
-            /// Clears characters on the line occupied by the cursor, beginning with the
-            /// cursor and ending at the end of the line.
+            
+            
             fn clear_to_screen_end( &mut self ) -> io::Result<()>;
-            /// Moves the cursor up `n` cells; `n` may be zero.
             fn move_up( &mut self, n: usize ) -> io::Result<()>;
-            /// Moves the cursor down `n` cells; `n` may be zero.
             fn move_down( &mut self, n: usize ) -> io::Result<()>;
-            /// Moves the cursor left `n` cells; `n` may be zero.
             fn move_left( &mut self, n: usize ) -> io::Result<()>;
-            /// Moves the cursor right `n` cells; `n` may be zero.
             fn move_right( &mut self, n: usize ) -> io::Result<()>;
-            /// Moves the cursor to the first column of the current line
             fn move_to_first_column( &mut self ) -> io::Result<()>;
-            /// Set the current cursor mode
             fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()>;
-            /// Writes output to the terminal.
             fn write( &mut self, s:&str ) -> io::Result<()>;
-            /// Flushes any currently buffered output data.
             fn flush( &mut self ) -> io::Result<()>;
         }
 
         impl DefaultTerminal
         {
-            /// Opens access to the terminal device associated with standard output.
             pub fn new() -> io::Result<DefaultTerminal> { system::common::Terminal::new().map( DefaultTerminal ) }
-            /// Opens access to the terminal device associated with standard error.
+            
             pub fn stderr() -> io::Result<DefaultTerminal>
             {
                 system::common::Terminal::stderr().map( DefaultTerminal )
@@ -38495,15 +37900,25 @@ pub mod system
         impl<'a> TerminalWriter<DefaultTerminal> for TerminalWriteGuard<'a>
         {
             fn size( &self ) -> io::Result<Size> { self.size() }
+            
             fn clear_screen( &mut self ) -> io::Result<()> { self.clear_screen() }
+            
             fn clear_to_screen_end( &mut self ) -> io::Result<()> { self.clear_to_screen_end() }
+            
             fn move_up( &mut self, n: usize ) -> io::Result<()> { self.move_up( n ) }
+            
             fn move_down( &mut self, n: usize ) -> io::Result<()> { self.move_down( n ) }
+            
             fn move_left( &mut self, n: usize ) -> io::Result<()> { self.move_left( n ) }
+            
             fn move_right( &mut self, n: usize ) -> io::Result<()> { self.move_right( n ) }
+            
             fn move_to_first_column( &mut self ) -> io::Result<()> { self.move_to_first_column() }
+            
             fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()> { self.set_cursor_mode( mode ) }
+            
             fn write( &mut self, s:&str ) -> io::Result<()> { self.write_str( s ) }
+            
             fn flush( &mut self ) -> io::Result<()> { self.flush() }
         }
 
@@ -38529,7 +37944,6 @@ pub mod system
             fn ioctl( fd: c_int, request: c_ulong, ... ) -> c_int;
         }
 
-        /// Runs the ioctl command.
         pub unsafe fn get_dimensions_any() -> winsize
         {
             let mut window: winsize = zeroed();
@@ -38548,8 +37962,7 @@ pub mod system
             }
             window
         }
-        /// Query the current processes's output (`stdout`), input (`stdin`), and error (`stderr`) in
-        /// that order, in the attempt to dtermine terminal width.
+        
         pub fn dimensions() -> Option<(usize, usize )> {
             let w = unsafe { get_dimensions_any() };
 
@@ -38577,22 +37990,17 @@ pub mod system
         };
         /*
         */
-        /// Default `keyseq_timeout`, in milliseconds
         const KEYSEQ_TIMEOUT_MS: u64 = 500;
-        /// Iterator over `Reader` variable values
         #[derive( Clone )]
         pub struct VariableIter<'a> {
             vars:&'a Variables,
             n: usize,
         }
-        /// Represents a `Reader` variable of a given type
+        
         #[derive( Clone, Debug )]
         pub enum Variable {
-            /// Boolean variable
             Boolean( bool ),
-            /// Integer variable
             Integer( i32 ),
-            /// String variable
             String( Cow<'static, str> ),
         }
 
@@ -38820,13 +38228,10 @@ pub mod system
         };
         /*
         */
-        /// Duration to wait for input when "blinking"
         pub const BLINK_DURATION: Duration = Duration::from_millis( 500 );
 
         const COMPLETE_MORE:&'static str = "--More--";
-        /// Default maximum history size
         const MAX_HISTORY: usize = !0;
-        /// Tab column interval
         const TAB_STOP: usize = 8;        
         const PROMPT_NUM_PREFIX: usize = 6;
         const PROMPT_NUM_SUFFIX: usize = 2;
@@ -38834,7 +38239,6 @@ pub mod system
         const PROMPT_SEARCH_FAILED_PREFIX: usize = 7;
         const PROMPT_SEARCH_REVERSE_PREFIX: usize = 8;
         const PROMPT_SEARCH_SUFFIX: usize = 3;
-        /// Provides an interface to write line-by-line output to the terminal device.
         pub struct Writer<'a, 'b: 'a, Term: 'b + Terminal> 
         {
             write: WriterImpl<'a, 'b, Term>,
@@ -38848,56 +38252,35 @@ pub mod system
 
         pub struct Write 
         {
-            /// Input buffer
             pub buffer: String,
-            /// Original buffer entered before searching through history
             pub backup_buffer: String,
-            /// Position of the cursor
             pub cursor: usize,
-            /// Position of the cursor if currently performing a blink
             blink: Option<Blink>,
 
-            /// Stored history entries
             pub history: VecDeque<String>,
-            /// History entry currently being edited;.
             pub history_index: Option<usize>,
-            /// Maximum size of history
             history_size: usize,
-            /// Number of history entries added since last loading history
             history_new_entries: usize,
 
-            /// Whether the prompt is drawn; i.e. a `read_line` operation is in progress
             pub is_prompt_drawn: bool,
 
-            /// Portion of prompt up to and including the final newline
             pub prompt_prefix: String,
             prompt_prefix_len: usize,
-            /// Portion of prompt after the final newline
             pub prompt_suffix: String,
             prompt_suffix_len: usize,
 
-            /// Current type of prompt
             pub prompt_type: PromptType,
 
-            /// Whether a search in progress is a reverse search
             pub reverse_search: bool,
-            /// Whether a search in progress has failed to find a match
             pub search_failed: bool,
-            /// Current search string
             pub search_buffer: String,
-            /// Last search string
             pub last_search: String,
-            /// Selected history entry prior to a history search
             pub prev_history: Option<usize>,
-            /// Position of the cursor prior to a history search
             pub prev_cursor: usize,
 
-            /// Numerical argument
             pub input_arg: Digit,
-            /// Whether a numerical argument was supplied
             pub explicit_arg: bool,
 
-            /// Terminal size as of last draw operation
             pub screen_size: Size,
         }
 
@@ -38909,8 +38292,8 @@ pub mod system
 
         impl<'a, Term: Terminal> WriteLock<'a, Term> 
         {
-            pub fn new( term: Box<dyn TerminalWriter<Term> + 'a>, data: MutexGuard<'a, Write> )
-                    -> WriteLock<'a, Term> {
+            pub fn new( term: Box<dyn TerminalWriter<Term> + 'a>, data: MutexGuard<'a, Write> ) -> WriteLock<'a, Term>
+            {
                 WriteLock{term, data}
             }
 
@@ -38980,7 +38363,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Draws the prompt and current input, assuming the cursor is at column 0
+            
             pub fn draw_prompt( &mut self ) -> io::Result<()> {
                 self.draw_prompt_prefix()?;
                 self.draw_prompt_suffix()
@@ -39043,7 +38426,7 @@ pub mod system
                 self.prompt_type = new_prompt;
                 self.draw_prompt_suffix()
             }
-            /// Draws a portion of the buffer, starting from the given cursor position
+            
             pub fn draw_buffer( &mut self, pos: usize ) -> io::Result<()> {
                 let ( _, col ) = self.line_col( pos );
 
@@ -39051,7 +38434,7 @@ pub mod system
                 self.draw_text( col, &buf )?;
                 Ok( () )
             }
-            /// Draw some text with the cursor beginning at the given column.
+            
             fn draw_text( &mut self, start_col: usize, text:&str ) -> io::Result<()> {
                 self.draw_text_impl( start_col, text, Display{
                     allow_tab: true,
@@ -39579,7 +38962,7 @@ pub mod system
 
                 Ok( () )
             }
-            /// Deletes a range from buffer; the cursor is moved to the end of the given range.
+            
             pub fn delete_range<R:ops::RangeArgument<usize>>( &mut self, r: R ) -> io::Result<()>
             {
                 let start = r.start().cloned().unwrap_or( 0 );
@@ -39727,7 +39110,7 @@ pub mod system
             pub fn clear_to_screen_end( &mut self ) -> io::Result<()> {
                 self.term.clear_to_screen_end()
             }
-            /// Draws a new buffer on the screen. Cursor position is assumed to be `0`.
+            
             pub fn new_buffer( &mut self ) -> io::Result<()> {
                 self.draw_buffer( 0 )?;
                 self.cursor = self.buffer.len();
@@ -39752,7 +39135,7 @@ pub mod system
                 self.term.move_to_first_column()?;
                 self.term.clear_to_screen_end()
             }
-            /// Move back to true cursor position from some other position
+            
             pub fn move_from( &mut self, pos: usize ) -> io::Result<()> {
                 let ( lines, cols ) = self.move_delta( pos, self.cursor, &self.buffer );
                 self.move_rel( lines, cols )
@@ -39776,8 +39159,8 @@ pub mod system
             pub fn move_right( &mut self, n: usize ) -> io::Result<()> {
                 self.term.move_right( n )
             }
-            /// Moves from `old` to `new` cursor position, using the given buffer
-            /// as current input.
+            
+            
             fn move_delta( &self, old: usize, new: usize, buf:&str ) -> ( isize, isize ) {
                 let prompt_len = self.prompt_suffix_length();
                 let ( old_line, old_col ) = self.line_col_with( old, buf, prompt_len );
@@ -39853,15 +39236,15 @@ pub mod system
             pub fn with_ref( write:&'a mut WriteLock<'b, Term>, clear: bool ) -> io::Result<Self> {
                 Writer::new( WriterImpl::MutRef( write ), clear )
             }
-            /// Returns an iterator over history entries.
+            
             pub fn history( &self ) -> HistoryIter {
                 self.write.history()
             }
-            /// Writes some text to the terminal device.
+            
             pub fn write_str( &mut self, s:&str ) -> io::Result<()> {
                 self.write.write_str( s )
             }
-            /// Writes formatted text to the terminal display.
+            
             pub fn write_fmt( &mut self, args: fmt::Arguments ) -> io::Result<()> {
                 let s = args.to_string();
                 self.write_str( &s )
@@ -40026,7 +39409,7 @@ pub mod system
                 col - start_col
             }
         }
-        /// Maximum value of digit input
+
         const NUMBER_MAX: i32 = 1_000_000;
 
         #[derive( Copy, Clone, Debug )]
@@ -40070,9 +39453,7 @@ pub mod system
 
         impl From<char> for Digit 
         {
-            /// Convert a decimal digit character to a `Digit` value.
             ///
-            /// The input must be in the range `'0' ..= '9'`.
             fn from( ch: char ) -> Digit {
                 let n = ( ch as u8 ) - b'0';
                 Digit::Num( n as i32 )
@@ -40117,7 +39498,7 @@ pub mod system
                 }
             }
         }
-        /// Iterator over `Interface` history entries
+        
         pub struct HistoryIter<'a>( vec_deque::Iter<'a, String> );
 
         impl<'a> ExactSizeIterator for HistoryIter<'a> {}
@@ -40277,7 +39658,7 @@ pub mod tuples
         vec: Vec<Value>,
         inner_tvec: Vec<Type>,
     }
-    /// `Tup` struct.
+    
     #[derive( Clone, Debug )]
     pub struct Tup 
     {
@@ -40286,7 +39667,6 @@ pub mod tuples
 
     impl Tup 
     {
-        /// Returns a new `Tup` from the given vector of `Value`s.
         pub fn from_vec( values: Vec<Value> ) -> Tup {
             let tvec: Vec<Type> = values.iter().map( |val| val.get_type() ).collect();
 
@@ -40297,11 +39677,11 @@ pub mod tuples
                 } ),
             }
         }
-        /// Returns a reference to the inner vec of this `Tup`.
+        
         pub fn vec_ref( &self ) -> &Vec<Value> {
             &self.inner.vec
         }
-        /// Iterates over each `Value` in `self`, applying `Fn` `f`.
+        
         pub fn with_each<F>( &self, mut f: F ) where
             F: FnMut( &Value ),
         {
@@ -40309,8 +39689,7 @@ pub mod tuples
                 f( value )
             }
         }
-        /// Gets the value at `index`.
-        /// Returns an error if `index` is out of bounds.
+        
         pub fn get( &self, index: usize ) -> OverResult<Value> {
             if index >= self.inner.vec.len() {
                 Err( OverError::TupOutOfBounds( index ) )
@@ -40321,23 +39700,23 @@ pub mod tuples
                 Ok( self.inner.vec[index].clone() )
             }
         }
-        /// Returns the type vector of this `Tup`.
+        
         pub fn inner_type_vec( &self ) -> Vec<Type> {
             self.inner.inner_tvec.clone()
         }
-        /// Returns the length of this `Tup`.
+        
         pub fn len( &self ) -> usize {
             self.inner.vec.len()
         }
-        /// Returns whether this `Tup` is empty.
+        
         pub fn is_empty( &self ) -> bool {
             self.inner.vec.is_empty()
         }
-        /// Returns whether `self` and `other` point to the same data.
+        
         pub fn ptr_eq( &self, other:&Self ) -> bool {
             Arc::ptr_eq( &self.inner, &other.inner )
         }
-        /// Returns an iterator over the Tup.
+        
         pub fn iter( &self ) -> Iter<Value> {
             self.vec_ref().iter()
         }
@@ -40380,30 +39759,27 @@ pub mod types
     */
     use ::
     {
+        borrow::{ Cow::{ self, * }, },
         collections::{ HashMap, HashSet },
         *,
     };
     /*
     use regex::Regex;
     use crate::parsers;
-    use crate::parsers::parser_line::tokens_to_redirections;
+    use crate::parses::lines::tokens_to_redirections;
     */
     macro_rules! define_directives
     {
-        ( $( #[$meta:meta] $name:ident => $str:expr , )+ ) =>
+        ( $( $name:ident => $str:expr , )+ ) =>
         {
-            /// Represents a directive to modify `Reader` state
             #[derive(Clone, Debug, Eq, PartialEq)]
             pub enum Directive
             {
-                $( #[$meta] $name , )+
-                /// Custom application-defined directive
+                $( $name , )+
                 Custom(Cow<'static, str>),
-                /// Execute a given key sequence
                 Macro(Cow<'static, str>),
             }
 
-            /// List of all command names
             pub static DIRECTIVES: &[&str] = &[ $( $str ),+ ];
 
             impl fmt::Display for Directive 
@@ -40421,12 +39797,10 @@ pub mod types
 
             impl Directive 
             {
-                /// Constructs a directive from a `'static str` reference.
                 pub fn from_str(name: &'static str) -> Directive {
                     Directive::opt_from_str(name)
                         .unwrap_or_else(|| Directive::Custom(Borrowed(name)))
                 }
-                /// Constructs a directive from a non-`'static` string-like type.
                 pub fn from_string<T>(name: T) -> Directive where
                 T: AsRef<str> + Into<String> 
                 {
@@ -40445,43 +39819,31 @@ pub mod types
             }
         }
     }
+
     pub type Token = (String, String);
     pub type Tokens = Vec<Token>;
     pub type Redirection = (String, String, String);
-    /// Enum of possible types for `Value`s.
+
     #[derive( Clone, Debug )]
     pub enum Type 
     {
-        /// A type used to indicate an empty Arr.
         Any,
-        /// Null value.
         Null,
 
-        /// A boolean type.
         Bool,
-        /// A signed integer type.
         Int,
-        /// A fully signed integer type.
         Integer,
-        /// A fractional type.
         Frac,
-        /// A character type.
         Char,
-        /// A string type.
         Str,
-        /// A string type.
         Strand,
-        /// An array type, containing the type of its sub-elements.
         Arr( Box<Type> ),
-        /// A tuple type, containing the types of its sub-elements.
         Tup( Vec<Type> ),
-        /// An object type.
         Obj,
     }
 
     impl Type 
     {
-        /// Returns true if this type is strictly the same as `other`.
         pub fn is( &self, other:&Type ) -> bool 
         {
             use self::Type::*;
@@ -40613,7 +39975,7 @@ pub mod types
                 }
             }
         }
-        /// Returns true if this `Type` contains `Any`.
+        
         pub fn has_any( &self ) -> bool 
         {
             match *self
@@ -40624,7 +39986,7 @@ pub mod types
                 _ => false,
             }
         }
-        /// Returns a type with the most specificity that can be applied to the two input types.
+        
         pub fn most_specific( type1:&Type, type2:&Type ) -> Option<( Type, bool )> 
         {
             use self::Type::*;
@@ -40690,7 +40052,7 @@ pub mod types
             }
         }
     }
-    /// Two types are considered equal if one of them is Any or they have the same variant.
+
     impl PartialEq for Type 
     {
         fn eq( &self, other:&Self ) -> bool
@@ -40914,112 +40276,63 @@ pub mod types
 
     define_directives!
     {
-        /// Abort history search
         Abort => "abort",
-        /// Accepts the current input line
         AcceptLine => "accept-line",
-        /// Perform completion
         Complete => "complete",
-        /// Insert all completions into the input buffer
         InsertCompletions => "insert-completions",
-        /// Show possible completions
         PossibleCompletions => "possible-completions",
-        /// Insert the next possible completion
         MenuComplete => "menu-complete",
-        /// Insert the previous possible completion
         MenuCompleteBackward => "menu-complete-backward",
-        /// Begin numeric argument input
         DigitArgument => "digit-argument",
-        /// Insert character or sequence at the cursor
         SelfInsert => "self-insert",
-        /// Inserts a tab character
         TabInsert => "tab-insert",
-        /// Toggles insert/overwrite mode
         OverwriteMode => "overwrite-mode",
-        /// Insert a comment and accept input
         InsertComment => "insert-comment",
-        /// Move the cursor backward one character
         BackwardChar => "backward-char",
-        /// Move the cursor forward one character
         ForwardChar => "forward-char",
-        /// Search for a given character
         CharacterSearch => "character-search",
-        /// Search backward for a given character
         CharacterSearchBackward => "character-search-backward",
-        /// Move the cursor backward one word
         BackwardWord => "backward-word",
-        /// Move the cursor forward one word
         ForwardWord => "forward-word",
-        /// Kill all characters before the cursor
         BackwardKillLine => "backward-kill-line",
-        /// Kill all characters after the cursor
         KillLine => "kill-line",
-        /// Kill a word before the cursor
         BackwardKillWord => "backward-kill-word",
-        /// Kill a word after the cursor
         KillWord => "kill-word",
-        /// Kill a word before the cursor, delimited by whitespace
         UnixWordRubout => "unix-word-rubout",
-        /// Clear the screen
         ClearScreen => "clear-screen",
-        /// Move the cursor to the beginning of the line
         BeginningOfLine => "beginning-of-line",
-        /// Move the cursor to the end of the line
         EndOfLine => "end-of-line",
-        /// Delete one character before the cursor
         BackwardDeleteChar => "backward-delete-char",
-        /// Delete one character after the cursor
         DeleteChar => "delete-char",
-        /// Drag the character before the cursor forward
         TransposeChars => "transpose-chars",
-        /// Drag the word before the cursor forward
         TransposeWords => "transpose-words",
-        /// Move to the first line of history
         BeginningOfHistory => "beginning-of-history",
-        /// Move to the last line of history
         EndOfHistory => "end-of-history",
-        /// Select next line in history
         NextHistory => "next-history",
-        /// Select previous line in history
         PreviousHistory => "previous-history",
-        /// Incremental search in history
         ForwardSearchHistory => "forward-search-history",
-        /// Incremental reverse search in history
         ReverseSearchHistory => "reverse-search-history",
-        /// Non-incremental forward history search using input up to the cursor
         HistorySearchForward => "history-search-forward",
-        /// Non-incremental backward history search using input up to the cursor
         HistorySearchBackward => "history-search-backward",
-        /// Insert literal character
         QuotedInsert => "quoted-insert",
-        /// Insert text into buffer from the kill ring
         Yank => "yank",
-        /// Rotate the kill ring and yank the new top
         YankPop => "yank-pop",
     }
-    /// Describes the category of a command
+    
     #[derive(Copy, Clone, Debug, Eq, PartialEq)]
     pub enum Category 
     {
-        /// Completion command
         Complete,
-        /// Kill command
         Kill,
-        /// Non-incremental search command
         Search,
-        /// Incremental search command
         IncrementalSearch,
-        /// Yank command
         Yank,
-        /// Digit argument command
         Digit,
-        /// Other command
         Other,
     }
 
     impl Directive
     {
-        /// Returns the category of the directive
         pub fn category(&self) -> Category
         {
             use self::Directive::*;
@@ -41168,8 +40481,7 @@ pub mod types
             self.pids_stopped.is_empty()
         }
     }
-
-    #[allow(dead_code )]
+    
     #[derive( Clone, Debug, Default )]
     pub struct CommandResult 
     {
@@ -41258,14 +40570,17 @@ pub mod types
         let mut n = 0;
         let re = Regex::new( r"^([a-zA-Z0-9_]+)=(.*)$" ).unwrap();
 
-        for ( sep, text) in tokens.iter() {
-            if !sep.is_empty() || !::regex::contains(text, r"^([a-zA-Z0-9_]+)=(.*)$" ) {
+        for ( sep, text) in tokens.iter()
+        {
+            if !sep.is_empty() || !::regex::contains(text, r"^([a-zA-Z0-9_]+)=(.*)$" )
+            {
                 break;
             }
 
-            for cap in re.captures_iter(text) {
+            for cap in re.captures_iter(text)
+            {
                 let name = cap[1].to_string();
-                let value = parsers::parser_line::unquote( &cap[2]);
+                let value = parses::lines::unquote( &cap[2]);
                 envs.insert( name, value );
             }
 
@@ -41281,7 +40596,7 @@ pub mod types
     {
         pub fn from_line(line: &str, sh: &mut shell::Shell ) -> Result<CommandLine, String>
         {
-            let linfo = parsers::parser_line::parse_line(line );
+            let linfo = parses::lines::parse_line(line );
             let mut tokens = linfo.tokens;
             shell::do_expansion( sh, &mut tokens );
             let envs = drain_env_tokens( &mut tokens );
@@ -41331,15 +40646,10 @@ pub mod types
     #[derive( Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
     pub struct App
     {
-        /// The maximum number of open files.
         pub a:bool,
-        /// The maximum number of open file descriptors.
         pub n:Option<Option<u64>>,
-        /// The maximum size of core files created.
         pub c:Option<Option<u64>>,
-        /// Set a soft limit for the given resource.
         pub S:bool,
-        /// Set a hard limit for the given resource.
         pub H:bool,
     }
 
@@ -41431,24 +40741,22 @@ pub mod uuid
     {
         /*!
         A Builder type for [`Uuid`]s. */
-        use ::
+        use super::
         {
-            *,
+            error::{ * },
+            timestamp, Bytes, Uuid, Variant, Version
         };
         /*
-        use crate::{error::*, timestamp, Bytes, Uuid, Variant, Version};
         */
-        /// A builder for creating a UUID.
         #[derive( Debug )]
         pub struct Builder( Uuid );
 
         impl Uuid
         {
-            /// The 'nil UUID' ( all zeros ).
             pub const fn nil() -> Self { Uuid::from_bytes( [0; 16] ) }
-            /// The 'max UUID' ( all ones ).
+            
             pub const fn max() -> Self { Uuid::from_bytes( [0xFF; 16] ) }
-            /// Creates a UUID from four field values.
+            
             pub const fn from_fields( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Uuid
             {
                 Uuid::from_bytes
@@ -41457,7 +40765,7 @@ pub mod uuid
                     d2 as u8, ( d3 >> 8 ) as u8, d3 as u8, d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7],
                 ] )
             }
-            /// Creates a UUID from four field values in little-endian order.
+            
             pub const fn from_fields_le( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Uuid
             {
                 Uuid::from_bytes
@@ -41467,14 +40775,14 @@ pub mod uuid
                     d4[5], d4[6], d4[7],
                 ] )
             }
-            /// Creates a UUID from a 128bit value.
+            
             pub const fn from_u128( v: u128 ) -> Self { Uuid::from_bytes( v.to_be_bytes() ) }
-            /// Creates a UUID from a 128bit value in little-endian order.
+            
             pub const fn from_u128_le( v: u128 ) -> Self { Uuid::from_bytes( v.to_le_bytes() ) }
-            /// Creates a UUID from two 64bit values.
+            
             pub const fn from_u64_pair( high_bits: u64, low_bits: u64 ) -> Self
             { Uuid::from_u128( ( ( high_bits as u128 ) << 64 ) | low_bits as u128 ) }
-            /// Creates a UUID using the supplied bytes.
+            
             pub fn from_slice( b:&[u8] ) -> Result<Uuid, Error>
             {
                 if b.len() != 16 { return Err( Error( ErrorKind::ParseByteLength { len: b.len() } ) ); }
@@ -41483,7 +40791,7 @@ pub mod uuid
                 bytes.copy_from_slice( b );
                 Ok( Uuid::from_bytes( bytes ) )
             }
-            /// Creates a UUID using the supplied bytes in little endian order.
+            
             pub fn from_slice_le( b:&[u8] ) -> Result<Uuid, Error>
             {
                 if b.len() != 16 { return Err( Error( ErrorKind::ParseByteLength { len: b.len() } ) ); }
@@ -41492,9 +40800,9 @@ pub mod uuid
                 bytes.copy_from_slice( b );
                 Ok( Uuid::from_bytes_le( bytes ) )
             }
-            /// Creates a UUID using the supplied bytes.
+            
             #[inline] pub const fn from_bytes( bytes: Bytes ) -> Uuid { Uuid( bytes ) }
-            /// Creates a UUID using the supplied bytes in little endian order.
+            
             pub const fn from_bytes_le( b: Bytes ) -> Uuid
             {
                 Uuid
@@ -41502,41 +40810,40 @@ pub mod uuid
                     b[3],b[2],b[1],b[0],b[5], b[4], b[7], b[6], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15],
                 ] )
             }
-            /// Creates a reference to a UUID from a reference to the supplied bytes.
+            
             #[inline] pub fn from_bytes_ref( bytes:&Bytes ) -> &Uuid { unsafe_transmute_ref!( bytes ) }
         }
 
         impl Builder
         {
-            /// Creates a `Builder` using the supplied bytes.
             pub const fn from_bytes( b: Bytes ) -> Self { Builder( Uuid::from_bytes( b ) ) }
-            /// Creates a `Builder` using the supplied bytes in little endian order.
+            
             pub const fn from_bytes_le( b: Bytes ) -> Self { Builder( Uuid::from_bytes_le( b ) ) }
-            /// Creates a `Builder` for a version 1 UUID using the supplied timestamp, counter, and node ID.
+            
             pub const fn from_gregorian_timestamp( ticks: u64, counter: u16, node_id:&[u8; 6] ) -> Self
             { Builder( timestamp::encode_gregorian_timestamp( ticks, counter, node_id ) ) }
-            /// Creates a `Builder` for a version 3 UUID using the supplied MD5 hashed bytes.
+            
             pub const fn from_md5_bytes( md5_bytes: Bytes ) -> Self
             {
                 Builder( Uuid::from_bytes( md5_bytes ) )
                 .with_variant( Variant::RFC4122 )
                 .with_version( Version::Md5 )
             }
-            /// Creates a `Builder` for a version 4 UUID using the supplied random bytes.
+            
             pub const fn from_random_bytes( random_bytes: Bytes ) -> Self
             {
                 Builder( Uuid::from_bytes( random_bytes ) )
                 .with_variant( Variant::RFC4122 )
                 .with_version( Version::Random )
             }
-            /// Creates a `Builder` for a version 5 UUID using the supplied SHA-1 hashed bytes.
+            
             pub const fn from_sha1_bytes( sha1_bytes: Bytes ) -> Self
             {
                 Builder( Uuid::from_bytes( sha1_bytes ) )
                 .with_variant( Variant::RFC4122 )
                 .with_version( Version::Sha1 )
             }
-            /// Creates a `Builder` for a version 6 UUID using the supplied timestamp, counter, and node ID.
+            
             pub const fn from_sorted_gregorian_timestamp
             ( 
                 ticks: u64,
@@ -41549,7 +40856,7 @@ pub mod uuid
                     ticks, counter, node_id,
                 ) )
             }
-            /// Creates a `Builder` for a version 7 UUID using the supplied Unix timestamp and counter bytes.
+            
             pub const fn from_unix_timestamp_millis( millis: u64, counter_random_bytes:&[u8; 10] ) -> Self
             {
                 Builder( timestamp::encode_unix_timestamp_millis
@@ -41558,44 +40865,44 @@ pub mod uuid
                     counter_random_bytes,
                 ) )
             }
-            /// Creates a `Builder` for a version 8 UUID using the supplied user-defined bytes.
+            
             pub const fn from_custom_bytes( custom_bytes: Bytes ) -> Self
             {
                 Builder::from_bytes( custom_bytes )
                 .with_variant( Variant::RFC4122 )
                 .with_version( Version::Custom )
             }
-            /// Creates a `Builder` using the supplied bytes.
+            
             pub fn from_slice( b:&[u8] ) -> Result<Self, Error>
             { Ok( Builder( Uuid::from_slice( b )? ) ) }
-            /// Creates a `Builder` using the supplied bytes in little endian order.
+            
             pub fn from_slice_le( b:&[u8] ) -> Result<Self, Error>
             { Ok( Builder( Uuid::from_slice_le( b )? ) ) }
-            /// Creates a `Builder` from four field values.
+            
             pub const fn from_fields( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Self
             { Builder( Uuid::from_fields( d1, d2, d3, d4 ) ) }
-            /// Creates a `Builder` from four field values.
+            
             pub const fn from_fields_le( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Self 
             { Builder( Uuid::from_fields_le( d1, d2, d3, d4 ) ) }
-            /// Creates a `Builder` from a 128bit value.
+            
             pub const fn from_u128( v: u128 ) -> Self 
             {
                 Builder( Uuid::from_u128( v ) )
             }
-            /// Creates a UUID from a 128bit value in little-endian order.
+            
             pub const fn from_u128_le( v: u128 ) -> Self 
             {
                 Builder( Uuid::from_u128_le( v ) )
             }
-            /// Creates a `Builder` with an initial [`Uuid::nil`].
+            
             pub const fn nil() -> Self { Builder( Uuid::nil() ) }
-            /// Specifies the variant of the UUID.
+            
             pub fn set_variant( &mut self, v: Variant ) -> &mut Self
             {
                 *self = Builder( self.0 ).with_variant( v );
                 self
             }
-            /// Specifies the variant of the UUID.
+            
             pub const fn with_variant( mut self, v: Variant ) -> Self
             {
                 let byte = ( self.0 ).0[8];
@@ -41610,21 +40917,21 @@ pub mod uuid
 
                 self
             }
-            /// Specifies the version number of the UUID.
+            
             pub fn set_version( &mut self, v: Version ) -> &mut Self
             {
                 *self = Builder( self.0 ).with_version( v );
                 self
             }
-            /// Specifies the version number of the UUID.
+            
             pub const fn with_version( mut self, v: Version ) -> Self
             {
                 ( self.0 ).0[6] = (( self.0 ).0[6] & 0x0f ) | ( ( v as u8 ) << 4 );
                 self
             }
-            /// Get a reference to the underlying [`Uuid`].
+            
             pub const fn as_uuid( &self ) -> &Uuid { &self.0 }
-            /// Convert the builder into a [`Uuid`].
+            
             pub const fn into_uuid( self ) -> Uuid { self.0 }
         
             #[deprecated( 
@@ -41653,44 +40960,33 @@ pub mod uuid
         };
         /*
         */
-        /// A general error that can occur when working with UUIDs.
         #[derive( Clone, Debug, Eq, Hash, PartialEq )]
         pub struct Error( pub ErrorKind );
 
         #[derive( Clone, Debug, Eq, Hash, PartialEq )]
         pub enum ErrorKind 
         {
-            /// Invalid character in the [`Uuid`] string.
             ParseChar { character:char, index: usize },
-            /// A simple [`Uuid`] didn't contain 32 characters.
             ParseSimpleLength { len: usize },
-            /// A byte array didn't contain 16 bytes
             ParseByteLength { len: usize },
-            /// A hyphenated [`Uuid`] didn't contain 5 groups
             ParseGroupCount { count: usize },
-            /// A hyphenated [`Uuid`] had a group that wasn't the right length
             ParseGroupLength
             {
                 group: usize,
                 len: usize,
                 index: usize,
             },
-            /// The input was not a valid UTF8 string
             ParseInvalidUTF8,
-            /// Some other parsing error occurred.
             ParseOther,
-            /// The UUID is nil.
             Nil,
-            /// A system time was invalid.
             InvalidSystemTime( &'static str ),
         }
-        /// A string that is guaranteed to fail to parse to a [`Uuid`].
+        
         #[derive( Clone, Debug, Eq, Hash, PartialEq )]
         pub struct InvalidUuid<'a>( pub &'a [u8] );
 
         impl<'a> InvalidUuid<'a>
         {
-            /// Converts the lightweight error type into detailed diagnostics.
             pub fn into_err( self ) -> Error
             {
                 let input_str = match ::str::from_utf8( self.0 )
@@ -41898,36 +41194,35 @@ pub mod uuid
             #[inline] fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result
             { fmt::UpperHex::fmt( self.as_hyphenated(), f ) }
         }
-        /// Format a [`Uuid`] as a hyphenated string.
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
         pub struct Hyphenated( Uuid );
-        /// Format a [`Uuid`] as a simple string.
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
         pub struct Simple( Uuid );
-        /// Format a [`Uuid`] as a URN string.
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
         pub struct Urn( Uuid );
-        /// Format a [`Uuid`] as a braced hyphenated string.
+        
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Default, Eq, Hash, Ord, PartialEq, PartialOrd )]
         pub struct Braced( Uuid );
 
         impl Uuid
         {
-            /// Get a [`Hyphenated`] formatter.
             #[inline] pub const fn hyphenated( self ) -> Hyphenated { Hyphenated( self ) }
-            /// Get a borrowed [`Hyphenated`] formatter.
+            
             #[inline] pub fn as_hyphenated( &self ) -> &Hyphenated { unsafe_transmute_ref!( self ) }
-            /// Get a [`Simple`] formatter.
+            
             #[inline] pub const fn simple( self ) -> Simple { Simple( self ) }
-            /// Get a borrowed [`Simple`] formatter.
+            
             #[inline] pub fn as_simple( &self ) -> &Simple { unsafe_transmute_ref!( self ) }
-            /// Get a [`Urn`] formatter.
+            
             #[inline] pub const fn urn( self ) -> Urn { Urn( self ) }
-            /// Get a borrowed [`Urn`] formatter.
+            
             #[inline] pub fn as_urn( &self ) -> &Urn { unsafe_transmute_ref!( self ) }
-            /// Get a [`Braced`] formatter.
+            
             #[inline] pub const fn braced( self ) -> Braced { Braced( self ) }
-            /// Get a borrowed [`Braced`] formatter.
+            
             #[inline] pub fn as_braced( &self ) -> &Braced { unsafe_transmute_ref!( self ) }
         }
 
@@ -42056,32 +41351,27 @@ pub mod uuid
 
         impl Hyphenated 
         {
-            /// The length of a hyphenated [`Uuid`] string.
             pub const LENGTH: usize = 36;
-            /// Creates a [`Hyphenated`] from a [`Uuid`].
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Hyphenated( uuid )
             }
-            /// Writes the [`Uuid`] as a lower-case hyphenated string to `buffer`,
-            /// and returns the subslice of the buffer that contains the encoded UUID.
+            
             #[inline] pub fn encode_lower<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_hyphenated( self.0.as_bytes(), buffer, false )
-            }
-            /// Writes the [`Uuid`] as an upper-case hyphenated string to
-            /// `buffer`, and returns the subslice of the buffer that contains the
-            /// encoded UUID.
+            }  
+            
             #[inline] pub fn encode_upper<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_hyphenated( self.0.as_bytes(), buffer, true )
             }
-            /// Get a reference to the underlying [`Uuid`].
+            
             pub const fn as_uuid( &self ) -> &Uuid 
             {
                 &self.0
             }
-            /// Consumes the [`Hyphenated`], returning the underlying [`Uuid`].
+            
             pub const fn into_uuid( self ) -> Uuid 
             {
                 self.0
@@ -42090,33 +41380,27 @@ pub mod uuid
 
         impl Braced 
         {
-            /// The length of a braced [`Uuid`] string.
             pub const LENGTH: usize = 38;
-            /// Creates a [`Braced`] from a [`Uuid`].
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Braced( uuid )
-            }
-            /// Writes the [`Uuid`] as a lower-case hyphenated string surrounded by
-            /// braces to `buffer`, and returns the subslice of the buffer that contains
-            /// the encoded UUID.
+            }  
+            
             #[inline] pub fn encode_lower<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_braced( self.0.as_bytes(), buffer, false )
-            }
-            /// Writes the [`Uuid`] as an upper-case hyphenated string surrounded by
-            /// braces to `buffer`, and returns the subslice of the buffer that contains
-            /// the encoded UUID.
+            }  
+            
             #[inline] pub fn encode_upper<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_braced( self.0.as_bytes(), buffer, true )
             }
-            /// Get a reference to the underlying [`Uuid`].
+            
             pub const fn as_uuid( &self ) -> &Uuid 
             {
                 &self.0
             }
-            /// Consumes the [`Braced`], returning the underlying [`Uuid`].
+            
             pub const fn into_uuid( self ) -> Uuid 
             {
                 self.0
@@ -42125,32 +41409,27 @@ pub mod uuid
 
         impl Simple 
         {
-            /// The length of a simple [`Uuid`] string.
             pub const LENGTH: usize = 32;
-            /// Creates a [`Simple`] from a [`Uuid`].
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Simple( uuid )
-            }
-            /// Writes the [`Uuid`] as a lower-case simple string to `buffer`,
-            /// and returns the subslice of the buffer that contains the encoded UUID.
-            /// double buffering.
+            }  
+            
             #[inline] pub fn encode_lower<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_simple( self.0.as_bytes(), buffer, false )
             }
-            /// Writes the [`Uuid`] as an upper-case simple string to `buffer`,
-            /// and returns the subslice of the buffer that contains the encoded UUID.
+            
             #[inline] pub fn encode_upper<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_simple( self.0.as_bytes(), buffer, true )
             }
-            /// Get a reference to the underlying [`Uuid`].
+            
             pub const fn as_uuid( &self ) -> &Uuid 
             {
                 &self.0
             }
-            /// Consumes the [`Simple`], returning the underlying [`Uuid`].
+            
             pub const fn into_uuid( self ) -> Uuid 
             {
                 self.0
@@ -42159,33 +41438,27 @@ pub mod uuid
 
         impl Urn 
         {
-            /// The length of a URN [`Uuid`] string.
             pub const LENGTH: usize = 45;
-            /// Creates a [`Urn`] from a [`Uuid`].
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Urn( uuid )
-            }
-            /// Writes the [`Uuid`] as a lower-case URN string to
-            /// `buffer`, and returns the subslice of the buffer that contains the
-            /// encoded UUID.
+            }  
+            
             #[inline] pub fn encode_lower<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_urn( self.0.as_bytes(), buffer, false )
-            }
-            /// Writes the [`Uuid`] as an upper-case URN string to
-            /// `buffer`, and returns the subslice of the buffer that contains the
-            /// encoded UUID.
+            }  
+            
             #[inline] pub fn encode_upper<'buf>( &self, buffer:&'buf mut [u8] ) -> &'buf mut str 
             {
                 encode_urn( self.0.as_bytes(), buffer, true )
             }
-            /// Get a reference to the underlying [`Uuid`].
+            
             pub const fn as_uuid( &self ) -> &Uuid 
             {
                 &self.0
             }
-            /// Consumes the [`Urn`], returning the underlying [`Uuid`].
+            
             pub const fn into_uuid( self ) -> Uuid 
             {
                 self.0
@@ -42246,8 +41519,7 @@ pub mod uuid
             {$( 
                 impl<$( $a ),*> fmt::Display for $T<$( $a ),*> 
                 {
-                    #[inline]
-                    fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result {
+                    #[inline] fn fmt( &self, f:&mut fmt::Formatter<'_> ) -> fmt::Result {
                         fmt::LowerHex::fmt( self, f )
                     }
                 }
@@ -42275,29 +41547,25 @@ pub mod uuid
             ( $T:ident<> ) =>
             {
                 impl From<Uuid> for $T {
-                    #[inline]
-                    fn from( f: Uuid ) -> Self {
+                    #[inline] fn from( f: Uuid ) -> Self {
                         $T( f )
                     }
                 }
 
                 impl From<$T> for Uuid {
-                    #[inline]
-                    fn from( f: $T ) -> Self {
+                    #[inline] fn from( f: $T ) -> Self {
                         f.into_uuid()
                     }
                 }
 
                 impl AsRef<Uuid> for $T {
-                    #[inline]
-                    fn as_ref( &self ) -> &Uuid {
+                    #[inline] fn as_ref( &self ) -> &Uuid {
                         &self.0
                     }
                 }
 
                 impl Borrow<Uuid> for $T {
-                    #[inline]
-                    fn borrow( &self ) -> &Uuid {
+                    #[inline] fn borrow( &self ) -> &Uuid {
                         &self.0
                     }
                 }
@@ -42307,34 +41575,22 @@ pub mod uuid
             {
                 impl<$a> From<&$a Uuid> for $T<$a> 
                 {
-                    #[inline]
-                    fn from( f:&$a Uuid ) -> Self {
-                        $T::from_uuid_ref( f )
-                    }
+                    #[inline] fn from( f:&$a Uuid ) -> Self { $T::from_uuid_ref( f ) }
                 }
 
                 impl<$a> From<$T<$a>> for &$a Uuid 
                 {
-                    #[inline]
-                    fn from( f: $T<$a> ) -> &$a Uuid {
-                        f.0
-                    }
+                    #[inline] fn from( f: $T<$a> ) -> &$a Uuid { f.0 }
                 }
 
                 impl<$a> AsRef<Uuid> for $T<$a> 
                 {
-                    #[inline]
-                    fn as_ref( &self ) -> &Uuid {
-                        self.0
-                    }
+                    #[inline] fn as_ref( &self ) -> &Uuid { self.0 }
                 }
 
                 impl<$a> Borrow<Uuid> for $T<$a> 
                 {
-                    #[inline]
-                    fn borrow( &self ) -> &Uuid {
-                        self.0
-                    }
+                    #[inline] fn borrow( &self ) -> &Uuid { self.0 }
                 }
             };
         }
@@ -42365,7 +41621,6 @@ pub mod uuid
         };
         /*
         */
-        /// A UUID that is guaranteed not to be the [nil UUID]( https://www.ietf.org/rfc/rfc9562.html#name-nil-uuid ).
         #[repr( transparent )] #[derive( Copy, Clone, PartialEq, Eq, Hash )]
         pub struct NonNilUuid( NonZeroU128 );
 
@@ -42391,7 +41646,6 @@ pub mod uuid
 
         impl NonNilUuid 
         {
-            /// Creates a non-nil UUID if the value is non-nil.
             pub const fn new( uuid: Uuid ) -> Option<Self> 
             {
                 match NonZeroU128::new( uuid.as_u128() )
@@ -42400,26 +41654,24 @@ pub mod uuid
                     None => None,
                 }
             }
-            /// Creates a non-nil without checking whether the value is non-nil.
+            
             pub const unsafe fn new_unchecked( uuid: Uuid ) -> Self 
             {
                 NonNilUuid( unsafe { NonZeroU128::new_unchecked( uuid.as_u128() ) } )
             }
-            /// Get the underlying [`Uuid`] value.
+            
             #[inline] pub const fn get( self ) -> Uuid { Uuid::from_u128( self.0.get() ) }
         }
 
         impl From<NonNilUuid> for Uuid 
         {
-            /// Converts a [`NonNilUuid`] back into a [`Uuid`].
             fn from( non_nil: NonNilUuid ) -> Self { Uuid::from_u128( non_nil.0.get() ) }
         }
 
         impl TryFrom<Uuid> for NonNilUuid 
         {
             type Error = Error;
-            /// Attempts to convert a [`Uuid`] into a [`NonNilUuid`].on_nil = NonNilUuid::try_from( uuid ).unwrap();
-            fn try_from( uuid: Uuid ) -> Result<Self, Self::Error> 
+            fn try_from( uuid:Uuid ) -> Result<Self, Self::Error> 
             {
                 NonZeroU128::new( uuid.as_u128() )
                 .map( self )
@@ -42475,16 +41727,15 @@ pub mod uuid
 
         impl Uuid 
         {
-            /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
             pub fn parse_str( input:&str ) -> Result<Uuid, Error>
             {
                 try_parse( input.as_bytes() )
                 .map( Uuid::from_bytes )
                 .map_err( InvalidUuid::into_err )
             }
-            /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
+            
             pub const fn try_parse( input:&str ) -> Result<Uuid, Error> { Self::try_parse_ascii( input.as_bytes() ) }
-            /// Parses a `Uuid` from a string of hexadecimal digits with optional hyphens.
+            
             pub const fn try_parse_ascii( input:&[u8] ) -> Result<Uuid, Error>
             {
                 match try_parse( input )
@@ -42626,8 +41877,7 @@ pub mod uuid
         {
             *,
         };
-        /*
-        */
+        
         trait Rng
         {
             fn u128() -> u128;
@@ -42669,10 +41919,7 @@ pub mod uuid
         };
         /*
         */
-        /// The number of 100 nanosecond ticks between the RFC 9562 epoch
-        /// ( `1582-10-15 00:00:00` ) and the Unix epoch ( `1970-01-01 00:00:00` ).
         pub const UUID_TICKS_BETWEEN_EPOCHS: u64 = 0x01B2_1DD2_1381_4000;
-        /// A timestamp that can be encoded into a UUID.
         #[derive( Debug, Clone, Copy, PartialEq, Eq, Hash )]
         pub struct Timestamp
         {
@@ -42684,7 +41931,6 @@ pub mod uuid
 
         impl Timestamp
         {
-            /// Get a timestamp representing the current system time and up to a 128-bit counter.
             pub fn now( context:impl ClockSequence<Output = impl Into<u128>> ) -> Self
             {
                 let ( seconds, subsec_nanos ) = now();
@@ -42699,9 +41945,8 @@ pub mod uuid
                     usable_counter_bits,
                 }
             }
-            /// Construct a `Timestamp` from the number of 100 nanosecond ticks since 00:00:00.00,
-            /// 15 October 1582 ( the date of Gregorian reform to the Christian calendar ) and a 14-bit
-            /// counter, as used in versions 1 and 6 UUIDs.
+            
+            
             pub const fn from_gregorian( ticks: u64, counter: u16 ) -> Self
             {
                 let ( seconds, subsec_nanos ) = Self::gregorian_to_unix( ticks );
@@ -42714,7 +41959,7 @@ pub mod uuid
                     usable_counter_bits: 14,
                 }
             }
-            /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
+            
             pub const fn from_unix_time( seconds:u64, subsec_nanos:u32, counter:u128, usable_counter_bits:u8 ) -> Self
             {
                 Timestamp
@@ -42725,7 +41970,7 @@ pub mod uuid
                     usable_counter_bits,
                 }
             }
-            /// Construct a `Timestamp` from a Unix timestamp and up to a 128-bit counter, as used in version 7 UUIDs.
+            
             pub fn from_unix
             ( 
                 context: impl ClockSequence<Output = impl Into<u128>>,
@@ -42745,8 +41990,7 @@ pub mod uuid
                     usable_counter_bits,
                 }
             }
-            /// Get the value of the timestamp as the number of 100 nanosecond ticks since 00:00:00.00,
-            /// 15 October 1582 and a 14-bit counter, as used in versions 1 and 6 UUIDs.
+            
             pub const fn to_gregorian( &self ) -> ( u64, u16 )
             {
                 ( 
@@ -42754,7 +41998,7 @@ pub mod uuid
                     ( self.counter as u16 ) & 0x3FFF,
                 )
             }
-            /// Get the value of the timestamp as a Unix timestamp, as used in version 7 UUIDs.
+            
             pub const fn to_unix( &self ) -> ( u64, u32 ) { ( self.seconds, self.subsec_nanos ) }
 
             const fn unix_to_gregorian_ticks( seconds: u64, nanos: u32 ) -> u64
@@ -42798,7 +42042,6 @@ pub mod uuid
         impl ::convert::TryFrom<std::time::SystemTime> for Timestamp
         {
             type Error = super::error::Error;
-            /// Perform the conversion.
             fn try_from( st: ::time::std::SystemTime ) -> Result<Self, Self::Error>
             {
                 let dur = st.duration_since( ::time::std::UNIX_EPOCH )
@@ -42946,14 +42189,11 @@ pub mod uuid
 
             ( dur.as_secs(), dur.subsec_nanos() )
         }
-        /// A counter that can be used by versions 1 and 6 UUIDs to support the uniqueness of timestamps.
+        
         pub trait ClockSequence
         {
-            /// The type of sequence returned by this counter.
             type Output;
-            /// Get the next value in the sequence to feed into a timestamp.
             fn generate_sequence( &self, seconds: u64, subsec_nanos: u32 ) -> Self::Output;
-            /// Get the next value in the sequence, potentially also adjusting the timestamp.
             fn generate_timestamp_sequence
             ( 
                 &self,
@@ -42967,9 +42207,7 @@ pub mod uuid
                     subsec_nanos,
                 )
             }
-            /*
-            The number of usable bits from the least significant bit in the result of 
-            `ClockSequence::generate_sequence` or `ClockSequence::generate_timestamp_sequence`. */
+            
             fn usable_bits( &self ) -> usize where
             Self::Output: Sized
             {
@@ -42996,11 +42234,10 @@ pub mod uuid
             Self::Output: Sized
             { ( **self ).usable_bits() }
         }
-        /// Default implementations for the [`ClockSequence`] trait.
+        
         pub mod context
         {
             use super::ClockSequence;
-            /// An empty counter that will always return the value `0`.
             #[derive( Debug, Clone, Copy, Default )]
             pub struct NoContext;
 
@@ -43016,73 +42253,52 @@ pub mod uuid
     } pub use self::timestamp::{ context::NoContext, ClockSequence, Timestamp };
     /*
     */
-    /// A 128-bit ( 16 byte ) buffer containing the UUID.
     pub type Bytes = [u8; 16];
-    /// The version of the UUID, denoting the generating algorithm.
     #[repr( u8 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, PartialEq )]
     pub enum Version
     {
-        /// The "nil" ( all zeros ) UUID.
         Nil = 0u8,
-        /// Version 1: Timestamp and node ID.
         Mac = 1,
-        /// Version 2: DCE Security.
         Dce = 2,
-        /// Version 3: MD5 hash.
         Md5 = 3,
-        /// Version 4: Random.
         Random = 4,
-        /// Version 5: SHA-1 hash.
         Sha1 = 5,
-        /// Version 6: Sortable Timestamp and node ID.
         SortMac = 6,
-        /// Version 7: Timestamp and random.
         SortRand = 7,
-        /// Version 8: Custom.
         Custom = 8,
-        /// The "max" ( all ones ) UUID.
         Max = 0xff,
     }
-    /// The reserved variants of UUIDs.
+    
     #[repr( u8 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, PartialEq )]
     pub enum Variant
     {
-        /// Reserved by the NCS for backward compatibility.
         NCS = 0u8,
-        /// As described in the RFC 9562 Specification ( default ).
         RFC4122,
-        /// Reserved by Microsoft for backward compatibility.
         Microsoft,
-        /// Reserved for future expansion.
         Future,
     }
-    /// A Universally Unique Identifier ( UUID ).
+    
     #[repr( transparent )] #[derive( Clone, Copy, Eq, Ord, PartialEq, PartialOrd )]
     pub struct Uuid( Bytes );
 
     impl Uuid
     {
-        /// UUID namespace for Domain Name System ( DNS ).
         pub const NAMESPACE_DNS: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
-        /// UUID namespace for ISO Object Identifiers ( OIDs ).
         pub const NAMESPACE_OID: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
-        /// UUID namespace for Uniform Resource Locators ( URLs ).
         pub const NAMESPACE_URL: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
-        /// UUID namespace for X.500 Distinguished Names ( DNs ).
         pub const NAMESPACE_X500: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
-        /// Returns the variant of the UUID structure.
         pub const fn get_variant( &self ) -> Variant
         {
             match self.as_bytes()[8] 
@@ -43094,12 +42310,12 @@ pub mod uuid
                 _ => Variant::Future,
             }
         }
-        /// Returns the version number of the UUID.
+        
         pub const fn get_version_num( &self ) -> usize
         {
             ( self.as_bytes()[6] >> 4 ) as usize
         }
-        /// Returns the version of the UUID.
+        
         pub const fn get_version( &self ) -> Option<Version>
         {
             match self.get_version_num()
@@ -43117,9 +42333,9 @@ pub mod uuid
                 _ => None,
             }
         }
-        /// Creates a UUID using the supplied bytes.
+        
         #[inline] pub const fn from_bytes(bytes: Bytes) -> Uuid { Uuid(bytes) }
-        /// Creates a UUID using the supplied bytes.
+        
         pub fn from_slice(b: &[u8]) -> Result<Uuid, error::Error>
         {
             if b.len() != 16 { return Err( error::Error( error::ErrorKind::ParseByteLength { len: b.len() })); }
@@ -43128,7 +42344,7 @@ pub mod uuid
             bytes.copy_from_slice(b);
             Ok(Uuid::from_bytes(bytes))
         }
-        /// Returns the four field values of the UUID.
+        
         pub fn as_fields( &self ) -> ( u32, u16, u16, &[u8; 8] )
         {
             let bytes = self.as_bytes();
@@ -43145,7 +42361,7 @@ pub mod uuid
             let d4:&[u8; 8] = convert::TryInto::try_into( &bytes[8..16] ).unwrap();
             ( d1, d2, d3, d4 )
         }
-        /// Returns the four field values of the UUID in little-endian order.
+        
         pub fn to_fields_le( &self ) -> ( u32, u16, u16, &[u8; 8] )
         {
             let d1 = ( self.as_bytes()[0] as u32 )
@@ -43160,33 +42376,33 @@ pub mod uuid
             let d4:&[u8; 8] = convert::TryInto::try_into( &self.as_bytes()[8..16] ).unwrap();
             ( d1, d2, d3, d4 )
         }
-        /// Returns a 128bit value containing the value.
+        
         pub const fn as_u128( &self ) -> u128 { u128::from_be_bytes( *self.as_bytes() ) }
-        /// Returns a 128bit little-endian value containing the value.
+        
         pub const fn to_u128_le( &self ) -> u128 { u128::from_le_bytes( *self.as_bytes() ) }
-        /// Returns two 64bit values containing the value.
+        
         pub const fn as_u64_pair( &self ) -> ( u64, u64 )
         {
             let value = self.as_u128();
             ( ( value >> 64 ) as u64, value as u64 )
         }
-        /// Returns a slice of 16 octets containing the value.
+        
         #[inline] pub const fn as_bytes( &self ) -> &Bytes { &self.0 }
-        /// Consumes self and returns the underlying byte value of the UUID.
+        
         #[inline] pub const fn into_bytes( self ) -> Bytes { self.0 }
-        /// Returns the bytes of the UUID in little-endian order.
+        
         pub const fn to_bytes_le( &self ) -> Bytes
         {[
             self.0[3], self.0[2], self.0[1], self.0[0], self.0[5], self.0[4], self.0[7], self.0[6], 
             self.0[8], self.0[9], self.0[10], self.0[11], self.0[12], self.0[13], self.0[14], self.0[15],
         ]}
-        /// Tests if the UUID is nil ( all zeros ).
+        
         pub const fn is_nil( &self ) -> bool { self.as_u128() == u128::MIN }
-        /// Tests if the UUID is max ( all ones ).
+        
         pub const fn is_max( &self ) -> bool { self.as_u128() == u128::MAX }
-        /// A buffer used for `encode_...` calls, that is guaranteed to be long enough for any of the format adapters.
+        
         pub const fn encode_buffer() -> [ u8; fmt::Urn::LENGTH ] { [0; fmt::Urn::LENGTH] }
-        /// If the UUID is the correct version, this will return the timestamp in a version-agnostic [`Timestamp`].
+        
         pub const fn get_timestamp( &self ) -> Option<Timestamp>
         {
             match self.get_version()
@@ -43214,7 +42430,7 @@ pub mod uuid
                 _ => None,
             }
         }
-        /// If the UUID is the correct version, this will return the node value as a 6-byte array.
+        
         pub const fn get_node_id( &self ) -> Option<[u8; 6]>
         {
             match self.get_version()
@@ -43233,7 +42449,7 @@ pub mod uuid
                 _ => None,
             }
         }
-        /// Creates a random UUID.
+        
         pub fn new_v4() -> Uuid
         {
             Uuid::from_u128( uuid::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000 )
@@ -43294,7 +42510,6 @@ pub mod values
         *,
     };
     /*
-    
     use crate::{OverResult, INDENT_STEP};
     */
     macro_rules! get_fn
@@ -43393,43 +42608,31 @@ pub mod values
             }
         };
     }
-    /// Enum of possible values and their inner types.
+    
     #[derive( Clone, Debug, PartialEq )]
     pub enum Value
     {
-        /// A null value.
         Null,
-        /// A boolean value.
         Bool( bool ),
-        /// A signed integer value.
         Int( BigInt ),
-        /// A signed integer value.
         Integer( i32 ),
-        /// A fractional value.
         Frac( BigRational ),
-        /// A character value.
         Char( char ),
-        /// A string value.
         Str( String ),
-        /// An ASCII string requiring expansion.
         Strand( String ),
-        /// An array value.
         Arr( Arr ),
-        /// A tuple value.
         Tup( Tup ),
-        /// An object value.
         Obj( Obj ),
     }
 
     impl Value
     {
-        /// Returns true if this `Value` is null.
         pub fn is_null( &self ) -> bool 
         {
             if let Value::Null = *self { true }
             else { false }
         }
-        /// Returns the `Type` of this `Value`.
+        
         pub fn get_type( &self ) -> Type
         {
             use self::Value::*;
@@ -43452,7 +42655,6 @@ pub mod values
 
         get_fn!( r#"Returns the `bool` contained in this `Value`."#, get_bool, bool, Bool );        
         get_fn! ( "Returns the `BigInt` contained in this `Value`.", get_int, BigInt, Int );
-        /// Returns the `BigRational` contained in this `Value`.
         pub fn get_frac( &self ) -> OverResult<BigRational>
         {
             match *self 
@@ -43466,7 +42668,6 @@ pub mod values
         get_fn!( "Returns the `char` contained in this `Value`.", get_char, char, Char );        
         get_fn!( r#"Returns the `String` contained in this `Value`."#, get_str, String, Str );        
         get_fn!( "Returns the `Obj` contained in this `Value`.", get_obj, objects::Obj, Obj );
-        /// Returns the `Arr` contained in this `Value`.
         pub fn get_arr( &self ) -> OverResult<arrays::Arr>
         {
             if let Value::Arr( ref inner ) = *self { Ok( inner.clone() ) }
@@ -43482,7 +42683,7 @@ pub mod values
                 )
             }
         }
-        /// Returns the `Tup` contained in this `Value`.
+        
         pub fn get_tup( &self ) -> OverResult<tuples::Tup>
         {
             if let Value::Tup( ref inner ) = *self { Ok( inner.clone() ) }
@@ -43624,8 +42825,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
             rc::file::run( &mut sh );
             sh.is_login = true;
         }
-
-        // Initialize command cache for highlighting
+        
         highlights::initialize();
         highlights::update( &sh );
         
@@ -43768,4 +42968,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 43771 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 42971 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
