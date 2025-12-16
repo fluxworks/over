@@ -49,6 +49,7 @@ pub mod parse;
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate libc;
+#[macro_use] extern crate nix;
 #[macro_use] extern crate rand;
 #[macro_use] extern crate regex as re;
 #[macro_use] extern crate smallvec;
@@ -3109,7 +3110,7 @@ pub mod api
 	{
 		let tokens = cmd.tokens.clone();
 		let mut cr = CommandResult::new();
-		let args = parsers::line::tokens_to_args(&tokens);
+		let args = tokens::to_args(&tokens);
 
 		if args.len() > 2 {
 			let info = "cicada: cd: too many argument";
@@ -3117,23 +3118,31 @@ pub mod api
 			return cr;
 		}
 
-		let str_current_dir = tools::get_current_dir();
+		let str_current_dir = get::current_dir();
 
-		let mut dir_to = if args.len() == 1 {
-			let home = tools::get_user_home();
+		let mut dir_to = if args.len() == 1
+        {
+			let home = get::user_home();
 			home.to_string()
-		} else {
+		}
+        
+        else
+        {
 			args[1..].join("")
 		};
 
-		if dir_to == "-" {
+		if dir_to == "-"
+        {
 			if sh.previous_dir.is_empty() {
 				let info = "no previous dir";
 				print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
 				return cr;
 			}
 			dir_to = sh.previous_dir.clone();
-		} else if !dir_to.starts_with('/') {
+		}
+
+        else if !dir_to.starts_with('/')
+        {
 			dir_to = format!("{}/{}", str_current_dir, dir_to);
 		}
 
@@ -3226,7 +3235,7 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let tokens = cmd.tokens.clone();
-		let args = parsers::line::tokens_to_args(&tokens);
+		let args = tokens::to_args(&tokens);
 		let len = args.len();
 		if len == 1 {
 			print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
@@ -3324,88 +3333,79 @@ pub mod api
 
 	pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
 	{
-		let tokens = cmd.tokens.clone();
-		let mut cr = CommandResult::new();
-
-		if sh.jobs.is_empty()
+        unsafe
         {
-			let info = "cicada: fg: no job found";
-			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
-			return cr;
-		}
+            let tokens = cmd.tokens.clone();
+            let mut cr = CommandResult::new();
 
-		let mut job_id = -1;
-		if tokens.len() == 1 {
-			if let Some((gid, _)) = sh.jobs.iter().next() {
-				job_id = *gid;
-			}
-		}
-
-		if tokens.len() >= 2 {
-			let mut job_str = tokens[1].1.clone();
-			if job_str.starts_with("%") {
-				job_str = job_str.trim_start_matches('%').to_string();
-			}
-
-			match job_str.parse::<i32>()
+            if sh.jobs.is_empty()
             {
-				Ok(n) => job_id = n,
-				Err(_) => {
-					let info = "cicada: fg: invalid job id";
-					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
-					return cr;
-				}
-			}
-		}
+                let info = "cicada: fg: no job found";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
 
-		if job_id == -1 {
-			let info = "cicada: not job id found";
-			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
-			return cr;
-		}
+            let mut job_id = -1;
+            
+            if tokens.len() == 1
+            {
+                if let Some((gid, _)) = sh.jobs.iter().next() { job_id = *gid; }
+            }
 
-		let gid: i32;
-		let pid_list: Vec<i32>;
+            if tokens.len() >= 2
+            {
+                let mut job_str = tokens[1].1.clone();
+                if job_str.starts_with("%") { job_str = job_str.trim_start_matches('%').to_string(); }
 
-		{
-			let mut result = sh.get_job_by_id(job_id);
-			if result.is_none() {
-				result = sh.get_job_by_gid(job_id);
-			}
+                match job_str.parse::<i32>()
+                {
+                    Ok(n) => job_id = n,
+                    Err(_) =>
+                    {
+                        let info = "cicada: fg: invalid job id";
+                        print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                        return cr;
+                    }
+                }
+            }
 
-			match result {
-				Some(job) => {
+            if job_id == -1
+            {
+                let info = "cicada: not job id found";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            let gid: i32;
+            let pid_list: Vec<i32>;
+
+            let mut result = sh.get_job_by_id( job_id );
+			if result.is_none() { result = sh.get_job_by_gid( job_id ); }
+
+			match result
+            {
+				Some(job) =>
+                {
 					print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
 					cr.status = 0;
+                    if !shell::give_terminal_to(job.gid) { return CommandResult::error(); }
 
-					unsafe {
-						if !shell::give_terminal_to(job.gid) {
-							return CommandResult::error();
-						}
-
-						libc::killpg(job.gid, libc::SIGCONT);
-						pid_list = job.pids.clone();
-						gid = job.gid;
-					}
+                    libc::killpg(job.gid, libc::SIGCONT);
+                    pid_list = job.pids.clone();
+                    gid = job.gid;
 				}
-				None => {
+
+				None =>
+                {
 					let info = "cicada: fg: no such job";
 					print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
 					return cr;
 				}
 			}
-		}
-
-		unsafe {
+            
 			jobc::mark_job_as_running(sh, gid, false);
-
 			let cr = jobc::wait_fg_job(sh, gid, &pid_list);
-
 			let gid_shell = libc::getpgid(0);
-			if !shell::give_terminal_to(gid_shell) {
-				log!("failed to give term to back to shell : {}", gid_shell);
-			}
-
 			cr
 		}
 	}
@@ -3432,7 +3432,7 @@ pub mod api
 		};
 
 		let tokens = cmd.tokens.clone();
-		let args = parsers::line::tokens_to_args(&tokens);
+		let args = tokens::to_args(&tokens);
 
 		let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
 		let opt = OptMainHistory::from_iter_safe(args);
@@ -3596,7 +3596,7 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let tokens = &cmd.tokens;
-		let args = parsers::line::tokens_to_args(tokens);
+		let args = tokens::to_args(tokens);
 		let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
 
 		let opt = OptMain::from_iter_safe(args);
@@ -3629,7 +3629,7 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let tokens = &cmd.tokens;
-		let args = parsers::line::tokens_to_args(tokens);
+		let args = tokens::to_args(tokens);
 
 		if args.len() < 2 {
 			let info = "cicada: source: no file specified";
@@ -3646,7 +3646,7 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let tokens = &cmd.tokens;
-		let args = parsers::line::tokens_to_args(tokens);
+		let args = tokens::to_args(tokens);
 
 		if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
 			App::command().print_help().unwrap();
@@ -3752,7 +3752,7 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let tokens = cmd.tokens.clone();
-		let args = parsers::line::tokens_to_args(&tokens);
+		let args = tokens::to_args(&tokens);
 		let len = args.len();
 		let subcmd = if len > 1 { &args[1] } else { "" };
 
@@ -4182,7 +4182,6 @@ pub mod api
         {
 			Ok(_) => true,
 			Err(e) => {
-				log!("history: error when delete: {:?}", e);
 				false
 			}
 		} */
@@ -5295,15 +5294,8 @@ pub mod char
     }
 
     fn contains_any( s:&str, strs:&[&str] ) -> bool { strs.iter().any( |a| s.contains( a ) ) }
-    pub fn is_printable( c: char ) -> bool { c == '\t' || c == '\n' || !( c == '\0' || is::control( c ) ) }
-
     const CTRL_BIT: u8 = 0x40;
     const CTRL_MASK: u8 = 0x1f;
-    pub fn is_ctrl( c: char ) -> bool
-    {
-        const CTRL_MAX: u32 = 0x1f;
-        c != '\0' && c as u32 <= CTRL_MAX
-    }
     pub fn ctrl( c: char ) -> char { ( ( c as u8 ) & CTRL_MASK ) as char }
     pub fn unctrl( c: char ) -> char { ( ( c as u8 ) | CTRL_BIT ) as char }
     // pub fn repeat_char( ch:char, n: usize ) -> String
@@ -6260,7 +6252,7 @@ pub mod expand
             if let Ok( x ) = Regex::new(item) { re = x; }
             else { return String::new(); }
 
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let ss = s.clone();
             let to = format!( "$head{}$tail", home );
             let result = re.replace_all( ss.as_str(), to.as_str() );
@@ -6319,7 +6311,7 @@ pub mod expand
 
                                 Err( e ) =>
                                 {
-                                    // log!( "glob error: {:?}", e );
+
                                 }
                             }
                         }
@@ -6421,7 +6413,7 @@ pub mod get
         match env::var( "USER" )
         {
             Ok( x ) => { return x; }
-            Err( e ) => { /* log!( "cicada: env USER error: {}", e ); */ }
+            Err( e ) => {}
         }
 
         let cmd_result = now::run( "whoami" );
@@ -7353,6 +7345,41 @@ pub mod is
     }
 
     pub fn tty( fd:system::api::c_int ) -> bool { system::api::isatty( fd ) != 0 }
+    // pub fn is_printable( c: char ) -> bool
+    pub fn is_printable( c: char ) -> bool { c == '\t' || c == '\n' || !( c == '\0' || ctrl( c ) ) }
+    // pub fn is_ctrl( c: char ) -> bool
+    pub fn ctrl( c: char ) -> bool { c != '\0' && c as u32 <= 0x1f }
+    // fn is_args_in_token(token: &str) -> bool
+    pub fn is_args_in_token(token: &str) -> bool { regex::contains(token, r"\$\{?[0-9@]+\}?") }
+    // pub fn is_valid_field( field:&str ) -> bool
+    pub fn valid_field( field:&str ) -> bool
+    {
+        let mut first = true;
+
+        for ch in field.chars() {
+            if first {
+                if !valid_field_char( ch, true ) {
+                    return false;
+                }
+                first = false;
+            } else if !valid_field_char( ch, false ) {
+                return false;
+            }
+        }
+        true
+    }
+    // pub fn is_valid_field_char( ch:char, first: bool ) -> bool
+    pub fn valid_field_char( ch:char, first: bool ) -> bool 
+    {
+        match ch 
+        {
+            ch if ch.is_alphabetic() => true,
+            ch if digit( ch ) => !first,
+            '_' => true,
+            '^' => first,
+            _ => false,
+        }
+    }
 }
 
 pub mod isize
@@ -7486,6 +7513,7 @@ pub mod num
                         #[inline] fn min_value() -> $t {
                             $min
                         }
+                        
                         #[inline] fn max_value() -> $t {
                             $max
                         }
@@ -7524,6 +7552,7 @@ pub mod num
                             bounded_impl_nonzero_const!( $t, $min, MIN );
                             MIN
                         }
+                        
                         #[inline] fn max_value() -> $t {
                            
                             bounded_impl_nonzero_const!( $t, $max, MAX );
@@ -7580,6 +7609,7 @@ pub mod num
                         #[inline] fn min_value() -> Self {
                             ( $( $name::min_value(), )* )
                         }
+                        
                         #[inline] fn max_value() -> Self {
                             ( $( $name::max_value(), )* )
                         }
@@ -7681,9 +7711,11 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
+                        
                         #[inline] fn to_f32( &self ) -> Option<f32> {
                             Some( *self as f32 )
                         }
+                        
                         #[inline] fn to_f64( &self ) -> Option<f64> {
                             Some( *self as f64 )
                         }
@@ -7749,9 +7781,11 @@ pub mod num
                             fn to_u64 -> u64;
                             fn to_u128 -> u128;
                         }
+                        
                         #[inline] fn to_f32( &self ) -> Option<f32> {
                             Some( *self as f32 )
                         }
+                        
                         #[inline] fn to_f64( &self ) -> Option<f64> {
                             Some( *self as f64 )
                         }
@@ -7975,42 +8009,55 @@ pub mod num
                         #[inline] fn from_isize( n: isize ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_i8( n: i8 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_i16( n: i16 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_i32( n: i32 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_i64( n: i64 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_i128( n: i128 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_usize( n: usize ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_u8( n: u8 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_u16( n: u16 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_u32( n: u32 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_u64( n: u64 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_u128( n: u128 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_f32( n: f32 ) -> Option<$T> {
                             n.$to_ty()
                         }
+                        
                         #[inline] fn from_f64( n: f64 ) -> Option<$T> {
                             n.$to_ty()
                         }
@@ -8039,42 +8086,55 @@ pub mod num
                         #[inline] fn from_isize( n: isize ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_i8( n: i8 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_i16( n: i16 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_i32( n: i32 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_i64( n: i64 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_i128( n: i128 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_usize( n: usize ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_u8( n: u8 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_u16( n: u16 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_u32( n: u32 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_u64( n: u64 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_u128( n: u128 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_f32( n: f32 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
+                        
                         #[inline] fn from_f64( n: f64 ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
@@ -8650,11 +8710,13 @@ pub mod num
                             epsilon() -> $T::EPSILON;
                             max_value() -> $T::MAX;
                         }
+                        
                         #[inline]
                         #[allow( deprecated )]
                         fn abs_sub( self, other: Self ) -> Self {
                             <$T>::abs_sub( self, other )
                         }
+                        
                         #[inline] fn integer_decode( self ) -> ( u64, i16, i8 ) {
                             $decode( self )
                         }
@@ -8768,10 +8830,12 @@ pub mod num
                         #[inline] fn TAU() -> Self where Self: Sized + Add<Self, Output = Self> {
                             Self::PI() + Self::PI()
                         }
+                        
                         #[doc = "Return `log10( 2.0 )`."]
                         #[inline] fn LOG10_2() -> Self where Self: Sized + Div<Self, Output = Self> {
                             Self::LN_2() / Self::LN_10()
                         }
+                        
                         #[doc = "Return `log2( 10.0 )`."]
                         #[inline] fn LOG2_10() -> Self where Self: Sized + Div<Self, Output = Self> {
                             Self::LN_10() / Self::LN_2()
@@ -8841,6 +8905,7 @@ pub mod num
                            
                             Self::total_cmp( &self, other )
                         }
+                        
                         #[inline]
                         #[cfg( not( has_total_cmp ) )]
                         fn total_cmp( &self, other:&Self ) -> Ordering {
@@ -8890,6 +8955,7 @@ pub mod num
                         #[inline] fn zero() -> $t {
                             $v
                         }
+                        
                         #[inline] fn is_zero( &self ) -> bool {
                             *self == $v
                         }
@@ -8981,6 +9047,7 @@ pub mod num
                         #[inline] fn one() -> $t {
                             $v
                         }
+                        
                         #[inline] fn is_one( &self ) -> bool {
                             *self == $v
                         }
@@ -9182,57 +9249,75 @@ pub mod num
                         #[inline] fn count_ones( self ) -> u32 {
                             <$T>::count_ones( self )
                         }
+                        
                         #[inline] fn count_zeros( self ) -> u32 {
                             <$T>::count_zeros( self )
                         }
+                        
                         #[inline] fn leading_ones( self ) -> u32 {
                             <$T>::leading_ones( self )
                         }
+                        
                         #[inline] fn leading_zeros( self ) -> u32 {
                             <$T>::leading_zeros( self )
                         }
+                        
                         #[inline] fn trailing_ones( self ) -> u32 {
                             <$T>::trailing_ones( self )
                         }
+                        
                         #[inline] fn trailing_zeros( self ) -> u32 {
                             <$T>::trailing_zeros( self )
                         }
+                        
                         #[inline] fn rotate_left( self, n: u32 ) -> Self {
                             <$T>::rotate_left( self, n )
                         }
+                        
                         #[inline] fn rotate_right( self, n: u32 ) -> Self {
                             <$T>::rotate_right( self, n )
                         }
+                        
                         #[inline] fn signed_shl( self, n: u32 ) -> Self {
                             ( ( self as $S ) << n ) as $T
                         }
+                        
                         #[inline] fn signed_shr( self, n: u32 ) -> Self {
                             ( ( self as $S ) >> n ) as $T
                         }
+                        
                         #[inline] fn unsigned_shl( self, n: u32 ) -> Self {
                             ( ( self as $U ) << n ) as $T
                         }
+                        
                         #[inline] fn unsigned_shr( self, n: u32 ) -> Self {
                             ( ( self as $U ) >> n ) as $T
                         }
+                        
                         #[inline] fn swap_bytes( self ) -> Self {
                             <$T>::swap_bytes( self )
                         }
+                        
                         #[inline] fn reverse_bits( self ) -> Self {
                             <$T>::reverse_bits( self )
                         }
+                        
                         #[inline] fn from_be( x: Self ) -> Self {
                             <$T>::from_be( x )
                         }
+                        
                         #[inline] fn from_le( x: Self ) -> Self {
                             <$T>::from_le( x )
                         }
+                        
                         #[inline] fn to_be( self ) -> Self {
                             <$T>::to_be( self )
                         }
+                        
                         #[inline] fn to_le( self ) -> Self {
                             <$T>::to_le( self )
                         }
+                        
                         #[inline] fn pow( self, exp: u32 ) -> Self {
                             <$T>::pow( self, exp )
                         }
@@ -10551,12 +10636,14 @@ pub mod num
             else
             { *self }
                         }
+                        
                         #[inline] fn abs_sub( &self, other:&$t ) -> $t {
                             if *self <= *other { 0 }
             
             else
             { *self - *other }
                         }
+                        
                         #[inline] fn signum( &self ) -> $t {
                             match *self {
                                 n if n > 0 => 1,
@@ -10564,7 +10651,9 @@ pub mod num
                                 _ => -1,
                             }
                         }
+                        
                         #[inline] fn is_positive( &self ) -> bool { *self > 0 }
+                        
                         #[inline] fn is_negative( &self ) -> bool { *self < 0 }
                     }
                 )* )
@@ -10590,50 +10679,45 @@ pub mod num
                     self.0.is_negative()
                 }
             }
-            macro_rules! signed_float_impl {
-                ( $t:ty ) => {
-                    impl Signed for $t {
-                        #[inline] fn abs( &self ) -> $t {
-                            Float::abs( *self )
-                        }
-                        
             
-                        #[inline] fn abs_sub( &self, other:&$t ) -> $t {
-                            if *self <= *other {
-                                0.
-                            }
-            
-            else
+            macro_rules! signed_float_impl
             {
-                                *self - *other
-                            }
-                        }
-                        ///
+                ( $t:ty ) =>
+                {
+                    impl Signed for $t
+                    {
+                        #[inline] fn abs( &self ) -> $t { Float::abs( *self ) }
                         
-            
-                        #[inline] fn signum( &self ) -> $t {
-                            Float::signum( *self )
+                        #[inline] fn abs_sub( &self, other:&$t ) -> $t
+                        {
+                            if *self <= *other { 0.0 }                            
+                            else { *self - *other }
                         }
-                        #[inline] fn is_positive( &self ) -> bool {
-                            Float::is_sign_positive( *self )
-                        }
-                        #[inline] fn is_negative( &self ) -> bool {
-                            Float::is_sign_negative( *self )
-                        }
+                        
+                        #[inline] fn signum( &self ) -> $t { Float::signum( *self ) }
+                        
+                        #[inline] fn is_positive( &self ) -> bool { Float::is_sign_positive( *self ) }
+                        
+                        #[inline] fn is_negative( &self ) -> bool { Float::is_sign_negative( *self ) }
                     }
                 };
             }
+
             signed_float_impl!( f32 );
             signed_float_impl!( f64 );
-            #[inline( always )] pub fn abs<T: Signed>( value: T ) -> T {
+
+            #[inline( always )] pub fn abs<T: Signed>( value: T ) -> T
+            {
                 value.abs()
             }
             
-            #[inline( always )] pub fn abs_sub<T: Signed>( x: T, y: T ) -> T {
+            #[inline( always )] pub fn abs_sub<T: Signed>( x: T, y: T ) -> T
+            {
                 x.abs_sub( &y )
             }
             
-            #[inline( always )] pub fn signum<T: Signed>( value: T ) -> T {
+            #[inline( always )] pub fn signum<T: Signed>( value: T ) -> T
+            {
                 value.signum()
             }
             
@@ -10644,10 +10728,12 @@ pub mod num
                     impl $name for $t {}
                 )* )
             }
+
             empty_trait_impl!( Unsigned for usize u8 u16 u32 u64 u128 );
 
             impl<T: Unsigned> Unsigned for Wrapping<T> where Wrapping<T>: Num {}
         } pub use self::sign::{abs, abs_sub, signum, Signed, Unsigned};
+
         pub trait Num: PartialEq + Zero + One + NumOps
         {
             type FromStrRadixErr;
@@ -15071,6 +15157,7 @@ pub mod num
                             let data = slice::from_raw_parts_mut( ptr, len );
                             gen_bits( self, data, rem );
                         }
+                        
                         #[cfg( target_endian = "big" )]
                         for digit in &mut data {
                            
@@ -15443,6 +15530,7 @@ pub mod num
                                 }
                             }
                         }
+                        
                         #[inline] fn add_assign( &mut self, other: u64 ) {
                             if other != 0 {
                                 if self.data.is_empty() {
@@ -15496,6 +15584,7 @@ pub mod num
                                 }
                             }
                         }
+                        
                         #[inline] fn add_assign( &mut self, other: u128 ) {
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             if hi == 0 {
@@ -15940,6 +16029,7 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
+                        
                         #[inline] fn div( self, other: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
@@ -15983,6 +16073,7 @@ pub mod num
                                 _ => BigUint::ZERO,
                             }
                         }
+                        
                         #[inline] fn div( self, other: BigUint ) -> BigUint {
                             match other.data.len() {
                                 0 => panic!( "attempt to divide by zero" ),
@@ -16750,6 +16841,7 @@ pub mod num
                                 *self = mul3( &self.data, &[lo, hi] );
                             }
                         }
+                        
                         #[inline] fn mul_assign( &mut self, other: u64 ) {
                             scalar_mul( self, other );
                         }
@@ -16780,6 +16872,7 @@ pub mod num
                                 };
                             }
                         }
+                        
                         #[inline] fn mul_assign( &mut self, other: u128 ) {
                             if let Some( other ) = BigDigit::from_u128( other ) {
                                 scalar_mul( self, other );
@@ -16973,6 +17066,7 @@ pub mod num
                             }
                             other.normalized()
                         }
+                        
                         #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push( self as BigDigit );
@@ -17003,6 +17097,7 @@ pub mod num
                             sub2( &mut self.data[..], &[lo, hi] );
                             self.normalize();
                         }
+                        
                         #[inline] fn sub_assign( &mut self, other: u64 ) {
                             sub2( &mut self.data[..], &[other as BigDigit] );
                             self.normalize();
@@ -17022,6 +17117,7 @@ pub mod num
                             sub2rev( &[lo, hi], &mut other.data[..] );
                             other.normalized()
                         }
+                        
                         #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push( self );
@@ -17052,6 +17148,7 @@ pub mod num
                             sub2( &mut self.data[..], &[d, c, b, a] );
                             self.normalize();
                         }
+                        
                         #[inline] fn sub_assign( &mut self, other: u128 ) {
                             let ( hi, lo ) = ::num::big::digit::from_doublebigdigit( other );
                             sub2( &mut self.data[..], &[lo, hi] );
@@ -17072,6 +17169,7 @@ pub mod num
                             sub2rev( &[d, c, b, a], &mut other.data[..] );
                             other.normalized()
                         }
+                        
                         #[inline] fn sub( self, mut other: BigUint ) -> BigUint {
                             while other.data.len() < 2 {
                                 other.data.push( 0 );
@@ -21544,7 +21642,6 @@ pub mod now
         {
             Ok(_ ) =>
             {
-                /*log!( "run non tty command: {}", &buffer ); */
                 run_command_line( sh, &buffer, false, false );
             }
             
@@ -21843,10 +21940,6 @@ pub mod now
         if let Some(cr ) = try_run_func( sh, cl, capture, log_cmd ) {
             return (term_given, cr );
         }
-        /*
-        if log_cmd {
-            log!( "run: {}", cl.line );
-        } */
 
         let length = cl.commands.len();
         if length == 0 {
@@ -21992,7 +22085,7 @@ pub mod now
             }
             /*
             println_stderr!( "cicada: error when run singler builtin" );
-            log!( "error when run singler builtin: {:?}", cl); */
+            */
             return 1;
         }
 
@@ -22389,11 +22482,7 @@ pub mod now
             {
                 args.push(token.1.to_string() );
             }
-            /*
-            if log_cmd {
-                log!( "run func: {:?}", &args );
-            }*/
-
+            
             let cr_list = scripts::run_lines( sh, &func_body, &args, capture );
             let mut stdout = String::new();
             let mut stderr = String::new();
@@ -22721,35 +22810,6 @@ pub mod objects
             }
         }
         
-        pub fn is_valid_field( field:&str ) -> bool 
-        {
-            let mut first = true;
-
-            for ch in field.chars() {
-                if first {
-                    if !Self::is_valid_field_char( ch, true ) {
-                        return false;
-                    }
-                    first = false;
-                } else if !Self::is_valid_field_char( ch, false ) {
-                    return false;
-                }
-            }
-            true
-        }
-        
-        pub fn is_valid_field_char( ch:char, first: bool ) -> bool 
-        {
-            match ch 
-            {
-                ch if ch.is_alphabetic() => true,
-                ch if is::digit( ch ) => !first,
-                '_' => true,
-                '^' => first,
-                _ => false,
-            }
-        }
-        
         pub fn keys( &self ) -> Keys<String, Value> 
         {
             self.map_ref().keys()
@@ -22884,6 +22944,444 @@ pub mod parses
     };
     /*
     */
+    pub mod lines
+    {
+        /*!
+        */
+        use ::
+        {
+            regex::{ Regex },
+            types::{ * },
+            *,
+        };
+        /*
+        */
+        pub fn line_to_cmds(line: &str) -> Vec<String>
+        {
+            let mut result = Vec::new();
+            let mut sep = String::new();
+            let mut token = String::new();
+            let mut has_backslash = false;
+            let len = line.chars().count();
+            for (i, c) in line.chars().enumerate() {
+                if has_backslash {
+                    token.push('\\');
+                    token.push(c);
+                    has_backslash = false;
+                    continue;
+                }
+
+                if c == '\\' && sep != "'" {
+                    has_backslash = true;
+                    continue;
+                }
+
+                if c == '#' {
+                    if sep.is_empty() {
+                        break;
+                    } else {
+                        token.push(c);
+                        continue;
+                    }
+                }
+                if c == '\'' || c == '"' || c == '`' {
+                    if sep.is_empty() {
+                        sep.push(c);
+                        token.push(c);
+                        continue;
+                    } else if sep == c.to_string() {
+                        token.push(c);
+                        sep = String::new();
+                        continue;
+                    } else {
+                        token.push(c);
+                        continue;
+                    }
+                }
+                if c == '&' || c == '|' {
+                    // needs watch ahead here
+                    if sep.is_empty() {
+                        if i + 1 == len {
+                            // for bg commands, e.g. `ls &`
+                            token.push(c);
+                            continue;
+                        } else {
+                            let c_next = match line.chars().nth(i + 1) {
+                                Some(x) => x,
+                                None => {
+                                    println!("chars nth error - should never happen");
+                                    continue;
+                                }
+                            };
+
+                            if c_next != c {
+                                token.push(c);
+                                continue;
+                            }
+                        }
+                    }
+
+                    if sep.is_empty() {
+                        sep.push(c);
+                        continue;
+                    } else if c.to_string() == sep {
+                        let _token = token.trim().to_string();
+                        if !_token.is_empty() {
+                            result.push(_token);
+                        }
+                        token = String::new();
+                        result.push(format!("{}{}", sep, sep));
+                        sep = String::new();
+                        continue;
+                    } else {
+                        token.push(c);
+                        continue;
+                    }
+                }
+                if c == ';' {
+                    if sep.is_empty() {
+                        let _token = token.trim().to_string();
+                        if !_token.is_empty() {
+                            result.push(_token);
+                        }
+                        result.push(String::from(";"));
+                        token = String::new();
+                        continue;
+                    } else {
+                        token.push(c);
+                        continue;
+                    }
+                }
+                token.push(c);
+            }
+            if !token.is_empty() {
+                result.push(token.trim().to_string());
+            }
+            result
+        }
+        
+        pub fn parse_line(line: &str) -> LineInfo
+        {
+            let mut result = Vec::new();
+            
+            if is::arithmetic(line)
+            {
+                for x in line.split(' ')
+                {
+                    result.push((String::from(""), x.to_string()));
+                }
+
+                return LineInfo::new(result);
+            }
+
+            let mut sep = String::new();
+            let mut sep_second = String::new();
+            let mut token = String::new();
+            let mut has_backslash = false;
+            let mut met_parenthesis = false;
+            let mut new_round = true;
+            let mut skip_next = false;
+            let mut has_dollar = false;
+            let mut parens_left_ignored = false;            
+            let mut sep_made = String::new();            
+            let mut semi_ok = false;
+            let count_chars = line.chars().count();
+            
+            for (i, c) in line.chars().enumerate()
+            {
+                if skip_next
+                {
+                    skip_next = false;
+                    continue;
+                }
+
+                if has_backslash && sep.is_empty() && (c == '>' || c == '<')
+                {
+                    sep_made = String::from("'");
+                    token.push(c);
+                    has_backslash = false;
+                    continue;
+                }
+
+                if has_backslash && sep == "\"" && c != '\"'
+                {
+                    token.push('\\');
+                    token.push(c);
+                    has_backslash = false;
+                    continue;
+                }
+
+                if has_backslash
+                {
+                    if new_round && sep.is_empty() && (c == '|' || c == '$') && token.is_empty()
+                    {
+                        sep = String::from("\\");
+                        token = format!("{}", c);
+                    }
+                    else { token.push(c); }
+
+                    new_round = false;
+                    has_backslash = false;
+                    continue;
+                }
+
+                if c == '$' { has_dollar = true; }
+                
+                if c == '(' && sep.is_empty()
+                {
+                    if !has_dollar && token.is_empty()
+                    {
+                        parens_left_ignored = true;
+                        continue;
+                    }
+
+                    met_parenthesis = true;
+                }
+
+                if c == ')'
+                {
+                    if parens_left_ignored && !has_dollar
+                    {
+                        if i == count_chars - 1 || (i + 1 < count_chars && line.chars().nth(i + 1).unwrap() == ' ') { continue; }
+                    }
+
+                    if sep.is_empty() { met_parenthesis = false; }
+                }
+
+                if c == '\\' {
+                    if sep == "'" || !sep_second.is_empty() {
+                        token.push(c)
+                    } else {
+                        has_backslash = true;
+                    }
+                    continue;
+                }
+
+                if new_round
+                {
+                    if c == ' ' { continue; } else if c == '"' || c == '\'' || c == '`'
+                    {
+                        sep = c.to_string();
+                        new_round = false;
+                        continue;
+                    }
+
+                    sep = String::new();
+
+                    if c == '#' { break; }
+
+                    if c == '|' {
+                        if i + 1 < count_chars && line.chars().nth(i + 1).unwrap() == '|' {
+                            result.push((String::from(""), "||".to_string()));
+                            skip_next = true;
+                        } else {
+                            result.push((String::from(""), "|".to_string()));
+                        }
+                        new_round = true;
+                        continue;
+                    }
+
+                    token.push(c);
+                    new_round = false;
+                    continue;
+                }
+
+                if c == '|' && !has_backslash {
+                    if semi_ok {
+                        if sep.is_empty() && !sep_made.is_empty() {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        } else {
+                            result.push((sep.to_string(), token));
+                        }
+                        result.push((String::from(""), "|".to_string()));
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        semi_ok = false;
+                        continue;
+                    } else if !met_parenthesis && sep_second.is_empty() && sep.is_empty() {
+                        if sep.is_empty() && !sep_made.is_empty() {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        } else {
+                            result.push((String::from(""), token));
+                        }
+                        result.push((String::from(""), "|".to_string()));
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        continue;
+                    }
+                }
+
+                if c == ' ' {
+                    if semi_ok {
+                        if sep.is_empty() && !sep_made.is_empty() {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        } else {
+                            result.push((sep.to_string(), token));
+                        }
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        semi_ok = false;
+                        continue;
+                    }
+
+                    if has_backslash {
+                        has_backslash = false;
+                        token.push(c);
+                        continue;
+                    }
+
+                    if met_parenthesis {
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep == "\\" {
+                        result.push((String::from("\\"), token));
+                        token = String::new();
+                        new_round = true;
+                        continue;
+                    }
+
+                    if sep.is_empty() {
+                        if sep_second.is_empty() {
+                            if sep.is_empty() && !sep_made.is_empty() {
+                                result.push((sep_made.clone(), token));
+                                sep_made = String::new();
+                            } else {
+                                result.push((String::from(""), token));
+                            }
+                            token = String::new();
+                            new_round = true;
+                            continue;
+                        } else {
+                            token.push(c);
+                            continue;
+                        }
+                    } else {
+                        token.push(c);
+                        continue;
+                    }
+                }
+
+                if c == '\'' || c == '"' || c == '`' {
+                    if has_backslash {
+                        has_backslash = false;
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep != c.to_string() && semi_ok {
+                        if sep.is_empty() && !sep_made.is_empty() {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        } else {
+                            result.push((sep.to_string(), token));
+                        }
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        semi_ok = false;
+                        // do not use continue here!
+                    }
+
+                    if sep != c.to_string() && met_parenthesis {
+                        token.push(c);
+                        continue;
+                    }
+                    if sep.is_empty() && !sep_second.is_empty() && sep_second != c.to_string() {
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep.is_empty() {
+                        let is_an_env = regex::contains(&token, r"^[a-zA-Z0-9_]+=.*$");
+                        if !is_an_env && (c == '\'' || c == '"') {
+                            sep = c.to_string();
+                            continue;
+                        }
+
+                        token.push(c);
+                        if sep_second.is_empty() {
+                            sep_second = c.to_string();
+                        } else if sep_second == c.to_string() {
+                            sep_second = String::new();
+                        }
+                        continue;
+                    } else if sep == c.to_string() {
+                        semi_ok = true;
+                        continue;
+                    } else {
+                        token.push(c);
+                    }
+                } else {
+                    if has_backslash {
+                        has_backslash = false;
+                        if sep == "\"" || sep == "'" {
+                            token.push('\\');
+                        }
+                    }
+                    token.push(c);
+                }
+            }
+
+            if !token.is_empty() || semi_ok 
+            {
+                if sep.is_empty() && !sep_made.is_empty() {
+                    result.push((sep_made.clone(), token));
+                } else {
+                    result.push((sep.clone(), token));
+                }
+            }
+
+            let mut is_line_complete = true;
+            if !result.is_empty() {
+                let token_last = result[result.len() - 1].clone();
+                if token_last.0.is_empty() && token_last.1 == "|" {
+                    is_line_complete = false;
+                }
+            }
+
+            if !sep.is_empty() {
+                is_line_complete = semi_ok;
+            }
+            if has_backslash {
+                is_line_complete = false;
+            }
+
+            LineInfo {
+                tokens: result,
+                is_complete: is_line_complete,
+            }
+        }
+
+        pub fn unquote(text: &str) -> String 
+        {
+            let mut new_str = String::from(text);
+
+            for &c in ['"', '\''].iter()
+            {
+                if text.starts_with(c) && text.ends_with(c) 
+                {
+                    new_str.remove(0);
+                    new_str.pop();
+                    break;
+                }
+            }
+
+            new_str
+        }
+    }
+
     type ObjMap = HashMap<String, Value>;
     type GlobalMap = HashMap<String, Value>;
     type IncludedMap = ( HashMap<String, Value>, HashSet<String> );
@@ -22895,25 +23393,30 @@ pub mod parses
         static ref ARR_SENTINEL: Obj = Obj::from_map_unchecked( HashMap::new() );
         static ref TUP_SENTINEL: Obj = Obj::from_map_unchecked( HashMap::new() );
     }
+
     pub const MAX_DEPTH: usize = 64;
     pub fn load_from_file( path:&str ) -> ParseResult<Obj>
     {
         object_file( path )
     }
+
     pub fn load_from_str( contents:&str ) -> ParseResult<Obj>
     {
         object_from_str( contents )
     }
+
     pub fn object_file( path:&str ) -> ParseResult<Obj>
     {
         let stream = CharStream::from_file( path )?;
         parse_obj_stream( stream, &mut ( HashMap::new(), HashSet::new() ) )
     }
    
-    fn parse_obj_file_includes( path:&str, included:&mut IncludedMap ) -> ParseResult<Obj> {
+    fn parse_obj_file_includes( path:&str, included:&mut IncludedMap ) -> ParseResult<Obj>
+    {
         let stream = CharStream::from_file( path )?;
         parse_obj_stream( stream, included )
     }
+
     pub fn object_from_str( contents:&str ) -> ParseResult<Obj>
     {
         let contents = String::from( contents );
@@ -22921,7 +23424,8 @@ pub mod parses
         parse_obj_stream( stream, &mut ( HashMap::new(), HashSet::new() ) )
     }
     
-    #[inline] fn parse_obj_stream( mut stream: CharStream, mut included:&mut IncludedMap ) -> ParseResult<Obj> {
+    #[inline] fn parse_obj_stream( mut stream: CharStream, mut included:&mut IncludedMap ) -> ParseResult<Obj>
+    {
         let mut obj: ObjMap = HashMap::new();
        
         if !find_char( stream.clone() ) {
@@ -23082,7 +23586,8 @@ pub mod parses
         Ok( true )
     }
    
-    fn parse_arr_file( path:&str, mut included:&mut IncludedMap ) -> ParseResult<Arr> {
+    fn parse_arr_file( path:&str, mut included:&mut IncludedMap ) -> ParseResult<Arr>
+    {
         let mut stream = CharStream::from_file( path )?;
 
         let obj: ObjMap = HashMap::new();
@@ -23227,7 +23732,8 @@ pub mod parses
         Ok( arr.into() )
     }
    
-    fn parse_tup_file( path:&str, mut included:&mut IncludedMap ) -> ParseResult<Tup> {
+    fn parse_tup_file( path:&str, mut included:&mut IncludedMap ) -> ParseResult<Tup>
+    {
         let mut stream = CharStream::from_file( path )?;
 
         let mut vec: Vec<Value> = Vec::new();
@@ -24335,6 +24841,39 @@ pub mod parses
             None => Ok( () ),
         }
     }
+
+    pub enum Rule
+    {
+        CMD,
+        CMD_END,
+        CMD_NORMAL,
+        DUMMY_DO,
+        DUMMY_THEN,
+        EXP,
+        EXP_BODY,
+        EXP_FOR,
+        EXP_IF,
+        EXP_WHILE,
+        FOR_VAR,
+        FOR_INIT,
+        FOR_HEAD,
+        IF_HEAD,
+        IF_ELSEIF_HEAD,
+        IF_IF_BR,
+        IF_ELSEIF_BR,
+        IF_ELSE_BR,
+        KW_IF,
+        KW_FI,
+        KW_FOR,
+        KW_ELSE,
+        KW_ELSEIF,
+        KW_WHILE,
+        KW_DONE,
+        KW_LIST,
+        TEST,
+        WHILE_HEAD,
+        WHITESPACE
+    }
 }
 
 pub mod path
@@ -24416,7 +24955,6 @@ pub mod path
                 Err( e ) =>
                 {
                     if e.kind() == ErrorKind::NotFound { continue; }
-                    //log!( "cicada: fs read_dir error: {}: {}", p.display(), e );
                 }
             }
         }
@@ -24431,7 +24969,6 @@ pub mod path
             Ok( x ) => x,
             Err( e ) =>
             {
-                // log!( "cicada: PROMPT: env current_dir error: {}", e );
                 return String::new();
             }
         };
@@ -24441,7 +24978,6 @@ pub mod path
             Some( x ) => x,
             None =>
             {
-                // log!( "cicada: PROMPT: to_str error" );
                 return String::new();
             }
         };
@@ -25553,240 +26089,70 @@ pub mod prompts
         };
         /*
         */
-        fn apply_seq( prompt: &mut String) {
-            prompt.push_str(libs::colored::SEQ);
-        }
-
-        fn apply_end_seq( prompt: &mut String) {
-            prompt.push_str(libs::colored::END_SEQ);
-        }
-
-        fn apply_esc( prompt: &mut String) {
-            prompt.push_str(libs::colored::ESC);
-        }
-
-        fn apply_underlined( prompt: &mut String) {
-            prompt.push_str(libs::colored::UNDERLINED);
-        }
-
-        fn apply_user( prompt: &mut String) {
-            let username = tools::get_user_name();
+        fn apply_seq( prompt: &mut String) { prompt.push_str(system::colors::SEQ); }
+        fn apply_end_seq( prompt: &mut String) { prompt.push_str(system::colors::END_SEQ); }
+        fn apply_esc( prompt: &mut String) { prompt.push_str(system::colors::ESC); }
+        fn apply_underlined( prompt: &mut String) { prompt.push_str(system::colors::UNDERLINED); }
+        fn apply_user( prompt: &mut String)
+        {
+            let username = get::user_name();
             prompt.push_str( &username );
         }
-
-        fn apply_black( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK);
-        }
-
-        fn apply_black_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK_B);
-        }
-
-        fn apply_black_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLACK_BG);
-        }
-
-        fn apply_blue( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE);
-        }
-
-        fn apply_blue_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_B);
-        }
-
-        fn apply_blue_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_BG);
-        }
-
-        fn apply_bold( prompt: &mut String) {
-            prompt.push_str(libs::colored::BOLD);
-        }
-
-        fn apply_green( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN);
-        }
-
-        fn apply_green_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_B);
-        }
-
-        fn apply_green_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_BG);
-        }
-
-        fn apply_red( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED);
-        }
-
-        fn apply_red_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_B);
-        }
-
-        fn apply_red_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_BG);
-        }
-
-        fn apply_white( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE);
-        }
-
-        fn apply_white_b( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE_B);
-        }
-
-        fn apply_white_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::WHITE_BG);
-        }
-
-        fn apply_hidden( prompt: &mut String) {
-            prompt.push_str(libs::colored::HIDDEN);
-        }
-
-        fn apply_reset( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET);
-        }
-
-        fn apply_reverse( prompt: &mut String) {
-            prompt.push_str(libs::colored::REVERSE);
-        }
-
-        fn apply_dim( prompt: &mut String) {
-            prompt.push_str(libs::colored::DIM);
-        }
-
-        fn apply_blink( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLINK);
-        }
-
-        fn apply_reset_underlined( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_UNDERLINED);
-        }
-
-        fn apply_reset_dim( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_DIM);
-        }
-
-        fn apply_reset_reverse( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_REVERSE);
-        }
-
-        fn apply_reset_hidden( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_HIDDEN);
-        }
-
-        fn apply_reset_blink( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_BLINK);
-        }
-
-        fn apply_reset_bold( prompt: &mut String) {
-            prompt.push_str(libs::colored::RESET_BOLD);
-        }
-
-        fn apply_default( prompt: &mut String) {
-            prompt.push_str(libs::colored::DEFAULT);
-        }
-
-        fn apply_default_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::DEFAULT_BG);
-        }
-
-        fn apply_cyan( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN);
-        }
-
-        fn apply_cyan_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_L);
-        }
-
-        fn apply_cyan_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_BG);
-        }
-
-        fn apply_cyan_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::CYAN_L_BG);
-        }
-
-        fn apply_red_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_L);
-        }
-
-        fn apply_red_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::RED_L_BG);
-        }
-
-        fn apply_green_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_L);
-        }
-
-        fn apply_green_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GREEN_L_BG);
-        }
-
-        fn apply_gray_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_L);
-        }
-
-        fn apply_gray_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_L_BG);
-        }
-
-        fn apply_gray_d( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_D);
-        }
-
-        fn apply_gray_d_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::GRAY_D_BG);
-        }
-
-        fn apply_magenta( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA);
-        }
-
-        fn apply_magenta_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_BG);
-        }
-
-        fn apply_magenta_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_L);
-        }
-
-        fn apply_magenta_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::MAGENTA_L_BG);
-        }
-
-        fn apply_yellow( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOw );
-        }
-
-        fn apply_yellow_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_BG);
-        }
-
-        fn apply_yellow_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_L);
-        }
-
-        fn apply_yellow_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::YELLOW_L_BG);
-        }
-
-        fn apply_blue_l( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_L);
-        }
-
-        fn apply_blue_l_bg( prompt: &mut String) {
-            prompt.push_str(libs::colored::BLUE_L_BG);
-        }
-
-        fn apply_color_status( sh: &shell::Shell, prompt: &mut String) {
-            if sh.previous_status == 0 {
-                prompt.push_str(libs::colored::GREEN_B);
-            }
-            
-            else
-            {
-                prompt.push_str(libs::colored::RED_B);
-            }
+        fn apply_black( prompt: &mut String) { prompt.push_str(system::colors::BLACK); }
+        fn apply_black_b( prompt: &mut String) { prompt.push_str(system::colors::BLACK_B); }
+        fn apply_black_bg( prompt: &mut String) { prompt.push_str(system::colors::BLACK_BG); }
+        fn apply_blue( prompt: &mut String) { prompt.push_str(system::colors::BLUE); }
+        fn apply_blue_b( prompt: &mut String) { prompt.push_str(system::colors::BLUE_B); }
+        fn apply_blue_bg( prompt: &mut String) { prompt.push_str(system::colors::BLUE_BG); }
+        fn apply_bold( prompt: &mut String) { prompt.push_str(system::colors::BOLD); }
+        fn apply_green( prompt: &mut String) { prompt.push_str(system::colors::GREEN); }
+        fn apply_green_b( prompt: &mut String) { prompt.push_str(system::colors::GREEN_B); }
+        fn apply_green_bg( prompt: &mut String) { prompt.push_str(system::colors::GREEN_BG); }
+        fn apply_red( prompt: &mut String) { prompt.push_str(system::colors::RED); }
+        fn apply_red_b( prompt: &mut String) { prompt.push_str(system::colors::RED_B); }
+        fn apply_red_bg( prompt: &mut String) { prompt.push_str(system::colors::RED_BG); }
+        fn apply_white( prompt: &mut String) { prompt.push_str(system::colors::WHITE); }
+        fn apply_white_b( prompt: &mut String) { prompt.push_str(system::colors::WHITE_B); }
+        fn apply_white_bg( prompt: &mut String) { prompt.push_str(system::colors::WHITE_BG); }
+        fn apply_hidden( prompt: &mut String) { prompt.push_str(system::colors::HIDDEN); }
+        fn apply_reset( prompt: &mut String) { prompt.push_str(system::colors::RESET); }
+        fn apply_reverse( prompt: &mut String) { prompt.push_str(system::colors::REVERSE); }
+        fn apply_dim( prompt: &mut String) { prompt.push_str(system::colors::DIM); }
+        fn apply_blink( prompt: &mut String) { prompt.push_str(system::colors::BLINK); }
+        fn apply_reset_underlined( prompt: &mut String) { prompt.push_str(system::colors::RESET_UNDERLINED); }
+        fn apply_reset_dim( prompt: &mut String) { prompt.push_str(system::colors::RESET_DIM); }
+        fn apply_reset_reverse( prompt: &mut String) { prompt.push_str(system::colors::RESET_REVERSE); }
+        fn apply_reset_hidden( prompt: &mut String) { prompt.push_str(system::colors::RESET_HIDDEN); }
+        fn apply_reset_blink( prompt: &mut String) { prompt.push_str(system::colors::RESET_BLINK); }
+        fn apply_reset_bold( prompt: &mut String) { prompt.push_str(system::colors::RESET_BOLD); }
+        fn apply_default( prompt: &mut String) { prompt.push_str(system::colors::DEFAULT); }
+        fn apply_default_bg( prompt: &mut String) { prompt.push_str(system::colors::DEFAULT_BG); }
+        fn apply_cyan( prompt: &mut String) { prompt.push_str(system::colors::CYAN); }
+        fn apply_cyan_l( prompt: &mut String) { prompt.push_str(system::colors::CYAN_L); }
+        fn apply_cyan_bg( prompt: &mut String) { prompt.push_str(system::colors::CYAN_BG); }
+        fn apply_cyan_l_bg( prompt: &mut String) { prompt.push_str(system::colors::CYAN_L_BG); }
+        fn apply_red_l( prompt: &mut String) { prompt.push_str(system::colors::RED_L); }
+        fn apply_red_l_bg( prompt: &mut String) { prompt.push_str(system::colors::RED_L_BG); }
+        fn apply_green_l( prompt: &mut String) { prompt.push_str(system::colors::GREEN_L); }
+        fn apply_green_l_bg( prompt: &mut String) { prompt.push_str(system::colors::GREEN_L_BG); }
+        fn apply_gray_l( prompt: &mut String) { prompt.push_str(system::colors::GRAY_L); }
+        fn apply_gray_l_bg( prompt: &mut String) { prompt.push_str(system::colors::GRAY_L_BG); }
+        fn apply_gray_d( prompt: &mut String) { prompt.push_str(system::colors::GRAY_D); }
+        fn apply_gray_d_bg( prompt: &mut String) { prompt.push_str(system::colors::GRAY_D_BG); }
+        fn apply_magenta( prompt: &mut String) { prompt.push_str(system::colors::MAGENTA); }
+        fn apply_magenta_bg( prompt: &mut String) { prompt.push_str(system::colors::MAGENTA_BG); }
+        fn apply_magenta_l( prompt: &mut String) { prompt.push_str(system::colors::MAGENTA_L); }
+        fn apply_magenta_l_bg( prompt: &mut String) { prompt.push_str(system::colors::MAGENTA_L_BG); }
+        fn apply_yellow( prompt: &mut String) { prompt.push_str(system::colors::YELLOW ); }
+        fn apply_yellow_bg( prompt: &mut String) { prompt.push_str(system::colors::YELLOW_BG); }
+        fn apply_yellow_l( prompt: &mut String) { prompt.push_str(system::colors::YELLOW_L); }
+        fn apply_yellow_l_bg( prompt: &mut String) { prompt.push_str(system::colors::YELLOW_L_BG); }
+        fn apply_blue_l( prompt: &mut String) { prompt.push_str(system::colors::BLUE_L); }
+        fn apply_blue_l_bg( prompt: &mut String) { prompt.push_str(system::colors::BLUE_L_BG); }
+        fn apply_color_status( sh: &shell::Shell, prompt: &mut String)
+        {
+            if sh.previous_status == 0 { prompt.push_str(system::colors::GREEN_B); }
+            else { prompt.push_str(system::colors::RED_B); }
         }
 
         fn _find_git_root() -> String {
@@ -25913,7 +26279,6 @@ pub mod prompts
                 Some( x ) => x,
                 None =>
                 {
-                    //log!( "cicada: PROMPT: token last error" );
                     return;
                 }
             };
@@ -25929,7 +26294,7 @@ pub mod prompts
 
         pub fn apply_hostname( prompt: &mut String)
         {
-            let hostname = tools::get_hostname();
+            let hostname = get::hostname();
             prompt.push_str( &hostname );
         }
 
@@ -25947,7 +26312,6 @@ pub mod prompts
                         Some( x ) => x,
                         None =>
                         {
-                            //log!( "prompt token last error" );
                             return;
                         }
                     };
@@ -26046,8 +26410,8 @@ pub mod prompts
         
         else
         {
-            //log!( "ERROR: Failed to get term size" );
         }
+
         prompt
     }
 }
@@ -26074,14 +26438,14 @@ pub mod rc
         */
         pub fn read() -> String
         {
-            let dir_config = tools::get_config_dir();
+            let dir_config = get::config_dir();
             let rc_file = format!( "{}/cicadarc", dir_config);
             if Path::new( &rc_file ).exists() {
                 return rc_file;
             }
 
             // fail back to $HOME/.cicadarc
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let rc_file_home = format!( "{}/{}", home, ".cicadarc" );
             if Path::new( &rc_file_home ).exists() {
                 return rc_file_home;
@@ -26570,7 +26934,7 @@ pub mod scripts
         tokens
     }
 
-    fn is_args_in_token(token: &str) -> bool { regex::contains(token, r"\$\{?[0-9@]+\}?") }
+    
 
     fn expand_args_for_single_token(token: &str, args: &[String]) -> String
     {
@@ -27811,12 +28175,26 @@ pub mod system
         pub type c_double = f64;
         pub type c_float = f32;
         pub type c_int = i32;
-        pub type c_long = i64;
+        pub type c_uint = u32;
+
+        cfg_if!
+        {
+            if #[cfg(all(target_pointer_width = "64", not(windows)))]
+            {
+                pub type c_long = i64;
+                pub type c_ulong = u64;
+            }
+            else
+            {
+                pub type c_long = i32;
+                pub type c_ulong = u32;
+            }
+        }
+
         pub type c_longlong = i64;
         pub type c_schar = i8;
         pub type c_short = i16;
         pub type c_uchar = u8;
-        pub type c_uint = u32;
         pub type c_ulonglong = u64;
         pub type c_ushort = u16;        
         pub type cc_t = c_uchar;
@@ -27913,6 +28291,10 @@ pub mod system
         pub const SIG_ALRM: c_int = 14;
         pub const SIG_TERM: c_int = 15;
         pub const SIG_TSTP: c_int = 20;
+
+        pub const STDIN_FILENO: c_int = 0;
+        pub const STDOUT_FILENO: c_int = 1;
+        pub const STDERR_FILENO: c_int = 2;
 
         pub const VDISCARD: usize = 13;
         pub const VMIN: usize = 6;
@@ -28319,7 +28701,7 @@ pub mod system
         }
 
         impl <'fd> FdSet<'fd>
-        {        
+        {
             pub fn new() -> FdSet<'fd>
             {
                 let mut fdset = mem::MaybeUninit::uninit();
@@ -28467,6 +28849,7 @@ pub mod system
         
         #[repr( transparent )] #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct TimeVal( TimeValue );
+
         impl TimeVal
         {
             #[inline] fn microseconds( microseconds: i64 ) -> TimeVal {
@@ -28495,8 +28878,7 @@ pub mod system
             }
         }
         
-        pub fn selects<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int>
-        where
+        pub fn selects<'a,'fd,N,R,W,E,T>( nfds:N, readfds:R, writefds:W, errorfds:E, timeout:T ) -> Result<c_int> where
         'fd: 'a,
         N: Into<Option<c_int>>,
         R: Into<Option<&'a mut FdSet<'fd>>>,
@@ -28512,20 +28894,22 @@ pub mod system
                 let mut errorfds = errorfds.into();
                 let timeout = timeout.into();
 
-                let nfds = nfds.into().unwrap_or_else( || {
+                let nfds = nfds.into().unwrap_or_else( ||
+                {
                     readfds
-                        .iter_mut()
-                        .chain( writefds.iter_mut() )
-                        .chain( errorfds.iter_mut() )
-                        .map( |set| {
-                            set.highest()
-                                .map( |borrowed_fd| borrowed_fd.as_raw_fd() )
-                                .unwrap_or( -1 )
-                        } )
-                        .max()
+                    .iter_mut()
+                    .chain( writefds.iter_mut() )
+                    .chain( errorfds.iter_mut() )
+                    .map(| set |
+                    {
+                        set.highest()
+                        .map( |borrowed_fd| borrowed_fd.as_raw_fd() )
                         .unwrap_or( -1 )
-                        + 1
-                } );
+                    })
+                    .max()
+                    .unwrap_or( -1 )
+                    + 1
+                });
 
                 let readfds = readfds
                     .map( |set| set as *mut _ as *mut FDSet )
@@ -28545,6 +28929,14 @@ pub mod system
                 Errno::result( res )
             }
             
+        }
+        
+        pub struct winsize
+        {
+            pub ws_row: c_ushort,
+            pub ws_col: c_ushort,
+            pub ws_xpixel: c_ushort,
+            pub ws_ypixel: c_ushort
         }
         
         libc_bitflags!
@@ -29527,6 +29919,84 @@ pub mod system
                 }
             }
         }
+    }
+
+    pub mod colors
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+        /*
+        */
+        pub const SEQ: &str = "\x01";
+        pub const END_SEQ: &str = "\x02";
+        pub const ESC: &str = "\x1B";
+
+        // Set
+        pub const BOLD: &str = "\x01\x1B[1m\x02";
+        pub const DIM: &str = "\x01\x1B[2m\x02";
+        pub const UNDERLINED: &str = "\x01\x1B[4m\x02";
+        pub const BLINK: &str = "\x01\x1B[5m\x02";
+        pub const REVERSE: &str = "\x01\x1B[7m\x02";
+        pub const HIDDEN: &str = "\x01\x1B[8m\x02";
+
+        // Reset
+        pub const RESET: &str = "\x01\x1B[0m\x02";
+        pub const RESET_BOLD: &str = "\x01\x1B[21m\x02";
+        pub const RESET_DIM: &str = "\x01\x1B[22m\x02";
+        pub const RESET_UNDERLINED: &str = "\x01\x1B[24m\x02";
+        pub const RESET_BLINK: &str = "\x01\x1B[25m\x02";
+        pub const RESET_REVERSE: &str = "\x01\x1B[27m\x02";
+        pub const RESET_HIDDEN: &str = "\x01\x1B[28m\x02";
+
+        // Foreground (text)
+        pub const DEFAULT: &str = "\x01\x1B[39m\x02";
+        pub const BLACK: &str = "\x01\x1B[30m\x02";
+        pub const RED: &str = "\x01\x1B[31m\x02";
+        pub const GREEN: &str = "\x01\x1B[32m\x02";
+        pub const YELLOW: &str = "\x01\x1B[33m\x02";
+        pub const BLUE: &str = "\x01\x1B[34m\x02";
+        pub const MAGENTA: &str = "\x01\x1B[35m\x02";
+        pub const CYAN: &str = "\x01\x1B[36m\x02";
+        pub const GRAY_L: &str = "\x01\x1B[37m\x02";
+
+        pub const GRAY_D: &str = "\x01\x1B[90m\x02";
+        pub const RED_L: &str = "\x01\x1B[91m\x02";
+        pub const GREEN_L: &str = "\x01\x1B[92m\x02";
+        pub const YELLOW_L: &str = "\x01\x1B[93m\x02";
+        pub const BLUE_L: &str = "\x01\x1B[94m\x02";
+        pub const MAGENTA_L: &str = "\x01\x1B[95m\x02";
+        pub const CYAN_L: &str = "\x01\x1B[96m\x02";
+        pub const WHITE: &str = "\x01\x1B[97m\x02";
+
+        pub const BLUE_B: &str = "\x01\x1B[34m\x1B[1m\x02";
+        pub const BLACK_B: &str = "\x01\x1B[30m\x1B[1m\x02";
+        pub const WHITE_B: &str = "\x01\x1B[97m\x1B[1m\x02";
+        pub const RED_B: &str = "\x01\x1B[31m\x1B[1m\x02";
+        pub const GREEN_B: &str = "\x01\x1B[32m\x1B[1m\x02";
+
+        // Background
+        pub const DEFAULT_BG: &str = "\x01\x1B[49m\x02";
+        pub const BLACK_BG: &str = "\x01\x1B[40m\x02";
+        pub const RED_BG: &str = "\x01\x1B[41m\x02";
+        pub const GREEN_BG: &str = "\x01\x1B[42m\x02";
+        pub const YELLOW_BG: &str = "\x01\x1B[43m\x02";
+        pub const BLUE_BG: &str = "\x01\x1B[44m\x02";
+        pub const MAGENTA_BG: &str = "\x01\x1B[45m\x02";
+        pub const CYAN_BG: &str = "\x01\x1B[46m\x02";
+        pub const GRAY_L_BG: &str = "\x01\x1B[47m\x02";
+
+        pub const GRAY_D_BG: &str = "\x01\x1B[100m\x02";
+        pub const RED_L_BG: &str = "\x01\x1B[101m\x02";
+        pub const GREEN_L_BG: &str = "\x01\x1B[102m\x02";
+        pub const YELLOW_L_BG: &str = "\x01\x1B[103m\x02";
+        pub const BLUE_L_BG: &str = "\x01\x1B[104m\x02";
+        pub const MAGENTA_L_BG: &str = "\x01\x1B[105m\x02";
+        pub const CYAN_L_BG: &str = "\x01\x1B[106m\x02";
+        pub const WHITE_BG: &str = "\x01\x1B[107m\x02";
     }
     /*
     mortal v0.0.0 */
@@ -33503,7 +33973,7 @@ pub mod system
         {
             borrow::Cow::{ self, Borrowed, Owned },
             fs::{ read_dir },
-            path::{ is::separator, MAIN_SEPARATOR },
+            path::{ MAIN_SEPARATOR },
             system::
             {
                 prompter::{ Prompter },
@@ -35126,7 +35596,7 @@ pub mod system
         Provides access to prompt input state. */
         use ::
         {
-            char::{is_ctrl, is::printable, DELETE, EOF},
+            char::{DELETE, EOF},
             mem::replace,
             ops::Range,
             sync::Arc,
@@ -39634,6 +40104,170 @@ pub mod time
     }
 }
 
+pub mod tokens
+{
+    /*!
+    */
+    use ::
+    {
+        regex::{ Regex },
+        types::{ * },
+        *,
+    };
+    /*
+    */
+    
+    // pub fn line_to_plain_tokens(line: &str) -> Vec<String>
+    pub fn from_line(line: &str) -> Vec<String>
+    {
+        let mut result = Vec::new();
+        let linfo = parse_line(line);
+        
+        for (_, r) in linfo.tokens
+        {
+            result.push( r.clone() );
+        }
+
+        result
+    }
+    // pub fn tokens_to_args(tokens: &Tokens) -> Vec<String>
+    pub fn to_args(tokens: &Tokens) -> Vec<String>
+    {
+        let mut result = Vec::new();
+        
+        for s in tokens
+        {
+            result.push(s.1.clone());
+        }
+
+        result
+    }
+    // pub fn tokens_to_line(tokens: &Tokens) -> String
+    pub fn to_line(tokens: &Tokens) -> String
+    {
+        let mut result = String::new();
+
+        for t in tokens
+        {
+            if t.0.is_empty() { result.push_str(&t.1); }
+            
+            else
+            {
+                let s = tools::wrap_sep_string(&t.0, &t.1);
+                result.push_str(&s);
+            }
+
+            result.push(' ');
+        }
+
+        if result.ends_with(' ')
+        {
+            let len = result.len();
+            result.truncate(len - 1);
+        }
+
+        result
+    }
+    // pub fn tokens_to_redirections(tokens: &Tokens) -> Result<(Tokens, Vec<Redirection>), String>
+    pub fn to_redirections(tokens: &Tokens) -> Result<(Tokens, Vec<Redirection>), String>
+    {
+        let mut tokens_new = Vec::new();
+        let mut redirects = Vec::new();
+        let mut to_be_continued = false;
+        let mut to_be_continued_s1 = String::new();
+        let mut to_be_continued_s2 = String::new();
+
+        for token in tokens {
+            let sep = &token.0;
+            if !sep.is_empty() && !to_be_continued {
+                tokens_new.push(token.clone());
+                continue;
+            }
+            let word = &token.1;
+
+            if to_be_continued {
+                if sep.is_empty() && word.starts_with('&') {
+                    return Err(String::from("bad redirection syntax near &"));
+                }
+
+                let s3 = word.to_string();
+                if regex::contains(&to_be_continued_s1, r"^\d+$") {
+                    if to_be_continued_s1 != "1" && to_be_continued_s1 != "2" {
+                        return Err(String::from("Bad file descriptor #3"));
+                    }
+                    let s1 = to_be_continued_s1.clone();
+                    let s2 = to_be_continued_s2.clone();
+                    redirects.push((s1, s2, s3));
+                } else {
+                    if !to_be_continued_s1.is_empty() {
+                        tokens_new.push((sep.clone(), to_be_continued_s1.to_string()));
+                    }
+                    redirects.push(("1".to_string(), to_be_continued_s2.clone(), s3));
+                }
+
+                to_be_continued = false;
+                continue;
+            }
+
+            let ptn1 = r"^([^>]*)(>>?)([^>]+)$";
+            let ptn2 = r"^([^>]*)(>>?)$";
+            if !regex::contains(word, r">") {
+                tokens_new.push(token.clone());
+            } else if regex::contains(word, ptn1) {
+                let re;
+                if let Ok(x) = Regex::new(ptn1) {
+                    re = x;
+                } else {
+                    return Err(String::from("Failed to build Regex"));
+                }
+
+                if let Some(caps) = re.captures(word) {
+                    let s1 = caps.get(1).unwrap().as_str();
+                    let s2 = caps.get(2).unwrap().as_str();
+                    let s3 = caps.get(3).unwrap().as_str();
+                    if s3.starts_with('&') && s3 != "&1" && s3 != "&2" {
+                        return Err(String::from("Bad file descriptor #1"));
+                    }
+
+                    if regex::contains(s1, r"^\d+$") {
+                        if s1 != "1" && s1 != "2" {
+                            return Err(String::from("Bad file descriptor #2"));
+                        }
+                        redirects.push((s1.to_string(), s2.to_string(), s3.to_string()));
+                    } else {
+                        if !s1.is_empty() {
+                            tokens_new.push((sep.clone(), s1.to_string()));
+                        }
+                        redirects.push((String::from("1"), s2.to_string(), s3.to_string()));
+                    }
+                }
+            } else if regex::contains(word, ptn2) {
+                let re;
+                if let Ok(x) = Regex::new(ptn2) {
+                    re = x;
+                } else {
+                    return Err(String::from("Failed to build Regex"));
+                }
+
+                if let Some(caps) = re.captures(word) {
+                    let s1 = caps.get(1).unwrap().as_str();
+                    let s2 = caps.get(2).unwrap().as_str();
+
+                    to_be_continued = true;
+                    to_be_continued_s1 = s1.to_string();
+                    to_be_continued_s2 = s2.to_string();
+                }
+            }
+        }
+
+        if to_be_continued {
+            return Err(String::from("redirection syntax error"));
+        }
+
+        Ok((tokens_new, redirects))
+    }
+}
+
 pub mod tuples
 {
     /*!
@@ -39765,8 +40399,6 @@ pub mod types
     };
     /*
     use regex::Regex;
-    use crate::parsers;
-    use crate::parses::lines::tokens_to_redirections;
     */
     macro_rules! define_directives
     {
@@ -40406,7 +41038,7 @@ pub mod types
 
             let tokens_final;
             let redirects_to;
-            match tokens_to_redirections( &tokens_new )
+            match tokens::to_redirections( &tokens_new )
             {
                 Ok((_tokens, _redirects_to ) ) =>
                 {
@@ -42831,7 +43463,6 @@ pub fn main() -> Result<(), error::parse::ParseError>
         
         if is::script( &args )
         {
-            //log!( "run script: {:?} ", &args );
             let status = scripts::run( &mut sh, &args );
             ::process::exit( status );
         }
@@ -42968,4 +43599,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 42971 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 43602 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
