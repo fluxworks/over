@@ -3242,7 +3242,7 @@ pub mod api
 			return cr;
 		}
 
-		let mut _cmd = exec::Command::new(&args[1]);
+		let mut _cmd = Command::from_arguments(&args[1]);
 		let err = _cmd.args(&args[2..len]).exec();
 		let info = format!("cicada: exec: {}", err);
 		print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
@@ -3384,11 +3384,12 @@ pub mod api
 
 			match result
             {
-				Some(job) =>
+				Some( job ) =>
                 {
 					print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
 					cr.status = 0;
-                    if !shell::give_terminal_to(job.gid) { return CommandResult::error(); }
+
+                    if !system::terminal::give_to( job.gid ) { return CommandResult::error(); }
 
                     libc::killpg(job.gid, libc::SIGCONT);
                     pid_list = job.pids.clone();
@@ -3631,13 +3632,14 @@ pub mod api
 		let tokens = &cmd.tokens;
 		let args = tokens::to_args(tokens);
 
-		if args.len() < 2 {
+		if args.len() < 2
+        {
 			let info = "cicada: source: no file specified";
 			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
 			return cr;
 		}
 
-		let status = scripts::run_script(sh, &args);
+		let status = scripts::run( sh, &args );
 		cr.status = status;
 		cr
 	}
@@ -3869,7 +3871,7 @@ pub mod api
 		let path_new = String::from("${VIRTUAL_ENV}/bin:$PATH");
 		let mut tokens: types::Tokens = Vec::new();
 		tokens.push((String::new(), path_new));
-		shell::expand_env(sh, &mut tokens);
+		expand::environment(sh, &mut tokens);
 		env::set_var("PATH", &tokens[0].1);
 		String::new()
 	}
@@ -3893,7 +3895,7 @@ pub mod api
 		// shell::extend_env(sh, &mut path_virtual_env);
 		let mut tokens: types::Tokens = Vec::new();
 		tokens.push((String::new(), path_virtual_env));
-		shell::expand_env(sh, &mut tokens);
+		expand::environment(sh, &mut tokens);
 		path_virtual_env = tokens[0].1.clone();
 		_tokens
 			.iter()
@@ -3957,7 +3959,7 @@ pub mod api
                 }
             }
 
-            if setrlimit(limit_id, &rlp) != 0
+            if libc::setrlimit(limit_id, &rlp) != 0
             {
 				return format!(
 					"cicada: ulimit: error setting limit: {}",
@@ -5237,12 +5239,14 @@ pub mod char
         let is_ctrl = contains_any( &name_lc, &["c-", "ctrl-", "control-"] );
         let is_meta = contains_any( &name_lc, &["m-", "meta-"] );
 
-        let name = match name_lc.rfind( '-' ) {
+        let name = match name_lc.rfind( '-' )
+        {
             Some( pos ) => &name_lc[pos + 1..],
             None => &name_lc[..]
         };
 
-        let ch = match name {
+        let ch = match name
+        {
             "del" | "rubout"  => DELETE,
             "esc" | "escape"  => ESCAPE,
             "lfd" | "newline" => '\n',
@@ -5253,7 +5257,8 @@ pub mod char
             _ => return None
         };
 
-        let ch = match ( is::ctrl, is::meta ) {
+        let ch = match ( is_ctrl, is_meta )
+        {
             ( true,  true )  => meta( ctrl( ch ) ),
             ( true,  false ) => ctrl( ch ).to_string(),
             ( false, true )  => meta( ch ),
@@ -5262,6 +5267,7 @@ pub mod char
 
         Some( ch )
     }
+
     pub fn escape_sequence( s:&str ) -> String
     {
         let mut res = String::with_capacity( s.len() );
@@ -5285,6 +5291,7 @@ pub mod char
 
         res
     }
+
     pub fn meta( ch: char ) -> String
     {
         let mut s = String::with_capacity( ch.len_utf8() + 1 );
@@ -5492,7 +5499,7 @@ pub mod emit
         unsafe
         {
             
-            let fd = get::dupped_stdout_fd(cmd, cl);
+            let fd = get::duped_stdout_fd(cmd, cl);
             if fd == -1 {
                 return;
             }
@@ -6228,11 +6235,13 @@ pub mod expand
     */
     use ::
     {
+        regex::{ Regex },
+        types::{ * },
+        shell::{ Shell },
         *,
     };
     /*
-    */
-    
+    */    
     // pub fn expand_home(text:&str ) -> String
     pub fn home(text:&str ) -> String
     {
@@ -6262,7 +6271,7 @@ pub mod expand
         s
     }
     // pub fn expand_glob(tokens: &mut types::Tokens )
-    pub fn glob(tokens: &mut types::Tokens )
+    pub fn glob( tokens:&mut types::Tokens )
     {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
@@ -6306,13 +6315,10 @@ pub mod expand
                                     if _basename.starts_with('.') && !show_hidden { continue; }
 
                                     result.push( file_path.to_string() );
-                                    is::empty = false;
+                                    is_empty = false;
                                 }
 
-                                Err( e ) =>
-                                {
-
-                                }
+                                Err( e ) => {}
                             }
                         }
 
@@ -6341,6 +6347,42 @@ pub mod expand
                 let sep = if token.contains(' ') { "\"" } else { "" };
                 tokens.insert(*i + j, ( sep.to_string(), token.clone() ) );
             }
+        }
+    }
+    // pub fn expand_env(sh: &Shell, tokens: &mut types::Tokens)
+    pub fn environment(sh: &Shell, tokens: &mut types::Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for (sep, token) in tokens.iter()
+        {
+            if sep == "`" || sep == "'"
+            {
+                idx += 1;
+                continue;
+            }
+
+            if !env_in_token(token)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut _token = token.clone();
+            
+            while env_in_token(&_token)
+            {
+                _token = expand_one_env(sh, &_token);
+            }
+
+            buff.push((idx, _token));
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter().rev()
+        {
+            tokens[*i].1 = text.to_string();
         }
     }
 }
@@ -6573,6 +6615,31 @@ pub mod get
         }
 
         str_current_dir.to_string()
+    }
+
+    pub fn duped_stdout_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    {
+        if cl.with_pipeline() { return 1; }
+
+        let (_fd_out, _fd_err) = _get_std_fds(&cmd.redirects_to);
+        if let Some(fd) = _fd_err
+        {
+            unsafe
+            {
+                libc::close(fd);
+            }
+        }
+
+        if let Some(fd) = _fd_out {
+            fd
+        } else {
+            let fd = unsafe { libc::dup(1) };
+            if fd == -1 {
+                let eno = errno();
+                println_stderr!("cicada: dup: {}", eno);
+            }
+            fd
+        }
     }
 }
 
@@ -26486,7 +26553,7 @@ pub mod rc
             }
 
             let args = vec!["source".to_string(), rc_file];
-            scripts::run_script( sh, &args );
+            scripts::run( sh, &args );
         }
     }
 }
@@ -38466,6 +38533,35 @@ pub mod system
                 Some((w.ws_col as usize, w.ws_row as usize  ) )
             }
         }
+        // pub unsafe fn give_terminal_to(gid: i32) -> bool
+        pub unsafe fn give_to(gid: i32) -> bool
+        {
+            let mut mask: libc::sigset_t = mem::zeroed();
+            let mut old_mask: libc::sigset_t = mem::zeroed();
+
+            libc::sigemptyset(&mut mask);
+            libc::sigaddset(&mut mask, libc::SIGTSTP);
+            libc::sigaddset(&mut mask, libc::SIGTTIN);
+            libc::sigaddset(&mut mask, libc::SIGTTOU);
+            libc::sigaddset(&mut mask, libc::SIGCHLD);
+
+            let rcode = libc::pthread_sigmask(libc::SIG_BLOCK, &mask, &mut old_mask);            
+            let rcode = libc::tcsetpgrp(1, gid);
+            let given;
+            
+            if rcode == -1
+            {
+                given = false;
+                let e = error::no::errno();
+                let code = e.0;
+            }
+            
+            else { given = true; }
+
+            let rcode = libc::pthread_sigmask(libc::SIG_SETMASK, &old_mask, &mut mask);
+
+            given
+        }
     }
 
     pub mod variables
@@ -40416,6 +40512,7 @@ pub mod types
     {
         borrow::{ Cow::{ self, * }, },
         collections::{ HashMap, HashSet },
+        ffi::{ OsString },
         rc::{ Rc },
         *,
     };
@@ -41075,16 +41172,35 @@ pub mod types
         fn default() -> Self { Directive::Custom(Borrowed("")) }
     }
     
-    #[derive( Debug )]
+    #[derive( Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
     pub struct Command
     {
         pub tokens: Tokens,
         pub redirects_to: Vec<Redirection>,
         pub redirect_from: Option<Token>,
+        pub argv: Vec<OsString>,
     }
 
     impl Command
     {
+        pub const fn new() -> Self
+        {
+            Self
+            {
+                tokens:Vec::new(),
+                redirects_to:Vec::new(),
+                redirect_from:None,
+                argv:Vec::new(),
+            }
+        }
+
+        pub fn from_arguments(arguments:&Vec<OsString>) -> Self
+        {
+            let mut cmd = Self::new();
+            cmd.argv = arguments.clone();
+            cmd.clone()
+        }
+
         pub fn from_tokens(tokens: Tokens ) -> Result<Command, String>
         {
             let mut tokens_new = tokens.clone();
@@ -43687,4 +43803,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 43690 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 43806 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
