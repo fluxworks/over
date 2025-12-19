@@ -6544,7 +6544,7 @@ pub mod get
         }
     }
     //fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
-	fn invalid_identifier(name_list: &Vec<String>) -> Option<String>
+	pub fn invalid_identifier(name_list: &Vec<String>) -> Option<String>
 	{
 		for id_ in name_list
         {
@@ -6553,6 +6553,27 @@ pub mod get
 
 		None
 	}
+    // pub fn get_current_dir() -> String
+    pub fn current_dir() -> String
+    {
+        let mut current_dir = PathBuf::new();
+        
+        match env::current_dir()
+        {
+            Ok(x) => current_dir = x,
+            Err(e) => { println_stderr!("env current_dir() failed: {}", e); }
+        }
+
+        let mut str_current_dir = "";
+
+        match current_dir.to_str()
+        {
+            Some(x) => str_current_dir = x,
+            None => { println_stderr!("current_dir to str failed."); }
+        }
+
+        str_current_dir.to_string()
+    }
 }
 
 pub mod f32
@@ -27008,7 +27029,7 @@ pub mod scripts
     fn run_exp_test_br
     (
         sh: &mut shell::Shell,
-        pair_br: Pair<parsers::locust::Rule>,
+        pair_br: Pair<Rule>,
         args: &Vec<String>,
         in_loop: bool,
         capture: bool,
@@ -27021,11 +27042,11 @@ pub mod scripts
         let mut test_pass = false;
         for pair in pairs {
             let rule = pair.as_rule();
-            if rule == parsers::locust::Rule::IF_HEAD
-                || rule == parsers::locust::Rule::IF_ELSEIF_HEAD
-                || rule == parsers::locust::Rule::WHILE_HEAD
+            if rule == Rule::IF_HEAD
+                || rule == Rule::IF_ELSEIF_HEAD
+                || rule == Rule::WHILE_HEAD
             {
-                let pairs_test: Vec<Pair<parsers::locust::Rule>> = pair.into_inner().collect();
+                let pairs_test: Vec<Pair<Rule>> = pair.into_inner().collect();
                 let pair_test = &pairs_test[0];
                 let line = pair_test.as_str().trim();
                 let line_new = expand_args(line, &args[1..]);
@@ -27038,12 +27059,12 @@ pub mod scripts
                 continue;
             }
 
-            if rule == parsers::locust::Rule::KW_ELSE {
+            if rule == Rule::KW_ELSE {
                 test_pass = true;
                 continue;
             }
 
-            if rule == parsers::locust::Rule::EXP_BODY {
+            if rule == Rule::EXP_BODY {
                 if !test_pass {
                     return (cr_list, false, false, false);
                 }
@@ -27061,7 +27082,7 @@ pub mod scripts
     fn run_exp_if
     (
         sh: &mut shell::Shell,
-        pair_if: Pair<parsers::locust::Rule>,
+        pair_if: Pair<Rule>,
         args: &Vec<String>,
         in_loop: bool,
         capture: bool,
@@ -27090,7 +27111,7 @@ pub mod scripts
     fn get_for_result_from_init
     (
         sh: &mut shell::Shell,
-        pair_init: Pair<parsers::locust::Rule>,
+        pair_init: Pair<Rule>,
         args: &[String],
     ) -> Vec<String> 
     {
@@ -27098,7 +27119,7 @@ pub mod scripts
         /*let pairs = pair_init.into_inner();
         for pair in pairs {
             let rule = pair.as_rule();
-            if rule == parsers::locust::Rule::TEST {
+            if rule == Rule::TEST {
                 let line = pair.as_str().trim();
                 let tokens = expand_line_to_toknes(line, &args[1..], sh);
                 for (sep, token) in tokens {
@@ -27118,7 +27139,7 @@ pub mod scripts
     fn get_for_result_list
     (
         sh: &mut shell::Shell,
-        pair_head: Pair<parsers::locust::Rule>,
+        pair_head: Pair<Rule>,
         args: &[String],
     ) -> Vec<String> 
     {
@@ -27126,24 +27147,24 @@ pub mod scripts
         let pairs = pair_head.into_inner();
         for pair in pairs {
             let rule = pair.as_rule();
-            if rule == parsers::locust::Rule::FOR_INIT {
+            if rule == Rule::FOR_INIT {
                 return get_for_result_from_init(sh, pair, args);
             }
         }*/
         Vec::new()
     }
 
-    fn get_for_var_name(pair_head: Pair<parsers::locust::Rule>) -> String
+    fn get_for_var_name(pair_head: Pair<Rule>) -> String
     {
         /*
         let pairs = pair_head.into_inner();
         for pair in pairs {
             let rule = pair.as_rule();
-            if rule == parsers::locust::Rule::FOR_INIT {
+            if rule == Rule::FOR_INIT {
                 let pairs_init = pair.into_inner();
                 for pair_init in pairs_init {
                     let rule_init = pair_init.as_rule();
-                    if rule_init == parsers::locust::Rule::FOR_VAR {
+                    if rule_init == Rule::FOR_VAR {
                         let line = pair_init.as_str().trim();
                         return line.to_string();
                     }
@@ -27156,7 +27177,7 @@ pub mod scripts
     fn run_exp_for
     (
         sh: &mut shell::Shell,
-        pair_for: Pair<parsers::locust::Rule>,
+        pair_for: Pair<Rule>,
         args: &Vec<String>,
         capture: bool,
     ) -> Vec<CommandResult>
@@ -27167,12 +27188,12 @@ pub mod scripts
         let mut var_name: String = String::new();
         for pair in pairs {
             let rule = pair.as_rule();
-            if rule == parsers::locust::Rule::FOR_HEAD {
+            if rule == Rule::FOR_HEAD {
                 var_name = get_for_var_name(pair.clone());
                 result_list = get_for_result_list(sh, pair.clone(), args);
                 continue;
             }
-            if rule == parsers::locust::Rule::EXP_BODY {
+            if rule == Rule::EXP_BODY {
                 for value in &result_list {
                     sh.set_env(&var_name, value);
                     let (mut _cr_list, _cont, _brk) = run_exp(sh, pair.clone(), args, true, capture);
@@ -27189,7 +27210,7 @@ pub mod scripts
     fn run_exp_while
     (
         sh: &mut shell::Shell,
-        pair_while: Pair<parsers::locust::Rule>,
+        pair_while: Pair<Rule>,
         args: &Vec<String>,
         capture: bool,
     ) -> Vec<CommandResult>
@@ -27209,7 +27230,7 @@ pub mod scripts
     fn run_exp
     (
         sh: &mut shell::Shell,
-        pair_in: Pair<parsers::locust::Rule>,
+        pair_in: Pair<Rule>,
         args: &Vec<String>,
         in_loop: bool,
         capture: bool,
@@ -27225,7 +27246,7 @@ pub mod scripts
             }
 
             let rule = pair.as_rule();
-            if rule == parsers::locust::Rule::CMD {
+            if rule == Rule::CMD {
                 if line == "continue" {
                     if in_loop {
                         return (cr_list, true, false);
@@ -27252,7 +27273,7 @@ pub mod scripts
                         return (cr_list, false, false);
                     }
                 }
-            } else if rule == parsers::locust::Rule::EXP_IF {
+            } else if rule == Rule::EXP_IF {
                 let (mut _cr_list, _cont, _brk) = run_exp_if(sh, pair, args, in_loop, capture);
                 cr_list.append(&mut _cr_list);
                 if _cont {
@@ -27261,10 +27282,10 @@ pub mod scripts
                 if _brk {
                     return (cr_list, false, true);
                 }
-            } else if rule == parsers::locust::Rule::EXP_FOR {
+            } else if rule == Rule::EXP_FOR {
                 let mut _cr_list = run_exp_for(sh, pair, args, capture);
                 cr_list.append(&mut _cr_list);
-            } else if rule == parsers::locust::Rule::EXP_WHILE {
+            } else if rule == Rule::EXP_WHILE {
                 let mut _cr_list = run_exp_while(sh, pair, args, capture);
                 cr_list.append(&mut _cr_list);
             }
@@ -40395,6 +40416,7 @@ pub mod types
     {
         borrow::{ Cow::{ self, * }, },
         collections::{ HashMap, HashSet },
+        rc::{ Rc },
         *,
     };
     /*
@@ -40455,6 +40477,72 @@ pub mod types
     pub type Token = (String, String);
     pub type Tokens = Vec<Token>;
     pub type Redirection = (String, String, String);
+
+    #[derive(Debug)]
+    pub enum QueueableToken<'i, R>
+    {
+        Start
+        {
+            end_token_index: usize,
+            input_pos: usize,
+        },
+        End
+        {
+            start_token_index: usize,
+            rule: R,
+            tag: Option<&'i str>,
+            input_pos: usize,
+        },
+    }
+
+    #[derive(Clone)]
+    pub struct LineIndex
+    {
+        line_offsets: Vec<usize>,
+    }
+
+    #[derive(Clone)]
+    pub struct Pair<'i, R>
+    {
+        queue: Rc<Vec<QueueableToken<'i, R>>>,
+        input: &'i str,
+        start: usize,
+        line_index: Rc<LineIndex>,
+    }
+
+    #[derive( Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
+    pub enum Rule
+    {
+        CMD_END,
+        CMD_NORMAL,
+        CMD,
+        DUMMY_DO,
+        DUMMY_THEN,
+        EXP,
+        EXP_BODY,
+        EXP_FOR,
+        EXP_IF,
+        EXP_WHILE,
+        FOR_HEAD,
+        FOR_INIT,
+        FOR_VAR,
+        IF_ELSEIF_HEAD,
+        IF_ELSEIF_BR,
+        IF_ELSE_BR,
+        IF_HEAD,
+        IF_IF_BR,
+        KW_DONE,
+        KW_ELSE,
+        KW_ELSEIF,
+        KW_FI,
+        KW_FOR,
+        KW_IF,
+        KW_LIST,
+        KW_WHILE,
+        TEST,
+        WHILE_HEAD,
+        WHITESPACE,
+    }
 
     #[derive( Clone, Debug )]
     pub enum Type 
@@ -43599,4 +43687,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 43602 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 43690 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
