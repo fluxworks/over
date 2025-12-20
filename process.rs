@@ -2970,7 +2970,7 @@ pub mod api
 	use crate::jobc;
 	*/
     /*
-	#[derive(Debug, StructOpt)]
+	#[derive( Debug, StructOpt)]
 	#[structopt(name = "set", about = "Set shell options (BETA)")]
 	struct OptMainSet
 	{
@@ -6162,7 +6162,7 @@ pub mod error
             #[cfg( windows )] pub use self::windows::{ * };
         }
         
-        #[derive(Copy, Clone, Eq, Ord, PartialEq, PartialOrd, Hash )]
+        #[derive( Copy, Clone, Eq, Ord, PartialEq, PartialOrd, Hash )]
         pub struct Errno( pub i32);
 
         impl fmt::Debug for Errno
@@ -7030,7 +7030,7 @@ pub mod highlights
     
     #[derive( Clone )]
     pub struct CicadaHighlighter;
-    #[derive(Debug, Clone, PartialEq, Eq)]
+    #[derive( Debug, Clone, PartialEq, Eq)]
     pub enum Style 
     {
         AnsiColor(String),
@@ -7456,7 +7456,7 @@ pub mod is
     // pub fn is_ctrl( c: char ) -> bool
     pub fn ctrl( c: char ) -> bool { c != '\0' && c as u32 <= 0x1f }
     // fn is_args_in_token(token: &str) -> bool
-    pub fn is_args_in_token(token: &str) -> bool { regex::contains(token, r"\$\{?[0-9@]+\}?") }
+    pub fn args_in_token(token: &str) -> bool { regex::contains(token, r"\$\{?[0-9@]+\}?") }
     // pub fn is_valid_field( field:&str ) -> bool
     pub fn valid_field( field:&str ) -> bool
     {
@@ -21792,10 +21792,13 @@ pub mod now
     use ::
     {
         collections::{ HashMap },
+        ffi::{ CStr, CString },
+        fs::{ File },
         io::{ self, Read, Write },
         libc::{ getpgid },
-        os::fd::{ RawFd },
+        os::fd::{ FromRawFd, RawFd },
         shell::{ self, Shell },
+        system::api::{ * },
         types::{ * },
         *,
     };
@@ -22416,7 +22419,7 @@ pub mod now
                         else
                         {
                             let append = op_ == ">>";
-                            match fs::create_raw_fd_from_file(to_, append )
+                            match os::fd::create_raw_from_file(to_, append )
                             {
                                 Ok( fd ) =>
                                 {
@@ -23069,10 +23072,31 @@ pub mod ops
 pub mod os
 {
     pub use std::os::{ *, fd as _ };
-
     pub mod fd
     {
         pub use std::os::fd::{ * };
+        // pub fn create_raw_fd_from_file(file_name: &str, append: bool) -> Result<i32, String>
+        pub fn create_raw_from_file(file_name: &str, append: bool) -> Result<i32, String>
+        {
+            let mut oos = ::fs::OpenOptions::new();
+
+            if append { oos.append(true); }            
+            else
+            {
+                oos.write(true);
+                oos.truncate(true);
+            }
+
+            match oos.create(true).open(file_name)
+            {
+                Ok(x) =>
+                {
+                    let fd = x.into_raw_fd();
+                    Ok(fd)
+                }
+                Err(e) => Err(format!("{}", e)),
+            }
+        }
     }
 }
 
@@ -23634,7 +23658,6 @@ pub mod parses
             return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
         }
 
-       
         let ch = stream.next().unwrap();
         assert_eq!( ch, '{' );
        
@@ -23676,7 +23699,6 @@ pub mod parses
         cur_brace: Option<char>,
     ) -> ParseResult<bool> 
     {
-       
         let peek = stream.peek().unwrap();
         
         if peek == '}' && cur_brace.is_some() 
@@ -23693,27 +23715,23 @@ pub mod parses
             );
         }
 
-       
         let ( field_line, field_col ) = ( stream.line(), stream.col() );
 
-       
-        let ( field, is::global, is::parent ) = parse_field( stream.clone(), field_line, field_col )?;
+        let ( field, is_global, is_parent ) = parse_field( stream.clone(), field_line, field_col )?;
 
         if !is_global && !is_parent && obj.contains_key( &field ) {
             return parse_err( stream.file(), DuplicateField( field, field_line, field_col ) );
-        } else if is::parent && parent.is_some() {
+        } else if is_parent && parent.is_some() {
             return parse_err( 
                 stream.file(),
                 DuplicateField( "^".into(), field_line, field_col ),
             );
         }
 
-       
         if !find_char( stream.clone() ) {
             return parse_err( stream.file(), UnexpectedEnd( stream.line() ) );
         }
 
-       
         let ( value_line, value_col ) = ( stream.line(), stream.col() );
         let value = parse_value( 
             &mut stream,
@@ -23727,12 +23745,12 @@ pub mod parses
             true,
         )?;
        
-        if is::global {
+        if is_global {
             if globals.contains_key( &field ) {
                 return parse_err( stream.file(), DuplicateGlobal( field, field_line, field_col ) );
             }
             globals.insert( field, value );
-        } else if is::parent {
+        } else if is_parent {
             let par = value
                 .get_obj()
                 .map_err( | e |ParseError::from_over( &e, stream.file(), value_line, value_col ) )?;
@@ -23744,7 +23762,6 @@ pub mod parses
             obj.insert( field, value );
         }
 
-       
         if !find_char( stream.clone() ) {
             match cur_brace {
                 Some( _ ) => return parse_err( stream.file(), UnexpectedEnd( stream.line() ) ),
@@ -23827,7 +23844,6 @@ pub mod parses
             return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
         }
 
-       
         let ch = stream.next().unwrap();
         assert_eq!( ch, '[' );
 
@@ -24008,7 +24024,7 @@ pub mod parses
         
         if ch == '@' {
             let ch = stream.next().unwrap();
-            is::global = true;
+            is_global = true;
             field.push( ch );
         }
 
@@ -24038,7 +24054,7 @@ pub mod parses
             {
                 parse_err( stream.file(), InvalidFieldName( field.clone(), line, col ) )
             }
-            _ => Ok( ( field.clone(), is::global, false ) ),
+            _ => Ok( ( field.clone(), is_global, false ) ),
         }
     }
    
@@ -24052,10 +24068,9 @@ pub mod parses
         col: usize,
         depth: usize,
         cur_brace: Option<char>,
-        is::first: bool,
+        is_first: bool,
     ) -> ParseResult<Value> 
     {
-       
         let res = match stream.peek().unwrap() 
         {
             '"' => parse_str( &mut stream )?,
@@ -24093,7 +24108,7 @@ pub mod parses
             }
         };
        
-        if is::first 
+        if is_first 
         {
             let mut val_deque: VecDeque<( Value, usize, usize )> = VecDeque::new();
             let mut op_deque: VecDeque<char> = VecDeque::new();
@@ -24368,7 +24383,7 @@ pub mod parses
 
             var @ "@" => return parse_err( stream.file(), InvalidValue( var.into(), line, col ) ),
             
-            var if is::global => 
+            var if is_global => 
             {
                
                 match globals.get( var ) {
@@ -24533,7 +24548,6 @@ pub mod parses
 
     fn parse_str_file( path:&str ) -> ParseResult<String> 
     {
-       
         let s = str::read_from_file( path )?.replace( "\r\n", "\n" );
 
         Ok( s )
@@ -24577,7 +24591,6 @@ pub mod parses
             }
         }
 
-       
         let s = s.replace( "\r\n", "\n" );
 
         Ok( s.into() )
@@ -24599,7 +24612,6 @@ pub mod parses
             Tup,
         }
 
-       
         if depth > MAX_DEPTH {
             return parse_err( stream.file(), MaxDepth( stream.line(), stream.col() ) );
         }
@@ -24660,7 +24672,6 @@ pub mod parses
             )?;
         }
 
-       
         if !find_char( stream.clone() ) {
             return parse_err( stream.file(), UnexpectedEnd( stream.line() ) );
         }
@@ -24675,7 +24686,6 @@ pub mod parses
             }
         }
 
-       
         let include_file = match value {
             Value::Str( s ) => s,
             _ => {
@@ -24699,7 +24709,6 @@ pub mod parses
             return parse_err( stream.file(), InvalidIncludePath( include_file, line, col ) );
         }
 
-       
         let path_str = match path.to_str() {
             Some( path ) => path,
             None => return parse_err( stream.file(), InvalidIncludePath( include_file, line, col ) ),
@@ -24731,7 +24740,6 @@ pub mod parses
             return parse_err( stream.file(), CyclicInclude( include_file, line, col ) );
         }
 
-       
         let value = if included.0.contains_key( full_path_str ) {
             let value = &included.0[full_path_str];
             value.clone()
@@ -25224,7 +25232,7 @@ pub mod path
         let scope = PathWrapper::from_path( scope );
 
         let mut dir_patterns = Vec::new();
-        let components = pattern[cmp::min( root_len, pattern.len() )..].split_terminator( is::separator );
+        let components = pattern[cmp::min( root_len, pattern.len() )..].split_terminator( path::is_separator );
 
         for component in components
         {
@@ -25245,7 +25253,7 @@ pub mod path
            );
         }
 
-        let last_is_separator = pattern.chars().next_back().map( is::separator );
+        let last_is_separator = pattern.chars().next_back().map( path::is_separator );
         let require_dir = last_is_separator == Some( true );
         let todo = Vec::new();
 
@@ -25569,7 +25577,9 @@ pub mod path
                                         i += 1;
                                         true
                                     }
+
                                     else if i == chars.len() { true }
+                                    
                                     else
                                     {
                                         return Err( PatternError
@@ -25589,13 +25599,13 @@ pub mod path
                                     });
                                 };
 
-                                if is::valid
+                                if is_valid
                                 {
                                     let tokens_len = tokens.len();
 
                                     if !(tokens_len > 1 && tokens[tokens_len - 1] == AnyRecursiveSequence )
                                     {
-                                        is::recursive = true;
+                                        is_recursive = true;
                                         tokens.push(AnyRecursiveSequence );
                                     }
                                 }
@@ -25614,7 +25624,8 @@ pub mod path
                             match chars[i + 3..].iter().position(|x| *x == ']') 
                             {
                                 None => (),
-                                Some(j) => {
+                                Some(j) =>
+                                {
                                     let chars = &chars[i + 2..i + 3 + j];
                                     let cs = parse_char_specifiers(chars );
                                     tokens.push(AnyExcept(cs  ) );
@@ -25629,7 +25640,8 @@ pub mod path
                             match chars[i + 2..].iter().position(|x| *x == ']')
                             {
                                 None => (),
-                                Some(j) => {
+                                Some(j) =>
+                                {
                                     let cs = parse_char_specifiers( &chars[i + 1..i + 2 + j]);
                                     tokens.push(AnyWithin(cs  ) );
                                     i += j + 3;
@@ -25638,7 +25650,8 @@ pub mod path
                             }
                         }
                         
-                        return Err( PatternError {
+                        return Err( PatternError
+                        {
                             pos: i,
                             msg: ERROR_INVALID_RANGE,
                         });
@@ -25695,7 +25708,7 @@ pub mod path
         
         pub fn as_str( &self ) -> &str { &self.original }
 
-        fn matches_from
+        pub fn matches_from
         (
             &self,
             mut follows_separator: bool,
@@ -25724,8 +25737,7 @@ pub mod path
 
                         while let Some( c ) = file.next()
                         {
-                            if follows_separator && options.require_literal_leading_dot && c == '.'
-                            { return SubPatternDoesntMatch; }
+                            if follows_separator && options.require_literal_leading_dot && c == '.' { return SubPatternDoesntMatch; }
 
                             follows_separator = path::is_separator( c );
                             
@@ -25765,8 +25777,7 @@ pub mod path
                         {
                             AnyChar       |
                             AnyWithin(..) |
-                            AnyExcept(..) if (options.require_literal_separator && is::sep) ||
-                            ( follows_separator && options.require_literal_leading_dot && c == '.' ) => { false }
+                            AnyExcept(..) if (options.require_literal_separator && is_sep) || ( follows_separator && options.require_literal_leading_dot && c == '.' ) => { false }
                             AnyChar => true,
                             AnyWithin( ref specifiers ) => in_char_specifiers( specifiers, c, options ),
                             AnyExcept( ref specifiers ) => !in_char_specifiers( specifiers, c, options ),
@@ -25775,7 +25786,7 @@ pub mod path
                         }
                         { return SubPatternDoesntMatch; }
 
-                        follows_separator = is::sep;
+                        follows_separator = is_sep;
                     }
                 }
             }
@@ -25785,7 +25796,7 @@ pub mod path
         }
     }
     
-    fn fill_todo
+    pub fn fill_todo
     (
         todo: &mut Vec<Result<( PathWrapper, usize ), GlobError>>,
         patterns:&[Pattern],
@@ -25804,7 +25815,7 @@ pub mod path
         let is_dir = path.is_directory;
         let curdir = path.as_ref() == Path::new( "." );
 
-        match ( pattern.has_metachars, is::dir )
+        match ( pattern.has_metachars, is_dir )
         {
             ( false, _ ) =>
             {
@@ -25825,7 +25836,7 @@ pub mod path
                 
                 let next_path = PathWrapper::from_path( next_path );
                 
-                if  ( special && is::dir ) ||
+                if  ( special && is_dir ) ||
                     (!special && ( fs::metadata( &next_path ).is_ok() || fs::symlink_metadata( &next_path ).is_ok() ) )
                     { add( todo, next_path ); }
             }
@@ -25893,7 +25904,7 @@ pub mod path
         }
     }
 
-    fn parse_char_specifiers( s:&[char] ) -> Vec<CharSpecifier>
+    pub fn parse_char_specifiers( s:&[char] ) -> Vec<CharSpecifier>
     {
         let mut cs = Vec::new();
         let mut i = 0;
@@ -25915,7 +25926,7 @@ pub mod path
         cs
     }
 
-    fn in_char_specifiers( specifiers:&[CharSpecifier], c:char, options:MatchOptions ) -> bool
+    pub fn in_char_specifiers( specifiers:&[CharSpecifier], c:char, options:MatchOptions ) -> bool
     {
         for &specifier in specifiers.iter()
         {
@@ -25951,7 +25962,7 @@ pub mod path
         false
     }
     
-    fn chars_eq( a:char, b:char, case_sensitive:bool ) -> bool 
+    pub fn chars_eq( a:char, b:char, case_sensitive:bool ) -> bool 
     {
         if cfg!( windows ) && path::is_separator( a ) && path::is_separator( b ) { true }
         
@@ -26039,11 +26050,10 @@ pub mod prompts
     */
     use ::
     {
+        system::terminal::{ dimensions },
         *,
     };
     /*
-    use crate::libs;
-    use crate::shell;
     */
     pub mod main
     {
@@ -26054,18 +26064,11 @@ pub mod prompts
             *,
         };
         /*
-        use std::env;
-
-        use crate::execute;
-        use crate::libs;
-        use crate::shell;
-
-        const DEFAULT_PROMPT: &str = "${COLOR_STATUS}$USER${RESET}\
-            @${COLOR_STATUS}$HOSTNAME${RESET}: \
-            ${COLOR_STATUS}$CWD${RESET}$ ";
-        use super::preset::apply_preset_item;
-        use super::preset::apply_pyenv;
         */
+        use super::preset::{ apply_preset_item, apply_pyenv };
+        const DEFAULT_PROMPT: &str = "${COLOR_STATUS}$USER${RESET}\
+        @${COLOR_STATUS}$HOSTNAME${RESET}: \
+        ${COLOR_STATUS}$CWD${RESET}$ ";
         // pub fn get_prompt_string() -> String
         pub fn read_string() -> String
         {
@@ -26915,17 +26918,11 @@ pub mod scripts
         fs::{ File },
         io::{ ErrorKind, Read, Write },
         path::{ Path },
+        regex::{ Regex, RegexBuilder },
         types::{ self, * },
         *,
     };
     /*
-    use pest::iterators::Pair;
-    use regex::{Regex, RegexBuilder};
-
-    use crate::execute;
-    use crate::libs;
-    use crate::parsers;
-    use crate::shell;
     */
     // pub fn run_script(sh: &mut shell::Shell, args: &Vec<String>) -> i32
     pub fn run(sh: &mut shell::Shell, args: &Vec<String>) -> i32
@@ -27086,7 +27083,7 @@ pub mod scripts
         cr_list
     }
 
-    fn expand_args(line: &str, args: &[String]) -> String 
+    pub fn expand_args(line: &str, args: &[String]) -> String 
     {
         let linfo = parses::lines::parse_line(line);
         let mut tokens = linfo.tokens;
@@ -27094,7 +27091,7 @@ pub mod scripts
         tokens::to_line(&tokens)
     }
 
-    fn expand_line_to_toknes(line: &str, args: &[String], sh: &mut shell::Shell) -> types::Tokens 
+    pub fn expand_line_to_toknes(line: &str, args: &[String], sh: &mut shell::Shell) -> types::Tokens 
     {
         let linfo = parses::lines::parse_line(line);
         let mut tokens = linfo.tokens;
@@ -27102,10 +27099,8 @@ pub mod scripts
         expand::tokens(sh, &mut tokens);
         tokens
     }
-
     
-
-    fn expand_args_for_single_token(token: &str, args: &[String]) -> String
+    pub fn expand_args_for_single_token(token: &str, args: &[String]) -> String
     {
         let re = Regex::new(r"^(.*?)\$\{?([0-9]+|@)\}?(.*)$").unwrap();
 
@@ -27150,7 +27145,7 @@ pub mod scripts
         result
     }
 
-    fn expand_args_in_tokens(tokens: &mut types::Tokens, args: &[String])
+    pub fn expand_args_in_tokens(tokens: &mut types::Tokens, args: &[String])
     {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
@@ -27174,7 +27169,7 @@ pub mod scripts
         }
     }
 
-    fn run_exp_test_br
+    pub fn run_exp_test_br
     (
         sh: &mut shell::Shell,
         pair_br: Pair<Rule>,
@@ -27227,7 +27222,7 @@ pub mod scripts
         (cr_list, test_pass, false, false)
     }
 
-    fn run_exp_if
+    pub fn run_exp_if
     (
         sh: &mut shell::Shell,
         pair_if: Pair<Rule>,
@@ -27254,7 +27249,7 @@ pub mod scripts
         (cr_list, met_continue, met_break)
     }
 
-    fn get_for_result_from_init
+    pub fn get_for_result_from_init
     (
         sh: &mut shell::Shell,
         pair_init: Pair<Rule>,
@@ -27282,7 +27277,7 @@ pub mod scripts
         result
     }
 
-    fn get_for_result_list
+    pub fn get_for_result_list
     (
         sh: &mut shell::Shell,
         pair_head: Pair<Rule>,
@@ -27300,7 +27295,7 @@ pub mod scripts
         Vec::new()
     }
 
-    fn get_for_var_name(pair_head: Pair<Rule>) -> String
+    pub fn get_for_var_name(pair_head: Pair<Rule>) -> String
     {
         /*
         let pairs = pair_head.into_inner();
@@ -27320,7 +27315,7 @@ pub mod scripts
         String::new()
     }
 
-    fn run_exp_for
+    pub fn run_exp_for
     (
         sh: &mut shell::Shell,
         pair_for: Pair<Rule>,
@@ -27353,7 +27348,7 @@ pub mod scripts
         cr_list
     }
 
-    fn run_exp_while
+    pub fn run_exp_while
     (
         sh: &mut shell::Shell,
         pair_while: Pair<Rule>,
@@ -27371,7 +27366,7 @@ pub mod scripts
         cr_list
     }
 
-    fn run_exp
+    pub fn run_exp
     (
         sh: &mut shell::Shell,
         pair_in: Pair<Rule>,
@@ -27594,7 +27589,6 @@ pub mod str
     //pub fn write_file_str( fname:&str, contents:&str ) -> io::Result<()>
     pub fn write_file_from( fname:&str, contents:&str ) -> io::Result<()>
     {
-       
         let mut file = File::create( fname )?;
 
         file.write_all( contents.as_bytes() )?;
@@ -28363,18 +28357,23 @@ pub mod system
         pub type c_ulonglong = u64;
         pub type c_ushort = u16;        
         pub type cc_t = c_uchar;
+        pub type clockid_t = c_int;
         
         pub type Error = Errno;
 
         pub type gid_t = u32;
 
+        pub type id_t = c_uint;
         pub type intptr_t = isize;
+
+        pub type key_t = c_int;
 
         pub type pid_t = i32;
         pub type ptrdiff_t = isize;
 
         pub type Result<Type> = ::result::Result<Type, Errno>;
         
+        pub type sa_family_t = u16;
         pub type SaFlags_t = c_int;
         pub type sighandler_t = size_t;
         pub type size_t = usize;
@@ -28384,10 +28383,17 @@ pub mod system
         
         pub type tcflag_t = c_uint;
         pub type time_t = i64;
+        pub type timer_t = *mut c_void;
 
-        pub type uintptr_t = usize;
-        
+        pub type uintptr_t = usize;        
         pub type uid_t = u32;
+        
+        pub const CS5:tcflag_t     = 0x00000000;
+        pub const CS6:tcflag_t     = 0x00000010;
+        pub const CS7:tcflag_t     = 0x00000020;
+        pub const CS8:tcflag_t     = 0x00000030;
+        pub const CRTSCTS:tcflag_t = 0x80000000;
+        pub const CSIZE:tcflag_t = 0x00000030;
         
         pub const EDEADLOCK: c_int = 35;
         pub const EISNAM: c_int = 120;
@@ -28432,12 +28438,44 @@ pub mod system
         pub const ERANGE: c_int = 34;
         
         pub const FD_SETSIZE: c_int = 1024;
+
+        pub const IGNBRK:tcflag_t = 0x00000001;
+        pub const BRKINT:tcflag_t = 0x00000002;
+        pub const IGNPAR:tcflag_t = 0x00000004;
+        pub const PARMRK:tcflag_t = 0x00000008;
+        pub const INPCK:tcflag_t = 0x00000010;
+        pub const ISTRIP:tcflag_t = 0x00000020;
+        pub const INLCR:tcflag_t = 0x00000040;
+        pub const IGNCR:tcflag_t = 0x00000080;
+        pub const ICRNL:tcflag_t = 0x00000100;
+        pub const IXANY:tcflag_t = 0x00000800;
+        pub const IXON:tcflag_t = 0x00000400;
+        pub const IXOFF:tcflag_t = 0x00001000;
+        pub const IMAXBEL:tcflag_t = 0x00002000;
         
         pub const INT_MIN: c_int = -2147483648;
         pub const INT_MAX: c_int = 2147483647;
 
         pub const NANOS_PER_SEC: i64 = 1_000_000_000;
         pub const NCCS: usize = 32;
+        
+        pub const OPOST:tcflag_t = 0x1;
+        pub const ECHO:tcflag_t = 0x00000008;
+        pub const OCRNL:tcflag_t = 0o000010;
+        pub const ONOCR:tcflag_t = 0o000020;
+        pub const ONLRET:tcflag_t = 0o000040;
+        pub const ONLCR:tcflag_t = 0x4;
+        pub const OFILL:tcflag_t = 0o000100;
+        pub const OFDEL:tcflag_t = 0o000200;
+        
+        pub const SA_NODEFER:c_int = 0x40000000;
+        pub const SA_RESETHAND:c_int = 0x80000000;
+        pub const SA_RESTART:c_int = 0x10000000;
+        pub const SA_NOCLDSTOP:c_int = 0x00000001;
+        
+        pub const SA_ONSTACK: c_int = 0x08000000;
+        pub const SA_SIGINFO: c_int = 0x00000004;
+        pub const SA_NOCLDWAIT: c_int = 0x00000002;
 
         pub const SECS_PER_MINUTE: i64 = 60;
         pub const SECS_PER_HOUR: i64 = 3600;
@@ -28457,6 +28495,25 @@ pub mod system
         pub const SIG_TERM: c_int = 15;
         pub const SIG_TSTP: c_int = 20;
 
+        pub const SIGTTIN: c_int = 21;
+        pub const SIGTTOU: c_int = 22;
+        pub const SIGXCPU: c_int = 24;
+        pub const SIGXFSZ: c_int = 25;
+        pub const SIGVTALRM: c_int = 26;
+        pub const SIGPROF: c_int = 27;
+        pub const SIGWINCH: c_int = 28;
+        pub const SIGCHLD: c_int = 17;
+        pub const SIGBUS: c_int = 7;
+        pub const SIGUSR1: c_int = 10;
+        pub const SIGUSR2: c_int = 12;
+        pub const SIGCONT: c_int = 18;
+        pub const SIGSTOP: c_int = 19;
+        pub const SIGTSTP: c_int = 20;
+        pub const SIGURG: c_int = 23;
+        pub const SIGIO: c_int = 29;
+        pub const SIGSYS: c_int = 31;
+        pub const SIGSTKFLT: c_int = 16;
+
         pub const STDIN_FILENO: c_int = 0;
         pub const STDOUT_FILENO: c_int = 1;
         pub const STDERR_FILENO: c_int = 2;
@@ -28469,6 +28526,43 @@ pub mod system
         pub const VSTOP: usize = 9;        
         pub const VTIME: usize = 5;
         pub const VWERASE: usize = 14;
+
+        pub const CSTOPB:tcflag_t = 0x00000040;
+        pub const CREAD:tcflag_t = 0x00000080;
+        pub const PARENB:tcflag_t = 0x00000100;
+        pub const PARODD:tcflag_t = 0x00000200;
+        pub const HUPCL:tcflag_t = 0x00000400;
+        pub const CLOCAL:tcflag_t = 0x00000800;
+        pub const ECHOKE:tcflag_t = 0x00000800;
+        pub const ECHOE:tcflag_t = 0x00000010;
+        pub const ECHOK:tcflag_t = 0x00000020;
+        pub const ECHONL:tcflag_t = 0x00000040;
+        pub const ECHOPRT:tcflag_t = 0x00000400;
+        pub const ECHOCTL:tcflag_t = 0x00000200;
+        pub const ISIG:tcflag_t = 0x00000001;
+        pub const ICANON:tcflag_t = 0x00000002;
+        pub const PENDIN:tcflag_t = 0x00004000;
+        pub const NOFLSH:tcflag_t = 0x00000080;
+        pub const CIBAUD:tcflag_t = 0o02003600000;
+        pub const CBAUDEX:tcflag_t = 0o010000;
+        pub const VSWTC:usize = 7;
+        pub const OLCUC:tcflag_t = 0o000002;
+        pub const NLDLY:tcflag_t = 0o000400;
+        pub const CRDLY:tcflag_t = 0o003000;
+        pub const TABDLY:tcflag_t = 0o014000;
+        pub const BSDLY:tcflag_t = 0o020000;
+        pub const FFDLY:tcflag_t = 0o100000;
+        pub const VTDLY:tcflag_t = 0o040000;
+        pub const XTABS:tcflag_t = 0o014000;
+        pub const CMSPAR:tcflag_t = 0o10000000000;
+
+        pub const VEOL:usize = 11;
+        pub const VEOL2:usize = 16;
+        pub const IEXTEN:tcflag_t = 0x00008000;
+        pub const TOSTOP:tcflag_t = 0x00000100;
+        pub const FLUSHO:tcflag_t = 0x00001000;
+        pub const EXTPROC:tcflag_t = 0x00010000;
+        
         // External libc Unix Functions
         extern "C"
         {
@@ -29250,7 +29344,8 @@ pub mod system
 
         libc_bitflags! 
         {
-            pub struct ControlFlags: tcflag_t {
+            pub struct ControlFlags: tcflag_t
+            {
                 #[cfg( bsd )]
                 CIGNORE;
                 CS5;
@@ -29484,9 +29579,9 @@ pub mod system
         libc_enum! 
         {
             ///
-            #[repr( i32 )]
-            #[non_exhaustive]
-            pub enum SetArg {
+            #[repr( i32 )] #[non_exhaustive]
+            pub enum SetArg
+            {
                 TCSANOW,
                 TCSADRAIN,
                 TCSAFLUSH,
@@ -29513,6 +29608,7 @@ pub mod system
         
         #[cfg( all( target_arch = "x86_64", target_pointer_width = "32" ) )]
         type timespec_tv_nsec_t = i64;
+        
         #[cfg( not( all( target_arch = "x86_64", target_pointer_width = "32" ) ) )]
         type timespec_tv_nsec_t = c_long;
 
@@ -29735,34 +29831,38 @@ pub mod system
             }
         }
 
-        impl ErrnoSentinel for i32 {
+        impl ErrnoSentinel for i32 
+        {
             fn sentinel() -> Self {
                 -1
             }
         }
 
-        impl ErrnoSentinel for i64 {
+        impl ErrnoSentinel for i64 
+        {
             fn sentinel() -> Self {
                 -1
             }
         }
 
-        impl ErrnoSentinel for *mut c_void {
+        impl ErrnoSentinel for *mut c_void 
+        {
             fn sentinel() -> Self {
                 -1isize as *mut c_void
             }
         }
 
-        impl ErrnoSentinel for sighandler_t {
+        impl ErrnoSentinel for sighandler_t 
+        {
             fn sentinel() -> Self {
                 libc::SIG_ERR
             }
         }
         
-        #[derive(Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
-        pub struct Pid( pid_t);
+        #[derive( Debug, Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
+        pub struct Pid( pub pid_t );
         
-        #[derive(Clone, Copy, Debug)]
+        #[derive( Clone, Copy, Debug )]
         pub enum ForkResult
         {
             Parent
@@ -29772,9 +29872,7 @@ pub mod system
             Child,
         }
 
-        
-
-        fn assert_fd_valid( fd: RawFd )
+        pub fn assert_fd_valid( fd: RawFd )
         {
             assert!( 
                 usize::try_from( fd ).map_or( false, |fd| fd < FD_SETSIZE ),
@@ -34314,39 +34412,38 @@ pub mod system
         {
             let ( base_dir, fname ) = split_path( path );
             let mut res = Vec::new();
-
             let lookup_dir = base_dir.unwrap_or( "." );
 
-            if let Ok( list ) = read_dir( lookup_dir ) {
-                for ent in list {
-                    if let Ok( ent ) = ent {
+            if let Ok( list ) = read_dir( lookup_dir )
+            {
+                for ent in list
+                {
+                    if let Ok( ent ) = ent
+                    {
                         let ent_name = ent.file_name();
 
-                        if let Ok( path ) = ent_name.into_string() {
-                            if path.starts_with( fname ) {
-                                let ( name, display ) = if let Some( dir ) = base_dir {
-                                    ( format!( "{}{}{}", dir, MAIN_SEPARATOR, path ),
-                                        Some( path ) )
+                        if let Ok( path ) = ent_name.into_string()
+                        {
+                            if path.starts_with( fname )
+                            {
+                                let ( name, display ) = if let Some( dir ) = base_dir
+                                {
+                                    ( format!( "{}{}{}", dir, MAIN_SEPARATOR, path ), Some( path ) )
                                 }
-            
-            else
-            {
-                                    ( path, None )
-                                };
+                                
+                                else { ( path, None ) };
 
-                                let is_dir = ent.metadata().ok()
-                                    .map_or( false, |m| m.is_dir() );
+                                let is_dir = ent.metadata().ok().map_or( false, |m| m.is_dir() );
 
-                                let suffix = if is::dir {
-                                    Suffix::Some( MAIN_SEPARATOR )
-                                }
+                                let suffix = if is_dir { Suffix::Some( MAIN_SEPARATOR ) }
             
-            else
-            {
+                                else
+                                {
                                     Suffix::Default
                                 };
 
-                                res.push( Completion{
+                                res.push( Completion
+                                {
                                     completion: name,
                                     display: display,
                                     suffix: suffix,
@@ -34475,9 +34572,10 @@ pub mod system
             }
         }
 
-        fn split_path( path:&str ) -> ( Option<&str>, &str ) 
+        pub fn split_path( path:&str ) -> ( Option<&str>, &str ) 
         {
-            match path.rfind( is::separator ) {
+            match path.rfind( path::is_separator )
+            {
                 Some( pos ) => ( Some( &path[..pos] ), &path[pos + 1..] ),
                 None => ( None, path )
             }
@@ -40700,7 +40798,7 @@ pub mod types
     pub type Tokens = Vec<Token>;
     pub type Redirection = (String, String, String);
 
-    #[derive(Debug)]
+    #[derive( Debug)]
     pub enum QueueableToken<'i, R>
     {
         Start
@@ -40717,13 +40815,13 @@ pub mod types
         },
     }
 
-    #[derive(Clone)]
+    #[derive( Clone )]
     pub struct LineIndex
     {
         line_offsets: Vec<usize>,
     }
 
-    #[derive(Clone)]
+    #[derive( Clone )]
     pub struct Pair<'i, R>
     {
         queue: Rc<Vec<QueueableToken<'i, R>>>,
@@ -41059,7 +41157,7 @@ pub mod types
         }
     }
 
-    #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
+    #[derive( Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
     pub struct WaitStatus( i32, i32, i32 );
 
     impl WaitStatus 
@@ -41261,7 +41359,7 @@ pub mod types
         YankPop => "yank-pop",
     }
     
-    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    #[derive( Copy, Clone, Debug, Eq, PartialEq)]
     pub enum Category 
     {
         Complete,
@@ -43926,4 +44024,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 43929 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 44027 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
