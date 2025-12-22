@@ -19,6 +19,7 @@
     unused_attributes,
     unused_imports,
     unused_macros,
+    unused_mut,
     unused_variables,
  )]
 /*
@@ -45,6 +46,180 @@ pub mod tup;
 pub mod types;
 pub mod value;
 pub mod parse;
+
+
+
+
+
+
+
+
+
+
+
+
+dfslkjfakjdflkj sldfkl js;ldj flsdkjf; s; ksaljkdjalsjdj a
+askdalskjdl ajsldj alsjdlasjdjals ajhskdn knxmncx,khsja hkaskjhdaksjdjh ba
+lasdjl kajhsdlj lasjdjklas asd jalsdjdjnkasndkasjyhyyyalskdm 
+
+
+
+sadflskodj lasjdlja lsjlajsdljaslkjd laksjdlkjasl jlasd
+
+
+
+asldnka shjsadl jasljlkkkk ksljad lkajsdljasldjlaksjd kk ksd 
+as
+dkl asjhdoj aiuhsjajdh  kjsahdkahskhd kaks hdkahsdh dkashd aksd
+askdhj oajsdlkjaA sldJKkj dsahg kaHDFSL HJasldjhaLHSD HJDSA;JKLdsal;ld ;klas
+;lasdjl kjalsjd lasjkkka slk;jdalkjdsLKJKLSD A;sda
+as;lk jdDASJ;ALKJS;AJ;SADLJ
+ASDJAS;D JL LASJK L;SAJDL JASL; lssda ;lkdjsfl jlsdjfj lskdjf lsjdf ljksdfjl sklsdkkks ka jdlkjslakjd laslsakdjdslak d
+as;ldk;aslkd;klaskd ;alskd;lsak klksdkoipuauweemk as dlkmlaksjdlnasdmnmndkajnsd kashjd 
+;sda lk;lsdjlasjL  ASLK DLAJSDLAKJlk kjsa dlkjsdal jaslkjsa lakjsd aksdjlasm lsnd kjahnsdkhiausdh kanjwelk  hdkjasn
+as;dm alsdl ajsld lakskjd lkajsdl asldmdfnmksamjsdn askd  ljsldmklsa k hjshdk kdsjkj ;aslkjd kjsah whjdl;sadhkj SA
+ASDL KJAOLJDS;Lsajk;L SD ALKJSDJHLKASJHD GAS lkk jsdlahjlojds lkasjdljksadl jasdl 
+aslk jdolasj dlkasd 
+as iljkdslkasjdlasldjlas kludjsalkdhjh das
+;alll
+
+
+asd jklasjhdl jasldjdsa ljlajsdlas jdkkak;a;askd alkdsk kasi uaiwlkskmdlkasdjdslKJASDL  ; l;ksdajkasldj lasjkdlaksd
+';ask dask dl;kasjdlkasdljkalsdklj lkajsd ljasldjlaksj jdkals ljkhweq ihedoa8d8s akshjdkjhsak hsdkjashdjkashdkjas d
+asl kjaklsjdlkasjdlkjaslkjasdl jals jdslkkjasldjlasjlasdjlasjdlasjdlkasdj lasdjlkas dlasl djlaskj dlas jda
+as dl;asld ml;askjl
+'a skdjkasjdlkjnsa
+
+
+asd jksj  ;DLSAJDJSALKJHS LJASLDJLAS JLKJ ljm saljdljk lj lsdkjljasdl jasldj laksjklj dsaljk sdalkjalksjds ldaj lasd
+as'd dk;askjd;laskd;aks d;kja;sdk; askd fhjaheuwhaskldcnaslkdjlakjsdpoajolpijslkdjlakks jdlkaks djl;kasd
+as dl;jasld jlasdj lkasdladsmflhsdkihjdflamlaenflkashdflaskjd lkas hjdiwias k kkkaksd hklasdlalskj kllmasd
+as okjdsa;sdlkas lksikask ksal;asjdklasd lkaslk
+
+
+sa  d aasdlk jdlajsdljaklkds jhasdjlklaskjdlasjdlkasdlk sdlk laslaksjd lkjasdlk jdlkajSDLJALJSDSAIKDS
+ SALDLKASDJKASDLKASDJ  lk;sadjlsdfkjflsdkjflkjsdf lkj lkdajsljasdljlkasdlasj dlaskjdlkasd
+  asl;djasjkduygwa lshjdlasjkdlisajlkhfdksljlasd ;jlsalkjsadljlaskdlajksd alsjk dkajshdlahjldsahloajsdlasjdlkasd
+  ; alsdjlkasdlaksjdlkasd asld jlaskjd lasd kal;s alk lkasjdlkasjdljasoiwilw idjhao8wasdalskjdlkaso
+
+
+
+  aslk jdoilajsdlajsdlj alsdj;lkasjhjklj dkajhsdlajnkshdlkasjhdlkashdkajwoisdlajds;kas;ljd ;laksdlkajljdslk jasdlkjasjd
+   asldk;lakskd;kalsd;k;aslk dljahsdfhalsdjkasdlhjakjshkjashdlkasdaskj lasjdl;jsadljlasdjlaskjd asdlojksadlkasjd
+    sa;ldjalskdlkasdloas dlasldj kasldl jasldj dsalj lksjdlkajsdaslkjd8o23mnkm saa,jasldjlasdkjasdlahdskjasld
+    a kdsjklajsdljkalsdjlaks jdlaksjdhbcfmxcnas lklk ala sd;lkjasdljasdlkjaslkj aslksdlkalsdjlkasdlkaksdlkasdl
+    as 'sdlklasdlajksdljasdhfjfdlasjasdllasjdljlask jdlkas jdlajs dlkasjd ljasd lsadl jdlkasj dlkaskd
+    as d;jasdljlaskjdlkaskhjdhu8anlk,sdjknmxlczmlasjdlkajxljkw dliawij wolijasdlkjsdalkasdlkjasdl;jalsjkd
+    a as;dljksad k
+
+
+     sadjplkjsdlkajsdljlakjdshncxncx,z ljidswiljkasohjdalskjdlasdkhfdvagasnLJ JS;JA;LSKJ;LKJSDALKJSDALKH klkjlddsljlds
+      aslkjawdsaslkdl l aslknsdalkjaslkjaslkj alk sdalkdhg23
+      \ sdajkla;lkasdlkasjd  ladlsajlkas    olasdjhkjs djaslk dlaksjdlkajs dlalsdj lkajsdlkjalskmcxzmnkjshkjascklhjnc
+       ascjklwjlkjlkjdlaks w askdlkjsdlkjaslk jlkasd lasl kjsa dlkask las lkas k
+       as ddjkds;jkalksdklasdlkasdlk
+
+
+
+
+        aslkjlkajs dlkjas;ldjlakslkjsl kdlj aslkjasld jlkasdjlkasjlkjalsdjjlijdwliaslkdnlkasnkda allkasdlkj aslkjlasd
+         asdojalksjdl;kajsdl jalksd jalkjdlkasjd jlakjksndmcjnwisjlasjdlasjdlka a aldsj lkajsdlkjalkjsdlkasd jlaksd 
+         asd ;maksldjklasdjlasdjlkjsa lkajsd lkasldj laksdywudhsaxdhasdoiuasiu dlia a l as
+         d
+
+          asidkhasdkjask jhkasjd kjasghdjkhsadhsldhjlkjasdjkaslj las kjdlkasjd lkjaslkyhdskjhdlkjasdkjl aslik sad
+          as 'djaskjd lkjasdkj saldaks dkasd kjasdhkasd ;lasjdlkajslkjasld oksaldjlaDSLKASDLLASD
+          AS '; lk lk
+          ' ksalkdlkas jdlasjdoljas dlk jaslj  lkjsdlkasd jlk
+
+
+
+
+           asdkjasdlkjasldjlassdlkas dla alkjsd jlkasjk dlads jkasjld laskj lkasjdlkasdlkakjd laksjjkdjkjk   klsad
+
+           \as djkasdjlkasjdjlasdj lakj   lkjsadlksajlklasd lkj asdljasdalajsdl lkajl loasd;ljkasdl kjaslknjksad
+            ksadlaskjdlkasdj klal  llasjdjikl
+
+
+
+            s adjhaskkhjdaksdkjasdkjasdkajsd kas as jkhdkasjhdkjasdkjh sdjkhaskdk sakdksd hkajsd  kjka ka kak 
+
+            aas djhdsahjkajs dkjhdsakha kashdk jas dhukayw jkadskjzsahc nilksahigabjsdkjasdjkbkshdk ka kdsand '
+            a
+
+            asd kosajd lasjldj aljskdhgcn  sdjkjasdljlkjd
+
+            sa.d jlasdkjds lalkjd lkasdlj aljsldj lasjdlasd
+
+            as ;ldjplkasdljasd;lj lakssjld ;lashd jnksdfhknsd,nflkhskld fljlajsdlkjdlajds 
+            as djasldjlasjdl asjljd lkalsjdkjhgdyhkashdkj akhs kasd
+            as dkajsdlkjasjdoasjhk dlkasj kksadfhakjgfjahdsdjkhaohjkdsakjhdskhasd
+            as dlkjdaksdhl askjdgfkaslksdaiuh kasjhd kjsa akjhjsjskj jaoljlks djhkjjas dlj a sldjla osd
+            a' kjsdkljaj d jla l lkasdagjsdkashldj aksd kjashdkhasjkdkahjlksd aksdkdsa
+            a
+
+            
+
+             asdDLKJAS DL;JALJDS ALKSJD LASKJDLK JASDLJ LASDJ ;l kjjlsadjoljasd ljalsjd lasdjljasd lkasd lasjdlkjasd
+ 
+ sd ojahalksjhd kjhsadkh askdhkahsd kakshd kajsdhaskhdk askhdk hsakhdkah dkaiks hdkahshd kashd khasdk hkashd kashd asd
+ a sd;jklasdjlkasjdljalsjdlj al ljasdlajk lsajdlj ala jsdlaskj j lkjasdl  alsdlkjas djlkasjd
+ as ldjalsdjla kjsdlasj j aljs dlasjk dklja sdla sddalksj lasjd sdlkjlksadjsadjlksa jdlkas dlkadsj lkajsldslad
+  sadlkjasd lkja sdlasd jlaskjd lkasjd lkj sadlj lksakjdlaksj dlaskjd lkasj djdjalsdj laj ldasjk  njdnnnwsl kadslkashdkgaskgdsa
+  asd hjnasdlaksjhdkasjljh sak hdkajshdkas hdkjasg dnmsad hsnacsncaksjhcg asakhjchkasjkhdkjs hdkas dkasdkashd
+  as ;djasdjlasdjl aslkdj jalsk dmd msp alk lks kalkjasdl adlja lskmlsa asld jlasj dl
+  as ;jdsakljdlasdl asjdls lasd jlasjdj lasd smlcmlaskj hkadsjhaskhdklsajd
+  as dljkasdjl ajsdlakjsd asdlasj kjsda
+  as daljslkj asdlj ldsaljk 
+
+
+   sdkkjalkas jdlas lsdaljaksd lkasd alkj dslkja lkksdlkasjdljasdjbgaskhdaskjdhkasdl hakshdhkasdkjdkas kasdkhsd
+    sadojlasdjlkasdlkj asdljlasda sdlkjasdljkasd lkjasldlkjasdlkajsdljlasjdljasdljsd jl jasd
+    asd kjasdjlasj dlasdj al sdljasd ljasdljlasjdlasd hgcxnkdcsakjbcbvagfvcjkbcskaknsdikas
+    asd kjasdjasdlalsd lasdj lasdmxcnbcsjjmsalkjdksaljksdgbfdvmad
+    asd kjdlasj  lajsdljka sdljsdl asldjskagdscmnashjkjscanaslkasdlhas;d
+
+
+
+    dsalkj sdlkjasd ljlasjdlkjas dljlasjdlkaj dlmans,mncmnbc ghaswjkhsjkdjlakshdl jdlajsld hjlasjk d lkjasd
+    asald;kj laskljhasklj fdkjhalsdghfaksjfdashikl jdlhalsj  ;djkasdhflnkblcxbnzk jglawujcsslkhafdlsjkads;ljasldj lasdl jalsd jalsjdlaks dlkash sbafkjalkjsjldasl
+     as;dkjlsakdlkasjl;djlas lkasdljkhakslj nkbjaskjkdl dlasdjlka sdljasd alsdj lasdj lasjdl kasdjalskd
+     as ;ldjklasjdljas djlasd asl dljkas dlakjs djgaaghbnksdbsdijsadj allos lkd njlj sakhuhdoiuwa
+     saz; dkjaksdkjasdhaksfflksaljk hlaskjdhfagsdfknjsadkbjascbkancskbnwsa khsa dksakjdkasbjgjchnlAGAIQGRFLAS
+     A SHDASJBHKlkjhdsalhsakihjd  HLI HJSDFKKl knhdfkakjalk hjdsladhlkhashas d
+     sa lkjlkjasdl;asjk la lsakjl ksk kakkk kasdaskjdvjsdkjbnaskn 
+
+     sakdk sdhkashd sda ljdsh lkhDFGCLKJN;SCLBLALJKGLK lo kjlsakhdkljklhdkahskdhkashdkijhdsaa
+
+     a
+     sd l;lkasjdljhasldjlasj dlhjasdfjbc,mnckjhawe ;docjvolishaygdskjbnjsakldhnlsad
+      asld akjsdkjasghdjvhadflJSDGLKHJSA ALKSHD LOFDgshlSADHJ lkhjsadlhsa dahs 
+      lk asksdljasdljlasdj laskhjd lksmjcljdsalhfsakbaskkjdsalhSFVLDJH FVKdfs
+      a sdjnlkj LKJJHDASFH lkhjsadbk askhkasdhkadskh adkaj sdkas dkas dkasd kh asdkaskh dsa'
+       adssad hsdhsakh kas dhkahsdkaskhdask dkas dkahskkjashdkahsddkaj hsdkajs dkjaksdkjasd
+       asd hkjsadhkashd lak kjs dkjahkjashdkjasdh kajkshbc b cb jkakuidggcanl;wisgBDSA]
+        LO hjasdgk DFSlhk  KSJD KSLJDAL l kjklahdfhgfdslkdfslkjjdsolk fnldvn
+        sa fklj ;dkSAF
+
+
+        DS FKJLAHDF L,LHDFLADHFJKJNV CXZ  hjnfdlkslHKDFJSFJLKakj dfslhgalghaklsjdfl sdk hfjndsflhds
+        sdf fjksljkdsfslkjsljk sdflsj lkjsdflk elnjks ;lkafsdlkjlS
+        A jlkhnadfslh dfs ALDSAGULK FHSDKLKSSDFALJHDGF kjljdflshj fas hkhdflahfdshflsadh
+        sd fkjsdalkjhgfdjhfdhladsfh jsadflhasldhfl hjsd f ljhsad flkas
+        safd ljhafdlhkfdlakfj ;ldsfa lkjdsfhlhjnadfs jlk  asdfhjas hl ;fdsa lhdfhjl kdfsahjlsaDFH;LDSGAHF
+        ';ASD F;JKISDFJ;LKDSF;JL DS;FSLKDFALK ; ljhdfs;jk fdslkjalkjh dfsal;kh
+
+
+         sadjklhdfsajhafdsjlkfdsgahkdfdkd sfakd lsd fakhdgskgjsajhdgfs hdga kagdsk fsdsf 
+         k ljdfsjhldsa jkfkhdfs kjhdfs kjhaskj dfkjhasdf jkhdasf lhjjhdfskjsa dkasdfkj dfskdsaf jhsafd
+          sdfajhlasdhfkhjd lfdkhldhasfl hldfs hlkgcmkndshjj llaSGjkfsakSALKJJIK hjdsffljhalhjd lhjdlsafh KHJLH lhjfds
+          dsf kljlsadjkhflkj s kjlfdks hdfslskjhd jh ldsAHLKSDHFA LJHDSAF
+          ' ;jlkfdksgahfkh safdskahg  hgjdfskg dfskjh safdkgsdfkjsdfgka
+          as dflhsdakhfdlsh lksdhf hsdlhflsadh  fhdslakh fljhddsljh lagdfdsbfbhasdhbf
+          s fkjldakjfdhgalshfd ds fhgsdflkjasdl hsdlkihfkjskj djnciksgjdsfjsdfhjfd sj;al suidgfksdhfgkajhgkdfsa]
+          ]sd
+          ;flj hdfahs; ljkfadsldkjfjsafdiuf sdlafhlakdfs h;ldasfkjd flkhadsflljikhdfaghifahksdfgdfklsa;f 
+          s fdjkahdslhfdlksj sdflhadsjfh;fdsalkhdgflkhadsfkjdfsalkh ldskfh lsjdkhflakhjgdfshjfdjlkjhsalkhjdfsalkhl h
 */
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
@@ -2278,7 +2453,7 @@ pub mod parse;
                 $field.set_cursor( pos );
             }
 
-            pub fn next_line( &self, column: usize ) 
+            pub fn next_line( &self, column:usize ) 
             {
                 let $slf = self;
                 $field.next_line( column );
@@ -2390,7 +2565,7 @@ pub mod parse;
                 $field.set_cursor( pos );
             }
 
-            pub fn next_line( &mut self, column: usize ) {
+            pub fn next_line( &mut self, column:usize ) {
                 let $slf = self;
                 $field.next_line( column );
             }
@@ -2947,6 +3122,12 @@ pub mod parse;
     }
 }
 
+pub mod celestial
+{
+
+
+}
+
 pub mod api
 {
 	/*!
@@ -3415,14 +3596,17 @@ pub mod api
 	{
 		let mut cr = CommandResult::new();
 		let hfile = history::get_history_file();
+
 		let path = Path::new(hfile.as_str());
-		if !path.exists()
+		
+        if !path.exists()
         {
 			let info = "no history file";
 			print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
 			return cr;
 		}
-		let conn = match Connection::open(&hfile)
+		
+        let conn = match Connection::open(&hfile)
         {
 			Ok(x) => x,
 			Err(e) => {
@@ -3437,9 +3621,13 @@ pub mod api
 
 		let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
 		let opt = OptMainHistory::from_iter_safe(args);
-		match opt {
-			Ok(opt) => match opt.cmd {
-				Some(SubCommand::Delete { rowid: rowids }) => {
+		
+        match opt
+        {
+			Ok(opt) => match opt.cmd
+            {
+				Some(SubCommandHistory::Delete { rowid: rowids }) =>
+                {
 					let mut _count = 0;
 					for rowid in rowids {
 						let _deleted = delete_history_item(&conn, rowid);
@@ -3453,15 +3641,23 @@ pub mod api
 					}
 					cr
 				}
-				Some(SubCommand::Add {
+				
+                Some
+                (
+                    SubCommandHistory::Add
+                    {
 					timestamp: ts,
 					input,
-				}) => {
+				    }
+                ) =>
+                {
 					let ts = ts.unwrap_or(0 as f64);
 					add_history(sh, ts, &input);
 					cr
 				}
-				None => {
+				
+                None =>
+                {
 					let (str_out, str_err) = list_current_history(sh, &conn, &opt);
 					if !str_out.is_empty() {
 						print_stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
@@ -4175,7 +4371,7 @@ pub mod api
 		(buffer, result_stderr) */
 	}
 
-	pub fn delete_history_item(conn: &Connection, rowid: usize) -> bool
+	pub fn delete_history_item(conn: &Connection, rowid:usize) -> bool
     {
         /*
 		let history_table = history::get_history_table();
@@ -4321,7 +4517,7 @@ pub mod arrays
             }
         }
         
-        pub fn get( &self, index: usize ) -> OverResult<Value> 
+        pub fn get( &self, index:usize ) -> OverResult<Value> 
         {
             if index >= self.inner.vec.len() {
                 Err( OverError::ArrOutOfBounds( index ) )
@@ -4410,7 +4606,7 @@ pub mod ascii
         T, T, T, T, T, T, T, T, T, T, T, T, F, F, F, F, F,
     ] );
 
-    pub const CHUNK: usize = 64;
+    pub const CHUNK:usize = 64;
 
     pub static TRIE_START: Align8<[u8; 411]> = Align8
     ( [
@@ -5086,8 +5282,8 @@ pub mod char
         file: Option<String>,
         contents: String,
         stream: Peekable<Chars<'static>>,
-        line: usize,
-        col: usize,
+        line:usize,
+        col:usize,
     }
 
     #[derive( Clone, Debug )]
@@ -5161,13 +5357,13 @@ pub mod char
             inner.col
         }
 
-        fn set_line( &mut self, value: usize ) 
+        fn set_line( &mut self, value:usize ) 
         {
             let mut inner = self.inner.borrow_mut();
             inner.line = value;
         }
 
-        fn set_col( &mut self, value: usize ) 
+        fn set_col( &mut self, value:usize ) 
         {
             let mut inner = self.inner.borrow_mut();
             inner.col = value;
@@ -5305,15 +5501,15 @@ pub mod char
     const CTRL_MASK: u8 = 0x1f;
     pub fn ctrl( c: char ) -> char { ( ( c as u8 ) & CTRL_MASK ) as char }
     pub fn unctrl( c: char ) -> char { ( ( c as u8 ) | CTRL_BIT ) as char }
-    // pub fn repeat_char( ch:char, n: usize ) -> String
-    pub fn repeat( ch:char, n: usize ) -> String
+    // pub fn repeat_char( ch:char, n:usize ) -> String
+    pub fn repeat( ch:char, n:usize ) -> String
     {
         let mut buf = [0; 4];
         let s = ch.encode_utf8( &mut buf );
         s.repeat( n )
     }
-    // pub fn backward_char( n: usize, s:&str, cur: usize ) -> usize
-    pub fn backward( n: usize, s:&str, cur: usize ) -> usize
+    // pub fn backward_char( n:usize, s:&str, cur:usize ) -> usize
+    pub fn backward( n:usize, s:&str, cur:usize ) -> usize
     {
         let mut chars = s[..cur].char_indices()
             .filter( |&( _, ch )| !is::combining_mark( ch ) );
@@ -5328,8 +5524,8 @@ pub mod char
 
         res
     }
-    // pub fn backward_search_char( n: usize, buf:&str, mut cur: usize, ch: char ) -> Option<usize>
-    pub fn backward_search( n: usize, buf:&str, mut cur: usize, ch: char ) -> Option<usize>
+    // pub fn backward_search_char( n:usize, buf:&str, mut cur:usize, ch: char ) -> Option<usize>
+    pub fn backward_search( n:usize, buf:&str, mut cur:usize, ch: char ) -> Option<usize>
     {
         let mut pos = None;
 
@@ -5345,8 +5541,8 @@ pub mod char
 
         pos
     }
-    // pub fn forward_char( n: usize, s:&str, cur: usize ) -> usize
-    pub fn forward( n: usize, s:&str, cur: usize ) -> usize
+    // pub fn forward_char( n:usize, s:&str, cur:usize ) -> usize
+    pub fn forward( n:usize, s:&str, cur:usize ) -> usize
     {
         let mut chars = s[cur..].char_indices()
             .filter( |&( _, ch )| !is::combining_mark( ch ) );
@@ -5363,8 +5559,8 @@ pub mod char
             None => s.len()
         }
     }
-    // pub fn forward_search_char( n: usize, buf:&str, mut cur: usize, ch: char ) -> Option<usize>
-    pub fn forward_search( n: usize, buf:&str, mut cur: usize, ch: char ) -> Option<usize>
+    // pub fn forward_search_char( n:usize, buf:&str, mut cur:usize, ch: char ) -> Option<usize>
+    pub fn forward_search( n:usize, buf:&str, mut cur:usize, ch: char ) -> Option<usize>
     {
         let mut pos = None;
 
@@ -5974,7 +6170,7 @@ pub mod error
 
         impl ParseError 
         {
-            pub fn from_over( e:&OverError, file: Option<String>, line: usize, col: usize ) -> Self {
+            pub fn from_over( e:&OverError, file: Option<String>, line:usize, col:usize ) -> Self {
                 ParseError {
                     file,
                     kind: ParseErrorKind::OverError( format!( "{} at line {}, col {}", e, line, col ) ),
@@ -6273,7 +6469,7 @@ pub mod expand
     // pub fn expand_glob(tokens: &mut types::Tokens )
     pub fn glob( tokens:&mut types::Tokens )
     {
-        let mut idx: usize = 0;
+        let mut idx:usize = 0;
         let mut buff = Vec::new();
 
         for ( sep, text) in tokens.iter()
@@ -6352,7 +6548,7 @@ pub mod expand
     // pub fn expand_env(sh: &Shell, tokens: &mut types::Tokens)
     pub fn environment(sh: &Shell, tokens: &mut types::Tokens)
     {
-        let mut idx: usize = 0;
+        let mut idx:usize = 0;
         let mut buff = Vec::new();
 
         for (sep, token) in tokens.iter()
@@ -6699,7 +6895,7 @@ pub mod fmt
     use crate::INDENT_STEP;
     */
    
-    fn indent( amount: usize ) -> String 
+    fn indent( amount:usize ) -> String 
     {
         " ".repeat( amount )
     }
@@ -6733,12 +6929,12 @@ pub mod fmt
     }
     pub trait Format 
     {
-        fn format( &self, full: bool, indent_amt: usize ) -> String;
+        fn format( &self, full: bool, indent_amt:usize ) -> String;
     }
 
     impl Format for BigRational 
     {
-        fn format( &self, _full: bool, _indent_amt: usize ) -> String {
+        fn format( &self, _full: bool, _indent_amt:usize ) -> String {
             let frac_fmt = format!( "{}", *self );
 
             if *self.denom() == BigInt::one() {
@@ -6754,7 +6950,7 @@ pub mod fmt
 
     impl Format for char 
     {
-        fn format( &self, _full: bool, _indent_amt: usize ) -> String {
+        fn format( &self, _full: bool, _indent_amt:usize ) -> String {
             if let Some( s ) = get_char_map( *self ) {
                 format!( "\'{}\'", s )
             }
@@ -6768,14 +6964,14 @@ pub mod fmt
 
     impl Format for String 
     {
-        fn format( &self, _full: bool, _indent_amt: usize ) -> String {
+        fn format( &self, _full: bool, _indent_amt:usize ) -> String {
             format!( "\"{}\"", replace_all( self ) )
         }
     }
 
     impl Format for Value 
     {
-        fn format( &self, _full: bool, indent_amt: usize ) -> String
+        fn format( &self, _full: bool, indent_amt:usize ) -> String
         {
             match *self
             {
@@ -6808,7 +7004,7 @@ pub mod fmt
 
     impl Format for Arr 
     {
-        fn format( &self, full: bool, indent_amt: usize ) -> String {
+        fn format( &self, full: bool, indent_amt:usize ) -> String {
             match self.len() {
                 0 => {
                     if full {
@@ -6868,7 +7064,7 @@ pub mod fmt
 
     impl Format for Tup 
     {
-        fn format( &self, full: bool, indent_amt: usize ) -> String {
+        fn format( &self, full: bool, indent_amt:usize ) -> String {
             match self.len() {
                 0 => {
                     if full {
@@ -6920,7 +7116,7 @@ pub mod fmt
 
     impl Format for Obj 
     {
-        fn format( &self, full: bool, indent_amt: usize ) -> String {
+        fn format( &self, full: bool, indent_amt:usize ) -> String {
             if self.is_empty() && !self.has_parent() {
                 if full {
                     String::from( "{}" )
@@ -7094,7 +7290,7 @@ pub mod highlights
         commands
     }
 
-    fn find( line: &str, start_byte: usize, token: &(String, String) ) -> Option<Range<usize>> 
+    fn find( line: &str, start_byte:usize, token: &(String, String) ) -> Option<Range<usize>> 
     {
         let ( sep, word ) = token;
         let mut search_area = &line[start_byte..];
@@ -7331,8 +7527,7 @@ pub mod is
     // #[inline] pub fn is_combining_mark( ch: char ) -> bool
     #[inline] pub fn combining_mark( ch: char ) -> bool
     {
-        use unicode_normalization::char::is_combining_mark;
-        is::combining_mark( ch )
+        unicode_normalization::char::is_combining_mark( ch )
     }
     // #[inline] pub fn is_ctrl( ch: char ) -> bool
     #[inline] pub fn control( ch:char ) -> bool
@@ -7450,9 +7645,9 @@ pub mod is
         else { regex::contains( &s, r#"^[a-zA-Z0-9_]$"#) }
     }
 
-    pub fn tty( fd:system::api::c_int ) -> bool { system::api::isatty( fd ) != 0 }
+    pub fn tty( fd:system::api::c_int ) -> bool { unsafe { system::api::isatty( fd ) != 0 } }
     // pub fn is_printable( c: char ) -> bool
-    pub fn is_printable( c: char ) -> bool { c == '\t' || c == '\n' || !( c == '\0' || ctrl( c ) ) }
+    pub fn printable( c: char ) -> bool { c == '\t' || c == '\n' || !( c == '\0' || ctrl( c ) ) }
     // pub fn is_ctrl( c: char ) -> bool
     pub fn ctrl( c: char ) -> bool { c != '\0' && c as u32 <= 0x1f }
     // fn is_args_in_token(token: &str) -> bool
@@ -8167,7 +8362,7 @@ pub mod num
                 #[inline] fn from_i128( n: i128 ) -> Option<Self> {
                     n.to_i64().and_then( FromPrimitive::from_i64 )
                 }
-                #[inline] fn from_usize( n: usize ) -> Option<Self> {
+                #[inline] fn from_usize( n:usize ) -> Option<Self> {
                     n.to_u64().and_then( FromPrimitive::from_u64 )
                 }
                 #[inline] fn from_u8( n: u8 ) -> Option<Self> {
@@ -8225,7 +8420,7 @@ pub mod num
                             n.$to_ty()
                         }
                         
-                        #[inline] fn from_usize( n: usize ) -> Option<$T> {
+                        #[inline] fn from_usize( n:usize ) -> Option<$T> {
                             n.$to_ty()
                         }
                         
@@ -8302,7 +8497,7 @@ pub mod num
                             n.$to_ty().and_then( Self::new )
                         }
                         
-                        #[inline] fn from_usize( n: usize ) -> Option<$T> {
+                        #[inline] fn from_usize( n:usize ) -> Option<$T> {
                             n.$to_ty().and_then( Self::new )
                         }
                         
@@ -10630,7 +10825,7 @@ pub mod num
             pow_impl!( f32, f32, f32, <f32 as Float>::powf );
             pow_impl!( f64, f32, f64, <f64 as Float>::powf );
             pow_impl!( f64, f64, f64, <f64 as Float>::powf );            
-            #[inline] pub fn pow<T: Clone + One + Mul<T, Output = T>>( mut base: T, mut exp: usize ) -> T 
+            #[inline] pub fn pow<T: Clone + One + Mul<T, Output = T>>( mut base: T, mut exp:usize ) -> T 
             {
                 if exp == 0 {
                     return T::one();
@@ -10653,7 +10848,7 @@ pub mod num
                 acc
             }
             
-            #[inline] pub fn checked_pow<T: Clone + One + CheckedMul>( mut base: T, mut exp: usize ) -> Option<T> 
+            #[inline] pub fn checked_pow<T: Clone + One + CheckedMul>( mut base: T, mut exp:usize ) -> Option<T> 
             {
                 if exp == 0 {
                     return Some( T::one() );
@@ -11180,7 +11375,7 @@ pub mod num
                                     None             => return Err( PFE { kind: Invalid } ),
                                 };
 
-                                fn pow( base: $t, exp: usize ) -> $t { Float::powi( base, exp as i32 ) }
+                                fn pow( base: $t, exp:usize ) -> $t { Float::powi( base, exp as i32 ) }
                                 
                                 match ( is_positive, exp )
                                 {
@@ -18312,7 +18507,7 @@ pub mod num
                                 self.it.size_hint()
                             }
                             #[inline]
-                            fn nth( &mut self, n: usize ) -> Option<u32> {
+                            fn nth( &mut self, n:usize ) -> Option<u32> {
                                 self.it.nth( n ).cloned()
                             }
                             #[inline]
@@ -18511,7 +18706,7 @@ pub mod num
                                 self.it.size_hint()
                             }
                             #[inline]
-                            fn nth( &mut self, n: usize ) -> Option<u64> {
+                            fn nth( &mut self, n:usize ) -> Option<u64> {
                                 self.it.nth( n ).cloned()
                             }
                             #[inline]
@@ -18590,7 +18785,7 @@ pub mod num
                 
             
                 #[allow( clippy::many_single_char_names )]
-                fn montgomery( x:&BigUint, y:&BigUint, m:&BigUint, k: BigDigit, n: usize ) -> BigUint {
+                fn montgomery( x:&BigUint, y:&BigUint, m:&BigUint, k: BigDigit, n:usize ) -> BigUint {
                    
                    
                    
@@ -19019,7 +19214,7 @@ pub mod num
                     let shift = ( shift % bits ).to_u8().unwrap();
                     biguint_shl2( n, digits, shift )
                 }
-                fn biguint_shl2( n: Cow<'_, BigUint>, digits: usize, shift: u8 ) -> BigUint {
+                fn biguint_shl2( n: Cow<'_, BigUint>, digits:usize, shift: u8 ) -> BigUint {
                     let mut data = match digits {
                         0 => n.into_owned().data,
                         _ => {
@@ -19057,7 +19252,7 @@ pub mod num
                     let shift = ( shift % bits ).to_u8().unwrap();
                     biguint_shr2( n, digits, shift )
                 }
-                fn biguint_shr2( n: Cow<'_, BigUint>, digits: usize, shift: u8 ) -> BigUint {
+                fn biguint_shr2( n: Cow<'_, BigUint>, digits:usize, shift: u8 ) -> BigUint {
                     if digits >= n.data.len() {
                         let mut n = n.into_owned();
                         n.set_zero();
@@ -21383,7 +21578,7 @@ pub mod num
             }
         }
 
-        fn approximate_float<T, F>( val: F, max_error: F, max_iterations: usize ) -> Option<Ratio<T>> where
+        fn approximate_float<T, F>( val: F, max_error: F, max_iterations:usize ) -> Option<Ratio<T>> where
             T: Integer + Signed + Bounded + NumCast + Clone,
             F: FloatCore + NumCast,
         {
@@ -21399,7 +21594,7 @@ pub mod num
             { r } )
         }
         
-        fn approximate_float_unsigned<T, F>( val: F, max_error: F, max_iterations: usize ) -> Option<Ratio<T>> where
+        fn approximate_float_unsigned<T, F>( val: F, max_error: F, max_iterations:usize ) -> Option<Ratio<T>> where
             T: Integer + Bounded + NumCast + Clone,
             F: FloatCore + NumCast,
         {
@@ -21695,7 +21890,7 @@ pub mod num
             }
         }
         
-        pub fn frac_from_whole_and_dec( whole: BigInt, decimal: BigInt, dec_len: usize ) -> BigRational
+        pub fn frac_from_whole_and_dec( whole: BigInt, decimal: BigInt, dec_len:usize ) -> BigRational
         {
             let denom = ::num::traits::pow( BigInt::from_u8( 10 ).unwrap(), dec_len );
             BigRational::new( whole, 1.into() ) + BigRational::new( decimal, denom )
@@ -21944,7 +22139,7 @@ pub mod now
     (
         sh: &mut Shell,
         cl: &CommandLine,
-        idx_cmd: usize,
+        idx_cmd:usize,
         capture: bool,
     ) -> Option<i32>
     {
@@ -21957,7 +22152,7 @@ pub mod now
     (
         sh: &mut Shell,
         cl: &CommandLine,
-        idx_cmd: usize,
+        idx_cmd:usize,
         capture: bool,
     ) -> Option<CommandResult>
     {
@@ -22238,7 +22433,7 @@ pub mod now
     (
         sh: &mut shell::Shell,
         cl: &CommandLine,
-        idx_cmd: usize,
+        idx_cmd:usize,
         options: &CommandOptions,
         pgid: &mut i32,
         term_given: &mut bool,
@@ -22713,7 +22908,7 @@ pub mod objects
     {
         map: HashMap<String, Value>,
         parent: Option<Obj>,
-        id: usize,
+        id:usize,
     }
     
     #[derive( Clone, Debug )]
@@ -23587,7 +23782,7 @@ pub mod parses
         static ref TUP_SENTINEL: Obj = Obj::from_map_unchecked( HashMap::new() );
     }
 
-    pub const MAX_DEPTH: usize = 64;
+    pub const MAX_DEPTH:usize = 64;
     pub fn load_from_file( path:&str ) -> ParseResult<Obj>
     {
         object_file( path )
@@ -23650,7 +23845,7 @@ pub mod parses
         mut stream:&mut CharStream,
         globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        depth: usize,
+        depth:usize,
     ) -> ParseResult<Value> 
     {
        
@@ -23695,7 +23890,7 @@ pub mod parses
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
         parent:&mut Option<Obj>,
-        depth: usize,
+        depth:usize,
         cur_brace: Option<char>,
     ) -> ParseResult<bool> 
     {
@@ -23835,7 +24030,7 @@ pub mod parses
         obj:&ObjMap,
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        depth: usize,
+        depth:usize,
     ) -> ParseResult<Value> 
     {
        
@@ -23952,7 +24147,7 @@ pub mod parses
         obj:&ObjMap,
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        depth: usize,
+        depth:usize,
     ) -> ParseResult<Value> 
     {        
         if depth > MAX_DEPTH 
@@ -24012,8 +24207,8 @@ pub mod parses
     fn parse_field
     ( 
         mut stream: CharStream,
-        line: usize,
-        col: usize,
+        line:usize,
+        col:usize,
     ) -> ParseResult<( String, bool, bool )> 
     {
         let mut field = String::new();
@@ -24064,9 +24259,9 @@ pub mod parses
         obj:&ObjMap,
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        line: usize,
-        col: usize,
-        depth: usize,
+        line:usize,
+        col:usize,
+        depth:usize,
         cur_brace: Option<char>,
         is_first: bool,
     ) -> ParseResult<Value> 
@@ -24185,7 +24380,7 @@ pub mod parses
         obj:&ObjMap,
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        depth: usize,
+        depth:usize,
         cur_brace: Option<char>,
         ch:char,
     ) -> ParseResult<Value> 
@@ -24211,7 +24406,7 @@ pub mod parses
         unary_op_on_value( stream, res, ch, line, col )
     }
    
-    fn parse_numeric( stream:&mut CharStream, line: usize, col: usize ) -> ParseResult<Value> 
+    fn parse_numeric( stream:&mut CharStream, line:usize, col:usize ) -> ParseResult<Value> 
     {
         let mut s1 = String::new();
         let mut s2 = String::new();
@@ -24317,9 +24512,9 @@ pub mod parses
         obj:&ObjMap,
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        line: usize,
-        col: usize,
-        depth: usize,
+        line:usize,
+        col:usize,
+        depth:usize,
         cur_brace: Option<char>,
     ) -> ParseResult<Value> 
     {
@@ -24602,7 +24797,7 @@ pub mod parses
         obj:&ObjMap,
         mut globals:&mut GlobalMap,
         mut included:&mut IncludedMap,
-        depth: usize,
+        depth:usize,
     ) -> ParseResult<Value> 
     {
         enum IncludeType {
@@ -24770,8 +24965,8 @@ pub mod parses
         stream:&CharStream,
         val: Value,
         op:char,
-        line: usize,
-        col: usize,
+        line:usize,
+        col:usize,
     ) -> ParseResult<Value> 
     {
         use crate::types::Type::*;
@@ -24798,8 +24993,8 @@ pub mod parses
         mut val1: Value,
         mut val2: Value,
         op:char,
-        line: usize,
-        col: usize,
+        line:usize,
+        col:usize,
     ) -> ParseResult<Value> 
     {
         use crate::types::Type::*;
@@ -25458,7 +25653,7 @@ pub mod path
     #[derive( Debug )]
     pub struct PatternError
     {
-        pub pos: usize,
+        pub pos:usize,
         pub msg: &'static str,
     }
 
@@ -25713,7 +25908,7 @@ pub mod path
             &self,
             mut follows_separator: bool,
             mut file: ::str::Chars,
-            i: usize,
+            i:usize,
             options: MatchOptions,
         ) -> MatchResult
         {
@@ -25800,7 +25995,7 @@ pub mod path
     (
         todo: &mut Vec<Result<( PathWrapper, usize ), GlobError>>,
         patterns:&[Pattern],
-        idx: usize,
+        idx:usize,
         path: &PathWrapper,
         options: MatchOptions,
     )
@@ -26681,7 +26876,7 @@ pub mod regex
         Some( pfx )
     }
     
-    pub fn backward_word( n: usize, buf:&str, cur: usize, word_break:&str ) -> usize
+    pub fn backward_word( n:usize, buf:&str, cur:usize, word_break:&str ) -> usize
     {
         let mut chars = buf[..cur].char_indices().rev();
 
@@ -26701,7 +26896,7 @@ pub mod regex
         }
     }
 
-    pub fn forward_word( n: usize, buf:&str, cur: usize, word_break:&str ) -> usize
+    pub fn forward_word( n:usize, buf:&str, cur:usize, word_break:&str ) -> usize
     {
         let mut chars = buf[cur..].char_indices();
 
@@ -26720,7 +26915,7 @@ pub mod regex
         }
     }
 
-    pub fn back_n_words( n: usize, buf:&str, cur: usize, word_break:&str ) -> ops::Range<usize>
+    pub fn back_n_words( n:usize, buf:&str, cur:usize, word_break:&str ) -> ops::Range<usize>
     {
         let prev = regex::backward_word( 1, buf, cur, word_break );
         let end = regex::word_end( &buf, prev, word_break );
@@ -26736,7 +26931,7 @@ pub mod regex
         }
     }
 
-    pub fn forward_n_words( n: usize, buf:&str, cur: usize, word_break:&str ) -> ops::Range<usize>
+    pub fn forward_n_words( n:usize, buf:&str, cur:usize, word_break:&str ) -> ops::Range<usize>
     {
         let start = next_word( 1, buf, cur, word_break );
 
@@ -26762,7 +26957,7 @@ pub mod regex
         chars.next().map( |( idx, _ )| idx )
     }
 
-    pub fn word_start( buf:&str, cur: usize, word_break:&str ) -> usize
+    pub fn word_start( buf:&str, cur:usize, word_break:&str ) -> usize
     {
         let fwd = match buf[cur..].chars().next() {
             Some( ch ) => word_break.contains( ch ),
@@ -26786,7 +26981,7 @@ pub mod regex
         }
     }
 
-    pub fn next_word( n: usize, buf:&str, cur: usize, word_break:&str ) -> usize
+    pub fn next_word( n:usize, buf:&str, cur:usize, word_break:&str ) -> usize
     {
         let mut chars = buf[cur..].char_indices();
 
@@ -26806,7 +27001,7 @@ pub mod regex
         }
     }
 
-    pub fn word_end( buf:&str, cur: usize, word_break:&str ) -> usize
+    pub fn word_end( buf:&str, cur:usize, word_break:&str ) -> usize
     {
         let mut chars = buf[cur..].char_indices();
 
@@ -27147,7 +27342,7 @@ pub mod scripts
 
     pub fn expand_args_in_tokens(tokens: &mut types::Tokens, args: &[String])
     {
-        let mut idx: usize = 0;
+        let mut idx:usize = 0;
         let mut buff = Vec::new();
 
         for (sep, token) in tokens.iter()
@@ -27608,7 +27803,7 @@ pub mod str
             }
         }
         
-        #[inline] pub fn with_capacity( n: usize ) -> SmallString<A> {
+        #[inline] pub fn with_capacity( n:usize ) -> SmallString<A> {
             SmallString {
                 data: SmallVec::with_capacity( n ),
             }
@@ -27713,15 +27908,15 @@ pub mod str
             }
         }
         
-        #[inline] pub fn grow( &mut self, new_cap: usize ) {
+        #[inline] pub fn grow( &mut self, new_cap:usize ) {
             self.data.grow( new_cap );
         }
         
-        #[inline] pub fn reserve( &mut self, additional: usize ) {
+        #[inline] pub fn reserve( &mut self, additional:usize ) {
             self.data.reserve( additional );
         }
         
-        #[inline] pub fn reserve_exact( &mut self, additional: usize ) {
+        #[inline] pub fn reserve_exact( &mut self, additional:usize ) {
             self.data.reserve( additional );
         }
         
@@ -27729,7 +27924,7 @@ pub mod str
             self.data.shrink_to_fit();
         }
         
-        #[inline] pub fn truncate( &mut self, len: usize ) {
+        #[inline] pub fn truncate( &mut self, len:usize ) {
             assert!( self.is_char_boundary( len ) );
             self.data.truncate( len );
         }
@@ -27742,7 +27937,7 @@ pub mod str
             self.data.clear();
         }
         
-        #[inline] pub fn remove( &mut self, idx: usize ) -> char {
+        #[inline] pub fn remove( &mut self, idx:usize ) -> char {
             let ch = match self[idx..].chars().next() {
                 Some( ch ) => ch,
                 None => panic!( "cannot remove a char from the end of a string" ),
@@ -27762,7 +27957,7 @@ pub mod str
             ch
         }
         
-        #[inline] pub fn insert( &mut self, idx: usize, ch: char ) {
+        #[inline] pub fn insert( &mut self, idx:usize, ch: char ) {
             assert!( self.is_char_boundary( idx ) );
 
             match ch.len_utf8() {
@@ -27771,7 +27966,7 @@ pub mod str
             }
         }
         
-        #[inline] pub fn insert_str( &mut self, idx: usize, s:&str ) {
+        #[inline] pub fn insert_str( &mut self, idx:usize, s:&str ) {
             assert!( self.is_char_boundary( idx ) );
 
             let len = self.len();
@@ -27807,8 +28002,8 @@ pub mod str
         #[inline] pub fn retain<F: FnMut( char ) -> bool>( &mut self, mut f: F ) {
             struct SetLenOnDrop<'a, A: Array<Item = u8>> {
                 s:&'a mut SmallString<A>,
-                idx: usize,
-                del_bytes: usize,
+                idx:usize,
+                del_bytes:usize,
             }
 
             impl<'a, A: Array<Item = u8>> Drop for SetLenOnDrop<'a, A> {
@@ -28276,6 +28471,43 @@ pub mod str
 
         Cow::Owned( virt )
     }
+
+    pub fn wrap_separator(sep: &str, s: &str) -> String
+    {
+        let mut _token = String::new();
+        let mut met_subsep = false;
+        
+        let mut previous_subsep = 'N';
+        for c in s.chars()
+        {
+            if sep.is_empty() && (c == '`' || c == '"')
+            {
+                if !met_subsep
+                {
+                    met_subsep = true;
+                    previous_subsep = c;
+                }
+                
+                else if c == previous_subsep
+                {
+                    met_subsep = false;
+                    previous_subsep = 'N';
+                }
+            }
+
+            if c.to_string() == sep { _token.push('\\'); }
+
+            if c == ' ' && sep.is_empty() && !met_subsep { _token.push('\\'); }
+
+            _token.push(c);
+        }
+        /*
+        asd;ljlkjs ;;ladslj asd;lj;lkJDSA;FH ASDHFLKAS HDFK HASDLKFJDSAHF LJKASDFKJ DSAF
+         SDFLKLADFJLASKJDFLJKSDA;LF J;ASKJDF; LKJASD;FLKJ;SALD JF;LSAJKD FI;UASHL;DJFJK;SAKJDF;LKAS JDFG
+         SDAF JASL;KJJASD;LFHJJ; 'lkfds;lkja;sjhdfsja dljfasd;jf;kjldfs; jlasdf;lkjsadfl;j s;ljkad;sf jk;lajdsf
+        */
+        format!("{}{}{}", sep, _token, sep)
+    }
 }
 
 pub mod string
@@ -28395,49 +28627,49 @@ pub mod system
         pub const CRTSCTS:tcflag_t = 0x80000000;
         pub const CSIZE:tcflag_t = 0x00000030;
         
-        pub const EDEADLOCK: c_int = 35;
-        pub const EISNAM: c_int = 120;
-        pub const ENAVAIL: c_int = 119;
-        pub const ENOTNAM: c_int = 118;
-        pub const EREMOTEIO: c_int = 121;
-        pub const EUCLEAN: c_int = 117;        
+        pub const EDEADLOCK:c_int = 35;
+        pub const EISNAM:c_int = 120;
+        pub const ENAVAIL:c_int = 119;
+        pub const ENOTNAM:c_int = 118;
+        pub const EREMOTEIO:c_int = 121;
+        pub const EUCLEAN:c_int = 117;        
 
-        pub const EPERM: c_int = 1;
-        pub const ENOENT: c_int = 2;
-        pub const ESRCH: c_int = 3;
-        pub const EINTR: c_int = 4;
-        pub const EIO: c_int = 5;
-        pub const ENXIO: c_int = 6;
-        pub const E2BIG: c_int = 7;
-        pub const ENOEXEC: c_int = 8;
-        pub const EBADF: c_int = 9;
-        pub const ECHILD: c_int = 10;
-        pub const EAGAIN: c_int = 11;
-        pub const ENOMEM: c_int = 12;
-        pub const EACCES: c_int = 13;
-        pub const EFAULT: c_int = 14;
-        pub const ENOTBLK: c_int = 15;
-        pub const EBUSY: c_int = 16;
-        pub const EEXIST: c_int = 17;
-        pub const EXDEV: c_int = 18;
-        pub const ENODEV: c_int = 19;
-        pub const ENOTDIR: c_int = 20;
-        pub const EISDIR: c_int = 21;
-        pub const EINVAL: c_int = 22;
-        pub const ENFILE: c_int = 23;
-        pub const EMFILE: c_int = 24;
-        pub const ENOTTY: c_int = 25;
-        pub const ETXTBSY: c_int = 26;
-        pub const EFBIG: c_int = 27;
-        pub const ENOSPC: c_int = 28;
-        pub const ESPIPE: c_int = 29;
-        pub const EROFS: c_int = 30;
-        pub const EMLINK: c_int = 31;
-        pub const EPIPE: c_int = 32;
-        pub const EDOM: c_int = 33;
-        pub const ERANGE: c_int = 34;
+        pub const EPERM:c_int = 1;
+        pub const ENOENT:c_int = 2;
+        pub const ESRCH:c_int = 3;
+        pub const EINTR:c_int = 4;
+        pub const EIO:c_int = 5;
+        pub const ENXIO:c_int = 6;
+        pub const E2BIG:c_int = 7;
+        pub const ENOEXEC:c_int = 8;
+        pub const EBADF:c_int = 9;
+        pub const ECHILD:c_int = 10;
+        pub const EAGAIN:c_int = 11;
+        pub const ENOMEM:c_int = 12;
+        pub const EACCES:c_int = 13;
+        pub const EFAULT:c_int = 14;
+        pub const ENOTBLK:c_int = 15;
+        pub const EBUSY:c_int = 16;
+        pub const EEXIST:c_int = 17;
+        pub const EXDEV:c_int = 18;
+        pub const ENODEV:c_int = 19;
+        pub const ENOTDIR:c_int = 20;
+        pub const EISDIR:c_int = 21;
+        pub const EINVAL:c_int = 22;
+        pub const ENFILE:c_int = 23;
+        pub const EMFILE:c_int = 24;
+        pub const ENOTTY:c_int = 25;
+        pub const ETXTBSY:c_int = 26;
+        pub const EFBIG:c_int = 27;
+        pub const ENOSPC:c_int = 28;
+        pub const ESPIPE:c_int = 29;
+        pub const EROFS:c_int = 30;
+        pub const EMLINK:c_int = 31;
+        pub const EPIPE:c_int = 32;
+        pub const EDOM:c_int = 33;
+        pub const ERANGE:c_int = 34;
         
-        pub const FD_SETSIZE: c_int = 1024;
+        pub const FD_SETSIZE:c_int = 1024;
 
         pub const IGNBRK:tcflag_t = 0x00000001;
         pub const BRKINT:tcflag_t = 0x00000002;
@@ -28453,11 +28685,11 @@ pub mod system
         pub const IXOFF:tcflag_t = 0x00001000;
         pub const IMAXBEL:tcflag_t = 0x00002000;
         
-        pub const INT_MIN: c_int = -2147483648;
-        pub const INT_MAX: c_int = 2147483647;
+        pub const INT_MIN:c_int = -2147483648;
+        pub const INT_MAX:c_int = 2147483647;
 
         pub const NANOS_PER_SEC: i64 = 1_000_000_000;
-        pub const NCCS: usize = 32;
+        pub const NCCS:usize = 32;
         
         pub const OPOST:tcflag_t = 0x1;
         pub const ECHO:tcflag_t = 0x00000008;
@@ -28473,59 +28705,63 @@ pub mod system
         pub const SA_RESTART:c_int = 0x10000000;
         pub const SA_NOCLDSTOP:c_int = 0x00000001;
         
-        pub const SA_ONSTACK: c_int = 0x08000000;
-        pub const SA_SIGINFO: c_int = 0x00000004;
-        pub const SA_NOCLDWAIT: c_int = 0x00000002;
+        pub const SA_ONSTACK:c_int = 0x08000000;
+        pub const SA_SIGINFO:c_int = 0x00000004;
+        pub const SA_NOCLDWAIT:c_int = 0x00000002;
 
         pub const SECS_PER_MINUTE: i64 = 60;
         pub const SECS_PER_HOUR: i64 = 3600;
         pub const SIG_DFL: sighandler_t = 0 as sighandler_t;
         pub const SIG_IGN: sighandler_t = 1 as sighandler_t;
         pub const SIG_ERR: sighandler_t = !0 as sighandler_t;
-        pub const SIG_HUP: c_int = 1;
-        pub const SIG_INT: c_int = 2;
-        pub const SIG_QUIT: c_int = 3;
-        pub const SIG_ILL: c_int = 4;
-        pub const SIG_ABRT: c_int = 6;
-        pub const SIG_FPE: c_int = 8;
-        pub const SIG_KILL: c_int = 9;
-        pub const SIG_SEGV: c_int = 11;
-        pub const SIG_PIPE: c_int = 13;
-        pub const SIG_ALRM: c_int = 14;
-        pub const SIG_TERM: c_int = 15;
-        pub const SIG_TSTP: c_int = 20;
+        pub const SIG_HUP:c_int = 1;
+        pub const SIG_INT:c_int = 2;
+        pub const SIG_QUIT:c_int = 3;
+        pub const SIG_ILL:c_int = 4;
+        pub const SIG_ABRT:c_int = 6;
+        pub const SIG_FPE:c_int = 8;
+        pub const SIG_KILL:c_int = 9;
+        pub const SIG_SEGV:c_int = 11;
+        pub const SIG_PIPE:c_int = 13;
+        pub const SIG_ALRM:c_int = 14;
+        pub const SIG_TERM:c_int = 15;
+        pub const SIG_TSTP:c_int = 20;
 
-        pub const SIGTTIN: c_int = 21;
-        pub const SIGTTOU: c_int = 22;
-        pub const SIGXCPU: c_int = 24;
-        pub const SIGXFSZ: c_int = 25;
-        pub const SIGVTALRM: c_int = 26;
-        pub const SIGPROF: c_int = 27;
-        pub const SIGWINCH: c_int = 28;
-        pub const SIGCHLD: c_int = 17;
-        pub const SIGBUS: c_int = 7;
-        pub const SIGUSR1: c_int = 10;
-        pub const SIGUSR2: c_int = 12;
-        pub const SIGCONT: c_int = 18;
-        pub const SIGSTOP: c_int = 19;
-        pub const SIGTSTP: c_int = 20;
-        pub const SIGURG: c_int = 23;
-        pub const SIGIO: c_int = 29;
-        pub const SIGSYS: c_int = 31;
-        pub const SIGSTKFLT: c_int = 16;
+        pub const SIGTTIN:c_int = 21;
+        pub const SIGTTOU:c_int = 22;
+        pub const SIGXCPU:c_int = 24;
+        pub const SIGXFSZ:c_int = 25;
+        pub const SIGVTALRM:c_int = 26;
+        pub const SIGPROF:c_int = 27;
+        pub const SIGWINCH:c_int = 28;
+        pub const SIGCHLD:c_int = 17;
+        pub const SIGBUS:c_int = 7;
+        pub const SIGUSR1:c_int = 10;
+        pub const SIGUSR2:c_int = 12;
+        pub const SIGCONT:c_int = 18;
+        pub const SIGSTOP:c_int = 19;
+        pub const SIGTSTP:c_int = 20;
+        pub const SIGURG:c_int = 23;
+        pub const SIGIO:c_int = 29;
+        pub const SIGSYS:c_int = 31;
+        pub const SIGSTKFLT:c_int = 16;
 
-        pub const STDIN_FILENO: c_int = 0;
-        pub const STDOUT_FILENO: c_int = 1;
-        pub const STDERR_FILENO: c_int = 2;
+        pub const STDIN_FILENO:c_int = 0;
+        pub const STDOUT_FILENO:c_int = 1;
+        pub const STDERR_FILENO:c_int = 2;
+        
+        pub const TCSANOW:c_int = 0;
+        pub const TCSADRAIN:c_int = 1;
+        pub const TCSAFLUSH:c_int = 2;
 
-        pub const VDISCARD: usize = 13;
-        pub const VMIN: usize = 6;
-        pub const VREPRINT: usize = 12;
-        pub const VSUSP: usize = 10;
-        pub const VSTART: usize = 8;
-        pub const VSTOP: usize = 9;        
-        pub const VTIME: usize = 5;
-        pub const VWERASE: usize = 14;
+        pub const VDISCARD:usize = 13;
+        pub const VMIN:usize = 6;
+        pub const VREPRINT:usize = 12;
+        pub const VSUSP:usize = 10;
+        pub const VSTART:usize = 8;
+        pub const VSTOP:usize = 9;        
+        pub const VTIME:usize = 5;
+        pub const VWERASE:usize = 14;
 
         pub const CSTOPB:tcflag_t = 0x00000040;
         pub const CREAD:tcflag_t = 0x00000080;
@@ -28572,11 +28808,11 @@ pub mod system
             pub fn getpid() -> pid_t;
             pub fn getppid() -> pid_t;
             pub fn getuid() -> uid_t;
-            pub fn isatty( fd: c_int ) -> c_int;
+            pub fn isatty( fd:c_int ) -> c_int;
             pub fn pipe( fds: *mut c_int ) -> c_int;
             pub fn select
             ( 
-                nfds: c_int,
+                nfds:c_int,
                 readfds: *mut FDSet,
                 writefds: *mut FDSet,
                 errorfds: *mut FDSet,
@@ -28630,7 +28866,7 @@ pub mod system
         #[derive( Clone, Copy, Debug, Eq, Hash, PartialEq )]
         pub struct SignalIterator
         {
-            next: usize,
+            next:usize,
         }
 
         impl Iterator for SignalIterator
@@ -28810,9 +29046,9 @@ pub mod system
         
         pub struct SignalInformation
         {
-            pub si_signo: c_int,
-            pub si_errno: c_int,
-            pub si_code: c_int,
+            pub si_signo:c_int,
+            pub si_errno:c_int,
+            pub si_code:c_int,
             #[doc(hidden )]
             #[deprecated(
                 since = "0.2.54",
@@ -28840,8 +29076,8 @@ pub mod system
             pub sa_sigaction: sighandler_t,
             pub sa_mask: SignalSet,
             #[cfg( target_arch = "sparc64" )]
-            __reserved0: c_int,
-            pub sa_flags: c_int,
+            __reserved0:c_int,
+            pub sa_flags:c_int,
             pub sa_restorer: Option<extern "C" fn()>,
         }
         
@@ -28897,7 +29133,8 @@ pub mod system
         libc_enum!
         {
             #[repr( i32 )] #[non_exhaustive]
-            pub enum Signal {
+            pub enum Signal
+            {
                 SIGHUP,
                 SIGINT,
                 SIGQUIT,
@@ -28935,9 +29172,9 @@ pub mod system
         cfg_if!
         {
             if #[cfg( target_pointer_width = "32" )] {
-                const ULONG_SIZE: usize = 32;
+                const ULONG_SIZE:usize = 32;
             } else if #[cfg( target_pointer_width = "64" )] {
-                const ULONG_SIZE: usize = 64;
+                const ULONG_SIZE:usize = 64;
             }
             
             else
@@ -30919,7 +31156,7 @@ pub mod system
             use crate::terminal::{Color, Cursor, Size, Style, Theme};
             use crate::util::{char_width, is::combining_mark};
             */
-            const TAB_STOP: usize = 8;
+            const TAB_STOP:usize = 8;
 
             pub struct ScreenBuffer 
             {
@@ -30964,7 +31201,7 @@ pub mod system
 
                 pub fn set_cursor( &mut self, pos: Cursor ) { self.cursor = pos; }
 
-                pub fn next_line( &mut self, column: usize )
+                pub fn next_line( &mut self, column:usize )
                 {
                     self.cursor.line += 1;
                     self.cursor.column = column;
@@ -31333,7 +31570,7 @@ pub mod system
                 #[inline] pub fn set_cursor<C: Into<Cursor>>( &self, pos: C ) {
                     self.0.set_cursor( pos.into() );
                 }
-                #[inline] pub fn next_line( &self, column: usize ) {
+                #[inline] pub fn next_line( &self, column:usize ) {
                     self.0.next_line( column );
                 }
                 pub fn set_cursor_mode( &self, mode: CursorMode ) -> io::Result<()> {
@@ -31430,7 +31667,7 @@ pub mod system
                 #[inline] pub fn cursor( &self ) -> Cursor { self.0.cursor() }
                 #[inline] pub fn set_cursor<C: Into<Cursor>>( &mut self, pos: C ) 
                 { self.0.set_cursor( pos.into() ); }
-                #[inline] pub fn next_line( &mut self, column: usize ) { self.0.next_line( column ); }
+                #[inline] pub fn next_line( &mut self, column:usize ) { self.0.next_line( column ); }
                 pub fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()> 
                 { self.0.set_cursor_mode( mode ) }
                 pub fn clear_screen( &mut self ) { self.0.clear_screen(); }
@@ -31796,8 +32033,8 @@ pub mod system
             #[derive( Copy, Clone, Debug, Default, Eq, PartialEq )]
             pub struct Cursor
             {
-                pub line: usize,
-                pub column: usize,
+                pub line:usize,
+                pub column:usize,
             }
 
             impl Cursor
@@ -31986,8 +32223,8 @@ pub mod system
             #[derive( Copy, Clone, Debug, Eq, PartialEq )]
             pub struct Size
             {
-                pub lines: usize,
-                pub columns: usize,
+                pub lines:usize,
+                pub columns:usize,
             }
 
             impl Size
@@ -32030,10 +32267,10 @@ pub mod system
                 pub fn clear_screen( &self ) -> io::Result<()> { self.0.clear_screen() }
                 pub fn clear_to_line_end( &self ) -> io::Result<()> { self.0.clear_to_line_end() }
                 pub fn clear_to_screen_end( &self ) -> io::Result<()> { self.0.clear_to_screen_end() }
-                pub fn move_up( &self, n: usize ) -> io::Result<()> { self.0.move_up( n ) }
-                pub fn move_down( &self, n: usize ) -> io::Result<()> { self.0.move_down( n ) }
-                pub fn move_left( &self, n: usize ) -> io::Result<()> { self.0.move_left( n ) }
-                pub fn move_right( &self, n: usize ) -> io::Result<()> { self.0.move_right( n ) }
+                pub fn move_up( &self, n:usize ) -> io::Result<()> { self.0.move_up( n ) }
+                pub fn move_down( &self, n:usize ) -> io::Result<()> { self.0.move_down( n ) }
+                pub fn move_left( &self, n:usize ) -> io::Result<()> { self.0.move_left( n ) }
+                pub fn move_right( &self, n:usize ) -> io::Result<()> { self.0.move_right( n ) }
                 pub fn move_to_first_column( &self ) -> io::Result<()> { self.0.move_to_first_column() }
                 pub fn set_cursor_mode( &self, mode: CursorMode ) -> io::Result<()>
                 { self.0.set_cursor_mode( mode ) }
@@ -32106,10 +32343,10 @@ pub mod system
                 pub fn clear_to_line_end( &mut self ) -> io::Result<()> { self.0.clear_to_line_end() }
                 pub fn clear_to_screen_end( &mut self ) -> io::Result<()>
                 { self.0.clear_to_screen_end() }
-                pub fn move_up( &mut self, n: usize ) -> io::Result<()> { self.0.move_up( n ) }
-                pub fn move_down( &mut self, n: usize ) -> io::Result<()> { self.0.move_down( n ) }
-                pub fn move_left( &mut self, n: usize ) -> io::Result<()> { self.0.move_left( n ) }
-                pub fn move_right( &mut self, n: usize ) -> io::Result<()> { self.0.move_right( n ) }
+                pub fn move_up( &mut self, n:usize ) -> io::Result<()> { self.0.move_up( n ) }
+                pub fn move_down( &mut self, n:usize ) -> io::Result<()> { self.0.move_down( n ) }
+                pub fn move_left( &mut self, n:usize ) -> io::Result<()> { self.0.move_left( n ) }
+                pub fn move_right( &mut self, n:usize ) -> io::Result<()> { self.0.move_right( n ) }
                 pub fn move_to_first_column( &mut self ) -> io::Result<()>
                 { self.0.move_to_first_column() }
                 pub fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()>
@@ -32620,7 +32857,7 @@ pub mod system
                     } }
                 }
                 
-                const OUT_BUFFER_SIZE: usize = 8192;
+                const OUT_BUFFER_SIZE:usize = 8192;
 
                 const XTERM_ENABLE_MOUSE:&str = "\x1b[?1006h\x1b[?1002h";
                 const XTERM_DISABLE_MOUSE:&str = "\x1b[?1006l\x1b[?1002l";
@@ -32778,25 +33015,25 @@ pub mod system
                     pub fn clear_to_screen_end( &self ) -> io::Result<()>
                     { self.lock_writer().clear_to_screen_end() }
 
-                    pub fn move_up( &self, n: usize ) -> io::Result<()>
+                    pub fn move_up( &self, n:usize ) -> io::Result<()>
                     {
                         if n != 0 { self.lock_writer().move_up( n )?; }
                         Ok( () )
                     }
 
-                    pub fn move_down( &self, n: usize ) -> io::Result<()>
+                    pub fn move_down( &self, n:usize ) -> io::Result<()>
                     {
                         if n != 0 { self.lock_writer().move_down( n )?; }
                         Ok( () )
                     }
 
-                    pub fn move_left( &self, n: usize ) -> io::Result<()>
+                    pub fn move_left( &self, n:usize ) -> io::Result<()>
                     {
                         if n != 0 { self.lock_writer().move_left( n )?; }
                         Ok( () )
                     }
 
-                    pub fn move_right( &self, n: usize ) -> io::Result<()>
+                    pub fn move_right( &self, n:usize ) -> io::Result<()>
                     {
                         if n != 0 { self.lock_writer().move_right( n )?; }
                         Ok( () )
@@ -33496,7 +33733,7 @@ pub mod system
                         Ok( () )
                     }
 
-                    pub fn move_up( &mut self, n: usize ) -> io::Result<()> 
+                    pub fn move_up( &mut self, n:usize ) -> io::Result<()> 
                     {
                         /*
                         if n == 1 {
@@ -33508,7 +33745,7 @@ pub mod system
                         Ok( () )
                     }
 
-                    pub fn move_down( &mut self, n: usize ) -> io::Result<()> 
+                    pub fn move_down( &mut self, n:usize ) -> io::Result<()> 
                     {
                         /*
                         if n != 0 {
@@ -33519,7 +33756,7 @@ pub mod system
                         Ok( () )
                     }
 
-                    pub fn move_left( &mut self, n: usize ) -> io::Result<()> 
+                    pub fn move_left( &mut self, n:usize ) -> io::Result<()> 
                     {
                         /*
                         if n == 1 {
@@ -33532,7 +33769,7 @@ pub mod system
                         Ok( () )
                     }
 
-                    pub fn move_right( &mut self, n: usize ) -> io::Result<()> 
+                    pub fn move_right( &mut self, n:usize ) -> io::Result<()> 
                     {
                         /*
                         if n == 1 {
@@ -33786,7 +34023,7 @@ pub mod system
                     ws_ypixel: c_ushort,
                 }
 
-                fn get_winsize( fd: c_int ) -> io::Result<Size> 
+                fn get_winsize( fd:c_int ) -> io::Result<Size> 
                 {
                     let mut winsz: Winsize = unsafe { zeroed() };
                     let res = unsafe { ioctl( fd, TIOCGWINSZ.into(), &mut winsz ) };
@@ -33931,7 +34168,7 @@ pub mod system
                     input &= !XTERM_MODIFIER_MASK;
 
                     let input = match input {
-                        0 ..= 3 => mouse_button_event( input, is::pressed ),
+                        0 ..= 3 => mouse_button_event( input, is_pressed ),
                         64 => MouseInput::WheelUp,
                         65 => MouseInput::WheelDown,
                         _ => MouseInput::Motion,
@@ -33969,7 +34206,7 @@ pub mod system
                     None
                 }
 
-                fn mouse_button_event( input: u32, is::pressed: bool ) -> MouseInput {
+                fn mouse_button_event( input: u32, is_pressed: bool ) -> MouseInput {
                     let button = match input {
                         0 => MouseButton::Left,
                         1 => MouseButton::Middle,
@@ -33977,7 +34214,7 @@ pub mod system
                         _ => MouseButton::Other( input )
                     };
 
-                    if is::pressed {
+                    if is_pressed {
                         MouseInput::ButtonPressed( button )
                     }
             
@@ -34009,12 +34246,12 @@ pub mod system
 
                 static LAST_SIGNAL: AtomicUsize = AtomicUsize::new( 0 );
 
-                extern "C" fn handle_signal( signum: c_int ) 
+                extern "C" fn handle_signal( signum:c_int ) 
                 {
                     LAST_SIGNAL.store( signum as usize, Ordering::Relaxed );
                 }
 
-                fn conv_signal( sig: c_int ) -> Option<Signal> 
+                fn conv_signal( sig:c_int ) -> Option<Signal> 
                 {
                     match NixSignal::try_from( sig ).ok() 
                     {
@@ -34062,14 +34299,14 @@ pub mod system
                 { io::Error::new( io::ErrorKind::Other, format!( "operation not supported: {}", op ) ) }
 
                 #[cfg( target_pointer_width = "64" )]
-                fn to_u32( u: usize ) -> u32
+                fn to_u32( u:usize ) -> u32
                 {
                     if u > u32::max_value() as usize { u32::max_value() }
                     else { u as u32 }
                 }
 
                 #[cfg( any( target_pointer_width = "16", target_pointer_width = "32" ) )]
-                fn to_u32( u: usize ) -> u32 { u as u32 }
+                fn to_u32( u:usize ) -> u32 { u as u32 }
             } pub use self::terminal::{ * };
         }
 
@@ -34362,7 +34599,7 @@ pub mod system
         pub trait Completer<Term: Terminal>: Send + Sync 
         {
             fn complete( &self, word:&str, prompter:&Prompter<Term>, start:usize, end:usize ) -> Option<Vec<Completion>>;
-            fn word_start( &self, line:&str, end: usize, prompter:&Prompter<Term> ) -> usize
+            fn word_start( &self, line:&str, end:usize, prompter:&Prompter<Term> ) -> usize
             {
                 word_break_start( &line[..end], prompter.word_break_chars() )
             }
@@ -34381,8 +34618,8 @@ pub mod system
                 &self,
                 _word:&str,
                 _reader:&Prompter<Term>,
-                _start: usize,
-                _end: usize
+                _start:usize,
+                _end:usize
             ) -> Option<Vec<Completion>> { None }
         }
         
@@ -34390,12 +34627,12 @@ pub mod system
 
         impl<Term: Terminal> Completer<Term> for PathCompleter 
         {
-            fn complete( &self, word:&str, _reader:&Prompter<Term>, _start: usize, _end: usize )
+            fn complete( &self, word:&str, _reader:&Prompter<Term>, _start:usize, _end:usize )
                     -> Option<Vec<Completion>> {
                 Some( complete_path( word ) )
             }
 
-            fn word_start( &self, line:&str, end: usize, _reader:&Prompter<Term> ) -> usize {
+            fn word_start( &self, line:&str, end:usize, _reader:&Prompter<Term> ) -> usize {
                 escaped_word_start( &line[..end] )
             }
 
@@ -34677,7 +34914,7 @@ pub mod system
         {
             lines: Lines<'a>,
             filename:&'a Path,
-            line_num: usize,
+            line_num:usize,
         }
 
         enum Token<'a> 
@@ -35325,7 +35562,7 @@ pub mod system
 
             fn rewrite_history<P: AsRef<Path>>( &self, path: P, w:&WriteLock<Term> ) -> io::Result<()>
             {
-                fn nth_line( s:&str, n: usize ) -> Option<usize> {
+                fn nth_line( s:&str, n:usize ) -> Option<usize> {
                     let start = s.as_ptr() as usize;
 
                     s.lines().nth( n )
@@ -35388,7 +35625,7 @@ pub mod system
             
             pub fn set_buffer( &self, buf:&str ) -> io::Result<()> { self.lock_reader().set_buffer( buf ) }
             
-            pub fn set_cursor( &self, pos: usize ) -> io::Result<()> { self.lock_reader().set_cursor( pos ) }
+            pub fn set_cursor( &self, pos:usize ) -> io::Result<()> { self.lock_reader().set_cursor( pos ) }
             
             pub fn add_history( &self, line: String ) { self.lock_reader().add_history( line ); }
             
@@ -35396,11 +35633,11 @@ pub mod system
             
             pub fn clear_history( &self  ) { self.lock_reader().clear_history(); }
             
-            pub fn remove_history( &self, idx: usize ) { self.lock_reader().remove_history( idx ); }
+            pub fn remove_history( &self, idx:usize ) { self.lock_reader().remove_history( idx ); }
             
-            pub fn set_history_size( &self, n: usize ) { self.lock_reader().set_history_size( n ); }
+            pub fn set_history_size( &self, n:usize ) { self.lock_reader().set_history_size( n ); }
             
-            pub fn truncate_history( &self, n: usize ) { self.lock_reader().truncate_history( n ); }
+            pub fn truncate_history( &self, n:usize ) { self.lock_reader().truncate_history( n ); }
         }
     }
 
@@ -35438,8 +35675,8 @@ pub mod system
         {
             memory: Vec<char>,
             input: Vec<u8>,
-            col: usize,
-            line: usize,
+            col:usize,
+            line:usize,
             cursor_mode: CursorMode,
             size: Size,
         }
@@ -35484,13 +35721,13 @@ pub mod system
                 }
             }
             
-            pub fn move_up( &self, n: usize ) { self.lock_writer().move_up( n ); }
+            pub fn move_up( &self, n:usize ) { self.lock_writer().move_up( n ); }
             
-            pub fn move_down( &self, n: usize ) { self.lock_writer().move_down( n ); }
+            pub fn move_down( &self, n:usize ) { self.lock_writer().move_down( n ); }
             
-            pub fn move_left( &self, n: usize ) { self.lock_writer().move_left( n ); }
+            pub fn move_left( &self, n:usize ) { self.lock_writer().move_left( n ); }
             
-            pub fn move_right( &self, n: usize ) { self.lock_writer().move_right( n ); }
+            pub fn move_right( &self, n:usize ) { self.lock_writer().move_right( n ); }
             
             pub fn move_to_first_column( &self  ) { self.lock_writer().move_to_first_column() }
             
@@ -35504,7 +35741,7 @@ pub mod system
                 self.lock_reader().resize( new_size );
             }
             
-            pub fn scroll_up( &self, n: usize ) { self.lock_writer().scroll_up( n ); }
+            pub fn scroll_up( &self, n:usize ) { self.lock_writer().scroll_up( n ); }
             
             pub fn cursor( &self ) -> ( usize, usize ) 
             {
@@ -35595,19 +35832,19 @@ pub mod system
                 }
             }
 
-            fn move_up( &mut self, n: usize ) {
+            fn move_up( &mut self, n:usize ) {
                 self.line = self.line.saturating_sub( n );
             }
 
-            fn move_down( &mut self, n: usize ) {
+            fn move_down( &mut self, n:usize ) {
                 self.line = min( self.size.lines - 1, self.line + n );
             }
 
-            fn move_left( &mut self, n: usize ) {
+            fn move_left( &mut self, n:usize ) {
                 self.col = self.col.saturating_sub( n );
             }
 
-            fn move_right( &mut self, n: usize ) {
+            fn move_right( &mut self, n:usize ) {
                 self.col = min( self.size.columns - 1, self.col + n );
             }
 
@@ -35652,7 +35889,7 @@ pub mod system
                 }
             }
 
-            fn scroll_up( &mut self, n: usize ) {
+            fn scroll_up( &mut self, n:usize ) {
                 let chars = min( self.memory.len(), self.size.columns * n );
                 self.memory.drain( ..chars );
                 self.memory.extend( repeat( ' ' ).take( chars ) );
@@ -35708,7 +35945,7 @@ pub mod system
         pub struct Lines<'a>
         {
             writer: MutexGuard<'a, Writer>,
-            line: usize,
+            line:usize,
         }
 
         impl<'a> Lines<'a>
@@ -35812,22 +36049,22 @@ pub mod system
                 Ok( () )
             }
 
-            fn move_up( &mut self, n: usize ) -> io::Result<()> {
+            fn move_up( &mut self, n:usize ) -> io::Result<()> {
                 self.0.move_up( n );
                 Ok( () )
             }
 
-            fn move_down( &mut self, n: usize ) -> io::Result<()> {
+            fn move_down( &mut self, n:usize ) -> io::Result<()> {
                 self.0.move_down( n );
                 Ok( () )
             }
 
-            fn move_left( &mut self, n: usize ) -> io::Result<()> {
+            fn move_left( &mut self, n:usize ) -> io::Result<()> {
                 self.0.move_left( n );
                 Ok( () )
             }
 
-            fn move_right( &mut self, n: usize ) -> io::Result<()> {
+            fn move_right( &mut self, n:usize ) -> io::Result<()> {
                 self.0.move_right( n );
                 Ok( () )
             }
@@ -36102,7 +36339,7 @@ pub mod system
                 self.write.cursor
             }
             
-            pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn set_cursor( &mut self, pos:usize ) -> io::Result<()> {
                 self.write.set_cursor( pos )
             }
             
@@ -36140,11 +36377,11 @@ pub mod system
                 self.write.history.len()
             }
 
-            fn next_history( &mut self, n: usize ) -> io::Result<()> {
+            fn next_history( &mut self, n:usize ) -> io::Result<()> {
                 self.write.next_history( n )
             }
 
-            fn prev_history( &mut self, n: usize ) -> io::Result<()> {
+            fn prev_history( &mut self, n:usize ) -> io::Result<()> {
                 self.write.prev_history( n )
             }
             
@@ -36729,7 +36966,7 @@ pub mod system
                 Ok( () )
             }
             
-            pub fn blink( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn blink( &mut self, pos:usize ) -> io::Result<()> {
                 self.write.blink( pos )?;
 
                 self.read.max_wait_duration = Some( BLINK_DURATION );
@@ -36899,7 +37136,7 @@ pub mod system
                 }
             }
 
-            fn start_page_completions( &mut self, n_completions: usize ) -> io::Result<()> {
+            fn start_page_completions( &mut self, n_completions:usize ) -> io::Result<()> {
                 self.read.state = InputState::CompleteIntro;
                 self.write.redraw_prompt( PromptType::CompleteIntro( n_completions ) )
             }
@@ -36917,7 +37154,7 @@ pub mod system
                 }
             }
 
-            fn show_completions_page( &mut self, offset: usize ) -> io::Result<()> {
+            fn show_completions_page( &mut self, offset:usize ) -> io::Result<()> {
                 if let Some( compl ) = self.read.completions.take() {
                     let width = self.write.screen_size.columns
                         .min( self.read.completion_display_width );
@@ -36952,7 +37189,7 @@ pub mod system
                 Ok( () )
             }
 
-            fn show_completions_line( &mut self, offset: usize ) -> io::Result<()> {
+            fn show_completions_line( &mut self, offset:usize ) -> io::Result<()> {
                 if let Some( compl ) = self.read.completions.take() {
                     let width = self.write.screen_size.columns
                         .min( self.read.completion_display_width );
@@ -37012,7 +37249,7 @@ pub mod system
                 Ok( () )
             }
 
-            fn next_completion( &mut self, n: usize ) -> io::Result<()> {
+            fn next_completion( &mut self, n:usize ) -> io::Result<()> {
                 let len = self.read.completions.as_ref().map_or( 0, |c| c.len() );
                 let max = len + 1;
 
@@ -37026,7 +37263,7 @@ pub mod system
                 Ok( () )
             }
 
-            fn prev_completion( &mut self, n: usize ) -> io::Result<()> {
+            fn prev_completion( &mut self, n:usize ) -> io::Result<()> {
                 let len = self.read.completions.as_ref().map_or( 0, |c| c.len() );
                 let max = len + 1;
 
@@ -37043,7 +37280,7 @@ pub mod system
                 self.set_completion( new )
             }
 
-            fn set_completion( &mut self, new: usize ) -> io::Result<()> {
+            fn set_completion( &mut self, new:usize ) -> io::Result<()> {
                 let len = self.read.completions.as_ref().map_or( 0, |c| c.len() );
                 let old = self.read.completion_index;
 
@@ -37120,13 +37357,13 @@ pub mod system
                 Ok( () )
             }
 
-            fn backward_word( &mut self, n: usize ) -> io::Result<()> {
+            fn backward_word( &mut self, n:usize ) -> io::Result<()> {
                 let pos = regex::backward_word( n,
                     &self.write.buffer, self.write.cursor, &self.read.word_break );
                 self.write.move_to( pos )
             }
 
-            fn forward_word( &mut self, n: usize ) -> io::Result<()> {
+            fn forward_word( &mut self, n:usize ) -> io::Result<()> {
                 let pos = regex::forward_word( n,
                     &self.write.buffer, self.write.cursor, &self.read.word_break );
                 self.write.move_to( pos )
@@ -37221,7 +37458,7 @@ pub mod system
                 Ok( () )
             }
             
-            fn overwrite( &mut self, n: usize, ch: char ) -> io::Result<()> {
+            fn overwrite( &mut self, n:usize, ch: char ) -> io::Result<()> {
                 let start = self.write.cursor;
                 let end = char::forward( n, &self.write.buffer, start );
 
@@ -37242,7 +37479,7 @@ pub mod system
                 self.replace_str_forward( start..end, &s )
             }
 
-            fn overwrite_back( &mut self, mut n: usize ) -> io::Result<()> {
+            fn overwrite_back( &mut self, mut n:usize ) -> io::Result<()> {
                 if self.read.overwritten_append != 0 {
                     let n_del = n.min( self.read.overwritten_append );
 
@@ -37277,7 +37514,7 @@ pub mod system
                 Ok( () )
             }
             
-            pub fn insert( &mut self, n: usize, ch: char ) -> io::Result<()> {
+            pub fn insert( &mut self, n:usize, ch: char ) -> io::Result<()> {
                 if n != 0 {
                     let s = char::repeat( ch, n );
                     self.insert_str( &s )?;
@@ -37361,7 +37598,7 @@ pub mod system
         pub const WORD_BREAK_CHARS:&str = " \t\n\"\\'`@$><=;|&{( ";
         pub const START_INVISIBLE: char = '\x01';
         pub const END_INVISIBLE: char = '\x02';
-        const MAX_KILLS: usize = 10;
+        const MAX_KILLS:usize = 10;
         pub struct Reader<'a, Term: 'a + Terminal>
         {
             iface:&'a Interface<Term>,
@@ -37378,14 +37615,14 @@ pub mod system
             pub sequence: String,
             pub input_accepted: bool,
             pub overwrite_mode: bool,
-            pub overwritten_append: usize,
+            pub overwritten_append:usize,
             pub overwritten_chars: String,
             pub completer: Arc<dyn Completer<Term>>,
             pub completion_append_character: Option<char>,
             pub completions: Option<Vec<Completion>>,
-            pub completion_index: usize,
-            pub completion_start: usize,
-            pub completion_prefix: usize,
+            pub completion_index:usize,
+            pub completion_start:usize,
+            pub completion_prefix:usize,
 
             pub string_chars: Cow<'static, str>,
             pub word_break: Cow<'static, str>,
@@ -37429,7 +37666,7 @@ pub mod system
             },
             Number,
             CharSearch{
-                n: usize,
+                n:usize,
                 backward: bool,
             },
             TextSearch,
@@ -37580,7 +37817,7 @@ pub mod system
                 }
             }
             
-            pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn set_cursor( &mut self, pos:usize ) -> io::Result<()> {
                 if self.lock.is_active() {
                     self.prompter().set_cursor( pos )
                 }
@@ -37614,19 +37851,19 @@ pub mod system
                 }
             }
             
-            pub fn remove_history( &self, idx: usize ) {
+            pub fn remove_history( &self, idx:usize ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().remove_history( idx );
                 }
             }
             
-            pub fn set_history_size( &self, n: usize ) {
+            pub fn set_history_size( &self, n:usize ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().set_history_size( n );
                 }
             }
             
-            pub fn truncate_history( &self, n: usize ) {
+            pub fn truncate_history( &self, n:usize ) {
                 if !self.lock.is_active() {
                     self.iface.lock_write().truncate_history( n );
                 }
@@ -37738,7 +37975,7 @@ pub mod system
                 self.lock.completion_display_width
             }
             
-            pub fn set_completion_display_width( &mut self, n: usize ) {
+            pub fn set_completion_display_width( &mut self, n:usize ) {
                 self.lock.completion_display_width = n;
             }
             
@@ -37746,7 +37983,7 @@ pub mod system
                 self.lock.completion_query_items
             }
             
-            pub fn set_completion_query_items( &mut self, n: usize ) {
+            pub fn set_completion_query_items( &mut self, n:usize ) {
                 self.lock.completion_query_items = n;
             }
             
@@ -38164,7 +38401,7 @@ pub mod system
 
             #[inline] fn next( &mut self ) -> Option<Self::Item> { self.0.next().map( |&( ref s, ref cmd )| ( &s[..], cmd ) ) }
             
-            #[inline] fn nth( &mut self, n: usize ) -> Option<Self::Item> { self.0.nth( n ).map( |&( ref s, ref cmd )| ( &s[..], cmd ) ) }
+            #[inline] fn nth( &mut self, n:usize ) -> Option<Self::Item> { self.0.nth( n ).map( |&( ref s, ref cmd )| ( &s[..], cmd ) ) }
             
             #[inline] fn size_hint( &self ) -> ( usize, Option<usize> ) { self.0.size_hint() }
         }
@@ -38276,13 +38513,13 @@ pub mod system
         };
         /*
         */
-        const COL_SPACE: usize = 2;
+        const COL_SPACE:usize = 2;
         pub struct Table<'a, S: 'a> {
             strings:&'a [S],
             sizes: Option<&'a [usize]>,
-            offset: usize,
-            per_col: usize,
-            rows: usize,
+            offset:usize,
+            per_col:usize,
+            rows:usize,
             horizontal: bool,
         }
 
@@ -38357,8 +38594,8 @@ pub mod system
         {
             strings:&'a [S],
             sizes: Option<&'a [usize]>,
-            stride: usize,
-            offset: usize,
+            stride:usize,
+            offset:usize,
         }
 
         impl<'a, S: 'a + AsRef<str>> Iterator for Line<'a, S> 
@@ -38377,7 +38614,7 @@ pub mod system
             }
         }
         
-        pub fn format_columns<S: AsRef<str>>( strs:&[S], screen_width: usize, horizontal: bool )
+        pub fn format_columns<S: AsRef<str>>( strs:&[S], screen_width:usize, horizontal: bool )
         -> Option<Vec<usize>>
         {
             if strs.is_empty() {
@@ -38532,10 +38769,10 @@ pub mod system
             
             
             fn clear_to_screen_end( &mut self ) -> io::Result<()>;
-            fn move_up( &mut self, n: usize ) -> io::Result<()>;
-            fn move_down( &mut self, n: usize ) -> io::Result<()>;
-            fn move_left( &mut self, n: usize ) -> io::Result<()>;
-            fn move_right( &mut self, n: usize ) -> io::Result<()>;
+            fn move_up( &mut self, n:usize ) -> io::Result<()>;
+            fn move_down( &mut self, n:usize ) -> io::Result<()>;
+            fn move_left( &mut self, n:usize ) -> io::Result<()>;
+            fn move_right( &mut self, n:usize ) -> io::Result<()>;
             fn move_to_first_column( &mut self ) -> io::Result<()>;
             fn set_cursor_mode( &mut self, mode: CursorMode ) -> io::Result<()>;
             fn write( &mut self, s:&str ) -> io::Result<()>;
@@ -38636,13 +38873,13 @@ pub mod system
             
             fn clear_to_screen_end( &mut self ) -> io::Result<()> { self.clear_to_screen_end() }
             
-            fn move_up( &mut self, n: usize ) -> io::Result<()> { self.move_up( n ) }
+            fn move_up( &mut self, n:usize ) -> io::Result<()> { self.move_up( n ) }
             
-            fn move_down( &mut self, n: usize ) -> io::Result<()> { self.move_down( n ) }
+            fn move_down( &mut self, n:usize ) -> io::Result<()> { self.move_down( n ) }
             
-            fn move_left( &mut self, n: usize ) -> io::Result<()> { self.move_left( n ) }
+            fn move_left( &mut self, n:usize ) -> io::Result<()> { self.move_left( n ) }
             
-            fn move_right( &mut self, n: usize ) -> io::Result<()> { self.move_right( n ) }
+            fn move_right( &mut self, n:usize ) -> io::Result<()> { self.move_right( n ) }
             
             fn move_to_first_column( &mut self ) -> io::Result<()> { self.move_to_first_column() }
             
@@ -38672,7 +38909,7 @@ pub mod system
 
         extern "C"
         {
-            fn ioctl( fd: c_int, request: c_ulong, ... ) -> c_int;
+            fn ioctl( fd:c_int, request: c_ulong, ... ) -> c_int;
         }
 
         pub unsafe fn get_dimensions_any() -> winsize
@@ -38754,7 +38991,7 @@ pub mod system
         #[derive( Clone )]
         pub struct VariableIter<'a> {
             vars:&'a Variables,
-            n: usize,
+            n:usize,
         }
         
         #[derive( Clone, Debug )]
@@ -38876,10 +39113,10 @@ pub mod system
             comment_begin: Cow<'static, str> => ( "comment-begin", parse_string,
                 |r| r.comment_begin.clone(),
                 |r, v| replace( &mut r.comment_begin, v.into() ) ),
-            completion_display_width: usize => ( "completion-display-width", parse_usize,
+            completion_display_width:usize => ( "completion-display-width", parse_usize,
                 |r| usize_as_i32( r.completion_display_width ),
                 |r, v| usize_as_i32( replace( &mut r.completion_display_width, v ) ) ),
-            completion_query_items: usize => ( "completion-query-items", parse_usize,
+            completion_query_items:usize => ( "completion-query-items", parse_usize,
                 |r| usize_as_i32( r.completion_query_items ),
                 |r, v| usize_as_i32( replace( &mut r.completion_query_items, v ) ) ),
             disable_completion: bool => ( "disable-completion", parse_bool,
@@ -38904,7 +39141,7 @@ pub mod system
                 Variables{
                     blink_matching_paren: false,
                     comment_begin: "#".into(),
-                    completion_display_width: usize::max_value(),
+                    completion_display_width:usize::max_value(),
                     completion_query_items: 100,
                     disable_completion: false,
                     echo_control_characters: true,
@@ -38949,7 +39186,7 @@ pub mod system
             }
         }
 
-        fn usize_as_i32( u: usize ) -> i32 {
+        fn usize_as_i32( u:usize ) -> i32 {
             match u {
                 u if u > i32::max_value() as usize => -1,
                 u => u as i32
@@ -38991,14 +39228,14 @@ pub mod system
         pub const BLINK_DURATION: Duration = Duration::from_millis( 500 );
 
         const COMPLETE_MORE:&'static str = "--More--";
-        const MAX_HISTORY: usize = !0;
-        const TAB_STOP: usize = 8;        
-        const PROMPT_NUM_PREFIX: usize = 6;
-        const PROMPT_NUM_SUFFIX: usize = 2;
-        const PROMPT_SEARCH_PREFIX: usize = 11;
-        const PROMPT_SEARCH_FAILED_PREFIX: usize = 7;
-        const PROMPT_SEARCH_REVERSE_PREFIX: usize = 8;
-        const PROMPT_SEARCH_SUFFIX: usize = 3;
+        const MAX_HISTORY:usize = !0;
+        const TAB_STOP:usize = 8;        
+        const PROMPT_NUM_PREFIX:usize = 6;
+        const PROMPT_NUM_SUFFIX:usize = 2;
+        const PROMPT_SEARCH_PREFIX:usize = 11;
+        const PROMPT_SEARCH_FAILED_PREFIX:usize = 7;
+        const PROMPT_SEARCH_REVERSE_PREFIX:usize = 8;
+        const PROMPT_SEARCH_SUFFIX:usize = 3;
         pub struct Writer<'a, 'b: 'a, Term: 'b + Terminal> 
         {
             write: WriterImpl<'a, 'b, Term>,
@@ -39014,20 +39251,20 @@ pub mod system
         {
             pub buffer: String,
             pub backup_buffer: String,
-            pub cursor: usize,
+            pub cursor:usize,
             blink: Option<Blink>,
 
             pub history: VecDeque<String>,
             pub history_index: Option<usize>,
-            history_size: usize,
-            history_new_entries: usize,
+            history_size:usize,
+            history_new_entries:usize,
 
             pub is_prompt_drawn: bool,
 
             pub prompt_prefix: String,
-            prompt_prefix_len: usize,
+            prompt_prefix_len:usize,
             pub prompt_suffix: String,
-            prompt_suffix_len: usize,
+            prompt_suffix_len:usize,
 
             pub prompt_type: PromptType,
 
@@ -39036,7 +39273,7 @@ pub mod system
             pub search_buffer: String,
             pub last_search: String,
             pub prev_history: Option<usize>,
-            pub prev_cursor: usize,
+            pub prev_cursor:usize,
 
             pub input_arg: Digit,
             pub explicit_arg: bool,
@@ -39071,7 +39308,7 @@ pub mod system
                 Ok( () )
             }
 
-            pub fn blink( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn blink( &mut self, pos:usize ) -> io::Result<()> {
                 self.expire_blink()?;
 
                 let orig = self.cursor;
@@ -39187,7 +39424,7 @@ pub mod system
                 self.draw_prompt_suffix()
             }
             
-            pub fn draw_buffer( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn draw_buffer( &mut self, pos:usize ) -> io::Result<()> {
                 let ( _, col ) = self.line_col( pos );
 
                 let buf = self.buffer[pos..].to_owned();
@@ -39195,7 +39432,7 @@ pub mod system
                 Ok( () )
             }
             
-            fn draw_text( &mut self, start_col: usize, text:&str ) -> io::Result<()> {
+            fn draw_text( &mut self, start_col:usize, text:&str ) -> io::Result<()> {
                 self.draw_text_impl( start_col, text, Display{
                     allow_tab: true,
                     allow_newline: true,
@@ -39211,7 +39448,7 @@ pub mod system
                 }, true )
             }
 
-            fn draw_text_impl( &mut self, start_col: usize, text:&str, disp: Display,
+            fn draw_text_impl( &mut self, start_col:usize, text:&str, disp: Display,
                     handle_invisible: bool ) -> io::Result<()> {
                 let width = self.screen_size.columns;
                 let mut col = start_col;
@@ -39321,7 +39558,7 @@ pub mod system
                 self.new_buffer()
             }
 
-            pub fn set_cursor( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn set_cursor( &mut self, pos:usize ) -> io::Result<()> {
                 self.expire_blink()?;
 
                 if !self.buffer.is_char_boundary( pos ) {
@@ -39344,7 +39581,7 @@ pub mod system
                 self.history_size
             }
 
-            pub fn set_history_size( &mut self, n: usize ) {
+            pub fn set_history_size( &mut self, n:usize ) {
                 self.history_size = n;
                 self.truncate_history( n );
             }
@@ -39591,7 +39828,7 @@ pub mod system
                 self.history_new_entries = 0;
             }
 
-            pub fn remove_history( &mut self, n: usize ) {
+            pub fn remove_history( &mut self, n:usize ) {
                 if n < self.history.len() {
                     let first_new = self.history.len() - self.history_new_entries;
 
@@ -39603,7 +39840,7 @@ pub mod system
                 }
             }
 
-            pub fn truncate_history( &mut self, n: usize ) {
+            pub fn truncate_history( &mut self, n:usize ) {
                 let len = self.history.len();
 
                 if n < len {
@@ -39612,7 +39849,7 @@ pub mod system
                 }
             }
 
-            pub fn next_history( &mut self, n: usize ) -> io::Result<()> {
+            pub fn next_history( &mut self, n:usize ) -> io::Result<()> {
                 if let Some( old ) = self.history_index {
                     let new = old.saturating_add( n );
 
@@ -39629,7 +39866,7 @@ pub mod system
                 Ok( () )
             }
 
-            pub fn prev_history( &mut self, n: usize ) -> io::Result<()> {
+            pub fn prev_history( &mut self, n:usize ) -> io::Result<()> {
                 if !self.history.is_empty() && self.history_index != Some( 0 ) {
                     let new = if let Some( old ) = self.history_index {
                         old.saturating_sub( n )
@@ -39697,17 +39934,17 @@ pub mod system
                 }
             }
 
-            pub fn backward_char( &mut self, n: usize ) -> io::Result<()> {
+            pub fn backward_char( &mut self, n:usize ) -> io::Result<()> {
                 let pos = char::backward( n, &self.buffer, self.cursor );
                 self.move_to( pos )
             }
 
-            pub fn forward_char( &mut self, n: usize ) -> io::Result<()> {
+            pub fn forward_char( &mut self, n:usize ) -> io::Result<()> {
                 let pos = char::forward( n, &self.buffer, self.cursor );
                 self.move_to( pos )
             }
 
-            pub fn backward_search_char( &mut self, n: usize, ch: char ) -> io::Result<()> {
+            pub fn backward_search_char( &mut self, n:usize, ch: char ) -> io::Result<()> {
                 if let Some( pos ) = char::backward_search( n, &self.buffer, self.cursor, ch ) {
                     self.move_to( pos )?;
                 }
@@ -39715,7 +39952,7 @@ pub mod system
                 Ok( () )
             }
 
-            pub fn forward_search_char( &mut self, n: usize, ch: char ) -> io::Result<()> {
+            pub fn forward_search_char( &mut self, n:usize, ch: char ) -> io::Result<()> {
                 if let Some( pos ) = char::forward_search( n, &self.buffer, self.cursor, ch ) {
                     self.move_to( pos )?;
                 }
@@ -39836,7 +40073,7 @@ pub mod system
                 }
             }
 
-            fn line_col( &self, pos: usize ) -> ( usize, usize ) {
+            fn line_col( &self, pos:usize ) -> ( usize, usize ) {
                 let prompt_len = self.prompt_suffix_length();
 
                 match self.prompt_type {
@@ -39849,7 +40086,7 @@ pub mod system
                 }
             }
 
-            fn line_col_with( &self, pos: usize, buf:&str, start_col: usize ) -> ( usize, usize ) {
+            fn line_col_with( &self, pos:usize, buf:&str, start_col:usize ) -> ( usize, usize ) {
                 let width = self.screen_size.columns;
                 if width == 0 {
                     return ( 0, 0 );
@@ -39896,12 +40133,12 @@ pub mod system
                 self.term.clear_to_screen_end()
             }
             
-            pub fn move_from( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn move_from( &mut self, pos:usize ) -> io::Result<()> {
                 let ( lines, cols ) = self.move_delta( pos, self.cursor, &self.buffer );
                 self.move_rel( lines, cols )
             }
 
-            pub fn move_to( &mut self, pos: usize ) -> io::Result<()> {
+            pub fn move_to( &mut self, pos:usize ) -> io::Result<()> {
                 if pos != self.cursor {
                     let ( lines, cols ) = self.move_delta( self.cursor, pos, &self.buffer );
                     self.move_rel( lines, cols )?;
@@ -39916,12 +40153,12 @@ pub mod system
                 self.move_to( pos )
             }
 
-            pub fn move_right( &mut self, n: usize ) -> io::Result<()> {
+            pub fn move_right( &mut self, n:usize ) -> io::Result<()> {
                 self.term.move_right( n )
             }
             
             
-            fn move_delta( &self, old: usize, new: usize, buf:&str ) -> ( isize, isize ) {
+            fn move_delta( &self, old:usize, new:usize, buf:&str ) -> ( isize, isize ) {
                 let prompt_len = self.prompt_suffix_length();
                 let ( old_line, old_col ) = self.line_col_with( old, buf, prompt_len );
                 let ( new_line, new_col ) = self.line_col_with( new, buf, prompt_len );
@@ -39965,7 +40202,7 @@ pub mod system
         #[derive( Copy, Clone )]
         struct Blink 
         {
-            pos: usize,
+            pos:usize,
             expiry: Instant,
         }
 
@@ -40108,7 +40345,7 @@ pub mod system
                 self.cursor = buf.len();
             }
 
-            pub fn set_cursor( &mut self, pos: usize ) {
+            pub fn set_cursor( &mut self, pos:usize ) {
                 if !self.buffer.is_char_boundary( pos ) {
                     panic!( "invalid cursor position {} in buffer {:?}",
                         pos, self.buffer );
@@ -40133,7 +40370,7 @@ pub mod system
                 self.prompt_suffix_len = self.display_size( &suf_virt, 0 );
             }
 
-            pub fn display_size( &self, s:&str, start_col: usize ) -> usize 
+            pub fn display_size( &self, s:&str, start_col:usize ) -> usize 
             {
                 let width = self.screen_size.columns;
                 let mut col = start_col;
@@ -40269,7 +40506,7 @@ pub mod system
 
             #[inline] fn next( &mut self ) -> Option<&'a str> { self.0.next().map( |s| &s[..] ) }
 
-            #[inline] fn nth( &mut self, n: usize ) -> Option<&'a str> 
+            #[inline] fn nth( &mut self, n:usize ) -> Option<&'a str> 
             { self.0.nth( n ).map( |s| &s[..] ) }
 
             #[inline] fn size_hint( &self ) -> ( usize, Option<usize> ) { self.0.size_hint() }
@@ -40354,7 +40591,7 @@ pub mod system
             }
         }
 
-        fn complete_intro( n: usize ) -> String { format!( "Display all {} possibilities? ( y/n )", n ) }
+        fn complete_intro( n:usize ) -> String { format!( "Display all {} possibilities? ( y/n )", n ) }
 
         fn number_len( n: i32 ) -> usize
         {
@@ -40411,7 +40648,7 @@ pub mod tokens
     pub fn from_line(line: &str) -> Vec<String>
     {
         let mut result = Vec::new();
-        let linfo = parse_line(line);
+        let linfo = parses::lines::parse_line(line);
         
         for (_, r) in linfo.tokens
         {
@@ -40440,10 +40677,9 @@ pub mod tokens
         for t in tokens
         {
             if t.0.is_empty() { result.push_str(&t.1); }
-            
             else
             {
-                let s = tools::wrap_sep_string(&t.0, &t.1);
+                let s = str::wrap_separator(&t.0, &t.1);
                 result.push_str(&s);
             }
 
@@ -40556,8 +40792,8 @@ pub mod tokens
 
         Ok((tokens_new, redirects))
     }
-    // pub fn find_token_range_heuristic( line: &str, start_byte: usize, token: &(String, String) ) -> Option<Range<usize>>
-    pub fn find_range_heuristic( line:&str, start_byte: usize, token: &(String, String) ) -> Option<Range<usize>>
+    // pub fn find_token_range_heuristic( line: &str, start_byte:usize, token: &(String, String) ) -> Option<Range<usize>>
+    pub fn find_range_heuristic( line:&str, start_byte:usize, token: &(String, String) ) -> Option<Range<usize>>
     {
         let (sep, word) = token;
         let mut search_area = &line[start_byte..];
@@ -40664,7 +40900,7 @@ pub mod tuples
             }
         }
         
-        pub fn get( &self, index: usize ) -> OverResult<Value> {
+        pub fn get( &self, index:usize ) -> OverResult<Value> {
             if index >= self.inner.vec.len() {
                 Err( OverError::TupOutOfBounds( index ) )
             }
@@ -40734,9 +40970,12 @@ pub mod types
     use ::
     {
         borrow::{ Cow::{ self, * }, },
+        cmp::{ Ordering },
         collections::{ HashMap, HashSet },
         ffi::{ OsString },
+        hash::{ Hash, Hasher },
         rc::{ Rc },
+        regex::{ Regex },
         *,
     };
     /*
@@ -40764,7 +41003,7 @@ pub mod types
                     {
                         $( Directive::$name => f.write_str($str) , )+
                         Directive::Custom(ref s) => f.write_str(s),
-                        Directive::Macro(ref s) => write!(f, "\"{}\"", escape_sequence(s))
+                        Directive::Macro(ref s) => write!(f, "\"{}\"", char::escape_sequence(s))
                     }
                 }
             }
@@ -40803,15 +41042,15 @@ pub mod types
     {
         Start
         {
-            end_token_index: usize,
-            input_pos: usize,
+            end_token_index:usize,
+            input_pos:usize,
         },
         End
         {
-            start_token_index: usize,
+            start_token_index:usize,
             rule: R,
             tag: Option<&'i str>,
-            input_pos: usize,
+            input_pos:usize,
         },
     }
 
@@ -40826,7 +41065,7 @@ pub mod types
     {
         queue: Rc<Vec<QueueableToken<'i, R>>>,
         input: &'i str,
-        start: usize,
+        start:usize,
         line_index: Rc<LineIndex>,
     }
 
@@ -41739,19 +41978,98 @@ pub mod types
 		cmd:Option<SubCommandHistory>,
 	}
     
-	#[derive( Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd )]
-	enum SubCommandHistory
+	#[derive( Clone, Debug )]
+	pub enum SubCommandHistory
 	{
-		Add
-        {
-			timestamp: Option<f64>,
-			input:String,
-		},
-		Delete
-        {
-			rowid: Vec<usize>,
-		},
+		Add( Option<f64>, String ),
+		Delete( Vec<usize>, String ),
 	}
+
+    impl Eq for SubCommandHistory {}
+
+    impl PartialEq for SubCommandHistory
+    {
+        fn eq(&self, other: &SubCommandHistory) -> bool
+        {
+            match ( self, other )
+            {
+                ( Self::Add( _, a ), Self::Add( _, b ) ) =>
+                {
+                    a == b
+                }
+
+                ( Self::Add( _, a ), Self::Delete( _, b ) ) =>
+                {
+                    a == b
+                }
+
+                ( Self::Delete( _, a ), Self::Add( _, b ) ) =>
+                {
+                    a == b
+                }
+
+                ( Self::Delete( _, a ), Self::Delete( _, b ) ) =>
+                {
+                    a == b
+                }
+            }
+        }
+    }
+
+    impl Hash for SubCommandHistory
+    {
+        fn hash<H: Hasher>(&self, state: &mut H)
+        {
+            match self
+            {
+                 Self::Add(    _, a ) => {  a.hash( state ); }
+                 Self::Delete( _, a ) => {  a.hash( state ); }
+            }
+        }
+    }
+    
+    impl PartialOrd for SubCommandHistory
+    {
+        fn partial_cmp(&self, other: &Self) -> Option<Ordering>
+        {
+            match ( self, other )
+            {
+                ( Self::Add( _, a ), Self::Add( _, b ) ) =>
+                {
+                    Some( a.cmp(b) )
+                }
+
+                ( Self::Add( _, a ), Self::Delete( _, b ) ) =>
+                {
+                    Some( a.cmp(b) )
+                }
+
+                ( Self::Delete( _, a ), Self::Add( _, b ) ) =>
+                {
+                    Some( a.cmp(b) )
+                }
+
+                ( Self::Delete( _, a ), Self::Delete( _, b ) ) =>
+                {
+                    Some( a.cmp(b) )
+                }
+            }
+        }
+    }
+
+    impl Ord for SubCommandHistory
+    {
+        fn cmp(&self, other: &Self) -> Ordering
+        {
+            match ( self, other )
+            {
+                ( Self::Add( _, a ), Self::Add( _, b ) ) => { a.cmp(b) }
+                ( Self::Add( _, a ), Self::Delete( _, b ) ) => { a.cmp(b) }
+                ( Self::Delete( _, a ), Self::Add( _, b ) ) => { a.cmp(b) }
+                ( Self::Delete( _, a ), Self::Delete( _, b ) ) => { a.cmp(b) }
+            }
+        }
+    }
 }
 
 pub mod u8
@@ -41807,7 +42125,7 @@ pub mod uuid
         */
         #[derive( Debug )]
         pub struct Builder( Uuid );
-
+        /*
         impl Uuid
         {
             pub const fn nil() -> Self { Uuid::from_bytes( [0; 16] ) }
@@ -41869,8 +42187,7 @@ pub mod uuid
             }
             
             #[inline] pub fn from_bytes_ref( bytes:&Bytes ) -> &Uuid { unsafe_transmute_ref!( bytes ) }
-        }
-
+        } */
         impl Builder
         {
             pub const fn from_bytes( b: Bytes ) -> Self { Builder( Uuid::from_bytes( b ) ) }
@@ -42023,15 +42340,15 @@ pub mod uuid
         #[derive( Clone, Debug, Eq, Hash, PartialEq )]
         pub enum ErrorKind 
         {
-            ParseChar { character:char, index: usize },
-            ParseSimpleLength { len: usize },
-            ParseByteLength { len: usize },
-            ParseGroupCount { count: usize },
+            ParseChar { character:char, index:usize },
+            ParseSimpleLength { len:usize },
+            ParseByteLength { len:usize },
+            ParseGroupCount { count:usize },
             ParseGroupLength
             {
-                group: usize,
-                len: usize,
-                index: usize,
+                group:usize,
+                len:usize,
+                index:usize,
             },
             ParseInvalidUTF8,
             ParseOther,
@@ -42408,7 +42725,7 @@ pub mod uuid
 
         impl Hyphenated 
         {
-            pub const LENGTH: usize = 36;
+            pub const LENGTH:usize = 36;
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Hyphenated( uuid )
@@ -42437,7 +42754,7 @@ pub mod uuid
 
         impl Braced 
         {
-            pub const LENGTH: usize = 38;
+            pub const LENGTH:usize = 38;
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Braced( uuid )
@@ -42466,7 +42783,7 @@ pub mod uuid
 
         impl Simple 
         {
-            pub const LENGTH: usize = 32;
+            pub const LENGTH:usize = 32;
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Simple( uuid )
@@ -42495,7 +42812,7 @@ pub mod uuid
 
         impl Urn 
         {
-            pub const LENGTH: usize = 45;
+            pub const LENGTH:usize = 45;
             pub const fn from_uuid( uuid: Uuid ) -> Self 
             {
                 Urn( uuid )
@@ -42731,7 +43048,7 @@ pub mod uuid
             fn try_from( uuid:Uuid ) -> Result<Self, Self::Error> 
             {
                 NonZeroU128::new( uuid.as_u128() )
-                .map( self )
+                .map( Self )
                 .ok_or( Error( ErrorKind::Nil ) )
             }
         }
@@ -43309,6 +43626,7 @@ pub mod uuid
         }
     } pub use self::timestamp::{ context::NoContext, ClockSequence, Timestamp };
     /*
+
     */
     pub type Bytes = [u8; 16];
     #[repr( u8 )] #[non_exhaustive] #[derive( Clone, Copy, Debug, PartialEq )]
@@ -43344,18 +43662,26 @@ pub mod uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x10, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
+
         pub const NAMESPACE_OID: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x12, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
+
         pub const NAMESPACE_URL: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x11, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
+
         pub const NAMESPACE_X500: Self = Uuid
         ( [
             0x6b, 0xa7, 0xb8, 0x14, 0x9d, 0xad, 0x11, 0xd1, 0x80, 0xb4, 0x00, 0xc0, 0x4f, 0xd4, 0x30, 0xc8,
         ] );
+        
+        pub const fn from_u128( v: u128 ) -> Self { Uuid::from_bytes( v.to_be_bytes() ) }
+        
+        pub const fn from_u128_le( v: u128 ) -> Self { Uuid::from_bytes( v.to_le_bytes() ) }
+
         pub const fn get_variant( &self ) -> Variant
         {
             match self.as_bytes()[8] 
@@ -43392,14 +43718,50 @@ pub mod uuid
         }
         
         #[inline] pub const fn from_bytes(bytes: Bytes) -> Uuid { Uuid(bytes) }
+            
+        pub const fn from_bytes_le( b: Bytes ) -> Uuid
+        {
+            Uuid
+            ([
+                b[3],b[2],b[1],b[0],b[5], b[4], b[7], b[6], b[8], b[9], b[10], b[11], b[12], b[13], b[14], b[15],
+            ] )
+        }
+            
+        pub const fn from_fields( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Uuid
+        {
+            Uuid::from_bytes
+            ([
+                ( d1 >> 24 ) as u8, ( d1 >> 16 ) as u8, ( d1 >> 8 ) as u8, d1 as u8, ( d2 >> 8 ) as u8,
+                d2 as u8, ( d3 >> 8 ) as u8, d3 as u8, d4[0], d4[1], d4[2], d4[3], d4[4], d4[5], d4[6], d4[7],
+            ] )
+        }
         
-        pub fn from_slice(b: &[u8]) -> Result<Uuid, error::Error>
+        pub const fn from_fields_le( d1: u32, d2: u16, d3: u16, d4:&[u8; 8] ) -> Uuid
+        {
+            Uuid::from_bytes
+            ([
+                d1 as u8, ( d1 >> 8 ) as u8, ( d1 >> 16 ) as u8, ( d1 >> 24 ) as u8, ( d2 ) as u8, 
+                ( d2 >> 8 ) as u8, d3 as u8, ( d3 >> 8 ) as u8, d4[0], d4[1], d4[2], d4[3], d4[4],
+                d4[5], d4[6], d4[7],
+            ] )
+        }
+        
+        pub fn from_slice( b:&[u8] ) -> Result<Uuid, error::Error>
         {
             if b.len() != 16 { return Err( error::Error( error::ErrorKind::ParseByteLength { len: b.len() })); }
 
             let mut bytes: Bytes = [0; 16];
             bytes.copy_from_slice(b);
             Ok(Uuid::from_bytes(bytes))
+        }
+        
+        pub fn from_slice_le( b:&[u8] ) -> Result<Uuid, error::Error>
+        {
+            if b.len() != 16 { return Err( Error( ErrorKind::ParseByteLength { len: b.len() } ) ); }
+
+            let mut bytes: Bytes = [0; 16];
+            bytes.copy_from_slice( b );
+            Ok( Uuid::from_bytes_le( bytes ) )
         }
         
         pub fn as_fields( &self ) -> ( u32, u16, u16, &[u8; 8] )
@@ -43511,6 +43873,8 @@ pub mod uuid
         {
             Uuid::from_u128( uuid::rng::u128() & 0xFFFFFFFFFFFF4FFFBFFFFFFFFFFFFFFF | 0x40008000000000000000 )
         }
+        
+        pub const fn nil() -> Self { Uuid::from_bytes( [0; 16] ) }
     }
 
     impl Hash for Uuid
@@ -43851,7 +44215,7 @@ pub mod vec
     pub use std::vec::{ * };
 }
 /// Indent step in .over files.
-pub const INDENT_STEP: usize = 4;
+pub const INDENT_STEP:usize = 4;
 
 pub fn main() -> Result<(), error::parse::ParseError>
 {
@@ -43902,7 +44266,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
         if is::non_tty()
         {
             now::run_procs_for_non_tty( &mut sh );
-            return;
+            return Ok(());
         }
 
         let mut rl;
@@ -43912,7 +44276,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
             Err( e ) => 
             {
                 println!( ":: lineread error: {}", e );
-                return;
+                return Ok(());
             }
         }
         
@@ -44024,4 +44388,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 44027 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 44391 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
