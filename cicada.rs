@@ -755,11 +755,10 @@ pub mod builtins
         */
         use ::
         {
+            path::{ Path },
             *,
         };
         /*
-        use std::path::Path;
-
         use rusqlite::Connection as Conn;
         use structopt::StructOpt;
 
@@ -771,59 +770,40 @@ pub mod builtins
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
         */
-        #[derive(Debug, StructOpt)]
-        #[structopt(name = "history", about = "History in cicada shell")]
-        struct OptMain {
-            #[structopt(short, long, help = "For current session only")]
+        // #[derive(Debug, StructOpt)]
+        // #[structopt(name = "history", about = "History in cicada shell")]
+        #[derive( Debug )]
+        struct OptMainHistory
+        {
             session: bool,
-
-            #[structopt(short, long, help = "Search old items first")]
             asc: bool,
-
-            #[structopt(short, long, help = "For current directory only")]
             pwd: bool,
-
-            #[structopt(short, long, help = "Only show ROWID")]
             only_id: bool,
-
-            #[structopt(short, long, help = "Do not show ROWID")]
             no_id: bool,
-
-            #[structopt(short = "d", long, help = "Show date")]
             show_date: bool,
-
-            #[structopt(short, long, default_value = "20")]
             limit: i32,
-
-            #[structopt(
-                name = "PATTERN",
-                default_value = "",
-                help = "You can use % to match anything"
-            )]
             pattern: String,
-
-            #[structopt(subcommand)]
             cmd: Option<SubCommand>,
         }
 
-        #[derive(StructOpt, Debug)]
-        enum SubCommand {
-            #[structopt(about = "Add new item into history")]
-            Add {
-                #[structopt(short = "t", long, help = "Specify a timestamp for the new item")]
+        // #[derive(StructOpt, Debug)]
+        #[derive( Debug )]
+        enum SubCommand
+        {
+            Add
+            {
                 timestamp: Option<f64>,
-
-                #[structopt(name = "INPUT", help = "input to be added into history")]
                 input: String,
             },
-            #[structopt(about = "Delete item from history")]
-            Delete {
-                #[structopt(name = "ROWID", help = "Row IDs of item to delete")]
+            
+            Delete
+            {
                 rowid: Vec<usize>,
             },
         }
 
-        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult {
+        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult 
+        {
             let mut cr = CommandResult::new();
             let hfile = history::get_history_file();
             let path = Path::new(hfile.as_str());
@@ -895,12 +875,14 @@ pub mod builtins
             }
         }
 
-        fn add_history(sh: &Shell, ts: f64, input: &str) {
+        fn add_history(sh: &Shell, ts: f64, input: &str) 
+        {
             let (tsb, tse) = (ts, ts + 1.0);
             history::add_raw(sh, input, 0, tsb, tse);
         }
 
-        fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) {
+        fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
+        {
             let mut result_stderr = String::new();
             let result_stdout = String::new();
 
@@ -1005,7 +987,8 @@ pub mod builtins
             (buffer, result_stderr)
         }
 
-        fn delete_history_item(conn: &Conn, rowid: usize) -> bool {
+        fn delete_history_item(conn: &Conn, rowid: usize) -> bool 
+        {
             let history_table = history::get_history_table();
             let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
             match conn.execute(&sql, []) {
@@ -1200,14 +1183,15 @@ pub mod builtins
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
         */
-        #[derive(Debug, StructOpt)]
-        #[structopt(name = "set", about = "Set shell options (BETA)")]
-        struct OptMain {
-            #[structopt(short, help = "exit on error status")]
+        //#[derive(Debug, StructOpt)]
+        #[derive(Debug)]
+        struct OptMainSet
+        {
             exit_on_error: bool,
         }
 
-        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult {
+        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+        {
             let mut cr = CommandResult::new();
             let tokens = &cmd.tokens;
             let args = parsers::parser_line::tokens_to_args(tokens);
@@ -1289,11 +1273,12 @@ pub mod builtins
         use crate::types::{Command, CommandLine, CommandResult};
         use clap::{CommandFactory, Parser};
         use std::io::Error;
-        */
+        
         #[derive(Parser)]
         #[command(name = "ulimit", about = "show / modify shell resource limits")]
-        #[allow(non_snake_case)]
-        struct App {
+        #[allow(non_snake_case)] */
+        struct App
+        {
             #[arg(short, help = "All current limits are reported.")]
             a: bool,
             #[arg(
@@ -1973,17 +1958,19 @@ pub mod calculator
     */
     use ::
     {
+        num::{ Wrapping as W },
+        iter::{ Pair, Pairs },
+        parses::
+        {
+            error::{ Error },
+            pratt::{ Assoc, Op, PrattParser },
+            Parser
+        },
         *,
     };
     /*
-    use std::num::Wrapping as W;
-
-    use pest::iterators::{Pair, Pairs};
-    use pest::pratt_parser::{Assoc, Op, PrattParser};
-    use pest::Parser;
-    */
     #[derive(Parser)]
-    #[grammar = "calculator/grammar.pest"]
+    #[grammar = "calculator/grammar.pest"] */
     struct Calculator;
 
     lazy_static! 
@@ -1994,21 +1981,22 @@ pub mod calculator
             use Rule::*;
 
             PrattParser::new()
-                .op(Op::infix(add, Left) | Op::infix(subtract, Left))
-                .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
-                .op(Op::infix(power, Right))
+            .op(Op::infix(add, Left) | Op::infix(subtract, Left))
+            .op(Op::infix(multiply, Left) | Op::infix(divide, Left))
+            .op(Op::infix(power, Right))
         };
     }
 
     pub fn eval_int(expression: Pairs<Rule>) -> i64 
     {
-        PRATT_PARSER
-            .map_primary(|primary| match primary.as_rule() {
-                Rule::num => primary.as_str().parse::<i64>().unwrap(),
-                Rule::expr => eval_int(primary.into_inner()),
-                _ => unreachable!(),
-            })
-            .map_infix(|lhs: i64, op: Pair<Rule>, rhs: i64| match op.as_rule() {
+        PRATT_PARSER.map_primary(|primary| match primary.as_rule()
+        {
+            Rule::num => primary.as_str().parse::<i64>().unwrap(),
+            Rule::expr => eval_int(primary.into_inner()),
+            _ => unreachable!(),
+        })
+        .map_infix(|lhs: i64, op: Pair<Rule>, rhs: i64| match op.as_rule()
+        {
                 Rule::add => (W(lhs) + W(rhs)).0,
                 Rule::subtract => (W(lhs) - W(rhs)).0,
                 Rule::multiply => (W(lhs) * W(rhs)).0,
@@ -2021,8 +2009,7 @@ pub mod calculator
                 }
                 Rule::power => lhs.pow(rhs as u32),
                 _ => unreachable!(),
-            })
-            .parse(expression)
+        }).parse(expression)
     }
 
     pub fn eval_float(expression: Pairs<Rule>) -> f64 
@@ -2044,11 +2031,7 @@ pub mod calculator
             .parse(expression)
     }
 
-    pub fn calculate(
-        line: &str,
-    ) -> Result<pest::iterators::Pairs<'_, Rule>, pest::error::Error<Rule>> {
-        Calculator::parse(Rule::calculation, line)
-    }
+    pub fn calculate( line: &str ) -> Result<Pairs<'_, Rule>, Error<Rule>> { Calculator::parse(Rule::calculation, line) }
 }
 
 pub mod completers
@@ -3773,6 +3756,34 @@ pub mod env
         }
         result
     }
+    // pub fn init_path_env()
+    pub fn initialize_paths()
+    {
+        let mut all_paths: HashSet<PathBuf> = HashSet::new();
+        for x in [
+            "/usr/local/sbin",
+            "/usr/local/bin",
+            "/usr/sbin",
+            "/usr/bin",
+            "/sbin",
+            "/bin",
+        ] {
+            let path_buf = PathBuf::from(x);
+            if path_buf.exists() {
+                all_paths.insert(path_buf);
+            }
+        }
+
+        if let Ok(env_path) = env::var("PATH") {
+            for one_path in env::split_paths(&env_path) {
+                if !all_paths.contains(&one_path) {
+                    all_paths.insert(one_path);
+                }
+            }
+        }
+        let path_var = env::join_paths(all_paths).unwrap_or_default();
+        env::set_var("PATH", path_var);
+    }
 }
 
 pub mod execute
@@ -4115,8 +4126,7 @@ pub mod highlight
     use crate::shell;
     use crate::tools;
     */
-    #[derive(Clone)]
-    pub struct CicadaHighlighter;
+    #[derive(Clone)] pub struct CicadaHighlighter;
 
     /// ANSI color codes wrapped with `\x1b` (ESC) and `[0;32m` (green text)
     const GREEN: &str = "\x1b[0;32m";
@@ -4612,6 +4622,512 @@ pub mod is
             return false;
         }
         re_contains(line, r"^[ 0-9\.\(\)\+\-\*/\^]+[\.0-9 \)]$")
+    }
+    // pub fn is_shell_altering_command(line: &str) -> bool
+    pub fn shell_altering_command(line: &str) -> bool
+    {
+        let line = line.trim();
+
+        if re_contains(line, r"^[A-Za-z_][A-Za-z0-9_]*=.*$") { return true; }
+
+        line.starts_with("alias ")
+        || line.starts_with("export ")
+        || line.starts_with("unalias ")
+        || line.starts_with("unset ")
+        || line.starts_with("source ")
+    }
+    // pub fn is_builtin(s: &str) -> bool
+    pub fn builtin(s: &str) -> bool
+    {
+        let builtins =
+        [
+            "alias", "bg", "cd", "cinfo", "exec", "exit", "export", "fg", "history", "jobs", "read",
+            "source", "ulimit", "unalias", "vox", "minfd", "set", "unset", "unpath",
+        ];
+        builtins.contains(&s)
+    }
+}
+
+pub mod iter
+{
+    pub use std::iter::{ * };
+    use ::
+    {
+        *,
+    };
+    /*
+    use alloc::format;
+    use alloc::rc::Rc;
+    #[cfg(feature = "pretty-print")]
+    use alloc::string::String;
+    use alloc::vec::Vec;
+    use core::borrow::Borrow;
+    use core::fmt;
+    use core::hash::{Hash, Hasher};
+    use core::ptr;
+    use core::str;
+
+    #[cfg(feature = "pretty-print")]
+    use serde::ser::SerializeStruct;
+
+    use super::line_index::LineIndex;
+    use super::pairs::{self, Pairs};
+    use super::queueable_token::QueueableToken;
+    use super::tokens::{self, Tokens};
+    use crate::span::Span;
+    use crate::RuleType;
+
+    use alloc::format;
+    use alloc::rc::Rc;
+    use alloc::string::String;
+    use alloc::vec::Vec;
+    use core::fmt;
+    use core::hash::{Hash, Hasher};
+    use core::iter::Filter;
+    use core::ptr;
+    use core::str;
+
+    #[cfg(feature = "pretty-print")]
+    use serde::ser::SerializeStruct;
+
+    use super::flat_pairs::{self, FlatPairs};
+    use super::line_index::LineIndex;
+    use super::pair::{self, Pair};
+    use super::queueable_token::QueueableToken;
+    use super::tokens::{self, Tokens};
+    use crate::RuleType;
+    */
+    #[derive(Clone)] pub struct Pair<'i, R> 
+    {
+        queue: Rc<Vec<QueueableToken<'i, R>>>,
+        input: &'i str,
+        start: usize,
+        line_index: Rc<LineIndex>,
+    }
+
+    pub fn create_pair<'i, R: RuleType>
+    (
+        queue: Rc<Vec<QueueableToken<'i, R>>>,
+        input: &'i str,
+        line_index: Rc<LineIndex>,
+        start: usize,
+    ) -> Pair<'i, R> 
+    {
+        Pair 
+        {
+            queue,
+            input,
+            start,
+            line_index,
+        }
+    }
+
+    impl<'i, R: RuleType> Pair<'i, R> 
+    {
+        #[inline] pub fn as_rule(&self) -> R 
+        {
+            match self.queue[self.pair()] 
+            {
+                QueueableToken::End { rule, .. } => rule,
+                _ => unreachable!(),
+            }
+        }
+        
+        #[inline] pub fn as_str(&self) -> &'i str 
+        {
+            let start = self.pos(self.start);
+            let end = self.pos(self.pair());
+            &self.input[start..end]
+        }
+        
+        pub fn get_input(&self) -> &'i str { self.input }
+        
+        #[inline] #[deprecated(since = "2.0.0", note = "Please use `as_span` instead")]
+        pub fn into_span(self) -> Span<'i> 
+        {
+            self.as_span()
+        }
+        
+        #[inline] pub fn as_span(&self) -> Span<'i> 
+        {
+            let start = self.pos(self.start);
+            let end = self.pos(self.pair());
+
+            Span::new_internal(self.input, start, end)
+        }
+        
+        #[inline] pub fn as_node_tag(&self) -> Option<&str> 
+        {
+            match &self.queue[self.pair()] {
+                QueueableToken::End { tag, .. } => tag.as_ref().map(|x| x.borrow()),
+                _ => None,
+            }
+        }
+        
+        #[inline] pub fn into_inner(self) -> Pairs<'i, R> 
+        {
+            let pair = self.pair();
+
+            pairs::new(
+                self.queue,
+                self.input,
+                Some(self.line_index),
+                self.start + 1,
+                pair,
+            )
+        }
+        
+        #[inline] pub fn tokens(self) -> Tokens<'i, R> 
+        {
+            let end = self.pair();
+
+            tokens::new(self.queue, self.input, self.start, end + 1)
+        }
+        
+        
+        pub fn line_col(&self) -> (usize, usize) 
+        {
+            let pos = self.pos(self.start);
+            self.line_index.line_col(self.input, pos)
+        }
+
+        fn pair(&self) -> usize 
+        {
+            match self.queue[self.start] {
+                QueueableToken::Start {
+                    end_token_index, ..
+                } => end_token_index,
+                _ => unreachable!(),
+            }
+        }
+
+        fn pos(&self, index: usize) -> usize 
+        {
+            match self.queue[index] 
+            {
+                QueueableToken::Start { input_pos, .. } | QueueableToken::End { input_pos, .. } => {
+                    input_pos
+                }
+            }
+        }
+    }
+
+    impl<'i, R: RuleType> Pairs<'i, R> 
+    {
+        pub fn single(pair: Pair<'i, R>) -> Self {
+            let end = pair.pair();
+            pairs::new(
+                pair.queue,
+                pair.input,
+                Some(pair.line_index),
+                pair.start,
+                end,
+            )
+        }
+    }
+
+    impl<R: RuleType> fmt::Debug for Pair<'_, R> 
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            let pair = &mut f.debug_struct("Pair");
+            pair.field("rule", &self.as_rule());
+            if let Some(s) = self.as_node_tag() {
+                pair.field("node_tag", &s);
+            }
+            pair.field("span", &self.as_span())
+                .field("inner", &self.clone().into_inner().collect::<Vec<_>>())
+                .finish()
+        }
+    }
+
+    impl<R: RuleType> fmt::Display for Pair<'_, R> 
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result 
+        {
+            let rule = self.as_rule();
+            let start = self.pos(self.start);
+            let end = self.pos(self.pair());
+            let mut pairs = self.clone().into_inner().peekable();
+
+            if pairs.peek().is_none() {
+                write!(f, "{:?}({}, {})", rule, start, end)
+            } else {
+                write!(
+                    f,
+                    "{:?}({}, {}, [{}])",
+                    rule,
+                    start,
+                    end,
+                    pairs
+                        .map(|pair| format!("{}", pair))
+                        .collect::<Vec<_>>()
+                        .join(", ")
+                )
+            }
+        }
+    }
+
+    impl<'i, R: PartialEq> PartialEq for Pair<'i, R> 
+    {
+        fn eq(&self, other: &Pair<'i, R>) -> bool 
+        {
+            Rc::ptr_eq(&self.queue, &other.queue)
+                && ptr::eq(self.input, other.input)
+                && self.start == other.start
+        }
+    }
+
+    impl<R: Eq> Eq for Pair<'_, R> {}
+
+    impl<'i, R: Hash> Hash for Pair<'i, R> 
+    {
+        fn hash<H: Hasher>(&self, state: &mut H) 
+        {
+            (&*self.queue as *const Vec<QueueableToken<'i, R>>).hash(state);
+            (self.input as *const str).hash(state);
+            self.start.hash(state);
+        }
+    }
+    
+    #[derive(Clone)] pub struct Pairs<'i, R> 
+    {
+        queue: Rc<Vec<QueueableToken<'i, R>>>,
+        input: &'i str,
+        start: usize,
+        end: usize,
+        pairs_count: usize,
+        line_index: Rc<LineIndex>,
+    }
+
+    pub fn create_pairs<'i, R: RuleType>
+    (
+        queue: Rc<Vec<QueueableToken<'i, R>>>,
+        input: &'i str,
+        line_index: Option<Rc<LineIndex>>,
+        start: usize,
+        end: usize,
+    ) -> Pairs<'i, R> 
+    {
+        let line_index = match line_index 
+        {
+            Some(line_index) => line_index,
+            None => {
+                let last_input_pos = queue
+                    .last()
+                    .map(|token| match *token {
+                        QueueableToken::Start { input_pos, .. }
+                        | QueueableToken::End { input_pos, .. } => input_pos,
+                    })
+                    .unwrap_or(0);
+
+                Rc::new(LineIndex::new(&input[..last_input_pos]))
+            }
+        };
+
+        let mut pairs_count = 0;
+        let mut cursor = start;
+        while cursor < end {
+            cursor = match queue[cursor] {
+                QueueableToken::Start {
+                    end_token_index, ..
+                } => end_token_index,
+                _ => unreachable!(),
+            } + 1;
+            pairs_count += 1;
+        }
+
+        Pairs {
+            queue,
+            input,
+            start,
+            end,
+            pairs_count,
+            line_index,
+        }
+    }
+
+    impl<'i, R: RuleType> Pairs<'i, R> 
+    {
+        #[inline] pub fn as_str(&self) -> &'i str {
+            if self.start < self.end {
+                let start = self.pos(self.start);
+                let end = self.pos(self.end - 1);
+                &self.input[start..end]
+            } else {
+                ""
+            }
+        }
+        
+        pub fn get_input(&self) -> &'i str { self.input }
+        
+        #[inline] pub fn concat(&self) -> String 
+        {
+            self.clone()
+                .fold(String::new(), |string, pair| string + pair.as_str())
+        }
+        
+        #[inline] pub fn flatten(self) -> FlatPairs<'i, R> 
+        {
+            flat_pairs::new(
+                self.queue,
+                self.input,
+                self.line_index,
+                self.start,
+                self.end,
+            )
+        }
+        
+        #[inline] pub fn find_first_tagged(&self, tag: &'i str) -> Option<Pair<'i, R>> {
+            self.clone().find_tagged(tag).next()
+        }
+        
+        #[inline] pub fn find_tagged(
+            self,
+            tag: &'i str,
+        ) -> Filter<FlatPairs<'i, R>, impl FnMut(&Pair<'i, R>) -> bool + 'i> {
+            self.flatten()
+                .filter(move |pair: &Pair<'i, R>| matches!(pair.as_node_tag(), Some(nt) if nt == tag))
+        }
+        
+        #[inline] pub fn tokens(self) -> Tokens<'i, R> {
+            tokens::new(self.queue, self.input, self.start, self.end)
+        }
+        
+        #[inline] pub fn peek(&self) -> Option<Pair<'i, R>> {
+            if self.start < self.end {
+                Some(pair::new(
+                    Rc::clone(&self.queue),
+                    self.input,
+                    Rc::clone(&self.line_index),
+                    self.start,
+                ))
+            } else {
+                None
+            }
+        }
+        
+        pub fn is_empty(&self) -> bool {
+            self.pairs_count == 0
+        }
+        
+
+        fn pair(&self) -> usize 
+        {
+            match self.queue[self.start] {
+                QueueableToken::Start {
+                    end_token_index, ..
+                } => end_token_index,
+                _ => unreachable!(),
+            }
+        }
+
+        fn pair_from_end(&self) -> usize 
+        {
+            match self.queue[self.end - 1] {
+                QueueableToken::End {
+                    start_token_index, ..
+                } => start_token_index,
+                _ => unreachable!(),
+            }
+        }
+
+        fn pos(&self, index: usize) -> usize 
+        {
+            match self.queue[index] {
+                QueueableToken::Start { input_pos, .. } | QueueableToken::End { input_pos, .. } => {
+                    input_pos
+                }
+            }
+        }
+    }
+
+    impl<R: RuleType> ExactSizeIterator for Pairs<'_, R> 
+    {
+        #[inline] fn len(&self) -> usize {
+            self.pairs_count
+        }
+    }
+
+    impl<'i, R: RuleType> Iterator for Pairs<'i, R> 
+    {
+        type Item = Pair<'i, R>;
+
+        fn next(&mut self) -> Option<Self::Item> {
+            let pair = self.peek()?;
+
+            self.start = self.pair() + 1;
+            self.pairs_count -= 1;
+            Some(pair)
+        }
+
+        fn size_hint(&self) -> (usize, Option<usize>) {
+            let len = <Self as ExactSizeIterator>::len(self);
+            (len, Some(len))
+        }
+    }
+
+    impl<R: RuleType> DoubleEndedIterator for Pairs<'_, R> 
+    {
+        fn next_back(&mut self) -> Option<Self::Item> {
+            if self.end <= self.start {
+                return None;
+            }
+
+            self.end = self.pair_from_end();
+            self.pairs_count -= 1;
+
+            let pair = pair::new(
+                Rc::clone(&self.queue),
+                self.input,
+                Rc::clone(&self.line_index),
+                self.end,
+            );
+
+            Some(pair)
+        }
+    }
+
+    impl<R: RuleType> fmt::Debug for Pairs<'_, R>
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            f.debug_list().entries(self.clone()).finish()
+        }
+    }
+
+    impl<R: RuleType> fmt::Display for Pairs<'_, R> 
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(
+                f,
+                "[{}]",
+                self.clone()
+                    .map(|pair| format!("{}", pair))
+                    .collect::<Vec<_>>()
+                    .join(", ")
+            )
+        }
+    }
+
+    impl<'i, R: PartialEq> PartialEq for Pairs<'i, R> 
+    {
+        fn eq(&self, other: &Pairs<'i, R>) -> bool {
+            Rc::ptr_eq(&self.queue, &other.queue)
+                && ptr::eq(self.input, other.input)
+                && self.start == other.start
+                && self.end == other.end
+        }
+    }
+
+    impl<R: Eq> Eq for Pairs<'_, R> {}
+
+    impl<'i, R: Hash> Hash for Pairs<'i, R> 
+    {
+        fn hash<H: Hasher>(&self, state: &mut H) {
+            (&*self.queue as *const Vec<QueueableToken<'i, R>>).hash(state);
+            (self.input as *const str).hash(state);
+            self.start.hash(state);
+            self.end.hash(state);
+        }
     }
 }
 
@@ -5374,6 +5890,11 @@ pub mod libs
     }
 }
 
+pub mod num
+{
+    pub use std::num::{ * };
+}
+
 pub mod os
 {
     pub use std::os::{ fd as _, * };
@@ -5412,7 +5933,818 @@ pub mod parses
         *,
     };
     /*
+    use crate::error::Error;
+    use crate::iterators::Pairs;
+    use crate::RuleType;
+    
+    pub use crate::position::Position;
+    pub use crate::span::{merge_spans, Lines, LinesSpan, Span};
+    pub use crate::stack::Stack;
+    pub use crate::token::Token;
+    use core::fmt::Debug;
+    use core::hash::Hash;
     */
+    pub trait RuleType: Copy + Debug + Eq + Hash + Ord {}
+
+    impl<T: Copy + Debug + Eq + Hash + Ord> RuleType for T {}
+
+    pub mod error
+    {
+        /*!
+        Types for different kinds of parsing failures. */
+        use ::
+        {
+            *,
+        };
+        /*
+        use crate::parser_state::{ParseAttempts, ParsingToken, RulesCallStack};
+        use alloc::borrow::Cow;
+        use alloc::borrow::ToOwned;
+        use alloc::boxed::Box;
+        use alloc::collections::{BTreeMap, BTreeSet};
+        use alloc::format;
+        use alloc::string::String;
+        use alloc::string::ToString;
+        use alloc::vec;
+        use alloc::vec::Vec;
+        use core::cmp;
+        use core::fmt;
+        use core::mem;
+
+        use crate::position::Position;
+        use crate::span::Span;
+        use crate::RuleType;
+        */
+        /// Parse-related error type.
+        #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+        pub struct Error<R> 
+        {
+            /// Variant of the error
+            pub variant: ErrorVariant<R>,
+            /// Location within the input string
+            pub location: InputLocation,
+            /// Line/column within the input string
+            pub line_col: LineColLocation,
+            path: Option<String>,
+            line: String,
+            continued_line: Option<String>,
+            parse_attempts: Option<ParseAttempts<R>>,
+        }
+
+        impl<R: RuleType> core::error::Error for Error<R> {}
+
+        /// Different kinds of parsing errors.
+        #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+        pub enum ErrorVariant<R> 
+        {
+            /// Generated parsing error with expected and unexpected `Rule`s
+            ParsingError 
+            {
+                /// Positive attempts
+                positives: Vec<R>,
+                /// Negative attempts
+                negatives: Vec<R>,
+            },
+            /// Custom error with a message
+            CustomError 
+            {
+                /// Short explanation
+                message: String,
+            },
+        }
+
+        impl<R: RuleType> core::error::Error for ErrorVariant<R> {}
+
+        /// Where an `Error` has occurred.
+        #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+        pub enum InputLocation {
+            /// `Error` was created by `Error::new_from_pos`
+            Pos(usize),
+            /// `Error` was created by `Error::new_from_span`
+            Span((usize, usize)),
+        }
+
+        /// Line/column where an `Error` has occurred.
+        #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+        pub enum LineColLocation {
+            /// Line/column pair if `Error` was created by `Error::new_from_pos`
+            Pos((usize, usize)),
+            /// Line/column pairs if `Error` was created by `Error::new_from_span`
+            Span((usize, usize), (usize, usize)),
+        }
+
+        impl From<Position<'_>> for LineColLocation {
+            fn from(value: Position<'_>) -> Self {
+                Self::Pos(value.line_col())
+            }
+        }
+
+        impl From<Span<'_>> for LineColLocation {
+            fn from(value: Span<'_>) -> Self {
+                let (start, end) = value.split();
+                Self::Span(start.line_col(), end.line_col())
+            }
+        }
+
+        /// Function mapping rule to its helper message defined by user.
+        pub type RuleToMessageFn<R> = Box<dyn Fn(&R) -> Option<String>>;
+        /// Function mapping string element to bool denoting whether it's a whitespace defined by user.
+        pub type IsWhitespaceFn = Box<dyn Fn(String) -> bool>;
+
+        impl ParsingToken {
+            pub fn is_whitespace(&self, is_whitespace: &IsWhitespaceFn) -> bool {
+                match self {
+                    ParsingToken::Sensitive { token } => is_whitespace(token.clone()),
+                    ParsingToken::Insensitive { token } => is_whitespace(token.clone()),
+                    ParsingToken::Range { .. } => false,
+                    ParsingToken::BuiltInRule => false,
+                }
+            }
+        }
+
+        impl<R: RuleType> ParseAttempts<R> {
+            /// Helper formatting function to get message informing about tokens we've
+            /// (un)expected to see.
+            /// Used as a part of `parse_attempts_error`.
+            fn tokens_helper_messages(
+                &self,
+                is_whitespace_fn: &IsWhitespaceFn,
+                spacing: &str,
+            ) -> Vec<String> {
+                let mut helper_messages = Vec::new();
+                let tokens_header_pairs = vec![
+                    (self.expected_tokens(), "expected"),
+                    (self.unexpected_tokens(), "unexpected"),
+                ];
+
+                for (tokens, header) in &tokens_header_pairs {
+                    if tokens.is_empty() {
+                        continue;
+                    }
+
+                    let mut helper_tokens_message = format!("{spacing}note: {header} ");
+                    helper_tokens_message.push_str(if tokens.len() == 1 {
+                        "token: "
+                    } else {
+                        "one of tokens: "
+                    });
+
+                    let expected_tokens_set: BTreeSet<String> = tokens
+                        .iter()
+                        .map(|token| {
+                            if token.is_whitespace(is_whitespace_fn) {
+                                String::from("WHITESPACE")
+                            } else {
+                                format!("`{}`", token)
+                            }
+                        })
+                        .collect();
+
+                    helper_tokens_message.push_str(
+                        &expected_tokens_set
+                            .iter()
+                            .cloned()
+                            .collect::<Vec<String>>()
+                            .join(", "),
+                    );
+                    helper_messages.push(helper_tokens_message);
+                }
+
+                helper_messages
+            }
+        }
+
+        impl<R: RuleType> Error<R> {
+            /// Creates `Error` from `ErrorVariant` and `Position`.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// # use pest::error::{Error, ErrorVariant};
+            /// # use pest::Position;
+            /// # #[allow(non_camel_case_types)]
+            /// # #[allow(dead_code)]
+            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            /// # enum Rule {
+            /// #     open_paren,
+            /// #     closed_paren
+            /// # }
+            /// # let input = "";
+            /// # let pos = Position::from_start(input);
+            /// let error = Error::new_from_pos(
+            ///     ErrorVariant::ParsingError {
+            ///         positives: vec![Rule::open_paren],
+            ///         negatives: vec![Rule::closed_paren],
+            ///     },
+            ///     pos
+            /// );
+            ///
+            /// println!("{}", error);
+            /// ```
+            pub fn new_from_pos(variant: ErrorVariant<R>, pos: Position<'_>) -> Error<R> {
+                let visualize_ws = pos.match_char('\n') || pos.match_char('\r');
+                let line_of = pos.line_of();
+                let line = if visualize_ws {
+                    visualize_whitespace(line_of)
+                } else {
+                    line_of.replace(&['\r', '\n'][..], "")
+                };
+                Error {
+                    variant,
+                    location: InputLocation::Pos(pos.pos()),
+                    path: None,
+                    line,
+                    continued_line: None,
+                    line_col: LineColLocation::Pos(pos.line_col()),
+                    parse_attempts: None,
+                }
+            }
+
+            /// Wrapper function to track `parse_attempts` as a result
+            /// of `state` function call in `parser_state.rs`.
+            pub(crate) fn new_from_pos_with_parsing_attempts(
+                variant: ErrorVariant<R>,
+                pos: Position<'_>,
+                parse_attempts: ParseAttempts<R>,
+            ) -> Error<R> {
+                let mut error = Self::new_from_pos(variant, pos);
+                error.parse_attempts = Some(parse_attempts);
+                error
+            }
+
+            /// Creates `Error` from `ErrorVariant` and `Span`.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// # use pest::error::{Error, ErrorVariant};
+            /// # use pest::{Position, Span};
+            /// # #[allow(non_camel_case_types)]
+            /// # #[allow(dead_code)]
+            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            /// # enum Rule {
+            /// #     open_paren,
+            /// #     closed_paren
+            /// # }
+            /// # let input = "";
+            /// # let start = Position::from_start(input);
+            /// # let end = start.clone();
+            /// # let span = start.span(&end);
+            /// let error = Error::new_from_span(
+            ///     ErrorVariant::ParsingError {
+            ///         positives: vec![Rule::open_paren],
+            ///         negatives: vec![Rule::closed_paren],
+            ///     },
+            ///     span
+            /// );
+            ///
+            /// println!("{}", error);
+            /// ```
+            pub fn new_from_span(variant: ErrorVariant<R>, span: Span<'_>) -> Error<R> {
+                let end = span.end_pos();
+                let mut end_line_col = end.line_col();
+                // end position is after a \n, so we want to point to the visual lf symbol
+                if end_line_col.1 == 1 {
+                    let mut visual_end = end;
+                    visual_end.skip_back(1);
+                    let lc = visual_end.line_col();
+                    end_line_col = (lc.0, lc.1 + 1);
+                };
+
+                let mut line_iter = span.lines();
+                let sl = line_iter.next().unwrap_or("");
+                let mut chars = span.as_str().chars();
+                let visualize_ws = matches!(chars.next(), Some('\n') | Some('\r'))
+                    || matches!(chars.last(), Some('\n') | Some('\r'));
+                let start_line = if visualize_ws {
+                    visualize_whitespace(sl)
+                } else {
+                    sl.to_owned().replace(&['\r', '\n'][..], "")
+                };
+                let ll = line_iter.last();
+                let continued_line = if visualize_ws {
+                    ll.map(str::to_owned)
+                } else {
+                    ll.map(visualize_whitespace)
+                };
+
+                Error {
+                    variant,
+                    location: InputLocation::Span((span.start(), end.pos())),
+                    path: None,
+                    line: start_line,
+                    continued_line,
+                    line_col: LineColLocation::Span(span.start_pos().line_col(), end_line_col),
+                    parse_attempts: None,
+                }
+            }
+
+            /// Returns `Error` variant with `path` which is shown when formatted with `Display`.
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// # use pest::error::{Error, ErrorVariant};
+            /// # use pest::Position;
+            /// # #[allow(non_camel_case_types)]
+            /// # #[allow(dead_code)]
+            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            /// # enum Rule {
+            /// #     open_paren,
+            /// #     closed_paren
+            /// # }
+            /// # let input = "";
+            /// # let pos = Position::from_start(input);
+            /// Error::new_from_pos(
+            ///     ErrorVariant::ParsingError {
+            ///         positives: vec![Rule::open_paren],
+            ///         negatives: vec![Rule::closed_paren],
+            ///     },
+            ///     pos
+            /// ).with_path("file.rs");
+            /// ```
+            pub fn with_path(mut self, path: &str) -> Error<R> {
+                self.path = Some(path.to_owned());
+
+                self
+            }
+
+            /// Returns the path set using [`Error::with_path()`].
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// # use pest::error::{Error, ErrorVariant};
+            /// # use pest::Position;
+            /// # #[allow(non_camel_case_types)]
+            /// # #[allow(dead_code)]
+            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            /// # enum Rule {
+            /// #     open_paren,
+            /// #     closed_paren
+            /// # }
+            /// # let input = "";
+            /// # let pos = Position::from_start(input);
+            /// # let error = Error::new_from_pos(
+            /// #     ErrorVariant::ParsingError {
+            /// #         positives: vec![Rule::open_paren],
+            /// #         negatives: vec![Rule::closed_paren],
+            /// #     },
+            /// #     pos);
+            /// let error = error.with_path("file.rs");
+            /// assert_eq!(Some("file.rs"), error.path());
+            /// ```
+            pub fn path(&self) -> Option<&str> {
+                self.path.as_deref()
+            }
+
+            /// Returns the line that the error is on.
+            pub fn line(&self) -> &str {
+                self.line.as_str()
+            }
+
+            /// Renames all `Rule`s if this is a [`ParsingError`]. It does nothing when called on a
+            /// [`CustomError`].
+            ///
+            /// Useful in order to rename verbose rules or have detailed per-`Rule` formatting.
+            ///
+            /// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError
+            /// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError
+            ///
+            /// # Examples
+            ///
+            /// ```
+            /// # use pest::error::{Error, ErrorVariant};
+            /// # use pest::Position;
+            /// # #[allow(non_camel_case_types)]
+            /// # #[allow(dead_code)]
+            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            /// # enum Rule {
+            /// #     open_paren,
+            /// #     closed_paren
+            /// # }
+            /// # let input = "";
+            /// # let pos = Position::from_start(input);
+            /// Error::new_from_pos(
+            ///     ErrorVariant::ParsingError {
+            ///         positives: vec![Rule::open_paren],
+            ///         negatives: vec![Rule::closed_paren],
+            ///     },
+            ///     pos
+            /// ).renamed_rules(|rule| {
+            ///     match *rule {
+            ///         Rule::open_paren => "(".to_owned(),
+            ///         Rule::closed_paren => "closed paren".to_owned()
+            ///     }
+            /// });
+            /// ```
+            pub fn renamed_rules<F>(mut self, f: F) -> Error<R>
+            where
+                F: FnMut(&R) -> String,
+            {
+                let variant = match self.variant {
+                    ErrorVariant::ParsingError {
+                        positives,
+                        negatives,
+                    } => {
+                        let message = Error::parsing_error_message(&positives, &negatives, f);
+                        ErrorVariant::CustomError { message }
+                    }
+                    variant => variant,
+                };
+
+                self.variant = variant;
+
+                self
+            }
+
+            /// Get detailed information about errored rules sequence.
+            /// Returns `Some(results)` only for `ParsingError`.
+            pub fn parse_attempts(&self) -> Option<ParseAttempts<R>> {
+                self.parse_attempts.clone()
+            }
+
+            /// Get error message based on parsing attempts.
+            /// Returns `None` in case self `parse_attempts` is `None`.
+            pub fn parse_attempts_error(
+                &self,
+                input: &str,
+                rule_to_message: &RuleToMessageFn<R>,
+                is_whitespace: &IsWhitespaceFn,
+            ) -> Option<Error<R>> {
+                let attempts = if let Some(ref parse_attempts) = self.parse_attempts {
+                    parse_attempts.clone()
+                } else {
+                    return None;
+                };
+
+                let spacing = self.spacing() + "   ";
+                let error_position = attempts.max_position;
+                let message = {
+                    let mut help_lines: Vec<String> = Vec::new();
+                    help_lines.push(String::from("error: parsing error occurred."));
+
+                    // Note: at least one of `(un)expected_tokens` must not be empty.
+                    for tokens_helper_message in attempts.tokens_helper_messages(is_whitespace, &spacing) {
+                        help_lines.push(tokens_helper_message);
+                    }
+
+                    let call_stacks = attempts.call_stacks();
+                    // Group call stacks by their parents so that we can print common header and
+                    // several sub helper messages.
+                    let mut call_stacks_parents_groups: BTreeMap<Option<R>, Vec<RulesCallStack<R>>> =
+                        BTreeMap::new();
+                    for call_stack in call_stacks {
+                        call_stacks_parents_groups
+                            .entry(call_stack.parent)
+                            .or_default()
+                            .push(call_stack);
+                    }
+
+                    for (group_parent, group) in call_stacks_parents_groups {
+                        if let Some(parent_rule) = group_parent {
+                            let mut contains_meaningful_info = false;
+                            help_lines.push(format!(
+                                "{spacing}help: {}",
+                                if let Some(message) = rule_to_message(&parent_rule) {
+                                    contains_meaningful_info = true;
+                                    message
+                                } else {
+                                    String::from("[Unknown parent rule]")
+                                }
+                            ));
+                            for call_stack in group {
+                                if let Some(r) = call_stack.deepest.get_rule() {
+                                    if let Some(message) = rule_to_message(r) {
+                                        contains_meaningful_info = true;
+                                        help_lines.push(format!("{spacing}      - {message}"));
+                                    }
+                                }
+                            }
+                            if !contains_meaningful_info {
+                                // Have to remove useless line for unknown parent rule.
+                                help_lines.pop();
+                            }
+                        } else {
+                            for call_stack in group {
+                                // Note that `deepest` rule may be `None`. E.g. in case it corresponds
+                                // to WHITESPACE expected token which has no parent rule (on the top level
+                                // parsing).
+                                if let Some(r) = call_stack.deepest.get_rule() {
+                                    let helper_message = rule_to_message(r);
+                                    if let Some(helper_message) = helper_message {
+                                        help_lines.push(format!("{spacing}help: {helper_message}"));
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    help_lines.join("\n")
+                };
+                let error = Error::new_from_pos(
+                    ErrorVariant::CustomError { message },
+                    Position::new_internal(input, error_position),
+                );
+                Some(error)
+            }
+
+            fn start(&self) -> (usize, usize) {
+                match self.line_col {
+                    LineColLocation::Pos(line_col) => line_col,
+                    LineColLocation::Span(start_line_col, _) => start_line_col,
+                }
+            }
+
+            fn spacing(&self) -> String {
+                let line = match self.line_col {
+                    LineColLocation::Pos((line, _)) => line,
+                    LineColLocation::Span((start_line, _), (end_line, _)) => cmp::max(start_line, end_line),
+                };
+
+                let line_str_len = format!("{}", line).len();
+
+                let mut spacing = String::new();
+                for _ in 0..line_str_len {
+                    spacing.push(' ');
+                }
+
+                spacing
+            }
+
+            fn underline(&self) -> String {
+                let mut underline = String::new();
+
+                let mut start = self.start().1;
+                let end = match self.line_col {
+                    LineColLocation::Span(_, (_, mut end)) => {
+                        let inverted_cols = start > end;
+                        if inverted_cols {
+                            mem::swap(&mut start, &mut end);
+                            start -= 1;
+                            end += 1;
+                        }
+
+                        Some(end)
+                    }
+                    _ => None,
+                };
+                let offset = start - 1;
+                let line_chars = self.line.chars();
+
+                for c in line_chars.take(offset) {
+                    match c {
+                        '\t' => underline.push('\t'),
+                        _ => underline.push(' '),
+                    }
+                }
+
+                if let Some(end) = end {
+                    underline.push('^');
+                    if end - start > 1 {
+                        for _ in 2..(end - start) {
+                            underline.push('-');
+                        }
+                        underline.push('^');
+                    }
+                } else {
+                    underline.push_str("^---")
+                }
+
+                underline
+            }
+
+            fn message(&self) -> String {
+                self.variant.message().to_string()
+            }
+
+            fn parsing_error_message<F>(positives: &[R], negatives: &[R], mut f: F) -> String
+            where
+                F: FnMut(&R) -> String,
+            {
+                match (negatives.is_empty(), positives.is_empty()) {
+                    (false, false) => format!(
+                        "unexpected {}; expected {}",
+                        Error::enumerate(negatives, &mut f),
+                        Error::enumerate(positives, &mut f)
+                    ),
+                    (false, true) => format!("unexpected {}", Error::enumerate(negatives, &mut f)),
+                    (true, false) => format!("expected {}", Error::enumerate(positives, &mut f)),
+                    (true, true) => "unknown parsing error".to_owned(),
+                }
+            }
+
+            fn enumerate<F>(rules: &[R], f: &mut F) -> String
+            where
+                F: FnMut(&R) -> String,
+            {
+                match rules.len() {
+                    1 => f(&rules[0]),
+                    2 => format!("{} or {}", f(&rules[0]), f(&rules[1])),
+                    l => {
+                        let non_separated = f(&rules[l - 1]);
+                        let separated = rules
+                            .iter()
+                            .take(l - 1)
+                            .map(f)
+                            .collect::<Vec<_>>()
+                            .join(", ");
+                        format!("{}, or {}", separated, non_separated)
+                    }
+                }
+            }
+
+            pub(crate) fn format(&self) -> String {
+                let spacing = self.spacing();
+                let path = self
+                    .path
+                    .as_ref()
+                    .map(|path| format!("{}:", path))
+                    .unwrap_or_default();
+
+                let pair = (self.line_col.clone(), &self.continued_line);
+                if let (LineColLocation::Span(_, end), Some(ref continued_line)) = pair {
+                    let has_line_gap = end.0 - self.start().0 > 1;
+                    if has_line_gap {
+                        format!(
+                            "{s    }--> {p}{ls}:{c}\n\
+                            {s    } |\n\
+                            {ls:w$} | {line}\n\
+                            {s    } | ...\n\
+                            {le:w$} | {continued_line}\n\
+                            {s    } | {underline}\n\
+                            {s    } |\n\
+                            {s    } = {message}",
+                            s = spacing,
+                            w = spacing.len(),
+                            p = path,
+                            ls = self.start().0,
+                            le = end.0,
+                            c = self.start().1,
+                            line = self.line,
+                            continued_line = continued_line,
+                            underline = self.underline(),
+                            message = self.message()
+                        )
+                    } else {
+                        format!(
+                            "{s    }--> {p}{ls}:{c}\n\
+                            {s    } |\n\
+                            {ls:w$} | {line}\n\
+                            {le:w$} | {continued_line}\n\
+                            {s    } | {underline}\n\
+                            {s    } |\n\
+                            {s    } = {message}",
+                            s = spacing,
+                            w = spacing.len(),
+                            p = path,
+                            ls = self.start().0,
+                            le = end.0,
+                            c = self.start().1,
+                            line = self.line,
+                            continued_line = continued_line,
+                            underline = self.underline(),
+                            message = self.message()
+                        )
+                    }
+                } else {
+                    format!(
+                        "{s}--> {p}{l}:{c}\n\
+                        {s} |\n\
+                        {l} | {line}\n\
+                        {s} | {underline}\n\
+                        {s} |\n\
+                        {s} = {message}",
+                        s = spacing,
+                        p = path,
+                        l = self.start().0,
+                        c = self.start().1,
+                        line = self.line,
+                        underline = self.underline(),
+                        message = self.message()
+                    )
+                }
+            }
+
+            #[cfg(feature = "miette-error")]
+            /// Turns an error into a [miette](crates.io/miette) Diagnostic.
+            pub fn into_miette(self) -> impl ::miette::Diagnostic {
+                miette_adapter::MietteAdapter(self)
+            }
+        }
+
+        impl<R: RuleType> ErrorVariant<R> {
+            ///
+            /// Returns the error message for [`ErrorVariant`]
+            ///
+            /// If [`ErrorVariant`] is [`CustomError`], it returns a
+            /// [`Cow::Borrowed`] reference to [`message`]. If [`ErrorVariant`] is [`ParsingError`], a
+            /// [`Cow::Owned`] containing "expected [ErrorVariant::ParsingError::positives] [ErrorVariant::ParsingError::negatives]" is returned.
+            ///
+            /// [`ErrorVariant`]: enum.ErrorVariant.html
+            /// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError
+            /// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError
+            /// [`Cow::Owned`]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#variant.Owned
+            /// [`Cow::Borrowed`]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#variant.Borrowed
+            /// [`message`]: enum.ErrorVariant.html#variant.CustomError.field.message
+            /// # Examples
+            ///
+            /// ```
+            /// # use pest::error::ErrorVariant;
+            /// let variant = ErrorVariant::<()>::CustomError {
+            ///     message: String::from("unexpected error")
+            /// };
+            ///
+            /// println!("{}", variant.message());
+            pub fn message(&self) -> Cow<'_, str> {
+                match self {
+                    ErrorVariant::ParsingError {
+                        ref positives,
+                        ref negatives,
+                    } => Cow::Owned(Error::parsing_error_message(positives, negatives, |r| {
+                        format!("{:?}", r)
+                    })),
+                    ErrorVariant::CustomError { ref message } => Cow::Borrowed(message),
+                }
+            }
+        }
+
+        impl<R: RuleType> fmt::Display for Error<R> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                write!(f, "{}", self.format())
+            }
+        }
+
+        impl<R: RuleType> fmt::Display for ErrorVariant<R> {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                match self {
+                    ErrorVariant::ParsingError { .. } => write!(f, "parsing error: {}", self.message()),
+                    ErrorVariant::CustomError { .. } => write!(f, "{}", self.message()),
+                }
+            }
+        }
+
+        fn visualize_whitespace(input: &str) -> String {
+            input.to_owned().replace('\r', "␍").replace('\n', "␊")
+        }
+
+        #[cfg(feature = "miette-error")]
+        mod miette_adapter {
+            use alloc::string::ToString;
+            use core::fmt;
+            use std::boxed::Box;
+
+            use crate::error::LineColLocation;
+
+            use super::{Error, RuleType};
+
+            use miette::{Diagnostic, LabeledSpan, SourceCode};
+
+            #[derive(Debug)]
+            pub(crate) struct MietteAdapter<R: RuleType>(pub(crate) Error<R>);
+
+            impl<R: RuleType> Diagnostic for MietteAdapter<R> {
+                fn source_code(&self) -> Option<&dyn SourceCode> {
+                    Some(&self.0.line)
+                }
+
+                fn labels(&self) -> Option<Box<dyn Iterator<Item = LabeledSpan>>> {
+                    let message = self.0.variant.message().to_string();
+
+                    let (offset, length) = match self.0.line_col {
+                        LineColLocation::Pos((_, c)) => (c - 1, 1),
+                        LineColLocation::Span((_, start_c), (_, end_c)) => {
+                            (start_c - 1, end_c - start_c + 1)
+                        }
+                    };
+
+                    let span = LabeledSpan::new(Some(message), offset, length);
+
+                    Some(Box::new(std::iter::once(span)))
+                }
+
+                fn help<'a>(&'a self) -> Option<Box<dyn fmt::Display + 'a>> {
+                    Some(Box::new(self.0.message()))
+                }
+            }
+
+            impl<R: RuleType> fmt::Display for MietteAdapter<R> {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                    write!(f, "Failure to parse at {:?}", self.0.line_col)
+                }
+            }
+
+            impl<R> core::error::Error for MietteAdapter<R>
+            where
+                R: RuleType,
+                Self: fmt::Debug + fmt::Display,
+            {
+            }
+        }
+
+
+    }
+
     pub mod locust
     {
         /*!
@@ -6058,6 +7390,277 @@ pub mod parses
             }
             new_str
         }
+    }
+
+    pub mod pratt
+    {
+        /*!
+        Constructs useful in prefix, postfix, and infix operator parsing with the Pratt parsing method.*/
+        use ::
+        {
+            *,
+        };
+        /*
+        use core::iter::Peekable;
+        use core::marker::PhantomData;
+        use core::ops::BitOr;
+
+        use alloc::boxed::Box;
+        use alloc::collections::BTreeMap;
+
+        use crate::iterators::Pair;
+        use crate::RuleType;
+        */
+        #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+        pub enum Assoc
+        {
+            /// Left operator associativity. Evaluate expressions from left-to-right.
+            Left,
+            /// Right operator associativity. Evaluate expressions from right-to-left.
+            Right,
+        }
+
+        type Prec = u32;
+        const PREC_STEP: Prec = 10;
+        
+        pub struct Op<R: RuleType>
+        {
+            rule: R,
+            affix: Affix,
+            next: Option<Box<Op<R>>>,
+        }
+
+        enum Affix
+        {
+            Prefix,
+            Postfix,
+            Infix(Assoc),
+        }
+
+        impl<R: RuleType> Op<R> 
+        {
+            /// Defines `rule` as a prefix unary operator.
+            pub fn prefix(rule: R) -> Self {
+                Self {
+                    rule,
+                    affix: Affix::Prefix,
+                    next: None,
+                }
+            }
+
+            /// Defines `rule` as a postfix unary operator.
+            pub fn postfix(rule: R) -> Self {
+                Self {
+                    rule,
+                    affix: Affix::Postfix,
+                    next: None,
+                }
+            }
+
+            /// Defines `rule` as an infix binary operator with associativity `assoc`.
+            pub fn infix(rule: R, assoc: Assoc) -> Self {
+                Self {
+                    rule,
+                    affix: Affix::Infix(assoc),
+                    next: None,
+                }
+            }
+        }
+
+        impl<R: RuleType> BitOr for Op<R> 
+        {
+            type Output = Self;
+
+            fn bitor(mut self, rhs: Self) -> Self {
+                fn assign_next<R: RuleType>(op: &mut Op<R>, next: Op<R>) {
+                    if let Some(ref mut child) = op.next {
+                        assign_next(child, next);
+                    } else {
+                        op.next = Some(Box::new(next));
+                    }
+                }
+
+                assign_next(&mut self, rhs);
+                self
+            }
+        }
+        
+        pub struct PrattParser<R: RuleType> 
+        {
+            prec: Prec,
+            ops: BTreeMap<R, (Affix, Prec)>,
+            has_prefix: bool,
+            has_postfix: bool,
+            has_infix: bool,
+        }
+
+        impl<R: RuleType> Default for PrattParser<R> 
+        {
+            fn default() -> Self {
+                Self::new()
+            }
+        }
+
+        impl<R: RuleType> PrattParser<R> 
+        {
+            pub fn new() -> Self 
+            {
+                Self {
+                    prec: PREC_STEP,
+                    ops: BTreeMap::new(),
+                    has_prefix: false,
+                    has_postfix: false,
+                    has_infix: false,
+                }
+            }
+            
+            pub fn op(mut self, op: Op<R>) -> Self 
+            {
+                self.prec += PREC_STEP;
+                let mut iter = Some(op);
+                while let Some(Op { rule, affix, next }) = iter.take() {
+                    match affix {
+                        Affix::Prefix => self.has_prefix = true,
+                        Affix::Postfix => self.has_postfix = true,
+                        Affix::Infix(_) => self.has_infix = true,
+                    }
+                    self.ops.insert(rule, (affix, self.prec));
+                    iter = next.map(|op| *op);
+                }
+                self
+            }
+            
+            pub fn map_primary<'pratt, 'a, 'i, X, T>( &'pratt self, primary: X ) -> PrattParserMap<'pratt, 'a, 'i, R, X, T> where
+            X: FnMut(Pair<'i, R>) -> T,
+            R: 'pratt
+            {
+                PrattParserMap
+                {
+                    pratt: self,
+                    primary,
+                    prefix: None,
+                    postfix: None,
+                    infix: None,
+                    phantom: PhantomData,
+                }
+            }
+        }
+
+        type PrefixFn<'a, 'i, R, T> = Box<dyn FnMut(Pair<'i, R>, T) -> T + 'a>;
+        type PostfixFn<'a, 'i, R, T> = Box<dyn FnMut(T, Pair<'i, R>) -> T + 'a>;
+        type InfixFn<'a, 'i, R, T> = Box<dyn FnMut(T, Pair<'i, R>, T) -> T + 'a>;
+        
+        pub struct PrattParserMap<'pratt, 'a, 'i, R, F, T> where
+        R: RuleType,
+        F: FnMut(Pair<'i, R>) -> T
+        {
+            pratt: &'pratt PrattParser<R>,
+            primary: F,
+            prefix: Option<PrefixFn<'a, 'i, R, T>>,
+            postfix: Option<PostfixFn<'a, 'i, R, T>>,
+            infix: Option<InfixFn<'a, 'i, R, T>>,
+            phantom: PhantomData<T>,
+        }
+
+        impl<'pratt, 'a, 'i, R, F, T> PrattParserMap<'pratt, 'a, 'i, R, F, T> where
+        R: RuleType + 'pratt,
+        F: FnMut(Pair<'i, R>) -> T,
+        {
+            
+            pub fn map_prefix<X>(mut self, prefix: X) -> Self
+            where
+                X: FnMut(Pair<'i, R>, T) -> T + 'a,
+            {
+                self.prefix = Some(Box::new(prefix));
+                self
+            }
+            
+            pub fn map_postfix<X>(mut self, postfix: X) -> Self
+            where
+                X: FnMut(T, Pair<'i, R>) -> T + 'a,
+            {
+                self.postfix = Some(Box::new(postfix));
+                self
+            }
+            
+            pub fn map_infix<X>(mut self, infix: X) -> Self
+            where
+                X: FnMut(T, Pair<'i, R>, T) -> T + 'a,
+            {
+                self.infix = Some(Box::new(infix));
+                self
+            }
+            
+            pub fn parse<P: Iterator<Item = Pair<'i, R>>>(&mut self, pairs: P) -> T
+            {
+                self.expr(&mut pairs.peekable(), 0)
+            }
+
+            fn expr<P: Iterator<Item = Pair<'i, R>>>(&mut self, pairs: &mut Peekable<P>, rbp: Prec) -> T
+            {
+                let mut lhs = self.nud(pairs);
+                while rbp < self.lbp(pairs) {
+                    lhs = self.led(pairs, lhs);
+                }
+                lhs
+            }
+            
+            fn nud<P: Iterator<Item = Pair<'i, R>>>(&mut self, pairs: &mut Peekable<P>) -> T
+            {
+                let pair = pairs.next().expect("Pratt parsing expects non-empty Pairs");
+                match self.pratt.ops.get(&pair.as_rule()) {
+                    Some((Affix::Prefix, prec)) => {
+                        let rhs = self.expr(pairs, *prec - 1);
+                        match self.prefix.as_mut() {
+                            Some(prefix) => prefix(pair, rhs),
+                            None => panic!("Could not map {}, no `.map_prefix(...)` specified", pair),
+                        }
+                    }
+                    None => (self.primary)(pair),
+                    _ => panic!("Expected prefix or primary expression, found {}", pair),
+                }
+            }
+            
+            fn led<P: Iterator<Item = Pair<'i, R>>>(&mut self, pairs: &mut Peekable<P>, lhs: T) -> T
+            {
+                let pair = pairs.next().unwrap();
+                match self.pratt.ops.get(&pair.as_rule()) {
+                    Some((Affix::Infix(assoc), prec)) => {
+                        let rhs = match *assoc {
+                            Assoc::Left => self.expr(pairs, *prec),
+                            Assoc::Right => self.expr(pairs, *prec - 1),
+                        };
+                        match self.infix.as_mut() {
+                            Some(infix) => infix(lhs, pair, rhs),
+                            None => panic!("Could not map {}, no `.map_infix(...)` specified", pair),
+                        }
+                    }
+                    Some((Affix::Postfix, _)) => match self.postfix.as_mut() {
+                        Some(postfix) => postfix(lhs, pair),
+                        None => panic!("Could not map {}, no `.map_postfix(...)` specified", pair),
+                    },
+                    _ => panic!("Expected postfix or infix expression, found {}", pair),
+                }
+            }
+            
+            fn lbp<P: Iterator<Item = Pair<'i, R>>>(&mut self, pairs: &mut Peekable<P>) -> Prec
+            {
+                match pairs.peek()
+                {
+                    Some(pair) => match self.pratt.ops.get(&pair.as_rule())
+                    {
+                        Some((_, prec)) => *prec,
+                        None => panic!("Expected operator, found {}", pair),
+                    },
+                    None => 0,
+                }
+            }
+        }
+    }
+    
+    pub trait Parser<R: RuleType>
+    {
+        fn parse(rule: R, input: &str) -> Result<Pairs<'_, R>, Error<R>>;
     }
 }
 
@@ -6880,7 +8483,7 @@ pub mod regex
     }
 }
 
-pub mod scripting
+pub mod scripts
 {
     /*!
     */
@@ -7432,8 +9035,10 @@ pub mod shell
         pub session_id: String,
     }
 
-    impl Shell {
-        pub fn new() -> Shell {
+    impl Shell 
+    {
+        pub fn new() -> Shell 
+        {
             let uuid = Uuid::new_v4().as_hyphenated().to_string();
             let current_dir = tools::get_current_dir();
             // TODO: the shell proc may have terminal later
@@ -7458,7 +9063,8 @@ pub mod shell
             }
         }
 
-        pub fn insert_job(&mut self, gid: i32, pid: i32, cmd: &str, status: &str, bg: bool) {
+        pub fn insert_job(&mut self, gid: i32, pid: i32, cmd: &str, status: &str, bg: bool)
+        {
             let mut i = 1;
             loop {
                 let mut indexed_job_missing = false;
@@ -7491,11 +9097,13 @@ pub mod shell
             }
         }
 
-        pub fn get_job_by_id(&self, job_id: i32) -> Option<&types::Job> {
+        pub fn get_job_by_id(&self, job_id: i32) -> Option<&types::Job> 
+        {
             self.jobs.get(&job_id)
         }
 
-        pub fn mark_job_member_continued(&mut self, pid: i32, gid: i32) -> Option<&types::Job> {
+        pub fn mark_job_member_continued(&mut self, pid: i32, gid: i32) -> Option<&types::Job>
+        {
             if self.jobs.is_empty() {
                 return None;
             }
@@ -7519,7 +9127,8 @@ pub mod shell
             self.jobs.get(&idx_found)
         }
 
-        pub fn mark_job_member_stopped(&mut self, pid: i32, gid: i32) -> Option<&types::Job> {
+        pub fn mark_job_member_stopped(&mut self, pid: i32, gid: i32) -> Option<&types::Job>
+        {
             if self.jobs.is_empty() {
                 return None;
             }
@@ -7543,7 +9152,8 @@ pub mod shell
             self.jobs.get(&idx_found)
         }
 
-        pub fn get_job_by_gid(&self, gid: i32) -> Option<&types::Job> {
+        pub fn get_job_by_gid(&self, gid: i32) -> Option<&types::Job> 
+        {
             if self.jobs.is_empty() {
                 return None;
             }
@@ -7564,7 +9174,8 @@ pub mod shell
             None
         }
 
-        pub fn mark_job_as_running(&mut self, gid: i32, bg: bool) {
+        pub fn mark_job_as_running(&mut self, gid: i32, bg: bool) 
+        {
             if self.jobs.is_empty() {
                 return;
             }
@@ -7587,7 +9198,8 @@ pub mod shell
             }
         }
 
-        pub fn mark_job_as_stopped(&mut self, gid: i32) {
+        pub fn mark_job_as_stopped(&mut self, gid: i32) 
+        {
             if self.jobs.is_empty() {
                 return;
             }
@@ -7609,7 +9221,8 @@ pub mod shell
             }
         }
 
-        pub fn remove_pid_from_job(&mut self, gid: i32, pid: i32) -> Option<types::Job> {
+        pub fn remove_pid_from_job(&mut self, gid: i32, pid: i32) -> Option<types::Job>
+        {
             if self.jobs.is_empty() {
                 return None;
             }
@@ -7638,29 +9251,26 @@ pub mod shell
             }
             None
         }
-
-        /// Update existing *ENV Variable* if such name exists in ENVs,
-        /// otherwise, we define a local *Shell Variable*, which would not
-        /// be exported into child processes.
-        pub fn set_env(&mut self, name: &str, value: &str) {
+        
+        pub fn set_env(&mut self, name: &str, value: &str) 
+        {
             if env::var(name).is_ok() {
                 env::set_var(name, value);
             } else {
                 self.envs.insert(name.to_string(), value.to_string());
             }
         }
-
-        /// get *Shell Variable*, or *ENV Variable*.
-        pub fn get_env(&self, name: &str) -> Option<String> {
+        
+        pub fn get_env(&self, name: &str) -> Option<String> 
+        {
             match self.envs.get(name) {
                 Some(x) => Some(x.to_string()),
                 None => env::var(name).ok(),
             }
         }
-
-        /// Remove environment variable, function from the environment of
-        /// the currently running process
-        pub fn remove_env(&mut self, name: &str) -> bool {
+        
+        pub fn remove_env(&mut self, name: &str) -> bool 
+        {
             // function names can contain the `-` char.
             let ptn_env = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_-]*$").unwrap();
             if !ptn_env.is_match(name) {
@@ -7673,7 +9283,8 @@ pub mod shell
             true
         }
 
-        pub fn remove_path(&mut self, path_to_remove: &Path) {
+        pub fn remove_path(&mut self, path_to_remove: &Path) 
+        {
             if let Ok(paths) = env::var("PATH") {
                 let mut paths_new: Vec<PathBuf> = env::split_paths(&paths).collect();
                 paths_new.retain(|x| x != path_to_remove);
@@ -7682,19 +9293,24 @@ pub mod shell
             }
         }
 
-        fn remove_func(&mut self, name: &str) {
+        fn remove_func(&mut self, name: &str) 
+        {
             self.funcs.remove(name);
         }
 
-        pub fn set_func(&mut self, name: &str, value: &str) {
+        pub fn set_func(&mut self, name: &str, value: &str) 
+        {
             self.funcs.insert(name.to_string(), value.to_string());
         }
 
-        pub fn get_func(&self, name: &str) -> Option<String> {
+        pub fn get_func(&self, name: &str) -> Option<String> 
+        {
             self.funcs.get(name).map(|x| x.to_string())
         }
 
-        pub fn get_alias_list(&self) -> Vec<(String, String)> {
+        pub fn get_alias_list(&self) -> Vec<(String, String)>
+        
+        {
             let mut result = Vec::new();
             for (name, value) in &self.aliases {
                 result.push((name.clone(), value.clone()));
@@ -7702,20 +9318,24 @@ pub mod shell
             result
         }
 
-        pub fn add_alias(&mut self, name: &str, value: &str) {
+        pub fn add_alias(&mut self, name: &str, value: &str)
+        {
             self.aliases.insert(name.to_string(), value.to_string());
         }
 
-        pub fn is_alias(&self, name: &str) -> bool {
+        pub fn is_alias(&self, name: &str) -> bool
+        {
             self.aliases.contains_key(name)
         }
 
-        pub fn remove_alias(&mut self, name: &str) -> bool {
+        pub fn remove_alias(&mut self, name: &str) -> bool
+        {
             let opt = self.aliases.remove(name);
             opt.is_some()
         }
 
-        pub fn get_alias_content(&self, name: &str) -> Option<String> {
+        pub fn get_alias_content(&self, name: &str) -> Option<String>
+        {
             let result = match self.aliases.get(name) {
                 Some(x) => x.to_string(),
                 None => String::new(),
@@ -7726,9 +9346,37 @@ pub mod shell
                 Some(result)
             }
         }
+        
+        pub fn split_into_fields
+        (
+            &self,
+            line: &str,
+            envs: &HashMap<String, String>,
+        ) -> Vec<String>
+        {
+            let ifs_chars;
+            if envs.contains_key("IFS") {
+                ifs_chars = envs[&"IFS".to_string()].chars().collect();
+            } else if let Some(x) = self.get_env("IFS") {
+                ifs_chars = x.chars().collect();
+            } else if let Ok(x) = env::var("IFS") {
+                ifs_chars = x.chars().collect();
+            } else {
+                ifs_chars = vec![];
+            }
+
+            if ifs_chars.is_empty() {
+                line.split(&[' ', '\t', '\n'][..])
+                    .map(|x| x.to_string())
+                    .collect()
+            } else {
+                line.split(&ifs_chars[..]).map(|x| x.to_string()).collect()
+            }
+        }
     }
 
-    pub unsafe fn give_terminal_to(gid: i32) -> bool {
+    pub unsafe fn give_terminal_to(gid: i32) -> bool 
+    {
         let mut mask: libc::sigset_t = mem::zeroed();
         let mut old_mask: libc::sigset_t = mem::zeroed();
 
@@ -7759,12 +9407,14 @@ pub mod shell
         given
     }
 
-    fn needs_globbing(line: &str) -> bool {
+    fn needs_globbing(line: &str) -> bool 
+    {
         let re = Regex::new(r"\*+").expect("Invalid regex ptn");
         re.is_match(line)
     }
 
-    pub fn expand_glob(tokens: &mut types::Tokens) {
+    pub fn expand_glob(tokens: &mut types::Tokens) 
+    {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
         for (sep, text) in tokens.iter() {
@@ -7831,7 +9481,8 @@ pub mod shell
         }
     }
 
-    fn expand_one_env(sh: &Shell, token: &str) -> String {
+    fn expand_one_env(sh: &Shell, token: &str) -> String 
+    {
         // do not combine these two into one: `\{?..\}?`,
         // otherwize `}` in `{print $NF}` would gone.
         let re1 = Regex::new(r"^(.*?)\$([A-Za-z0-9_]+|\$|\?)(.*)$").unwrap();
@@ -7877,11 +9528,13 @@ pub mod shell
         result
     }
 
-    fn need_expand_brace(line: &str) -> bool {
+    fn need_expand_brace(line: &str) -> bool 
+    {
         libs::re::re_contains(line, r#"\{[^ "']*,[^ "']*,?[^ "']*\}"#)
     }
 
-    fn brace_getitem(s: &str, depth: i32) -> (Vec<String>, String) {
+    fn brace_getitem(s: &str, depth: i32) -> (Vec<String>, String) 
+    {
         let mut out: Vec<String> = vec![String::new()];
         let mut ss = s.to_string();
         let mut tmp;
@@ -7936,7 +9589,8 @@ pub mod shell
         (out, ss)
     }
 
-    fn brace_getgroup(s: &str, depth: i32) -> Option<(Vec<String>, String)> {
+    fn brace_getgroup(s: &str, depth: i32) -> Option<(Vec<String>, String)> 
+    {
         let mut out: Vec<String> = Vec::new();
         let mut comma = false;
         let mut ss = s.to_string();
@@ -7978,7 +9632,8 @@ pub mod shell
         None
     }
 
-    fn expand_brace(tokens: &mut types::Tokens) {
+    fn expand_brace(tokens: &mut types::Tokens)
+    {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
         for (sep, token) in tokens.iter() {
@@ -8005,7 +9660,8 @@ pub mod shell
         }
     }
 
-    fn expand_brace_range(tokens: &mut types::Tokens) {
+    fn expand_brace_range(tokens: &mut types::Tokens)
+    {
         let re;
         if let Ok(x) = Regex::new(r#"\{(-?[0-9]+)\.\.(-?[0-9]+)(\.\.)?([0-9]+)?\}"#) {
             re = x;
@@ -8084,7 +9740,8 @@ pub mod shell
         }
     }
 
-    fn expand_alias(sh: &Shell, tokens: &mut types::Tokens) {
+    fn expand_alias(sh: &Shell, tokens: &mut types::Tokens) 
+    {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
         let mut is_head = true;
@@ -8123,7 +9780,8 @@ pub mod shell
         }
     }
 
-    fn expand_home(tokens: &mut types::Tokens) {
+    fn expand_home(tokens: &mut types::Tokens) 
+    {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
         for (sep, text) in tokens.iter() {
@@ -8150,7 +9808,8 @@ pub mod shell
         }
     }
 
-    fn env_in_token(token: &str) -> bool {
+    fn env_in_token(token: &str) -> bool 
+    {
         if libs::re::re_contains(token, r"\$\{?[\$\?]\}?") {
             return true;
         }
@@ -8178,7 +9837,8 @@ pub mod shell
         !libs::re::re_contains(token, &ptn_env)
     }
 
-    pub fn expand_env(sh: &Shell, tokens: &mut types::Tokens) {
+    pub fn expand_env(sh: &Shell, tokens: &mut types::Tokens) 
+    {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
 
@@ -8206,12 +9866,14 @@ pub mod shell
         }
     }
 
-    fn should_do_dollar_command_extension(line: &str) -> bool {
+    fn should_do_dollar_command_extension(line: &str) -> bool 
+    {
         libs::re::re_contains(line, r"\$\([^\)]+\)")
             && !libs::re::re_contains(line, r"='.*\$\([^\)]+\).*'$")
     }
 
-    fn do_command_substitution_for_dollar(sh: &mut Shell, tokens: &mut types::Tokens) {
+    fn do_command_substitution_for_dollar(sh: &mut Shell, tokens: &mut types::Tokens) 
+    {
         let mut idx: usize = 0;
         let mut buff: HashMap<usize, String> = HashMap::new();
 
@@ -8280,7 +9942,8 @@ pub mod shell
         }
     }
 
-    fn do_command_substitution_for_dot(sh: &mut Shell, tokens: &mut types::Tokens) {
+    fn do_command_substitution_for_dot(sh: &mut Shell, tokens: &mut types::Tokens) 
+    {
         let mut idx: usize = 0;
         let mut buff: HashMap<usize, String> = HashMap::new();
         let re = Regex::new(r"^([^`]*)`([^`]+)`(.*)$").unwrap();
@@ -8371,12 +10034,14 @@ pub mod shell
         }
     }
 
-    fn do_command_substitution(sh: &mut Shell, tokens: &mut types::Tokens) {
+    fn do_command_substitution(sh: &mut Shell, tokens: &mut types::Tokens) 
+    {
         do_command_substitution_for_dot(sh, tokens);
         do_command_substitution_for_dollar(sh, tokens);
     }
 
-    pub fn do_expansion(sh: &mut Shell, tokens: &mut types::Tokens) {
+    pub fn do_expansion(sh: &mut Shell, tokens: &mut types::Tokens) 
+    {
         let line = parsers::parser_line::tokens_to_line(tokens);
         if tools::is_arithmetic(&line) {
             return;
@@ -8395,7 +10060,8 @@ pub mod shell
         expand_brace_range(tokens);
     }
 
-    pub fn trim_multiline_prompts(line: &str) -> String {
+    pub fn trim_multiline_prompts(line: &str) -> String 
+    {
         // remove sub-prompts from multiple line mode
         // 1. assuming '\n' char cannot be typed manually?
         // 2. `>>` is defined as `src/prompt/multilines.rs`
@@ -8404,15 +10070,14 @@ pub mod shell
         libs::re::replace_all(&line_new, r"(?P<NEWLINE>\n)>> ", "$NEWLINE")
     }
 
-    fn proc_has_terminal() -> bool {
+    fn proc_has_terminal() -> bool 
+    {
         unsafe {
             let tgid = libc::tcgetpgrp(0);
             let pgid = libc::getpgid(0);
             tgid == pgid
         }
     }
-
-
 }
 
 pub mod signals
@@ -9180,4 +10845,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
         }
     }
 }
-// 9183 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 10848 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
