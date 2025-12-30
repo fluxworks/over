@@ -68,6 +68,7 @@ use lineread::{Command, Interface, ReadResult};
 #[macro_use] extern crate bitflags;
 #[macro_use] extern crate lazy_static;
 #[macro_use] extern crate libc;
+#[macro_use] extern crate nix;
 #[macro_use] extern crate rand;
 #[macro_use] extern crate regex as re;
 #[macro_use] extern crate smallvec;
@@ -93,7 +94,7 @@ use lineread::{Command, Interface, ReadResult};
                 let msg = $fmt;
                 match std::fs::OpenOptions::new().append(true).create(true).open(&log_file) {
                     Ok(mut cfile) => {
-                        let pid = $crate::tlog::getpid();
+                        let pid = ::process::read_pid();
                         let now = $crate::ctime::DateTime::now();
                         let msg = format!("[{}][{}] {}", now, pid, msg);
                         let msg = if msg.ends_with('\n') { msg } else { format!("{}\n", msg) };
@@ -365,7 +366,7 @@ pub mod builtins
         {
             let tokens = cmd.tokens.clone();
             let mut cr = CommandResult::new();
-            let args = parsers::parser_line::tokens_to_args(&tokens);
+            let args = parses::lines::tokens_to_args(&tokens);
 
             if args.len() > 2 {
                 let info = "cicada: cd: too many argument";
@@ -520,7 +521,7 @@ pub mod builtins
         {
             let mut cr = CommandResult::new();
             let tokens = cmd.tokens.clone();
-            let args = parsers::parser_line::tokens_to_args(&tokens);
+            let args = parses::lines::tokens_to_args(&tokens);
             let len = args.len();
             if len == 1 {
                 print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
@@ -636,7 +637,7 @@ pub mod builtins
 
                 for cap in re_name_ptn.captures_iter(text) {
                     let name = cap[1].to_string();
-                    let token = parsers::parser_line::unquote(&cap[2]);
+                    let token = parses::lines::unquote(&cap[2]);
                     let value = libs::path::expand_home(&token);
                     env::set_var(name, &value);
                 }
@@ -822,7 +823,7 @@ pub mod builtins
             };
 
             let tokens = cmd.tokens.clone();
-            let args = parsers::parser_line::tokens_to_args(&tokens);
+            let args = parses::lines::tokens_to_args(&tokens);
 
             let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
             let opt = OptMain::from_iter_safe(args);
@@ -1184,7 +1185,7 @@ pub mod builtins
         use crate::types::{Command, CommandLine, CommandResult};
         */
         //#[derive(Debug, StructOpt)]
-        #[derive(Debug)]
+        #[derive( Debug )]
         struct OptMainSet
         {
             exit_on_error: bool,
@@ -1194,7 +1195,7 @@ pub mod builtins
         {
             let mut cr = CommandResult::new();
             let tokens = &cmd.tokens;
-            let args = parsers::parser_line::tokens_to_args(tokens);
+            let args = parses::lines::tokens_to_args(tokens);
             let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
 
             let opt = OptMain::from_iter_safe(args);
@@ -1243,7 +1244,7 @@ pub mod builtins
         {
             let mut cr = CommandResult::new();
             let tokens = &cmd.tokens;
-            let args = parsers::parser_line::tokens_to_args(tokens);
+            let args = parses::lines::tokens_to_args(tokens);
 
             if args.len() < 2 {
                 let info = "cicada: source: no file specified";
@@ -1279,33 +1280,34 @@ pub mod builtins
         #[allow(non_snake_case)] */
         struct App
         {
-            #[arg(short, help = "All current limits are reported.")]
+            /*#[arg(short, help = "All current limits are reported.")]*/
             a: bool,
-            #[arg(
+            /*#[arg(
                 short,
                 value_name = "NEW VALUE",
                 help = "The maximum number of open file descriptors."
-            )]
+            )]*/
             n: Option<Option<u64>>,
-            #[arg(
+            /*#[arg(
                 short,
                 value_name = "NEW VALUE",
                 help = "The maximum size of core files created."
-            )]
+            )]*/
             c: Option<Option<u64>>,
+            /*
             #[arg(
                 short = 'S',
                 help = "Set a soft limit for the given resource. (default)"
-            )]
+            )]*/
             S: bool,
-            #[arg(short = 'H', help = "Set a hard limit for the given resource.")]
+            /* #[arg(short = 'H', help = "Set a hard limit for the given resource.")] */
             H: bool,
         }
 
         pub fn run(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult {
             let mut cr = CommandResult::new();
             let tokens = &cmd.tokens;
-            let args = parsers::parser_line::tokens_to_args(tokens);
+            let args = parses::lines::tokens_to_args(tokens);
 
             if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
                 App::command().print_help().unwrap();
@@ -1698,7 +1700,7 @@ pub mod builtins
         pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult {
             let mut cr = CommandResult::new();
             let tokens = cmd.tokens.clone();
-            let args = parsers::parser_line::tokens_to_args(&tokens);
+            let args = parses::lines::tokens_to_args(&tokens);
             let len = args.len();
             let subcmd = if len > 1 { &args[1] } else { "" };
 
@@ -1966,6 +1968,7 @@ pub mod calculator
             pratt::{ Assoc, Op, PrattParser },
             Parser
         },
+        types::{ * },
         *,
     };
     /*
@@ -1977,8 +1980,8 @@ pub mod calculator
     {
         static ref PRATT_PARSER: PrattParser<Rule> = 
         {
-            use Assoc::*;
-            use Rule::*;
+            use self::Assoc::*;
+            use self::Rule::*;
 
             PrattParser::new()
             .op(Op::infix(add, Left) | Op::infix(subtract, Left))
@@ -2118,7 +2121,7 @@ pub mod completers
         }
 
         fn get_dot_file(line: &str) -> (String, String) {
-            let args = parsers::parser_line::line_to_plain_tokens(line);
+            let args = parses::lines::line_to_plain_tokens(line);
             let dir = tools::get_user_completer_dir();
             let dot_file = format!("{}/{}.yaml", dir, args[0]);
             if !Path::new(&dot_file).exists() {
@@ -2140,7 +2143,7 @@ pub mod completers
                 return;
             }
 
-            let linfo = parsers::parser_line::parse_line(value);
+            let linfo = parses::lines::parse_line(value);
             let tokens = linfo.tokens;
             if tokens.len() == 1 && tokens[0].0 == "`" {
                 log!("run subcmd: {:?}", &tokens[0].1);
@@ -2523,7 +2526,7 @@ pub mod completers
         pub fn complete_path(word: &str, for_dir: bool) -> Vec<Completion> {
             let is_env = is_env_prefix(word);
             let mut res = Vec::new();
-            let linfo = parsers::parser_line::parse_line(word);
+            let linfo = parses::lines::parse_line(word);
             let tokens = linfo.tokens;
             let (path, path_sep) = if tokens.is_empty() {
                 (String::new(), String::new())
@@ -2820,7 +2823,7 @@ pub mod completers
     }
 
     fn for_dots(line: &str) -> bool {
-        let args = parsers::parser_line::line_to_plain_tokens(line);
+        let args = parses::lines::line_to_plain_tokens(line);
         let len = args.len();
         if len == 0 {
             return false;
@@ -3520,7 +3523,7 @@ pub mod core
                 }
 
                 if options.isatty && !options.capture_output {
-                    let _cmd = parsers::parser_line::tokens_to_line(&cmd.tokens);
+                    let _cmd = parses::lines::tokens_to_line(&cmd.tokens);
                     sh.insert_job(*pgid, pid, &_cmd, "Running", cl.background);
                 }
 
@@ -3830,7 +3833,7 @@ pub mod execute
         let mut cr_list = Vec::new();
         let mut status = 0;
         let mut sep = String::new();
-        for token in parsers::parser_line::line_to_cmds(line) {
+        for token in parses::lines::line_to_cmds(line) {
             if token == ";" || token == "&&" || token == "||" {
                 sep = token.clone();
                 continue;
@@ -3852,7 +3855,7 @@ pub mod execute
 
     pub fn line_to_tokens(sh: &mut Shell, line: &str) -> (Tokens, HashMap<String, String>)
     {
-        let linfo = parsers::parser_line::parse_line(line);
+        let linfo = parses::lines::parse_line(line);
         let mut tokens = linfo.tokens;
         shell::do_expansion(sh, &mut tokens);
         let envs = drain_env_tokens(&mut tokens);
@@ -3955,7 +3958,7 @@ pub mod extend
         let re = Regex::new(r"!!").unwrap();
         let mut replaced = false;
         let mut new_line = String::new();
-        let linfo = parsers::parser_line::parse_line(line);
+        let linfo = parses::lines::parse_line(line);
         for (sep, token) in linfo.tokens {
             if !sep.is_empty() {
                 new_line.push_str(&sep);
@@ -4122,7 +4125,7 @@ pub mod highlight
 
     use lineread::highlighting::{Highlighter, Style};
 
-    use crate::parsers::parser_line;
+    use crate::parses::lines;
     use crate::shell;
     use crate::tools;
     */
@@ -5472,13 +5475,19 @@ pub mod libs
         */
         use ::
         {
+            nix::
+            {
+                unistd::{fork as nix_fork, ForkResult},
+                Result,
+            },
             *,
         };
         /*
         use nix::unistd::{fork as nix_fork, ForkResult};
         use nix::Result;
         */
-        pub fn fork() -> Result<ForkResult> {
+        pub fn fork() -> Result<ForkResult>
+        {
             unsafe { nix_fork() }
         }
     }
@@ -6162,7 +6171,7 @@ pub mod parses
 
             /// Wrapper function to track `parse_attempts` as a result
             /// of `state` function call in `parser_state.rs`.
-            pub(crate) fn new_from_pos_with_parsing_attempts(
+            pub fn new_from_pos_with_parsing_attempts(
                 variant: ErrorVariant<R>,
                 pos: Position<'_>,
                 parse_attempts: ParseAttempts<R>,
@@ -6554,7 +6563,7 @@ pub mod parses
                 }
             }
 
-            pub(crate) fn format(&self) -> String {
+            pub fn format(&self) -> String {
                 let spacing = self.spacing();
                 let path = self
                     .path
@@ -6700,8 +6709,8 @@ pub mod parses
 
             use miette::{Diagnostic, LabeledSpan, SourceCode};
 
-            #[derive(Debug)]
-            pub(crate) struct MietteAdapter<R: RuleType>(pub(crate) Error<R>);
+            #[derive( Debug )]
+            pub struct MietteAdapter<R: RuleType>(pub Error<R>);
 
             impl<R: RuleType> Diagnostic for MietteAdapter<R> {
                 fn source_code(&self) -> Option<&dyn SourceCode> {
@@ -6751,73 +6760,18 @@ pub mod parses
         */
         use ::
         {
+            types::{ * },
             *,
         };
         /*
         use pest::error::Error;
         use pest::iterators::Pairs;
         use pest::Parser;
-        WHITESPACE = _{ " " | "\t" }
-
-        KW_IF = _{ "if " }
-        KW_FI = _{ "fi" ~ (NEWLINE | EOI) }
-        KW_FOR = _{ "for " }
-        KW_ELSE = { "else" ~ NEWLINE }
-        KW_ELSEIF = _{ "else if " }
-        KW_WHILE = _{ "while " }
-        KW_DONE = _{ "done" ~ (NEWLINE | EOI) }
-        KW_LIST = _{ KW_IF | KW_FOR | KW_ELSEIF | KW_ELSE | KW_FI | KW_WHILE | KW_DONE }
-
-        DUMMY_DO = _{ ";" ~ "do" ~ NEWLINE }
-        DUMMY_THEN = _{ ";" ~ "then" ~ NEWLINE }
-
-        TEST = {(!(NEWLINE|DUMMY_THEN|DUMMY_DO) ~ ANY)+}
-
-        CMD_END = _{ !KW_LIST ~ (!NEWLINE ~ ANY)+ ~ EOI}
-        CMD_NORMAL = _{ !KW_LIST ~ (!NEWLINE ~ ANY)* ~ NEWLINE}
-        CMD = { CMD_NORMAL | CMD_END }
-
-        IF_HEAD = { KW_IF ~ TEST ~ (DUMMY_THEN|NEWLINE) }
-        EXP_BODY = { (CMD | EXP_IF | EXP_WHILE | EXP_FOR)+ }
-        IF_ELSEIF_HEAD = { KW_ELSEIF ~ TEST ~ (DUMMY_THEN|NEWLINE) }
-        IF_IF_BR = { IF_HEAD ~ EXP_BODY }
-        IF_ELSEIF_BR = { IF_ELSEIF_HEAD ~ EXP_BODY }
-        IF_ELSE_BR = { KW_ELSE ~ EXP_BODY }
-
-        EXP_IF = {
-            (SOI)? ~
-            IF_IF_BR ~
-            IF_ELSEIF_BR* ~
-            IF_ELSE_BR? ~
-            KW_FI
-        }
-
-        FOR_VAR = @{ (ASCII_ALPHA | "_") ~ (ASCII_ALPHANUMERIC | "_")* }
-        FOR_INIT = { FOR_VAR ~ "in" ~ TEST ~ (DUMMY_DO|NEWLINE) }
-        FOR_HEAD = { KW_FOR ~ FOR_INIT }
-
-        EXP_FOR = {
-            (SOI)? ~
-            FOR_HEAD ~
-                EXP_BODY ~
-            KW_DONE
-        }
-
-        WHILE_HEAD = { KW_WHILE ~ TEST ~ (DUMMY_DO|NEWLINE) }
-
-        EXP_WHILE = {
-            (SOI)? ~
-            WHILE_HEAD ~
-                EXP_BODY ~
-            KW_DONE
-        }
-
-        EXP = { (EXP_IF | EXP_FOR | EXP_WHILE | CMD)* }
         */
-        #[derive(Parser)]
+        // #[derive(Parser)]
         struct Locust;
 
-        pub fn parse_lines( lines: &str ) -> Result<Pairs<'_, crate::parsers::locust::Rule>, Error<crate::parsers::locust::Rule>>
+        pub fn parse_lines( lines: &str ) -> Result<Pairs<'_, Rule>, Error<Rule>>
         {
             Locust::parse(Rule::EXP, lines)
         }
@@ -7881,7 +7835,7 @@ pub mod prompt
         use lineread::{Function, Prompter, Terminal};
         use std::io;
 
-        use crate::parsers::parser_line;
+        use crate::parses::lines;
         */
         pub struct EnterFunction;
 
@@ -8646,15 +8600,15 @@ pub mod scripts
 
     fn expand_args(line: &str, args: &[String]) -> String 
     {
-        let linfo = parsers::parser_line::parse_line(line);
+        let linfo = parses::lines::parse_line(line);
         let mut tokens = linfo.tokens;
         expand_args_in_tokens(&mut tokens, args);
-        parsers::parser_line::tokens_to_line(&tokens)
+        parses::lines::tokens_to_line(&tokens)
     }
 
     fn expand_line_to_toknes(line: &str, args: &[String], sh: &mut shell::Shell) -> types::Tokens 
     {
-        let linfo = parsers::parser_line::parse_line(line);
+        let linfo = parses::lines::parse_line(line);
         let mut tokens = linfo.tokens;
         expand_args_in_tokens(&mut tokens, args);
         shell::do_expansion(sh, &mut tokens);
@@ -9771,7 +9725,7 @@ pub mod shell
         }
 
         for (i, text) in buff.iter().rev() {
-            let linfo = parsers::parser_line::parse_line(text);
+            let linfo = parses::lines::parse_line(text);
             let tokens_ = linfo.tokens;
             tokens.remove(*i);
             for item in tokens_.iter().rev() {
@@ -10042,7 +9996,7 @@ pub mod shell
 
     pub fn do_expansion(sh: &mut Shell, tokens: &mut types::Tokens) 
     {
-        let line = parsers::parser_line::tokens_to_line(tokens);
+        let line = parses::lines::tokens_to_line(tokens);
         if tools::is_arithmetic(&line) {
             return;
         }
@@ -10285,14 +10239,15 @@ pub mod types
 
     use crate::libs;
     use crate::parsers;
-    use crate::parsers::parser_line::tokens_to_redirections;
+    use crate::parses::lines::tokens_to_redirections;
     use crate::shell;
     use crate::tools;
     */
-    #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+    #[derive( Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
     pub struct WaitStatus(i32, i32, i32);
 
-    impl WaitStatus {
+    impl WaitStatus 
+    {
         pub fn from_exited(pid: i32, status: i32) -> Self {
             WaitStatus(pid, 0, status)
         }
@@ -10388,7 +10343,8 @@ pub mod types
         }
     }
 
-    impl fmt::Debug for WaitStatus {
+    impl fmt::Debug for WaitStatus 
+    {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             let mut formatter = f.debug_struct("WaitStatus");
             formatter.field("pid", &self.0);
@@ -10403,15 +10359,17 @@ pub mod types
     pub type Tokens = Vec<Token>;
     pub type Redirection = (String, String, String);
 
-    #[derive(Debug)]
-    pub struct LineInfo {
+    #[derive( Debug )]
+    pub struct LineInfo 
+    {
         // e.g. echo 'foo
         // is not a completed line, need to turn to multiple-line mode.
         pub tokens: Tokens,
         pub is_complete: bool,
     }
 
-    impl LineInfo {
+    impl LineInfo 
+    {
         pub fn new(tokens: Tokens) -> Self {
             LineInfo {
                 tokens,
@@ -10419,34 +10377,26 @@ pub mod types
             }
         }
     }
-
-    ///
-    /// command line: `ls 'foo bar' 2>&1 > /dev/null < one-file` would be:
-    /// Command {
-    ///     tokens: [("", "ls"), ("", "-G"), ("\'", "foo bar")],
-    ///     redirects_to: [
-    ///         ("2", ">", "&1"),
-    ///         ("1", ">", "/dev/null"),
-    ///     ],
-    ///     redirect_from: Some(("<", "one-file")),
-    /// }
-    ///
-    #[derive(Debug)]
-    pub struct Command {
+    
+    #[derive( Debug )]
+    pub struct Command 
+    {
         pub tokens: Tokens,
         pub redirects_to: Vec<Redirection>,
         pub redirect_from: Option<Token>,
     }
 
-    #[derive(Debug)]
-    pub struct CommandLine {
+    #[derive( Debug )]
+    pub struct CommandLine 
+    {
         pub line: String,
         pub commands: Vec<Command>,
         pub envs: HashMap<String, String>,
         pub background: bool,
     }
 
-    impl Command {
+    impl Command 
+    {
         pub fn from_tokens(tokens: Tokens) -> Result<Command, String> {
             let mut tokens_new = tokens.clone();
             let mut redirects_from_type = String::new();
@@ -10515,8 +10465,9 @@ pub mod types
         }
     }
 
-    #[derive(Debug, Clone, Default)]
-    pub struct Job {
+    #[derive( Clone, Debug, Default )]
+    pub struct Job 
+    {
         pub cmd: String,
         pub id: i32,
         pub gid: i32,
@@ -10526,7 +10477,8 @@ pub mod types
         pub is_bg: bool,
     }
 
-    impl Job {
+    impl Job 
+    {
         pub fn all_members_stopped(&self) -> bool {
             for pid in &self.pids {
                 if !self.pids_stopped.contains(pid) {
@@ -10540,17 +10492,18 @@ pub mod types
             self.pids_stopped.is_empty()
         }
     }
-
-    #[allow(dead_code)]
-    #[derive(Clone, Debug, Default)]
-    pub struct CommandResult {
+    
+    #[derive( Clone, Debug, Default )]
+    pub struct CommandResult 
+    {
         pub gid: i32,
         pub status: i32,
         pub stdout: String,
         pub stderr: String,
     }
 
-    impl CommandResult {
+    impl CommandResult 
+    {
         pub fn new() -> CommandResult {
             CommandResult {
                 gid: 0,
@@ -10578,17 +10531,18 @@ pub mod types
             }
         }
     }
-
-    #[allow(dead_code)]
-    #[derive(Clone, Debug, Default)]
-    pub struct CommandOptions {
+    
+    #[derive( Clone, Debug, Default )]
+    pub struct CommandOptions 
+    {
         pub background: bool,
         pub isatty: bool,
         pub capture_output: bool,
         pub envs: HashMap<String, String>,
     }
 
-    fn split_tokens_by_pipes(tokens: &[Token]) -> Vec<Tokens> {
+    fn split_tokens_by_pipes(tokens: &[Token]) -> Vec<Tokens> 
+    {
         let mut cmd = Vec::new();
         let mut cmds = Vec::new();
         for token in tokens {
@@ -10611,7 +10565,8 @@ pub mod types
         cmds
     }
 
-    pub(crate) fn drain_env_tokens(tokens: &mut Tokens) -> HashMap<String, String> {
+    pub fn drain_env_tokens(tokens: &mut Tokens) -> HashMap<String, String> 
+    {
         let mut envs: HashMap<String, String> = HashMap::new();
         let mut n = 0;
         let re = Regex::new(r"^([a-zA-Z0-9_]+)=(.*)$").unwrap();
@@ -10622,7 +10577,7 @@ pub mod types
 
             for cap in re.captures_iter(text) {
                 let name = cap[1].to_string();
-                let value = parsers::parser_line::unquote(&cap[2]);
+                let value = parses::lines::unquote(&cap[2]);
                 envs.insert(name, value);
             }
 
@@ -10634,9 +10589,10 @@ pub mod types
         envs
     }
 
-    impl CommandLine {
+    impl CommandLine
+    {
         pub fn from_line(line: &str, sh: &mut shell::Shell) -> Result<CommandLine, String> {
-            let linfo = parsers::parser_line::parse_line(line);
+            let linfo = parses::lines::parse_line(line);
             let mut tokens = linfo.tokens;
             shell::do_expansion(sh, &mut tokens);
             let envs = drain_env_tokens(&mut tokens);
@@ -10679,6 +10635,40 @@ pub mod types
         pub fn is_single_and_builtin(&self) -> bool {
             self.commands.len() == 1 && self.commands[0].is_builtin()
         }
+    }
+
+    #[derive( Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash )]
+    pub enum Rule
+    {
+        WHITESPACE( String ),
+        KW_IF( String ),
+        KW_FI( String ),
+        KW_FOR( String ),
+        KW_ELSE( String ),
+        KW_ELSEIF( String ),
+        KW_WHILE( String ),
+        KW_DONE( String ),
+        KW_LIST( String ),
+        DUMMY_DO( String ),
+        DUMMY_THEN( String ),
+        TEST( String ),
+        CMD_END( String ),
+        CMD_NORMAL( String ),
+        CMD( String ),
+        IF_HEAD( String ),
+        EXP_BODY( String ),
+        IF_ELSEIF_HEAD( String ),
+        IF_IF_BR( String ),
+        IF_ELSEIF_BR( String ),
+        IF_ELSE_BR( String ),
+        EXP_IF( String ),
+        FOR_VAR( String ),
+        FOR_INIT( String ),
+        FOR_HEAD( String ),
+        EXP_FOR( String ),
+        WHILE_HEAD( String ),
+        EXP_WHILE( String ),
+        EXP( String ),
     }
 }
 
