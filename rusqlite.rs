@@ -137,6 +137,11 @@ use lineread::{Command, Interface, ReadResult};
     }
 }
 
+pub mod borrow
+{
+    pub use std::borrow::{ * };
+}
+
 pub mod boxed
 {
     pub use std::boxed::{ * };
@@ -152,6 +157,7 @@ pub mod builtins
         fs::{ File },
         io::{ Write },
         os::unix::io::{ FromRawFd, RawFd },
+        types::{ * },
         *,
     };
     /*
@@ -993,6 +999,9 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stdout_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
@@ -1001,7 +1010,7 @@ pub mod builtins
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
         */
-        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+        pub fn run( sh:&mut Shell, cl:&CommandLine, cmd:&Command, capture:bool ) -> CommandResult
         {
             let mut cr = CommandResult::new();
             if sh.jobs.is_empty() {
@@ -1031,6 +1040,9 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stdout_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
@@ -1070,6 +1082,9 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
@@ -1158,16 +1173,12 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture, print_stdout_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
-        use structopt::StructOpt;
-
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
-        use crate::parsers;
-        use crate::shell::Shell;
-        use crate::types::{Command, CommandLine, CommandResult};
         */
         //#[derive(Debug, StructOpt)]
         #[derive( Debug )]
@@ -1216,14 +1227,12 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::parsers;
-        use crate::scripting;
-        use crate::shell::Shell;
-        use crate::types::{Command, CommandLine, CommandResult};
         */
         pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
         {
@@ -1249,20 +1258,18 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture, print_stdout_with_capture },
+            io::{ Error },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
-        use crate::parsers;
-        use crate::shell::Shell;
-        use crate::types::{Command, CommandLine, CommandResult};
         use clap::{CommandFactory, Parser};
-        use std::io::Error;
         
         #[derive(Parser)]
         #[command(name = "ulimit", about = "show / modify shell resource limits")]
-        #[allow(non_snake_case)] */
+        */
         struct App
         {
             /*#[arg(short, help = "All current limits are reported.")]*/
@@ -1476,12 +1483,12 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::shell::Shell;
-        use crate::types::{Command, CommandLine, CommandResult};
         */
         pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult {
             let tokens = cmd.tokens.clone();
@@ -1509,14 +1516,13 @@ pub mod builtins
         */
         use ::
         {
+            path::{ Path },
+            builtins::{ print_stderr_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
-        use std::path::Path;
-
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::shell::Shell;
-        use crate::types::{Command, CommandLine, CommandResult};
         */
         pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
         {
@@ -1541,14 +1547,15 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture },
+            shell::{ Shell },
+            types::{ * },
             *,
         };
         /*
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::shell::Shell;
-        use crate::types::{Command, CommandLine, CommandResult};
         */
-        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult {
+        pub fn run(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
+        {
             let tokens = cmd.tokens.clone();
             let mut cr = CommandResult::new();
 
@@ -1574,22 +1581,16 @@ pub mod builtins
         */
         use ::
         {
+            builtins::{ print_stderr_with_capture, print_stdout_with_capture },
+            path::{ Path, PathBuf },
+            shell::{ self, Shell },
+            types::{ * },
             *,
         };
         /*
-        use std::env;
-        use std::fs;
-        use std::path::Path;
-        use std::path::PathBuf;
-
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
-        use crate::execute;
-        use crate::parsers;
-        use crate::shell::{self, Shell};
-        use crate::types::{self, Command, CommandLine, CommandResult};
         */
-        fn in_env() -> bool {
+        fn in_env() -> bool
+        {
             env::var("VIRTUAL_ENV").is_ok_and(|x| !x.is_empty())
         }
 
@@ -3676,6 +3677,7 @@ pub mod ctime
     */
     use ::
     {
+        temporal::{ OffsetDateTime },
         *,
     };
     /*
@@ -3733,11 +3735,18 @@ pub mod ctime
 pub mod env
 {
     pub use std::env::{ * };
+
+    use ::
+    {
+        collections::{ HashSet },
+        path::{ PathBuf },
+        *,
+    };
     // pub fn env_args_to_command_line() -> String
     pub fn args_to_command_line() -> String
     {
         let mut result = String::new();
-        let env_args = env::args();
+        let env_args = args();
         if env_args.len() <= 1 {
             return result;
         }
@@ -3767,15 +3776,15 @@ pub mod env
             }
         }
 
-        if let Ok(env_path) = env::var("PATH") {
+        if let Ok(env_path) = var("PATH") {
             for one_path in env::split_paths(&env_path) {
                 if !all_paths.contains(&one_path) {
                     all_paths.insert(one_path);
                 }
             }
         }
-        let path_var = env::join_paths(all_paths).unwrap_or_default();
-        env::set_var("PATH", path_var);
+        let path_var = join_paths(all_paths).unwrap_or_default();
+        set_var("PATH", path_var);
     }
 }
 
@@ -3980,6 +3989,314 @@ pub mod error
 
         pub fn set_errno(err: Errno) { sys::set_errno( err ) }
     }
+
+    pub mod parse
+    {
+        /*!
+        */
+        use ::
+        {
+            /*
+            char::{ format },
+            error::{ Error, OverError },
+            num::
+            {
+                big::{ BigInt, ParseBigIntError },
+                ParseIntError
+            },
+            objects::{ Obj },
+            parses::{ MAX_DEPTH, object_file, object_from_str },
+            result::{ ParseResult },
+            types::{ Type }, */
+            *,
+        };
+
+        pub fn parse_err<T>( file: Option<String>, kind: ParseErrorKind ) -> ParseResult<T>
+        {
+            Err( ParseError { file, kind } )
+        }
+        /// Error kind.
+        #[derive( Debug )]
+        pub enum ParseErrorKind
+        {
+            /*
+            BinaryOperatorError( Type, Type, char, usize, usize ),
+            CyclicInclude( String, usize, usize ),
+            DuplicateField( String, usize, usize ),
+            DuplicateGlobal( String, usize, usize ),
+            ExpectedType( Type, Type, usize, usize ),
+            GlobalNotFound( String, usize, usize ),
+            InvalidIndex( BigInt, usize, usize ),
+            InvalidClosingBracket( Option<char>, char, usize, usize ),
+            InvalidDot( Type, usize, usize ),
+            InvalidEscapeChar( char, usize, usize ),
+            InvalidFieldChar( char, usize, usize ),
+            InvalidFieldName( String, usize, usize ),
+            InvalidIncludeChar( char, usize, usize ),
+            InvalidIncludePath( String, usize, usize ),
+            InvalidIncludeToken( Type, usize, usize ),
+            InvalidNumeric( usize, usize ),
+            InvalidValue( String, usize, usize ),
+            InvalidValueChar( char, usize, usize ),
+            MaxDepth( usize, usize ),
+            UnaryOperatorError( Type, char, usize, usize ),
+            UnexpectedEnd( usize ),
+            VariableNotFound( String, usize, usize ),
+
+            IoError( String ),
+            OverError( String ),
+            ParseIntError( String ), */
+            OverError( String ),
+            ParseError( String ),
+        }
+        /// Parse error.
+        #[derive( Debug )]
+        pub struct ParseError 
+        {
+            /// The file this error occurred in.
+            pub file: Option<String>,
+            /// Error kind.
+            pub kind: ParseErrorKind,
+        }
+
+        impl fmt::Display for ParseError 
+        {
+            fn fmt( &self, f:&mut fmt::Formatter ) -> fmt::Result
+            {
+                match ( *self ).kind
+                {
+                    _=>
+                    {
+                        write!( f, "error");
+                    }
+                }
+                /*
+                use self::ParseErrorKind::*;
+
+                if let Some( ref file ) = ( *self ).file { write!( f, "{}: ", file )?; }
+
+                match ( *self ).kind
+                {
+                    BinaryOperatorError( ref expected, ref found, ref op, ref line, ref col ) => write!( 
+                        f,
+                        "Could not apply operator {} on types {} and {} at line {}, column {}",
+                        op, expected, found, line, col,
+                    ),
+                    CyclicInclude( ref file, ref line, ref col ) => write!( 
+                        f,
+                        "Tried to cyclically include file \"{}\" at line {}, column {}",
+                        file, line, col
+                    ),
+                    DuplicateField( ref field, ref line, ref col ) => write!( 
+                        f,
+                        "Duplicate field \"{}\" at line {}, column {}",
+                        field, line, col
+                    ),
+                    DuplicateGlobal( ref field, ref line, ref col ) => write!( 
+                        f,
+                        "Duplicate global \"{}\" at line {}, column {}",
+                        field, line, col
+                    ),
+                    ExpectedType( ref expected, ref found, ref line, ref col ) => write!( 
+                        f,
+                        "Expected {} at line {}, column {}; found {}",
+                        expected, line, col, found
+                    ),
+                    GlobalNotFound( ref var, ref line, ref col ) => write!( 
+                        f,
+                        "Global \"{}\" at line {}, column {} could not be found",
+                        var, line, col
+                    ),
+                    InvalidClosingBracket( ref expected, ref found, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid closing bracket '{}' at line {}, column {}; expected {}",
+                        found,
+                        line,
+                        col,
+                        match *expected {
+                            Some( ch ) => format!( "'{}'", ch ),
+                            None => String::from( "none" ),
+                        }
+                    ),
+                    InvalidDot( ref t, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid use of dot notation on value of type {} at line {}, column {}; \
+                        value must be an Obj, Arr, or Tup.",
+                        t, line, col
+                    ),
+                    InvalidEscapeChar( ref ch, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid escape character '\\{}' at line {}, column {}. \
+                        If you meant to write a backslash, use '\\\\'",
+                        format( *ch ),
+                        line,
+                        col
+                    ),
+                    InvalidFieldChar( ref ch, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid character '{}' for field at line {}, column {}",
+                        format( *ch ),
+                        line,
+                        col
+                    ),
+                    InvalidFieldName( ref field, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid field name \"{}\" at line {}, column {}",
+                        field, line, col
+                    ),
+                    InvalidIncludeChar( ref found, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid include token character \'{}\' at line {}, column {}",
+                        found, line, col
+                    ),
+                    InvalidIncludePath( ref path, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid include path \"{}\" at line {}, column {}",
+                        path, line, col
+                    ),
+                    InvalidIncludeToken( ref t, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid value of type \"{}\" at line {}, column {}; \
+                        must be either a Str value or one of the tokens \
+                        \"Obj\", \"Arr\", \"Tup\", or \"Str\"",
+                        t, line, col
+                    ),
+                    InvalidIndex( ref index, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid index {} at line {}, column {}",
+                        index, line, col
+                    ),
+                    InvalidNumeric( ref line, ref col ) => {
+                        write!( f, "Invalid numeric value at line {}, column {}", line, col )
+                    }
+                    InvalidValue( ref value, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid value \"{}\" at line {}, column {}",
+                        value, line, col
+                    ),
+                    InvalidValueChar( ref ch, ref line, ref col ) => write!( 
+                        f,
+                        "Invalid character '{}' for value at line {}, column {}",
+                        format( *ch ),
+                        line,
+                        col
+                    ),
+                    MaxDepth( ref line, ref col ) => write!( 
+                        f,
+                        "Exceeded maximum recursion depth ( {} ) at line {}, column {}",
+                        MAX_DEPTH, line, col
+                    ),
+                    UnaryOperatorError( ref found, ref op, ref line, ref col ) => write!( 
+                        f,
+                        "Could not apply operator {} on type {} at line {}, column {}",
+                        op, found, line, col,
+                    ),
+                    UnexpectedEnd( ref line ) => write!( f, "Unexpected end at line {}", line, ),
+                    VariableNotFound( ref var, ref line, ref col ) => write!( 
+                        f,
+                        "Variable \"{}\" at line {}, column {} could not be found",
+                        var, line, col
+                    ),
+
+                    IoError( ref error ) | OverError( ref error ) | ParseIntError( ref error ) => {
+                        write!( f, "{}", error )
+                    }
+                } */
+            }
+        }
+
+        impl Error for ParseError 
+        {
+            fn description( &self ) -> &str
+            {
+                "ParseError( description )"
+                /*
+                use self::ParseErrorKind::*;
+
+                match ( *self ).kind {
+                    BinaryOperatorError( _, _, _, _, _ ) | UnaryOperatorError( _, _, _, _ ) => {
+                        "Could not apply operator"
+                    }
+                    CyclicInclude( _, _, _ ) => "Tried to cyclically include file",
+                    DuplicateField( _, _, _ ) => "Duplicate field",
+                    DuplicateGlobal( _, _, _ ) => "Duplicate global",
+                    ExpectedType( _, _, _, _ ) => "Expected different type",
+                    GlobalNotFound( _, _, _ ) => "Global could not be found",
+                    InvalidClosingBracket( _, _, _, _ ) => "Invalid closing bracket",
+                    InvalidDot( _, _, _ ) => "Invalid use of dot notation",
+                    InvalidEscapeChar( _, _, _ ) => "Invalid escape character",
+                    InvalidFieldChar( _, _, _ ) => "Invalid character for field",
+                    InvalidFieldName( _, _, _ ) => "Invalid field name",
+                    InvalidIncludeChar( _, _, _ ) => "Invalid include character",
+                    InvalidIncludePath( _, _, _ ) => "Invalid include path",
+                    InvalidIncludeToken( _, _, _ ) => "Invalid include token",
+                    InvalidIndex( _, _, _ ) => "Invalid index",
+                    InvalidNumeric( _, _ ) => "Invalid numeric value",
+                    InvalidValue( _, _, _ ) => "Invalid value",
+                    InvalidValueChar( _, _, _ ) => "Invalid character for value",
+                    MaxDepth( _, _ ) => "Exceeded maximum depth for a container",
+                    UnexpectedEnd( _ ) => "Unexpected end when reading value",
+                    VariableNotFound( _, _, _ ) => "Variable could not be found",
+
+                    IoError( ref error ) | OverError( ref error ) | ParseIntError( ref error ) => error,
+                } */
+            }
+        }
+
+        impl ParseError 
+        {
+            pub fn from_over( e:&OverError, file: Option<String>, line: usize, col: usize ) -> Self
+            {
+                ParseError
+                {
+                    file,
+                    kind: ParseErrorKind::OverError( format!( "{} at line {}, col {}", e, line, col ) ),
+                }
+            }
+        }
+
+        impl From<()> for ParseError 
+        {
+            fn from( e:() ) -> Self {
+                ParseError {
+                    file: None,
+                    kind: ParseErrorKind::IoError( format!( "()" ) ),
+                }
+            }
+        }
+
+
+        impl From<io::Error> for ParseError 
+        {
+            fn from( e: io::Error ) -> Self {
+                ParseError {
+                    file: None,
+                    kind: ParseErrorKind::IoError( format!( "{}", e ) ),
+                }
+            }
+        }
+
+        impl From<ParseIntError> for ParseError 
+        {
+            fn from( e: ParseIntError ) -> Self {
+                ParseError {
+                    file: None,
+                    kind: ParseErrorKind::ParseIntError( format!( "{}", e ) ),
+                }
+            }
+        }
+
+        impl From<ParseBigIntError> for ParseError 
+        {
+            fn from( e: ParseBigIntError ) -> Self {
+                ParseError {
+                    file: None,
+                    kind: ParseErrorKind::ParseIntError( format!( "{}", e ) ),
+                }
+            }
+        }
+    } pub use self::parse::{ ParseError };
+
 }
 
 pub mod execute
@@ -4295,6 +4612,11 @@ pub mod ffi
     pub use std::ffi::{ * };
 }
 
+pub mod fmt
+{
+    pub use std::fmt::{ * };
+}
+
 pub mod fs
 {
     pub use std::fs::{ * };
@@ -4421,6 +4743,11 @@ pub mod get
         }
         str_current_dir.to_string()
     }
+}
+
+pub mod hash
+{
+    pub use std::hash::{ * };
 }
 
 pub mod highlight
@@ -4961,19 +5288,21 @@ pub mod is
     // fn is_command(word: &str) -> bool
     pub fn command(word: &str) -> bool
     {
-        if builtin(word) {
+        if builtin(word)
+        {
             return true;
         }
-        if let Ok(aliases) = ALIASES.lock() {
-            if aliases.contains(word) {
-                return true;
-            }
+        
+        if let Ok(aliases) = highlight::ALIASES.lock()
+        {
+            if aliases.contains(word) { return true; }
         }
-        if let Ok(commands) = AVAILABLE_COMMANDS.lock() {
-            if commands.contains(word) {
-                return true;
-            }
+        
+        if let Ok(commands) = highlight::AVAILABLE_COMMANDS.lock()
+        {
+            if commands.contains(word) { return true; }
         }
+
         false
     }
 }
@@ -4983,23 +5312,12 @@ pub mod iter
     pub use std::iter::{ * };
     use ::
     {
+        borrow::{ Borrow },
+        hash::{Hash, Hasher},
+        rc::{ Rc },
         *,
     };
     /*
-    use alloc::format;
-    use alloc::rc::Rc;
-    #[cfg(feature = "pretty-print")]
-    use alloc::string::String;
-    use alloc::vec::Vec;
-    use core::borrow::Borrow;
-    use core::fmt;
-    use core::hash::{Hash, Hasher};
-    use core::ptr;
-    use core::str;
-
-    #[cfg(feature = "pretty-print")]
-    use serde::ser::SerializeStruct;
-
     use super::line_index::LineIndex;
     use super::pairs::{self, Pairs};
     use super::queueable_token::QueueableToken;
@@ -5467,20 +5785,20 @@ pub mod jobc
     */
     use ::
     {
+        io::{ Write },
+        nix::
+        {
+            sys::
+            {
+                signal::{ Signal },
+                wait::{ waitpid, WaitPidFlag as WF, WaitStatus as WS },
+            },
+            unistd::{ Pid },
+        },
+        types::{ * },
         *,
     };
     /*
-    use std::io::Write;
-
-    use nix::sys::signal::Signal;
-    use nix::sys::wait::waitpid;
-    use nix::sys::wait::WaitPidFlag as WF;
-    use nix::sys::wait::WaitStatus as WS;
-    use nix::unistd::Pid;
-
-    use crate::shell;
-    use crate::signals;
-    use crate::types::{self, CommandResult};
     */
     pub fn get_job_line(job: &types::Job, trim: bool) -> String 
     {
@@ -6020,15 +6338,15 @@ pub mod libs
         */
         use ::
         {
+            libc::{ c_int },
+            nix::{ Error },
+            os::fd::{ RawFd },
             *,
         };
         /*
-        use libc::c_int;
-        use nix::Error;
-        use std::mem;
-        use std::os::fd::RawFd;
         */
-        pub fn pipe() -> std::result::Result<(RawFd, RawFd), Error> {
+        pub fn pipe() -> std::result::Result<(RawFd, RawFd), Error>
+        {
             let mut fds = mem::MaybeUninit::<[c_int; 2]>::uninit();
             let res = unsafe { libc::pipe(fds.as_mut_ptr() as *mut c_int) };
             Error::result(res)?;
@@ -6047,13 +6365,9 @@ pub mod libs
         /*
         */
         pub fn is_login(args: &[String]) -> bool {
-            if !args.is_empty() && args[0].starts_with("-") {
-                return true;
-            }
+            if !args.is_empty() && args[0].starts_with("-") { return true; }
 
-            if args.len() > 1 && (args[1] == "--login" || args[1] == "-l") {
-                return true;
-            }
+            if args.len() > 1 && (args[1] == "--login" || args[1] == "-l") { return true; }
 
             if let Ok(term_program) = std::env::var("TERM_PROGRAM") {
                 if term_program == "vscode" {
@@ -6074,54 +6388,6 @@ pub mod libs
 
         pub fn is_non_tty() -> bool {
             unsafe { libc::isatty(0) == 0 }
-        }
-    }
-
-    pub mod re
-    {
-        /*!
-        */
-        use ::
-        {
-            *,
-        };
-        /*
-        */
-        pub fn find_first_group(ptn: &str, text: &str) -> Option<String> 
-        {
-            let re = match regex::Regex::new(ptn) {
-                Ok(x) => x,
-                Err(_) => return None,
-            };
-            match re.captures(text) {
-                Some(caps) => {
-                    if let Some(x) = caps.get(1) {
-                        return Some(x.as_str().to_owned());
-                    }
-                }
-                None => {
-                    return None;
-                }
-            }
-            None
-        }
-
-        pub fn re_contains(text: &str, ptn: &str) -> bool {
-            let re = match regex::Regex::new(ptn) {
-                Ok(x) => x,
-                Err(e) => {
-                    println!("Regex new error: {:?}", e);
-                    return false;
-                }
-            };
-            re.is_match(text)
-        }
-
-        pub fn replace_all(text: &str, ptn: &str, ptn_to: &str) -> String 
-        {
-            let re = regex::Regex::new(ptn).unwrap();
-            let result = re.replace_all(text, ptn_to);
-            result.to_string()
         }
     }
 
@@ -6206,22 +6472,6 @@ pub mod libs
             } else {
                 Some((w.ws_col as usize, w.ws_row as usize))
             }
-        }
-    }
-    
-    pub fn close(fd: i32) {
-        unsafe {
-            libc::close(fd);
-        }
-    }
-
-    pub fn dup(fd: i32) -> i32 {
-        unsafe { libc::dup(fd) }
-    }
-
-    pub fn dup2(src: i32, dst: i32) {
-        unsafe {
-            libc::dup2(src, dst);
         }
     }
 }
@@ -7959,7 +8209,14 @@ pub mod path
 pub mod process
 {
     pub use std::process::{ * };
+
     pub fn read_pid() -> i32 { unsafe { libc::getpid() } }
+    
+    pub fn close(fd: i32) { unsafe { libc::close(fd); } }
+
+    pub fn dup(fd: i32) -> i32 { unsafe { libc::dup(fd) } }
+
+    pub fn dup2(src: i32, dst: i32) { unsafe { libc::dup2(src, dst); } }
 }
 
 pub mod prompt
@@ -8698,46 +8955,34 @@ pub mod prompt
     }
 }
 
-pub mod rcfile
+pub mod rc
 {
-    /*!
-    */
+    pub use std::rc::{ * };
+    
     use ::
     {
+        path::{ Path },
         *,
     };
     /*
-    use std::path::Path;
-
-    use crate::scripting;
-    use crate::shell;
-    use crate::tools;
     */
     pub fn get_rc_file() -> String 
     {
         let dir_config = tools::get_config_dir();
         let rc_file = format!("{}/cicadarc", dir_config);
-        if Path::new(&rc_file).exists() {
-            return rc_file;
-        }
-
-        // fail back to $HOME/.cicadarc
+        if Path::new(&rc_file).exists() { return rc_file; }
+        
         let home = tools::get_user_home();
         let rc_file_home = format!("{}/{}", home, ".cicadarc");
-        if Path::new(&rc_file_home).exists() {
-            return rc_file_home;
-        }
-
-        // use std path if both absent
+        if Path::new(&rc_file_home).exists() { return rc_file_home; }
+        
         rc_file
     }
 
     pub fn load_rc_files(sh: &mut shell::Shell) 
     {
         let rc_file = get_rc_file();
-        if !Path::new(&rc_file).exists() {
-            return;
-        }
+        if !Path::new(&rc_file).exists() { return; }
 
         let args = vec!["source".to_string(), rc_file];
         scripting::run_script(sh, &args);
@@ -8763,6 +9008,49 @@ pub mod regex
         }
         args[0].clone()
     }
+    
+    pub fn find_first_group(ptn: &str, text: &str) -> Option<String> 
+    {
+        let re = match regex::Regex::new(ptn) {
+            Ok(x) => x,
+            Err(_) => return None,
+        };
+        match re.captures(text) {
+            Some(caps) => {
+                if let Some(x) = caps.get(1) {
+                    return Some(x.as_str().to_owned());
+                }
+            }
+            None => {
+                return None;
+            }
+        }
+        None
+    }
+
+    pub fn contains(text: &str, ptn: &str) -> bool
+    {
+        let re = match regex::Regex::new(ptn) {
+            Ok(x) => x,
+            Err(e) => {
+                println!("Regex new error: {:?}", e);
+                return false;
+            }
+        };
+        re.is_match(text)
+    }
+
+    pub fn replace_all(text: &str, ptn: &str, ptn_to: &str) -> String 
+    {
+        let re = regex::Regex::new(ptn).unwrap();
+        let result = re.replace_all(text, ptn_to);
+        result.to_string()
+    }
+}
+
+pub mod result
+{
+    pub use std::result::{ * };
 }
 
 pub mod rusqlite
@@ -11465,4 +11753,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
         }
     }
 }
-// 11468 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 11756 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
