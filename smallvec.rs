@@ -8485,7 +8485,7 @@ pub mod highlights
         commands
     }
 
-    fn find( line: &str, start_byte: usize, token: &(String, String) ) -> Option<Range<usize>> 
+    fn find( line: &str, start_b: usize, token: &(String, String) ) -> Option<Range<usize>> 
     {
         let ( sep, word ) = token;
         let mut search_area = &line[start_byte..];
@@ -28392,15 +28392,15 @@ pub mod regex
 
             impl Unit           
             {
-                pub fn u8(byte: u8) -> Unit { Unit(UnitKind::U8(byte)) }
+                pub fn u8(b: u8) -> Unit { Unit(UnitKind::U8(b)) }
                 
-                pub fn eoi(num_byte_equiv_classes: usize) -> Unit {
+                pub fn eoi(n: usize) -> Unit {
                     assert!(
-                        num_byte_equiv_classes <= 256,
+                        n <= 256,
                         "max number of byte-based equivalent classes is 256, but got \
-                        {num_byte_equiv_classes}",
+                        {n}",
                     );
-                    Unit(UnitKind::EOI(u16::try_from(num_byte_equiv_classes).unwrap()))
+                    Unit(UnitKind::EOI(u16::try_from(n).unwrap()))
                 }
                 
                 pub fn as_u8(self) -> Option<u8> {
@@ -28424,8 +28424,8 @@ pub mod regex
                     }
                 }
                 
-                pub fn is_byte(self, byte: u8) -> bool {
-                    self.as_u8().map_or(false, |b| b == byte)
+                pub fn is_byte(self, b: u8) -> bool {
+                    self.as_u8().map_or(false, |a| a == b)
                 }
                 
                 pub fn is_eoi(self) -> bool {
@@ -28501,16 +28501,16 @@ pub mod regex
                 }
 
 
-                #[inline] pub fn set(&mut self, byte: u8, class: u8) {
-                    self.0[usize::from(byte)] = class;
+                #[inline] pub fn set(&mut self, b: u8, class: u8) {
+                    self.0[usize::from(b)] = class;
                 }
 
 
-                #[inline] pub fn get(&self, byte: u8) -> u8 {
-                    self.0[usize::from(byte)]
+                #[inline] pub fn get(&self, b: u8) -> u8 {
+                    self.0[usize::from(b)]
                 }
-                #[inline] pub fn get_by_unit(&self, unit: Unit) -> usize {
-                    match unit.0 {
+                #[inline] pub fn get_by_unit(&self, u: Unit) -> usize {
+                    match u.0 {
                         UnitKind::U8(b) => usize::from(self.get(b)),
                         UnitKind::EOI(b) => usize::from(b),
                     }
@@ -28537,31 +28537,35 @@ pub mod regex
                 }
                 
                 pub fn representatives<R: ::ops::RangeBounds<u8>>
-                
                 (
                     &self,
-                    range: R,
-                ) -> ByteClassRepresentatives<'_> {
+                    r: R,
+                ) -> ByteClassRepresentatives<'_> 
+                {
                     use ::ops::Bound;
 
-                    let cur_byte = match range.start_bound() {
+                    let cur_byte = match r.start_bound() {
                         Bound::Included(&i) => usize::from(i),
                         Bound::Excluded(&i) => usize::from(i).checked_add(1).unwrap(),
                         Bound::Unbounded => 0,
                     };
-                    let end_byte = match range.end_bound() {
+
+                    let end_byte = match r.end_bound() {
                         Bound::Included(&i) => {
                             Some(usize::from(i).checked_add(1).unwrap())
                         }
                         Bound::Excluded(&i) => Some(usize::from(i)),
                         Bound::Unbounded => None,
                     };
+
                     assert_ne!(
                         cur_byte,
                         usize::MAX,
                         "start range must be less than usize::MAX",
                     );
-                    ByteClassRepresentatives {
+
+                    ByteClassRepresentatives 
+                    {
                         classes: self,
                         cur_byte,
                         end_byte,
@@ -28570,11 +28574,11 @@ pub mod regex
                 }
                 
                 #[inline] pub fn elements(&self, class: Unit) -> ByteClassElements<'_> {
-                    ByteClassElements { classes: self, class, byte: 0 }
+                    ByteClassElements { classes: self, class, b: 0 }
                 }
                 
-                fn element_ranges(&self, class: Unit) -> ByteClassElementRanges<'_> {
-                    ByteClassElementRanges { elements: self.elements(class), range: None }
+                fn element_ranges(&self, c: Unit) -> ByteClassElementRanges<'_> {
+                    ByteClassElementRanges { elements: self.elements(c), range: None }
                 }
             }
 
@@ -28635,8 +28639,8 @@ pub mod regex
             #[derive(Debug)]
             pub struct ByteClassRepresentatives<'a> {
                 classes: &'a ByteClasses,
-                cur_byte: usize,
-                end_byte: Option<usize>,
+                cur_b: usize,
+                end_b: Option<usize>,
                 last_class: Option<u8>,
             }
 
@@ -28666,7 +28670,7 @@ pub mod regex
             pub struct ByteClassElements<'a> {
                 classes: &'a ByteClasses,
                 class: Unit,
-                byte: usize,
+                b: usize,
             }
 
             impl<'a> Iterator for ByteClassElements<'a> {
@@ -28737,17 +28741,19 @@ pub mod regex
                     ByteClassSet(ByteSet::empty())
                 }
 
-                pub fn set_range(&mut self, start: u8, end: u8) {
-                    debug_assert!(start <= end);
-                    if start > 0 {
-                        self.0.add(start - 1);
+                pub fn set_range(&mut self, f: u8, t: u8) {
+                    debug_assert!(f <= t);
+                    if f > 0 {
+                        self.0.add(f - 1);
                     }
-                    self.0.add(end);
+                    self.0.add(t);
                 }
 
-                pub fn add_set(&mut self, set: &ByteSet) {
-                    for (start, end) in set.iter_ranges() {
-                        self.set_range(start, end);
+                pub fn add_set(&mut self, s: &ByteSet)
+                {
+                    for (f, t) in s.iter_ranges()
+                    {
+                        self.set_range(f, t);
                     }
                 }
 
@@ -28777,54 +28783,54 @@ pub mod regex
             #[derive(Clone, Copy, Default, Eq, PartialEq)]
             struct BitSet([u128; 2]);
 
-            impl ByteSet {
-
-                pub fn empty() -> ByteSet {
+            impl ByteSet 
+            {
+                pub fn empty() -> ByteSet 
+                {
                     ByteSet { bits: BitSet([0; 2]) }
                 }
 
-                pub fn add(&mut self, byte: u8)
+                pub fn add(&mut self, b: u8)
                 {
-                    let bucket = byte / 128;
-                    let bit = byte % 128;
+                    let bucket = b / 128;
+                    let bit = b % 128;
                     self.bits.0[usize::from(bucket)] |= 1 << bit;
                 }
 
-                pub fn remove(&mut self, byte: u8)
+                pub fn remove(&mut self, b: u8)
                 {
-                    let bucket = byte / 128;
-                    let bit = byte % 128;
+                    let bucket = b / 128;
+                    let bit = b % 128;
                     self.bits.0[usize::from(bucket)] &= !(1 << bit);
                 }
 
-                pub fn contains(&self, byte: u8) -> bool {
-                    let bucket = byte / 128;
-                    let bit = byte % 128;
+                pub fn contains(&self, b: u8) -> bool 
+                {
+                    let bucket = b / 128;
+                    let bit = b % 128;
                     self.bits.0[usize::from(bucket)] & (1 << bit) > 0
                 }
 
-                pub fn contains_range(&self, start: u8, end: u8) -> bool {
-                    (start..=end).all(|b| self.contains(b))
+                pub fn contains_range(&self, f: u8, t: u8) -> bool 
+                {
+                    (f..=t).all(|b| self.contains(b))
                 }
 
-                pub fn iter(&self) -> ByteSetIter<'_> {
+                pub fn iter(&self) -> ByteSetIter<'_> 
+                {
                     ByteSetIter { set: self, b: 0 }
                 }
 
-                pub fn iter_ranges(&self) -> ByteSetRangeIter<'_> {
+                pub fn iter_ranges(&self) -> ByteSetRangeIter<'_>
+                {
                     ByteSetRangeIter { set: self, b: 0 }
                 }
+                
+                #[inline(always)] pub fn is_empty(&self) -> bool { self.bits.0 == [0, 0] }
 
-
-                #[inline(always)] pub fn is_empty(&self) -> bool {
-                    self.bits.0 == [0, 0]
-                }
-
-                pub fn from_bytes(
-                    slice: &[u8],
-                ) -> Result<(ByteSet, usize), DeserializeError> {
+                pub fn from_bytes( slice: &[u8] ) -> Result<(ByteSet, usize), DeserializeError> 
+                {
                     use ::mem::size_of;
-
                     wire::check_slice_len(slice, 2 * size_of::<u128>(), "byte set")?;
                     let mut nread = 0;
                     let (low, nr) = wire::try_read_u128(slice, "byte set low bucket")?;
@@ -28838,9 +28844,9 @@ pub mod regex
                 (
                     &self,
                     dst: &mut [u8],
-                ) -> Result<usize, SerializeError> {
+                ) -> Result<usize, SerializeError> 
+                {
                     use ::mem::size_of;
-
                     let nwrite = self.write_to_len();
                     if dst.len() < nwrite {
                         return Err(SerializeError::buffer_too_small("byte set"));
@@ -28864,14 +28870,19 @@ pub mod regex
                 }
             }
 
-            impl ::fmt::Debug for BitSet {
-                fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result {
+            impl ::fmt::Debug for BitSet 
+            {
+                fn fmt(&self, f: &mut ::fmt::Formatter) -> ::fmt::Result 
+                {
                     let mut fmtd = f.debug_set();
-                    for b in 0u8..=255 {
+
+                    for b in 0u8..=255 
+                    {
                         if (ByteSet { bits: *self }).contains(b) {
                             fmtd.entry(&b);
                         }
                     }
+                    
                     fmtd.finish()
                 }
             }
@@ -29820,7 +29831,7 @@ pub mod regex
                         self
                     }
 
-                    pub fn quit( mut self, byte: u8, yes:bool ) -> Config
+                    pub fn quit( mut self, b: u8, yes:bool ) -> Config
                     {
                         if self.get_unicode_word_boundary() && !byte.is_ascii() && !yes 
                         {
@@ -29870,7 +29881,7 @@ pub mod regex
 
                     pub fn get_unicode_word_boundary( &self ) -> bool { self.unicode_word_boundary.unwrap_or( false ) }
 
-                    pub fn get_quit(&self, byte: u8) -> bool { self.quitset.map_or(false, |q| q.contains( byte )) }
+                    pub fn get_quit(&self, b: u8) -> bool { self.quitset.map_or(false, |q| q.contains( byte )) }
 
                     pub fn get_specialize_start_states( &self ) -> bool { self.specialize_start_states.unwrap_or( false ) }
 
@@ -30323,7 +30334,7 @@ pub mod regex
                     pub fn set_transition(
                         &mut self,
                         from: StateID,
-                        byte: alphabet::Unit,
+                        b: alphabet::Unit,
                         to: StateID,
                     ) {
                         self.tt.set(from, byte, to);
@@ -30759,7 +30770,7 @@ pub mod regex
                     unsafe fn next_state_unchecked(
                         &self,
                         current: StateID,
-                        byte: u8,
+                        b: u8,
                     ) -> StateID {
                         let class = self.byte_classes().get( byte );
                         let o = current.as_usize() + usize::from(class);
@@ -32740,13 +32751,13 @@ pub mod regex
                         Ok( self.starts.get(pid.one_more()).copied().unwrap_or(DEAD))
                     }
                     
-                    fn transition(&self, sid: StateID, byte: u8) -> Transition {
+                    fn transition(&self, sid: StateID, b: u8) -> Transition {
                         let offset = sid.as_usize() << self.stride2();
                         let class = self.classes.get( byte ).as_usize();
                         self.table[offset + class]
                     }
                     
-                    fn set_transition( &mut self, sid: StateID, byte: u8, to: Transition) {
+                    fn set_transition( &mut self, sid: StateID, b: u8, to: Transition) {
                         let offset = sid.as_usize() << self.stride2();
                         let class = self.classes.get( byte ).as_usize();
                         self.table[offset + class] = to;
@@ -35306,7 +35317,7 @@ pub mod regex
                     fn from_bytes_unchecked(bytes: [u8; 4]) -> Accel {
                         Accel { bytes: [bytes[0], bytes[1], bytes[2], bytes[3], 0, 0, 0, 0] }
                     }
-                        pub fn add( &mut self, byte: u8) -> bool {
+                        pub fn add( &mut self, b: u8) -> bool {
                         if self.len() >= 3 {
                             return false;
                         }
@@ -35330,7 +35341,7 @@ pub mod regex
 
                     fn needles( &self ) -> &[u8] { &self.bytes[1..1 + self.len()] }
                         
-                        fn contains(&self, byte: u8) -> bool {
+                        fn contains(&self, b: u8) -> bool {
                         self.needles().iter().position(|&b| b == byte).is_some()
                     }
 
@@ -35681,7 +35692,7 @@ pub mod regex
                 pub enum StartError {
                     Quit {
 
-                        byte: u8,
+                        b: u8,
                     },
                     UnsupportedAnchored {
 
@@ -35691,7 +35702,7 @@ pub mod regex
 
                 impl StartError
                 {
-                    pub fn quit(byte: u8) -> StartError {
+                    pub fn quit(b: u8) -> StartError {
                         StartError::Quit { byte }
                     }
 
@@ -37737,7 +37748,7 @@ pub mod regex
                         let ch = match result {
                             Ok(ch) => ch,
                             Err(byte) => {
-                                write!(f, r"\x{byte:02x}")?;
+                                write!(f, r"\x{b:02x}")?;
                                 bytes = &bytes[1..];
                                 continue;
                             }
@@ -38706,7 +38717,7 @@ pub mod regex
                         self
                     }
 
-                    pub fn quit( mut self, byte: u8, yes:bool ) -> Config {
+                    pub fn quit( mut self, b: u8, yes:bool ) -> Config {
                         if self.get_unicode_word_boundary() && !byte.is_ascii() && !yes {
                             panic!(
                                 "cannot set non-ASCII byte to be non-quit when \
@@ -38761,7 +38772,7 @@ pub mod regex
 
                     pub fn get_unicode_word_boundary( &self ) -> bool { self.unicode_word_boundary.unwrap_or( false ) }
 
-                    pub fn get_quit(&self, byte: u8) -> bool {
+                    pub fn get_quit(&self, b: u8) -> bool {
                         self.quitset.map_or(false, |q| q.contains( byte ))
                     }
 
@@ -39146,7 +39157,7 @@ pub mod regex
                     },
                     Quit {
 
-                        byte: u8,
+                        b: u8,
                     },
                     UnsupportedAnchored {
 
@@ -39160,7 +39171,7 @@ pub mod regex
                         StartError::Cache { err }
                     }
 
-                    pub fn quit(byte: u8) -> StartError {
+                    pub fn quit(b: u8) -> StartError {
                         StartError::Quit { byte }
                     }
 
@@ -41758,7 +41769,7 @@ pub mod regex
                         Config { byte_classes: Some(yes), ..self }
                     }
                     
-                    pub fn line_terminator(self, byte: u8) -> Config {
+                    pub fn line_terminator(self, b: u8) -> Config {
                         Config { line_terminator: Some( byte ), ..self }
                     }
                     
@@ -47000,7 +47011,7 @@ pub mod regex
                         ) -> Option<StateID> {
                             unit.as_u8().and_then(|byte| self.matches_byte(byte))
                         }
-                        #[inline] pub fn matches_byte(&self, byte: u8) -> Option<StateID> {
+                        #[inline] pub fn matches_byte(&self, b: u8) -> Option<StateID> {
                             for t in self.transitions.iter() {
                                 if t.start > byte {
                                     break;
@@ -47045,7 +47056,7 @@ pub mod regex
                         ) -> Option<StateID> {
                             unit.as_u8().and_then(|byte| self.matches_byte(byte))
                         }
-                        #[inline] pub fn matches_byte(&self, byte: u8) -> Option<StateID> {
+                        #[inline] pub fn matches_byte(&self, b: u8) -> Option<StateID> {
                             let next = self.transitions[usize::from(byte)];
                             if next == StateID::ZERO {
                                 None
@@ -47095,7 +47106,7 @@ pub mod regex
                         pub fn matches_unit(&self, unit: alphabet::Unit) -> bool {
                             unit.as_u8().map_or(false, |byte| self.matches_byte(byte))
                         }
-                        pub fn matches_byte(&self, byte: u8) -> bool {
+                        pub fn matches_byte(&self, b: u8) -> bool {
                             self.start <= byte && byte <= self.end
                         }
                     }
@@ -48905,7 +48916,7 @@ pub mod regex
                     &self.0
                 }
 
-                pub fn quit(byte: u8, offset: usize) -> MatchError {
+                pub fn quit(b: u8, offset: usize) -> MatchError {
                     MatchError::new(MatchErrorKind::Quit { byte, offset })
                 }
 
@@ -48926,7 +48937,7 @@ pub mod regex
             pub enum MatchErrorKind {
                 Quit {
 
-                    byte: u8,
+                    b: u8,
                     offset: usize,
                 },                GaveUp {
                     offset: usize,
@@ -49072,7 +49083,7 @@ pub mod regex
                     self
                 }
                 
-                pub fn line_terminator(mut self, byte: u8) -> Config {
+                pub fn line_terminator(mut self, b: u8) -> Config {
                     self.line_terminator = byte;
                     self
                 }
@@ -49919,7 +49930,7 @@ pub mod regex
                 self
             }
 
-            fn line_terminator( &mut self, byte: u8) -> &mut Builder {
+            fn line_terminator( &mut self, b: u8) -> &mut Builder {
                 self.metac = self.metac.clone().line_terminator( byte );
                 self.syntaxc = self.syntaxc.line_terminator( byte );
                 self
@@ -50014,7 +50025,7 @@ pub mod regex
                     self
                 }
 
-                pub fn line_terminator( &mut self, byte: u8) -> &mut RegexBuilder {
+                pub fn line_terminator( &mut self, b: u8) -> &mut RegexBuilder {
                     self.builder.line_terminator( byte );
                     self
                 }
@@ -50094,7 +50105,7 @@ pub mod regex
                     self
                 }
 
-                pub fn line_terminator( &mut self, byte: u8) -> &mut RegexSetBuilder {
+                pub fn line_terminator( &mut self, b: u8) -> &mut RegexSetBuilder {
                     self.builder.line_terminator( byte );
                     self
                 }
@@ -50194,7 +50205,7 @@ pub mod regex
                     self
                 }
 
-                pub fn line_terminator( &mut self, byte: u8) -> &mut RegexBuilder {
+                pub fn line_terminator( &mut self, b: u8) -> &mut RegexBuilder {
                     self.builder.line_terminator( byte );
                     self
                 }
@@ -50274,7 +50285,7 @@ pub mod regex
                     self
                 }
 
-                pub fn line_terminator( &mut self, byte: u8) -> &mut RegexSetBuilder {
+                pub fn line_terminator( &mut self, b: u8) -> &mut RegexSetBuilder {
                     self.builder.line_terminator( byte );
                     self
                 }
@@ -51195,7 +51206,7 @@ pub mod regex
             fn no_expansion<T: AsRef<[u8]>>(replacement: &T) -> Option<Cow<'_, [u8]>>
             {
                 let replacement = replacement.as_ref();
-                match crate::find_byte::find_byte(b'$', replacement) {
+                match crate::find_b::find_byte(b'$', replacement) {
                     Some(_) => None,
                     None => Some(Cow::Borrowed(replacement)),
                 }
@@ -51852,7 +51863,7 @@ pub mod regex
             fn no_expansion<T: AsRef<str>>(replacement: &T) -> Option<Cow<'_, str>> 
             {
                 let replacement = replacement.as_ref();
-                match crate::find_byte::find_byte(b'$', replacement.as_bytes()) {
+                match crate::find_b::find_byte(b'$', replacement.as_bytes()) {
                     Some(_) => None,
                     None => Some(Cow::Borrowed(replacement)),
                 }
@@ -56013,7 +56024,7 @@ pub mod regex
                         let ch = match result {
                             Ok(ch) => ch,
                             Err( byte ) => {
-                                write!(f, r"\x{byte:02x}")?;
+                                write!(f, r"\x{b:02x}")?;
                                 bytes = &bytes[1..];
                                 continue;
                             }
@@ -56036,7 +56047,7 @@ pub mod regex
             }
 
             pub fn utf8_decode(bytes: &[u8]) -> Option<Result<char, u8>> {
-                fn len(byte: u8) -> Option<usize> {
+                fn len(b: u8) -> Option<usize> {
                     if byte <= 0x7F {
                         return Some(1);
                     } else if byte & 0b1100_0000 == 0b1000_0000 {
@@ -57529,7 +57540,7 @@ pub mod regex
 
                 impl From<u8> for Literal
                 {
-                    fn from(byte: u8) -> Literal {
+                    fn from(b: u8) -> Literal {
                         Literal::exact(vec![byte])
                     }
                 }
@@ -57640,7 +57651,7 @@ pub mod regex
                     }
                 }
 
-                pub fn rank(byte: u8) -> u8 {
+                pub fn rank(b: u8) -> u8 {
                     crate::rank::BYTE_FREQUENCIES[usize::from( byte )]
                 }
             }
@@ -57947,7 +57958,7 @@ pub mod regex
                         self
                     }
                     
-                    pub fn line_terminator( &mut self, byte: u8) -> &mut TranslatorBuilder {
+                    pub fn line_terminator( &mut self, b: u8) -> &mut TranslatorBuilder {
                         self.line_terminator = byte;
                         self
                     }
@@ -58468,7 +58479,7 @@ pub mod regex
                         }
                     }
 
-                    fn push_byte(&self, byte: u8) {
+                    fn push_byte(&self, b: u8) {
                         let mut stack = self.trans().stack.borrow_mut();
                         if let Some(HirFrame::Literal(ref mut literal)) = stack.last_mut() {
                             literal.push( byte );
@@ -60851,7 +60862,7 @@ pub mod regex
                     self
                 }
 
-                pub fn line_terminator( &mut self, byte: u8) -> &mut ParserBuilder {
+                pub fn line_terminator( &mut self, b: u8) -> &mut ParserBuilder {
                     self.hir.line_terminator( byte );
                     self
                 }
@@ -81222,4 +81233,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
     */
     Ok( () )
 }
-// 81225 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 81236 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
