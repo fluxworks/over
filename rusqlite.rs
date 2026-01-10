@@ -384,10 +384,10 @@ pub mod builtins
                 return cr;
             }
 
-            let str_current_dir = tools::get_current_dir();
+            let str_current_dir = get::current_dir();
 
             let mut dir_to = if args.len() == 1 {
-                let home = tools::get_user_home();
+                let home = get::user_home();
                 home.to_string()
             } else {
                 args[1..].join("")
@@ -465,7 +465,7 @@ pub mod builtins
             let hfile = history::get_history_file();
             info.push(("history-file", &hfile));
 
-            let rcf = rcfile::get_rc_file();
+            let rcf = rc::get_rc_file();
             info.push(("rc-file", &rcf));
 
             let git_hash = "abcdefghi"; // env!("GIT_HASH");
@@ -1083,22 +1083,16 @@ pub mod builtins
         use ::
         {
             builtins::{ print_stderr_with_capture },
+            regex::{ contains },
             shell::{ Shell },
             types::{ * },
             *,
         };
         /*
-        use std::io;
-
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::libs::re::re_contains;
-        use crate::shell::Shell;
-        use crate::tools;
-        use crate::types::{Command, CommandLine, CommandResult};
         */
         fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String> {
             for id_ in name_list {
-                if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
+                if !contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
                     return Some(id_.to_string());
                 }
             }
@@ -1246,7 +1240,7 @@ pub mod builtins
                 return cr;
             }
 
-            let status = scripting::run_script(sh, &args);
+            let status = scripts::run_script(sh, &args);
             cr.status = status;
             cr
         }
@@ -1328,8 +1322,7 @@ pub mod builtins
                     &mut all_stdout,
                     &mut all_stderr,
                 )
-            {
-            } else {
+            {} else {
                 report_all(&app, &mut all_stdout, &mut all_stderr);
             }
 
@@ -1853,9 +1846,7 @@ pub mod builtins
     pub fn print_stdout(info: &str, cmd: &Command, cl: &CommandLine) 
     {
         let fd = _get_dupped_stdout_fd(cmd, cl);
-        if fd == -1 {
-            return;
-        }
+        if fd == -1 { return; }
 
         unsafe {
             let mut f = File::from_raw_fd(fd);
@@ -1880,9 +1871,7 @@ pub mod builtins
     pub fn print_stderr(info: &str, cmd: &Command, cl: &CommandLine) 
     {
         let fd = _get_dupped_stderr_fd(cmd, cl);
-        if fd == -1 {
-            return;
-        }
+        if fd == -1 { return; }
 
         unsafe {
             let mut f = File::from_raw_fd(fd);
@@ -2056,13 +2045,13 @@ pub mod completers
         */
         use ::
         {
+            borrow::{ Cow },
+            fs::{ File },
+            io::{ Read, Write },
+            path::{ Path },
             *,
         };
         /*
-        use std::borrow::Cow;
-        use std::fs::File;
-        use std::io::{Read, Write};
-        use std::path::Path;
 
         use lineread::complete::escape;
         use lineread::complete::escaped_word_start;
@@ -2073,12 +2062,9 @@ pub mod completers
         use lineread::terminal::Terminal;
         use yaml_rust::yaml::Hash;
         use yaml_rust::{Yaml, YamlLoader};
-
-        use crate::execute;
-        use crate::parsers;
-        use crate::tools;
         */
-        /// Performs completion by searching dotfiles
+        /// 
+        
         pub struct DotsCompleter;
 
         impl<Term: Terminal> Completer<Term> for DotsCompleter {
@@ -2454,7 +2440,7 @@ pub mod completers
         pub struct PathCompleter;
 
         fn is_env_prefix(line: &str) -> bool {
-            libs::re::re_contains(line, r" *\$[a-zA-Z_][A-Za-z0-9_]*")
+            libs::re::contains(line, r" *\$[a-zA-Z_][A-Za-z0-9_]*")
         }
 
         fn is_pipelined(path: &str) -> bool {
@@ -2505,10 +2491,10 @@ pub mod completers
         }
 
         fn needs_expand_home(line: &str) -> bool {
-            libs::re::re_contains(line, r"( +~ +)|( +~/)|(^ *~/)|( +~ *$)")
+            libs::re::contains(line, r"( +~ +)|( +~/)|(^ *~/)|( +~ *$)")
         }
 
-        /// Returns a sorted list of paths whose prefix matches the given path.
+        
         pub fn complete_path(word: &str, for_dir: bool) -> Vec<Completion> {
             let is_env = is_env_prefix(word);
             let mut res = Vec::new();
@@ -2607,7 +2593,7 @@ pub mod completers
             }
         }
 
-        /// Returns a sorted list of paths whose prefix matches the given path.
+        
         fn complete_bin(sh: &shell::Shell, path: &str) -> Vec<Completion> {
             let mut res = Vec::new();
             let (prefix, _, fname) = split_pathname(path, "");
@@ -2752,7 +2738,7 @@ pub mod completers
 
         fn complete_ssh(path: &str) -> Vec<Completion> {
             let mut res = Vec::new();
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let ssh_config = home + "/.ssh/config";
             if let Ok(f) = File::open(&ssh_config) {
                 let file = BufReader::new(&f);
@@ -2788,24 +2774,24 @@ pub mod completers
     }
 
     fn for_make(line: &str) -> bool {
-        libs::re::re_contains(line, r"^ *make ")
+        libs::re::contains(line, r"^ *make ")
     }
 
     fn for_env(line: &str) -> bool {
-        libs::re::re_contains(line, r" *\$[_a-zA-Z0-9]*$")
+        libs::re::contains(line, r" *\$[_a-zA-Z0-9]*$")
     }
 
     fn for_ssh(line: &str) -> bool {
-        libs::re::re_contains(line, r"^ *(ssh|scp).* +[^ \./]+ *$")
+        libs::re::contains(line, r"^ *(ssh|scp).* +[^ \./]+ *$")
     }
 
     fn for_cd(line: &str) -> bool {
-        libs::re::re_contains(line, r"^ *cd +")
+        libs::re::contains(line, r"^ *cd +")
     }
 
     fn for_bin(line: &str) -> bool {
         let ptn = r"(^ *(sudo|which|nohup)? *[a-zA-Z0-9_\.-]+$)|(^.+\| *(sudo|which|nohup)? *[a-zA-Z0-9_\.-]+$)";
-        libs::re::re_contains(line, ptn)
+        libs::re::contains(line, ptn)
     }
 
     fn for_dots(line: &str) -> bool {
@@ -2931,7 +2917,7 @@ pub mod completers
             } else {
                 return;
             }
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let ss = text.clone();
             let to = format!("$head{}$tail", home);
             let result = re.replace_all(ss.as_str(), to.as_str());
@@ -2941,9 +2927,7 @@ pub mod completers
 
     pub fn expand_env_string(text: &mut String) {
         // expand "$HOME/.local/share" to "/home/tom/.local/share"
-        if !text.starts_with('$') {
-            return;
-        }
+        if !text.starts_with('$') { return; }
         let ptn = r"^\$([A-Za-z_][A-Za-z0-9_]*)";
         let mut env_value = String::new();
         match libs::re::find_first_group(ptn, text) {
@@ -2957,9 +2941,7 @@ pub mod completers
             }
         }
 
-        if env_value.is_empty() {
-            return;
-        }
+        if env_value.is_empty() { return; }
         let t = text.clone();
         *text = libs::re::replace_all(&t, ptn, &env_value);
     }
@@ -3090,8 +3072,6 @@ pub mod core
         None
     }
 
-    /// Run a pipeline (e.g. `echo hi | wc -l`)
-    /// returns: (is-terminal-given, command-result)
     pub fn run_pipeline(
         sh: &mut shell::Shell,
         cl: &CommandLine,
@@ -3138,7 +3118,6 @@ pub mod core
         }
 
         if errored_pipes {
-            // release fds that already created when errors occurred
             for fds in pipes {
                 libs::close(fds.0);
                 libs::close(fds.1);
@@ -3221,9 +3200,6 @@ pub mod core
 
         if !fg_pids.is_empty() {
             let _cr = jobc::wait_fg_job(sh, pgid, &fg_pids);
-            // for capture commands, e.g. `echo foo` in `echo "hello $(echo foo)"
-            // the cmd_result is already built in loop calling run_single_program()
-            // above.
             if !capture {
                 cmd_result = _cr;
             }
@@ -3231,8 +3207,6 @@ pub mod core
         (term_given, cmd_result)
     }
 
-    /// Run a single command.
-    /// e.g. the `sort -k2` part of `ps ax | sort -k2 | head`
     #[allow(clippy::needless_range_loop)]
     #[allow(clippy::too_many_arguments)]
     fn run_single_program(
@@ -3276,12 +3250,10 @@ pub mod core
         match libs::fork::fork() {
             Ok(ForkResult::Child) => {
                 unsafe {
-                    // child processes need to handle ctrl-Z
                     libc::signal(libc::SIGTSTP, libc::SIG_DFL);
                     libc::signal(libc::SIGQUIT, libc::SIG_DFL);
                 }
-
-                // close pipes unrelated to current child (left side)
+                
                 if idx_cmd > 0 {
                     for i in 0..idx_cmd - 1 {
                         let fds = pipes[i];
@@ -3289,14 +3261,13 @@ pub mod core
                         libs::close(fds.1);
                     }
                 }
-                // close pipes unrelated to current child (right side)
+                
                 for i in idx_cmd + 1..pipes_count {
                     let fds = pipes[i];
                     libs::close(fds.0);
                     libs::close(fds.1);
                 }
-                // close pipe fds for capturing stdout/stderr
-                // (they're only used in last child)
+                
                 if idx_cmd < pipes_count {
                     if let Some(fds) = fds_capture_stdout {
                         libs::close(fds.0);
@@ -3318,8 +3289,7 @@ pub mod core
                         libc::setpgid(0, *pgid);
                     }
                 }
-
-                // (in child) replace stdin/stdout with read/write ends of pipe
+                
                 if idx_cmd > 0 {
                     let fds_prev = pipes[idx_cmd - 1];
                     libs::dup2(fds_prev.0, 0);
@@ -3370,8 +3340,7 @@ pub mod core
                             }
                             libs::dup2(fd, 2);
                         } else {
-                            // note: capture output with redirections does not
-                            // make much sense
+                            
                         }
                     } else if to_ == "&2" && from_ == "1" {
                         if idx_cmd < pipes_count || !options.capture_output {
@@ -3382,8 +3351,7 @@ pub mod core
                             }
                             libs::dup2(fd, 1);
                         } else {
-                            // note: capture output with redirections does not
-                            // make much sense
+                            
                         }
                     } else {
                         let append = op_ == ">>";
@@ -3409,8 +3377,7 @@ pub mod core
                         }
                     }
                 }
-
-                // capture output of last process if needed.
+                
                 if idx_cmd == pipes_count && options.capture_output {
                     if !stdout_redirected {
                         if let Some(fds) = fds_capture_stdout {
@@ -3433,9 +3400,7 @@ pub mod core
                         process::exit(status);
                     }
                 }
-
-                // our strings do not have '\x00' bytes in them,
-                // we can use CString::new().expect() safely.
+                
                 let mut c_envs: Vec<_> = env::vars()
                     .map(|(k, v)| {
                         CString::new(format!("{}={}", k, v).as_str()).expect("CString error")
@@ -3492,12 +3457,6 @@ pub mod core
                 if idx_cmd == 0 {
                     *pgid = pid;
                     unsafe {
-                        // we need to wait pgid of child set to itself,
-                        // before give terminal to it (for macos).
-                        // 1. this loop causes `bash`, `htop` etc to go `T` status
-                        //    immediate after start on linux (ubuntu).
-                        // 2. but on mac, we need this loop, otherwise commands
-                        //    like `vim` will go to `T` status after start.
                         if cfg!(target_os = "macos") {
                             loop {
                                 let _pgid = libc::getpgid(pid);
@@ -3537,14 +3496,12 @@ pub mod core
                         }
                     }
                 }
-
-                // (in parent) close unused pipe ends
+                
                 if idx_cmd < pipes_count {
                     let fds = pipes[idx_cmd];
                     libs::close(fds.1);
                 }
                 if idx_cmd > 0 {
-                    // close pipe end only after dupped in the child
                     let fds = pipes[idx_cmd - 1];
                     libs::close(fds.0);
                 }
@@ -3611,7 +3568,7 @@ pub mod core
             if log_cmd {
                 log!("run func: {:?}", &args);
             }
-            let cr_list = scripting::run_lines(sh, &func_body, &args, capture);
+            let cr_list = scripts::run_lines(sh, &func_body, &args, capture);
             let mut stdout = String::new();
             let mut stderr = String::new();
             for cr in cr_list {
@@ -3629,7 +3586,7 @@ pub mod core
     }
 
     fn try_run_calculator(line: &str, capture: bool) -> Option<CommandResult> {
-        if tools::is_arithmetic(line) {
+        if is::arithmetic(line) {
             match run_calculator(line) {
                 Ok(result) => {
                     let mut cr = CommandResult::new();
@@ -4008,6 +3965,7 @@ pub mod error
             parses::{ MAX_DEPTH, object_file, object_from_str },
             result::{ ParseResult },
             types::{ Type }, */
+            error::{ Error },
             *,
         };
 
@@ -4015,7 +3973,7 @@ pub mod error
         {
             Err( ParseError { file, kind } )
         }
-        /// Error kind.
+        
         #[derive( Debug )]
         pub enum ParseErrorKind
         {
@@ -4049,13 +4007,13 @@ pub mod error
             OverError( String ),
             ParseError( String ),
         }
-        /// Parse error.
+        
         #[derive( Debug )]
         pub struct ParseError 
         {
-            /// The file this error occurred in.
+            
             pub file: Option<String>,
-            /// Error kind.
+            
             pub kind: ParseErrorKind,
         }
 
@@ -4495,9 +4453,6 @@ pub mod execute
         match CommandLine::from_line(line, sh) {
             Ok(cl) => {
                 if cl.is_empty() {
-                    // for commands with only envs, e.g.
-                    // $ FOO=1 BAR=2
-                    // we need to define these **Shell Variables**.
                     if !cl.envs.is_empty() {
                         set_shell_vars(sh, &cl.envs);
                     }
@@ -4561,6 +4516,7 @@ pub mod extend
     */
     use ::
     {
+        regex::{ Regex, contains },
         *,
     };
     /*
@@ -4568,12 +4524,8 @@ pub mod extend
     // pub fn extend_bangbang(sh: &shell::Shell, line: &mut String)
     pub fn bangbang(sh: &shell::Shell, line: &mut String)
     {
-        if !re_contains(line, r"!!") {
-            return;
-        }
-        if sh.previous_cmd.is_empty() {
-            return;
-        }
+        if !contains(line, r"!!") { return; }
+        if sh.previous_cmd.is_empty() { return; }
 
         let re = Regex::new(r"!!").unwrap();
         let mut replaced = false;
@@ -4584,7 +4536,7 @@ pub mod extend
                 new_line.push_str(&sep);
             }
 
-            if re_contains(&token, r"!!") && sep != "'" {
+            if contains(&token, r"!!") && sep != "'" {
                 let line2 = token.clone();
                 let result = re.replace_all(&line2, sh.previous_cmd.as_str());
                 new_line.push_str(&result);
@@ -4600,10 +4552,8 @@ pub mod extend
         }
 
         *line = new_line.trim_end().to_string();
-        // print full line after extending
-        if replaced {
-            println!("{}", line);
-        }
+        
+        if replaced { println!("{}", line); }
     }
 }
 
@@ -4775,7 +4725,7 @@ pub mod highlight
     */
     #[derive(Clone)] pub struct CicadaHighlighter;
 
-    /// ANSI color codes wrapped with `\x1b` (ESC) and `[0;32m` (green text)
+    
     const GREEN: &str = "\x1b[0;32m";
 
     lazy_static! {
@@ -4783,7 +4733,7 @@ pub mod highlight
         pub static ref ALIASES: Mutex<HashSet<String>> = Mutex::new(HashSet::new());
     }
 
-    /// Initialize the available commands cache by scanning PATH directories
+    
     pub fn init_command_cache() {
         let commands = scan_available_commands();
         if let Ok(mut cache) = AVAILABLE_COMMANDS.lock() {
@@ -4791,7 +4741,7 @@ pub mod highlight
         }
     }
 
-    /// Update aliases in the highlighter's cache
+    
     pub fn update_aliases(sh: &shell::Shell) {
         if let Ok(mut aliases) = ALIASES.lock() {
             aliases.clear();
@@ -4815,7 +4765,6 @@ pub mod highlight
                         if let Ok(file_type) = entry.file_type() {
                             if file_type.is_file() || file_type.is_symlink() {
                                 if let Ok(metadata) = entry.metadata() {
-                                    // Check if file is executable
                                     if metadata.permissions().mode() & 0o111 != 0 {
                                         if let Some(name) = entry.file_name().to_str() {
                                             commands.insert(name.to_string());
@@ -4843,35 +4792,28 @@ pub mod highlight
         let mut search_area = &line[start_byte..];
         let token_start_byte =
             if let Some(non_ws_offset) = search_area.find(|c: char| !c.is_whitespace()) {
-                // Calculate the actual byte index of the first non-whitespace character
                 start_byte
                     + search_area
                         .char_indices()
                         .nth(non_ws_offset)
                         .map_or(0, |(idx, _)| idx)
             } else {
-                return None; // Only whitespace left
+                return None;
             };
 
         search_area = &line[token_start_byte..];
-
-        // Estimate the end byte based on the token structure
+        
         let mut estimated_len = 0;
         let mut current_search_offset = 0;
-
-        // Match separator prefix if needed (e.g., `"` or `'`)
+        
         if !sep.is_empty() && search_area.starts_with(sep) {
             estimated_len += sep.len();
             current_search_offset += sep.len();
-        }
-
-        // Match the word content
-        // Use starts_with for a basic check, assuming the word appears next
+        }\
         if search_area[current_search_offset..].starts_with(word) {
             estimated_len += word.len();
             current_search_offset += word.len();
-
-            // Match separator suffix if needed
+            
             if !sep.is_empty() && search_area[current_search_offset..].starts_with(sep) {
                 estimated_len += sep.len();
             }
@@ -4882,18 +4824,12 @@ pub mod highlight
             && search_area.starts_with(sep)
             && search_area[sep.len()..].starts_with(sep)
         {
-            // Handle empty quoted string like "" or ''
             estimated_len += sep.len() * 2;
             Some(token_start_byte..(token_start_byte + estimated_len))
         } else {
-            // Fallback: Maybe it's just the word without quotes, or a separator like `|`
             if search_area.starts_with(word) {
                 Some(token_start_byte..(token_start_byte + word.len()))
             } else {
-                // Could not reliably map the token back to the original string segment
-                // This might happen with complex escapes or parser ambiguities
-                // As a basic fallback, consume up to the next space or end of line? Unsafe.
-                // Return None to signal failure for this token.
                 None
             }
         }
@@ -4908,9 +4844,8 @@ pub mod highlight
                 return styles;
             }
 
-            let line_info = parser_line::parse_line(line);
+            let line_info = parses::lines::parse_line(line);
             if line_info.tokens.is_empty() {
-                // If parser returns no tokens, style whole line as default
                 styles.push((0..line.len(), Style::Default));
                 return styles;
             }
@@ -4942,7 +4877,6 @@ pub mod highlight
 
                         styles.push((token_range.clone(), current_token_style));
 
-                        // Check if this token marks the end of a command segment
                         if ["|", "&&", "||", ";"].contains(&word.as_str()) {
                             is_start_of_segment = true;
                         }
@@ -4951,12 +4885,11 @@ pub mod highlight
                     }
 
                     None => {
-                        // If we can't map a token, style the rest of the line as default and stop.
                         if current_byte_idx < line.len() {
                             styles.push((current_byte_idx..line.len(), Style::Default));
                         }
-                        current_byte_idx = line.len(); // Mark as done
-                        break; // Stop processing further tokens
+                        current_byte_idx = line.len();
+                        break;
                     }
                 }
             }
@@ -5128,7 +5061,7 @@ pub mod history
         } else if let Ok(d) = env::var("XDG_DATA_HOME") {
             format!("{}/{}", d, "cicada/history.sqlite")
         } else {
-            let home = tools::get_user_home();
+            let home = get::user_home();
             format!("{}/{}", home, ".local/share/cicada/history.sqlite")
         }
     }
@@ -5254,20 +5187,20 @@ pub mod is
     // pub fn is_arithmetic(line: &str) -> bool
     pub fn arithmetic(line: &str) -> bool
     {
-        if !re_contains(line, r"[0-9]+") {
+        if !contains(line, r"[0-9]+") {
             return false;
         }
-        if !re_contains(line, r"\+|\-|\*|/|\^") {
+        if !contains(line, r"\+|\-|\*|/|\^") {
             return false;
         }
-        re_contains(line, r"^[ 0-9\.\(\)\+\-\*/\^]+[\.0-9 \)]$")
+        contains(line, r"^[ 0-9\.\(\)\+\-\*/\^]+[\.0-9 \)]$")
     }
     // pub fn is_shell_altering_command(line: &str) -> bool
     pub fn shell_altering_command(line: &str) -> bool
     {
         let line = line.trim();
 
-        if re_contains(line, r"^[A-Za-z_][A-Za-z0-9_]*=.*$") { return true; }
+        if contains(line, r"^[A-Za-z_][A-Za-z0-9_]*=.*$") { return true; }
 
         line.starts_with("alias ")
         || line.starts_with("export ")
@@ -5832,11 +5765,8 @@ pub mod jobc
 
     pub fn mark_job_as_stopped(sh: &mut shell::Shell, gid: i32, report: bool) {
         sh.mark_job_as_stopped(gid);
-        if !report {
-            return;
-        }
+        if !report { return; }
 
-        // add an extra line to separate output of fg commands if any.
         if let Some(job) = sh.get_job_by_gid(gid) {
             println_stderr!("");
             print_job(job);
@@ -5901,8 +5831,6 @@ pub mod jobc
             }
             Ok(WS::StillAlive) => types::WaitStatus::empty(),
             Ok(_others) => {
-                // this is for PtraceEvent and PtraceSyscall on Linux,
-                // unreachable on other platforms.
                 types::WaitStatus::from_others()
             }
             Err(e) => types::WaitStatus::from_error(e as i32),
@@ -5920,8 +5848,7 @@ pub mod jobc
 
         loop {
             let ws = waitpidx(-1, true);
-            // here when we calling waitpidx(), all signals should have
-            // been masked. There should no errors (ECHILD/EINTR etc) happen.
+            
             if ws.is_error() {
                 let err = ws.get_errno();
                 if err == nix::Error::ECHILD {
@@ -5948,11 +5875,8 @@ pub mod jobc
                 }
             } else if ws.is_stopped() {
                 if is_a_fg_child {
-                    // for stop signal of fg job (current job)
-                    // i.e. Ctrl-Z is pressed on the fg job
                     mark_job_member_stopped(sh, pid, gid, true);
                 } else {
-                    // for stop signal of bg jobs
                     signals::insert_stopped_map(pid);
                     mark_job_member_stopped(sh, pid, 0, false);
                 }
@@ -5982,12 +5906,9 @@ pub mod jobc
     }
 
     pub fn try_wait_bg_jobs(sh: &mut shell::Shell, report: bool, sig_handler_enabled: bool) {
-        if sh.jobs.is_empty() {
-            return;
-        }
+        if sh.jobs.is_empty() { return; }
 
         if !sig_handler_enabled {
-            // we need to wait pids in case CICADA_ENABLE_SIG_HANDLER=0
             signals::handle_sigchld(Signal::SIGCHLD as i32);
         }
 
@@ -6255,7 +6176,7 @@ pub mod libs
                 } else {
                     return String::new();
                 }
-                let home = tools::get_user_home();
+                let home = get::user_home();
                 let ss = s.clone();
                 let to = format!("$head{}$tail", home);
                 let result = re.replace_all(ss.as_str(), to.as_str());
@@ -6292,7 +6213,6 @@ pub mod libs
                                     };
                                     let mode = _mode.permissions().mode();
                                     if mode & 0o111 == 0 {
-                                        // not binary
                                         continue;
                                     }
                                 }
@@ -6403,7 +6323,6 @@ pub mod libs
         use libc::{c_int, c_ulong, winsize, STDERR_FILENO, STDIN_FILENO, STDOUT_FILENO};
         use std::mem::zeroed;
         */
-        // Unfortunately the actual command is not standardised...
         #[cfg(any(target_os = "linux", target_os = "android"))]
         static TIOCGWINSZ: c_ulong = 0x5413;
 
@@ -6423,10 +6342,7 @@ pub mod libs
         extern "C" {
             fn ioctl(fd: c_int, request: c_ulong, ...) -> c_int;
         }
-
-        /// Runs the ioctl command. Returns (0, 0) if all of the streams are not to a terminal, or
-        /// there is an error. (0, 0) is an invalid size to have anyway, which is why
-        /// it can be used as a nil value.
+        
         unsafe fn get_dimensions_any() -> winsize {
             let mut window: winsize = zeroed();
             let mut result = ioctl(STDOUT_FILENO, TIOCGWINSZ, &mut window);
@@ -6444,26 +6360,7 @@ pub mod libs
             }
             window
         }
-
-        /// Query the current processes's output (`stdout`), input (`stdin`), and error (`stderr`) in
-        /// that order, in the attempt to dtermine terminal width. If one of those streams is actually
-        /// a tty, this function returns its width and height as a number of characters.
-        ///
-        /// # Errors
-        ///
-        /// If *all* of the streams are not ttys or return any errors this function will return `None`.
-        ///
-        /// # Example
-        ///
-        /// To get the dimensions of your terminal window, simply use the following:
-        ///
-        /// ```ignore
-        /// if let Some((w, h)) = term_size::dimensions() {
-        ///     println!("Width: {}\nHeight: {}", w, h);
-        /// } else {
-        ///     println!("Unable to get term size :(")
-        /// }
-        /// ```
+        
         pub fn dimensions() -> Option<(usize, usize)> {
             let w = unsafe { get_dimensions_any() };
 
@@ -6561,15 +6458,15 @@ pub mod parses
         use crate::span::Span;
         use crate::RuleType;
         */
-        /// Parse-related error type.
+        
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
         pub struct Error<R> 
         {
-            /// Variant of the error
+            
             pub variant: ErrorVariant<R>,
-            /// Location within the input string
+            
             pub location: InputLocation,
-            /// Line/column within the input string
+            
             pub line_col: LineColLocation,
             path: Option<String>,
             line: String,
@@ -6578,44 +6475,35 @@ pub mod parses
         }
 
         impl<R: RuleType> core::error::Error for Error<R> {}
-
-        /// Different kinds of parsing errors.
+        
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
         pub enum ErrorVariant<R> 
         {
-            /// Generated parsing error with expected and unexpected `Rule`s
             ParsingError 
             {
-                /// Positive attempts
                 positives: Vec<R>,
-                /// Negative attempts
                 negatives: Vec<R>,
             },
-            /// Custom error with a message
+            
             CustomError 
             {
-                /// Short explanation
                 message: String,
             },
         }
 
         impl<R: RuleType> core::error::Error for ErrorVariant<R> {}
-
-        /// Where an `Error` has occurred.
+        
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
         pub enum InputLocation {
-            /// `Error` was created by `Error::new_from_pos`
+            
             Pos(usize),
-            /// `Error` was created by `Error::new_from_span`
             Span((usize, usize)),
         }
-
-        /// Line/column where an `Error` has occurred.
+        
         #[derive(Clone, Debug, Eq, Hash, PartialEq)]
-        pub enum LineColLocation {
-            /// Line/column pair if `Error` was created by `Error::new_from_pos`
+        pub enum LineColLocation 
+        {            
             Pos((usize, usize)),
-            /// Line/column pairs if `Error` was created by `Error::new_from_span`
             Span((usize, usize), (usize, usize)),
         }
 
@@ -6632,9 +6520,9 @@ pub mod parses
             }
         }
 
-        /// Function mapping rule to its helper message defined by user.
+        
         pub type RuleToMessageFn<R> = Box<dyn Fn(&R) -> Option<String>>;
-        /// Function mapping string element to bool denoting whether it's a whitespace defined by user.
+        
         pub type IsWhitespaceFn = Box<dyn Fn(String) -> bool>;
 
         impl ParsingToken {
@@ -6649,9 +6537,8 @@ pub mod parses
         }
 
         impl<R: RuleType> ParseAttempts<R> {
-            /// Helper formatting function to get message informing about tokens we've
-            /// (un)expected to see.
-            /// Used as a part of `parse_attempts_error`.
+
+            
             fn tokens_helper_messages(
                 &self,
                 is_whitespace_fn: &IsWhitespaceFn,
@@ -6701,32 +6588,6 @@ pub mod parses
         }
 
         impl<R: RuleType> Error<R> {
-            /// Creates `Error` from `ErrorVariant` and `Position`.
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// # use pest::error::{Error, ErrorVariant};
-            /// # use pest::Position;
-            /// # #[allow(non_camel_case_types)]
-            /// # #[allow(dead_code)]
-            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            /// # enum Rule {
-            /// #     open_paren,
-            /// #     closed_paren
-            /// # }
-            /// # let input = "";
-            /// # let pos = Position::from_start(input);
-            /// let error = Error::new_from_pos(
-            ///     ErrorVariant::ParsingError {
-            ///         positives: vec![Rule::open_paren],
-            ///         negatives: vec![Rule::closed_paren],
-            ///     },
-            ///     pos
-            /// );
-            ///
-            /// println!("{}", error);
-            /// ```
             pub fn new_from_pos(variant: ErrorVariant<R>, pos: Position<'_>) -> Error<R> {
                 let visualize_ws = pos.match_char('\n') || pos.match_char('\r');
                 let line_of = pos.line_of();
@@ -6746,8 +6607,6 @@ pub mod parses
                 }
             }
 
-            /// Wrapper function to track `parse_attempts` as a result
-            /// of `state` function call in `parser_state.rs`.
             pub fn new_from_pos_with_parsing_attempts(
                 variant: ErrorVariant<R>,
                 pos: Position<'_>,
@@ -6757,39 +6616,11 @@ pub mod parses
                 error.parse_attempts = Some(parse_attempts);
                 error
             }
-
-            /// Creates `Error` from `ErrorVariant` and `Span`.
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// # use pest::error::{Error, ErrorVariant};
-            /// # use pest::{Position, Span};
-            /// # #[allow(non_camel_case_types)]
-            /// # #[allow(dead_code)]
-            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            /// # enum Rule {
-            /// #     open_paren,
-            /// #     closed_paren
-            /// # }
-            /// # let input = "";
-            /// # let start = Position::from_start(input);
-            /// # let end = start.clone();
-            /// # let span = start.span(&end);
-            /// let error = Error::new_from_span(
-            ///     ErrorVariant::ParsingError {
-            ///         positives: vec![Rule::open_paren],
-            ///         negatives: vec![Rule::closed_paren],
-            ///     },
-            ///     span
-            /// );
-            ///
-            /// println!("{}", error);
-            /// ```
+            
             pub fn new_from_span(variant: ErrorVariant<R>, span: Span<'_>) -> Error<R> {
                 let end = span.end_pos();
                 let mut end_line_col = end.line_col();
-                // end position is after a \n, so we want to point to the visual lf symbol
+
                 if end_line_col.1 == 1 {
                     let mut visual_end = end;
                     visual_end.skip_back(1);
@@ -6824,108 +6655,23 @@ pub mod parses
                     parse_attempts: None,
                 }
             }
-
-            /// Returns `Error` variant with `path` which is shown when formatted with `Display`.
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// # use pest::error::{Error, ErrorVariant};
-            /// # use pest::Position;
-            /// # #[allow(non_camel_case_types)]
-            /// # #[allow(dead_code)]
-            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            /// # enum Rule {
-            /// #     open_paren,
-            /// #     closed_paren
-            /// # }
-            /// # let input = "";
-            /// # let pos = Position::from_start(input);
-            /// Error::new_from_pos(
-            ///     ErrorVariant::ParsingError {
-            ///         positives: vec![Rule::open_paren],
-            ///         negatives: vec![Rule::closed_paren],
-            ///     },
-            ///     pos
-            /// ).with_path("file.rs");
-            /// ```
+            
             pub fn with_path(mut self, path: &str) -> Error<R> {
                 self.path = Some(path.to_owned());
 
                 self
             }
-
-            /// Returns the path set using [`Error::with_path()`].
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// # use pest::error::{Error, ErrorVariant};
-            /// # use pest::Position;
-            /// # #[allow(non_camel_case_types)]
-            /// # #[allow(dead_code)]
-            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            /// # enum Rule {
-            /// #     open_paren,
-            /// #     closed_paren
-            /// # }
-            /// # let input = "";
-            /// # let pos = Position::from_start(input);
-            /// # let error = Error::new_from_pos(
-            /// #     ErrorVariant::ParsingError {
-            /// #         positives: vec![Rule::open_paren],
-            /// #         negatives: vec![Rule::closed_paren],
-            /// #     },
-            /// #     pos);
-            /// let error = error.with_path("file.rs");
-            /// assert_eq!(Some("file.rs"), error.path());
-            /// ```
+            
             pub fn path(&self) -> Option<&str> {
                 self.path.as_deref()
             }
 
-            /// Returns the line that the error is on.
+            
             pub fn line(&self) -> &str {
                 self.line.as_str()
             }
-
-            /// Renames all `Rule`s if this is a [`ParsingError`]. It does nothing when called on a
-            /// [`CustomError`].
-            ///
-            /// Useful in order to rename verbose rules or have detailed per-`Rule` formatting.
-            ///
-            /// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError
-            /// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError
-            ///
-            /// # Examples
-            ///
-            /// ```
-            /// # use pest::error::{Error, ErrorVariant};
-            /// # use pest::Position;
-            /// # #[allow(non_camel_case_types)]
-            /// # #[allow(dead_code)]
-            /// # #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
-            /// # enum Rule {
-            /// #     open_paren,
-            /// #     closed_paren
-            /// # }
-            /// # let input = "";
-            /// # let pos = Position::from_start(input);
-            /// Error::new_from_pos(
-            ///     ErrorVariant::ParsingError {
-            ///         positives: vec![Rule::open_paren],
-            ///         negatives: vec![Rule::closed_paren],
-            ///     },
-            ///     pos
-            /// ).renamed_rules(|rule| {
-            ///     match *rule {
-            ///         Rule::open_paren => "(".to_owned(),
-            ///         Rule::closed_paren => "closed paren".to_owned()
-            ///     }
-            /// });
-            /// ```
-            pub fn renamed_rules<F>(mut self, f: F) -> Error<R>
-            where
+            
+            pub fn renamed_rules<F>(mut self, f: F) -> Error<R> where
                 F: FnMut(&R) -> String,
             {
                 let variant = match self.variant {
@@ -6944,14 +6690,10 @@ pub mod parses
                 self
             }
 
-            /// Get detailed information about errored rules sequence.
-            /// Returns `Some(results)` only for `ParsingError`.
             pub fn parse_attempts(&self) -> Option<ParseAttempts<R>> {
                 self.parse_attempts.clone()
             }
 
-            /// Get error message based on parsing attempts.
-            /// Returns `None` in case self `parse_attempts` is `None`.
             pub fn parse_attempts_error(
                 &self,
                 input: &str,
@@ -7213,7 +6955,7 @@ pub mod parses
             }
 
             #[cfg(feature = "miette-error")]
-            /// Turns an error into a [miette](crates.io/miette) Diagnostic.
+            
             pub fn into_miette(self) -> impl ::miette::Diagnostic {
                 miette_adapter::MietteAdapter(self)
             }
@@ -7221,27 +6963,21 @@ pub mod parses
 
         impl<R: RuleType> ErrorVariant<R> {
             ///
-            /// Returns the error message for [`ErrorVariant`]
+            
             ///
-            /// If [`ErrorVariant`] is [`CustomError`], it returns a
-            /// [`Cow::Borrowed`] reference to [`message`]. If [`ErrorVariant`] is [`ParsingError`], a
-            /// [`Cow::Owned`] containing "expected [ErrorVariant::ParsingError::positives] [ErrorVariant::ParsingError::negatives]" is returned.
+
+            
             ///
-            /// [`ErrorVariant`]: enum.ErrorVariant.html
-            /// [`CustomError`]: enum.ErrorVariant.html#variant.CustomError
-            /// [`ParsingError`]: enum.ErrorVariant.html#variant.ParsingError
-            /// [`Cow::Owned`]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#variant.Owned
-            /// [`Cow::Borrowed`]: https://doc.rust-lang.org/std/borrow/enum.Cow.html#variant.Borrowed
-            /// [`message`]: enum.ErrorVariant.html#variant.CustomError.field.message
-            /// # Examples
+
+
+
+            
             ///
-            /// ```
-            /// # use pest::error::ErrorVariant;
-            /// let variant = ErrorVariant::<()>::CustomError {
-            ///     message: String::from("unexpected error")
-            /// };
+
+
+            
             ///
-            /// println!("{}", variant.message());
+            
             pub fn message(&self) -> Cow<'_, str> {
                 match self {
                     ErrorVariant::ParsingError {
@@ -7320,12 +7056,10 @@ pub mod parses
                 }
             }
 
-            impl<R> core::error::Error for MietteAdapter<R>
-            where
-                R: RuleType,
-                Self: fmt::Debug + fmt::Display,
-            {
-            }
+            impl<R> core::error::Error for MietteAdapter<R> where
+            R: RuleType,
+            Self: fmt::Debug + fmt::Display,
+            {}
         }
 
 
@@ -7394,7 +7128,7 @@ pub mod parses
                 if t.0.is_empty() {
                     result.push_str(&t.1);
                 } else {
-                    let s = tools::wrap_sep_string(&t.0, &t.1);
+                    let s = str::wrap_separator_str(&t.0, &t.1);
                     result.push_str(&s);
                 }
                 result.push(' ');
@@ -7513,7 +7247,7 @@ pub mod parses
         pub fn parse_line(line: &str) -> LineInfo 
         {
             let mut result = Vec::new();
-            if tools::is_arithmetic(line) {
+            if is::arithmetic(line) {
                 for x in line.split(' ') {
                     result.push((String::from(""), x.to_string()));
                 }
@@ -7750,7 +7484,7 @@ pub mod parses
                     }
 
                     if sep.is_empty() {
-                        let is_an_env = libs::re::re_contains(&token, r"^[a-zA-Z0-9_]+=.*$");
+                        let is_an_env = libs::re::contains(&token, r"^[a-zA-Z0-9_]+=.*$");
                         if !is_an_env && (c == '\'' || c == '"') {
                             sep = c.to_string();
                             continue;
@@ -7830,7 +7564,7 @@ pub mod parses
                     }
 
                     let s3 = word.to_string();
-                    if libs::re::re_contains(&to_be_continued_s1, r"^\d+$") {
+                    if libs::re::contains(&to_be_continued_s1, r"^\d+$") {
                         if to_be_continued_s1 != "1" && to_be_continued_s1 != "2" {
                             return Err(String::from("Bad file descriptor #3"));
                         }
@@ -7850,9 +7584,9 @@ pub mod parses
 
                 let ptn1 = r"^([^>]*)(>>?)([^>]+)$";
                 let ptn2 = r"^([^>]*)(>>?)$";
-                if !libs::re::re_contains(word, r">") {
+                if !libs::re::contains(word, r">") {
                     tokens_new.push(token.clone());
-                } else if libs::re::re_contains(word, ptn1) {
+                } else if libs::re::contains(word, ptn1) {
                     let re;
                     if let Ok(x) = Regex::new(ptn1) {
                         re = x;
@@ -7868,7 +7602,7 @@ pub mod parses
                             return Err(String::from("Bad file descriptor #1"));
                         }
 
-                        if libs::re::re_contains(s1, r"^\d+$") {
+                        if libs::re::contains(s1, r"^\d+$") {
                             if s1 != "1" && s1 != "2" {
                                 return Err(String::from("Bad file descriptor #2"));
                             }
@@ -7880,7 +7614,7 @@ pub mod parses
                             redirects.push((String::from("1"), s2.to_string(), s3.to_string()));
                         }
                     }
-                } else if libs::re::re_contains(word, ptn2) {
+                } else if libs::re::contains(word, ptn2) {
                     let re;
                     if let Ok(x) = Regex::new(ptn2) {
                         re = x;
@@ -7945,9 +7679,9 @@ pub mod parses
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub enum Assoc
         {
-            /// Left operator associativity. Evaluate expressions from left-to-right.
+            
             Left,
-            /// Right operator associativity. Evaluate expressions from right-to-left.
+            
             Right,
         }
 
@@ -7970,7 +7704,7 @@ pub mod parses
 
         impl<R: RuleType> Op<R> 
         {
-            /// Defines `rule` as a prefix unary operator.
+            
             pub fn prefix(rule: R) -> Self {
                 Self {
                     rule,
@@ -7979,7 +7713,7 @@ pub mod parses
                 }
             }
 
-            /// Defines `rule` as a postfix unary operator.
+            
             pub fn postfix(rule: R) -> Self {
                 Self {
                     rule,
@@ -7988,7 +7722,7 @@ pub mod parses
                 }
             }
 
-            /// Defines `rule` as an infix binary operator with associativity `assoc`.
+            
             pub fn infix(rule: R, assoc: Assoc) -> Self {
                 Self {
                     rule,
@@ -8270,9 +8004,9 @@ pub mod prompt
         {
             let s = c.to_string();
             if token.is_empty() {
-                libs::re::re_contains(&s, r#"^[a-zA-Z_]$"#)
+                libs::re::contains(&s, r#"^[a-zA-Z_]$"#)
             } else {
-                libs::re::re_contains(&s, r#"^[a-zA-Z0-9_]$"#)
+                libs::re::contains(&s, r#"^[a-zA-Z0-9_]$"#)
             }
         }
 
@@ -8427,7 +8161,7 @@ pub mod prompt
         {
             fn execute(&self, prompter: &mut Prompter<T>, count: i32, _ch: char) -> io::Result<()> {
                 let buf = prompter.buffer();
-                let linfo = parser_line::parse_line(buf);
+                let linfo = parses::lines::parse_line(buf);
                 if linfo.is_complete {
                     prompter.accept_input()
                 } else if count > 0 {
@@ -8480,7 +8214,7 @@ pub mod prompt
         }
 
         fn apply_user(prompt: &mut String) {
-            let username = tools::get_user_name();
+            let username = get::username();
             prompt.push_str(&username);
         }
 
@@ -8810,7 +8544,7 @@ pub mod prompt
                 }
             };
 
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let pwd = if last.is_empty() {
                 "/"
             } else if current_dir == home {
@@ -8822,7 +8556,7 @@ pub mod prompt
         }
 
         fn apply_hostname(prompt: &mut String) {
-            let hostname = tools::get_hostname();
+            let hostname = get::hostname();
             prompt.push_str(&hostname);
         }
 
@@ -8944,7 +8678,7 @@ pub mod prompt
         let mut prompt = render_prompt(sh, &ps);
         if let Some((w, _h)) = libs::term_size::dimensions() {
             if get_prompt_len(&prompt) > (w / 2) as i32
-                && !libs::re::re_contains(&ps, r#"(?i)\$\{?newline.\}?"#)
+                && !libs::re::contains(&ps, r#"(?i)\$\{?newline.\}?"#)
             {
                 prompt.push_str("\n$ ");
             }
@@ -8968,11 +8702,11 @@ pub mod rc
     */
     pub fn get_rc_file() -> String 
     {
-        let dir_config = tools::get_config_dir();
+        let dir_config = get::config_dir();
         let rc_file = format!("{}/cicadarc", dir_config);
         if Path::new(&rc_file).exists() { return rc_file; }
         
-        let home = tools::get_user_home();
+        let home = get::user_home();
         let rc_file_home = format!("{}/{}", home, ".cicadarc");
         if Path::new(&rc_file_home).exists() { return rc_file_home; }
         
@@ -8985,7 +8719,7 @@ pub mod rc
         if !Path::new(&rc_file).exists() { return; }
 
         let args = vec!["source".to_string(), rc_file];
-        scripting::run_script(sh, &args);
+        scripts::run_script(sh, &args);
     }
 }
 
@@ -9498,7 +9232,7 @@ pub mod scripts
 
     fn is_args_in_token(token: &str) -> bool 
     {
-        libs::re::re_contains(token, r"\$\{?[0-9@]+\}?")
+        libs::re::contains(token, r"\$\{?[0-9@]+\}?")
     }
 
     fn expand_args_for_single_token(token: &str, args: &[String]) -> String 
@@ -9875,10 +9609,7 @@ pub mod shell
         pub fn new() -> Shell 
         {
             let uuid = Uuid::new_v4().as_hyphenated().to_string();
-            let current_dir = tools::get_current_dir();
-            // TODO: the shell proc may have terminal later
-            // e.g. $ cicada foo.sh &
-            // then with a $ fg
+            let current_dir = get::current_dir();
             let has_terminal = proc_has_terminal();
             let (session_id, _) = uuid.split_at(13);
             Shell {
@@ -10365,7 +10096,7 @@ pub mod shell
 
     fn need_expand_brace(line: &str) -> bool 
     {
-        libs::re::re_contains(line, r#"\{[^ "']*,[^ "']*,?[^ "']*\}"#)
+        libs::re::contains(line, r#"\{[^ "']*,[^ "']*,?[^ "']*\}"#)
     }
 
     fn brace_getitem(s: &str, depth: i32) -> (Vec<String>, String) 
@@ -10619,8 +10350,11 @@ pub mod shell
     {
         let mut idx: usize = 0;
         let mut buff = Vec::new();
-        for (sep, text) in tokens.iter() {
-            if !sep.is_empty() || !text.starts_with("~") {
+
+        for (sep, text) in tokens.iter() 
+        {
+            if !sep.is_empty() || !text.starts_with("~") 
+            {
                 idx += 1;
                 continue;
             }
@@ -10628,7 +10362,7 @@ pub mod shell
             let mut s: String = text.clone();
             let ptn = r"^~(?P<tail>.*)";
             let re = Regex::new(ptn).expect("invalid re ptn");
-            let home = tools::get_user_home();
+            let home = get::user_home();
             let ss = s.clone();
             let to = format!("{}$tail", home);
             let result = re.replace_all(ss.as_str(), to.as_str());
@@ -10638,20 +10372,21 @@ pub mod shell
             idx += 1;
         }
 
-        for (i, text) in buff.iter().rev() {
+        for (i, text) in buff.iter().rev() 
+        {
             tokens[*i].1 = text.to_string();
         }
     }
 
     fn env_in_token(token: &str) -> bool 
     {
-        if libs::re::re_contains(token, r"\$\{?[\$\?]\}?") {
+        if libs::re::contains(token, r"\$\{?[\$\?]\}?") {
             return true;
         }
 
         let ptn_env_name = r"[a-zA-Z_][a-zA-Z0-9_]*";
         let ptn_env = format!(r"\$\{{?{}\}}?", ptn_env_name);
-        if !libs::re::re_contains(token, &ptn_env) {
+        if !libs::re::contains(token, &ptn_env) {
             return false;
         }
 
@@ -10660,16 +10395,16 @@ pub mod shell
         // - VERSION=$(foobar -h | grep 'version: v' | awk '{print $NF}')
         let ptn_cmd_sub1 = format!(r"^{}=`.*`$", ptn_env_name);
         let ptn_cmd_sub2 = format!(r"^{}=\$\(.*\)$", ptn_env_name);
-        if libs::re::re_contains(token, &ptn_cmd_sub1)
-            || libs::re::re_contains(token, &ptn_cmd_sub2)
-            || libs::re::re_contains(token, r"^\$\(.+\)$")
+        if libs::re::contains(token, &ptn_cmd_sub1)
+            || libs::re::contains(token, &ptn_cmd_sub2)
+            || libs::re::contains(token, r"^\$\(.+\)$")
         {
             return false;
         }
 
         // for cmd-line like `alias foo='echo $PWD'`
         let ptn_env = format!(r"='.*\$\{{?{}\}}?.*'$", ptn_env_name);
-        !libs::re::re_contains(token, &ptn_env)
+        !libs::re::contains(token, &ptn_env)
     }
 
     pub fn expand_env(sh: &Shell, tokens: &mut types::Tokens) 
@@ -10703,8 +10438,8 @@ pub mod shell
 
     fn should_do_dollar_command_extension(line: &str) -> bool 
     {
-        libs::re::re_contains(line, r"\$\([^\)]+\)")
-            && !libs::re::re_contains(line, r"='.*\$\([^\)]+\).*'$")
+        libs::re::contains(line, r"\$\([^\)]+\)")
+            && !libs::re::contains(line, r"='.*\$\([^\)]+\).*'$")
     }
 
     fn do_command_substitution_for_dollar(sh: &mut Shell, tokens: &mut types::Tokens) 
@@ -10878,13 +10613,9 @@ pub mod shell
     pub fn do_expansion(sh: &mut Shell, tokens: &mut types::Tokens) 
     {
         let line = parses::lines::tokens_to_line(tokens);
-        if tools::is_arithmetic(&line) {
-            return;
-        }
+        if is::arithmetic(&line) { return; }
 
-        if tokens.len() >= 2 && tokens[0].1 == "export" && tokens[1].1.starts_with("PROMPT=") {
-            return;
-        }
+        if tokens.len() >= 2 && tokens[0].1 == "export" && tokens[1].1.starts_with("PROMPT=") { return; }
 
         expand_alias(sh, tokens);
         expand_home(tokens);
@@ -11489,7 +11220,7 @@ pub mod types
         let mut n = 0;
         let re = Regex::new(r"^([a-zA-Z0-9_]+)=(.*)$").unwrap();
         for (sep, text) in tokens.iter() {
-            if !sep.is_empty() || !libs::re::re_contains(text, r"^([a-zA-Z0-9_]+)=(.*)$") {
+            if !sep.is_empty() || !libs::re::contains(text, r"^([a-zA-Z0-9_]+)=(.*)$") {
                 break;
             }
 
@@ -11605,7 +11336,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
 
         if libs::progopts::is_login(&args)
         {
-            rcfile::load_rc_files(&mut sh);
+            rc::load_rc_files(&mut sh);
             sh.is_login = true;
         }
         
@@ -11615,7 +11346,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
         if libs::progopts::is_script(&args)
         {
             log!("run script: {:?} ", &args);
-            let status = scripting::run_script(&mut sh, &args);
+            let status = scripts::run_script(&mut sh, &args);
             std::process::exit(status);
         }
 
@@ -11651,7 +11382,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
         history::init(&mut rl);
         rl.set_completer(Arc::new(completers::CicadaCompleter { sh: Arc::new(sh.clone()) }));
 
-        let sig_handler_enabled = tools::is_signal_handler_enabled();
+        let sig_handler_enabled = is::signal_handler_enabled();
         
         if sig_handler_enabled
         {
@@ -11703,7 +11434,7 @@ pub fn main() -> Result<(), error::parse::ParseError>
                         sh.previous_cmd = line.clone();
                     }
 
-                    if tools::is_shell_altering_command(&line)
+                    if is::shell_altering_command(&line)
                     {
                         rl.set_completer
                         (
@@ -11753,4 +11484,4 @@ pub fn main() -> Result<(), error::parse::ParseError>
         }
     }
 }
-// 11756 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 11487 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
