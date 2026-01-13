@@ -36,6 +36,7 @@ pub mod __
     */
 }
 */
+extern crate time as temporal;
 extern crate proc_macro;
 
 #[macro_use] pub mod macros
@@ -1501,8 +1502,10 @@ extern crate proc_macro;
 }
 
 pub mod arch
-{
-    pub use std::arch::{ * };
+{    
+    #[cfg(target_arch = "x86")] pub use std::arch::x86::*;
+    #[cfg(target_arch = "x86_64")] pub use std::arch::x86_64::*;
+    pub use std::arch::*;
 }
 
 pub mod ascii
@@ -2336,7 +2339,6 @@ pub mod marker
     pub use std::marker::{ * };
     use ::
     {
-        marker::{ PhantomData },
         rc::{ Rc },
         panic::{ RefUnwindSafe, UnwindSafe },
         *,
@@ -2604,13 +2606,11 @@ pub mod num
                 ($t:ty, $min:expr, $max:expr) =>
                 {
                     impl Bounded for $t {
-                        #[inline]
-                        fn min_value() -> $t {
+                        #[inline] fn min_value() -> $t {
                             $min
                         }
 
-                        #[inline]
-                        fn max_value() -> $t {
+                        #[inline] fn max_value() -> $t {
                             $max
                         }
                     }
@@ -2645,15 +2645,13 @@ pub mod num
             {
                 ($t:ty, $min:expr, $max:expr) => {
                     impl Bounded for $t {
-                        #[inline]
-                        fn min_value() -> $t {
+                        #[inline] fn min_value() -> $t {
                            
                             bounded_impl_nonzero_const!($t, $min, MIN);
                             MIN
                         }
 
-                        #[inline]
-                        fn max_value() -> $t {
+                        #[inline] fn max_value() -> $t {
                            
                             bounded_impl_nonzero_const!($t, $max, MAX);
                             MAX
@@ -2708,14 +2706,15 @@ pub mod num
 
             macro_rules! bounded_tuple 
             {
-                ( $($name:ident)* ) => (
-                    impl<$($name: Bounded,)*> Bounded for ($($name,)*) {
-                        #[inline]
-                        fn min_value() -> Self {
+                ( $($name:ident)* ) => 
+                (
+                    impl<$($name: Bounded,)*> Bounded for ($($name,)*) 
+                    {
+                        #[inline] fn min_value() -> Self {
                             ($($name::min_value(),)*)
                         }
-                        #[inline]
-                        fn max_value() -> Self {
+                        
+                        #[inline] fn max_value() -> Self {
                             ($($name::max_value(),)*)
                         }
                     }
@@ -2745,12 +2744,15 @@ pub mod num
                 #[inline] fn to_isize(&self) -> Option<isize> {
                     self.to_i64().as_ref().and_then(ToPrimitive::to_isize)
                 }
+                
                 #[inline] fn to_i8(&self) -> Option<i8> {
                     self.to_i64().as_ref().and_then(ToPrimitive::to_i8)
                 }
+                
                 #[inline] fn to_i16(&self) -> Option<i16> {
                     self.to_i64().as_ref().and_then(ToPrimitive::to_i16)
                 }
+                
                 #[inline] fn to_i32(&self) -> Option<i32> {
                     self.to_i64().as_ref().and_then(ToPrimitive::to_i32)
                 }
@@ -2758,15 +2760,19 @@ pub mod num
                 #[inline] fn to_i128(&self) -> Option<i128> {
                     self.to_i64().map(From::from)
                 }
+                
                 #[inline] fn to_usize(&self) -> Option<usize> {
                     self.to_u64().as_ref().and_then(ToPrimitive::to_usize)
                 }
+                
                 #[inline] fn to_u8(&self) -> Option<u8> {
                     self.to_u64().as_ref().and_then(ToPrimitive::to_u8)
                 }
+                
                 #[inline] fn to_u16(&self) -> Option<u16> {
                     self.to_u64().as_ref().and_then(ToPrimitive::to_u16)
                 }
+                
                 #[inline] fn to_u32(&self) -> Option<u32> {
                     self.to_u64().as_ref().and_then(ToPrimitive::to_u32)
                 }
@@ -2774,9 +2780,11 @@ pub mod num
                 #[inline] fn to_u128(&self) -> Option<u128> {
                     self.to_u64().map(From::from)
                 }
+                
                 #[inline] fn to_f32(&self) -> Option<f32> {
                     self.to_f64().as_ref().and_then(ToPrimitive::to_f32)
                 }
+                
                 #[inline] fn to_f64(&self) -> Option<f64> {
                     match self.to_i64() {
                         Some(i) => i.to_f64(),
@@ -2836,12 +2844,11 @@ pub mod num
                             fn to_u128 -> u128;
                         }
 
-                        #[inline]
-                        fn to_f32(&self) -> Option<f32> {
+                        #[inline] fn to_f32(&self) -> Option<f32> {
                             Some(*self as f32)
                         }
-                        #[inline]
-                        fn to_f64(&self) -> Option<f64> {
+                        
+                        #[inline] fn to_f64(&self) -> Option<f64> {
                             Some(*self as f64)
                         }
                     }
@@ -2905,12 +2912,11 @@ pub mod num
                             fn to_u128 -> u128;
                         }
 
-                        #[inline]
-                        fn to_f32(&self) -> Option<f32> {
+                        #[inline] fn to_f32(&self) -> Option<f32> {
                             Some(*self as f32)
                         }
-                        #[inline]
-                        fn to_f64(&self) -> Option<f64> {
+                        
+                        #[inline] fn to_f64(&self) -> Option<f64> {
                             Some(*self as f64)
                         }
                     }
@@ -3086,12 +3092,15 @@ pub mod num
                 #[inline] fn from_isize(n: isize) -> Option<Self> {
                     n.to_i64().and_then(FromPrimitive::from_i64)
                 }
+                
                 #[inline] fn from_i8(n: i8) -> Option<Self> {
                     FromPrimitive::from_i64(From::from(n))
                 }
+                
                 #[inline] fn from_i16(n: i16) -> Option<Self> {
                     FromPrimitive::from_i64(From::from(n))
                 }
+                
                 #[inline] fn from_i32(n: i32) -> Option<Self> {
                     FromPrimitive::from_i64(From::from(n))
                 }
@@ -3099,15 +3108,19 @@ pub mod num
                 #[inline] fn from_i128(n: i128) -> Option<Self> {
                     n.to_i64().and_then(FromPrimitive::from_i64)
                 }
+                
                 #[inline] fn from_usize(n: usize) -> Option<Self> {
                     n.to_u64().and_then(FromPrimitive::from_u64)
                 }
+                
                 #[inline] fn from_u8(n: u8) -> Option<Self> {
                     FromPrimitive::from_u64(From::from(n))
                 }
+                
                 #[inline] fn from_u16(n: u16) -> Option<Self> {
                     FromPrimitive::from_u64(From::from(n))
                 }
+                
                 #[inline] fn from_u32(n: u32) -> Option<Self> {
                     FromPrimitive::from_u64(From::from(n))
                 }
@@ -3115,9 +3128,11 @@ pub mod num
                 #[inline] fn from_u128(n: u128) -> Option<Self> {
                     n.to_u64().and_then(FromPrimitive::from_u64)
                 }
+                
                 #[inline] fn from_f32(n: f32) -> Option<Self> {
                     FromPrimitive::from_f64(From::from(n))
                 }
+                
                 #[inline] fn from_f64(n: f64) -> Option<Self> {
                     match n.to_i64() {
                         Some(i) => FromPrimitive::from_i64(i),
@@ -3130,62 +3145,59 @@ pub mod num
             {
                 ($T:ty, $to_ty:ident) => {
                     impl FromPrimitive for $T {
-                        #[inline]
-                        fn from_isize(n: isize) -> Option<$T> {
+                        #[inline] fn from_isize(n: isize) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i8(n: i8) -> Option<$T> {
+                        
+                        #[inline] fn from_i8(n: i8) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i16(n: i16) -> Option<$T> {
+                        
+                        #[inline] fn from_i16(n: i16) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i32(n: i32) -> Option<$T> {
+                        
+                        #[inline] fn from_i32(n: i32) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i64(n: i64) -> Option<$T> {
+                        
+                        #[inline] fn from_i64(n: i64) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_i128(n: i128) -> Option<$T> {
-                            n.$to_ty()
-                        }
-
-                        #[inline]
-                        fn from_usize(n: usize) -> Option<$T> {
-                            n.$to_ty()
-                        }
-                        #[inline]
-                        fn from_u8(n: u8) -> Option<$T> {
-                            n.$to_ty()
-                        }
-                        #[inline]
-                        fn from_u16(n: u16) -> Option<$T> {
-                            n.$to_ty()
-                        }
-                        #[inline]
-                        fn from_u32(n: u32) -> Option<$T> {
-                            n.$to_ty()
-                        }
-                        #[inline]
-                        fn from_u64(n: u64) -> Option<$T> {
-                            n.$to_ty()
-                        }
-                        #[inline]
-                        fn from_u128(n: u128) -> Option<$T> {
+                        
+                        #[inline] fn from_i128(n: i128) -> Option<$T> {
                             n.$to_ty()
                         }
 
-                        #[inline]
-                        fn from_f32(n: f32) -> Option<$T> {
+                        #[inline] fn from_usize(n: usize) -> Option<$T> {
                             n.$to_ty()
                         }
-                        #[inline]
-                        fn from_f64(n: f64) -> Option<$T> {
+                        
+                        #[inline] fn from_u8(n: u8) -> Option<$T> {
+                            n.$to_ty()
+                        }
+                        
+                        #[inline] fn from_u16(n: u16) -> Option<$T> {
+                            n.$to_ty()
+                        }
+                        
+                        #[inline] fn from_u32(n: u32) -> Option<$T> {
+                            n.$to_ty()
+                        }
+                        
+                        #[inline] fn from_u64(n: u64) -> Option<$T> {
+                            n.$to_ty()
+                        }
+                        
+                        #[inline] fn from_u128(n: u128) -> Option<$T> {
+                            n.$to_ty()
+                        }
+
+                        #[inline] fn from_f32(n: f32) -> Option<$T> {
+                            n.$to_ty()
+                        }
+                        
+                        #[inline] fn from_f64(n: f64) -> Option<$T> {
                             n.$to_ty()
                         }
                     }
@@ -3211,62 +3223,59 @@ pub mod num
             {
                 ($T:ty, $to_ty:ident) => {
                     impl FromPrimitive for $T {
-                        #[inline]
-                        fn from_isize(n: isize) -> Option<$T> {
+                        #[inline] fn from_isize(n: isize) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-                        #[inline]
-                        fn from_i8(n: i8) -> Option<$T> {
+                        
+                        #[inline] fn from_i8(n: i8) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-                        #[inline]
-                        fn from_i16(n: i16) -> Option<$T> {
+                        
+                        #[inline] fn from_i16(n: i16) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-                        #[inline]
-                        fn from_i32(n: i32) -> Option<$T> {
+                        
+                        #[inline] fn from_i32(n: i32) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-                        #[inline]
-                        fn from_i64(n: i64) -> Option<$T> {
+                        
+                        #[inline] fn from_i64(n: i64) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-                        #[inline]
-                        fn from_i128(n: i128) -> Option<$T> {
-                            n.$to_ty().and_then(Self::new)
-                        }
-
-                        #[inline]
-                        fn from_usize(n: usize) -> Option<$T> {
-                            n.$to_ty().and_then(Self::new)
-                        }
-                        #[inline]
-                        fn from_u8(n: u8) -> Option<$T> {
-                            n.$to_ty().and_then(Self::new)
-                        }
-                        #[inline]
-                        fn from_u16(n: u16) -> Option<$T> {
-                            n.$to_ty().and_then(Self::new)
-                        }
-                        #[inline]
-                        fn from_u32(n: u32) -> Option<$T> {
-                            n.$to_ty().and_then(Self::new)
-                        }
-                        #[inline]
-                        fn from_u64(n: u64) -> Option<$T> {
-                            n.$to_ty().and_then(Self::new)
-                        }
-                        #[inline]
-                        fn from_u128(n: u128) -> Option<$T> {
+                        
+                        #[inline] fn from_i128(n: i128) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
 
-                        #[inline]
-                        fn from_f32(n: f32) -> Option<$T> {
+                        #[inline] fn from_usize(n: usize) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
-                        #[inline]
-                        fn from_f64(n: f64) -> Option<$T> {
+                        
+                        #[inline] fn from_u8(n: u8) -> Option<$T> {
+                            n.$to_ty().and_then(Self::new)
+                        }
+                        
+                        #[inline] fn from_u16(n: u16) -> Option<$T> {
+                            n.$to_ty().and_then(Self::new)
+                        }
+                        
+                        #[inline] fn from_u32(n: u32) -> Option<$T> {
+                            n.$to_ty().and_then(Self::new)
+                        }
+                        
+                        #[inline] fn from_u64(n: u64) -> Option<$T> {
+                            n.$to_ty().and_then(Self::new)
+                        }
+                        
+                        #[inline] fn from_u128(n: u128) -> Option<$T> {
+                            n.$to_ty().and_then(Self::new)
+                        }
+
+                        #[inline] fn from_f32(n: f32) -> Option<$T> {
+                            n.$to_ty().and_then(Self::new)
+                        }
+                        
+                        #[inline] fn from_f64(n: f64) -> Option<$T> {
                             n.$to_ty().and_then(Self::new)
                         }
                     }
@@ -3363,8 +3372,7 @@ pub mod num
             {
                 ($T:ty, $conv:ident) => {
                     impl NumCast for $T {
-                        #[inline]
-                        fn from<N: ToPrimitive>(n: N) -> Option<$T> {
+                        #[inline] fn from<N: ToPrimitive>(n: N) -> Option<$T> {
                             n.$conv()
                         }
                     }
@@ -3389,8 +3397,7 @@ pub mod num
             macro_rules! impl_num_cast_nonzero {
                 ($T:ty, $conv:ident) => {
                     impl NumCast for $T {
-                        #[inline]
-                        fn from<N: ToPrimitive>(n: N) -> Option<$T> {
+                        #[inline] fn from<N: ToPrimitive>(n: N) -> Option<$T> {
                             n.$conv().and_then(Self::new)
                         }
                     }
@@ -3509,9 +3516,11 @@ pub mod num
                 #[inline] fn is_infinite(self) -> bool {
                     self == Self::infinity() || self == Self::neg_infinity()
                 }
+                
                 #[inline] fn is_finite(self) -> bool {
                     !(self.is_nan() || self.is_infinite())
                 }
+                
                 #[inline] fn is_normal(self) -> bool {
                     self.classify() == FpCategory::Normal
                 }
@@ -3530,6 +3539,7 @@ pub mod num
                         self - f
                     }
                 }
+                
                 #[inline] fn ceil(self) -> Self {
                     let f = self.fract();
                     if f.is_nan() || f.is_zero() {
@@ -3540,6 +3550,7 @@ pub mod num
                         self - f
                     }
                 }
+                
                 #[inline] fn round(self) -> Self {
                     let one = Self::one();
                     let h = Self::from(0.5).expect("Unable to cast from 0.5");
@@ -3558,6 +3569,7 @@ pub mod num
                         self - f - one
                     }
                 }
+                
                 #[inline] fn trunc(self) -> Self {
                     let f = self.fract();
                     if f.is_nan() {
@@ -3566,6 +3578,7 @@ pub mod num
                         self - f
                     }
                 }
+                
                 #[inline] fn fract(self) -> Self {
                     if self.is_zero() {
                         Self::zero()
@@ -3573,6 +3586,7 @@ pub mod num
                         self % Self::one()
                     }
                 }
+                
                 #[inline] fn abs(self) -> Self {
                     if self.is_sign_positive() {
                         return self;
@@ -3593,9 +3607,11 @@ pub mod num
                         Self::one()
                     }
                 }
+                
                 #[inline] fn is_sign_positive(self) -> bool {
                     !self.is_sign_negative()
                 }
+                
                 #[inline] fn is_sign_negative(self) -> bool {
                     let (_, _, sign) = self.integer_decode();
                     sign < 0
@@ -3635,6 +3651,7 @@ pub mod num
                 #[inline] fn recip(self) -> Self {
                     Self::one() / self
                 }
+                
                 #[inline] fn powi(mut self, mut exp: i32) -> Self {
                     if exp < 0 {
                         exp = exp.wrapping_neg();
@@ -3817,6 +3834,7 @@ pub mod num
                     let ninety = Self::from(90u8).unwrap();
                     self * ninety / halfpi
                 }
+                
                 #[inline] fn to_radians(self) -> Self {
                     let halfpi = Self::zero().acos();
                     let ninety = Self::from(90u8).unwrap();
@@ -3891,8 +3909,7 @@ pub mod num
                             <$T>::abs_sub(self, other)
                         }
 
-                        #[inline]
-                        fn integer_decode(self) -> (u64, i16, i8) {
+                        #[inline] fn integer_decode(self) -> (u64, i16, i8) {
                             $decode(self)
                         }
 
@@ -3992,18 +4009,15 @@ pub mod num
                     pub trait FloatConst {
                         $(#[$doc] fn $constant() -> Self;)+
                         #[doc = "Return the full circle constant `τ`."]
-                        #[inline]
-                        fn TAU() -> Self where Self: Sized + Add<Self, Output = Self> {
+                        #[inline] fn TAU() -> Self where Self: Sized + Add<Self, Output = Self> {
                             Self::PI() + Self::PI()
                         }
                         #[doc = "Return `log10(2.0)`."]
-                        #[inline]
-                        fn LOG10_2() -> Self where Self: Sized + Div<Self, Output = Self> {
+                        #[inline] fn LOG10_2() -> Self where Self: Sized + Div<Self, Output = Self> {
                             Self::LN_2() / Self::LN_10()
                         }
                         #[doc = "Return `log2(10.0)`."]
-                        #[inline]
-                        fn LOG2_10() -> Self where Self: Sized + Div<Self, Output = Self> {
+                        #[inline] fn LOG2_10() -> Self where Self: Sized + Div<Self, Output = Self> {
                             Self::LN_10() / Self::LN_2()
                         }
                     }
@@ -4126,12 +4140,11 @@ pub mod num
             macro_rules! zero_impl {
                 ($t:ty, $v:expr) => {
                     impl Zero for $t {
-                        #[inline]
-                        fn zero() -> $t {
+                        #[inline] fn zero() -> $t {
                             $v
                         }
-                        #[inline]
-                        fn is_zero(&self) -> bool {
+                        
+                        #[inline] fn is_zero(&self) -> bool {
                             *self == $v
                         }
                     }
@@ -4212,6 +4225,7 @@ pub mod num
                 fn set_one(&mut self) {
                     *self = One::one();
                 }
+                
                 #[inline] fn is_one(&self) -> bool where
                     Self: PartialEq,
                 {
@@ -4226,12 +4240,11 @@ pub mod num
             macro_rules! one_impl {
                 ($t:ty, $v:expr) => {
                     impl One for $t {
-                        #[inline]
-                        fn one() -> $t {
+                        #[inline] fn one() -> $t {
                             $v
                         }
-                        #[inline]
-                        fn is_one(&self) -> bool {
+                        
+                        #[inline] fn is_one(&self) -> bool {
                             *self == $v
                         }
                     }
@@ -4419,98 +4432,79 @@ pub mod num
             macro_rules! prim_int_impl {
                 ($T:ty, $S:ty, $U:ty) => {
                     impl PrimInt for $T {
-                        #[inline]
-                        fn count_ones(self) -> u32 {
+                        #[inline] fn count_ones(self) -> u32 {
                             <$T>::count_ones(self)
                         }
 
-                        #[inline]
-                        fn count_zeros(self) -> u32 {
+                        #[inline] fn count_zeros(self) -> u32 {
                             <$T>::count_zeros(self)
                         }
 
-                        #[inline]
-                        fn leading_ones(self) -> u32 {
+                        #[inline] fn leading_ones(self) -> u32 {
                             <$T>::leading_ones(self)
                         }
 
-                        #[inline]
-                        fn leading_zeros(self) -> u32 {
+                        #[inline] fn leading_zeros(self) -> u32 {
                             <$T>::leading_zeros(self)
                         }
 
-                        #[inline]
-                        fn trailing_ones(self) -> u32 {
+                        #[inline] fn trailing_ones(self) -> u32 {
                             <$T>::trailing_ones(self)
                         }
 
-                        #[inline]
-                        fn trailing_zeros(self) -> u32 {
+                        #[inline] fn trailing_zeros(self) -> u32 {
                             <$T>::trailing_zeros(self)
                         }
 
-                        #[inline]
-                        fn rotate_left(self, n: u32) -> Self {
+                        #[inline] fn rotate_left(self, n: u32) -> Self {
                             <$T>::rotate_left(self, n)
                         }
 
-                        #[inline]
-                        fn rotate_right(self, n: u32) -> Self {
+                        #[inline] fn rotate_right(self, n: u32) -> Self {
                             <$T>::rotate_right(self, n)
                         }
 
-                        #[inline]
-                        fn signed_shl(self, n: u32) -> Self {
+                        #[inline] fn signed_shl(self, n: u32) -> Self {
                             ((self as $S) << n) as $T
                         }
 
-                        #[inline]
-                        fn signed_shr(self, n: u32) -> Self {
+                        #[inline] fn signed_shr(self, n: u32) -> Self {
                             ((self as $S) >> n) as $T
                         }
 
-                        #[inline]
-                        fn unsigned_shl(self, n: u32) -> Self {
+                        #[inline] fn unsigned_shl(self, n: u32) -> Self {
                             ((self as $U) << n) as $T
                         }
 
-                        #[inline]
-                        fn unsigned_shr(self, n: u32) -> Self {
+                        #[inline] fn unsigned_shr(self, n: u32) -> Self {
                             ((self as $U) >> n) as $T
                         }
 
-                        #[inline]
-                        fn swap_bytes(self) -> Self {
+                        #[inline] fn swap_bytes(self) -> Self {
                             <$T>::swap_bytes(self)
                         }
 
-                        #[inline]
-                        fn reverse_bits(self) -> Self {
+                        #[inline] fn reverse_bits(self) -> Self {
                             <$T>::reverse_bits(self)
                         }
 
-                        #[inline]
-                        fn from_be(x: Self) -> Self {
+                        #[inline] fn from_be(x: Self) -> Self {
                             <$T>::from_be(x)
                         }
 
-                        #[inline]
-                        fn from_le(x: Self) -> Self {
+                        #[inline] fn from_le(x: Self) -> Self {
                             <$T>::from_le(x)
                         }
 
-                        #[inline]
-                        fn to_be(self) -> Self {
+                        #[inline] fn to_be(self) -> Self {
                             <$T>::to_be(self)
                         }
 
-                        #[inline]
-                        fn to_le(self) -> Self {
+                        #[inline] fn to_le(self) -> Self {
                             <$T>::to_le(self)
                         }
 
-                        #[inline]
-                        fn pow(self, exp: u32) -> Self {
+                        #[inline] fn pow(self, exp: u32) -> Self {
                             <$T>::pow(self, exp)
                         }
                     }
@@ -4629,18 +4623,15 @@ pub mod num
                         impl ToBytes for $T {
                             type Bytes = [u8; $L];
 
-                            #[inline]
-                            fn to_be_bytes(&self) -> Self::Bytes {
+                            #[inline] fn to_be_bytes(&self) -> Self::Bytes {
                                 <$T>::to_be_bytes(*self)
                             }
 
-                            #[inline]
-                            fn to_le_bytes(&self) -> Self::Bytes {
+                            #[inline] fn to_le_bytes(&self) -> Self::Bytes {
                                 <$T>::to_le_bytes(*self)
                             }
 
-                            #[inline]
-                            fn to_ne_bytes(&self) -> Self::Bytes {
+                            #[inline] fn to_ne_bytes(&self) -> Self::Bytes {
                                 <$T>::to_ne_bytes(*self)
                             }
                         }
@@ -4648,18 +4639,15 @@ pub mod num
                         impl FromBytes for $T {
                             type Bytes = [u8; $L];
 
-                            #[inline]
-                            fn from_be_bytes(bytes: &Self::Bytes) -> Self {
+                            #[inline] fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_be_bytes(*bytes)
                             }
 
-                            #[inline]
-                            fn from_le_bytes(bytes: &Self::Bytes) -> Self {
+                            #[inline] fn from_le_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_le_bytes(*bytes)
                             }
 
-                            #[inline]
-                            fn from_ne_bytes(bytes: &Self::Bytes) -> Self {
+                            #[inline] fn from_ne_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_ne_bytes(*bytes)
                             }
                         }
@@ -4671,18 +4659,15 @@ pub mod num
                         impl ToBytes for $T {
                             type Bytes = [u8; $L];
 
-                            #[inline]
-                            fn to_be_bytes(&self) -> Self::Bytes {
+                            #[inline] fn to_be_bytes(&self) -> Self::Bytes {
                                 <$T>::to_be_bytes(*self)
                             }
 
-                            #[inline]
-                            fn to_le_bytes(&self) -> Self::Bytes {
+                            #[inline] fn to_le_bytes(&self) -> Self::Bytes {
                                 <$T>::to_le_bytes(*self)
                             }
 
-                            #[inline]
-                            fn to_ne_bytes(&self) -> Self::Bytes {
+                            #[inline] fn to_ne_bytes(&self) -> Self::Bytes {
                                 <$T>::to_ne_bytes(*self)
                             }
                         }
@@ -4690,18 +4675,15 @@ pub mod num
                         impl FromBytes for $T {
                             type Bytes = [u8; $L];
 
-                            #[inline]
-                            fn from_be_bytes(bytes: &Self::Bytes) -> Self {
+                            #[inline] fn from_be_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_be_bytes(*bytes)
                             }
 
-                            #[inline]
-                            fn from_le_bytes(bytes: &Self::Bytes) -> Self {
+                            #[inline] fn from_le_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_le_bytes(*bytes)
                             }
 
-                            #[inline]
-                            fn from_ne_bytes(bytes: &Self::Bytes) -> Self {
+                            #[inline] fn from_ne_bytes(bytes: &Self::Bytes) -> Self {
                                 <$T>::from_ne_bytes(*bytes)
                             }
                         }
@@ -4752,8 +4734,7 @@ pub mod num
                 macro_rules! checked_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self, v: &$t) -> Option<$t> {
+                            #[inline] fn $method(&self, v: &$t) -> Option<$t> {
                                 <$t>::$method(*self, *v)
                             }
                         }
@@ -4854,8 +4835,7 @@ pub mod num
                 macro_rules! checked_impl_unary {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self) -> Option<$t> {
+                            #[inline] fn $method(&self) -> Option<$t> {
                                 <$t>::$method(*self)
                             }
                         }
@@ -4893,8 +4873,7 @@ pub mod num
                 macro_rules! checked_shift_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self, rhs: u32) -> Option<$t> {
+                            #[inline] fn $method(&self, rhs: u32) -> Option<$t> {
                                 <$t>::$method(*self, rhs)
                             }
                         }
@@ -4948,7 +4927,36 @@ pub mod num
                 };
                 /*
                 */
-                pub trait Euclid: Sized + Div<Self, Output = Self> + Rem<Self, Output = Self> {
+                macro_rules! checked_euclid_forward_impl
+                {
+                    ($($t:ty)*) =>
+                    {$(
+                        impl CheckedEuclid for $t
+                        {
+                            #[inline] fn checked_div_euclid(&self, v: &$t) -> Option<Self> { <$t>::checked_div_euclid(*self, *v) }
+                            #[inline] fn checked_rem_euclid(&self, v: &$t) -> Option<Self> { <$t>::checked_rem_euclid(*self, *v) }
+                        }
+                    )*}
+                }
+
+                macro_rules! euclid_forward_impl
+                {
+                    ($($t:ty)*) =>
+                    {$(
+                        impl Euclid for $t {
+                            #[inline] fn div_euclid(&self, v: &$t) -> Self {
+                                <$t>::div_euclid(*self, *v)
+                            }
+
+                            #[inline] fn rem_euclid(&self, v: &$t) -> Self {
+                                <$t>::rem_euclid(*self, *v)
+                            }
+                        }
+                    )*}
+                }
+
+                pub trait Euclid: Sized + Div<Self, Output = Self> + Rem<Self, Output = Self>
+                {
                     
                     ///
                     ///
@@ -4965,28 +4973,13 @@ pub mod num
                         (self.div_euclid(v), self.rem_euclid(v))
                     }
                 }
-
-                macro_rules! euclid_forward_impl {
-                    ($($t:ty)*) => {$(
-                        impl Euclid for $t {
-                            #[inline]
-                            fn div_euclid(&self, v: &$t) -> Self {
-                                <$t>::div_euclid(*self, *v)
-                            }
-
-                            #[inline]
-                            fn rem_euclid(&self, v: &$t) -> Self {
-                                <$t>::rem_euclid(*self, *v)
-                            }
-                        }
-                    )*}
-                }
-
+                
                 euclid_forward_impl!(isize i8 i16 i32 i64 i128);
                 euclid_forward_impl!(usize u8 u16 u32 u64 u128);
                 euclid_forward_impl!(f32 f64);
 
-                pub trait CheckedEuclid: Euclid {
+                pub trait CheckedEuclid: Euclid
+                {
                     fn checked_div_euclid(&self, v: &Self) -> Option<Self>;
                     fn checked_rem_euclid(&self, v: &Self) -> Option<Self>;
                     ///
@@ -4996,22 +4989,6 @@ pub mod num
                     fn checked_div_rem_euclid(&self, v: &Self) -> Option<(Self, Self)> {
                         Some((self.checked_div_euclid(v)?, self.checked_rem_euclid(v)?))
                     }
-                }
-
-                macro_rules! checked_euclid_forward_impl {
-                    ($($t:ty)*) => {$(
-                        impl CheckedEuclid for $t {
-                            #[inline]
-                            fn checked_div_euclid(&self, v: &$t) -> Option<Self> {
-                                <$t>::checked_div_euclid(*self, *v)
-                            }
-
-                            #[inline]
-                            fn checked_rem_euclid(&self, v: &$t) -> Option<Self> {
-                                <$t>::checked_rem_euclid(*self, *v)
-                            }
-                        }
-                    )*}
                 }
 
                 checked_euclid_forward_impl!(isize i8 i16 i32 i64 i128);
@@ -5076,72 +5053,63 @@ pub mod num
                 };
                 /*
                 */
-                pub trait MulAdd<A = Self, B = Self> {
+                macro_rules! mul_add_impl
+                {
+                    ($trait_name:ident for $($t:ty)*) =>
+                    {$(
+                        impl $trait_name for $t
+                        {
+                            type Output = Self;
+                            #[inline] fn mul_add(self, a: Self, b: Self) -> Self::Output { (self * a) + b }
+                        }
+                    )*}
+                }
 
+                macro_rules! mul_add_assign_impl
+                {
+                    ($trait_name:ident for $($t:ty)*) =>
+                    {$(
+                        impl $trait_name for $t
+                        {
+                            #[inline] fn mul_add_assign(&mut self, a: Self, b: Self) { *self = (*self * a) + b }
+                        }
+                    )*}
+                }
+
+                pub trait MulAdd<A = Self, B = Self>
+                {
                     type Output;
-
-
                     fn mul_add(self, a: A, b: B) -> Self::Output;
                 }
 
-                pub trait MulAddAssign<A = Self, B = Self> {
-
+                pub trait MulAddAssign<A = Self, B = Self> 
+                {
                     fn mul_add_assign(&mut self, a: A, b: B);
                 }
-
-                    impl MulAdd<f32, f32> for f32 {
+                
+                impl MulAdd<f32, f32> for f32
+                {
                     type Output = Self;
-
-                    #[inline] fn mul_add(self, a: Self, b: Self) -> Self::Output {
-                        <Self as Float>::mul_add(self, a, b)
-                    }
+                    #[inline] fn mul_add(self, a: Self, b: Self) -> Self::Output { <Self as Float>::mul_add(self, a, b) }
                 }
 
-                    impl MulAdd<f64, f64> for f64 {
+                impl MulAdd<f64, f64> for f64
+                {
                     type Output = Self;
-
-                    #[inline] fn mul_add(self, a: Self, b: Self) -> Self::Output {
-                        <Self as crate::Float>::mul_add(self, a, b)
-                    }
-                }
-
-                macro_rules! mul_add_impl {
-                    ($trait_name:ident for $($t:ty)*) => {$(
-                        impl $trait_name for $t {
-                            type Output = Self;
-
-                            #[inline]
-                            fn mul_add(self, a: Self, b: Self) -> Self::Output {
-                                (self * a) + b
-                            }
-                        }
-                    )*}
+                    #[inline] fn mul_add(self, a: Self, b: Self) -> Self::Output { <Self as Float>::mul_add(self, a, b) }
                 }
 
                 mul_add_impl!(MulAdd for isize i8 i16 i32 i64 i128);
                 mul_add_impl!(MulAdd for usize u8 u16 u32 u64 u128);
-
-                    impl MulAddAssign<f32, f32> for f32 {
-                    #[inline] fn mul_add_assign(&mut self, a: Self, b: Self) {
-                        *self = <Self as crate::Float>::mul_add(*self, a, b)
-                    }
+                
+                impl MulAddAssign<f32, f32> for f32
+                {
+                    #[inline] fn mul_add_assign(&mut self, a: Self, b: Self) { *self = <Self as Float>::mul_add(*self, a, b) }
                 }
-
-                    impl MulAddAssign<f64, f64> for f64 {
-                    #[inline] fn mul_add_assign(&mut self, a: Self, b: Self) {
-                        *self = <Self as crate::Float>::mul_add(*self, a, b)
-                    }
-                }
-
-                macro_rules! mul_add_assign_impl {
-                    ($trait_name:ident for $($t:ty)*) => {$(
-                        impl $trait_name for $t {
-                            #[inline]
-                            fn mul_add_assign(&mut self, a: Self, b: Self) {
-                                *self = (*self * a) + b
-                            }
-                        }
-                    )*}
+                
+                impl MulAddAssign<f64, f64> for f64
+                {
+                    #[inline] fn mul_add_assign(&mut self, a: Self, b: Self) { *self = <Self as Float>::mul_add(*self, a, b) }
                 }
 
                 mul_add_assign_impl!(MulAddAssign for isize i8 i16 i32 i64 i128);
@@ -5163,8 +5131,7 @@ pub mod num
                 {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self, v: &Self) -> (Self, bool) {
+                            #[inline] fn $method(&self, v: &Self) -> (Self, bool) {
                                 <$t>::$method(*self, *v)
                             }
                         }
@@ -5248,13 +5215,11 @@ pub mod num
                 macro_rules! deprecated_saturating_impl {
                     ($trait_name:ident for $($t:ty)*) => {$(
                         impl $trait_name for $t {
-                            #[inline]
-                            fn saturating_add(self, v: Self) -> Self {
+                            #[inline] fn saturating_add(self, v: Self) -> Self {
                                 Self::saturating_add(self, v)
                             }
 
-                            #[inline]
-                            fn saturating_sub(self, v: Self) -> Self {
+                            #[inline] fn saturating_sub(self, v: Self) -> Self {
                                 Self::saturating_sub(self, v)
                             }
                         }
@@ -5267,8 +5232,7 @@ pub mod num
                 macro_rules! saturating_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self, v: &Self) -> Self {
+                            #[inline] fn $method(&self, v: &Self) -> Self {
                                 <$t>::$method(*self, *v)
                             }
                         }
@@ -5347,16 +5311,14 @@ pub mod num
                 macro_rules! wrapping_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self, v: &Self) -> Self {
+                            #[inline] fn $method(&self, v: &Self) -> Self {
                                 <$t>::$method(*self, *v)
                             }
                         }
                     };
                     ($trait_name:ident, $method:ident, $t:ty, $rhs:ty) => {
                         impl $trait_name<$rhs> for $t {
-                            #[inline]
-                            fn $method(&self, v: &$rhs) -> Self {
+                            #[inline] fn $method(&self, v: &$rhs) -> Self {
                                 <$t>::$method(*self, *v)
                             }
                         }
@@ -5422,8 +5384,7 @@ pub mod num
                 macro_rules! wrapping_unary_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self) -> $t {
+                            #[inline] fn $method(&self) -> $t {
                                 <$t>::$method(*self)
                             }
                         }
@@ -5453,8 +5414,7 @@ pub mod num
                 macro_rules! wrapping_shift_impl {
                     ($trait_name:ident, $method:ident, $t:ty) => {
                         impl $trait_name for $t {
-                            #[inline]
-                            fn $method(&self, rhs: u32) -> $t {
+                            #[inline] fn $method(&self, rhs: u32) -> $t {
                                 <$t>::$method(*self, rhs)
                             }
                         }
@@ -5597,32 +5557,28 @@ pub mod num
                 ($t:ty, $rhs:ty, $desired_rhs:ty, $method:expr) => {
                     impl Pow<$rhs> for $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow(self, rhs: $rhs) -> $t {
+                        #[inline] fn pow(self, rhs: $rhs) -> $t {
                             ($method)(self, <$desired_rhs>::from(rhs))
                         }
                     }
 
                     impl<'a> Pow<&'a $rhs> for $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow(self, rhs: &'a $rhs) -> $t {
+                        #[inline] fn pow(self, rhs: &'a $rhs) -> $t {
                             ($method)(self, <$desired_rhs>::from(*rhs))
                         }
                     }
 
                     impl<'a> Pow<$rhs> for &'a $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow(self, rhs: $rhs) -> $t {
+                        #[inline] fn pow(self, rhs: $rhs) -> $t {
                             ($method)(*self, <$desired_rhs>::from(rhs))
                         }
                     }
 
                     impl<'a, 'b> Pow<&'a $rhs> for &'b $t {
                         type Output = $t;
-                        #[inline]
-                        fn pow(self, rhs: &'a $rhs) -> $t {
+                        #[inline] fn pow(self, rhs: &'a $rhs) -> $t {
                             ($method)(*self, <$desired_rhs>::from(*rhs))
                         }
                     }
@@ -5831,13 +5787,15 @@ pub mod num
                 fn atanh(self) -> Self;
             }
 
-            impl<T: Float> Real for T {
+            impl<T: Float> Real for T 
+            {
                 forward! {
                     Float::min_value() -> Self;
                     Float::min_positive_value() -> Self;
                     Float::epsilon() -> Self;
                     Float::max_value() -> Self;
                 }
+
                 forward! {
                     Float::floor(self) -> Self;
                     Float::ceil(self) -> Self;
@@ -5889,17 +5847,88 @@ pub mod num
 
         pub mod sign
         {
+            use num::traits::Float;
             use ::
             {
                 num::
                 {
                     traits::{ float::FloatCore, Num },
+                    Wrapping
                 },
                 ops::{ Neg },
                 *,
             };
             /*
             */
+            macro_rules! signed_impl
+            {
+                ($($t:ty)*) =>
+                ($(
+                    impl Signed for $t {
+                        #[inline] fn abs(&self) -> $t {
+                            if self.is_negative() { -*self } else { *self }
+                        }
+
+                        #[inline] fn abs_sub(&self, other: &$t) -> $t {
+                            if *self <= *other { 0 } else { *self - *other }
+                        }
+
+                        #[inline] fn signum(&self) -> $t {
+                            match *self {
+                                n if n > 0 => 1,
+                                0 => 0,
+                                _ => -1,
+                            }
+                        }
+
+                        #[inline] fn is_positive(&self) -> bool { *self > 0 }
+
+                        #[inline] fn is_negative(&self) -> bool { *self < 0 }
+                    }
+                )*)
+            }
+
+            macro_rules! signed_float_impl 
+            {
+                ($t:ty) => 
+                {
+                    impl Signed for $t {
+
+                        #[inline] fn abs(&self) -> $t {
+                            Float::abs(*self)
+                        }
+                        
+                        #[inline] fn abs_sub(&self, other: &$t) -> $t {
+                            if *self <= *other {
+                                0.
+                            } else {
+                                *self - *other
+                            }
+                        }
+                        
+                        #[inline] fn signum(&self) -> $t {
+                            Float::signum(*self)
+                        }
+
+
+                        #[inline] fn is_positive(&self) -> bool {
+                            Float::is_sign_positive(*self)
+                        }
+
+
+                        #[inline] fn is_negative(&self) -> bool {
+                            Float::is_sign_negative(*self)
+                        }
+                    }
+                };
+            }
+
+            macro_rules! empty_trait_impl
+            {
+                ($name:ident for $($t:ty)*) => ($(
+                    impl $name for $t {}
+                )*)
+            }
 
             pub trait Signed: Sized + Num + Neg<Output = Self>
             {
@@ -5916,41 +5945,10 @@ pub mod num
                 fn is_negative(&self) -> bool;
             }
 
-            macro_rules! signed_impl {
-                ($($t:ty)*) => ($(
-                    impl Signed for $t {
-                        #[inline]
-                        fn abs(&self) -> $t {
-                            if self.is_negative() { -*self } else { *self }
-                        }
-
-                        #[inline]
-                        fn abs_sub(&self, other: &$t) -> $t {
-                            if *self <= *other { 0 } else { *self - *other }
-                        }
-
-                        #[inline]
-                        fn signum(&self) -> $t {
-                            match *self {
-                                n if n > 0 => 1,
-                                0 => 0,
-                                _ => -1,
-                            }
-                        }
-
-                        #[inline]
-                        fn is_positive(&self) -> bool { *self > 0 }
-
-                        #[inline]
-                        fn is_negative(&self) -> bool { *self < 0 }
-                    }
-                )*)
-            }
-
             signed_impl!(isize i8 i16 i32 i64 i128);
 
             impl<T: Signed> Signed for Wrapping<T> where
-                Wrapping<T>: Num + Neg<Output = Wrapping<T>>,
+            Wrapping<T>: Num + Neg<Output = Wrapping<T>>
             {
                 #[inline] fn abs(&self) -> Self {
                     Wrapping(self.0.abs())
@@ -5973,65 +5971,25 @@ pub mod num
                 }
             }
 
-            macro_rules! signed_float_impl {
-                ($t:ty) => {
-                    impl Signed for $t {
-
-                        #[inline]
-                        fn abs(&self) -> $t {
-                            Float::abs(*self)
-                        }
-                        #[inline]
-                        fn abs_sub(&self, other: &$t) -> $t {
-                            if *self <= *other {
-                                0.
-                            } else {
-                                *self - *other
-                            }
-                        }
-                        #[inline]
-                        fn signum(&self) -> $t {
-                            Float::signum(*self)
-                        }
-
-
-                        #[inline]
-                        fn is_positive(&self) -> bool {
-                            Float::is_sign_positive(*self)
-                        }
-
-
-                        #[inline]
-                        fn is_negative(&self) -> bool {
-                            Float::is_sign_negative(*self)
-                        }
-                    }
-                };
-            }
-
             signed_float_impl!(f32);
             signed_float_impl!(f64);
 
-            #[inline( always )] pub fn abs<T: Signed>(value: T) -> T {
+            #[inline( always )] pub fn abs<T: Signed>(value: T) -> T
+            {
                 value.abs()
             }
 
-            #[inline( always )] pub fn abs_sub<T: Signed>(x: T, y: T) -> T {
+            #[inline( always )] pub fn abs_sub<T: Signed>(x: T, y: T) -> T
+            {
                 x.abs_sub(&y)
             }
 
-            #[inline( always )] pub fn signum<T: Signed>(value: T) -> T {
+            #[inline( always )] pub fn signum<T: Signed>(value: T) -> T
+            {
                 value.signum()
             }
 
             pub trait Unsigned: Num {}
-
-            macro_rules! empty_trait_impl
-            {
-                ($name:ident for $($t:ty)*) => ($(
-                    impl $name for $t {}
-                )*)
-            }
 
             empty_trait_impl!(Unsigned for usize u8 u16 u32 u64 u128);
 
@@ -6258,6 +6216,7 @@ pub mod num
                 #[inline] fn sqrt(&self) -> Self {
                     self.nth_root(2)
                 }
+                
                 #[inline] fn cbrt(&self) -> Self {
                     self.nth_root(3)
                 }
@@ -6275,8 +6234,7 @@ pub mod num
             macro_rules! signed_roots {
                 ($T:ty, $U:ty) => {
                     impl Roots for $T {
-                        #[inline]
-                        fn nth_root(&self, n: u32) -> Self {
+                        #[inline] fn nth_root(&self, n: u32) -> Self {
                             if *self >= 0 {
                                 (*self as $U).nth_root(n) as Self
                             } else {
@@ -6285,14 +6243,12 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn sqrt(&self) -> Self {
+                        #[inline] fn sqrt(&self) -> Self {
                             assert!(*self >= 0, "the square root of a negative is imaginary");
                             (*self as $U).sqrt() as Self
                         }
 
-                        #[inline]
-                        fn cbrt(&self) -> Self {
+                        #[inline] fn cbrt(&self) -> Self {
                             if *self >= 0 {
                                 (*self as $U).cbrt() as Self
                             } else {
@@ -6339,8 +6295,7 @@ pub mod num
             macro_rules! unsigned_roots {
                 ($T:ident) => {
                     impl Roots for $T {
-                        #[inline]
-                        fn nth_root(&self, n: u32) -> Self {
+                        #[inline] fn nth_root(&self, n: u32) -> Self {
                             fn go(a: $T, n: u32) -> $T {
                                
                                 match n {
@@ -6402,8 +6357,7 @@ pub mod num
                             go(*self, n)
                         }
 
-                        #[inline]
-                        fn sqrt(&self) -> Self {
+                        #[inline] fn sqrt(&self) -> Self {
                             fn go(a: $T) -> $T {
                                 if bits::<$T>() > 64 {
                                    
@@ -6435,8 +6389,7 @@ pub mod num
                             go(*self)
                         }
 
-                        #[inline]
-                        fn cbrt(&self) -> Self {
+                        #[inline] fn cbrt(&self) -> Self {
                             fn go(a: $T) -> $T {
                                 if bits::<$T>() > 64 {
                                    
@@ -7838,8 +7791,7 @@ pub mod num
                         impl Mul<$Other> for $Self {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn mul(self, other: $Other) -> BigInt {
+                            #[inline] fn mul(self, other: $Other) -> BigInt {
                                
                                 let BigInt { data: x, .. } = self;
                                 let BigInt { data: y, .. } = other;
@@ -7858,8 +7810,7 @@ pub mod num
                 macro_rules! impl_mul_assign {
                     ($(impl MulAssign<$Other:ty> for BigInt;)*) => {$(
                         impl MulAssign<$Other> for BigInt {
-                            #[inline]
-                            fn mul_assign(&mut self, other: $Other) {
+                            #[inline] fn mul_assign(&mut self, other: $Other) {
                                
                                 let BigInt { data: y, .. } = other;
                                 self.data *= y;
@@ -8321,11 +8272,8 @@ pub mod num
 
                 impl CheckedSub for BigInt
                 {
-                    #[inline] fn checked_sub(&self, v: &BigInt) -> Option<BigInt> {
-                        Some(self.sub(v))
-                    }
+                    #[inline] fn checked_sub(&self, v: &BigInt) -> Option<BigInt> { Some(self.sub(v)) }
                 }
-
             }
 
             pub mod bits
@@ -8333,19 +8281,29 @@ pub mod num
                 use ::
                 {
                     cmp::{ Ordering::{ Equal, Greater, Less } },
-                    num::traits::{ToPrimitive, Zero},
+                    num::
+                    {
+                        big::
+                        {
+                            digit::{ BITS, BigDigit, DoubleBigDigit },
+                            BigInt, BigUint, Sign::{ self, Minus, NoSign, Plus},
+                        },
+                        traits::{ToPrimitive, Zero},
+                    },
                     ops::{ BitAnd, BitAndAssign, BitOr, BitOrAssign, BitXor, BitXorAssign },
                     vec::{ Vec },
                     *,
                 };
+                /*
                 use super::BigInt;
-                use super::Sign::{Minus, NoSign, Plus};
+                use super::Sign::{Minus, NoSign, Plus}; */
                 /*
                 */
-                #[inline] fn negate_carry(a: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit {
+                #[inline] fn negate_carry(a: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit 
+                {
                     *acc += DoubleBigDigit::from(!a);
                     let lo = *acc as BigDigit;
-                    *acc >>= big_digit::BITS;
+                    *acc >>= BITS;
                     lo
                 }
                 
@@ -8356,10 +8314,7 @@ pub mod num
                         *ai &= twos_b;
                     }
                     debug_assert!(b.len() > a.len() || carry_b == 0);
-                }
-
-               
-               
+                }              
                
                 fn bitand_neg_pos(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_a = 1;
@@ -8376,11 +8331,7 @@ pub mod num
                             a.extend(extra.iter().cloned());
                         }
                     }
-                }
-
-               
-               
-               
+                }              
                
                 fn bitand_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_a = 1;
@@ -8479,10 +8430,7 @@ pub mod num
                             }
                         }
                     }
-                }
-
-               
-               
+                }              
                
                 fn bitor_pos_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_b = 1;
@@ -8508,10 +8456,7 @@ pub mod num
                     }
                    
                     debug_assert!(carry_or == 0);
-                }
-
-               
-               
+                }              
                
                 fn bitor_neg_pos(a: &mut [BigDigit], b: &[BigDigit]) {
                     let mut carry_a = 1;
@@ -8530,10 +8475,7 @@ pub mod num
                     }
                    
                     debug_assert!(carry_or == 0);
-                }
-
-               
-               
+                }              
                
                 fn bitor_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_a = 1;
@@ -8612,10 +8554,7 @@ pub mod num
                             }
                         }
                     }
-                }
-
-               
-               
+                }              
                
                 fn bitxor_pos_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_b = 1;
@@ -8645,10 +8584,7 @@ pub mod num
                     if carry_xor != 0 {
                         a.push(1);
                     }
-                }
-
-               
-               
+                }              
                
                 fn bitxor_neg_pos(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_a = 1;
@@ -8678,10 +8614,7 @@ pub mod num
                     if carry_xor != 0 {
                         a.push(1);
                     }
-                }
-
-               
-               
+                }              
                
                 fn bitxor_neg_neg(a: &mut Vec<BigDigit>, b: &[BigDigit]) {
                     let mut carry_a = 1;
@@ -8758,31 +8691,24 @@ pub mod num
                     }
                 }
 
-                pub fn set_negative_bit(x: &mut BigInt, bit: u64, value: bool) {
+                pub fn set_negative_bit(x: &mut BigInt, bit: u64, value: bool)
+                {
                     debug_assert_eq!(x.sign, Minus);
                     let data = &mut x.data;
 
-                    let bits_per_digit = u64::from(big_digit::BITS);
+                    let bits_per_digit = u64::from(BITS);
                     if bit >= bits_per_digit * data.len() as u64 {
                         if !value {
                             data.set_bit(bit, true);
                         }
-                    } else {
-                       
-                       
-                       
-                       
-                       
-                       
+                    }
+                    
+                    else
+                    {
                         let trailing_zeros = data.trailing_zeros().unwrap();
                         if bit > trailing_zeros {
                             data.set_bit(bit, !value);
                         } else if bit == trailing_zeros && !value {
-                           
-                           
-                           
-                           
-                           
                             let bit_index = (bit / bits_per_digit).to_usize().unwrap();
                             let bit_mask = (1 as BigDigit) << (bit % bits_per_digit);
                             let mut digit_iter = data.digits_mut().iter_mut().skip(bit_index);
@@ -8809,17 +8735,11 @@ pub mod num
                                 data.digits_mut().push(1);
                             }
                         } else if bit < trailing_zeros && value {
-                           
-                           
-                           
-                           
-                           
-                           
                             let index_lo = (bit / bits_per_digit).to_usize().unwrap();
                             let index_hi = (trailing_zeros / bits_per_digit).to_usize().unwrap();
-                            let bit_mask_lo = big_digit::MAX << (bit % bits_per_digit);
+                            let bit_mask_lo = num::big::digit::MAX << (bit % bits_per_digit);
                             let bit_mask_hi =
-                                big_digit::MAX >> (bits_per_digit - 1 - (trailing_zeros % bits_per_digit));
+                                num::big::digit::MAX >> (bits_per_digit - 1 - (trailing_zeros % bits_per_digit));
                             let digits = data.digits_mut();
 
                             if index_lo == index_hi {
@@ -8827,15 +8747,11 @@ pub mod num
                             } else {
                                 digits[index_lo] = bit_mask_lo;
                                 for digit in &mut digits[index_lo + 1..index_hi] {
-                                    *digit = big_digit::MAX;
+                                    *digit = ::num::big::digit::MAX;
                                 }
                                 digits[index_hi] ^= bit_mask_hi;
                             }
-                        } else {
-                           
-                           
-                           
-                        }
+                        } else {}
                     }
                 }
 
@@ -8954,8 +8870,7 @@ pub mod num
                         impl TryFrom<&BigInt> for $T {
                             type Error = TryFromBigIntError<()>;
 
-                            #[inline]
-                            fn try_from(value: &BigInt) -> Result<$T, TryFromBigIntError<()>> {
+                            #[inline] fn try_from(value: &BigInt) -> Result<$T, TryFromBigIntError<()>> {
                                 $to_ty(value).ok_or(TryFromBigIntError::new(()))
                             }
                         }
@@ -8963,8 +8878,7 @@ pub mod num
                         impl TryFrom<BigInt> for $T {
                             type Error = TryFromBigIntError<BigInt>;
 
-                            #[inline]
-                            fn try_from(value: BigInt) -> Result<$T, TryFromBigIntError<BigInt>> {
+                            #[inline] fn try_from(value: BigInt) -> Result<$T, TryFromBigIntError<BigInt>> {
                                 <$T>::try_from(&value).map_err(|_| TryFromBigIntError::new(value))
                             }
                         }
@@ -9046,8 +8960,7 @@ pub mod num
                 macro_rules! impl_bigint_from_int {
                     ($T:ty) => {
                         impl From<$T> for BigInt {
-                            #[inline]
-                            fn from(n: $T) -> Self {
+                            #[inline] fn from(n: $T) -> Self {
                                 BigInt::from(n as i64)
                             }
                         }
@@ -9090,8 +9003,7 @@ pub mod num
                 macro_rules! impl_bigint_from_uint {
                     ($T:ty) => {
                         impl From<$T> for BigInt {
-                            #[inline]
-                            fn from(n: $T) -> Self {
+                            #[inline] fn from(n: $T) -> Self {
                                 BigInt::from(n as u64)
                             }
                         }
@@ -9176,8 +9088,7 @@ pub mod num
                 macro_rules! impl_to_bigint {
                     ($T:ty, $from_ty:path) => {
                         impl ToBigInt for $T {
-                            #[inline]
-                            fn to_bigint(&self) -> Option<BigInt> {
+                            #[inline] fn to_bigint(&self) -> Option<BigInt> {
                                 $from_ty(*self)
                             }
                         }
@@ -9276,12 +9187,15 @@ pub mod num
                     }
                     bytes
                 }
+                
                 #[inline] fn twos_complement_le(digits: &mut [u8]) {
                     twos_complement(digits)
                 }
+                
                 #[inline] fn twos_complement_be(digits: &mut [u8]) {
                     twos_complement(digits.iter_mut().rev())
                 }
+                
                 #[inline] fn twos_complement<'a, I>(digits: I) where
                     I: IntoIterator<Item = &'a mut u8>,
                 {
@@ -9330,8 +9244,7 @@ pub mod num
                         impl Pow<$T> for BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn pow(self, rhs: $T) -> BigInt {
+                            #[inline] fn pow(self, rhs: $T) -> BigInt {
                                 BigInt::from_biguint(powsign(self.sign, &rhs), self.data.pow(rhs))
                             }
                         }
@@ -9339,8 +9252,7 @@ pub mod num
                         impl Pow<&$T> for BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn pow(self, rhs: &$T) -> BigInt {
+                            #[inline] fn pow(self, rhs: &$T) -> BigInt {
                                 BigInt::from_biguint(powsign(self.sign, rhs), self.data.pow(rhs))
                             }
                         }
@@ -9348,8 +9260,7 @@ pub mod num
                         impl Pow<$T> for &BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn pow(self, rhs: $T) -> BigInt {
+                            #[inline] fn pow(self, rhs: $T) -> BigInt {
                                 BigInt::from_biguint(powsign(self.sign, &rhs), Pow::pow(&self.data, rhs))
                             }
                         }
@@ -9357,8 +9268,7 @@ pub mod num
                         impl Pow<&$T> for &BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn pow(self, rhs: &$T) -> BigInt {
+                            #[inline] fn pow(self, rhs: &$T) -> BigInt {
                                 BigInt::from_biguint(powsign(self.sign, rhs), Pow::pow(&self.data, rhs))
                             }
                         }
@@ -9418,22 +9328,19 @@ pub mod num
                         impl $Shx<&$rhs> for BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn $shx(self, rhs: &$rhs) -> BigInt {
+                            #[inline] fn $shx(self, rhs: &$rhs) -> BigInt {
                                 $Shx::$shx(self, *rhs)
                             }
                         }
                         impl $Shx<&$rhs> for &BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn $shx(self, rhs: &$rhs) -> BigInt {
+                            #[inline] fn $shx(self, rhs: &$rhs) -> BigInt {
                                 $Shx::$shx(self, *rhs)
                             }
                         }
                         impl $ShxAssign<&$rhs> for BigInt {
-                            #[inline]
-                            fn $shx_assign(&mut self, rhs: &$rhs) {
+                            #[inline] fn $shx_assign(&mut self, rhs: &$rhs) {
                                 $ShxAssign::$shx_assign(self, *rhs);
                             }
                         }
@@ -9442,22 +9349,19 @@ pub mod num
                         impl Shl<$rhs> for BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn shl(self, rhs: $rhs) -> BigInt {
+                            #[inline] fn shl(self, rhs: $rhs) -> BigInt {
                                 BigInt::from_biguint(self.sign, self.data << rhs)
                             }
                         }
                         impl Shl<$rhs> for &BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn shl(self, rhs: $rhs) -> BigInt {
+                            #[inline] fn shl(self, rhs: $rhs) -> BigInt {
                                 BigInt::from_biguint(self.sign, &self.data << rhs)
                             }
                         }
                         impl ShlAssign<$rhs> for BigInt {
-                            #[inline]
-                            fn shl_assign(&mut self, rhs: $rhs) {
+                            #[inline] fn shl_assign(&mut self, rhs: $rhs) {
                                 self.data <<= rhs
                             }
                         }
@@ -9466,8 +9370,7 @@ pub mod num
                         impl Shr<$rhs> for BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn shr(self, rhs: $rhs) -> BigInt {
+                            #[inline] fn shr(self, rhs: $rhs) -> BigInt {
                                 let round_down = shr_round_down(&self, rhs);
                                 let data = self.data >> rhs;
                                 let data = if round_down { data + 1u8 } else { data };
@@ -9477,8 +9380,7 @@ pub mod num
                         impl Shr<$rhs> for &BigInt {
                             type Output = BigInt;
 
-                            #[inline]
-                            fn shr(self, rhs: $rhs) -> BigInt {
+                            #[inline] fn shr(self, rhs: $rhs) -> BigInt {
                                 let round_down = shr_round_down(self, rhs);
                                 let data = &self.data >> rhs;
                                 let data = if round_down { data + 1u8 } else { data };
@@ -9486,8 +9388,7 @@ pub mod num
                             }
                         }
                         impl ShrAssign<$rhs> for BigInt {
-                            #[inline]
-                            fn shr_assign(&mut self, rhs: $rhs) {
+                            #[inline] fn shr_assign(&mut self, rhs: $rhs) {
                                 let round_down = shr_round_down(self, rhs);
                                 self.data >>= rhs;
                                 if round_down {
@@ -9782,8 +9683,7 @@ pub mod num
                     impl UnsignedAbs for $Signed {
                         type Unsigned = $Unsigned;
 
-                        #[inline]
-                        fn checked_uabs(self) -> CheckedUnsignedAbs<Self::Unsigned> {
+                        #[inline] fn checked_uabs(self) -> CheckedUnsignedAbs<Self::Unsigned> {
                             if self >= 0 {
                                 Positive(self as $Unsigned)
                             } else {
@@ -9910,6 +9810,7 @@ pub mod num
                 #[inline] fn lcm(&self, other: &BigInt) -> BigInt {
                     BigInt::from(self.data.lcm(&other.data))
                 }
+                
                 #[inline] fn gcd_lcm(&self, other: &BigInt) -> (BigInt, BigInt) {
                     let (gcd, lcm) = self.data.gcd_lcm(&other.data);
                     (BigInt::from(gcd), BigInt::from(lcm))
@@ -9992,13 +9893,17 @@ pub mod num
             impl IntDigits for BigInt
             {
                 #[inline] fn digits(&self) -> &[BigDigit] { self.data.digits() }
+                
                 #[inline] fn digits_mut(&mut self) -> &mut Vec<BigDigit> { self.data.digits_mut() }
+                
                 #[inline] fn normalize(&mut self)
                 {
                     self.data.normalize();
                     if self.data.is_zero() { self.sign = NoSign; }
                 }
+                
                 #[inline] fn capacity(&self) -> usize { self.data.capacity() }
+                
                 #[inline] fn len(&self) -> usize { self.data.len() }
             }
             pub trait ToBigInt
@@ -10163,6 +10068,7 @@ pub mod num
                 pub fn into_parts(self) -> (Sign, BigUint) {
                     (self.sign, self.data)
                 }
+                
                 #[inline]
                 pub fn bits(&self) -> u64 {
                     self.data.bits()
@@ -10273,7 +10179,7 @@ pub mod num
                 }
             }
 
-            impl num_traits::FromBytes for BigInt
+            impl num::traits::FromBytes for BigInt
             {
                 type  Bytes = [u8];
 
@@ -10286,7 +10192,7 @@ pub mod num
                 }
             }
 
-            impl num_traits::ToBytes for BigInt
+            impl num::traits::ToBytes for BigInt
             {
                 type  Bytes = Vec<u8>;
 
@@ -10298,7 +10204,7 @@ pub mod num
                     self.to_signed_bytes_le()
                 }
             }
-        }
+        } pub use self::int::{ * };
 
         pub mod rand
         {
@@ -10313,8 +10219,8 @@ pub mod num
                 },
                 rand::
                 {
-                    Rng,
-                    //distributions::uniform::{SampleBorrow, SampleUniform, UniformSampler},
+                    uniform::{SampleBorrow, SampleUniform, UniformSampler},
+                    Distribution, Rng,
                 },
                 *,
             };
@@ -10567,7 +10473,7 @@ pub mod num
                     rng.gen_bigint(self.bits)
                 }
             }
-        }
+        } pub use self::rand::{ * };
 
         pub mod uint
         {
@@ -10720,8 +10626,7 @@ pub mod num
 
                 impl AddAssign<u64> for BigUint {
                     cfg_digit!(
-                        #[inline]
-                        fn add_assign(&mut self, other: u64) {
+                        #[inline] fn add_assign(&mut self, other: u64) {
                             let (hi, lo) = big_digit::from_doublebigdigit(other);
                             if hi == 0 {
                                 *self += lo;
@@ -10737,8 +10642,7 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn add_assign(&mut self, other: u64) {
+                        #[inline] fn add_assign(&mut self, other: u64) {
                             if other != 0 {
                                 if self.data.is_empty() {
                                     self.data.push(0);
@@ -10765,8 +10669,7 @@ pub mod num
 
                 impl AddAssign<u128> for BigUint {
                     cfg_digit!(
-                        #[inline]
-                        fn add_assign(&mut self, other: u128) {
+                        #[inline] fn add_assign(&mut self, other: u128) {
                             if other <= u128::from(u64::MAX) {
                                 *self += other as u64
                             } else {
@@ -10790,8 +10693,7 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn add_assign(&mut self, other: u128) {
+                        #[inline] fn add_assign(&mut self, other: u128) {
                             let (hi, lo) = big_digit::from_doublebigdigit(other);
                             if hi == 0 {
                                 *self += lo;
@@ -10818,7 +10720,7 @@ pub mod num
 
                 impl_sum_iter_type!(BigUint);
 
-            }
+            } pub use self::addition::{*};
 
             pub mod division
             {
@@ -10884,6 +10786,7 @@ pub mod num
                         (div, rem)
                     }
                 }
+                
                 #[inline] fn div_half(rem: BigDigit, digit: BigDigit, divisor: BigDigit) -> (BigDigit, BigDigit)
                 {
                     use ::num::big::digit::{HALF, HALF_BITS};
@@ -11239,8 +11142,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!(
-                        #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        #[inline] fn div(self, other: BigUint) -> BigUint {
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / u64::from(other.data[0])),
@@ -11249,8 +11151,7 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        #[inline] fn div(self, other: BigUint) -> BigUint {
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / other.data[0]),
@@ -11281,8 +11182,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!(
-                        #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        #[inline] fn div(self, other: BigUint) -> BigUint {
                             use super::u32_to_u128;
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
@@ -11298,8 +11198,7 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn div(self, other: BigUint) -> BigUint {
+                        #[inline] fn div(self, other: BigUint) -> BigUint {
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / other.data[0] as u128),
@@ -11382,8 +11281,7 @@ pub mod num
                     ($scalar:ty, $to_scalar:ident) => {
                         forward_val_assign_scalar!(impl RemAssign for BigUint, $scalar, rem_assign);
                         impl RemAssign<&BigUint> for $scalar {
-                            #[inline]
-                            fn rem_assign(&mut self, other: &BigUint) {
+                            #[inline] fn rem_assign(&mut self, other: &BigUint) {
                                 *self = match other.$to_scalar() {
                                     None => *self,
                                     Some(0) => panic!("attempt to divide by zero"),
@@ -11393,8 +11291,7 @@ pub mod num
                         }
                     }
                 }
-
-               
+                
                 impl_rem_assign_scalar!(u128, to_u128);
                 impl_rem_assign_scalar!(usize, to_usize);
                 impl_rem_assign_scalar!(u64, to_u64);
@@ -11508,7 +11405,7 @@ pub mod num
                     }
                 }
 
-            }
+            } pub use self::division::{*};
 
             pub mod multiplication
             {
@@ -11580,6 +11477,7 @@ pub mod num
                 fn bigint_from_slice(slice: &[BigDigit]) -> BigInt {
                     BigInt::from(biguint_from_vec(slice.to_vec()))
                 }
+                
                 #[allow(clippy::many_single_char_names)]
                 fn mac3(mut acc: &mut [BigDigit], mut b: &[BigDigit], mut c: &[BigDigit]) {
                    
@@ -11981,8 +11879,7 @@ pub mod num
                         impl Mul<$Other> for $Self {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn mul(self, other: $Other) -> BigUint {
+                            #[inline] fn mul(self, other: $Other) -> BigUint {
                                 match (&*self.data, &*other.data) {
                                    
                                     (&[], _) | (_, &[]) => BigUint::ZERO,
@@ -12006,8 +11903,7 @@ pub mod num
                 macro_rules! impl_mul_assign {
                     ($(impl MulAssign<$Other:ty> for BigUint;)*) => {$(
                         impl MulAssign<$Other> for BigUint {
-                            #[inline]
-                            fn mul_assign(&mut self, other: $Other) {
+                            #[inline] fn mul_assign(&mut self, other: $Other) {
                                 match (&*self.data, &*other.data) {
                                    
                                     (&[], _) => {},
@@ -12060,8 +11956,7 @@ pub mod num
                 }
                 impl MulAssign<u64> for BigUint {
                     cfg_digit!(
-                        #[inline]
-                        fn mul_assign(&mut self, other: u64) {
+                        #[inline] fn mul_assign(&mut self, other: u64) {
                             if let Some(other) = BigDigit::from_u64(other) {
                                 scalar_mul(self, other);
                             } else {
@@ -12070,8 +11965,7 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn mul_assign(&mut self, other: u64) {
+                        #[inline] fn mul_assign(&mut self, other: u64) {
                             scalar_mul(self, other);
                         }
                     );
@@ -12089,8 +11983,7 @@ pub mod num
 
                 impl MulAssign<u128> for BigUint {
                     cfg_digit!(
-                        #[inline]
-                        fn mul_assign(&mut self, other: u128) {
+                        #[inline] fn mul_assign(&mut self, other: u128) {
                             if let Some(other) = BigDigit::from_u128(other) {
                                 scalar_mul(self, other);
                             } else {
@@ -12102,8 +11995,7 @@ pub mod num
                             }
                         }
 
-                        #[inline]
-                        fn mul_assign(&mut self, other: u128) {
+                        #[inline] fn mul_assign(&mut self, other: u128) {
                             if let Some(other) = BigDigit::from_u128(other) {
                                 scalar_mul(self, other);
                             } else {
@@ -12122,7 +12014,7 @@ pub mod num
                 }
 
                 impl_product_iter_type!(BigUint);
-            }
+            } pub use self::multiplication::{*};
 
             pub mod subtraction
             {
@@ -12292,8 +12184,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!(
-                        #[inline]
-                        fn sub(self, mut other: BigUint) -> BigUint {
+                        #[inline] fn sub(self, mut other: BigUint) -> BigUint {
                             if other.data.len() == 0 {
                                 other.data.push(self);
                             } else {
@@ -12302,8 +12193,7 @@ pub mod num
                             other.normalized()
                         }
 
-                        #[inline]
-                        fn sub(self, mut other: BigUint) -> BigUint {
+                        #[inline] fn sub(self, mut other: BigUint) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push(self as BigDigit);
                             } else {
@@ -12327,15 +12217,13 @@ pub mod num
                 impl SubAssign<u64> for BigUint 
                 {
                     cfg_digit!(
-                        #[inline]
-                        fn sub_assign(&mut self, other: u64) {
+                        #[inline] fn sub_assign(&mut self, other: u64) {
                             let (hi, lo) = big_digit::from_doublebigdigit(other);
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
                         }
 
-                        #[inline]
-                        fn sub_assign(&mut self, other: u64) {
+                        #[inline] fn sub_assign(&mut self, other: u64) {
                             sub2(&mut self.data[..], &[other as BigDigit]);
                             self.normalize();
                         }
@@ -12347,8 +12235,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!(
-                        #[inline]
-                        fn sub(self, mut other: BigUint) -> BigUint {
+                        #[inline] fn sub(self, mut other: BigUint) -> BigUint {
                             while other.data.len() < 2 {
                                 other.data.push(0);
                             }
@@ -12358,8 +12245,7 @@ pub mod num
                             other.normalized()
                         }
 
-                        #[inline]
-                        fn sub(self, mut other: BigUint) -> BigUint {
+                        #[inline] fn sub(self, mut other: BigUint) -> BigUint {
                             if other.data.is_empty() {
                                 other.data.push(self);
                             } else {
@@ -12383,15 +12269,13 @@ pub mod num
                 impl SubAssign<u128> for BigUint 
                 {
                     cfg_digit!(
-                        #[inline]
-                        fn sub_assign(&mut self, other: u128) {
+                        #[inline] fn sub_assign(&mut self, other: u128) {
                             let (a, b, c, d) = super::u32_from_u128(other);
                             sub2(&mut self.data[..], &[d, c, b, a]);
                             self.normalize();
                         }
 
-                        #[inline]
-                        fn sub_assign(&mut self, other: u128) {
+                        #[inline] fn sub_assign(&mut self, other: u128) {
                             let (hi, lo) = big_digit::from_doublebigdigit(other);
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
@@ -12404,8 +12288,7 @@ pub mod num
                     type Output = BigUint;
 
                     cfg_digit!(
-                        #[inline]
-                        fn sub(self, mut other: BigUint) -> BigUint {
+                        #[inline] fn sub(self, mut other: BigUint) -> BigUint {
                             while other.data.len() < 4 {
                                 other.data.push(0);
                             }
@@ -12415,8 +12298,7 @@ pub mod num
                             other.normalized()
                         }
 
-                        #[inline]
-                        fn sub(self, mut other: BigUint) -> BigUint {
+                        #[inline] fn sub(self, mut other: BigUint) -> BigUint {
                             while other.data.len() < 2 {
                                 other.data.push(0);
                             }
@@ -12438,7 +12320,7 @@ pub mod num
                         }
                     }
                 }
-            }
+            } pub use self::subtraction::{*};
 
             pub mod bits
             {
@@ -12542,7 +12424,7 @@ pub mod num
                     }
                 }
 
-            }
+            } pub use self::bits::{*};
 
             pub mod convert
             {
@@ -12763,7 +12645,6 @@ pub mod num
                 {
                     type FromStrRadixErr = ParseBigIntError;
 
-
                     fn from_str_radix(s: &str, radix: u32) -> Result<BigUint, ParseBigIntError> {
                         assert!(2 <= radix && radix <= 36, "The radix must be within 2...36");
                         let mut s = s;
@@ -12937,8 +12818,7 @@ pub mod num
                         impl TryFrom<&BigUint> for $T {
                             type Error = TryFromBigIntError<()>;
 
-                            #[inline]
-                            fn try_from(value: &BigUint) -> Result<$T, TryFromBigIntError<()>> {
+                            #[inline] fn try_from(value: &BigUint) -> Result<$T, TryFromBigIntError<()>> {
                                 $to_ty(value).ok_or(TryFromBigIntError::new(()))
                             }
                         }
@@ -12946,8 +12826,7 @@ pub mod num
                         impl TryFrom<BigUint> for $T {
                             type Error = TryFromBigIntError<BigUint>;
 
-                            #[inline]
-                            fn try_from(value: BigUint) -> Result<$T, TryFromBigIntError<BigUint>> {
+                            #[inline] fn try_from(value: BigUint) -> Result<$T, TryFromBigIntError<BigUint>> {
                                 <$T>::try_from(&value).map_err(|_| TryFromBigIntError::new(value))
                             }
                         }
@@ -13056,8 +12935,7 @@ pub mod num
                 macro_rules! impl_biguint_from_uint {
                     ($T:ty) => {
                         impl From<$T> for BigUint {
-                            #[inline]
-                            fn from(n: $T) -> Self {
+                            #[inline] fn from(n: $T) -> Self {
                                 BigUint::from(n as u64)
                             }
                         }
@@ -13074,8 +12952,7 @@ pub mod num
                         impl TryFrom<$T> for BigUint {
                             type Error = TryFromBigIntError<()>;
 
-                            #[inline]
-                            fn try_from(value: $T) -> Result<BigUint, TryFromBigIntError<()>> {
+                            #[inline] fn try_from(value: $T) -> Result<BigUint, TryFromBigIntError<()>> {
                                 $from_ty(value).ok_or(TryFromBigIntError::new(()))
                             }
                         }
@@ -13099,8 +12976,7 @@ pub mod num
                 macro_rules! impl_to_biguint {
                     ($T:ty, $from_ty:path) => {
                         impl ToBigUint for $T {
-                            #[inline]
-                            fn to_biguint(&self) -> Option<BigUint> {
+                            #[inline] fn to_biguint(&self) -> Option<BigUint> {
                                 $from_ty(*self)
                             }
                         }
@@ -13357,7 +13233,7 @@ pub mod num
                     bases
                 }
 
-            } pub use self::convert::to_str_radix_reversed;
+            } pub use self::convert::{*};
 
             pub mod iter
             {
@@ -13392,28 +13268,23 @@ pub mod num
 
                         impl Iterator for U32Digits<'_> {
                             type Item = u32;
-                            #[inline]
-                            fn next(&mut self) -> Option<u32> {
+                            #[inline] fn next(&mut self) -> Option<u32> {
                                 self.it.next().cloned()
                             }
 
-                            #[inline]
-                            fn size_hint(&self) -> (usize, Option<usize>) {
+                            #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
                                 self.it.size_hint()
                             }
 
-                            #[inline]
-                            fn nth(&mut self, n: usize) -> Option<u32> {
+                            #[inline] fn nth(&mut self, n: usize) -> Option<u32> {
                                 self.it.nth(n).cloned()
                             }
 
-                            #[inline]
-                            fn last(self) -> Option<u32> {
+                            #[inline] fn last(self) -> Option<u32> {
                                 self.it.last().cloned()
                             }
 
-                            #[inline]
-                            fn count(self) -> usize {
+                            #[inline] fn count(self) -> usize {
                                 self.it.count()
                             }
                         }
@@ -13425,8 +13296,7 @@ pub mod num
                         }
 
                         impl ExactSizeIterator for U32Digits<'_> {
-                            #[inline]
-                            fn len(&self) -> usize {
+                            #[inline] fn len(&self) -> usize {
                                 self.it.len()
                             }
                         }
@@ -13453,8 +13323,7 @@ pub mod num
 
                         impl Iterator for U32Digits<'_> {
                             type Item = u32;
-                            #[inline]
-                            fn next(&mut self) -> Option<u32> {
+                            #[inline] fn next(&mut self) -> Option<u32> {
                                 match self.data.split_first() {
                                     Some((&first, data)) => {
                                         let next_is_lo = self.next_is_lo;
@@ -13475,14 +13344,12 @@ pub mod num
                                 }
                             }
 
-                            #[inline]
-                            fn size_hint(&self) -> (usize, Option<usize>) {
+                            #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
                                 let len = self.len();
                                 (len, Some(len))
                             }
 
-                            #[inline]
-                            fn last(self) -> Option<u32> {
+                            #[inline] fn last(self) -> Option<u32> {
                                 self.data.last().map(|&last| {
                                     if self.last_hi_is_zero {
                                         last as u32
@@ -13492,8 +13359,7 @@ pub mod num
                                 })
                             }
 
-                            #[inline]
-                            fn count(self) -> usize {
+                            #[inline] fn count(self) -> usize {
                                 self.len()
                             }
                         }
@@ -13522,8 +13388,7 @@ pub mod num
                         }
 
                         impl ExactSizeIterator for U32Digits<'_> {
-                            #[inline]
-                            fn len(&self) -> usize {
+                            #[inline] fn len(&self) -> usize {
                                 self.data.len() * 2
                                     - usize::from(self.last_hi_is_zero)
                                     - usize::from(!self.next_is_lo)
@@ -13554,24 +13419,20 @@ pub mod num
 
                         impl Iterator for U64Digits<'_> {
                             type Item = u64;
-                            #[inline]
-                            fn next(&mut self) -> Option<u64> {
+                            #[inline] fn next(&mut self) -> Option<u64> {
                                 self.it.next().map(super::u32_chunk_to_u64)
                             }
 
-                            #[inline]
-                            fn size_hint(&self) -> (usize, Option<usize>) {
+                            #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
                                 let len = self.len();
                                 (len, Some(len))
                             }
 
-                            #[inline]
-                            fn last(self) -> Option<u64> {
+                            #[inline] fn last(self) -> Option<u64> {
                                 self.it.last().map(super::u32_chunk_to_u64)
                             }
 
-                            #[inline]
-                            fn count(self) -> usize {
+                            #[inline] fn count(self) -> usize {
                                 self.len()
                             }
                         }
@@ -13593,28 +13454,23 @@ pub mod num
 
                         impl Iterator for U64Digits<'_> {
                             type Item = u64;
-                            #[inline]
-                            fn next(&mut self) -> Option<u64> {
+                            #[inline] fn next(&mut self) -> Option<u64> {
                                 self.it.next().cloned()
                             }
 
-                            #[inline]
-                            fn size_hint(&self) -> (usize, Option<usize>) {
+                            #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
                                 self.it.size_hint()
                             }
 
-                            #[inline]
-                            fn nth(&mut self, n: usize) -> Option<u64> {
+                            #[inline] fn nth(&mut self, n: usize) -> Option<u64> {
                                 self.it.nth(n).cloned()
                             }
 
-                            #[inline]
-                            fn last(self) -> Option<u64> {
+                            #[inline] fn last(self) -> Option<u64> {
                                 self.it.last().cloned()
                             }
 
-                            #[inline]
-                            fn count(self) -> usize {
+                            #[inline] fn count(self) -> usize {
                                 self.it.count()
                             }
                         }
@@ -13635,7 +13491,7 @@ pub mod num
 
                 impl FusedIterator for U64Digits<'_> {}
 
-            } pub use self::iter::{U32Digits, U64Digits};
+            } pub use self::iter::{*};
 
             pub mod monty
             {
@@ -13858,7 +13714,7 @@ pub mod num
                     zz
                 }
 
-            }
+            } pub use self::monty::{*};
 
             pub mod power
             {
@@ -13915,8 +13771,7 @@ pub mod num
                         impl Pow<&$T> for BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn pow(self, exp: &$T) -> BigUint {
+                            #[inline] fn pow(self, exp: &$T) -> BigUint {
                                 Pow::pow(self, *exp)
                             }
                         }
@@ -13924,8 +13779,7 @@ pub mod num
                         impl Pow<$T> for &BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn pow(self, exp: $T) -> BigUint {
+                            #[inline] fn pow(self, exp: $T) -> BigUint {
                                 if exp == 0 {
                                     return BigUint::one();
                                 }
@@ -13936,8 +13790,7 @@ pub mod num
                         impl Pow<&$T> for &BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn pow(self, exp: &$T) -> BigUint {
+                            #[inline] fn pow(self, exp: &$T) -> BigUint {
                                 Pow::pow(self, *exp)
                             }
                         }
@@ -14092,7 +13945,7 @@ pub mod num
                     }
                     acc
                 }
-            }
+            } pub use self::power::{*};
 
             pub mod shift
             {
@@ -14122,22 +13975,19 @@ pub mod num
                         impl $Shx<&$rhs> for BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn $shx(self, rhs: &$rhs) -> BigUint {
+                            #[inline] fn $shx(self, rhs: &$rhs) -> BigUint {
                                 $Shx::$shx(self, *rhs)
                             }
                         }
                         impl $Shx<&$rhs> for &BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn $shx(self, rhs: &$rhs) -> BigUint {
+                            #[inline] fn $shx(self, rhs: &$rhs) -> BigUint {
                                 $Shx::$shx(self, *rhs)
                             }
                         }
                         impl $ShxAssign<&$rhs> for BigUint {
-                            #[inline]
-                            fn $shx_assign(&mut self, rhs: &$rhs) {
+                            #[inline] fn $shx_assign(&mut self, rhs: &$rhs) {
                                 $ShxAssign::$shx_assign(self, *rhs);
                             }
                         }
@@ -14148,22 +13998,19 @@ pub mod num
                         impl Shl<$rhs> for BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn shl(self, rhs: $rhs) -> BigUint {
+                            #[inline] fn shl(self, rhs: $rhs) -> BigUint {
                                 biguint_shl(Cow::Owned(self), rhs)
                             }
                         }
                         impl Shl<$rhs> for &BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn shl(self, rhs: $rhs) -> BigUint {
+                            #[inline] fn shl(self, rhs: $rhs) -> BigUint {
                                 biguint_shl(Cow::Borrowed(self), rhs)
                             }
                         }
                         impl ShlAssign<$rhs> for BigUint {
-                            #[inline]
-                            fn shl_assign(&mut self, rhs: $rhs) {
+                            #[inline] fn shl_assign(&mut self, rhs: $rhs) {
                                 let n = mem::replace(self, Self::ZERO);
                                 *self = n << rhs;
                             }
@@ -14173,22 +14020,19 @@ pub mod num
                         impl Shr<$rhs> for BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn shr(self, rhs: $rhs) -> BigUint {
+                            #[inline] fn shr(self, rhs: $rhs) -> BigUint {
                                 biguint_shr(Cow::Owned(self), rhs)
                             }
                         }
                         impl Shr<$rhs> for &BigUint {
                             type Output = BigUint;
 
-                            #[inline]
-                            fn shr(self, rhs: $rhs) -> BigUint {
+                            #[inline] fn shr(self, rhs: $rhs) -> BigUint {
                                 biguint_shr(Cow::Borrowed(self), rhs)
                             }
                         }
                         impl ShrAssign<$rhs> for BigUint {
-                            #[inline]
-                            fn shr_assign(&mut self, rhs: $rhs) {
+                            #[inline] fn shr_assign(&mut self, rhs: $rhs) {
                                 let n = mem::replace(self, Self::ZERO);
                                 *self = n >> rhs;
                             }
@@ -14284,7 +14128,7 @@ pub mod num
 
                 impl_shift! { u8, u16, u32, u64, u128, usize }
                 impl_shift! { i8, i16, i32, i64, i128, isize }
-            }
+            } pub use self::shift::{*};
 
             pub struct BigUint
             {
@@ -14624,7 +14468,7 @@ pub mod num
                     let guess = match self.to_f64()
                     {
                         Some(f) if f.is_finite() => {
-                            use num_traits::FromPrimitive;
+                            use num::traits::FromPrimitive;
 
                            
                             BigUint::from_f64((f.ln() / f64::from(n)).exp()).unwrap()
@@ -14668,7 +14512,7 @@ pub mod num
                     #[cfg(feature = "std")]
                     let guess = match self.to_f64() {
                         Some(f) if f.is_finite() => {
-                            use num_traits::FromPrimitive;
+                            use num::traits::FromPrimitive;
 
                            
                             BigUint::from_f64(f.sqrt()).unwrap()
@@ -14710,7 +14554,7 @@ pub mod num
                     #[cfg(feature = "std")]
                     let guess = match self.to_f64() {
                         Some(f) if f.is_finite() => {
-                            use num_traits::FromPrimitive;
+                            use num::traits::FromPrimitive;
 
                            
                             BigUint::from_f64(f.cbrt()).unwrap()
@@ -14892,6 +14736,7 @@ pub mod num
                     let zeros: u64 = self.data.last().unwrap().leading_zeros().into();
                     self.data.len() as u64 * u64::from(big_digit::BITS) - zeros
                 }
+                
                 #[inline] fn normalize(&mut self) {
                     if let Some(&0) = self.data.last() {
                         let len = self.data.iter().rposition(|&d| d != 0).map_or(0, |i| i + 1);
@@ -15031,7 +14876,7 @@ pub mod num
                 }
             }
 
-            impl num_traits::FromBytes for BigUint {
+            impl num::traits::FromBytes for BigUint {
                 type Bytes = [u8];
 
                 fn from_be_bytes(bytes: &Self::Bytes) -> Self {
@@ -15043,7 +14888,7 @@ pub mod num
                 }
             }
 
-            impl num_traits::ToBytes for BigUint {
+            impl num::traits::ToBytes for BigUint {
                 type Bytes = Vec<u8>;
 
                 fn to_be_bytes(&self) -> Self::Bytes {
@@ -15068,39 +14913,45 @@ pub mod num
                 #[inline] fn digits(&self) -> &[BigDigit] {
                     &self.data
                 }
+                
                 #[inline] fn digits_mut(&mut self) -> &mut Vec<BigDigit> {
                     &mut self.data
                 }
+                
                 #[inline] fn normalize(&mut self) {
                     self.normalize();
                 }
+                
                 #[inline] fn capacity(&self) -> usize {
                     self.data.capacity()
                 }
+                
                 #[inline] fn len(&self) -> usize {
                     self.data.len()
                 }
             }
 
-            #[inline] fn u32_chunk_to_u64(chunk: &[u32]) -> u64 {
-               
+            #[inline] fn u32_chunk_to_u64(chunk: &[u32]) -> u64
+            {
                 let mut digit = chunk[0] as u64;
-                if let Some(&hi) = chunk.get(1) {
-                    digit |= (hi as u64) << 32;
-                }
+
+                if let Some(&hi) = chunk.get(1) { digit |= (hi as u64) << 32; }
+
                 digit
             }
 
-            cfg_32_or_test!(
-
-                #[inline] fn u32_to_u128(a: u32, b: u32, c: u32, d: u32) -> u128 {
+            cfg_32_or_test!
+            (
+                #[inline] fn u32_to_u128(a: u32, b: u32, c: u32, d: u32) -> u128
+                {
                     u128::from(d) | (u128::from(c) << 32) | (u128::from(b) << 64) | (u128::from(a) << 96)
                 }
             );
 
-            cfg_32_or_test!(
-
-                #[inline] fn u32_from_u128(n: u128) -> (u32, u32, u32, u32) {
+            cfg_32_or_test!
+            (
+                #[inline] fn u32_from_u128(n: u128) -> (u32, u32, u32, u32)
+                {
                     (
                         (n >> 96) as u32,
                         (n >> 64) as u32,
@@ -15109,7 +14960,7 @@ pub mod num
                     )
                 }
             );
-        }
+        } pub use self::uint::{ * };
 
         #[cfg(target_pointer_width = "32")]
         type UsizePromotion = u32;
@@ -15261,6 +15112,7 @@ pub mod num
     pub mod rational
     {
         //! Rational numbers
+        use num::traits::float::FloatCore;
         use ::
         {
             error::{ Error },
@@ -15315,8 +15167,7 @@ pub mod num
                     }
                     impl<'b, T: Clone + Integer + Pow<$exp, Output = T>> Pow<&'b $exp> for Ratio<T> {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow(self, expon: &'b $exp) -> Ratio<T> {
+                        #[inline] fn pow(self, expon: &'b $exp) -> Ratio<T> {
                             Pow::pow(self, *expon)
                         }
                     }
@@ -15325,8 +15176,7 @@ pub mod num
                         &'a T: Pow<$exp, Output = T>,
                     {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow(self, expon: &'b $exp) -> Ratio<T> {
+                        #[inline] fn pow(self, expon: &'b $exp) -> Ratio<T> {
                             Pow::pow(self, *expon)
                         }
                     }
@@ -15377,8 +15227,7 @@ pub mod num
                     }
                     impl<'b, T: Clone + Integer + Pow<$unsigned, Output = T>> Pow<&'b $exp> for Ratio<T> {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow(self, expon: &'b $exp) -> Ratio<T> {
+                        #[inline] fn pow(self, expon: &'b $exp) -> Ratio<T> {
                             Pow::pow(self, *expon)
                         }
                     }
@@ -15387,8 +15236,7 @@ pub mod num
                         &'a T: Pow<$unsigned, Output = T>,
                     {
                         type Output = Ratio<T>;
-                        #[inline]
-                        fn pow(self, expon: &'b $exp) -> Ratio<T> {
+                        #[inline] fn pow(self, expon: &'b $exp) -> Ratio<T> {
                             Pow::pow(self, *expon)
                         }
                     }
@@ -15966,14 +15814,12 @@ pub mod num
             macro_rules! forward_op_assign {
                 (impl $imp:ident, $method:ident) => {
                     impl<'a, T: Clone + Integer + NumAssign> $imp<&'a Ratio<T>> for Ratio<T> {
-                        #[inline]
-                        fn $method(&mut self, other: &Ratio<T>) {
+                        #[inline] fn $method(&mut self, other: &Ratio<T>) {
                             self.$method(other.clone())
                         }
                     }
                     impl<'a, T: Clone + Integer + NumAssign> $imp<&'a T> for Ratio<T> {
-                        #[inline]
-                        fn $method(&mut self, other: &T) {
+                        #[inline] fn $method(&mut self, other: &T) {
                             self.$method(other.clone())
                         }
                     }
@@ -16893,13 +16739,94 @@ pub mod rand
         /*
         */
     }
+    */    
+    pub mod bernoulli
+    {
+        /*!
+        The Bernoulli distribution `Bernoulli(p)`. */
+        use ::
+        {
+            rand::
+            {
+                Distribution, Rng
+            },
+            *,
+        };
+        /*
+        */
+        const ALWAYS_TRUE: u64 = u64::MAX;
+        const SCALE: f64 = 2.0 * (1u64 << 63) as f64;
 
+        #[derive(Clone, Copy, Debug, PartialEq)]
+        pub struct Bernoulli
+        {
+            p_int: u64,
+        }
+        
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub enum BernoulliError
+        {
+            InvalidProbability,
+        }
 
-    use crate::Rng;
-    #[cfg(feature = "alloc")]
-    use alloc::string::String;
-    use ::iter;
-    */
+        impl fmt::Display for BernoulliError
+        {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+            {
+                f.write_str(match self
+                {
+                    BernoulliError::InvalidProbability => "p is outside [0, 1] in Bernoulli distribution",
+                })
+            }
+        }
+        
+        impl ::error::Error for BernoulliError {}
+
+        impl Bernoulli
+        {
+            #[inline] pub fn new(p: f64) -> Result<Bernoulli, BernoulliError>
+            {
+                if !(0.0..1.0).contains(&p)
+                {
+                    if p == 1.0 { return Ok(Bernoulli { p_int: ALWAYS_TRUE }); }
+
+                    return Err(BernoulliError::InvalidProbability);
+                }
+
+                Ok(Bernoulli
+                {
+                    p_int: (p * SCALE) as u64,
+                })
+            }
+            
+            #[inline] pub fn from_ratio(numerator: u32, denominator: u32) -> Result<Bernoulli, BernoulliError>
+            {
+                if numerator > denominator || denominator == 0 { return Err(BernoulliError::InvalidProbability); }
+
+                if numerator == denominator { return Ok(Bernoulli { p_int: ALWAYS_TRUE }); }
+
+                let p_int = ((f64::from(numerator) / f64::from(denominator)) * SCALE) as u64;
+                Ok(Bernoulli { p_int })
+            }
+
+            #[inline] pub fn p(&self) -> f64
+            {
+                if self.p_int == ALWAYS_TRUE { 1.0 } else { (self.p_int as f64) / SCALE }
+            }
+        }
+
+        impl Distribution<bool> for Bernoulli
+        {
+            #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> bool
+            {
+                if self.p_int == ALWAYS_TRUE { return true; }
+
+                let v: u64 = rng.random();
+                v < self.p_int
+            }
+        }
+    } pub use self::bernoulli::{Bernoulli, BernoulliError};
+    
     pub mod core
     {
         /*!
@@ -16911,6 +16838,47 @@ pub mod rand
         };
         /*
         */
+        pub mod simd
+        {
+            use ::
+            {
+                *
+            };
+
+            macro_rules! supported_lane_count
+            {
+                ($($lanes:literal),+) =>
+                {
+                    $(
+                        impl SupportedLaneCount for LaneCount<$lanes>
+                        {
+                            type BitMask = [u8; ($lanes + 7) / 8];
+                        }
+                    )+
+                };
+            }
+
+            pub struct LaneCount<const N: usize>;
+            impl<const N: usize> LaneCount<N>
+            {
+                pub const BITMASK_LEN: usize = N.div_ceil(8);
+            }
+            
+            pub trait SupportedLaneCount
+            {
+                type BitMask: Copy + Default + AsRef<[u8]> + AsMut<[u8]>;
+            }
+
+            impl<const N: usize> LaneCount<N> {}
+
+            supported_lane_count!
+            (
+                1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26,
+                27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50,
+                51, 52, 53, 54, 55, 56, 57, 58, 59, 60, 61, 62, 63, 64
+            );
+        }
+
         pub trait RngCore
         {
             fn next_u32(&mut self) -> u32;
@@ -17054,7 +17022,7 @@ pub mod rand
             Self: TryRngCore
             { Self::try_from_rng(self) }
         }
-    }
+    } pub use self::core::{*};
 
     pub mod rng
     {
@@ -17067,7 +17035,7 @@ pub mod rand
             {
                 core::{ RngCore },
                 uniform::{SampleRange, SampleUniform},
-                Distribution, StandardUniform
+                Distribution, StandardUniform, Iter
             },
             *,
         };
@@ -17098,7 +17066,7 @@ pub mod rand
             
             #[inline] #[track_caller] fn random_bool(&mut self, p: f64) -> bool 
             {
-                match distr::Bernoulli::new(p) 
+                match super::Bernoulli::new(p) 
                 {
                     Ok(d) => self.sample(d),
                     Err(_) => panic!("p={:?} is outside range [0.0, 1.0]", p),
@@ -17107,7 +17075,7 @@ pub mod rand
             
             #[inline] #[track_caller] fn random_ratio(&mut self, numerator: u32, denominator: u32) -> bool
             {
-                match distr::Bernoulli::from_ratio(numerator, denominator)
+                match super::Bernoulli::from_ratio(numerator, denominator)
                 {
                     Ok(d) => self.sample(d),
                     Err(_) => panic!
@@ -17263,8 +17231,6 @@ pub mod rand
                 ops::{ Range, RangeInclusive, RangeTo, RangeToInclusive },
                 rand::
                 {
-                    ::simd::prelude::*,
-                    float::IntoFloat,
                     BoolAsSIMD, FloatAsSIMD, FloatSIMDUtils, IntAsSIMD, Rng
                 },
                 *,
@@ -17384,6 +17350,12 @@ pub mod rand
                 };
             }
 
+            pub trait IntoFloat
+            {
+                type F;
+                fn into_float_with_exponent(self, exponent: i32) -> Self::F;
+            }
+
             #[derive(Clone, Copy, Debug, PartialEq)]
             pub struct UniformFloat<X>
             {
@@ -17410,9 +17382,8 @@ pub mod rand
             {
                 rand::
                 {
-                    ::
+                    core::
                     {
-                        simd::prelude::*,
                         simd::{LaneCount, SupportedLaneCount},
                     },
                     uniform::{ Error, SampleBorrow, SampleUniform, UniformSampler },
@@ -17917,7 +17888,7 @@ pub mod rand
                 }
             }
             
-            impl super::SampleString for Uniform<char>
+            impl rand::SampleString for Uniform<char>
             {
                 fn append_string<R: Rng + ?Sized>
                 (
@@ -18271,9 +18242,225 @@ pub mod rand
     {
         fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T { (*self).sample(rng) }
     }
+    
+    #[derive(Debug)]
+    pub struct Iter<D, R, T>
+    {
+        distr: D,
+        rng: R,
+        phantom: ::marker::PhantomData<T>,
+    }
 
+    impl<D, R, T> Iterator for Iter<D, R, T> where
+    D: Distribution<T>,
+    R: Rng
+    {
+        type Item = T;
+        #[inline(always)] fn next(&mut self) -> Option<T> { Some(self.distr.sample(&mut self.rng)) }
+        fn size_hint(&self) -> (usize, Option<usize>) { (usize::MAX, None) }
+    }
+
+    impl<D, R, T> iter::FusedIterator for Iter<D, R, T> where
+    D: Distribution<T>,
+    R: Rng
+    {
+    }
+    
+    #[derive(Debug)]
+    pub struct Map<D, F, T, S> 
+    {
+        distr: D,
+        func: F,
+        phantom: ::marker::PhantomData<fn(T) -> S>,
+    }
+
+    impl<D, F, T, S> Distribution<S> for Map<D, F, T, S> where
+    D: Distribution<T>,
+    F: Fn(T) -> S
+    {
+        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> S { (self.func)(self.distr.sample(rng)) }
+    }
+    
+    pub trait SampleString
+    {
+        fn append_string<R: Rng + ?Sized>(&self, rng: &mut R, string: &mut String, len: usize);
+        #[inline] fn sample_string<R: Rng + ?Sized>(&self, rng: &mut R, len: usize) -> String 
+        {
+            let mut s = String::new();
+            self.append_string(rng, &mut s, len);
+            s
+        }
+    }
+    
     #[derive(Clone, Copy, Debug, Default)]
     pub struct StandardUniform;
+
+    
+    pub trait WideningMultiply<RHS = Self>
+    {
+        type Output;
+        fn wmul(self, x: RHS) -> Self::Output;
+    }
+
+    macro_rules! wmul_impl
+    {
+        ($ty:ty, $wide:ty, $shift:expr) => {
+            impl WideningMultiply for $ty {
+                type Output = ($ty, $ty);
+
+                #[inline(always)]
+                fn wmul(self, x: $ty) -> Self::Output {
+                    let tmp = (self as $wide) * (x as $wide);
+                    ((tmp >> $shift) as $ty, tmp as $ty)
+                }
+            }
+        };
+
+        // simd bulk implementation
+        ($(($ty:ident, $wide:ty),)+, $shift:expr) => {
+            $(
+                impl WideningMultiply for $ty {
+                    type Output = ($ty, $ty);
+
+                    #[inline(always)]
+                    fn wmul(self, x: $ty) -> Self::Output {
+                        // For supported vectors, this should compile to a couple
+                        // supported multiply & swizzle instructions (no actual
+                        // casting).
+                        // TODO: optimize
+                        let y: $wide = self.cast();
+                        let x: $wide = x.cast();
+                        let tmp = y * x;
+                        let hi: $ty = (tmp >> Simd::splat($shift)).cast();
+                        let lo: $ty = tmp.cast();
+                        (hi, lo)
+                    }
+                }
+            )+
+        };
+    }
+
+    wmul_impl! { u8, u16, 8 }
+    wmul_impl! { u16, u32, 16 }
+    wmul_impl! { u32, u64, 32 }
+    wmul_impl! { u64, u128, 64 }
+    
+    macro_rules! wmul_impl_large 
+    {
+        ($ty:ty, $half:expr) => {
+            impl WideningMultiply for $ty {
+                type Output = ($ty, $ty);
+
+                #[inline(always)]
+                fn wmul(self, b: $ty) -> Self::Output {
+                    const LOWER_MASK: $ty = !0 >> $half;
+                    let mut low = (self & LOWER_MASK).wrapping_mul(b & LOWER_MASK);
+                    let mut t = low >> $half;
+                    low &= LOWER_MASK;
+                    t += (self >> $half).wrapping_mul(b & LOWER_MASK);
+                    low += (t & LOWER_MASK) << $half;
+                    let mut high = t >> $half;
+                    t = low >> $half;
+                    low &= LOWER_MASK;
+                    t += (b >> $half).wrapping_mul(self & LOWER_MASK);
+                    low += (t & LOWER_MASK) << $half;
+                    high += t >> $half;
+                    high += (self >> $half).wrapping_mul(b >> $half);
+
+                    (high, low)
+                }
+            }
+        };
+
+        // simd bulk implementation
+        (($($ty:ty,)+) $scalar:ty, $half:expr) => {
+            $(
+                impl WideningMultiply for $ty {
+                    type Output = ($ty, $ty);
+
+                    #[inline(always)]
+                    fn wmul(self, b: $ty) -> Self::Output {
+                        // needs wrapping multiplication
+                        let lower_mask = <$ty>::splat(!0 >> $half);
+                        let half = <$ty>::splat($half);
+                        let mut low = (self & lower_mask) * (b & lower_mask);
+                        let mut t = low >> half;
+                        low &= lower_mask;
+                        t += (self >> half) * (b & lower_mask);
+                        low += (t & lower_mask) << half;
+                        let mut high = t >> half;
+                        t = low >> half;
+                        low &= lower_mask;
+                        t += (b >> half) * (self & lower_mask);
+                        low += (t & lower_mask) << half;
+                        high += t >> half;
+                        high += (self >> half) * (b >> half);
+
+                        (high, low)
+                    }
+                }
+            )+
+        };
+    }
+
+    wmul_impl_large! { u128, 64 }
+
+    macro_rules! wmul_impl_usize 
+    {
+        ($ty:ty) =>
+        {
+            impl WideningMultiply for usize
+            {
+                type Output = (usize, usize);
+                #[inline(always)] fn wmul(self, x: usize) -> Self::Output
+                {
+                    let (high, low) = (self as $ty).wmul(x as $ty);
+                    (high as usize, low as usize)
+                }
+            }
+        };
+    }
+
+    #[cfg(target_pointer_width = "16")] wmul_impl_usize! { u16 }
+    #[cfg(target_pointer_width = "32")] wmul_impl_usize! { u32 }
+    #[cfg(target_pointer_width = "64")] wmul_impl_usize! { u64 }
+    
+    pub trait FloatSIMDUtils 
+    {
+        fn all_lt(self, other: Self) -> bool;
+        fn all_le(self, other: Self) -> bool;
+        fn all_finite(self) -> bool;
+
+        type Mask;
+        fn gt_mask(self, other: Self) -> Self::Mask;
+        fn decrease_masked(self, mask: Self::Mask) -> Self;
+        type UInt;
+        fn cast_from_int(i: Self::UInt) -> Self;
+    }
+    
+    pub trait FloatAsSIMD: Sized 
+    {
+        const LEN: usize = 1;
+        #[inline(always)] fn splat(scalar: Self) -> Self { scalar }
+    }
+
+    pub trait IntAsSIMD: Sized 
+    {
+        #[inline(always)] fn splat(scalar: Self) -> Self { scalar }
+    }
+
+    impl IntAsSIMD for u32 {}
+    impl IntAsSIMD for u64 {}
+
+    pub trait BoolAsSIMD: Sized
+    {
+        fn any(self) -> bool;
+    }
+
+    impl BoolAsSIMD for bool
+    {
+        #[inline(always)] fn any(self) -> bool { self }
+    }
 }
 
 pub mod rc
@@ -18311,6 +18498,16 @@ pub mod thread
     pub use std::thread::{ * };
 }
 
+pub mod time
+{
+    pub mod std
+    {
+        pub use std::time::{ * };
+    }
+
+    pub use temporal::{ * };
+}
+
 pub mod u8
 {
     pub use std::u8::{ * };
@@ -18345,4 +18542,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 18348 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 18545 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
