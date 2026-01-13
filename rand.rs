@@ -1472,12 +1472,10 @@ extern crate proc_macro;
     #[macro_export] macro_rules! impl_sum_iter_type
     {
         ($res:ty) => {
-            impl<T> Sum<T> for $res
-            where
+            impl<T> Sum<T> for $res where
                 $res: Add<T, Output = $res>,
             {
-                fn sum<I>(iter: I) -> Self
-                where
+                fn sum<I>(iter: I) -> Self where
                     I: Iterator<Item = T>,
                 {
                     iter.fold(Self::ZERO, <$res>::add)
@@ -1489,12 +1487,10 @@ extern crate proc_macro;
     #[macro_export] macro_rules! impl_product_iter_type
     {
         ($res:ty) => {
-            impl<T> Product<T> for $res
-            where
+            impl<T> Product<T> for $res where
                 $res: Mul<T, Output = $res>,
             {
-                fn product<I>(iter: I) -> Self
-                where
+                fn product<I>(iter: I) -> Self where
                     I: Iterator<Item = T>,
                 {
                     iter.fold(One::one(), <$res>::mul)
@@ -2375,6 +2371,185 @@ pub mod num
         };
         /*
         */
+        macro_rules! float_trait_impl
+        {
+            ($name:ident for $($t:ident)*) =>
+            ($(
+                impl $name for $t 
+                {
+                    type FromStrRadixErr = ParseFloatError;
+
+                    fn from_str_radix(src: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr>
+                    {
+                        use self::FloatErrorKind::*;
+                        use self::ParseFloatError as PFE;
+                        
+                        if radix == 10
+                        {
+                            return src.parse().map_err(|_| PFE
+                            {
+                                kind: if src.is_empty() { Empty } else { Invalid },
+                            });
+                        }
+                        
+                        if str_to_ascii_lower_eq_str(src, "inf") || str_to_ascii_lower_eq_str(src, "infinity") { return Ok(::$t::INFINITY); }
+
+                        else if str_to_ascii_lower_eq_str(src, "-inf") || str_to_ascii_lower_eq_str(src, "-infinity") { return Ok(::$t::NEG_INFINITY); }
+                        
+                        else if str_to_ascii_lower_eq_str(src, "nan") { return Ok(::$t::NAN); }
+                        
+                        else if str_to_ascii_lower_eq_str(src, "-nan") { return Ok(-::$t::NAN); }
+
+                        fn slice_shift_char(src: &str) -> Option<(char, &str)> {
+                            let mut chars = src.chars();
+                            Some((chars.next()?, chars.as_str()))
+                        }
+
+                        let (is_positive, src) =  match slice_shift_char(src) {
+                            None             => return Err(PFE { kind: Empty }),
+                            Some(('-', ""))  => return Err(PFE { kind: Empty }),
+                            Some(('-', src)) => (false, src),
+                            Some((_, _))     => (true,  src),
+                        };
+
+                       
+                        let mut sig = if is_positive { 0.0 } else { -0.0 };
+                       
+                        let mut prev_sig = sig;
+                        let mut cs = src.chars().enumerate();
+                       
+                        let mut exp_info = None::<(char, usize)>;
+
+                       
+                        for (i, c) in cs.by_ref() {
+                            match c.to_digit(radix) {
+                                Some(digit) => {
+                                   
+                                    sig *= radix as $t;
+
+                                   
+                                    if is_positive {
+                                        sig += (digit as isize) as $t;
+                                    } else {
+                                        sig -= (digit as isize) as $t;
+                                    }
+
+                                   
+                                   
+                                    if prev_sig != 0.0 {
+                                        if is_positive && sig <= prev_sig
+                                            { return Ok(::$t::INFINITY); }
+                                        if !is_positive && sig >= prev_sig
+                                            { return Ok(::$t::NEG_INFINITY); }
+
+                                       
+                                        if is_positive && (prev_sig != (sig - digit as $t) / radix as $t)
+                                            { return Ok(::$t::INFINITY); }
+                                        if !is_positive && (prev_sig != (sig + digit as $t) / radix as $t)
+                                            { return Ok(::$t::NEG_INFINITY); }
+                                    }
+                                    prev_sig = sig;
+                                },
+                                None => match c {
+                                    'e' | 'E' | 'p' | 'P' => {
+                                        exp_info = Some((c, i + 1));
+                                        break; 
+                                    },
+                                    '.' => {
+                                        break; 
+                                    },
+                                    _ => {
+                                        return Err(PFE { kind: Invalid });
+                                    },
+                                },
+                            }
+                        }
+
+                       
+                       
+                        if exp_info.is_none() {
+                            let mut power = 1.0;
+                            for (i, c) in cs.by_ref() {
+                                match c.to_digit(radix) {
+                                    Some(digit) => {
+                                       
+                                        power /= radix as $t;
+                                       
+                                        sig = if is_positive {
+                                            sig + (digit as $t) * power
+                                        } else {
+                                            sig - (digit as $t) * power
+                                        };
+                                       
+                                        if is_positive && sig < prev_sig
+                                            { return Ok(::$t::INFINITY); }
+                                        if !is_positive && sig > prev_sig
+                                            { return Ok(::$t::NEG_INFINITY); }
+                                        prev_sig = sig;
+                                    },
+                                    None => match c {
+                                        'e' | 'E' | 'p' | 'P' => {
+                                            exp_info = Some((c, i + 1));
+                                            break;
+                                        },
+                                        _ => {
+                                            return Err(PFE { kind: Invalid });
+                                        },
+                                    },
+                                }
+                            }
+                        }
+
+                       
+                        let exp = match exp_info {
+                            Some((c, offset)) => {
+                                let base = match c {
+                                    'E' | 'e' if radix == 10 => 10.0,
+                                    'P' | 'p' if radix == 16 => 2.0,
+                                    _ => return Err(PFE { kind: Invalid }),
+                                };
+
+                               
+                                let src = &src[offset..];
+                                let (is_positive, exp) = match slice_shift_char(src) {
+                                    Some(('-', src)) => (false, src.parse::<usize>()),
+                                    Some(('+', src)) => (true,  src.parse::<usize>()),
+                                    Some((_, _))     => (true,  src.parse::<usize>()),
+                                    None             => return Err(PFE { kind: Invalid }),
+                                };
+
+                                                    fn pow(base: $t, exp: usize) -> $t {
+                                    Float::powi(base, exp as i32)
+                                }
+                               
+
+                                match (is_positive, exp) {
+                                    (true,  Ok(exp)) => pow(base, exp),
+                                    (false, Ok(exp)) => 1.0 / pow(base, exp),
+                                    (_, Err(_))      => return Err(PFE { kind: Invalid }),
+                                }
+                            },
+                            None => 1.0,
+                        };
+
+                        Ok(sig * exp)
+                    }
+                }
+            )*)
+        }
+        
+        macro_rules! int_trait_impl
+        {
+            ($name:ident for $($t:ty)*) => 
+            ($(
+                impl $name for $t
+                {
+                    type FromStrRadixErr = ::num::ParseIntError;
+                    #[inline] fn from_str_radix(s: &str, radix: u32) -> Result<Self, ::num::ParseIntError> { <$t>::from_str_radix(s, radix) }
+                }
+            )*)
+        }
+
         pub mod bounds
         {
             use ::
@@ -4037,8 +4212,7 @@ pub mod num
                 fn set_one(&mut self) {
                     *self = One::one();
                 }
-                #[inline] fn is_one(&self) -> bool
-                where
+                #[inline] fn is_one(&self) -> bool where
                     Self: PartialEq,
                 {
                     *self == Self::one()
@@ -5863,12 +6037,12 @@ pub mod num
 
             impl<T: Unsigned> Unsigned for Wrapping<T> where Wrapping<T>: Num {}
         } pub use self::sign::{abs, abs_sub, signum, Signed, Unsigned};
+
         pub trait Num: PartialEq + Zero + One + NumOps
         {
             type FromStrRadixErr;
             fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr>;
         }
-
         
         pub trait NumOps<Rhs = Self, Output = Self>:
             Add<Rhs, Output = Output>
@@ -5887,10 +6061,14 @@ pub mod num
                 + Rem<Rhs, Output = Output>
         {
         }
+
         pub trait NumRef: Num + for<'r> NumOps<&'r Self> {}
+        
         impl<T> NumRef for T where T: Num + for<'r> NumOps<&'r T> {}
+
         pub trait RefNum<Base>: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
-        impl<T, Base> RefNum<Base> for T where T: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
+        
+        impl <T, Base> RefNum<Base> for T where T: NumOps<Base, Base> + for<'r> NumOps<&'r Base, Base> {}
 
         pub trait NumAssignOps<Rhs = Self>:
         AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
@@ -5898,27 +6076,18 @@ pub mod num
         }
 
         impl<T, Rhs> NumAssignOps<Rhs> for T where
-            T: AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
+        T: AddAssign<Rhs> + SubAssign<Rhs> + MulAssign<Rhs> + DivAssign<Rhs> + RemAssign<Rhs>
         {
         }
 
         pub trait NumAssign: Num + NumAssignOps {}
-        impl<T> NumAssign for T where T: Num + NumAssignOps {}
-        pub trait NumAssignRef: NumAssign + for<'r> NumAssignOps<&'r Self> {}
-        impl<T> NumAssignRef for T where T: NumAssign + for<'r> NumAssignOps<&'r T> {}
+        
+        impl <T> NumAssign for T where T: Num + NumAssignOps {}
 
-        macro_rules! int_trait_impl {
-            ($name:ident for $($t:ty)*) => ($(
-                impl $name for $t {
-                    type FromStrRadixErr = ::num::ParseIntError;
-                    #[inline] fn from_str_radix(s: &str, radix: u32)
-                                    -> Result<Self, ::num::ParseIntError>
-                    {
-                        <$t>::from_str_radix(s, radix)
-                    }
-                }
-            )*)
-        }
+        pub trait NumAssignRef: NumAssign + for<'r> NumAssignOps<&'r Self> {}
+        
+        impl <T> NumAssignRef for T where T: NumAssign + for<'r> NumAssignOps<&'r T> {}
+
         int_trait_impl!(Num for usize u8 u16 u32 u64 u128);
         int_trait_impl!(Num for isize i8 i16 i32 i64 i128);
 
@@ -5930,8 +6099,7 @@ pub mod num
                 T::from_str_radix(str, radix).map(Wrapping)
             }
         }
-
-        #[cfg(has_num_saturating)]
+        
         impl<T: Num> Num for ::num::Saturating<T> where
             ::num::Saturating<T>: NumOps,
         {
@@ -5941,19 +6109,20 @@ pub mod num
             }
         }
 
-        #[derive(Debug)]
-        pub enum FloatErrorKind {
+        #[derive(Debug)] pub enum FloatErrorKind
+        {
             Empty,
             Invalid,
         }
        
        
-        #[derive(Debug)]
-        pub struct ParseFloatError {
+        #[derive(Debug)] pub struct ParseFloatError
+        {
             pub kind: FloatErrorKind,
         }
 
-        impl fmt::Display for ParseFloatError {
+        impl fmt::Display for ParseFloatError
+        {
             fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
                 {let description = match self.kind {
                     FloatErrorKind::Empty => "cannot parse float from empty string",
@@ -5964,7 +6133,8 @@ pub mod num
             }
         }
 
-        fn str_to_ascii_lower_eq_str(a: &str, b: &str) -> bool {
+        fn str_to_ascii_lower_eq_str(a: &str, b: &str) -> bool
+        {
             a.len() == b.len()
                 && a.bytes().zip(b.bytes()).all(|(a, b)| {
                     let a_to_ascii_lower = a | (((b'A' <= a && a <= b'Z') as u8) << 5);
@@ -5972,183 +6142,11 @@ pub mod num
                 })
         }
 
-       
-       
-       
-        macro_rules! float_trait_impl {
-            ($name:ident for $($t:ident)*) => ($(
-                impl $name for $t {
-                    type FromStrRadixErr = ParseFloatError;
-
-                    fn from_str_radix(src: &str, radix: u32)
-                                    -> Result<Self, Self::FromStrRadixErr>
-                    {
-                        use self::FloatErrorKind::*;
-                        use self::ParseFloatError as PFE;
-
-                       
-                        if radix == 10 {
-                            return src.parse().map_err(|_| PFE {
-                                kind: if src.is_empty() { Empty } else { Invalid },
-                            });
-                        }
-
-                       
-                        if str_to_ascii_lower_eq_str(src, "inf")
-                            || str_to_ascii_lower_eq_str(src, "infinity")
-                        {
-                            return Ok(::$t::INFINITY);
-                        } else if str_to_ascii_lower_eq_str(src, "-inf")
-                            || str_to_ascii_lower_eq_str(src, "-infinity")
-                        {
-                            return Ok(::$t::NEG_INFINITY);
-                        } else if str_to_ascii_lower_eq_str(src, "nan") {
-                            return Ok(::$t::NAN);
-                        } else if str_to_ascii_lower_eq_str(src, "-nan") {
-                            return Ok(-::$t::NAN);
-                        }
-
-                        fn slice_shift_char(src: &str) -> Option<(char, &str)> {
-                            let mut chars = src.chars();
-                            Some((chars.next()?, chars.as_str()))
-                        }
-
-                        let (is_positive, src) =  match slice_shift_char(src) {
-                            None             => return Err(PFE { kind: Empty }),
-                            Some(('-', ""))  => return Err(PFE { kind: Empty }),
-                            Some(('-', src)) => (false, src),
-                            Some((_, _))     => (true,  src),
-                        };
-
-                       
-                        let mut sig = if is_positive { 0.0 } else { -0.0 };
-                       
-                        let mut prev_sig = sig;
-                        let mut cs = src.chars().enumerate();
-                       
-                        let mut exp_info = None::<(char, usize)>;
-
-                       
-                        for (i, c) in cs.by_ref() {
-                            match c.to_digit(radix) {
-                                Some(digit) => {
-                                   
-                                    sig *= radix as $t;
-
-                                   
-                                    if is_positive {
-                                        sig += (digit as isize) as $t;
-                                    } else {
-                                        sig -= (digit as isize) as $t;
-                                    }
-
-                                   
-                                   
-                                    if prev_sig != 0.0 {
-                                        if is_positive && sig <= prev_sig
-                                            { return Ok(::$t::INFINITY); }
-                                        if !is_positive && sig >= prev_sig
-                                            { return Ok(::$t::NEG_INFINITY); }
-
-                                       
-                                        if is_positive && (prev_sig != (sig - digit as $t) / radix as $t)
-                                            { return Ok(::$t::INFINITY); }
-                                        if !is_positive && (prev_sig != (sig + digit as $t) / radix as $t)
-                                            { return Ok(::$t::NEG_INFINITY); }
-                                    }
-                                    prev_sig = sig;
-                                },
-                                None => match c {
-                                    'e' | 'E' | 'p' | 'P' => {
-                                        exp_info = Some((c, i + 1));
-                                        break; 
-                                    },
-                                    '.' => {
-                                        break; 
-                                    },
-                                    _ => {
-                                        return Err(PFE { kind: Invalid });
-                                    },
-                                },
-                            }
-                        }
-
-                       
-                       
-                        if exp_info.is_none() {
-                            let mut power = 1.0;
-                            for (i, c) in cs.by_ref() {
-                                match c.to_digit(radix) {
-                                    Some(digit) => {
-                                       
-                                        power /= radix as $t;
-                                       
-                                        sig = if is_positive {
-                                            sig + (digit as $t) * power
-                                        } else {
-                                            sig - (digit as $t) * power
-                                        };
-                                       
-                                        if is_positive && sig < prev_sig
-                                            { return Ok(::$t::INFINITY); }
-                                        if !is_positive && sig > prev_sig
-                                            { return Ok(::$t::NEG_INFINITY); }
-                                        prev_sig = sig;
-                                    },
-                                    None => match c {
-                                        'e' | 'E' | 'p' | 'P' => {
-                                            exp_info = Some((c, i + 1));
-                                            break;
-                                        },
-                                        _ => {
-                                            return Err(PFE { kind: Invalid });
-                                        },
-                                    },
-                                }
-                            }
-                        }
-
-                       
-                        let exp = match exp_info {
-                            Some((c, offset)) => {
-                                let base = match c {
-                                    'E' | 'e' if radix == 10 => 10.0,
-                                    'P' | 'p' if radix == 16 => 2.0,
-                                    _ => return Err(PFE { kind: Invalid }),
-                                };
-
-                               
-                                let src = &src[offset..];
-                                let (is_positive, exp) = match slice_shift_char(src) {
-                                    Some(('-', src)) => (false, src.parse::<usize>()),
-                                    Some(('+', src)) => (true,  src.parse::<usize>()),
-                                    Some((_, _))     => (true,  src.parse::<usize>()),
-                                    None             => return Err(PFE { kind: Invalid }),
-                                };
-
-                                                    fn pow(base: $t, exp: usize) -> $t {
-                                    Float::powi(base, exp as i32)
-                                }
-                               
-
-                                match (is_positive, exp) {
-                                    (true,  Ok(exp)) => pow(base, exp),
-                                    (false, Ok(exp)) => 1.0 / pow(base, exp),
-                                    (_, Err(_))      => return Err(PFE { kind: Invalid }),
-                                }
-                            },
-                            None => 1.0,
-                        };
-
-                        Ok(sig * exp)
-                    }
-                }
-            )*)
-        }
         float_trait_impl!(Num for f32 f64);
 
 
-        #[inline] pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T {
+        #[inline] pub fn clamp<T: PartialOrd>(input: T, min: T, max: T) -> T
+        {
             debug_assert!(min <= max, "min must be less than or equal to max");
             if input < min {
                 min
@@ -6159,9 +6157,8 @@ pub mod num
             }
         }
 
-        #[inline]
-        #[allow(clippy::eq_op)]
-        pub fn clamp_min<T: PartialOrd>(input: T, min: T) -> T {
+        #[inline] pub fn clamp_min<T: PartialOrd>(input: T, min: T) -> T
+        {
             debug_assert!(min == min, "min must not be NAN");
             if input < min {
                 min
@@ -6170,9 +6167,8 @@ pub mod num
             }
         }
 
-        #[inline]
-        #[allow(clippy::eq_op)]
-        pub fn clamp_max<T: PartialOrd>(input: T, max: T) -> T {
+        #[inline] pub fn clamp_max<T: PartialOrd>(input: T, max: T) -> T
+        {
             debug_assert!(max == max, "max must not be NAN");
             if input > max {
                 max
@@ -6214,8 +6210,7 @@ pub mod num
                 fn average_floor(&self, other: &Self) -> Self;
             }
 
-            impl<I> Average for I
-            where
+            impl<I> Average for I where
                 I: Integer + Shr<usize, Output = I>,
                 for<'a, 'b> &'a I:
                     BitAnd<&'b I, Output = I> + BitOr<&'b I, Output = I> + BitXor<&'b I, Output = I>,
@@ -6315,8 +6310,7 @@ pub mod num
             signed_roots!(i128, u128);
             signed_roots!(isize, usize);
 
-            #[inline] fn fixpoint<T, F>(mut x: T, f: F) -> T
-            where
+            #[inline] fn fixpoint<T, F>(mut x: T, f: F) -> T where
                 T: Integer + Copy,
                 F: Fn(T) -> T,
             {
@@ -6562,8 +6556,7 @@ pub mod num
                 }
             }
 
-            #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self)
-            where
+            #[inline] fn extended_gcd_lcm(&self, other: &Self) -> (ExtendedGcd<Self>, Self) where
                 Self: Clone + Signed,
             {
                 (self.extended_gcd(other), self.lcm(other))
@@ -6587,8 +6580,7 @@ pub mod num
             fn div_mod_floor(&self, other: &Self) -> (Self, Self) {
                 (self.div_floor(other), self.mod_floor(other))
             }
-            #[inline] fn next_multiple_of(&self, other: &Self) -> Self
-            where
+            #[inline] fn next_multiple_of(&self, other: &Self) -> Self where
                 Self: Clone,
             {
                 let m = self.mod_floor(other);
@@ -6599,20 +6591,17 @@ pub mod num
                         other.clone() - m
                     }
             }
-            #[inline] fn prev_multiple_of(&self, other: &Self) -> Self
-            where
+            #[inline] fn prev_multiple_of(&self, other: &Self) -> Self where
                 Self: Clone,
             {
                 self.clone() - self.mod_floor(other)
             }
-            fn dec(&mut self)
-            where
+            fn dec(&mut self) where
                 Self: Clone,
             {
                 *self = self.clone() - Self::one()
             }
-            fn inc(&mut self)
-            where
+            fn inc(&mut self) where
                 Self: Clone,
             {
                 *self = self.clone() + Self::one()
@@ -8769,7 +8758,7 @@ pub mod num
                     }
                 }
 
-                pub(super) fn set_negative_bit(x: &mut BigInt, bit: u64, value: bool) {
+                pub fn set_negative_bit(x: &mut BigInt, bit: u64, value: bool) {
                     debug_assert_eq!(x.sign, Minus);
                     let data = &mut x.data;
 
@@ -9384,7 +9373,7 @@ pub mod num
                 pow_impl!(u128);
                 pow_impl!(BigUint);
 
-                pub(super) fn modpow(x: &BigInt, exponent: &BigInt, modulus: &BigInt) -> BigInt {
+                pub fn modpow(x: &BigInt, exponent: &BigInt, modulus: &BigInt) -> BigInt {
                     assert!(
                         !exponent.is_negative(),
                         "negative exponentiation is not supported!"
@@ -10331,7 +10320,6 @@ pub mod num
             };
             /*
             */
-
             pub trait RandBigInt
             {
 
@@ -10460,11 +10448,9 @@ pub mod num
             impl UniformSampler for UniformBigUint 
             {
                 type X = BigUint;
-
-                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self
-                where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
                 {
                     let low = low_b.borrow();
                     let high = high_b.borrow();
@@ -10475,10 +10461,9 @@ pub mod num
                     }
                 }
 
-                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self
-                where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
                 {
                     let low = low_b.borrow();
                     let high = high_b.borrow();
@@ -10486,14 +10471,14 @@ pub mod num
                     Self::new(low, high + 1u32)
                 }
 
-                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
+                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X 
+                {
                     &self.base + rng.gen_biguint_below(&self.len)
                 }
 
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
-                where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
+                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
                 {
                     rng.gen_biguint_range(low.borrow(), high.borrow())
                 }
@@ -10515,8 +10500,7 @@ pub mod num
             {
                 type X = BigInt;
 
-                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self
-                where
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
@@ -10529,8 +10513,7 @@ pub mod num
                     }
                 }
 
-                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self
-                where
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
@@ -10544,8 +10527,7 @@ pub mod num
                     &self.base + BigInt::from(rng.gen_biguint_below(&self.len))
                 }
 
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X
-                where
+                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X where
                     B1: SampleBorrow<Self::X> + Sized,
                     B2: SampleBorrow<Self::X> + Sized,
                 {
@@ -10659,7 +10641,7 @@ pub mod num
                     carry as BigDigit
                 }
                 ///
-                pub(super) fn add2(a: &mut [BigDigit], b: &[BigDigit]) {
+                pub fn add2(a: &mut [BigDigit], b: &[BigDigit]) {
                     let carry = __add2(a, b);
 
                     debug_assert!(carry == 0);
@@ -11034,7 +11016,7 @@ pub mod num
                     }
                 }
 
-                pub(super) fn div_rem_ref(u: &BigUint, d: &BigUint) -> (BigUint, BigUint)
+                pub fn div_rem_ref(u: &BigUint, d: &BigUint) -> (BigUint, BigUint)
                 {
                     if d.is_zero() {
                         panic!("attempt to divide by zero")
@@ -12182,7 +12164,7 @@ pub mod num
                     }
                 );
                 
-                pub(super) fn sub2(a: &mut [BigDigit], b: &[BigDigit]) {
+                pub fn sub2(a: &mut [BigDigit], b: &[BigDigit]) {
                     let mut borrow = 0;
 
                     let len = Ord::min(a.len(), b.len());
@@ -12611,7 +12593,7 @@ pub mod num
                     }
                 }
                 
-                pub(super) fn from_bitwise_digits_le(v: &[u8], bits: u8) -> BigUint {
+                pub fn from_bitwise_digits_le(v: &[u8], bits: u8) -> BigUint {
                     debug_assert!(!v.is_empty() && bits <= 8 && big_digit::BITS % bits == 0);
                     debug_assert!(v.iter().all(|&c| BigDigit::from(c) < (1 << bits)));
 
@@ -12715,7 +12697,7 @@ pub mod num
                     biguint_from_vec(data)
                 }
 
-                pub(super) fn from_radix_be(buf: &[u8], radix: u32) -> Option<BigUint> {
+                pub fn from_radix_be(buf: &[u8], radix: u32) -> Option<BigUint> {
                     assert!(
                         2 <= radix && radix <= 256,
                         "The radix must be within 2...256"
@@ -12746,7 +12728,7 @@ pub mod num
                     Some(res)
                 }
 
-                pub(super) fn from_radix_le(buf: &[u8], radix: u32) -> Option<BigUint> {
+                pub fn from_radix_le(buf: &[u8], radix: u32) -> Option<BigUint> {
                     assert!(
                         2 <= radix && radix <= 256,
                         "The radix must be within 2...256"
@@ -13153,7 +13135,7 @@ pub mod num
                 }
 
                
-                pub(super) fn to_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> {
+                pub fn to_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> {
                     debug_assert!(!u.is_zero() && bits <= 8 && big_digit::BITS % bits == 0);
 
                     let last_i = u.data.len() - 1;
@@ -13223,7 +13205,7 @@ pub mod num
 
                
                 #[inline(always)]
-                pub(super) fn to_radix_digits_le(u: &BigUint, radix: u32) -> Vec<u8> {
+                pub fn to_radix_digits_le(u: &BigUint, radix: u32) -> Vec<u8> {
                     debug_assert!(!u.is_zero() && !radix.is_power_of_two());
 
                             let radix_digits = {
@@ -13295,7 +13277,7 @@ pub mod num
                     res
                 }
 
-                pub(super) fn to_radix_le(u: &BigUint, radix: u32) -> Vec<u8> {
+                pub fn to_radix_le(u: &BigUint, radix: u32) -> Vec<u8> {
                     if u.is_zero() {
                         vec![0]
                     } else if radix.is_power_of_two() {
@@ -13403,7 +13385,7 @@ pub mod num
                     const _: () = {
                         impl<'a> U32Digits<'a> {
                             #[inline]
-                            pub(super) fn new(data: &'a [u32]) -> Self {
+                            pub fn new(data: &'a [u32]) -> Self {
                                 Self { it: data.iter() }
                             }
                         }
@@ -13453,7 +13435,7 @@ pub mod num
                     const _: () = {
                         impl<'a> U32Digits<'a> {
                             #[inline]
-                            pub(super) fn new(data: &'a [u64]) -> Self {
+                            pub fn new(data: &'a [u64]) -> Self {
                                 let last_hi_is_zero = data
                                     .last()
                                     .map(|&last| {
@@ -13565,7 +13547,7 @@ pub mod num
                     const _: () = {
                         impl<'a> U64Digits<'a> {
                             #[inline]
-                            pub(super) fn new(data: &'a [u32]) -> Self {
+                            pub fn new(data: &'a [u32]) -> Self {
                                 U64Digits { it: data.chunks(2) }
                             }
                         }
@@ -13604,7 +13586,7 @@ pub mod num
                     const _: () = {
                         impl<'a> U64Digits<'a> {
                             #[inline]
-                            pub(super) fn new(data: &'a [u64]) -> Self {
+                            pub fn new(data: &'a [u64]) -> Self {
                                 Self { it: data.iter() }
                             }
                         }
@@ -13653,7 +13635,7 @@ pub mod num
 
                 impl FusedIterator for U64Digits<'_> {}
 
-            }
+            } pub use self::iter::{U32Digits, U64Digits};
 
             pub mod monty
             {
@@ -13679,9 +13661,7 @@ pub mod num
                 struct MontyReducer {
                     n0inv: BigDigit,
                 }
-
-               
-               
+                
                 fn inv_mod_alt(b: BigDigit) -> BigDigit {
                     assert_ne!(b & 1, 0);
 
@@ -13704,7 +13684,7 @@ pub mod num
                         MontyReducer { n0inv }
                     }
                 }
-                #[allow(clippy::many_single_char_names)]
+                
                 fn montgomery(x: &BigUint, y: &BigUint, m: &BigUint, k: BigDigit, n: usize) -> BigUint {
                    
                    
@@ -13786,9 +13766,8 @@ pub mod num
                     let z = x as DoubleBigDigit * y as DoubleBigDigit + c as DoubleBigDigit;
                     ((z >> big_digit::BITS) as BigDigit, z as BigDigit)
                 }
-
-                #[allow(clippy::many_single_char_names)]
-                pub(super) fn monty_modpow(x: &BigUint, y: &BigUint, m: &BigUint) -> BigUint {
+                
+                pub fn monty_modpow(x: &BigUint, y: &BigUint, m: &BigUint) -> BigUint {
                     assert!(m.data[0] & 1 == 1);
                     let mr = MontyReducer::new(m);
                     let num_words = m.data.len();
@@ -13879,7 +13858,7 @@ pub mod num
                     zz
                 }
 
-            } pub use self::iter::{U32Digits, U64Digits};
+            }
 
             pub mod power
             {
@@ -13899,61 +13878,9 @@ pub mod num
                 use super::BigUint;
                 /*
                 */
-                impl Pow<&BigUint> for BigUInt
+
+                macro_rules! pow_impl 
                 {
-                    type Output = BigUint;
-
-                    #[inline] fn pow(self, exp: &BigUint) -> BigUint {
-                        if self.is_one() || exp.is_zero() {
-                            BigUint::one()
-                        } else if self.is_zero() {
-                            Self::ZERO
-                        } else if let Some(exp) = exp.to_u64() {
-                            self.pow(exp)
-                        } else if let Some(exp) = exp.to_u128() {
-                            self.pow(exp)
-                        } else {
-                           
-                           
-                            panic!("memory overflow")
-                        }
-                    }
-                }
-
-                impl Pow<BigUint> for BigUInt
-                {
-                    type Output = BigUint;
-
-                    #[inline] fn pow(self, exp: BigUint) -> BigUint {
-                        Pow::pow(self, &exp)
-                    }
-                }
-
-                impl Pow<&BigUint> for &BigUInt
-                {
-                    type Output = BigUint;
-
-                    #[inline] fn pow(self, exp: &BigUint) -> BigUint {
-                        if self.is_one() || exp.is_zero() {
-                            BigUint::one()
-                        } else if self.is_zero() {
-                            BigUint::ZERO
-                        } else {
-                            self.clone().pow(exp)
-                        }
-                    }
-                }
-
-                impl Pow<BigUint> for &BigUInt
-                {
-                    type Output = BigUint;
-
-                    #[inline] fn pow(self, exp: BigUint) -> BigUint {
-                        Pow::pow(self, &exp)
-                    }
-                }
-
-                macro_rules! pow_impl {
                     ($T:ty) => {
                         impl Pow<$T> for BigUint {
                             type Output = BigUint;
@@ -14017,6 +13944,60 @@ pub mod num
                     };
                 }
 
+                impl Pow<&BigUint> for BigUInt
+                {
+                    type Output = BigUint;
+
+                    #[inline] fn pow(self, exp: &BigUint) -> BigUint {
+                        if self.is_one() || exp.is_zero() {
+                            BigUint::one()
+                        } else if self.is_zero() {
+                            Self::ZERO
+                        } else if let Some(exp) = exp.to_u64() {
+                            self.pow(exp)
+                        } else if let Some(exp) = exp.to_u128() {
+                            self.pow(exp)
+                        } else {
+                           
+                           
+                            panic!("memory overflow")
+                        }
+                    }
+                }
+
+                impl Pow<BigUint> for BigUInt
+                {
+                    type Output = BigUint;
+
+                    #[inline] fn pow(self, exp: BigUint) -> BigUint {
+                        Pow::pow(self, &exp)
+                    }
+                }
+
+                impl Pow<&BigUint> for &BigUInt
+                {
+                    type Output = BigUint;
+
+                    #[inline] fn pow(self, exp: &BigUint) -> BigUint {
+                        if self.is_one() || exp.is_zero() {
+                            BigUint::one()
+                        } else if self.is_zero() {
+                            BigUint::ZERO
+                        } else {
+                            self.clone().pow(exp)
+                        }
+                    }
+                }
+
+                impl Pow<BigUint> for &BigUInt
+                {
+                    type Output = BigUint;
+
+                    #[inline] fn pow(self, exp: BigUint) -> BigUint {
+                        Pow::pow(self, &exp)
+                    }
+                }
+
                 pow_impl!(u8);
                 pow_impl!(u16);
                 pow_impl!(u32);
@@ -14024,7 +14005,8 @@ pub mod num
                 pow_impl!(usize);
                 pow_impl!(u128);
 
-                pub(super) fn modpow(x: &BigUint, exponent: &BigUint, modulus: &BigUint) -> BigUint {
+                pub fn modpow(x: &BigUint, exponent: &BigUint, modulus: &BigUint) -> BigUint 
+                {
                     assert!(
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
@@ -14039,7 +14021,8 @@ pub mod num
                     }
                 }
 
-                fn plain_modpow(base: &BigUint, exp_data: &[BigDigit], modulus: &BigUint) -> BigUint {
+                fn plain_modpow(base: &BigUint, exp_data: &[BigDigit], modulus: &BigUint) -> BigUint 
+                {
                     assert!(
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
@@ -14131,89 +14114,11 @@ pub mod num
                 use super::{biguint_from_vec, BigUint};
                 /*
                 */
-                #[inline] fn biguint_shl<T: PrimInt>(n: Cow<'_, BigUint>, shift: T) -> BigUint {
-                    if shift < T::zero() {
-                        panic!("attempt to shift left with negative");
-                    }
-                    if n.is_zero() {
-                        return n.into_owned();
-                    }
-                    let bits = T::from(big_digit::BITS).unwrap();
-                    let digits = (shift / bits).to_usize().expect("capacity overflow");
-                    let shift = (shift % bits).to_u8().unwrap();
-                    biguint_shl2(n, digits, shift)
-                }
 
-                fn biguint_shl2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint {
-                    let mut data = match digits {
-                        0 => n.into_owned().data,
-                        _ => {
-                            let len = digits.saturating_add(n.data.len() + 1);
-                            let mut data = Vec::with_capacity(len);
-                            data.resize(digits, 0);
-                            data.extend(n.data.iter());
-                            data
-                        }
-                    };
-
-                    if shift > 0 {
-                        let mut carry = 0;
-                        let carry_shift = big_digit::BITS - shift;
-                        for elem in data[digits..].iter_mut() {
-                            let new_carry = *elem >> carry_shift;
-                            *elem = (*elem << shift) | carry;
-                            carry = new_carry;
-                        }
-                        if carry != 0 {
-                            data.push(carry);
-                        }
-                    }
-
-                    biguint_from_vec(data)
-                }
-
-                #[inline] fn biguint_shr<T: PrimInt>(n: Cow<'_, BigUint>, shift: T) -> BigUint {
-                    if shift < T::zero() {
-                        panic!("attempt to shift right with negative");
-                    }
-                    if n.is_zero() {
-                        return n.into_owned();
-                    }
-                    let bits = T::from(big_digit::BITS).unwrap();
-                    let digits = (shift / bits).to_usize().unwrap_or(usize::MAX);
-                    let shift = (shift % bits).to_u8().unwrap();
-                    biguint_shr2(n, digits, shift)
-                }
-
-                fn biguint_shr2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint {
-                    if digits >= n.data.len() {
-                        let mut n = n.into_owned();
-                        n.set_zero();
-                        return n;
-                    }
-                    let mut data = match n {
-                        Cow::Borrowed(n) => n.data[digits..].to_vec(),
-                        Cow::Owned(mut n) => {
-                            n.data.drain(..digits);
-                            n.data
-                        }
-                    };
-
-                    if shift > 0 {
-                        let mut borrow = 0;
-                        let borrow_shift = big_digit::BITS - shift;
-                        for elem in data.iter_mut().rev() {
-                            let new_borrow = *elem << borrow_shift;
-                            *elem = (*elem >> shift) | borrow;
-                            borrow = new_borrow;
-                        }
-                    }
-
-                    biguint_from_vec(data)
-                }
-
-                macro_rules! impl_shift {
-                    (@ref $Shx:ident :: $shx:ident, $ShxAssign:ident :: $shx_assign:ident, $rhs:ty) => {
+                macro_rules! impl_shift
+                {
+                    (@ref $Shx:ident :: $shx:ident, $ShxAssign:ident :: $shx_assign:ident, $rhs:ty) =>
+                    {
                         impl $Shx<&$rhs> for BigUint {
                             type Output = BigUint;
 
@@ -14237,7 +14142,9 @@ pub mod num
                             }
                         }
                     };
-                    ($($rhs:ty),+) => {$(
+
+                    ($($rhs:ty),+) =>
+                    {$(
                         impl Shl<$rhs> for BigUint {
                             type Output = BigUint;
 
@@ -14290,9 +14197,93 @@ pub mod num
                     )*};
                 }
 
+                #[inline] fn biguint_shl<T: PrimInt>(n: Cow<'_, BigUint>, shift: T) -> BigUint 
+                {
+                    if shift < T::zero() {
+                        panic!("attempt to shift left with negative");
+                    }
+                    if n.is_zero() {
+                        return n.into_owned();
+                    }
+                    let bits = T::from(big_digit::BITS).unwrap();
+                    let digits = (shift / bits).to_usize().expect("capacity overflow");
+                    let shift = (shift % bits).to_u8().unwrap();
+                    biguint_shl2(n, digits, shift)
+                }
+
+                fn biguint_shl2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint 
+                {
+                    let mut data = match digits {
+                        0 => n.into_owned().data,
+                        _ => {
+                            let len = digits.saturating_add(n.data.len() + 1);
+                            let mut data = Vec::with_capacity(len);
+                            data.resize(digits, 0);
+                            data.extend(n.data.iter());
+                            data
+                        }
+                    };
+
+                    if shift > 0 {
+                        let mut carry = 0;
+                        let carry_shift = big_digit::BITS - shift;
+                        for elem in data[digits..].iter_mut() {
+                            let new_carry = *elem >> carry_shift;
+                            *elem = (*elem << shift) | carry;
+                            carry = new_carry;
+                        }
+                        if carry != 0 {
+                            data.push(carry);
+                        }
+                    }
+
+                    biguint_from_vec(data)
+                }
+
+                #[inline] fn biguint_shr<T: PrimInt>(n: Cow<'_, BigUint>, shift: T) -> BigUint 
+                {
+                    if shift < T::zero() {
+                        panic!("attempt to shift right with negative");
+                    }
+                    if n.is_zero() {
+                        return n.into_owned();
+                    }
+                    let bits = T::from(big_digit::BITS).unwrap();
+                    let digits = (shift / bits).to_usize().unwrap_or(usize::MAX);
+                    let shift = (shift % bits).to_u8().unwrap();
+                    biguint_shr2(n, digits, shift)
+                }
+
+                fn biguint_shr2(n: Cow<'_, BigUint>, digits: usize, shift: u8) -> BigUint 
+                {
+                    if digits >= n.data.len() {
+                        let mut n = n.into_owned();
+                        n.set_zero();
+                        return n;
+                    }
+                    let mut data = match n {
+                        Cow::Borrowed(n) => n.data[digits..].to_vec(),
+                        Cow::Owned(mut n) => {
+                            n.data.drain(..digits);
+                            n.data
+                        }
+                    };
+
+                    if shift > 0 {
+                        let mut borrow = 0;
+                        let borrow_shift = big_digit::BITS - shift;
+                        for elem in data.iter_mut().rev() {
+                            let new_borrow = *elem << borrow_shift;
+                            *elem = (*elem >> shift) | borrow;
+                            borrow = new_borrow;
+                        }
+                    }
+
+                    biguint_from_vec(data)
+                }
+
                 impl_shift! { u8, u16, u32, u64, u128, usize }
                 impl_shift! { i8, i16, i32, i64, i128, isize }
-
             }
 
             pub struct BigUint
@@ -14597,14 +14588,17 @@ pub mod num
 
             impl Roots for BigUint
             {  
-                fn nth_root(&self, n: u32) -> Self {
+                fn nth_root(&self, n: u32) -> Self
+                {
                     assert!(n > 0, "root degree n must be at least 1");
 
-                    if self.is_zero() || self.is_one() {
+                    if self.is_zero() || self.is_one()
+                    {
                         return self.clone();
                     }
 
-                    match n {
+                    match n
+                    {
                        
                         1 => return self.clone(),
                         2 => return self.sqrt(),
@@ -14615,19 +14609,20 @@ pub mod num
                    
                     let bits = self.bits();
                     let n64 = u64::from(n);
-                    if bits <= n64 {
+                    
+                    if bits <= n64
+                    {
                         return BigUint::one();
                     }
-
-                   
-                    if let Some(x) = self.to_u64() {
+                    
+                    if let Some(x) = self.to_u64()
+                    {
                         return x.nth_root(n).into();
                     }
 
                     let max_bits = bits / n64 + 1;
-
-                    #[cfg(feature = "std")]
-                    let guess = match self.to_f64() {
+                    let guess = match self.to_f64()
+                    {
                         Some(f) if f.is_finite() => {
                             use num_traits::FromPrimitive;
 
@@ -14648,9 +14643,6 @@ pub mod num
                         }
                     };
 
-                    #[cfg(not(feature = "std"))]
-                    let guess = BigUint::one() << max_bits;
-
                     let n_min_1 = n - 1;
                     fixpoint(guess, max_bits, move |s| {
                         let q = self / s.pow(n_min_1);
@@ -14658,10 +14650,9 @@ pub mod num
                         t / n
                     })
                 }
-
-               
-               
-                fn sqrt(&self) -> Self {
+                
+                fn sqrt(&self) -> Self 
+                {
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
@@ -14702,7 +14693,8 @@ pub mod num
                     })
                 }
 
-                fn cbrt(&self) -> Self {
+                fn cbrt(&self) -> Self 
+                {
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
@@ -14743,17 +14735,14 @@ pub mod num
                     })
                 }
             }
-
-
-            pub trait ToBigUint {
+            
+            pub trait ToBigUint
+            {
 
                 fn to_biguint(&self) -> Option<BigUint>;
             }
-
-
             
-            #[inline]
-            pub(crate) fn biguint_from_vec(digits: Vec<BigDigit>) -> BigUint {
+            #[inline] pub fn biguint_from_vec(digits: Vec<BigDigit>) -> BigUint {
                 BigUint { data: digits }.normalized()
             }
 
@@ -15066,7 +15055,7 @@ pub mod num
                 }
             }
 
-            pub(crate) trait IntDigits {
+            pub trait IntDigits {
                 fn digits(&self) -> &[BigDigit];
                 fn digits_mut(&mut self) -> &mut Vec<BigDigit>;
                 fn normalize(&mut self);
@@ -15092,7 +15081,6 @@ pub mod num
                     self.data.len()
                 }
             }
-
 
             #[inline] fn u32_chunk_to_u64(chunk: &[u32]) -> u64 {
                
@@ -15808,8 +15796,7 @@ pub mod num
 
             impl<T: Integer + Clone> Sum for Ratio<T>
             {
-                fn sum<I>(iter: I) -> Self
-                where
+                fn sum<I>(iter: I) -> Self where
                     I: Iterator<Item = Ratio<T>>,
                 {
                     iter.fold(Self::zero(), |sum, num| sum + num)
@@ -15818,8 +15805,7 @@ pub mod num
 
             impl<'a, T: Integer + Clone> Sum<&'a Ratio<T>> for Ratio<T>
             {
-                fn sum<I>(iter: I) -> Self
-                where
+                fn sum<I>(iter: I) -> Self where
                     I: Iterator<Item = &'a Ratio<T>>,
                 {
                     iter.fold(Self::zero(), |sum, num| sum + num)
@@ -15828,8 +15814,7 @@ pub mod num
 
             impl<T: Integer + Clone> Product for Ratio<T>
             {
-                fn product<I>(iter: I) -> Self
-                where
+                fn product<I>(iter: I) -> Self where
                     I: Iterator<Item = Ratio<T>>,
                 {
                     iter.fold(Self::one(), |prod, num| prod * num)
@@ -15838,8 +15823,7 @@ pub mod num
 
             impl<'a, T: Integer + Clone> Product<&'a Ratio<T>> for Ratio<T>
             {
-                fn product<I>(iter: I) -> Self
-                where
+                fn product<I>(iter: I) -> Self where
                     I: Iterator<Item = &'a Ratio<T>>,
                 {
                     iter.fold(Self::one(), |prod, num| prod * num)
@@ -16892,635 +16876,143 @@ pub mod ptr
 pub mod rand
 {
     /*!
-    Utilities for random number generation. */
+    Utilities for random number generation*/
     use ::
     {
         *,
     };
     /*
-    #[cfg(all(feature = "std", feature = "std_rng"))]
-    pub use crate::rngs::thread::thread_rng;
-    pub use rng::{Fill, Rng};
-
-    #[cfg(all(feature = "std", feature = "std_rng"))]
-    use crate::distributions::{Distribution, Standard};
-    */
-    pub mod core
+    pub mod __
     {
         /*!
-        Core random number generation traits */
+        */
         use ::
         {
-            boxed::{ Box },
-            convert::{ AsMut },
-            default::{ Default },
             *,
         };
         /*
         */
-        pub mod block
+    }
+
+
+    use crate::Rng;
+    #[cfg(feature = "alloc")]
+    use alloc::string::String;
+    use ::iter;
+    */
+    pub mod core
+    {
+        /*!
+        */
+        use ::
         {
-            /*!
-            The `BlockRngCore` trait and implementation helpers */
-            use ::
-            {
-                convert::{ AsRef },
-                rand::core::
-                {
-                    impls::{ fill_via_u32_chunks, fill_via_u64_chunks },
-                    CryptoRng, Error, RngCore, SeedableRng,
-                },
-                *,
-            };
-            /*
-            */
-
-            pub trait BlockRngCore
-            {
-
-                type Item;
-                type Results: AsRef<[Self::Item]> + AsMut<[Self::Item]> + Default;
-
-
-                fn generate(&mut self, results: &mut Self::Results);
-            }
-
-            #[derive(Clone)]
-            pub struct BlockRng<R: BlockRngCore + ?Sized>
-            {
-                results: R::Results,
-                index: usize,
-
-                pub core: R,
-            }
-          
-            impl<R: BlockRngCore + fmt::Debug> fmt::Debug for BlockRng<R>
-            {
-                fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result
-                {    fmt.debug_struct("BlockRng")
-                        .field("core", &self.core)
-                        .field("result_len", &self.results.as_ref().len())
-                        .field("index", &self.index)
-                        .finish()
-                }
-            }
-
-            impl<R: BlockRngCore> BlockRng<R>
-            {
-                #[inline]
-                pub fn new(core: R) -> BlockRng<R> {
-                    let results_empty = R::Results::default();
-                    BlockRng {
-                        core,
-                        index: results_empty.as_ref().len(),
-                        results: results_empty,
-                    }
-                }
-                #[inline(always)]
-                pub fn index(&self) -> usize {
-                    self.index
-                }
-                #[inline]
-                pub fn reset(&mut self) {
-                    self.index = self.results.as_ref().len();
-                }
-                #[inline]
-                pub fn generate_and_set(&mut self, index: usize) {
-                    assert!(index < self.results.as_ref().len());
-                    self.core.generate(&mut self.results);
-                    self.index = index;
-                }
-            }
-
-            impl<R: BlockRngCore<Item = u32>> RngCore for BlockRng<R> where
-            <R as BlockRngCore>::Results: AsRef<[u32]> + AsMut<[u32]>,
-            {
-                #[inline] fn next_u32(&mut self) -> u32 {
-                    if self.index >= self.results.as_ref().len() {
-                        self.generate_and_set(0);
-                    }
-
-                    let value = self.results.as_ref()[self.index];
-                    self.index += 1;
-                    value
-                }
-
-                #[inline] fn next_u64(&mut self) -> u64 {
-                    let read_u64 = |results: &[u32], index| {
-                        let data = &results[index..=index + 1];
-                        u64::from(data[1]) << 32 | u64::from(data[0])
-                    };
-
-                    let len = self.results.as_ref().len();
-
-                    let index = self.index;
-                    if index < len - 1 {
-                        self.index += 2;
-                       
-                        read_u64(self.results.as_ref(), index)
-                    } else if index >= len {
-                        self.generate_and_set(2);
-                        read_u64(self.results.as_ref(), 0)
-                    } else {
-                        let x = u64::from(self.results.as_ref()[len - 1]);
-                        self.generate_and_set(1);
-                        let y = u64::from(self.results.as_ref()[0]);
-                        (y << 32) | x
-                    }
-                }
-
-                #[inline] fn fill_bytes(&mut self, dest: &mut [u8]) {
-                    let mut read_len = 0;
-                    while read_len < dest.len() {
-                        if self.index >= self.results.as_ref().len() {
-                            self.generate_and_set(0);
-                        }
-                        let (consumed_u32, filled_u8) =
-                            fill_via_u32_chunks(&self.results.as_ref()[self.index..], &mut dest[read_len..]);
-
-                        self.index += consumed_u32;
-                        read_len += filled_u8;
-                    }
-                }
-
-                #[inline( always )] fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                    self.fill_bytes(dest);
-                    Ok(())
-                }
-            }
-
-            impl<R: BlockRngCore + SeedableRng> SeedableRng for BlockRng<R> 
-            {
-                type Seed = R::Seed;
-
-                #[inline( always )] fn from_seed(seed: Self::Seed) -> Self {
-                    Self::new(R::from_seed(seed))
-                }
-
-                #[inline( always )] fn seed_from_u64(seed: u64) -> Self {
-                    Self::new(R::seed_from_u64(seed))
-                }
-
-                #[inline( always )] fn from_rng<S: RngCore>(rng: S) -> Result<Self, Error> {
-                    Ok(Self::new(R::from_rng(rng)?))
-                }
-            }
-            #[derive(Clone)]
-            pub struct BlockRng64<R: BlockRngCore + ?Sized>
-            {
-                results: R::Results,
-                index: usize,
-                half_used: bool,
-
-                pub core: R,
-            }
-          
-            impl<R: BlockRngCore + fmt::Debug> fmt::Debug for BlockRng64<R>
-            {
-                fn fmt(&self, fmt: &mut fmt::Formatter) -> fmt::Result
-                {    fmt.debug_struct("BlockRng64")
-                        .field("core", &self.core)
-                        .field("result_len", &self.results.as_ref().len())
-                        .field("index", &self.index)
-                        .field("half_used", &self.half_used)
-                        .finish()
-                }
-            }
-
-            impl<R: BlockRngCore> BlockRng64<R> 
-            {
-                #[inline]
-                pub fn new(core: R) -> BlockRng64<R> {
-                    let results_empty = R::Results::default();
-                    BlockRng64 {
-                        core,
-                        index: results_empty.as_ref().len(),
-                        half_used: false,
-                        results: results_empty,
-                    }
-                }
-                #[inline(always)]
-                pub fn index(&self) -> usize {
-                    self.index
-                }
-                #[inline]
-                pub fn reset(&mut self) {
-                    self.index = self.results.as_ref().len();
-                    self.half_used = false;
-                }
-                #[inline]
-                pub fn generate_and_set(&mut self, index: usize) {
-                    assert!(index < self.results.as_ref().len());
-                    self.core.generate(&mut self.results);
-                    self.index = index;
-                    self.half_used = false;
-                }
-            }
-
-            impl<R: BlockRngCore<Item = u64>> RngCore for BlockRng64<R> where
-            <R as BlockRngCore>::Results: AsRef<[u64]> + AsMut<[u64]>,
-            {
-                #[inline] fn next_u32(&mut self) -> u32 {
-                    let mut index = self.index - self.half_used as usize;
-                    if index >= self.results.as_ref().len() {
-                        self.core.generate(&mut self.results);
-                        self.index = 0;
-                        index = 0;
-                       
-                        self.half_used = false;
-                    }
-
-                    let shift = 32 * (self.half_used as usize);
-
-                    self.half_used = !self.half_used;
-                    self.index += self.half_used as usize;
-
-                    (self.results.as_ref()[index] >> shift) as u32
-                }
-
-                #[inline] fn next_u64(&mut self) -> u64 {
-                    if self.index >= self.results.as_ref().len() {
-                        self.core.generate(&mut self.results);
-                        self.index = 0;
-                    }
-
-                    let value = self.results.as_ref()[self.index];
-                    self.index += 1;
-                    self.half_used = false;
-                    value
-                }
-
-                #[inline] fn fill_bytes(&mut self, dest: &mut [u8]) {
-                    let mut read_len = 0;
-                    self.half_used = false;
-                    while read_len < dest.len() {
-                        if self.index as usize >= self.results.as_ref().len() {
-                            self.core.generate(&mut self.results);
-                            self.index = 0;
-                        }
-
-                        let (consumed_u64, filled_u8) = fill_via_u64_chunks(
-                            &self.results.as_ref()[self.index as usize..],
-                            &mut dest[read_len..],
-                        );
-
-                        self.index += consumed_u64;
-                        read_len += filled_u8;
-                    }
-                }
-
-                #[inline( always )] fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                    self.fill_bytes(dest);
-                    Ok(())
-                }
-            }
-
-            impl<R: BlockRngCore + SeedableRng> SeedableRng for BlockRng64<R> 
-            {
-                type Seed = R::Seed;
-
-                #[inline( always )] fn from_seed(seed: Self::Seed) -> Self {
-                    Self::new(R::from_seed(seed))
-                }
-
-                #[inline( always )] fn seed_from_u64(seed: u64) -> Self {
-                    Self::new(R::seed_from_u64(seed))
-                }
-
-                #[inline( always )] fn from_rng<S: RngCore>(rng: S) -> Result<Self, Error> {
-                    Ok(Self::new(R::from_rng(rng)?))
-                }
-            }
-
-            impl<R: BlockRngCore + CryptoRng> CryptoRng for BlockRng<R> {}
-        }
-        
-        pub mod error
-        {
-            /*!
-            Error types */
-            use ::
-            {
-                boxed::{ Box },
-                num::{ NonZeroU32 },
-                *,
-            };
-            /*
-            */
-
-            pub struct Error 
-            {
-                inner: Box<dyn ::error::Error + Send + Sync + 'static>,
-            }
-
-            impl Error 
-            {
-                pub const CUSTOM_START: u32 = (1 << 31) + (1 << 30);
-                
-                pub const INTERNAL_START: u32 = 1 << 31;
-
-
-                
-                
-                #[cfg(feature = "std")]
-                #[cfg_attr(doc_cfg, doc(cfg(feature = "std")))]
-                #[inline]
-                pub fn new<E>(err: E) -> Self
-                where
-                    E: Into<Box<dyn ::error::Error + Send + Sync + 'static>>,
-                {
-                    Error { inner: err.into() }
-                }
-                #[cfg(feature = "std")]
-                #[cfg_attr(doc_cfg, doc(cfg(feature = "std")))]
-                #[inline]
-                pub fn inner(&self) -> &(dyn ::error::Error + Send + Sync + 'static) {
-                    &*self.inner
-                }
-                #[cfg(feature = "std")]
-                #[cfg_attr(doc_cfg, doc(cfg(feature = "std")))]
-                #[inline]
-                pub fn take_inner(self) -> Box<dyn ::error::Error + Send + Sync + 'static> {
-                    self.inner
-                }
-                #[inline]
-                pub fn raw_os_error(&self) -> Option<i32> {
-                    #[cfg(feature = "std")]
-                    {
-                        if let Some(e) = self.inner.downcast_ref::<::io::Error>() {
-                            return e.raw_os_error();
-                        }
-                    }
-                    match self.code() {
-                        Some(code) if u32::from(code) < Self::INTERNAL_START => Some(u32::from(code) as i32),
-                        _ => None,
-                    }
-                }
-                #[inline] pub fn code(&self) -> Option<NonZeroU32>
-                {
-                    self.inner.downcast_ref::<ErrorCode>().map(|c| c.0)
-                }
-            }
-
-            impl fmt::Debug for Error
-            {
-                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {
-                    write!(f, "Error {{ inner: {:?} }}", self.inner)
-                }
-            }
-
-            impl fmt::Display for Error
-            {
-                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {    #[cfg(feature = "std")]
-                    {
-                        write!(f, "{}", self.inner)
-                    }
-                    #[cfg(all(feature = "getrandom", not(feature = "std")))]
-                    {
-                        getrandom::Error::from(self.code).fmt(f)
-                    }
-                    #[cfg(not(feature = "getrandom"))]
-                    {
-                        write!(f, "error code {}", self.code)
-                    }
-                }
-            }
-
-            impl From<NonZeroU32> for Error
-            {
-                #[inline] fn from(code: NonZeroU32) -> Self
-                {
-                    Error
-                    {
-                        inner: Box::new(ErrorCode(code)),
-                    }
-                }
-            }
-            
-            impl ::error::Error for Error
-            {
-                #[inline] fn source(&self) -> Option<&(dyn ::error::Error + 'static)> {
-                    self.inner.source()
-                }
-            }
-            
-            impl From<Error> for ::io::Error 
-            {
-                #[inline] fn from(error: Error) -> Self {
-                    if let Some(code) = error.raw_os_error() {
-                        ::io::Error::from_raw_os_error(code)
-                    } else {
-                        ::io::Error::new(::io::ErrorKind::Other, error)
-                    }
-                }
-            }
-            
-            #[derive(Debug, Copy, Clone)]
-            struct ErrorCode(NonZeroU32);
-            
-            impl fmt::Display for ErrorCode 
-            {
-                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                {    write!(f, "error code {}", self.0)
-                }
-            }
-            
-            impl ::error::Error for ErrorCode {}
-        } pub use self::error::Error;
-        
-        pub mod impls
-        {
-            /*!
-            Helper functions for implementing `RngCore` functions. */
-            use ::
-            {
-                rand::core::{ RngCore },
-                *,
-            };
-            /*
-            */
-
-            pub fn next_u64_via_u32<R: RngCore + ?Sized>(rng: &mut R) -> u64 {
-               
-                let x = u64::from(rng.next_u32());
-                let y = u64::from(rng.next_u32());
-                (y << 32) | x
-            }
-
-            pub fn fill_bytes_via_next<R: RngCore + ?Sized>(rng: &mut R, dest: &mut [u8]) 
-            {
-                let mut left = dest;
-                while left.len() >= 8 {
-                    let (l, r) = { left }.split_at_mut(8);
-                    left = r;
-                    let chunk: [u8; 8] = rng.next_u64().to_le_bytes();
-                    l.copy_from_slice(&chunk);
-                }
-                let n = left.len();
-                if n > 4 {
-                    let chunk: [u8; 8] = rng.next_u64().to_le_bytes();
-                    left.copy_from_slice(&chunk[..n]);
-                } else if n > 0 {
-                    let chunk: [u8; 4] = rng.next_u32().to_le_bytes();
-                    left.copy_from_slice(&chunk[..n]);
-                }
-            }
-
-            trait Observable: Copy 
-            {
-                type Bytes: AsRef<[u8]>;
-                fn to_le_bytes(self) -> Self::Bytes;
-
-               
-                fn as_byte_slice(x: &[Self]) -> &[u8];
-            }
-            impl Observable for u32 
-            {
-                type Bytes = [u8; 4];
-                fn to_le_bytes(self) -> Self::Bytes {
-                    self.to_le_bytes()
-                }
-                fn as_byte_slice(x: &[Self]) -> &[u8] {
-                    let ptr = x.as_ptr() as *const u8;
-                    let len = x.len() * core::mem::size_of::<Self>();
-                    unsafe { core::slice::from_raw_parts(ptr, len) }
-                }
-            }
-            impl Observable for u64 
-            {
-                type Bytes = [u8; 8];
-                fn to_le_bytes(self) -> Self::Bytes {
-                    self.to_le_bytes()
-                }
-                fn as_byte_slice(x: &[Self]) -> &[u8] {
-                    let ptr = x.as_ptr() as *const u8;
-                    let len = x.len() * core::mem::size_of::<Self>();
-                    unsafe { core::slice::from_raw_parts(ptr, len) }
-                }
-            }
-
-            fn fill_via_chunks<T: Observable>(src: &[T], dest: &mut [u8]) -> (usize, usize) 
-            {
-                let size = core::mem::size_of::<T>();
-                let byte_len = min(src.len() * size, dest.len());
-                let num_chunks = (byte_len + size - 1) / size;
-
-                if cfg!(target_endian = "little") {
-                   
-                    dest[..byte_len].copy_from_slice(&T::as_byte_slice(&src[..num_chunks])[..byte_len]);
-                } else {
-                   
-                    let mut i = 0;
-                    let mut iter = dest[..byte_len].chunks_exact_mut(size);
-                    for chunk in &mut iter {
-                        chunk.copy_from_slice(src[i].to_le_bytes().as_ref());
-                        i += 1;
-                    }
-                    let chunk = iter.into_remainder();
-                    if !chunk.is_empty() {
-                        chunk.copy_from_slice(&src[i].to_le_bytes().as_ref()[..chunk.len()]);
-                    }
-                }
-
-                (num_chunks, byte_len)
-            }
-
-            pub fn fill_via_u32_chunks(src: &[u32], dest: &mut [u8]) -> (usize, usize) 
-            {
-                fill_via_chunks(src, dest)
-            }
-
-            pub fn fill_via_u64_chunks(src: &[u64], dest: &mut [u8]) -> (usize, usize)
-            {
-                fill_via_chunks(src, dest)
-            }
-
-            pub fn next_u32_via_fill<R: RngCore + ?Sized>(rng: &mut R) -> u32 
-            {
-                let mut buf = [0; 4];
-                rng.fill_bytes(&mut buf);
-                u32::from_le_bytes(buf)
-            }
-
-            pub fn next_u64_via_fill<R: RngCore + ?Sized>(rng: &mut R) -> u64 
-            {
-                let mut buf = [0; 8];
-                rng.fill_bytes(&mut buf);
-                u64::from_le_bytes(buf)
-            }
-        }
-        
-        pub mod le
-        {
-            /*!
-            Little-Endian utilities */
-            use ::
-            {
-                *,
-            };
-            /*
-            */
-
-            #[inline] pub fn read_u32_into(src: &[u8], dst: &mut [u32]) {
-                assert!(src.len() >= 4 * dst.len());
-                for (out, chunk) in dst.iter_mut().zip(src.chunks_exact(4)) {
-                    *out = u32::from_le_bytes(chunk.try_into().unwrap());
-                }
-            }
-
-            #[inline] pub fn read_u64_into(src: &[u8], dst: &mut [u64]) {
-                assert!(src.len() >= 8 * dst.len());
-                for (out, chunk) in dst.iter_mut().zip(src.chunks_exact(8)) {
-                    *out = u64::from_le_bytes(chunk.try_into().unwrap());
-                }
-            }
-        }
-        
-
-        pub trait RngCore 
+            ops::{ DerefMut },
+            *,
+        };
+        /*
+        */
+        pub trait RngCore
         {
             fn next_u32(&mut self) -> u32;
             fn next_u64(&mut self) -> u64;
-            ///
-            fn fill_bytes(&mut self, dest: &mut [u8]);
-            ///
-            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error>;
-        }
-        pub trait CryptoRng {}
-        pub trait CryptoRngCore: RngCore
-        {
-
-            fn as_rngcore(&mut self) -> &mut dyn RngCore;
+            fn fill_bytes(&mut self, dst: &mut [u8]);
         }
 
-        impl<T: CryptoRng + RngCore> CryptoRngCore for T
+        impl<T: DerefMut> RngCore for T where
+        T::Target: RngCore
         {
-            fn as_rngcore(&mut self) -> &mut dyn RngCore {
-                self
+            #[inline] fn next_u32(&mut self) -> u32 { self.deref_mut().next_u32() }
+            #[inline] fn next_u64(&mut self) -> u64 { self.deref_mut().next_u64() }
+            #[inline] fn fill_bytes(&mut self, dst: &mut [u8]) { self.deref_mut().fill_bytes(dst); }
+        }
+        
+        pub trait CryptoRng: RngCore {}
+
+        impl<T: DerefMut> CryptoRng for T where T::Target: CryptoRng {}
+        
+        pub trait TryRngCore
+        {
+            type Error: fmt::Debug + fmt::Display;
+            fn try_next_u32(&mut self) -> Result<u32, Self::Error>;
+            fn try_next_u64(&mut self) -> Result<u64, Self::Error>;
+            fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error>;
+            
+            fn unwrap_err(self) -> UnwrapErr<Self> where
+            Self: Sized
+            { UnwrapErr(self) }
+            
+            fn unwrap_mut(&mut self) -> UnwrapMut<'_, Self> { UnwrapMut(self) }
+        }
+        
+        impl<R: RngCore + ?Sized> TryRngCore for R
+        {
+            type Error = ::convert::Infallible;
+
+            #[inline] fn try_next_u32(&mut self) -> Result<u32, Self::Error> { Ok(self.next_u32()) }
+
+            #[inline] fn try_next_u64(&mut self) -> Result<u64, Self::Error> { Ok(self.next_u64()) }
+
+            #[inline] fn try_fill_bytes(&mut self, dst: &mut [u8]) -> Result<(), Self::Error>
+            {
+                self.fill_bytes(dst);
+                Ok(())
+            }
+        }
+        
+        pub trait TryCryptoRng: TryRngCore {}
+
+        impl<R: CryptoRng + ?Sized> TryCryptoRng for R {}
+        
+        #[derive(Debug, Default, Clone, Copy, Eq, PartialEq, Hash)]
+        pub struct UnwrapErr<R: TryRngCore>(pub R);
+
+        impl<R: TryRngCore> RngCore for UnwrapErr<R>
+        {
+            #[inline] fn next_u32(&mut self) -> u32 { self.0.try_next_u32().unwrap() }
+
+            #[inline] fn next_u64(&mut self) -> u64 { self.0.try_next_u64().unwrap() }
+
+            #[inline] fn fill_bytes(&mut self, dst: &mut [u8]) { self.0.try_fill_bytes(dst).unwrap() }
+        }
+
+        impl<R: TryCryptoRng> CryptoRng for UnwrapErr<R> {}
+        
+        #[derive(Debug, Eq, PartialEq, Hash)]
+        pub struct UnwrapMut<'r, R: TryRngCore + ?Sized>(pub &'r mut R);
+
+        impl<'r, R: TryRngCore + ?Sized> UnwrapMut<'r, R>
+        {
+            #[inline(always)] pub fn re<'b>(&'b mut self) -> UnwrapMut<'b, R> where
+            'r: 'b,
+            {
+                UnwrapMut(self.0)
             }
         }
 
+        impl<R: TryRngCore + ?Sized> RngCore for UnwrapMut<'_, R>
+        {
+            #[inline] fn next_u32(&mut self) -> u32 { self.0.try_next_u32().unwrap() }
+            #[inline] fn next_u64(&mut self) -> u64 { self.0.try_next_u64().unwrap() }
+            #[inline] fn fill_bytes(&mut self, dst: &mut [u8]) { self.0.try_fill_bytes(dst).unwrap() }
+        }
+
+        impl<R: TryCryptoRng + ?Sized> CryptoRng for UnwrapMut<'_, R> {}
+        
         pub trait SeedableRng: Sized
         {
-            type Seed: Sized + Default + AsMut<[u8]>;
-            fn from_seed(seed: Self::Seed) -> Self;
-
-
+            type Seed: Clone + Default + AsRef<[u8]> + AsMut<[u8]>;
             
-            fn seed_from_u64(mut state: u64) -> Self {
-               
+            fn from_seed(seed: Self::Seed) -> Self;
+            
+            fn seed_from_u64(mut state: u64) -> Self
+            {
                 fn pcg32(state: &mut u64) -> [u8; 4] {
                     const MUL: u64 = 6364136223846793005;
                     const INC: u64 = 11634580027462260723;
-
-                   
-                   
+                    
                     *state = state.wrapping_mul(MUL).wrapping_add(INC);
-                    let state = *state;
 
-                   
+                    let state = *state;                    
                     let xorshifted = (((state >> 18) ^ state) >> 27) as u32;
                     let rot = (state >> 59) as u32;
                     let x = xorshifted.rotate_right(rot);
@@ -17539,1907 +17031,1249 @@ pub mod rand
 
                 Self::from_seed(seed)
             }
-
             
+            fn from_rng<R: RngCore + ?Sized>(rng: &mut R) -> Self
+            {
+                let mut seed = Self::Seed::default();
+                rng.fill_bytes(seed.as_mut());
+                Self::from_seed(seed)
+            }
             
-            
-            fn from_rng<R: RngCore>(mut rng: R) -> Result<Self, Error> {
+            fn try_from_rng<R: TryRngCore + ?Sized>(rng: &mut R) -> Result<Self, R::Error>
+            {
                 let mut seed = Self::Seed::default();
                 rng.try_fill_bytes(seed.as_mut())?;
                 Ok(Self::from_seed(seed))
-            } # Panics
-            
-            
-            #[cfg(feature = "getrandom")]
-            #[cfg_attr(doc_cfg, doc(cfg(feature = "getrandom")))]
-            fn from_entropy() -> Self {
-                let mut seed = Self::Seed::default();
-                if let Err(err) = getrandom::getrandom(seed.as_mut()) {
-                    panic!("from_entropy failed: {}", err);
-                }
-                Self::from_seed(seed)
-            }
-        }
-        
-        impl<'a, R: RngCore + ?Sized> RngCore for &'a mut R {
-            #[inline(always)]
-            fn next_u32(&mut self) -> u32 {
-                (**self).next_u32()
-            }
-
-            #[inline(always)]
-            fn next_u64(&mut self) -> u64 {
-                (**self).next_u64()
-            }
-
-            #[inline(always)]
-            fn fill_bytes(&mut self, dest: &mut [u8]) {
-                (**self).fill_bytes(dest)
-            }
-
-            #[inline(always)]
-            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                (**self).try_fill_bytes(dest)
-            }
-        }
-        
-        impl<R: RngCore + ?Sized> RngCore for Box<R>
-        {
-            #[inline(always)]
-            fn next_u32(&mut self) -> u32 {
-                (**self).next_u32()
-            }
-
-            #[inline(always)]
-            fn next_u64(&mut self) -> u64 {
-                (**self).next_u64()
-            }
-
-            #[inline(always)]
-            fn fill_bytes(&mut self, dest: &mut [u8]) {
-                (**self).fill_bytes(dest)
-            }
-
-            #[inline(always)]
-            fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                (**self).try_fill_bytes(dest)
-            }
-        }
-        
-        impl ::io::Read for dyn RngCore
-        {
-            fn read(&mut self, buf: &mut [u8]) -> Result<usize, ::io::Error> {
-                self.try_fill_bytes(buf)?;
-                Ok(buf.len())
-            }
-        }
-        
-        impl<'a, R: CryptoRng + ?Sized> CryptoRng for &'a mut R {}
-        
-        impl<R: CryptoRng + ?Sized> CryptoRng for Box<R> {}
-    } pub use self::core::{CryptoRng, Error, RngCore, SeedableRng};
-
-    pub mod distributions
-    {
-        /*!
-        Generating random samples from probability distributions */
-        use ::
-        {
-            rand::{ Rng },
-            string::{ String },
-            *,
-        };
-        /*
-        */
-        pub mod uniform
-        {
-            /*!
-            A distribution uniformly sampling numbers within a given range. */
-            use ::
-            {
-                ops::{ Range, RangeInclusive, RangeTo, RangeToInclusive },
-                rand::{ Distribution, Rng, RngCore },
-                *,
-            };
-            /*
-            */
-            mod float
-            {
-                /*!
-                */
-                use ::
-                {
-                    *,
-                };
-                /*
-                */
-            } pub use self::float::UniformFloat;
-            
-            mod int
-            {
-                /*!
-                */
-                use ::
-                {
-                    *,
-                };
-                /*
-                */
-            } pub use int::{UniformInt, UniformUsize};
-            
-            mod other
-            {
-                /*!
-                */
-                use ::
-                {
-                    *,
-                };
-                /*
-                */
-            }  pub use other::{UniformChar, UniformDuration};
-
-            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-            pub enum Error
-            {
-
-                EmptyRange,
-
-                NonFinite,
-            }
-
-            impl fmt::Display for Error
-            {
-                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                    f.write_str(match self {
-                        Error::EmptyRange => "low > high (or equal if exclusive) in uniform distribution",
-                        Error::NonFinite => "Non-finite range in uniform distribution",
-                    })
-                }
             }
             
-            impl std::error::Error for Error {}
-
-            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-            pub struct Uniform<X: SampleUniform>(X::Sampler);
-
-            impl<X: SampleUniform> Uniform<X>
-            {
-
-                pub fn new<B1, B2>(low: B1, high: B2) -> Result<Uniform<X>, Error> where
-                B1: SampleBorrow<X> + Sized,
-                B2: SampleBorrow<X> + Sized
-                {
-                    X::Sampler::new(low, high).map(Uniform)
-                }
-                ///
-                pub fn new_inclusive<B1, B2>(low: B1, high: B2) -> Result<Uniform<X>, Error>
-                where
-                    B1: SampleBorrow<X> + Sized,
-                    B2: SampleBorrow<X> + Sized,
-                {
-                    X::Sampler::new_inclusive(low, high).map(Uniform)
-                }
-            }
-
-            impl<X: SampleUniform> Distribution<X> for Uniform<X> {
-                fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> X {
-                    self.0.sample(rng)
-                }
-            }
-            pub trait SampleUniform: Sized {
-
-                type Sampler: UniformSampler<X = Self>;
-            }
-
-            pub trait UniformSampler: Sized
-            {
-
-                type X;
-
-
-                fn new<B1, B2>(low: B1, high: B2) -> Result<Self, Error> where
-                B1: SampleBorrow<Self::X> + Sized,
-                B2: SampleBorrow<Self::X> + Sized;
-
-                fn new_inclusive<B1, B2>(low: B1, high: B2) -> Result<Self, Error> where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized;
-
-
-                fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X;
-                fn sample_single<R: Rng + ?Sized, B1, B2>(
-                    low: B1,
-                    high: B2,
-                    rng: &mut R,
-                ) -> Result<Self::X, Error> where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
-                {
-                    let uniform: Self = UniformSampler::new(low, high)?;
-                    Ok(uniform.sample(rng))
-                }
-                fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>
-                (
-                    low: B1,
-                    high: B2,
-                    rng: &mut R,
-                ) -> Result<Self::X, Error> where
-                B1: SampleBorrow<Self::X> + Sized,
-                B2: SampleBorrow<Self::X> + Sized,
-                {
-                    let uniform: Self = UniformSampler::new_inclusive(low, high)?;
-                    Ok(uniform.sample(rng))
-                }
-            }
-
-            impl<X: SampleUniform> TryFrom<Range<X>> for Uniform<X>
-            {
-                type Error = Error;
-
-                fn try_from(r: Range<X>) -> Result<Uniform<X>, Error> {
-                    Uniform::new(r.start, r.end)
-                }
-            }
-
-            impl<X: SampleUniform> TryFrom<RangeInclusive<X>> for Uniform<X>
-            {
-                type Error = Error;
-
-                fn try_from(r: ::core::ops::RangeInclusive<X>) -> Result<Uniform<X>, Error> {
-                    Uniform::new_inclusive(r.start(), r.end())
-                }
-            }
-            pub trait SampleBorrow<Borrowed>
-            {
-
-                fn borrow(&self) -> &Borrowed;
-            }
-
-            impl<Borrowed> SampleBorrow<Borrowed> for Borrowed where
-            Borrowed: SampleUniform,
-            {
-                #[inline( always )] fn borrow(&self) -> &Borrowed { self }
-            }
-
-            impl<Borrowed> SampleBorrow<Borrowed> for &Borrowed where
-            Borrowed: SampleUniform,
-            {
-                #[inline( always )] fn borrow(&self) -> &Borrowed { self }
-            }
-
-
-            pub trait SampleRange<T>
-            {
-
-                fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<T, Error>;
-
-
-                fn is_empty(&self) -> bool;
-            }
-
-            impl<T: SampleUniform + PartialOrd> SampleRange<T> for Range<T> {
-                #[inline] fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<T, Error> {
-                    T::Sampler::sample_single(self.start, self.end, rng)
-                }
-
-                #[inline] fn is_empty(&self) -> bool {
-                    !(self.start < self.end)
-                }
-            }
-
-            impl<T: SampleUniform + PartialOrd> SampleRange<T> for RangeInclusive<T> {
-                #[inline] fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<T, Error> {
-                    T::Sampler::sample_single_inclusive(self.start(), self.end(), rng)
-                }
-
-                #[inline] fn is_empty(&self) -> bool {
-                    !(self.start() <= self.end())
-                }
-            }
-
-            macro_rules! impl_sample_range_u {
-                ($t:ty) => {
-                    impl SampleRange<$t> for RangeTo<$t> {
-                        #[inline]
-                        fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<$t, Error> {
-                            <$t as SampleUniform>::Sampler::sample_single(0, self.end, rng)
-                        }
-
-                        #[inline]
-                        fn is_empty(&self) -> bool {
-                            0 == self.end
-                        }
-                    }
-
-                    impl SampleRange<$t> for RangeToInclusive<$t> {
-                        #[inline]
-                        fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<$t, Error> {
-                            <$t as SampleUniform>::Sampler::sample_single_inclusive(0, self.end, rng)
-                        }
-
-                        #[inline]
-                        fn is_empty(&self) -> bool {
-                            false
-                        }
-                    }
-                };
-            }
-
-            impl_sample_range_u!(u8);
-            impl_sample_range_u!(u16);
-            impl_sample_range_u!(u32);
-            impl_sample_range_u!(u64);
-            impl_sample_range_u!(u128);
-            impl_sample_range_u!(usize);
-        }
-
-        #[derive(Clone, Copy, Debug)]
-        pub struct Standard;
-
-        pub trait Distribution<T> {
-
-            fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T;
-             let mut rng = thread_rng();
-             let v: Vec<f32> = Standard.sample_iter(&mut rng).take(16).collect();
-                 .collect();
-            ///
-            ///
-            fn sample_iter<R>(self, rng: R) -> DistIter<Self, R, T> where
-                R: Rng,
-                Self: Sized,
-            {
-                DistIter {
-                    distr: self,
-                    rng,
-                    phantom: ::core::marker::PhantomData,
-                }
-            }
+            fn fork(&mut self) -> Self where
+            Self: RngCore
+            { Self::from_rng(self) }
             
-             let mut rng = thread_rng();
-            ///
-            fn map<F, S>(self, func: F) -> DistMap<Self, F, T, S> where
-                F: Fn(T) -> S,
-                Self: Sized,
-            {
-                DistMap {
-                    distr: self,
-                    func,
-                    phantom: ::core::marker::PhantomData,
-                }
-            }
+            fn try_fork(&mut self) -> Result<Self, Self::Error> where
+            Self: TryRngCore
+            { Self::try_from_rng(self) }
         }
-
-        impl<'a, T, D: Distribution<T>> Distribution<T> for &'a D 
-        {
-            fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T {
-                (*self).sample(rng)
-            }
-        }
-
-        #[derive(Debug)]
-        pub struct DistIter<D, R, T> 
-        {
-            distr: D,
-            rng: R,
-            phantom: ::core::marker::PhantomData<T>,
-        }
-
-        impl<D, R, T> Iterator for DistIter<D, R, T> where
-            D: Distribution<T>,
-            R: Rng,
-        {
-            type Item = T;
-
-            #[inline(always)]
-            fn next(&mut self) -> Option<T> {
-               
-               
-               
-                Some(self.distr.sample(&mut self.rng))
-            }
-
-            fn size_hint(&self) -> (usize, Option<usize>) {
-                (usize::max_value(), None)
-            }
-        }
-
-        impl<D, R, T> iter::FusedIterator for DistIter<D, R, T> where
-            D: Distribution<T>,
-            R: Rng,
-        {
-        }
-
-        #[derive(Debug)]
-        pub struct DistMap<D, F, T, S>
-        {
-            distr: D,
-            func: F,
-            phantom: ::core::marker::PhantomData<fn(T) -> S>,
-        }
-
-        impl<D, F, T, S> Distribution<S> for DistMap<D, F, T, S> where
-            D: Distribution<T>,
-            F: Fn(T) -> S,
-        {
-            fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> S {
-                (self.func)(self.distr.sample(rng))
-            }
-        }
-
-        pub trait DistString 
-        {
-
-            fn append_string<R: Rng + ?Sized>(&self, rng: &mut R, string: &mut String, len: usize);
-
-
-            #[inline] fn sample_string<R: Rng + ?Sized>(&self, rng: &mut R, len: usize) -> String {
-                let mut s = String::new();
-                self.append_string(rng, &mut s, len);
-                s
-            }
-        }
-    } use self::distributions::{Distribution, Standard};
+    }
 
     pub mod rng
     {
         /*!
-        [`Rng`] trait */
+        [`Rng`] trait*/
         use ::
         {
             num::{ Wrapping },
             rand::
             {
-                core::{ Error, RngCore },
-                distributions::{ self, Distribution, Standard },
+                core::{ RngCore },
+                uniform::{SampleRange, SampleUniform},
+                Distribution, StandardUniform
             },
             *,
         };
         /*
-        use crate::distributions::uniform::{SampleRange, SampleUniform};
         */
-
-        pub trait Rng: RngCore 
+        pub trait Rng: RngCore
         {
-            #[inline] fn gen<T>(&mut self) -> T
-            where Standard: Distribution<T> {
-                Standard.sample(self)
+            #[inline] fn random<T>(&mut self) -> T where
+            StandardUniform: Distribution<T>
+            {
+                StandardUniform.sample(self)
             }
             
-            fn gen_range<T, R>(&mut self, range: R) -> T
-            where
-                T: SampleUniform,
-                R: SampleRange<T>
+            #[inline] fn random_iter<T>(self) -> Iter<StandardUniform, Self, T> where
+            Self: Sized,
+            StandardUniform: Distribution<T>,
+            {
+                StandardUniform.sample_iter(self)
+            }
+            
+            #[track_caller] fn random_range<T, R>(&mut self, range: R) -> T where
+            T: SampleUniform,
+            R: SampleRange<T>
             {
                 assert!(!range.is_empty(), "cannot sample empty range");
-                range.sample_single(self)
+                range.sample_single(self).unwrap()
             }
             
-            fn sample<T, D: Distribution<T>>(&mut self, distr: D) -> T {
-                distr.sample(self)
-            }            
-            
-            fn sample_iter<T, D>(self, distr: D) -> distributions::DistIter<D, Self, T> where
-                D: Distribution<T>,
-                Self: Sized,
+            #[inline] #[track_caller] fn random_bool(&mut self, p: f64) -> bool 
             {
-                distr.sample_iter(self)
+                match distr::Bernoulli::new(p) 
+                {
+                    Ok(d) => self.sample(d),
+                    Err(_) => panic!("p={:?} is outside range [0.0, 1.0]", p),
+                }
             }
             
-            fn fill<T: Fill + ?Sized>(&mut self, dest: &mut T) {
-                dest.try_fill(self).unwrap_or_else(|_| panic!("Rng::fill failed"))
+            #[inline] #[track_caller] fn random_ratio(&mut self, numerator: u32, denominator: u32) -> bool
+            {
+                match distr::Bernoulli::from_ratio(numerator, denominator)
+                {
+                    Ok(d) => self.sample(d),
+                    Err(_) => panic!
+                    (
+                        "p={}/{} is outside range [0.0, 1.0]",
+                        numerator, denominator
+                    ),
+                }
             }
             
-            fn try_fill<T: Fill + ?Sized>(&mut self, dest: &mut T) -> Result<(), Error> {
-                dest.try_fill(self)
-            }
+            fn sample<T, D: Distribution<T>>(&mut self, distr: D) -> T { distr.sample(self) }
             
-            #[inline] fn gen_bool(&mut self, p: f64) -> bool {
-                let d = distributions::Bernoulli::new(p).unwrap();
-                self.sample(d)
-            }
+            fn sample_iter<T, D>(self, distr: D) -> Iter<D, Self, T> where
+            D: Distribution<T>,
+            Self: Sized
+            { distr.sample_iter(self) }
             
-            #[inline] fn gen_ratio(&mut self, numerator: u32, denominator: u32) -> bool {
-                let d = distributions::Bernoulli::from_ratio(numerator, denominator).unwrap();
-                self.sample(d)
-            }
+            #[track_caller] fn fill<T: Fill>(&mut self, dest: &mut [T]) { Fill::fill_slice(dest, self) }
+            
+            #[inline] #[deprecated
+            (
+                since = "0.9.0",
+                note = "Renamed to `random` to avoid conflict with the new `gen` keyword in Rust 2024."
+            )] fn r#gen<T>(&mut self) -> T where
+            StandardUniform: Distribution<T>
+            { self.random() }
+            
+            #[inline] #[deprecated
+            (
+                since = "0.9.0", note = "Renamed to `random_range`"
+            )] fn gen_range<T, R>(&mut self, range: R) -> T where
+            T: SampleUniform,
+            R: SampleRange<T>
+            { self.random_range(range) }
+            
+            #[inline] #[deprecated
+            (
+                since = "0.9.0", note = "Renamed to `random_bool`"
+            )]
+            
+            fn gen_bool(&mut self, p: f64) -> bool { self.random_bool(p) }
+            
+            #[inline] #[deprecated
+            (
+                since = "0.9.0", note = "Renamed to `random_ratio`"
+            )] fn gen_ratio(&mut self, numerator: u32, denominator: u32) -> bool { self.random_ratio(numerator, denominator) }
         }
 
         impl<R: RngCore + ?Sized> Rng for R {}
 
-        pub trait Fill 
+        pub trait Fill: Sized
         {
-
-            fn try_fill<R: Rng + ?Sized>(&mut self, rng: &mut R) -> Result<(), Error>;
+            fn fill_slice<R: Rng + ?Sized>(this: &mut [Self], rng: &mut R);
         }
 
-        macro_rules! impl_fill_each 
+        impl Fill for u8
         {
+            fn fill_slice<R: Rng + ?Sized>(this: &mut [Self], rng: &mut R) { rng.fill_bytes(this) }
+        }
+        
+        const unsafe fn __unsafe() {}
+        
+        macro_rules! impl_fill {
             () => {};
-            ($t:ty) => {
-                impl Fill for [$t] {
-                    fn try_fill<R: Rng + ?Sized>(&mut self, rng: &mut R) -> Result<(), Error> {
-                        for elt in self.iter_mut() {
-                            *elt = rng.gen();
-                        }
-                        Ok(())
-                    }
-                }
+            (to_le! plain $x:ident) => {
+                $x.to_le()
             };
-            ($t:ty, $($tt:ty,)*) => {
-                impl_fill_each!($t);
-                impl_fill_each!($($tt,)*);
+            (to_le! wrapping $x:ident) => {
+                Wrapping($x.0.to_le())
             };
-        }
-
-        impl_fill_each!(bool, char, f32, f64,);
-
-        impl Fill for [u8] 
-        {
-            fn try_fill<R: Rng + ?Sized>(&mut self, rng: &mut R) -> Result<(), Error> {
-                rng.try_fill_bytes(self)
-            }
-        }
-
-        macro_rules! impl_fill 
-        {
-            () => {};
-            ($t:ty) => {
-                impl Fill for [$t] {
-                    #[inline(never)]
-                    fn try_fill<R: Rng + ?Sized>(&mut self, rng: &mut R) -> Result<(), Error> {
-                        if self.len() > 0 {
-                            rng.try_fill_bytes(unsafe {
-                                slice::from_raw_parts_mut(self.as_mut_ptr()
+            (fill_slice! $t:ty, $to_le:tt) => {
+                fn fill_slice<R: Rng + ?Sized>(this: &mut [Self], rng: &mut R) {
+                    if this.len() > 0 {
+                        let size = mem::size_of_val(this);
+                        rng.fill_bytes(
+                            unsafe {
+                                slice::from_raw_parts_mut(this.as_mut_ptr()
                                     as *mut u8,
-                                    self.len() * mem::size_of::<$t>()
+                                    size
                                 )
-                            })?;
-                            for x in self {
-                                *x = x.to_le();
                             }
+                        );
+                        for x in this {
+                            *x = impl_fill!(to_le! $to_le x);
                         }
-                        Ok(())
-                    }
-                }
-
-                impl Fill for [Wrapping<$t>] {
-                    #[inline(never)]
-                    fn try_fill<R: Rng + ?Sized>(&mut self, rng: &mut R) -> Result<(), Error> {
-                        if self.len() > 0 {
-                            rng.try_fill_bytes(unsafe {
-                                slice::from_raw_parts_mut(self.as_mut_ptr()
-                                    as *mut u8,
-                                    self.len() * mem::size_of::<$t>()
-                                )
-                            })?;
-                            for x in self {
-                            *x = Wrapping(x.0.to_le());
-                            }
-                        }
-                        Ok(())
                     }
                 }
             };
-            ($t:ty, $($tt:ty,)*) => {
+            ($t:ty) => {{
+                __unsafe();
+
+                impl Fill for $t {
+                    impl_fill!(fill_slice! $t, plain);
+                }
+
+                impl Fill for Wrapping<$t> {
+                    impl_fill!(fill_slice! $t, wrapping);
+                }}
+            };
+            ($t:ty, $($tt:ty,)*) => {{
                 impl_fill!($t);
-               
-               
                 impl_fill!($($tt,)*);
-            }
+            }}
         }
+        
+        const _: () = unsafe { impl_fill!(u16, u32, u64, u128,) };
+        const _: () = unsafe { impl_fill!(i8, i16, i32, i64, i128,) };
 
-        impl_fill!(u16, u32, u64, usize, u128,);
-        impl_fill!(i8, i16, i32, i64, isize, i128,);
     } pub use self::rng::{Fill, Rng};
-
-    pub mod rngs
+    
+    pub mod uniform
     {
         /*!
-        Random number generators and adapters */
+        */
         use ::
         {
+            convert::TryFrom,
+            ops::{Range, RangeInclusive, RangeTo, RangeToInclusive},
+            rand::
+            {
+               Distribution, Rng, RngCore
+            },
             *,
         };
-
-        pub use ::rand::core::OsRng;
         /*
-        pub use rand_core::OsRng;
         */
-        pub mod adapter
+        macro_rules! impl_sample_range_u
         {
-            /*!
-            Wrappers / adapters forming RNGs*/
-            use ::
+            ($t:ty) =>
             {
-                *,
+                impl SampleRange<$t> for RangeTo<$t>
+                {
+                    #[inline] fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<$t, Error> { <$t as SampleUniform>::Sampler::sample_single(0, self.end, rng) }
+
+                    #[inline] fn is_empty(&self) -> bool { 0 == self.end }
+                }
+
+                impl SampleRange<$t> for RangeToInclusive<$t>
+                {
+                    #[inline] fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<$t, Error> { <$t as SampleUniform>::Sampler::sample_single_inclusive(0, self.end, rng) }
+
+                    #[inline] fn is_empty(&self) -> bool { false }
+                }
             };
-            /*
-            */
-            pub mod read
-            {
-                /*!
-                A wrapper around any Read to treat it as an RNG. */
-                use ::
-                {
-                    io::{ Read },
-                    rand::
-                    {
-                        core::{ impls, Error, RngCore },
-                    },
-                    *,
-                };
-                /*
-                */
-
-                #[derive(Debug)]
-                #[deprecated(since="0.8.4", note="removal due to lack of usage")]
-                pub struct ReadRng<R> 
-                {
-                    reader: R,
-                }
-
-                impl<R: Read> ReadRng<R> 
-                {
-
-                    pub fn new(r: R) -> ReadRng<R> {
-                        ReadRng { reader: r }
-                    }
-                }
-
-                impl<R: Read> RngCore for ReadRng<R> 
-                {
-                    fn next_u32(&mut self) -> u32 {
-                        impls::next_u32_via_fill(self)
-                    }
-
-                    fn next_u64(&mut self) -> u64 {
-                        impls::next_u64_via_fill(self)
-                    }
-
-                    fn fill_bytes(&mut self, dest: &mut [u8]) {
-                        self.try_fill_bytes(dest).unwrap_or_else(|err| {
-                            panic!(
-                                "reading random bytes from Read implementation failed; error: {}",
-                                err
-                            )
-                        });
-                    }
-
-                    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                        if dest.is_empty() {
-                            return Ok(());
-                        }
-                       
-                        self.reader
-                            .read_exact(dest)
-                            .map_err(|e| Error::new(ReadError(e)))
-                    }
-                }
-
-                #[derive(Debug)]
-                #[deprecated(since="0.8.4")]
-                pub struct ReadError(::io::Error);
-
-                impl fmt::Display for ReadError 
-                {
-                    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
-                    {
-                        write!(f, "ReadError: {}", self.0)
-                    }
-                }
-
-                impl ::error::Error for ReadError
-                {
-                    fn source(&self) -> Option<&(dyn ::error::Error + 'static)> 
-                    {
-                        Some(&self.0)
-                    }
-                }
-            } pub use self::read::{ReadError, ReadRng};
-            
-            pub mod reseeding
-            {
-                /*!
-                A wrapper around another PRNG that reseeds it after it generates a certain number of random bytes.*/
-                use ::
-                {
-                    mem::{ size_of },
-                    rand::
-                    {
-                        core::
-                        {
-                            block::{BlockRng, BlockRngCore},
-                            CryptoRng, Error, RngCore, SeedableRng,
-                        },
-                    },
-                    *,
-                };
-                /*
-                */
-
-                #[derive(Debug)]
-                pub struct ReseedingRng<R, Rsdr>(BlockRng<ReseedingCore<R, Rsdr>>) where
-                R: BlockRngCore + SeedableRng,
-                Rsdr: RngCore;
-
-                impl<R, Rsdr> ReseedingRng<R, Rsdr> where
-                R: BlockRngCore + SeedableRng,
-                Rsdr: RngCore,
-                {
-                    ///
-                    pub fn new(rng: R, threshold: u64, reseeder: Rsdr) -> Self {
-                        ReseedingRng(BlockRng::new(ReseedingCore::new(rng, threshold, reseeder)))
-                    }
-
-
-                    pub fn reseed(&mut self) -> Result<(), Error> {
-                        self.0.core.reseed()
-                    }
-                }
-
-               
-               
-                impl<R, Rsdr: RngCore> RngCore for ReseedingRng<R, Rsdr> where
-                R: BlockRngCore<Item = u32> + SeedableRng,
-                <R as BlockRngCore>::Results: AsRef<[u32]> + AsMut<[u32]>,
-                {
-                    #[inline(always)]
-                    fn next_u32(&mut self) -> u32 {
-                        self.0.next_u32()
-                    }
-
-                    #[inline(always)]
-                    fn next_u64(&mut self) -> u64 {
-                        self.0.next_u64()
-                    }
-
-                    fn fill_bytes(&mut self, dest: &mut [u8]) {
-                        self.0.fill_bytes(dest)
-                    }
-
-                    fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                        self.0.try_fill_bytes(dest)
-                    }
-                }
-
-                impl<R, Rsdr> Clone for ReseedingRng<R, Rsdr> where
-                R: BlockRngCore + SeedableRng + Clone,
-                Rsdr: RngCore + Clone,
-                {
-                    fn clone(&self) -> ReseedingRng<R, Rsdr> {
-                       
-                       
-                        ReseedingRng(BlockRng::new(self.0.core.clone()))
-                    }
-                }
-
-                impl<R, Rsdr> CryptoRng for ReseedingRng<R, Rsdr> where
-                R: BlockRngCore + SeedableRng + CryptoRng,
-                Rsdr: RngCore + CryptoRng,
-                {
-                }
-
-                #[derive(Debug)]
-                struct ReseedingCore<R, Rsdr> 
-                {
-                    inner: R,
-                    reseeder: Rsdr,
-                    threshold: i64,
-                    bytes_until_reseed: i64,
-                    fork_counter: usize,
-                }
-
-                impl<R, Rsdr> BlockRngCore for ReseedingCore<R, Rsdr> where
-                    R: BlockRngCore + SeedableRng,
-                    Rsdr: RngCore,
-                {
-                    type Item = <R as BlockRngCore>::Item;
-                    type Results = <R as BlockRngCore>::Results;
-
-                    fn generate(&mut self, results: &mut Self::Results) {
-                        let global_fork_counter = fork::get_fork_counter();
-                        if self.bytes_until_reseed <= 0 || self.is_forked(global_fork_counter) {
-                           
-                           
-                           
-                            return self.reseed_and_generate(results, global_fork_counter);
-                        }
-                        let num_bytes = results.as_ref().len() * size_of::<Self::Item>();
-                        self.bytes_until_reseed -= num_bytes as i64;
-                        self.inner.generate(results);
-                    }
-                }
-
-                impl<R, Rsdr> ReseedingCore<R, Rsdr> where
-                    R: BlockRngCore + SeedableRng,
-                    Rsdr: RngCore,
-                {
-
-                    fn new(rng: R, threshold: u64, reseeder: Rsdr) -> Self {
-                        use ::core::i64::MAX;
-                        fork::register_fork_handler();
-
-                       
-                       
-                       
-                       
-                        let threshold = if threshold == 0 {
-                            MAX
-                        } else if threshold <= MAX as u64 {
-                            threshold as i64
-                        } else {
-                            MAX
-                        };
-
-                        ReseedingCore {
-                            inner: rng,
-                            reseeder,
-                            threshold: threshold as i64,
-                            bytes_until_reseed: threshold as i64,
-                            fork_counter: 0,
-                        }
-                    }
-
-
-                    fn reseed(&mut self) -> Result<(), Error> {
-                        R::from_rng(&mut self.reseeder).map(|result| {
-                            self.bytes_until_reseed = self.threshold;
-                            self.inner = result
-                        })
-                    }
-
-                    fn is_forked(&self, global_fork_counter: usize) -> bool {
-                       
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                       
-                       
-                        (self.fork_counter.wrapping_sub(global_fork_counter) as isize) < 0
-                    }
-
-                    #[inline(never)]
-                    fn reseed_and_generate
-                    (
-                        &mut self, results: &mut <Self as BlockRngCore>::Results, global_fork_counter: usize,
-                    )
-                    {
-                        let num_bytes = results.as_ref().len() * size_of::<<R as BlockRngCore>::Item>();
-
-                        if let Err(e) = self.reseed()
-                        {
-                            let _ = e;
-                        }
-
-                        self.fork_counter = global_fork_counter;
-
-                        self.bytes_until_reseed = self.threshold - num_bytes as i64;
-                        self.inner.generate(results);
-                    }
-                }
-
-                impl<R, Rsdr> Clone for ReseedingCore<R, Rsdr> where
-                    R: BlockRngCore + SeedableRng + Clone,
-                    Rsdr: RngCore + Clone,
-                {
-                    fn clone(&self) -> ReseedingCore<R, Rsdr> {
-                        ReseedingCore {
-                            inner: self.inner.clone(),
-                            reseeder: self.reseeder.clone(),
-                            threshold: self.threshold,
-                            bytes_until_reseed: 0,
-                            fork_counter: self.fork_counter,
-                        }
-                    }
-                }
-
-                impl<R, Rsdr> CryptoRng for ReseedingCore<R, Rsdr> where
-                    R: BlockRngCore + SeedableRng + CryptoRng,
-                    Rsdr: RngCore + CryptoRng,
-                {
-                }
-                
-                mod fork
-                {
-                    use ::sync::atomic::{AtomicUsize, Ordering};
-                    use ::sync::Once;
-                    
-                    static RESEEDING_RNG_FORK_COUNTER: AtomicUsize = AtomicUsize::new(0);
-
-                    pub fn get_fork_counter() -> usize 
-                    {
-                        RESEEDING_RNG_FORK_COUNTER.load(Ordering::Relaxed)
-                    }
-
-                    extern "C" fn fork_handler() 
-                    {
-                       
-                       
-                        RESEEDING_RNG_FORK_COUNTER.fetch_add(1, Ordering::Relaxed);
-                    }
-
-                    pub fn register_fork_handler() 
-                    {
-                        static REGISTER: Once = Once::new();
-                        REGISTER.call_once(|| {
-                           
-                            let ret = unsafe { libc::pthread_atfork(
-                                Some(fork_handler),
-                                Some(fork_handler),
-                                Some(fork_handler),
-                            ) };
-                            if ret != 0 {
-                                panic!("libc::pthread_atfork failed with code {}", ret);
-                            }
-                        });
-                    }
-                }
-            } pub use self::reseeding::ReseedingRng;
         }
-        
-        pub mod std
+
+        pub mod float
         {
             /*!
-            The standard RNG */
+            `UniformFloat` implementation */
             use ::
             {
-                rand::{ CryptoRng, Error, RngCore, SeedableRng },
-                *,
-            };
-            /*
-            pub use rand_chacha::ChaCha12Core as Core;
-            use rand_chacha::ChaCha12Rng as Rng;
-            */
-            #[derive(Clone, Debug, PartialEq, Eq)]
-            pub struct StdRng(Rng);
-
-            impl RngCore for StdRng
-            {
-                #[inline( always )] fn next_u32(&mut self) -> u32 {
-                    self.0.next_u32()
-                }
-
-                #[inline( always )] fn next_u64(&mut self) -> u64 {
-                    self.0.next_u64()
-                }
-
-                #[inline( always )] fn fill_bytes(&mut self, dest: &mut [u8]) {
-                    self.0.fill_bytes(dest);
-                }
-
-                #[inline( always )] fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                    self.0.try_fill_bytes(dest)
-                }
-            }
-
-            impl SeedableRng for StdRng
-            {
-                type Seed = <Rng as SeedableRng>::Seed;
-
-                #[inline( always )] fn from_seed(seed: Self::Seed) -> Self {
-                    StdRng(Rng::from_seed(seed))
-                }
-
-                #[inline( always )] fn from_rng<R: RngCore>(rng: R) -> Result<Self, Error> {
-                    Rng::from_rng(rng).map(StdRng)
-                }
-            }
-
-            impl CryptoRng for StdRng {}
-        } pub use self::std::StdRng;
-        
-        pub mod thread
-        {
-            /*!
-            Thread-local random number generator */
-            use ::
-            {
-                cell::{ UnsafeCell },
+                ops::{ Range, RangeInclusive, RangeTo, RangeToInclusive },
                 rand::
                 {
-                    rngs::adapter::ReseedingRng,
-                    rngs::OsRng,
-                    CryptoRng, Error, RngCore, SeedableRng,
+                    ::simd::prelude::*,
+                    float::IntoFloat,
+                    BoolAsSIMD, FloatAsSIMD, FloatSIMDUtils, IntAsSIMD, Rng
                 },
-                rc::{ Rc },
                 *,
             };
 
-            use super::Core;
+            use super::{Error, SampleBorrow, SampleUniform, UniformSampler};
             /*
             */
-            const THREAD_RNG_RESEED_THRESHOLD: u64 = 1024 * 64;
-
-            #[derive(Clone, Debug)]
-            pub struct ThreadRng
+            macro_rules! uniform_float_impl
             {
-               
-                rng: Rc<UnsafeCell<ReseedingRng<Core, OsRng>>>,
+                ($($meta:meta)?, $ty:ty, $uty:ident, $f_scalar:ident, $u_scalar:ident, $bits_to_discard:expr) => {
+                    $(#[cfg($meta)])?
+                    impl UniformFloat<$ty>
+                    {
+                        fn new_bounded(low: $ty, high: $ty, mut scale: $ty) -> Self
+                        {
+                            let max_rand = <$ty>::splat(1.0 as $f_scalar - $f_scalar::EPSILON);
+
+                            loop
+                            {
+                                let mask = (scale * max_rand + low).gt_mask(high);
+                                if !mask.any() {
+                                    break;
+                                }
+                                scale = scale.decrease_masked(mask);
+                            }
+
+                            debug_assert!(<$ty>::splat(0.0).all_le(scale));
+
+                            UniformFloat { low, scale }
+                        }
+                    }
+
+                    $(#[cfg($meta)])?
+                    impl SampleUniform for $ty
+                    {
+                        type Sampler = UniformFloat<$ty>;
+                    }
+
+                    $(#[cfg($meta)])?
+                    impl UniformSampler for UniformFloat<$ty>
+                    {
+                        type X = $ty;
+                        fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+                            #[cfg(debug_assertions)]
+                            if !(low.all_finite()) || !(high.all_finite()) {
+                                return Err(Error::NonFinite);
+                            }
+                            if !(low.all_lt(high)) {
+                                return Err(Error::EmptyRange);
+                            }
+
+                            let scale = high - low;
+                            if !(scale.all_finite()) {
+                                return Err(Error::NonFinite);
+                            }
+
+                            Ok(Self::new_bounded(low, high, scale))
+                        }
+
+                        fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+                            
+                            if !low.all_le(high) { return Err(Error::EmptyRange); }
+
+                            let max_rand = <$ty>::splat(1.0 as $f_scalar - $f_scalar::EPSILON);
+                            let scale = (high - low) / max_rand;
+                            if !scale.all_finite() { return Err(Error::NonFinite); }
+
+                            Ok(Self::new_bounded(low, high, scale))
+                        }
+
+                        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X
+                        {
+                            let value1_2 = (rng.random::<$uty>() >> $uty::splat($bits_to_discard)).into_float_with_exponent(0);
+                            let value0_1 = value1_2 - <$ty>::splat(1.0);
+                            value0_1 * self.scale + self.low
+                        }
+
+                        #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low_b: B1, high_b: B2, rng: &mut R) -> Result<Self::X, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            Self::sample_single_inclusive(low_b, high_b, rng)
+                        }
+
+                        #[inline] fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>(low_b: B1, high_b: B2, rng: &mut R) -> Result<Self::X, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+                            
+                            if !low.all_finite() || !high.all_finite() { return Err(Error::NonFinite); }
+
+                            if !low.all_le(high) { return Err(Error::EmptyRange); }
+
+                            let scale = high - low;
+                            
+                            if !scale.all_finite() { return Err(Error::NonFinite); }
+                            
+                            let value1_2 = (rng.random::<$uty>() >> $uty::splat($bits_to_discard)).into_float_with_exponent(0);
+                                
+                            let value0_1 = value1_2 - <$ty>::splat(1.0);
+                            Ok(value0_1 * scale + low)
+                        }
+                    }
+                };
             }
 
-            thread_local!
-            (
-               
-               
-                static THREAD_RNG_KEY: Rc<UnsafeCell<ReseedingRng<Core, OsRng>>> = {
-                    let r = Core::from_rng(OsRng).unwrap_or_else(|err|
-                            panic!("could not initialize thread_rng: {}", err));
-                    let rng = ReseedingRng::new(r,
-                                                THREAD_RNG_RESEED_THRESHOLD,
-                                                OsRng);
-                    Rc::new(UnsafeCell::new(rng))
-                }
-            );
-
-
-            pub fn thread_rng() -> ThreadRng
+            #[derive(Clone, Copy, Debug, PartialEq)]
+            pub struct UniformFloat<X>
             {
-                let rng = THREAD_RNG_KEY.with(|t| t.clone());
-                ThreadRng { rng }
+                low: X,
+                scale: X,
             }
 
-            impl Default for ThreadRng
-            {
-                fn default() -> ThreadRng {
-                    crate::prelude::thread_rng()
-                }
-            }
+            uniform_float_impl! { , f32, u32, f32, u32, 32 - 23 }
+            uniform_float_impl! { , f64, u64, f64, u64, 64 - 52 }            
+            uniform_float_impl! { feature = "simd_support", f32x2, u32x2, f32, u32, 32 - 23 }            
+            uniform_float_impl! { feature = "simd_support", f32x4, u32x4, f32, u32, 32 - 23 }            
+            uniform_float_impl! { feature = "simd_support", f32x8, u32x8, f32, u32, 32 - 23 }            
+            uniform_float_impl! { feature = "simd_support", f32x16, u32x16, f32, u32, 32 - 23 }            
+            uniform_float_impl! { feature = "simd_support", f64x2, u64x2, f64, u64, 64 - 52 }            
+            uniform_float_impl! { feature = "simd_support", f64x4, u64x4, f64, u64, 64 - 52 }            
+            uniform_float_impl! { feature = "simd_support", f64x8, u64x8, f64, u64, 64 - 52 }
+        } pub use self::float::UniformFloat;
 
-            impl RngCore for ThreadRng
-            {
-                #[inline( always )] fn next_u32(&mut self) -> u32 {
-                   
-                   
-                    let rng = unsafe { &mut *self.rng.get() };
-                    rng.next_u32()
-                }
-
-                #[inline( always )] fn next_u64(&mut self) -> u64 {
-                   
-                   
-                    let rng = unsafe { &mut *self.rng.get() };
-                    rng.next_u64()
-                }
-
-                fn fill_bytes(&mut self, dest: &mut [u8]) {
-                   
-                   
-                    let rng = unsafe { &mut *self.rng.get() };
-                    rng.fill_bytes(dest)
-                }
-
-                fn try_fill_bytes(&mut self, dest: &mut [u8]) -> Result<(), Error> {
-                   
-                   
-                    let rng = unsafe { &mut *self.rng.get() };
-                    rng.try_fill_bytes(dest)
-                }
-            }
-
-            impl CryptoRng for ThreadRng {}
-        } pub use self::thread::ThreadRng;
-    } pub use self::rngs::thread::thread_rng;
-
-    pub mod seq
-    {
-        /*!
-        Sequence-related functionality */
-        use ::
-        {
-            ops::{ Index },
-            rand::{ distributions::WeightedError, Rng },
-            vec::{ Vec },
-            *,
-        };
-        /*
-        use crate::distributions::uniform::{SampleBorrow, SampleUniform};
-        */
-        pub mod index
+        pub mod integer
         {
             /*!
-            */
+            `UniformInt` implementation */
             use ::
             {
-                collections::{ BTreeSet, HashSet },
-                rand::{ distributions::{ uniform::SampleUniform, Distribution, Uniform, WeightedError }, Rng },
-                vec::{ self, Vec },
+                rand::
+                {
+                    ::
+                    {
+                        simd::prelude::*,
+                        simd::{LaneCount, SupportedLaneCount},
+                    },
+                    uniform::{ Error, SampleBorrow, SampleUniform, UniformSampler },
+                    Rng, WideningMultiply, Distribution, StandardUniform
+                },
                 *,
             };
             /*
             */
-
-            #[derive(Clone, Debug)]
-            pub enum IndexVec
+            macro_rules! uniform_int_impl
             {
-                #[doc(hidden)]
-                U32(Vec<u32>),
-                #[doc(hidden)]
-                USize(Vec<usize>),
-            }
-
-            impl IndexVec
-            {
-
-                #[inline]
-                pub fn len(&self) -> usize {
-                    match *self {
-                        IndexVec::U32(ref v) => v.len(),
-                        IndexVec::USize(ref v) => v.len(),
-                    }
-                }
-
-                #[inline]
-                pub fn is_empty(&self) -> bool {
-                    match *self {
-                        IndexVec::U32(ref v) => v.is_empty(),
-                        IndexVec::USize(ref v) => v.is_empty(),
-                    }
-                }
-                #[inline]
-                pub fn index(&self, index: usize) -> usize {
-                    match *self {
-                        IndexVec::U32(ref v) => v[index] as usize,
-                        IndexVec::USize(ref v) => v[index],
-                    }
-                }
-
-                #[inline]
-                pub fn into_vec(self) -> Vec<usize> {
-                    match self {
-                        IndexVec::U32(v) => v.into_iter().map(|i| i as usize).collect(),
-                        IndexVec::USize(v) => v,
-                    }
-                }
-
-                #[inline]
-                pub fn iter(&self) -> IndexVecIter<'_> {
-                    match *self {
-                        IndexVec::U32(ref v) => IndexVecIter::U32(v.iter()),
-                        IndexVec::USize(ref v) => IndexVecIter::USize(v.iter()),
-                    }
-                }
-            }
-
-            impl IntoIterator for IndexVec
-            {
-                type Item = usize;
-                type IntoIter = IndexVecIntoIter;
-
-
-                #[inline] fn into_iter(self) -> IndexVecIntoIter {
-                    match self {
-                        IndexVec::U32(v) => IndexVecIntoIter::U32(v.into_iter()),
-                        IndexVec::USize(v) => IndexVecIntoIter::USize(v.into_iter()),
-                    }
-                }
-            }
-
-            impl PartialEq for IndexVec
-            {
-                fn eq(&self, other: &IndexVec) -> bool {
-                    use self::IndexVec::*;
-                    match (self, other) {
-                        (&U32(ref v1), &U32(ref v2)) => v1 == v2,
-                        (&USize(ref v1), &USize(ref v2)) => v1 == v2,
-                        (&U32(ref v1), &USize(ref v2)) => {
-                            (v1.len() == v2.len()) && (v1.iter().zip(v2.iter()).all(|(x, y)| *x as usize == *y))
-                        }
-                        (&USize(ref v1), &U32(ref v2)) => {
-                            (v1.len() == v2.len()) && (v1.iter().zip(v2.iter()).all(|(x, y)| *x == *y as usize))
-                        }
-                    }
-                }
-            }
-
-            impl From<Vec<u32>> for IndexVec
-            {
-                #[inline] fn from(v: Vec<u32>) -> Self {
-                    IndexVec::U32(v)
-                }
-            }
-
-            impl From<Vec<usize>> for IndexVec
-            {
-                #[inline] fn from(v: Vec<usize>) -> Self {
-                    IndexVec::USize(v)
-                }
-            }
-
-            #[derive(Debug)]
-            pub enum IndexVecIter<'a>
-            {
-                #[doc(hidden)]
-                U32(slice::Iter<'a, u32>),
-                #[doc(hidden)]
-                USize(slice::Iter<'a, usize>),
-            }
-
-            impl<'a> Iterator for IndexVecIter<'a>
-            {
-                type Item = usize;
-
-                #[inline] fn next(&mut self) -> Option<usize> {
-                    use self::IndexVecIter::*;
-                    match *self {
-                        U32(ref mut iter) => iter.next().map(|i| *i as usize),
-                        USize(ref mut iter) => iter.next().cloned(),
-                    }
-                }
-
-                #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
-                    match *self {
-                        IndexVecIter::U32(ref v) => v.size_hint(),
-                        IndexVecIter::USize(ref v) => v.size_hint(),
-                    }
-                }
-            }
-
-            impl<'a> ExactSizeIterator for IndexVecIter<'a> {}
-
-            #[derive(Clone, Debug)]
-            pub enum IndexVecIntoIter
-            {
-                #[doc(hidden)]
-                U32(vec::IntoIter<u32>),
-                #[doc(hidden)]
-                USize(vec::IntoIter<usize>),
-            }
-
-            impl Iterator for IndexVecIntoIter
-            {
-                type Item = usize;
-
-                #[inline] fn next(&mut self) -> Option<Self::Item> {
-                    use self::IndexVecIntoIter::*;
-                    match *self {
-                        U32(ref mut v) => v.next().map(|i| i as usize),
-                        USize(ref mut v) => v.next(),
-                    }
-                }
-
-                #[inline] fn size_hint(&self) -> (usize, Option<usize>) {
-                    use self::IndexVecIntoIter::*;
-                    match *self {
-                        U32(ref v) => v.size_hint(),
-                        USize(ref v) => v.size_hint(),
-                    }
-                }
-            }
-
-            impl ExactSizeIterator for IndexVecIntoIter {}
-            pub fn sample<R>(rng: &mut R, length: usize, amount: usize) -> IndexVec where
-            R: Rng + ?Sized
-            {
-                if amount > length {
-                    panic!("`amount` of samples must be less than or equal to `length`");
-                }
-                if length > (::core::u32::MAX as usize) {
-                   
-                   
-                    return sample_rejection(rng, length, amount);
-                }
-                let amount = amount as u32;
-                let length = length as u32;
-
-               
-               
-               
-
-                if amount < 163 {
-                    const C: [[f32; 2]; 2] = [[1.6, 8.0 / 45.0], [10.0, 70.0 / 9.0]];
-                    let j = if length < 500_000 { 0 } else { 1 };
-                    let amount_fp = amount as f32;
-                    let m4 = C[0][j] * amount_fp;
-                   
-                    if amount > 11 && (length as f32) < (C[1][j] + m4) * amount_fp {
-                        sample_inplace(rng, length, amount)
-                    } else {
-                        sample_floyd(rng, length, amount)
-                    }
-                } else {
-                    const C: [f32; 2] = [270.0, 330.0 / 9.0];
-                    let j = if length < 500_000 { 0 } else { 1 };
-                    if (length as f32) < C[j] * (amount as f32) {
-                        sample_inplace(rng, length, amount)
-                    } else {
-                        sample_rejection(rng, length, amount)
-                    }
-                }
-            }
-            pub fn sample_weighted<R, F, X>
-            (
-                rng: &mut R, length: usize, weight: F, amount: usize,
-            ) -> Result<IndexVec, WeightedError> where
-            R: Rng + ?Sized,
-            F: Fn(usize) -> X,
-            X: Into<f64>,
-            {
-                if length > (core::u32::MAX as usize) {
-                    sample_efraimidis_spirakis(rng, length, weight, amount)
-                } else {
-                    assert!(amount <= core::u32::MAX as usize);
-                    let amount = amount as u32;
-                    let length = length as u32;
-                    sample_efraimidis_spirakis(rng, length, weight, amount)
-                }
-            }
-            fn sample_efraimidis_spirakis<R, F, X, N>
-            (
-                rng: &mut R, length: N, weight: F, amount: N,
-            ) -> Result<IndexVec, WeightedError> where
-            R: Rng + ?Sized,
-            F: Fn(usize) -> X,
-            X: Into<f64>,
-            N: UInt,
-            IndexVec: From<Vec<N>>,
-            {
-                if amount == N::zero() {
-                    return Ok(IndexVec::U32(Vec::new()));
-                }
-
-                if amount > length {
-                    panic!("`amount` of samples must be less than or equal to `length`");
-                }
-
-                struct Element<N> {
-                    index: N,
-                    key: f64,
-                }
-                
-                impl<N> PartialOrd for Element<N> {
-                    fn partial_cmp(&self, other: &Self) -> Option<core::cmp::Ordering> {
-                        self.key.partial_cmp(&other.key)
-                    }
-                }
-                
-                impl<N> Ord for Element<N> {
-                    fn cmp(&self, other: &Self) -> core::cmp::Ordering {
-                       
-                       
-                        self.partial_cmp(other).unwrap()
-                    }
-                }
-                
-                impl<N> PartialEq for Element<N> {
-                    fn eq(&self, other: &Self) -> bool {
-                        self.key == other.key
-                    }
-                }
-                
-                impl<N> Eq for Element<N> {}
-
-                #[cfg(feature = "nightly")]
+                ($ty:ty, $uty:ty, $sample_ty:ident) =>
                 {
-                    let mut candidates = Vec::with_capacity(length.as_usize());
-                    let mut index = N::zero();
-                    while index < length {
-                        let weight = weight(index.as_usize()).into();
-                        if !(weight >= 0.) {
-                            return Err(WeightedError::InvalidWeight);
+                    impl SampleUniform for $ty
+                    {
+                        type Sampler = UniformInt<$ty>;
+                    }
+
+                    impl UniformSampler for UniformInt<$ty>
+                    {
+                        type X = $ty;
+
+                        #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+
+                            if !(low < high) { return Err(Error::EmptyRange); }
+
+                            UniformSampler::new_inclusive(low, high - 1)
                         }
 
-                        let key = rng.gen::<f64>().powf(1.0 / weight);
-                        candidates.push(Element { index, key });
+                        #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
 
-                        index += N::one();
+                            if !(low <= high) { return Err(Error::EmptyRange); }
+
+                            let range = high.wrapping_sub(low).wrapping_add(1) as $uty;
+                            let thresh = if range > 0
+                            {
+                                let range = $sample_ty::from(range);
+                                (range.wrapping_neg() % range)
+                            } else { 0 };
+
+                            Ok(UniformInt
+                            {
+                                low,
+                                range: range as $ty,
+                                thresh: thresh as $uty as $ty,
+                            })
+                        }
+                        
+                        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X
+                        {
+                            let range = self.range as $uty as $sample_ty;
+                            
+                            if range == 0 { return rng.random(); }
+
+                            let thresh = self.thresh as $uty as $sample_ty;
+                            let hi = loop
+                            {
+                                let (hi, lo) = rng.random::<$sample_ty>().wmul(range);
+                                if lo >= thresh { break hi; }
+                            };
+
+                            self.low.wrapping_add(hi as $ty)
+                        }
+
+                        #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>
+                        (
+                            low_b: B1,
+                            high_b: B2,
+                            rng: &mut R,
+                        ) -> Result<Self::X, Error> where
+                        B1: SampleBorrow<Self::X> + Sized,
+                        B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+
+                            if !(low < high) { return Err(Error::EmptyRange); }
+
+                            Self::sample_single_inclusive(low, high - 1, rng)
+                        }
+                        
+                        #[inline] fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>
+                        (
+                            low_b: B1,
+                            high_b: B2,
+                            rng: &mut R,
+                        ) -> Result<Self::X, Error> where
+                        B1: SampleBorrow<$ty> + Sized,
+                        B2: SampleBorrow<$ty> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+
+                            if !(low <= high) { return Err(Error::EmptyRange); }
+
+                            let range = high.wrapping_sub(low).wrapping_add(1) as $uty as $sample_ty;
+                            
+                            if range == 0 { return Ok(rng.random()); }
+
+                            let (mut result, mut lo) = rng.random::<$sample_ty>().wmul(range);
+                            
+                            while lo > range.wrapping_neg()
+                            {
+                                let (new_hi, new_lo) = (rng.random::<$sample_ty>()).wmul(range);
+                                match lo.checked_add(new_hi)
+                                {
+                                    Some(x) if x < $sample_ty::MAX => { break; }
+                                    
+                                    None =>
+                                    {
+                                        result += 1;
+                                        break;
+                                    }
+                                    
+                                    _ =>
+                                    {
+                                        lo = new_lo;
+                                        continue;
+                                    }
+                                }
+                            }
+
+                            Ok(low.wrapping_add(result as $ty))
+                        }
+                    }
+                };
+            }
+            
+            macro_rules! uniform_simd_int_impl
+            {
+                ($ty:ident, $unsigned:ident) => {
+                    // The "pick the largest zone that can fit in an `u32`" optimization
+                    // is less useful here. Multiple lanes complicate things, we don't
+                    // know the PRNG's minimal output size, and casting to a larger vector
+                    // is generally a bad idea for SIMD performance. The user can still
+                    // implement it manually.
+
+                    #[cfg(feature = "simd_support")]
+                    impl<const LANES: usize> SampleUniform for Simd<$ty, LANES>
+                    where
+                        LaneCount<LANES>: SupportedLaneCount,
+                        Simd<$unsigned, LANES>:
+                            WideningMultiply<Output = (Simd<$unsigned, LANES>, Simd<$unsigned, LANES>)>,
+                        StandardUniform: Distribution<Simd<$unsigned, LANES>>,
+                    {
+                        type Sampler = UniformInt<Simd<$ty, LANES>>;
                     }
 
-                   
-                   
-                   
-                   
-                    let (_, mid, greater)
-                        = candidates.select_nth_unstable(length.as_usize() - amount.as_usize());
+                    #[cfg(feature = "simd_support")]
+                    impl<const LANES: usize> UniformSampler for UniformInt<Simd<$ty, LANES>>
+                    where
+                        LaneCount<LANES>: SupportedLaneCount,
+                        Simd<$unsigned, LANES>:
+                            WideningMultiply<Output = (Simd<$unsigned, LANES>, Simd<$unsigned, LANES>)>,
+                        StandardUniform: Distribution<Simd<$unsigned, LANES>>,
+                    {
+                        type X = Simd<$ty, LANES>;
 
-                    let mut result: Vec<N> = Vec::with_capacity(amount.as_usize());
-                    result.push(mid.index);
-                    for element in greater {
-                        result.push(element.index);
+                        #[inline] // if the range is constant, this helps LLVM to do the
+                                // calculations at compile-time.
+                        fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error>
+                            where B1: SampleBorrow<Self::X> + Sized,
+                                B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+                            if !(low.simd_lt(high).all()) {
+                                return Err(Error::EmptyRange);
+                            }
+                            UniformSampler::new_inclusive(low, high - Simd::splat(1))
+                        }
+
+                        #[inline] // if the range is constant, this helps LLVM to do the
+                                // calculations at compile-time.
+                        fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error>
+                            where B1: SampleBorrow<Self::X> + Sized,
+                                B2: SampleBorrow<Self::X> + Sized
+                        {
+                            let low = *low_b.borrow();
+                            let high = *high_b.borrow();
+                            if !(low.simd_le(high).all()) {
+                                return Err(Error::EmptyRange);
+                            }
+
+                            // NOTE: all `Simd` operations are inherently wrapping,
+                            //       see https://doc.rust-lang.org/std/simd/struct.Simd.html
+                            let range: Simd<$unsigned, LANES> = ((high - low) + Simd::splat(1)).cast();
+
+                            // We must avoid divide-by-zero by using 0 % 1 == 0.
+                            let not_full_range = range.simd_gt(Simd::splat(0));
+                            let modulo = not_full_range.select(range, Simd::splat(1));
+                            let ints_to_reject = range.wrapping_neg() % modulo;
+
+                            Ok(UniformInt {
+                                low,
+                                // These are really $unsigned values, but store as $ty:
+                                range: range.cast(),
+                                thresh: ints_to_reject.cast(),
+                            })
+                        }
+
+                        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
+                            let range: Simd<$unsigned, LANES> = self.range.cast();
+                            let thresh: Simd<$unsigned, LANES> = self.thresh.cast();
+
+                            // This might seem very slow, generating a whole new
+                            // SIMD vector for every sample rejection. For most uses
+                            // though, the chance of rejection is small and provides good
+                            // general performance. With multiple lanes, that chance is
+                            // multiplied. To mitigate this, we replace only the lanes of
+                            // the vector which fail, iteratively reducing the chance of
+                            // rejection. The replacement method does however add a little
+                            // overhead. Benchmarking or calculating probabilities might
+                            // reveal contexts where this replacement method is slower.
+                            let mut v: Simd<$unsigned, LANES> = rng.random();
+                            loop {
+                                let (hi, lo) = v.wmul(range);
+                                let mask = lo.simd_ge(thresh);
+                                if mask.all() {
+                                    let hi: Simd<$ty, LANES> = hi.cast();
+                                    // wrapping addition
+                                    let result = self.low + hi;
+                                    // `select` here compiles to a blend operation
+                                    // When `range.eq(0).none()` the compare and blend
+                                    // operations are avoided.
+                                    let v: Simd<$ty, LANES> = v.cast();
+                                    return range.simd_gt(Simd::splat(0)).select(result, v);
+                                }
+                                // Replace only the failing lanes
+                                v = mask.select(v, rng.random());
+                            }
+                        }
                     }
-                    Ok(IndexVec::from(result))
-                }
+                };
 
-                #[cfg(not(feature = "nightly"))]
+                // bulk implementation
+                ($(($unsigned:ident, $signed:ident)),+) => {
+                    $(
+                        uniform_simd_int_impl!($unsigned, $unsigned);
+                        uniform_simd_int_impl!($signed, $unsigned);
+                    )+
+                };
+            }
+            
+            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+            pub struct UniformInt<X>
+            {
+                pub low: X,
+                pub range: X,
+                thresh: X,
+            }
+
+            uniform_int_impl! { i8, u8, u32 }
+            uniform_int_impl! { i16, u16, u32 }
+            uniform_int_impl! { i32, u32, u32 }
+            uniform_int_impl! { i64, u64, u64 }
+            uniform_int_impl! { i128, u128, u128 }
+            uniform_int_impl! { u8, u8, u32 }
+            uniform_int_impl! { u16, u16, u32 }
+            uniform_int_impl! { u32, u32, u32 }
+            uniform_int_impl! { u64, u64, u64 }
+            uniform_int_impl! { u128, u128, u128 }
+            
+            uniform_simd_int_impl! { (u8, i8), (u16, i16), (u32, i32), (u64, i64) }
+            
+            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+            pub struct UniformUsize
+            {
+                low: usize,
+                range: usize,
+                thresh: usize
+            }
+
+            #[cfg(any(target_pointer_width = "32", target_pointer_width = "64"))]
+            impl SampleUniform for usize
+            {
+                type Sampler = UniformUsize;
+            }
+            
+            impl UniformSampler for UniformUsize
+            {
+                type X = usize;
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
                 {
-                    use alloc::collections::BinaryHeap;
+                    let low = *low_b.borrow();
+                    let high = *high_b.borrow();
 
-                   
-                   
-                    let mut candidates = BinaryHeap::with_capacity(length.as_usize());
-                    let mut index = N::zero();
-                    while index < length {
-                        let weight = weight(index.as_usize()).into();
-                        if !(weight >= 0.) {
-                            return Err(WeightedError::InvalidWeight);
+                    if !(low < high) { return Err(Error::EmptyRange); }
+
+                    UniformSampler::new_inclusive(low, high - 1)
+                }
+
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = *low_b.borrow();
+                    let high = *high_b.borrow();
+
+                    if !(low <= high) { return Err(Error::EmptyRange); }
+
+                    #[cfg(target_pointer_width = "64")] let mode64 = high > (u32::MAX as usize);
+                    #[cfg(target_pointer_width = "32")] let mode64 = false;
+
+                    let (range, thresh);
+
+                    if cfg!(target_pointer_width = "64") && !mode64
+                    {
+                        let range32 = (high as u32).wrapping_sub(low as u32).wrapping_add(1);
+                        range = range32 as usize;
+                        thresh = if range32 > 0
+                        {
+                            (range32.wrapping_neg() % range32) as usize
+                        } else { 0 };
+                    }
+                    
+                    else
+                    {
+                        range = high.wrapping_sub(low).wrapping_add(1);
+                        thresh = if range > 0 { range.wrapping_neg() % range } else { 0 };
+                    }
+
+                    Ok(UniformUsize
+                    {
+                        low,
+                        range,
+                        thresh,
+                        #[cfg(target_pointer_width = "64")]
+                        mode64,
+                    })
+                }
+
+                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> usize
+                {
+                    #[cfg(target_pointer_width = "32")] let mode32 = true;
+                    #[cfg(target_pointer_width = "64")] let mode32 = !self.mode64;
+
+                    if mode32
+                    {
+                        let range = self.range as u32;
+                        if range == 0 {
+                            return rng.random::<u32>() as usize;
                         }
 
-                        let key = rng.gen::<f64>().powf(1.0 / weight);
-                        candidates.push(Element { index, key });
-
-                        index += N::one();
-                    }
-
-                    let mut result: Vec<N> = Vec::with_capacity(amount.as_usize());
-                    while result.len() < amount.as_usize() {
-                        result.push(candidates.pop().unwrap().index);
-                    }
-                    Ok(IndexVec::from(result))
-                }
-            }
-
-            fn sample_floyd<R>(rng: &mut R, length: u32, amount: u32) -> IndexVec where
-            R: Rng + ?Sized
-            {
-                let floyd_shuffle = amount < 50;
-
-                debug_assert!(amount <= length);
-                let mut indices = Vec::with_capacity(amount as usize);
-                for j in length - amount..length {
-                    let t = rng.gen_range(0..=j);
-                    if floyd_shuffle {
-                        if let Some(pos) = indices.iter().position(|&x| x == t) {
-                            indices.insert(pos, j);
-                            continue;
-                        }
-                    } else if indices.contains(&t) {
-                        indices.push(j);
-                        continue;
-                    }
-                    indices.push(t);
-                }
-                if !floyd_shuffle {
-                   
-                    for i in (1..amount).rev() {
-                       
-                        indices.swap(i as usize, rng.gen_range(0..=i) as usize);
-                    }
-                }
-                IndexVec::from(indices)
-            }
-
-            fn sample_inplace<R>(rng: &mut R, length: u32, amount: u32) -> IndexVec where
-            R: Rng + ?Sized
-            {
-                debug_assert!(amount <= length);
-                let mut indices: Vec<u32> = Vec::with_capacity(length as usize);
-                indices.extend(0..length);
-                for i in 0..amount {
-                    let j: u32 = rng.gen_range(i..length);
-                    indices.swap(i as usize, j as usize);
-                }
-                indices.truncate(amount as usize);
-                debug_assert_eq!(indices.len(), amount as usize);
-                IndexVec::from(indices)
-            }
-
-            trait UInt: Copy + PartialOrd + Ord + PartialEq + Eq + SampleUniform + ::hash::Hash + ::ops::AddAssign
-            {
-                fn zero() -> Self;
-                fn one() -> Self;
-                fn as_usize(self) -> usize;
-            }
-
-            impl UInt for u32
-            {
-                #[inline] fn zero() -> Self {
-                    0
-                }
-
-                #[inline] fn one() -> Self {
-                    1
-                }
-
-                #[inline] fn as_usize(self) -> usize {
-                    self as usize
-                }
-            }
-
-            impl UInt for usize
-            {
-                #[inline] fn zero() -> Self {
-                    0
-                }
-
-                #[inline] fn one() -> Self {
-                    1
-                }
-
-                #[inline] fn as_usize(self) -> usize {
-                    self
-                }
-            }
-
-            fn sample_rejection<X: UInt, R>(rng: &mut R, length: X, amount: X) -> IndexVec where
-                R: Rng + ?Sized,
-                IndexVec: From<Vec<X>>,
-            {
-                debug_assert!(amount < length);
-                let mut cache = HashSet::with_capacity(amount.as_usize());
-                let distr = Uniform::new(X::zero(), length);
-                let mut indices = Vec::with_capacity(amount.as_usize());
-                for _ in 0..amount.as_usize() {
-                    let mut pos = distr.sample(rng);
-                    while !cache.insert(pos) {
-                        pos = distr.sample(rng);
-                    }
-                    indices.push(pos);
-                }
-
-                debug_assert_eq!(indices.len(), amount.as_usize());
-                IndexVec::from(indices)
-            }
-        }
-
-        pub trait SliceRandom
-        {
-
-            type Item;
-
-            fn choose<R>(&self, rng: &mut R) -> Option<&Self::Item> where R: Rng + ?Sized;
-
-            fn choose_mut<R>(&mut self, rng: &mut R) -> Option<&mut Self::Item> where R: Rng + ?Sized;
-
-            fn choose_multiple<R>(&self, rng: &mut R, amount: usize) -> SliceChooseIter<Self, Self::Item> where
-            R: Rng + ?Sized;
-
-            fn choose_weighted<R, F, B, X>
-            (
-                &self, rng: &mut R, weight: F,
-            ) -> Result<&Self::Item, WeightedError> where
-            R: Rng + ?Sized,
-            F: Fn(&Self::Item) -> B,
-            B: SampleBorrow<X>,
-            X: SampleUniform
-            + for<'a> ::ops::AddAssign<&'a X>
-            + ::cmp::PartialOrd<X>
-            + Clone
-            + Default;
-
-            fn choose_weighted_mut<R, F, B, X>
-            (
-                &mut self, rng: &mut R, weight: F,
-            ) -> Result<&mut Self::Item, WeightedError> where
-            R: Rng + ?Sized,
-            F: Fn(&Self::Item) -> B,
-            B: SampleBorrow<X>,
-            X: SampleUniform
-            + for<'a> ::ops::AddAssign<&'a X>
-            + ::cmp::PartialOrd<X>
-            + Clone
-            + Default;
-            fn choose_multiple_weighted<R, F, X>
-            (
-                &self, rng: &mut R, amount: usize, weight: F,
-            ) -> Result<SliceChooseIter<Self, Self::Item>, WeightedError> where
-            R: Rng + ?Sized,
-            F: Fn(&Self::Item) -> X,
-            X: Into<f64>;
-
-            fn shuffle<R>(&mut self, rng: &mut R) where R: Rng + ?Sized;
-
-            fn partial_shuffle<R>( &mut self, rng: &mut R, amount: usize ) ->
-            (&mut [Self::Item], &mut [Self::Item]) where R: Rng + ?Sized;
-        }
-
-        pub trait IteratorRandom: Iterator + Sized
-        {
-
-            fn choose<R>(mut self, rng: &mut R) -> Option<Self::Item> where R: Rng + ?Sized
-            {
-                let (mut lower, mut upper) = self.size_hint();
-                let mut consumed = 0;
-                let mut result = None;
-
-               
-               
-               
-                if upper == Some(lower) {
-                    return if lower == 0 {
-                        None
-                    } else {
-                        self.nth(gen_index(rng, lower))
-                    };
-                }
-
-               
-                loop {
-                    if lower > 1 {
-                        let ix = gen_index(rng, lower + consumed);
-                        let skip = if ix < lower {
-                            result = self.nth(ix);
-                            lower - (ix + 1)
-                        } else {
-                            lower
+                        let thresh = self.thresh as u32;
+                        let hi = loop {
+                            let (hi, lo) = rng.random::<u32>().wmul(range);
+                            if lo >= thresh {
+                                break hi;
+                            }
                         };
-                        if upper == Some(lower) {
-                            return result;
-                        }
-                        consumed += lower;
-                        if skip > 0 {
-                            self.nth(skip - 1);
-                        }
-                    } else {
-                        let elem = self.next();
-                        if elem.is_none() {
-                            return result;
-                        }
-                        consumed += 1;
-                        if gen_index(rng, consumed) == 0 {
-                            result = elem;
-                        }
+                        self.low.wrapping_add(hi as usize)
+                    }
+                    
+                    else
+                    {
+                        let range = self.range as u64;
+                        if range == 0 { return rng.random::<u64>() as usize; }
+
+                        let thresh = self.thresh as u64;
+                        let hi = loop
+                        {
+                            let (hi, lo) = rng.random::<u64>().wmul(range);
+                            if lo >= thresh { break hi; }
+                        };
+
+                        self.low.wrapping_add(hi as usize)
+                    }
+                }
+
+                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>
+                (
+                    low_b: B1,
+                    high_b: B2,
+                    rng: &mut R,
+                ) -> Result<Self::X, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = *low_b.borrow();
+                    let high = *high_b.borrow();
+
+                    if !(low < high) { return Err(Error::EmptyRange); }
+
+                    if cfg!(target_pointer_width = "64") && high > (u32::MAX as usize)
+                    {
+                        return UniformInt::<u64>::sample_single(low as u64, high as u64, rng).map(|x| x as usize);
                     }
 
-                    let hint = self.size_hint();
-                    lower = hint.0;
-                    upper = hint.1;
+                    UniformInt::<u32>::sample_single(low as u32, high as u32, rng).map(|x| x as usize)
+                }
+
+                #[inline] fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>
+                (
+                    low_b: B1,
+                    high_b: B2,
+                    rng: &mut R,
+                ) -> Result<Self::X, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = *low_b.borrow();
+                    let high = *high_b.borrow();
+
+                    if !(low <= high) { return Err(Error::EmptyRange); }
+
+                    if cfg!(target_pointer_width = "64") && high > (u32::MAX as usize)
+                    {
+                        return UniformInt::<u64>::sample_single_inclusive(low as u64, high as u64, rng).map(|x| x as usize);
+                    }
+
+                    UniformInt::<u32>::sample_single_inclusive(low as u32, high as u32, rng).map(|x| x as usize)
                 }
             }
+        } pub use self::integer::{UniformInt, UniformUsize};
 
-            fn choose_stable<R>(mut self, rng: &mut R) -> Option<Self::Item> where R: Rng + ?Sized
-            {
-                let mut consumed = 0;
-                let mut result = None;
-
-                loop {
-                   
-                   
-                   
-                   
-                    let mut next = 0;
-
-                    let (lower, _) = self.size_hint();
-                    if lower >= 2 {
-                        let highest_selected = (0..lower)
-                            .filter(|ix| gen_index(rng, consumed+ix+1) == 0)
-                            .last();
-
-                        consumed += lower;
-                        next = lower;
-
-                        if let Some(ix) = highest_selected {
-                            result = self.nth(ix);
-                            next -= ix + 1;
-                            debug_assert!(result.is_some(), "iterator shorter than size_hint().0");
-                        }
-                    }
-
-                    let elem = self.nth(next);
-                    if elem.is_none() {
-                        return result
-                    }
-
-                    if gen_index(rng, consumed+1) == 0 {
-                        result = elem;
-                    }
-                    consumed += 1;
-                }
-            }
-
-            fn choose_multiple_fill<R>(mut self, rng: &mut R, buf: &mut [Self::Item]) -> usize where
-            R: Rng + ?Sized
-            {
-                let amount = buf.len();
-                let mut len = 0;
-                while len < amount {
-                    if let Some(elem) = self.next() {
-                        buf[len] = elem;
-                        len += 1;
-                    } else {
-                       
-                        return len;
-                    }
-                }
-
-               
-                for (i, elem) in self.enumerate() {
-                    let k = gen_index(rng, i + 1 + amount);
-                    if let Some(slot) = buf.get_mut(k) {
-                        *slot = elem;
-                    }
-                }
-                len
-            }
-
-            fn choose_multiple<R>(mut self, rng: &mut R, amount: usize) -> Vec<Self::Item> where R: Rng + ?Sized
-            {
-                let mut reservoir = Vec::with_capacity(amount);
-                reservoir.extend(self.by_ref().take(amount));
-
-               
-                //
-               
-               
-                if reservoir.len() == amount {
-                    for (i, elem) in self.enumerate() {
-                        let k = gen_index(rng, i + 1 + amount);
-                        if let Some(slot) = reservoir.get_mut(k) {
-                            *slot = elem;
-                        }
-                    }
-                } else {
-                   
-                   
-                    reservoir.shrink_to_fit();
-                }
-                reservoir
-            }
-        }
-        
-        impl<T> SliceRandom for [T]
+        pub mod other
         {
-            type Item = T;
+            /*!
+            `UniformChar`, `UniformDuration` implementations */
+            use ::
+            {
+                rand::
+                {
+                    uniform::{ Error, SampleBorrow, SampleUniform, Uniform, UniformInt, UniformSampler },
+                    Rng, Distribution
+                },
+                time::{ Duration },
+                *,
+            };
+            /*
+            */
+            const CHAR_SURROGATE_START: u32 = 0xD800;
+            const CHAR_SURROGATE_LEN: u32 = 0xE000 - CHAR_SURROGATE_START;
 
-            fn choose<R>(&self, rng: &mut R) -> Option<&Self::Item> where R: Rng + ?Sized {
-                if self.is_empty() {
-                    None
-                } else {
-                    Some(&self[gen_index(rng, self.len())])
+            impl SampleUniform for char
+            {
+                type Sampler = UniformChar;
+            }
+            
+            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+            pub struct UniformChar
+            {
+                sampler: UniformInt<u32>,
+            }
+            
+            fn char_to_comp_u32(c: char) -> u32
+            {
+                match c as u32
+                {
+                    c if c >= CHAR_SURROGATE_START => c - CHAR_SURROGATE_LEN,
+                    c => c,
                 }
             }
 
-            fn choose_mut<R>(&mut self, rng: &mut R) -> Option<&mut Self::Item> where R: Rng + ?Sized {
-                if self.is_empty() {
-                    None
-                } else {
-                    let len = self.len();
-                    Some(&mut self[gen_index(rng, len)])
+            impl UniformSampler for UniformChar
+            {
+                type X = char;
+
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = char_to_comp_u32(*low_b.borrow());
+                    let high = char_to_comp_u32(*high_b.borrow());
+                    let sampler = UniformInt::<u32>::new(low, high);
+                    sampler.map(|sampler| UniformChar { sampler })
+                }
+
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = char_to_comp_u32(*low_b.borrow());
+                    let high = char_to_comp_u32(*high_b.borrow());
+                    let sampler = UniformInt::<u32>::new_inclusive(low, high);
+                    sampler.map(|sampler| UniformChar { sampler })
+                }
+
+                fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X
+                {
+                    let mut x = self.sampler.sample(rng);
+                    
+                    if x >= CHAR_SURROGATE_START
+                    {
+                        x += CHAR_SURROGATE_LEN;
+                    }
+                    
+                    unsafe { ::char::from_u32_unchecked(x) }
                 }
             }
-
-            #[cfg(feature = "alloc")]
-            fn choose_multiple<R>(&self, rng: &mut R, amount: usize) -> SliceChooseIter<Self, Self::Item> where R: Rng + ?Sized {
-                let amount = ::core::cmp::min(amount, self.len());
-                SliceChooseIter {
-                    slice: self,
-                    _phantom: Default::default(),
-                    indices: index::sample(rng, self.len(), amount).into_iter(),
+            
+            impl super::SampleString for Uniform<char>
+            {
+                fn append_string<R: Rng + ?Sized>
+                (
+                    &self,
+                    rng: &mut R,
+                    string: &mut String,
+                    len: usize,
+                )
+                {
+                    let mut hi = self.0.sampler.low + self.0.sampler.range - 1;
+                    
+                    if hi >= CHAR_SURROGATE_START
+                    {
+                        hi += CHAR_SURROGATE_LEN;
+                    }
+                    
+                    let max_char_len = char::from_u32(hi).map(char::len_utf8).unwrap_or(4);
+                    string.reserve(max_char_len * len);
+                    string.extend(self.sample_iter(rng).take(len))
                 }
             }
-
-            #[cfg(feature = "alloc")]
-            fn choose_weighted<R, F, B, X>(
-                &self, rng: &mut R, weight: F,
-            ) -> Result<&Self::Item, WeightedError> where
-                R: Rng + ?Sized,
-                F: Fn(&Self::Item) -> B,
-                B: SampleBorrow<X>,
-                X: SampleUniform
-                    + for<'a> ::core::ops::AddAssign<&'a X>
-                    + ::core::cmp::PartialOrd<X>
-                    + Clone
-                    + Default,
+            
+            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+            pub struct UniformDuration
             {
-                use crate::distributions::{Distribution, WeightedIndex};
-                let distr = WeightedIndex::new(self.iter().map(weight))?;
-                Ok(&self[distr.sample(rng)])
+                mode: UniformDurationMode,
+                offset: u32,
             }
 
-            #[cfg(feature = "alloc")]
-            fn choose_weighted_mut<R, F, B, X>(
-                &mut self, rng: &mut R, weight: F,
-            ) -> Result<&mut Self::Item, WeightedError> where
-                R: Rng + ?Sized,
-                F: Fn(&Self::Item) -> B,
-                B: SampleBorrow<X>,
-                X: SampleUniform
-                    + for<'a> ::core::ops::AddAssign<&'a X>
-                    + ::core::cmp::PartialOrd<X>
-                    + Clone
-                    + Default,
+            #[derive(Debug, Copy, Clone, PartialEq, Eq)]
+            enum UniformDurationMode
             {
-                use crate::distributions::{Distribution, WeightedIndex};
-                let distr = WeightedIndex::new(self.iter().map(weight))?;
-                Ok(&mut self[distr.sample(rng)])
+                Small
+                {
+                    secs: u64,
+                    nanos: Uniform<u32>,
+                },
+                Medium
+                {
+                    nanos: Uniform<u64>,
+                },
+                Large
+                {
+                    max_secs: u64,
+                    max_nanos: u32,
+                    secs: Uniform<u64>,
+                },
             }
 
-            #[cfg(feature = "std")]
-            fn choose_multiple_weighted<R, F, X>(
-                &self, rng: &mut R, amount: usize, weight: F,
-            ) -> Result<SliceChooseIter<Self, Self::Item>, WeightedError> where
-                R: Rng + ?Sized,
-                F: Fn(&Self::Item) -> X,
-                X: Into<f64>,
+            impl SampleUniform for Duration
             {
-                let amount = ::core::cmp::min(amount, self.len());
-                Ok(SliceChooseIter {
-                    slice: self,
-                    _phantom: Default::default(),
-                    indices: index::sample_weighted(
-                        rng,
-                        self.len(),
-                        |idx| weight(&self[idx]).into(),
-                        amount,
-                    )?
-                    .into_iter(),
+                type Sampler = UniformDuration;
+            }
+
+            impl UniformSampler for UniformDuration
+            {
+                type X = Duration;
+
+                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = *low_b.borrow();
+                    let high = *high_b.borrow();
+
+                    if !(low < high) { return Err(Error::EmptyRange); }
+
+                    UniformDuration::new_inclusive(low, high - Duration::new(0, 1))
+                }
+
+                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error> where
+                B1: SampleBorrow<Self::X> + Sized,
+                B2: SampleBorrow<Self::X> + Sized
+                {
+                    let low = *low_b.borrow();
+                    let high = *high_b.borrow();
+
+                    if !(low <= high) { return Err(Error::EmptyRange); }
+
+                    let low_s = low.as_secs();
+                    let low_n = low.subsec_nanos();
+                    let mut high_s = high.as_secs();
+                    let mut high_n = high.subsec_nanos();
+
+                    if high_n < low_n
+                    {
+                        high_s -= 1;
+                        high_n += 1_000_000_000;
+                    }
+
+                    let mode = if low_s == high_s
+                    {
+                        UniformDurationMode::Small
+                        {
+                            secs: low_s,
+                            nanos: Uniform::new_inclusive(low_n, high_n)?,
+                        }
+                    }
+                    
+                    else
+                    {
+                        let max = high_s
+                        .checked_mul(1_000_000_000)
+                        .and_then(|n| n.checked_add(u64::from(high_n)));
+
+                        if let Some(higher_bound) = max
+                        {
+                            let lower_bound = low_s * 1_000_000_000 + u64::from(low_n);
+                            UniformDurationMode::Medium
+                            {
+                                nanos: Uniform::new_inclusive(lower_bound, higher_bound)?,
+                            }
+                        }
+                        
+                        else
+                        {
+                            let max_nanos = high_n - low_n;
+                            UniformDurationMode::Large
+                            {
+                                max_secs: high_s,
+                                max_nanos,
+                                secs: Uniform::new_inclusive(low_s, high_s)?,
+                            }
+                        }
+                    };
+
+                    Ok(UniformDuration
+                    {
+                        mode,
+                        offset: low_n,
+                    })
+                }
+
+                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Duration
+                {
+                    match self.mode
+                    {
+                        UniformDurationMode::Small { secs, nanos } =>
+                        {
+                            let n = nanos.sample(rng);
+                            Duration::new(secs, n)
+                        }
+                        
+                        UniformDurationMode::Medium { nanos } =>
+                        {
+                            let nanos = nanos.sample(rng);
+                            Duration::new(nanos / 1_000_000_000, (nanos % 1_000_000_000) as u32)
+                        }
+                        
+                        UniformDurationMode::Large
+                        {
+                            max_secs,
+                            max_nanos,
+                            secs,
+                        } =>
+                        {
+                            let nano_range = Uniform::new(0, 1_000_000_000).unwrap();
+                            loop
+                            {
+                                let s = secs.sample(rng);
+                                let n = nano_range.sample(rng);
+
+                                if !(s == max_secs && n > max_nanos)
+                                {
+                                    let sum = n + self.offset;
+                                    break Duration::new(s, sum);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } pub use self::other::{UniformChar, UniformDuration};
+        
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub enum Error
+        {
+            EmptyRange,
+            NonFinite,
+        }
+
+        impl fmt::Display for Error
+        {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+            {
+                f.write_str(match self
+                {
+                    Error::EmptyRange => "low > high (or equal if exclusive) in uniform distribution",
+                    Error::NonFinite => "Non-finite range in uniform distribution",
                 })
             }
-
-            fn shuffle<R>(&mut self, rng: &mut R)
-            where R: Rng + ?Sized {
-                for i in (1..self.len()).rev() {
-                   
-                    self.swap(i, gen_index(rng, i + 1));
-                }
-            }
-
-            fn partial_shuffle<R>(
-                &mut self, rng: &mut R, amount: usize,
-            ) -> (&mut [Self::Item], &mut [Self::Item])
-            where R: Rng + ?Sized {
-               
-               
-               
-               
-
-                let len = self.len();
-                let end = if amount >= len { 0 } else { len - amount };
-
-                for i in (end..len).rev() {
-                   
-                    self.swap(i, gen_index(rng, i + 1));
-                }
-                let r = self.split_at_mut(end);
-                (r.1, r.0)
-            }
-        }
-
-        impl<I> IteratorRandom for I where I: Iterator + Sized {}
-
-        #[derive(Debug)]
-        pub struct SliceChooseIter<'a, S: ?Sized + 'a, T: 'a>
-        {
-            slice: &'a S,
-            _phantom: ::core::marker::PhantomData<T>,
-            indices: index::IndexVecIntoIter,
         }
         
-        impl<'a, S: Index<usize, Output = T> + ?Sized + 'a, T: 'a> Iterator for SliceChooseIter<'a, S, T>
-        {
-            type Item = &'a T;
-            
-            fn next(&mut self) -> Option<Self::Item>
-            {
-               
-                self.indices.next().map(|i| &self.slice[i as usize])
-            }
+        impl ::error::Error for Error {}
+        
+        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub struct Uniform<X: SampleUniform>(X::Sampler);
 
-            fn size_hint(&self) -> (usize, Option<usize>)
-            {
-                (self.indices.len(), Some(self.indices.len()))
-            }
-        }
-        
-        impl<'a, S: Index<usize, Output = T> + ?Sized + 'a, T: 'a> ExactSizeIterator
-            for SliceChooseIter<'a, S, T>
+        impl<X: SampleUniform> Uniform<X>
         {
-            fn len(&self) -> usize
+            pub fn new<B1, B2>(low: B1, high: B2) -> Result<Uniform<X>, Error> where
+            B1: SampleBorrow<X> + Sized,
+            B2: SampleBorrow<X> + Sized
             {
-                self.indices.len()
-            }
-        }
-        
-        #[inline] fn gen_index<R: Rng + ?Sized>(rng: &mut R, ubound: usize) -> usize
-        {
-            if ubound <= (::u32::MAX as usize)
-            {
-                rng.gen_range(0..ubound as u32) as usize
+                X::Sampler::new(low, high).map(Uniform)
             }
             
-            else
+            pub fn new_inclusive<B1, B2>(low: B1, high: B2) -> Result<Uniform<X>, Error> where
+            B1: SampleBorrow<X> + Sized,
+            B2: SampleBorrow<X> + Sized
             {
-                rng.gen_range(0..ubound)
+                X::Sampler::new_inclusive(low, high).map(Uniform)
+            }
+        }
+
+        impl<X: SampleUniform> Distribution<X> for Uniform<X>
+        {
+            fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> X { self.0.sample(rng) }
+        }
+        
+        pub trait SampleUniform: Sized
+        {
+            type Sampler: UniformSampler<X = Self>;
+        }
+        
+        pub trait UniformSampler: Sized
+        {    
+            type X;
+            
+            fn new<B1, B2>(low: B1, high: B2) -> Result<Self, Error> where
+            B1: SampleBorrow<Self::X> + Sized,
+            B2: SampleBorrow<Self::X> + Sized;
+            
+            fn new_inclusive<B1, B2>(low: B1, high: B2) -> Result<Self, Error> where
+            B1: SampleBorrow<Self::X> + Sized,
+            B2: SampleBorrow<Self::X> + Sized;
+            
+            fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X;
+            
+            fn sample_single<R: Rng + ?Sized, B1, B2>
+            (
+                low: B1,
+                high: B2,
+                rng: &mut R,
+            ) -> Result<Self::X, Error> where
+            B1: SampleBorrow<Self::X> + Sized,
+            B2: SampleBorrow<Self::X> + Sized
+            {
+                let uniform: Self = UniformSampler::new(low, high)?;
+                Ok(uniform.sample(rng))
+            }
+            
+            fn sample_single_inclusive<R: Rng + ?Sized, B1, B2>
+            (
+                low: B1,
+                high: B2,
+                rng: &mut R,
+            ) -> Result<Self::X, Error> where
+            B1: SampleBorrow<Self::X> + Sized,
+            B2: SampleBorrow<Self::X> + Sized
+            {
+                let uniform: Self = UniformSampler::new_inclusive(low, high)?;
+                Ok(uniform.sample(rng))
+            }
+        }
+
+        impl<X: SampleUniform> TryFrom<Range<X>> for Uniform<X>
+        {
+            type Error = Error;
+            fn try_from(r: Range<X>) -> Result<Uniform<X>, Error> { Uniform::new(r.start, r.end) }
+        }
+
+        impl<X: SampleUniform> TryFrom<RangeInclusive<X>> for Uniform<X>
+        {
+            type Error = Error;
+            fn try_from(r: ::ops::RangeInclusive<X>) -> Result<Uniform<X>, Error> { Uniform::new_inclusive(r.start(), r.end()) }
+        }
+        
+        pub trait SampleBorrow<Borrowed>
+        {
+            fn borrow(&self) -> &Borrowed;
+        }
+
+        impl<Borrowed> SampleBorrow<Borrowed> for Borrowed where
+        Borrowed: SampleUniform
+        {
+            #[inline(always)] fn borrow(&self) -> &Borrowed { self }
+        }
+        
+        impl <Borrowed> SampleBorrow<Borrowed> for &Borrowed where
+        Borrowed: SampleUniform
+        {
+            #[inline(always)] fn borrow(&self) -> &Borrowed { self }
+        }
+        
+        pub trait SampleRange<T>
+        {
+            fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<T, Error>;
+            fn is_empty(&self) -> bool;
+        }
+
+        impl<T: SampleUniform + PartialOrd> SampleRange<T> for Range<T>
+        {
+            #[inline] fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<T, Error> { T::Sampler::sample_single(self.start, self.end, rng) }
+            #[inline] fn is_empty(&self) -> bool { !(self.start < self.end) }
+        }
+
+        impl<T: SampleUniform + PartialOrd> SampleRange<T> for RangeInclusive<T>
+        {
+            #[inline] fn sample_single<R: RngCore + ?Sized>(self, rng: &mut R) -> Result<T, Error> { T::Sampler::sample_single_inclusive(self.start(), self.end(), rng) }
+            #[inline] fn is_empty(&self) -> bool { !(self.start() <= self.end()) }
+        }
+
+        impl_sample_range_u!(u8);
+        impl_sample_range_u!(u16);
+        impl_sample_range_u!(u32);
+        impl_sample_range_u!(u64);
+        impl_sample_range_u!(u128);
+        impl_sample_range_u!(usize);
+    }
+
+    pub trait Distribution<T>
+    {
+        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T;
+        fn sample_iter<R>(self, rng: R) -> Iter<Self, R, T> where
+        R: Rng,
+        Self: Sized,
+        {
+            Iter
+            {
+                distr: self,
+                rng,
+                phantom: ::marker::PhantomData,
+            }
+        }
+        
+        fn map<F, S>(self, func: F) -> Map<Self, F, T, S> where
+        F: Fn(T) -> S,
+        Self: Sized
+        {
+            Map
+            {
+                distr: self,
+                func,
+                phantom: ::marker::PhantomData,
             }
         }
     }
 
-    #[inline] pub fn random<T>() -> T where
-    Standard: Distribution<T>
-    { thread_rng().gen() }
+    impl<T, D: Distribution<T> + ?Sized> Distribution<T> for &D
+    {
+        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> T { (*self).sample(rng) }
+    }
+
+    #[derive(Clone, Copy, Debug, Default)]
+    pub struct StandardUniform;
 }
 
 pub mod rc
@@ -19511,4 +18345,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 19514 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 18348 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
