@@ -905,8 +905,7 @@ extern crate proc_macro;
     {
         ($( Self :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
             => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret {
-                    Self::$method(self $( , $arg )* )
+                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret { Self::$method(self $( , $arg )* )
                 }
             )*};
         ($( $base:ident :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
@@ -1477,7 +1476,7 @@ extern crate proc_macro;
                 $res: Add<T, Output = $res>,
             {
                 fn sum<I>(iter: I) -> Self where
-                    I: Iterator<Item = T>,
+                I: Iterator<Item = T>,
                 {
                     iter.fold(Self::ZERO, <$res>::add)
                 }
@@ -1492,7 +1491,7 @@ extern crate proc_macro;
                 $res: Mul<T, Output = $res>,
             {
                 fn product<I>(iter: I) -> Self where
-                    I: Iterator<Item = T>,
+                I: Iterator<Item = T>,
                 {
                     iter.fold(One::one(), <$res>::mul)
                 }
@@ -2413,8 +2412,6 @@ pub mod num
                             Some(('-', src)) => (false, src),
                             Some((_, _))     => (true,  src),
                         };
-
-                       
                         let mut sig = if is_positive { 0.0 } else { -0.0 };
                        
                         let mut prev_sig = sig;
@@ -2422,8 +2419,7 @@ pub mod num
                        
                         let mut exp_info = None::<(char, usize)>;
 
-                       
-                        for (i, c) in cs.by_ref() {
+for (i, c) in cs.by_ref() {
                             match c.to_digit(radix) {
                                 Some(digit) => {
                                    
@@ -3648,8 +3644,7 @@ pub mod num
                     clamp(self, min, max)
                 }
                 
-                #[inline] fn recip(self) -> Self {
-                    Self::one() / self
+                #[inline] fn recip(self) -> Self { Self::one() / self
                 }
                 
                 #[inline] fn powi(mut self, mut exp: i32) -> Self {
@@ -3688,8 +3683,7 @@ pub mod num
                 }
 
                 forward!
-                {
-                    Self::is_nan(self) -> bool;
+                { Self::is_nan(self) -> bool;
                     Self::is_infinite(self) -> bool;
                     Self::is_finite(self) -> bool;
                     Self::is_normal(self) -> bool;
@@ -3706,8 +3700,7 @@ pub mod num
                 }
                 
                 forward!
-                {
-                    Self::floor(self) -> Self;
+                { Self::floor(self) -> Self;
                     Self::ceil(self) -> Self;
                     Self::round(self) -> Self;
                     Self::trunc(self) -> Self;
@@ -3738,8 +3731,7 @@ pub mod num
                 }
 
                 forward!
-                {
-                    Self::is_nan(self) -> bool;
+                { Self::is_nan(self) -> bool;
                     Self::is_infinite(self) -> bool;
                     Self::is_finite(self) -> bool;
                     Self::is_normal(self) -> bool;
@@ -3756,8 +3748,7 @@ pub mod num
                 }
                 
                 forward!
-                {
-                    Self::floor(self) -> Self;
+                { Self::floor(self) -> Self;
                     Self::ceil(self) -> Self;
                     Self::round(self) -> Self;
                     Self::trunc(self) -> Self;
@@ -3782,8 +3773,7 @@ pub mod num
                 fn min_positive_value() -> Self;
                 
                 
-                fn epsilon() -> Self {
-                    Self::from(f32::EPSILON).expect("Unable to cast from f32::EPSILON")
+                fn epsilon() -> Self { Self::from(f32::EPSILON).expect("Unable to cast from f32::EPSILON")
                 }
 
                 fn max_value() -> Self;
@@ -5019,6 +5009,7 @@ pub mod num
                         1.0 / self
                     }
                 }
+                
                 impl Inv for f64 {
                     type Output = f64;
                     #[inline] fn inv(self) -> f64 {
@@ -6684,8 +6675,7 @@ pub mod num
                         m = m.abs();
                         n = n.abs();
 
-                       
-                        m >>= m.trailing_zeros();
+m >>= m.trailing_zeros();
                         n >>= n.trailing_zeros();
 
                         while m != n {
@@ -6807,8 +6797,7 @@ pub mod num
                        
                         let shift = (m | n).trailing_zeros();
 
-                       
-                        m >>= m.trailing_zeros();
+m >>= m.trailing_zeros();
                         n >>= n.trailing_zeros();
 
                         while m != n {
@@ -6986,7 +6975,7 @@ pub mod num
                     integers::{Integer, Roots},
                     big::
                     {
-                        digit::BigDigit,
+                        digit::{self,BigDigit},
                         uint::{BigUint, IntDigits, to_str_radix_reversed, U32Digits, U64Digits},
                     },
                 },
@@ -7161,6 +7150,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl AddAssign<u128> for BigInt
                 {
                     #[inline] fn add_assign(&mut self, other: u128) {
@@ -7184,6 +7174,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl AddAssign<i32> for BigInt
                 {
                     #[inline] fn add_assign(&mut self, other: i32) {
@@ -7205,6 +7196,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl AddAssign<i64> for BigInt
                 {
                     #[inline] fn add_assign(&mut self, other: i64) {
@@ -7226,6 +7218,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl AddAssign<i128> for BigInt
                 {
                     #[inline] fn add_assign(&mut self, other: i128) {
@@ -8087,6 +8080,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl SubAssign<u32> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: u32) {
@@ -8184,6 +8178,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl SubAssign<i32> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: i32) {
@@ -8216,6 +8211,7 @@ pub mod num
                         }
                     }
                 }
+                
                 impl SubAssign<i64> for BigInt
                 {
                     #[inline] fn sub_assign(&mut self, other: i64) {
@@ -8285,7 +8281,7 @@ pub mod num
                     {
                         big::
                         {
-                            digit::{ BITS, BigDigit, DoubleBigDigit },
+                            digit::{ self, BITS, BigDigit, DoubleBigDigit },
                             BigInt, BigUint, Sign::{ self, Minus, NoSign, Plus},
                         },
                         traits::{ToPrimitive, Zero},
@@ -8737,24 +8733,23 @@ pub mod num
                         } else if bit < trailing_zeros && value {
                             let index_lo = (bit / bits_per_digit).to_usize().unwrap();
                             let index_hi = (trailing_zeros / bits_per_digit).to_usize().unwrap();
-                            let bit_mask_lo = num::big::digit::MAX << (bit % bits_per_digit);
+                            let bit_mask_lo = digit::MAX << (bit % bits_per_digit);
                             let bit_mask_hi =
-                                num::big::digit::MAX >> (bits_per_digit - 1 - (trailing_zeros % bits_per_digit));
+                                digit::MAX >> (bits_per_digit - 1 - (trailing_zeros % bits_per_digit));
                             let digits = data.digits_mut();
 
                             if index_lo == index_hi {
                                 digits[index_lo] ^= bit_mask_lo & bit_mask_hi;
                             } else {
                                 digits[index_lo] = bit_mask_lo;
-                                for digit in &mut digits[index_lo + 1..index_hi] {
-                                    *digit = ::num::big::digit::MAX;
+                                for d in &mut digits[index_lo + 1..index_hi] {
+                                    *d = digit::MAX;
                                 }
                                 digits[index_hi] ^= bit_mask_hi;
                             }
                         } else {}
                     }
                 }
-
             }
 
             pub mod convert
@@ -9036,7 +9031,7 @@ pub mod num
                     }
                 }
 
-                impl ToBigInt for BigUInt
+                impl ToBigInt for BigUint
                 {
                     #[inline] fn to_bigint(&self) -> Option<BigInt> {
                         if self.is_zero() {
@@ -9061,7 +9056,7 @@ pub mod num
                     }
                 }
 
-                impl TryFrom<&BigInt> for BigUInt
+                impl TryFrom<&BigInt> for BigUint
                 {
                     type Error = TryFromBigIntError<()>;
 
@@ -9072,7 +9067,7 @@ pub mod num
                     }
                 }
 
-                impl TryFrom<BigInt> for BigUInt
+                impl TryFrom<BigInt> for BigUint
                 {
                     type Error = TryFromBigIntError<BigInt>;
 
@@ -9197,7 +9192,7 @@ pub mod num
                 }
                 
                 #[inline] fn twos_complement<'a, I>(digits: I) where
-                    I: IntoIterator<Item = &'a mut u8>,
+                I: IntoIterator<Item = &'a mut u8>,
                 {
                     let mut carry = true;
                     for d in digits {
@@ -9297,9 +9292,7 @@ pub mod num
                     if result.is_zero() {
                         return BigInt::ZERO;
                     }
-
-                   
-                    let (sign, mag) = match (x.is_negative() && exponent.is_odd(), modulus.is_negative()) {
+                     let (sign, mag) = match (x.is_negative() && exponent.is_odd(), modulus.is_negative()) {
                         (false, false) => (Plus, result),
                         (true, false) => (Plus, &modulus.data - result),
                         (false, true) => (Minus, &modulus.data - result),
@@ -9508,8 +9501,7 @@ pub mod num
 
             impl Default for BigInt
             {
-                #[inline] fn default() -> BigInt {
-                    Self::ZERO
+                #[inline] fn default() -> BigInt { Self::ZERO
                 }
             }
 
@@ -9591,8 +9583,7 @@ pub mod num
 
             impl Zero for BigInt
             {
-                #[inline] fn zero() -> BigInt {
-                    Self::ZERO
+                #[inline] fn zero() -> BigInt { Self::ZERO
                 }
 
                 #[inline] fn set_zero(&mut self) {
@@ -9801,7 +9792,6 @@ pub mod num
                         (_, NoSign) => unreachable!(),
                     }
                 }
-
                 
                 #[inline] fn gcd(&self, other: &BigInt) -> BigInt {
                     BigInt::from(self.data.gcd(&other.data))
@@ -9816,7 +9806,7 @@ pub mod num
                     (BigInt::from(gcd), BigInt::from(lcm))
                 }
 
-                #[inline] fn extended_gcd_lcm(&self, other: &BigInt) -> (num_integer::ExtendedGcd<BigInt>, BigInt) {
+                #[inline] fn extended_gcd_lcm(&self, other: &BigInt) -> (num::integers::ExtendedGcd<BigInt>, BigInt) {
                     let egcd = self.extended_gcd(other);
                     let lcm = if egcd.gcd.is_zero() {
                         Self::ZERO
@@ -9914,22 +9904,16 @@ pub mod num
 
             impl BigInt
             {
-
                 pub const ZERO: Self = BigInt {
                     sign: NoSign,
                     data: BigUint::ZERO,
                 };
-
-
                 
-                #[inline]
-                pub fn new(sign: Sign, digits: Vec<u32>) -> BigInt {
+                #[inline] pub fn new(sign: Sign, digits: Vec<u32>) -> BigInt {
                     BigInt::from_biguint(sign, BigUint::new(digits))
                 }
-
                 
-                #[inline]
-                pub fn from_biguint(mut sign: Sign, mut data: BigUint) -> BigInt {
+                #[inline] pub fn from_biguint(mut sign: Sign, mut data: BigUint) -> BigInt {
                     if sign == NoSign {
                         data.assign_from_slice(&[]);
                     } else if data.is_zero() {
@@ -9938,16 +9922,12 @@ pub mod num
 
                     BigInt { sign, data }
                 }
-
                 
-                #[inline]
-                pub fn from_slice(sign: Sign, slice: &[u32]) -> BigInt {
+                #[inline] pub fn from_slice(sign: Sign, slice: &[u32]) -> BigInt {
                     BigInt::from_biguint(sign, BigUint::from_slice(slice))
                 }
-
                 
-                #[inline]
-                pub fn assign_from_slice(&mut self, sign: Sign, slice: &[u32]) {
+                #[inline] pub fn assign_from_slice(&mut self, sign: Sign, slice: &[u32]) {
                     if sign == NoSign {
                         self.set_zero();
                     } else {
@@ -9956,84 +9936,70 @@ pub mod num
                     }
                 }
 
-                #[inline]
-                pub fn from_bytes_be(sign: Sign, bytes: &[u8]) -> BigInt {
+                #[inline] pub fn from_bytes_be(sign: Sign, bytes: &[u8]) -> BigInt {
                     BigInt::from_biguint(sign, BigUint::from_bytes_be(bytes))
                 }
-
                 
-                #[inline]
-                pub fn from_bytes_le(sign: Sign, bytes: &[u8]) -> BigInt {
+                #[inline] pub fn from_bytes_le(sign: Sign, bytes: &[u8]) -> BigInt {
                     BigInt::from_biguint(sign, BigUint::from_bytes_le(bytes))
                 }
                 
-                #[inline]
-                pub fn from_signed_bytes_be(digits: &[u8]) -> BigInt {
+                #[inline] pub fn from_signed_bytes_be(digits: &[u8]) -> BigInt {
                     convert::from_signed_bytes_be(digits)
                 }
-
                 
-                #[inline]
-                pub fn from_signed_bytes_le(digits: &[u8]) -> BigInt {
+                #[inline] pub fn from_signed_bytes_le(digits: &[u8]) -> BigInt {
                     convert::from_signed_bytes_le(digits)
                 }
-                ///
-                #[inline]
-                pub fn parse_bytes(buf: &[u8], radix: u32) -> Option<BigInt> {
+
+                #[inline] pub fn parse_bytes(buf: &[u8], radix: u32) -> Option<BigInt> {
                     let s = str::from_utf8(buf).ok()?;
                     BigInt::from_str_radix(s, radix).ok()
                 }
+                
                 pub fn from_radix_be(sign: Sign, buf: &[u8], radix: u32) -> Option<BigInt> {
                     let u = BigUint::from_radix_be(buf, radix)?;
                     Some(BigInt::from_biguint(sign, u))
                 }
+                
                 pub fn from_radix_le(sign: Sign, buf: &[u8], radix: u32) -> Option<BigInt> {
                     let u = BigUint::from_radix_le(buf, radix)?;
                     Some(BigInt::from_biguint(sign, u))
                 }
-                ///
-                #[inline]
-                pub fn to_bytes_be(&self) -> (Sign, Vec<u8>) {
+
+                #[inline] pub fn to_bytes_be(&self) -> (Sign, Vec<u8>) {
                     (self.sign, self.data.to_bytes_be())
                 }
-                ///
-                #[inline]
-                pub fn to_bytes_le(&self) -> (Sign, Vec<u8>) {
+
+                #[inline] pub fn to_bytes_le(&self) -> (Sign, Vec<u8>) {
                     (self.sign, self.data.to_bytes_le())
                 }
-                ///
-                #[inline]
-                pub fn to_u32_digits(&self) -> (Sign, Vec<u32>) {
+
+                #[inline] pub fn to_u32_digits(&self) -> (Sign, Vec<u32>) {
                     (self.sign, self.data.to_u32_digits())
                 }
-                ///
-                #[inline]
-                pub fn to_u64_digits(&self) -> (Sign, Vec<u64>) {
+
+                #[inline] pub fn to_u64_digits(&self) -> (Sign, Vec<u64>) {
                     (self.sign, self.data.to_u64_digits())
                 }
-                ///
-                #[inline]
-                pub fn iter_u32_digits(&self) -> U32Digits<'_> {
+
+                #[inline] pub fn iter_u32_digits(&self) -> U32Digits<'_> {
                     self.data.iter_u32_digits()
                 }
-                ///
-                #[inline]
-                pub fn iter_u64_digits(&self) -> U64Digits<'_> {
+
+                #[inline] pub fn iter_u64_digits(&self) -> U64Digits<'_> {
                     self.data.iter_u64_digits()
                 }
-                ///
-                #[inline]
-                pub fn to_signed_bytes_be(&self) -> Vec<u8> {
+
+                #[inline] pub fn to_signed_bytes_be(&self) -> Vec<u8> {
                     convert::to_signed_bytes_be(self)
                 }
-                ///
-                #[inline]
-                pub fn to_signed_bytes_le(&self) -> Vec<u8> {
+
+                #[inline] pub fn to_signed_bytes_le(&self) -> Vec<u8> {
                     convert::to_signed_bytes_le(self)
                 }
-                ///
-                #[inline]
-                pub fn to_str_radix(&self, radix: u32) -> String {
+
+                #[inline] pub fn to_str_radix(&self, radix: u32) -> String {
                     let mut v = to_str_radix_reversed(&self.data, radix);
 
                     if self.is_negative() {
@@ -10044,38 +10010,31 @@ pub mod num
                     unsafe { String::from_utf8_unchecked(v) }
                 }
                 
-                #[inline]
-                pub fn to_radix_be(&self, radix: u32) -> (Sign, Vec<u8>) {
+                #[inline] pub fn to_radix_be(&self, radix: u32) -> (Sign, Vec<u8>) {
                     (self.sign, self.data.to_radix_be(radix))
                 }
                 
-                #[inline]
-                pub fn to_radix_le(&self, radix: u32) -> (Sign, Vec<u8>) {
+                #[inline] pub fn to_radix_le(&self, radix: u32) -> (Sign, Vec<u8>) {
                     (self.sign, self.data.to_radix_le(radix))
                 }
-                ///
-                #[inline]
-                pub fn sign(&self) -> Sign {
+
+                #[inline] pub fn sign(&self) -> Sign {
                     self.sign
                 }
-                ///
-                #[inline]
-                pub fn magnitude(&self) -> &BigUint {
+
+                #[inline] pub fn magnitude(&self) -> &BigUint {
                     &self.data
                 }
-                ///
-                #[inline]
-                pub fn into_parts(self) -> (Sign, BigUint) {
+
+                #[inline] pub fn into_parts(self) -> (Sign, BigUint) {
                     (self.sign, self.data)
                 }
                 
-                #[inline]
-                pub fn bits(&self) -> u64 {
+                #[inline] pub fn bits(&self) -> u64 {
                     self.data.bits()
                 }
 
-                #[inline]
-                pub fn to_biguint(&self) -> Option<BigUint> {
+                #[inline] pub fn to_biguint(&self) -> Option<BigUint> {
                     match self.sign {
                         Plus => Some(self.data.clone()),
                         NoSign => Some(BigUint::ZERO),
@@ -10083,23 +10042,19 @@ pub mod num
                     }
                 }
 
-                #[inline]
-                pub fn checked_add(&self, v: &BigInt) -> Option<BigInt> {
+                #[inline] pub fn checked_add(&self, v: &BigInt) -> Option<BigInt> {
                     Some(self + v)
                 }
 
-                #[inline]
-                pub fn checked_sub(&self, v: &BigInt) -> Option<BigInt> {
+                #[inline] pub fn checked_sub(&self, v: &BigInt) -> Option<BigInt> {
                     Some(self - v)
                 }
 
-                #[inline]
-                pub fn checked_mul(&self, v: &BigInt) -> Option<BigInt> {
+                #[inline] pub fn checked_mul(&self, v: &BigInt) -> Option<BigInt> {
                     Some(self * v)
                 }
 
-                #[inline]
-                pub fn checked_div(&self, v: &BigInt) -> Option<BigInt> {
+                #[inline] pub fn checked_div(&self, v: &BigInt) -> Option<BigInt> {
                     if v.is_zero() {
                         return None;
                     }
@@ -10114,8 +10069,6 @@ pub mod num
                     power::modpow(self, exponent, modulus)
                 }
                 
-                
-                
                 pub fn modinv(&self, modulus: &Self) -> Option<Self> {
                     let result = self.data.modinv(&modulus.data)?;
                    
@@ -10127,26 +10080,27 @@ pub mod num
                     };
                     Some(BigInt::from_biguint(sign, mag))
                 }
+                
                 pub fn sqrt(&self) -> Self {
                     Roots::sqrt(self)
                 }
+                
                 pub fn cbrt(&self) -> Self {
                     Roots::cbrt(self)
                 }
+                
                 pub fn nth_root(&self, n: u32) -> Self {
                     Roots::nth_root(self, n)
                 }
+                
                 pub fn trailing_zeros(&self) -> Option<u64> {
                     self.data.trailing_zeros()
                 }
+                
                 pub fn bit(&self, bit: u64) -> bool {
                     if self.is_negative() {
-                       
-                       
-                       
-                       
-                       
-                        if bit >= u64::from(crate::big_digit::BITS) * self.len() as u64 {
+
+                        if bit >= u64::from(digit::BITS) * self.len() as u64 {
                             true
                         } else {
                             let trailing_zeros = self.data.trailing_zeros().unwrap();
@@ -10160,7 +10114,7 @@ pub mod num
                         self.data.bit(bit)
                     }
                 }
-                ///
+                
                 pub fn set_bit(&mut self, bit: u64, value: bool) {
                     match self.sign {
                         Sign::Plus => self.data.set_bit(bit, value),
@@ -10183,12 +10137,10 @@ pub mod num
             {
                 type  Bytes = [u8];
 
-                fn from_be_bytes(bytes: &Self::Bytes) -> Self {
-                    Self::from_signed_bytes_be(bytes)
+                fn from_be_bytes(bytes: &Self::Bytes) -> Self { Self::from_signed_bytes_be(bytes)
                 }
 
-                fn from_le_bytes(bytes: &Self::Bytes) -> Self {
-                    Self::from_signed_bytes_le(bytes)
+                fn from_le_bytes(bytes: &Self::Bytes) -> Self { Self::from_signed_bytes_le(bytes)
                 }
             }
 
@@ -10206,277 +10158,10 @@ pub mod num
             }
         } pub use self::int::{ * };
 
-        pub mod rand
-        {
-            //! Randomization of big integers
-            use ::
-            {
-                num::
-                {
-                    big::{ uint::biguint_from_vec, BigInt, BigUint, Sign::* },
-                    integers::{ Integer },
-                    traits::{ ToPrimitive, Zero },
-                },
-                rand::
-                {
-                    uniform::{SampleBorrow, SampleUniform, UniformSampler},
-                    Distribution, Rng,
-                },
-                *,
-            };
-            /*
-            */
-            pub trait RandBigInt
-            {
-
-                fn gen_biguint(&mut self, bit_size: u64) -> BigUint;
-
-
-                fn gen_bigint(&mut self, bit_size: u64) -> BigInt;
-                fn gen_biguint_below(&mut self, bound: &BigUint) -> BigUint;
-                fn gen_biguint_range(&mut self, lbound: &BigUint, ubound: &BigUint) -> BigUint;
-                fn gen_bigint_range(&mut self, lbound: &BigInt, ubound: &BigInt) -> BigInt;
-            }
-
-            fn gen_bits<R: Rng + ?Sized>( rng: &mut R, data: &mut [u32], rem: u64 ) 
-            {
-               
-                rng.fill(data);
-                if rem > 0 {
-                    let last = data.len() - 1;
-                    data[last] >>= 32 - rem;
-                }
-            }
-
-            impl<R: Rng + ?Sized> RandBigInt for R 
-            {
-                cfg_digit!(
-                    fn gen_biguint(&mut self, bit_size: u64) -> BigUint {
-                        let (digits, rem) = bit_size.div_rem(&32);
-                        let len = (digits + (rem > 0) as u64)
-                            .to_usize()
-                            .expect("capacity overflow");
-                        let mut data = vec![0u32; len];
-                        gen_bits(self, &mut data, rem);
-                        biguint_from_vec(data)
-                    }
-
-                    fn gen_biguint(&mut self, bit_size: u64) -> BigUint {
-                        use ::slice;
-
-                        let (digits, rem) = bit_size.div_rem(&32);
-                        let len = (digits + (rem > 0) as u64)
-                            .to_usize()
-                            .expect("capacity overflow");
-                        let native_digits = Integer::div_ceil(&bit_size, &64);
-                        let native_len = native_digits.to_usize().expect("capacity overflow");
-                        let mut data = vec![0u64; native_len];
-                        unsafe {
-                           
-                            let ptr = data.as_mut_ptr() as *mut u32;
-                            debug_assert!(native_len * 2 >= len);
-                            let data = slice::from_raw_parts_mut(ptr, len);
-                            gen_bits(self, data, rem);
-                        }
-                        #[cfg(target_endian = "big")]
-                        for digit in &mut data {
-                           
-                            *digit = (*digit << 32) | (*digit >> 32);
-                        }
-                        biguint_from_vec(data)
-                    }
-                );
-
-                fn gen_bigint(&mut self, bit_size: u64) -> BigInt {
-                    loop {
-                       
-                        let biguint = self.gen_biguint(bit_size);
-                       
-                        let sign = if biguint.is_zero() {
-                           
-                           
-                           
-                           
-                            if self.gen() {
-                                continue;
-                            } else {
-                                NoSign
-                            }
-                        } else if self.gen() {
-                            Plus
-                        } else {
-                            Minus
-                        };
-                        return BigInt::from_biguint(sign, biguint);
-                    }
-                }
-
-                fn gen_biguint_below(&mut self, bound: &BigUint) -> BigUint {
-                    assert!(!bound.is_zero());
-                    let bits = bound.bits();
-                    loop {
-                        let n = self.gen_biguint(bits);
-                        if n < *bound {
-                            return n;
-                        }
-                    }
-                }
-
-                fn gen_biguint_range(&mut self, lbound: &BigUint, ubound: &BigUint) -> BigUint {
-                    assert!(*lbound < *ubound);
-                    if lbound.is_zero() {
-                        self.gen_biguint_below(ubound)
-                    } else {
-                        lbound + self.gen_biguint_below(&(ubound - lbound))
-                    }
-                }
-
-                fn gen_bigint_range(&mut self, lbound: &BigInt, ubound: &BigInt) -> BigInt {
-                    assert!(*lbound < *ubound);
-                    if lbound.is_zero() {
-                        BigInt::from(self.gen_biguint_below(ubound.magnitude()))
-                    } else if ubound.is_zero() {
-                        lbound + BigInt::from(self.gen_biguint_below(lbound.magnitude()))
-                    } else {
-                        let delta = ubound - lbound;
-                        lbound + BigInt::from(self.gen_biguint_below(delta.magnitude()))
-                    }
-                }
-            }
-
-            #[derive(Clone, Debug)]
-            pub struct UniformBigUint 
-            {
-                base: BigUint,
-                len: BigUint,
-            }
-
-            impl UniformSampler for UniformBigUint 
-            {
-                type X = BigUint;
-                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self where
-                B1: SampleBorrow<Self::X> + Sized,
-                B2: SampleBorrow<Self::X> + Sized
-                {
-                    let low = low_b.borrow();
-                    let high = high_b.borrow();
-                    assert!(low < high);
-                    UniformBigUint {
-                        len: high - low,
-                        base: low.clone(),
-                    }
-                }
-
-                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self where
-                B1: SampleBorrow<Self::X> + Sized,
-                B2: SampleBorrow<Self::X> + Sized
-                {
-                    let low = low_b.borrow();
-                    let high = high_b.borrow();
-                    assert!(low <= high);
-                    Self::new(low, high + 1u32)
-                }
-
-                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X 
-                {
-                    &self.base + rng.gen_biguint_below(&self.len)
-                }
-
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X where
-                B1: SampleBorrow<Self::X> + Sized,
-                B2: SampleBorrow<Self::X> + Sized
-                {
-                    rng.gen_biguint_range(low.borrow(), high.borrow())
-                }
-            }
-
-            impl SampleUniform for BigUint 
-            {
-                type Sampler = UniformBigUint;
-            }
-
-            #[derive(Clone, Debug)]
-            pub struct UniformBigInt 
-            {
-                base: BigInt,
-                len: BigUint,
-            }
-
-            impl UniformSampler for UniformBigInt 
-            {
-                type X = BigInt;
-
-                #[inline] fn new<B1, B2>(low_b: B1, high_b: B2) -> Self where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
-                {
-                    let low = low_b.borrow();
-                    let high = high_b.borrow();
-                    assert!(low < high);
-                    UniformBigInt {
-                        len: (high - low).into_parts().1,
-                        base: low.clone(),
-                    }
-                }
-
-                #[inline] fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Self where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
-                {
-                    let low = low_b.borrow();
-                    let high = high_b.borrow();
-                    assert!(low <= high);
-                    Self::new(low, high + 1u32)
-                }
-
-                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
-                    &self.base + BigInt::from(rng.gen_biguint_below(&self.len))
-                }
-
-                #[inline] fn sample_single<R: Rng + ?Sized, B1, B2>(low: B1, high: B2, rng: &mut R) -> Self::X where
-                    B1: SampleBorrow<Self::X> + Sized,
-                    B2: SampleBorrow<Self::X> + Sized,
-                {
-                    rng.gen_bigint_range(low.borrow(), high.borrow())
-                }
-            }
-
-            impl SampleUniform for BigInt 
-            {
-                type Sampler = UniformBigInt;
-            }
-
-            #[derive(Clone, Copy, Debug)]
-            pub struct RandomBits 
-            {
-                bits: u64,
-            }
-
-            impl RandomBits 
-            {
-                #[inline]
-                pub fn new(bits: u64) -> RandomBits {
-                    RandomBits { bits }
-                }
-            }
-
-            impl Distribution<BigUint> for RandomBits 
-            {
-                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> BigUint {
-                    rng.gen_biguint(self.bits)
-                }
-            }
-
-            impl Distribution<BigInt> for RandomBits 
-            {
-                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> BigInt {
-                    rng.gen_bigint(self.bits)
-                }
-            }
-        } pub use self::rand::{ * };
-
         pub mod uint
         {
+            use num::big::Sign::Minus;
+            use num::big::ParseBigIntError;
             use ::
             {
                 cmp::{ self, Ordering },
@@ -10556,7 +10241,7 @@ pub mod num
                 forward_all_binop_to_val_ref_commutative!(impl Add for BigUint, add);
                 forward_val_assign!(impl AddAssign for BigUint, add_assign);
 
-                impl Add<&BigUint> for BigUInt
+                impl Add<&BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -10565,7 +10250,8 @@ pub mod num
                         self
                     }
                 }
-                impl AddAssign<&BigUint> for BigUInt
+                
+                impl AddAssign<&BigUint> for BigUint
                 {
                     #[inline] fn add_assign(&mut self, other: &BigUint) {
                         let self_len = self.data.len();
@@ -10588,7 +10274,7 @@ pub mod num
                 forward_all_scalar_binop_to_val_val_commutative!(impl Add<u64> for BigUint, add);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Add<u128> for BigUint, add);
 
-                impl Add<u32> for BigUInt
+                impl Add<u32> for BigUint
                 {
                     type Output = BigUint;
 
@@ -10598,7 +10284,7 @@ pub mod num
                     }
                 }
 
-                impl AddAssign<u32> for BigUInt
+                impl AddAssign<u32> for BigUint
                 {
                     #[inline] fn add_assign(&mut self, other: u32) {
                         if other != 0 {
@@ -10614,7 +10300,7 @@ pub mod num
                     }
                 }
 
-                impl Add<u64> for BigUInt
+                impl Add<u64> for BigUint
                 {
                     type Output = BigUint;
 
@@ -10627,7 +10313,7 @@ pub mod num
                 impl AddAssign<u64> for BigUint {
                     cfg_digit!(
                         #[inline] fn add_assign(&mut self, other: u64) {
-                            let (hi, lo) = big_digit::from_doublebigdigit(other);
+                            let (hi, lo) = digit::from_doublebigdigit(other);
                             if hi == 0 {
                                 *self += lo;
                             } else {
@@ -10657,7 +10343,7 @@ pub mod num
                     );
                 }
 
-                impl Add<u128> for BigUInt
+                impl Add<u128> for BigUint
                 {
                     type Output = BigUint;
 
@@ -10694,7 +10380,7 @@ pub mod num
                         }
 
                         #[inline] fn add_assign(&mut self, other: u128) {
-                            let (hi, lo) = big_digit::from_doublebigdigit(other);
+                            let (hi, lo) = digit::from_doublebigdigit(other);
                             if hi == 0 {
                                 *self += lo;
                             } else {
@@ -10711,7 +10397,7 @@ pub mod num
                     );
                 }
 
-                impl CheckedAdd for BigUInt
+                impl CheckedAdd for BigUint
                 {
                     #[inline] fn checked_add(&self, v: &BigUint) -> Option<BigUint> {
                         Some(self.add(v))
@@ -10733,7 +10419,7 @@ pub mod num
                     {
                         big::
                         {
-                            big_digit::{self, BigDigit, DoubleBigDigit}, UsizePromotion
+                            digit::{self, BigDigit, DoubleBigDigit}, UsizePromotion
                         },
                         integers::Integer,
                         traits::{CheckedDiv, CheckedEuclid, Euclid, One, ToPrimitive, Zero},
@@ -10754,9 +10440,7 @@ pub mod num
                    
                    
                     debug_assert!(hi < divisor);
-
-                   
-                   
+                    
                    
                    
                     unsafe {
@@ -10787,13 +10471,13 @@ pub mod num
                     }
                 }
                 
-                #[inline] fn div_half(rem: BigDigit, digit: BigDigit, divisor: BigDigit) -> (BigDigit, BigDigit)
+                #[inline] fn div_half(r: BigDigit, d: BigDigit, v: BigDigit) -> (BigDigit, BigDigit)
                 {
-                    use ::num::big::digit::{HALF, HALF_BITS};
-                    debug_assert!(rem < divisor && divisor <= HALF);
-                    let (hi, rem) = ((rem << HALF_BITS) | (digit >> HALF_BITS)).div_rem(&divisor);
-                    let (lo, rem) = ((rem << HALF_BITS) | (digit & HALF)).div_rem(&divisor);
-                    ((hi << HALF_BITS) | lo, rem)
+                    use num::big::digit::{HALF, HALF_BITS};
+                    debug_assert!(r < v && v <= HALF);
+                    let (h, r) = ((r << HALF_BITS) | (d >> HALF_BITS)).div_rem(&v);
+                    let (l, r) = ((r << HALF_BITS) | (d & HALF)).div_rem(&v);
+                    ((h << HALF_BITS) | l, r)
                 }
 
                 #[inline] pub fn div_rem_digit(mut a: BigUint, b: BigDigit) -> (BigUint, BigDigit)
@@ -10804,7 +10488,7 @@ pub mod num
 
                     let mut rem = 0;
 
-                    if !FAST_DIV_WIDE && b <= big_digit::HALF {
+                    if !FAST_DIV_WIDE && b <= digit::HALF {
                         for d in a.data.iter_mut().rev() {
                             let (q, r) = div_half(rem, *d, b);
                             *d = q;
@@ -10829,7 +10513,7 @@ pub mod num
 
                     let mut rem = 0;
 
-                    if !FAST_DIV_WIDE && b <= big_digit::HALF {
+                    if !FAST_DIV_WIDE && b <= digit::HALF {
                         for &digit in a.data.iter().rev() {
                             let (_, r) = div_half(rem, digit, b);
                             rem = r;
@@ -10847,28 +10531,20 @@ pub mod num
                 fn sub_mul_digit_same_len(a: &mut [BigDigit], b: &[BigDigit], c: BigDigit) -> BigDigit
                 {
                     debug_assert!(a.len() == b.len());
-
-                   
-                   
-                    let mut offset_carry = big_digit::MAX;
+                    
+                    let mut offset_carry = digit::MAX;
 
                     for (x, y) in a.iter_mut().zip(b) {
-                       
-                       
-                       
-                       
-                        let offset_sum = big_digit::to_doublebigdigit(big_digit::MAX, *x)
-                            - big_digit::MAX as DoubleBigDigit
+                        let offset_sum = digit::to_doublebigdigit(digit::MAX, *x)
+                            - digit::MAX as DoubleBigDigit
                             + offset_carry as DoubleBigDigit
                             - *y as DoubleBigDigit * c as DoubleBigDigit;
-
-                        let (new_offset_carry, new_x) = big_digit::from_doublebigdigit(offset_sum);
+                        let (new_offset_carry, new_x) = digit::from_doublebigdigit(offset_sum);
                         offset_carry = new_offset_carry;
                         *x = new_x;
                     }
-
-                   
-                    big_digit::MAX - offset_carry
+                    
+                    digit::MAX - offset_carry
                 }
 
                 fn div_rem(mut u: BigUint, mut d: BigUint) -> (BigUint, BigUint)
@@ -10890,9 +10566,7 @@ pub mod num
                         d += rem;
                         return (div, d);
                     }
-
-                   
-                    match u.cmp(&d) {
+                     match u.cmp(&d) {
                         Less => return (BigUint::ZERO, u),
                         Equal => {
                             u.set_one();
@@ -10900,9 +10574,7 @@ pub mod num
                         }
                         Greater => {}
                     }
-
-                   
-                    //
+                     //
                    
                    
                    
@@ -10936,16 +10608,12 @@ pub mod num
                         let (div, rem) = div_rem_digit(u.clone(), d.data[0]);
                         return (div, rem.into());
                     }
-
-                   
-                    match u.cmp(d) {
+                     match u.cmp(d) {
                         Less => return (BigUint::ZERO, u.clone()),
                         Equal => return (One::one(), BigUint::ZERO),
                         Greater => {}
                     }
-
-                   
-                    //
+                     //
                    
                    
                    
@@ -10966,28 +10634,7 @@ pub mod num
                 {
                     debug_assert!(a.data.len() >= b.len() && b.len() > 1);
                     debug_assert!(b.last().unwrap().leading_zeros() == 0);
-
-                   
-                   
-                    //
-                   
-                   
-                    //
-                   
-                    //
-                   
-                   
-                   
-                   
-                    //
-                   
-                   
-                   
-
-                   
                     let mut a0 = 0;
-
-                   
                     let b0 = b[b.len() - 1];
                     let b1 = b[b.len() - 2];
 
@@ -10998,11 +10645,8 @@ pub mod num
 
                     for j in (0..q_len).rev() {
                         debug_assert!(a.data.len() == b.len() + j);
-
                         let a1 = *a.data.last().unwrap();
                         let a2 = a.data[a.data.len() - 2];
-
-                       
                        
                         let (mut q0, mut r) = if a0 < b0 {
                             let (q0, r) = div_wide(a0, a1, b0);
@@ -11011,19 +10655,15 @@ pub mod num
                             debug_assert!(a0 == b0);
                            
                            
-                            (big_digit::MAX, a0 as DoubleBigDigit + a1 as DoubleBigDigit)
+                            (digit::MAX, a0 as DoubleBigDigit + a1 as DoubleBigDigit)
                         };
 
-                       
-                        //
-                       
-                       
-                        //
+
                        
                        
                        
-                        while r <= big_digit::MAX as DoubleBigDigit
-                            && big_digit::to_doublebigdigit(r as BigDigit, a2)
+                        while r <= digit::MAX as DoubleBigDigit
+                            && digit::to_doublebigdigit(r as BigDigit, a2)
                                 < q0 as DoubleBigDigit * b1 as DoubleBigDigit
                         {
                             q0 -= 1;
@@ -11044,8 +10684,7 @@ pub mod num
 
                         q.data[j] = q0;
 
-                       
-                        a0 = a.data.pop().unwrap();
+a0 = a.data.pop().unwrap();
                     }
 
                     a.data.push(a0);
@@ -11060,7 +10699,7 @@ pub mod num
                 forward_ref_val_binop_big!(impl Div for BigUint, div);
                 forward_val_assign!(impl DivAssign for BigUint, div_assign);
 
-                impl Div<BigUint> for BigUInt
+                impl Div<BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11070,7 +10709,7 @@ pub mod num
                     }
                 }
 
-                impl Div<&BigUint> for &BigUInt
+                impl Div<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
 
@@ -11079,7 +10718,8 @@ pub mod num
                         q
                     }
                 }
-                impl DivAssign<&BigUint> for BigUInt
+                
+                impl DivAssign<&BigUint> for BigUint
                 {
                     #[inline] fn div_assign(&mut self, other: &BigUint) {
                         *self = &*self / other;
@@ -11092,7 +10732,7 @@ pub mod num
                 forward_all_scalar_binop_to_val_val!(impl Div<u64> for BigUint, div);
                 forward_all_scalar_binop_to_val_val!(impl Div<u128> for BigUint, div);
 
-                impl Div<u32> for BigUInt
+                impl Div<u32> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11101,7 +10741,8 @@ pub mod num
                         q
                     }
                 }
-                impl DivAssign<u32> for BigUInt
+                
+                impl DivAssign<u32> for BigUint
                 {
                     #[inline] fn div_assign(&mut self, other: u32) {
                         *self = &*self / other;
@@ -11120,7 +10761,7 @@ pub mod num
                     }
                 }
 
-                impl Div<u64> for BigUInt
+                impl Div<u64> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11129,7 +10770,8 @@ pub mod num
                         q
                     }
                 }
-                impl DivAssign<u64> for BigUInt
+                
+                impl DivAssign<u64> for BigUint
                 {
                     #[inline] fn div_assign(&mut self, other: u64) {
                        
@@ -11146,7 +10788,7 @@ pub mod num
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / u64::from(other.data[0])),
-                                2 => From::from(self / big_digit::to_doublebigdigit(other.data[1], other.data[0])),
+                                2 => From::from(self / digit::to_doublebigdigit(other.data[1], other.data[0])),
                                 _ => BigUint::ZERO,
                             }
                         }
@@ -11161,7 +10803,7 @@ pub mod num
                     );
                 }
 
-                impl Div<u128> for BigUInt
+                impl Div<u128> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11171,7 +10813,7 @@ pub mod num
                     }
                 }
 
-                impl DivAssign<u128> for BigUInt
+                impl DivAssign<u128> for BigUint
                 {
                     #[inline] fn div_assign(&mut self, other: u128) {
                         *self = &*self / other;
@@ -11188,7 +10830,7 @@ pub mod num
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / u128::from(other.data[0])),
                                 2 => From::from(
-                                    self / u128::from(big_digit::to_doublebigdigit(other.data[1], other.data[0])),
+                                    self / u128::from(digit::to_doublebigdigit(other.data[1], other.data[0])),
                                 ),
                                 3 => From::from(self / u32_to_u128(0, other.data[2], other.data[1], other.data[0])),
                                 4 => From::from(
@@ -11202,7 +10844,7 @@ pub mod num
                             match other.data.len() {
                                 0 => panic!("attempt to divide by zero"),
                                 1 => From::from(self / other.data[0] as u128),
-                                2 => From::from(self / big_digit::to_doublebigdigit(other.data[1], other.data[0])),
+                                2 => From::from(self / digit::to_doublebigdigit(other.data[1], other.data[0])),
                                 _ => BigUint::ZERO,
                             }
                         }
@@ -11213,11 +10855,12 @@ pub mod num
                 forward_ref_val_binop_big!(impl Rem for BigUint, rem);
                 forward_val_assign!(impl RemAssign for BigUint, rem_assign);
 
-                impl Rem<BigUint> for BigUInt
+                impl Rem<BigUint> for BigUint
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: BigUint) -> BigUint {
+                    #[inline] fn rem(self, other: BigUint) -> BigUint
+                    {
                         if let Some(other) = other.to_u32() {
                             &self % other
                         } else {
@@ -11227,11 +10870,12 @@ pub mod num
                     }
                 }
 
-                impl Rem<&BigUint> for &BigUInt
+                impl Rem<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
 
-                    #[inline] fn rem(self, other: &BigUint) -> BigUint {
+                    #[inline] fn rem(self, other: &BigUint) -> BigUint
+                    {
                         if let Some(other) = other.to_u32() {
                             self % other
                         } else {
@@ -11240,7 +10884,8 @@ pub mod num
                         }
                     }
                 }
-                impl RemAssign<&BigUint> for BigUInt
+                
+                impl RemAssign<&BigUint> for BigUint
                 {
                     #[inline] fn rem_assign(&mut self, other: &BigUint) {
                         *self = &*self % other;
@@ -11253,7 +10898,7 @@ pub mod num
                 forward_all_scalar_binop_to_val_val!(impl Rem<u64> for BigUint, rem);
                 forward_all_scalar_binop_to_val_val!(impl Rem<u128> for BigUint, rem);
 
-                impl Rem<u32> for &BigUInt
+                impl Rem<u32> for &BigUint
                 {
                     type Output = BigUint;
 
@@ -11261,7 +10906,8 @@ pub mod num
                         rem_digit(self, other as BigDigit).into()
                     }
                 }
-                impl RemAssign<u32> for BigUInt
+                
+                impl RemAssign<u32> for BigUint
                 {
                     #[inline] fn rem_assign(&mut self, other: u32) {
                         *self = &*self % other;
@@ -11305,7 +10951,7 @@ pub mod num
                 impl_rem_assign_scalar!(i16, to_i16);
                 impl_rem_assign_scalar!(i8, to_i8);
 
-                impl Rem<u64> for BigUInt
+                impl Rem<u64> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11314,7 +10960,8 @@ pub mod num
                         r
                     }
                 }
-                impl RemAssign<u64> for BigUInt
+                
+                impl RemAssign<u64> for BigUint
                 {
                     #[inline] fn rem_assign(&mut self, other: u64) {
                         *self = &*self % other;
@@ -11330,7 +10977,7 @@ pub mod num
                     }
                 }
 
-                impl Rem<u128> for BigUInt
+                impl Rem<u128> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11340,7 +10987,7 @@ pub mod num
                     }
                 }
 
-                impl RemAssign<u128> for BigUInt
+                impl RemAssign<u128> for BigUint
                 {
                     #[inline] fn rem_assign(&mut self, other: u128) {
                         *self = &*self % other;
@@ -11356,7 +11003,7 @@ pub mod num
                     }
                 }
 
-                impl CheckedDiv for BigUInt
+                impl CheckedDiv for BigUint
                 {
                     #[inline] fn checked_div(&self, v: &BigUint) -> Option<BigUint> {
                         if v.is_zero() {
@@ -11366,7 +11013,7 @@ pub mod num
                     }
                 }
 
-                impl CheckedEuclid for BigUInt
+                impl CheckedEuclid for BigUint
                 {
                     #[inline] fn checked_div_euclid(&self, v: &BigUint) -> Option<BigUint> {
                         if v.is_zero() {
@@ -11387,7 +11034,7 @@ pub mod num
                     }
                 }
 
-                impl Euclid for BigUInt
+                impl Euclid for BigUint
                 {
                     #[inline] fn div_euclid(&self, v: &BigUint) -> BigUint {
                        
@@ -11404,7 +11051,6 @@ pub mod num
                         self.div_rem(v)
                     }
                 }
-
             } pub use self::division::{*};
 
             pub mod multiplication
@@ -11419,7 +11065,7 @@ pub mod num
                     {
                         big::
                         {
-                            big_digit::{self, BigDigit, DoubleBigDigit},
+                            digit::{self, BigDigit, DoubleBigDigit},
                             Sign::{self, Minus, NoSign, Plus},
                             {BigInt, UsizePromotion},
                         },
@@ -11438,20 +11084,22 @@ pub mod num
                     b: BigDigit,
                     c: BigDigit,
                     acc: &mut DoubleBigDigit,
-                ) -> BigDigit {
+                ) -> BigDigit
+                {
                     *acc += DoubleBigDigit::from(a);
                     *acc += DoubleBigDigit::from(b) * DoubleBigDigit::from(c);
                     let lo = *acc as BigDigit;
-                    *acc >>= big_digit::BITS;
+                    *acc >>= digit::BITS;
                     lo
                 }
 
                 #[inline] fn mul_with_carry(a: BigDigit, b: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit {
                     *acc += DoubleBigDigit::from(a) * DoubleBigDigit::from(b);
                     let lo = *acc as BigDigit;
-                    *acc >>= big_digit::BITS;
+                    *acc >>= digit::BITS;
                     lo
                 }
+
                 fn mac_digit(acc: &mut [BigDigit], b: &[BigDigit], c: BigDigit) {
                     if c == 0 {
                         return;
@@ -11464,7 +11112,7 @@ pub mod num
                         *a = mac_with_carry(*a, b, c, &mut carry);
                     }
 
-                    let (carry_hi, carry_lo) = big_digit::from_doublebigdigit(carry);
+                    let (carry_hi, carry_lo) = digit::from_doublebigdigit(carry);
 
                     let final_carry = if carry_hi == 0 {
                         __add2(a_hi, &[carry_lo])
@@ -11474,14 +11122,15 @@ pub mod num
                     assert_eq!(final_carry, 0, "carry overflow during multiplication!");
                 }
 
-                fn bigint_from_slice(slice: &[BigDigit]) -> BigInt {
+                fn bigint_from_slice(slice: &[BigDigit]) -> BigInt
+                {
                     BigInt::from(biguint_from_vec(slice.to_vec()))
                 }
                 
-                #[allow(clippy::many_single_char_names)]
-                fn mac3(mut acc: &mut [BigDigit], mut b: &[BigDigit], mut c: &[BigDigit]) {
-                   
-                    if let Some(&0) = b.first() {
+                fn mac3(mut acc: &mut [BigDigit], mut b: &[BigDigit], mut c: &[BigDigit])
+                {
+                    if let Some(&0) = b.first()
+                    {
                         if let Some(nz) = b.iter().position(|&d| d != 0) {
                             b = &b[nz..];
                             acc = &mut acc[nz..];
@@ -11489,7 +11138,9 @@ pub mod num
                             return;
                         }
                     }
-                    if let Some(&0) = c.first() {
+
+                    if let Some(&0) = c.first() 
+                    {
                         if let Some(nz) = c.iter().position(|&d| d != 0) {
                             c = &c[nz..];
                             acc = &mut acc[nz..];
@@ -11500,177 +11151,40 @@ pub mod num
 
                     let acc = acc;
                     let (x, y) = if b.len() < c.len() { (b, c) } else { (c, b) };
-
-                   
-                    //
-                   
-                   
-                   
-                   
-                   
-                   
-                    //
-                   
-                   
-
+                    
                     if x.len() <= 32 {
                        
                         for (i, xi) in x.iter().enumerate() {
                             mac_digit(&mut acc[i..], y, *xi);
                         }
-                    } else if x.len() * 2 <= y.len() {
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                       
-                       
+                    }
+                    
+                    else if x.len() * 2 <= y.len() 
+                    {
                         let m2 = y.len() / 2;
                         let (low2, high2) = y.split_at(m2);
-
-                       
                         mac3(acc, x, low2);
                         mac3(&mut acc[m2..], x, high2);
-                    } else if x.len() <= 256 {
-                       
-                        //
-                       
-                       
-                        //
-                       
-                       
-                        //
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                       
-                       
-                        //
-                       
-                       
+                    }
 
-                       
-                       
+                    else if x.len() <= 256 
+                    {
                         let b = x.len() / 2;
                         let (x0, x1) = x.split_at(b);
                         let (y0, y1) = y.split_at(b);
-
-                       
-                       
                         let len = x1.len() + y1.len() + 1;
                         let mut p = BigUint { data: vec![0; len] };
-
-                       
                         mac3(&mut p.data, x1, y1);
-
-                       
                         p.normalize();
-
                         add2(&mut acc[b..], &p.data);
                         add2(&mut acc[b * 2..], &p.data);
-
-                       
                         p.data.truncate(0);
                         p.data.resize(len, 0);
-
-                       
                         mac3(&mut p.data, x0, y0);
                         p.normalize();
 
                         add2(acc, &p.data);
                         add2(&mut acc[b..], &p.data);
-
-                       
                        
                         let (j0_sign, j0) = sub_sign(x1, x0);
                         let (j1_sign, j1) = sub_sign(y1, y0);
@@ -11690,129 +11204,39 @@ pub mod num
                             }
                             NoSign => (),
                         }
-                    } else {
-                       
-                        //
-                       
-                       
-                        //
-                       
-                       
-                       
-                        let i = y.len() / 3 + 1;
+                    }
 
+                    else 
+                    {
+                        let i = y.len() / 3 + 1;
                         let x0_len = Ord::min(x.len(), i);
                         let x1_len = Ord::min(x.len() - x0_len, i);
-
                         let y0_len = i;
                         let y1_len = Ord::min(y.len() - y0_len, i);
-
-                       
-                       
-                       
-                        //
-                       
                         let x0 = bigint_from_slice(&x[..x0_len]);
                         let x1 = bigint_from_slice(&x[x0_len..x0_len + x1_len]);
                         let x2 = bigint_from_slice(&x[x0_len + x1_len..]);
-
-                       
                         let y0 = bigint_from_slice(&y[..y0_len]);
                         let y1 = bigint_from_slice(&y[y0_len..y0_len + y1_len]);
                         let y2 = bigint_from_slice(&y[y0_len + y1_len..]);
-
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                       
-                        //
-                       
-                       
-                        //
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                       
-                       
-
-                       
                         let p = &x0 + &x2;
-
-                       
                         let q = &y0 + &y2;
-
-                       
                         let p2 = &p - &x1;
-
-                       
                         let q2 = &q - &y1;
-
-                       
                         let r0 = &x0 * &y0;
-
-                       
                         let r4 = &x2 * &y2;
-
-                       
                         let r1 = (p + x1) * (q + y1);
-
-                       
                         let r2 = &p2 * &q2;
-
-                       
                         let r3 = ((p2 + x2) * 2 - x0) * ((q2 + y2) * 2 - y0);
-
-                       
-                        //
-                       
-                       
-                       
-                       
-                       
-                        //
-                       
-                       
-                        //
-                       
-                       
-                       
-                       
-                       
-                        //
-                       
-                       
                         let mut comp3: BigInt = (r3 - &r1) / 3u32;
                         let mut comp1: BigInt = (r1 - &r2) >> 1;
                         let mut comp2: BigInt = r2 - &r0;
                         comp3 = ((&comp2 - comp3) >> 1) + (&r4 << 1);
                         comp2 += &comp1 - &r4;
                         comp1 -= &comp3;
-
-                       
-                        //
-                       
-                        //
-                       
-                       
-                       
-                       
-                       
-                       
-                       
-                       
-                        //
-                       
-                        for (j, result) in [&r0, &comp1, &comp2, &comp3, &r4].iter().enumerate().rev() {
+                        
+                        for (j, result) in [&r0, &comp1, &comp2, &comp3, &r4].iter().enumerate().rev()
+                        {
                             match result.sign() {
                                 Plus => add2(&mut acc[i * j..], result.digits()),
                                 Minus => sub2(&mut acc[i * j..], result.digits()),
@@ -11822,7 +11246,8 @@ pub mod num
                     }
                 }
 
-                fn mul3(x: &[BigDigit], y: &[BigDigit]) -> BigUint {
+                fn mul3(x: &[BigDigit], y: &[BigDigit]) -> BigUint
+                {
                     let len = x.len() + y.len() + 1;
                     let mut prod = BigUint { data: vec![0; len] };
 
@@ -11830,7 +11255,8 @@ pub mod num
                     prod.normalized()
                 }
 
-                fn scalar_mul(a: &mut BigUint, b: BigDigit) {
+                fn scalar_mul(a: &mut BigUint, b: BigDigit)
+                {
                     match b {
                         0 => a.set_zero(),
                         1 => {}
@@ -11850,7 +11276,8 @@ pub mod num
                     }
                 }
 
-                fn sub_sign(mut a: &[BigDigit], mut b: &[BigDigit]) -> (Sign, BigUint) {
+                fn sub_sign(mut a: &[BigDigit], mut b: &[BigDigit]) -> (Sign, BigUint)
+                {
                    
                     if let Some(&0) = a.last() {
                         a = &a[..a.iter().rposition(|&x| x != 0).map_or(0, |i| i + 1)];
@@ -11874,7 +11301,8 @@ pub mod num
                     }
                 }
 
-                macro_rules! impl_mul {
+                macro_rules! impl_mul
+                {
                     ($(impl Mul<$Other:ty> for $Self:ty;)*) => {$(
                         impl Mul<$Other> for $Self {
                             type Output = BigUint;
@@ -11893,14 +11321,17 @@ pub mod num
                         }
                     )*}
                 }
-                impl_mul! {
+
+                impl_mul!
+                {
                     impl Mul<BigUint> for BigUint;
                     impl Mul<BigUint> for &BigUint;
                     impl Mul<&BigUint> for BigUint;
                     impl Mul<&BigUint> for &BigUint;
                 }
 
-                macro_rules! impl_mul_assign {
+                macro_rules! impl_mul_assign
+                {
                     ($(impl MulAssign<$Other:ty> for BigUint;)*) => {$(
                         impl MulAssign<$Other> for BigUint {
                             #[inline] fn mul_assign(&mut self, other: $Other) {
@@ -11918,7 +11349,9 @@ pub mod num
                         }
                     )*}
                 }
-                impl_mul_assign! {
+
+                impl_mul_assign!
+                {
                     impl MulAssign<BigUint> for BigUint;
                     impl MulAssign<&BigUint> for BigUint;
                 }
@@ -11929,7 +11362,7 @@ pub mod num
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<u64> for BigUint, mul);
                 forward_all_scalar_binop_to_val_val_commutative!(impl Mul<u128> for BigUint, mul);
 
-                impl Mul<u32> for BigUInt
+                impl Mul<u32> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11938,14 +11371,15 @@ pub mod num
                         self
                     }
                 }
-                impl MulAssign<u32> for BigUInt
+
+                impl MulAssign<u32> for BigUint
                 {
                     #[inline] fn mul_assign(&mut self, other: u32) {
                         scalar_mul(self, other as BigDigit);
                     }
                 }
 
-                impl Mul<u64> for BigUInt
+                impl Mul<u64> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11954,13 +11388,15 @@ pub mod num
                         self
                     }
                 }
-                impl MulAssign<u64> for BigUint {
+
+                impl MulAssign<u64> for BigUint 
+                {
                     cfg_digit!(
                         #[inline] fn mul_assign(&mut self, other: u64) {
                             if let Some(other) = BigDigit::from_u64(other) {
                                 scalar_mul(self, other);
                             } else {
-                                let (hi, lo) = big_digit::from_doublebigdigit(other);
+                                let (hi, lo) = digit::from_doublebigdigit(other);
                                 *self = mul3(&self.data, &[lo, hi]);
                             }
                         }
@@ -11971,7 +11407,7 @@ pub mod num
                     );
                 }
 
-                impl Mul<u128> for BigUInt
+                impl Mul<u128> for BigUint
                 {
                     type Output = BigUint;
 
@@ -11981,7 +11417,8 @@ pub mod num
                     }
                 }
 
-                impl MulAssign<u128> for BigUint {
+                impl MulAssign<u128> for BigUint
+                {
                     cfg_digit!(
                         #[inline] fn mul_assign(&mut self, other: u128) {
                             if let Some(other) = BigDigit::from_u128(other) {
@@ -11999,14 +11436,14 @@ pub mod num
                             if let Some(other) = BigDigit::from_u128(other) {
                                 scalar_mul(self, other);
                             } else {
-                                let (hi, lo) = big_digit::from_doublebigdigit(other);
+                                let (hi, lo) = digit::from_doublebigdigit(other);
                                 *self = mul3(&self.data, &[lo, hi]);
                             }
                         }
                     );
                 }
 
-                impl CheckedMul for BigUInt
+                impl CheckedMul for BigUint
                 {
                     #[inline] fn checked_mul(&self, v: &BigUint) -> Option<BigUint> {
                         Some(self.mul(v))
@@ -12056,7 +11493,8 @@ pub mod num
                     }
                 );
                 
-                pub fn sub2(a: &mut [BigDigit], b: &[BigDigit]) {
+                pub fn sub2(a: &mut [BigDigit], b: &[BigDigit])
+                {
                     let mut borrow = 0;
 
                     let len = Ord::min(a.len(), b.len());
@@ -12075,16 +11513,14 @@ pub mod num
                             }
                         }
                     }
-
-                   
-                    assert!(
+                     assert!(
                         borrow == 0 && b_hi.iter().all(|x| *x == 0),
                         "Cannot subtract b from a because b is larger than a."
                     );
                 }
-
                
-                #[inline] fn __sub2rev(a: &[BigDigit], b: &mut [BigDigit]) -> u8 {
+                #[inline] fn __sub2rev(a: &[BigDigit], b: &mut [BigDigit]) -> u8
+                {
                     debug_assert!(b.len() == a.len());
 
                     let mut borrow = 0;
@@ -12096,7 +11532,8 @@ pub mod num
                     borrow
                 }
 
-                fn sub2rev(a: &[BigDigit], b: &mut [BigDigit]) {
+                fn sub2rev(a: &[BigDigit], b: &mut [BigDigit])
+                {
                     debug_assert!(b.len() >= a.len());
 
                     let len = Ord::min(a.len(), b.len());
@@ -12106,9 +11543,7 @@ pub mod num
                     let borrow = __sub2rev(a_lo, b_lo);
 
                     assert!(a_hi.is_empty());
-
-                   
-                    assert!(
+                     assert!(
                         borrow == 0 && b_hi.iter().all(|x| *x == 0),
                         "Cannot subtract b from a because b is larger than a."
                     );
@@ -12118,7 +11553,7 @@ pub mod num
                 forward_ref_ref_binop_big!(impl Sub for BigUint, sub);
                 forward_val_assign!(impl SubAssign for BigUint, sub_assign);
 
-                impl Sub<&BigUint> for BigUInt
+                impl Sub<&BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12136,7 +11571,7 @@ pub mod num
                     }
                 }
 
-                impl Sub<BigUint> for &BigUInt
+                impl Sub<BigUint> for &BigUint
                 {
                     type Output = BigUint;
 
@@ -12161,7 +11596,7 @@ pub mod num
                 forward_all_scalar_binop_to_val_val!(impl Sub<u64> for BigUint, sub);
                 forward_all_scalar_binop_to_val_val!(impl Sub<u128> for BigUint, sub);
 
-                impl Sub<u32> for BigUInt
+                impl Sub<u32> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12204,7 +11639,7 @@ pub mod num
                     );
                 }
 
-                impl Sub<u64> for BigUInt
+                impl Sub<u64> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12218,7 +11653,7 @@ pub mod num
                 {
                     cfg_digit!(
                         #[inline] fn sub_assign(&mut self, other: u64) {
-                            let (hi, lo) = big_digit::from_doublebigdigit(other);
+                            let (hi, lo) = digit::from_doublebigdigit(other);
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
                         }
@@ -12240,7 +11675,7 @@ pub mod num
                                 other.data.push(0);
                             }
 
-                            let (hi, lo) = big_digit::from_doublebigdigit(self);
+                            let (hi, lo) = digit::from_doublebigdigit(self);
                             sub2rev(&[lo, hi], &mut other.data[..]);
                             other.normalized()
                         }
@@ -12256,7 +11691,7 @@ pub mod num
                     );
                 }
 
-                impl Sub<u128> for BigUInt
+                impl Sub<u128> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12276,7 +11711,7 @@ pub mod num
                         }
 
                         #[inline] fn sub_assign(&mut self, other: u128) {
-                            let (hi, lo) = big_digit::from_doublebigdigit(other);
+                            let (hi, lo) = digit::from_doublebigdigit(other);
                             sub2(&mut self.data[..], &[lo, hi]);
                             self.normalize();
                         }
@@ -12303,14 +11738,14 @@ pub mod num
                                 other.data.push(0);
                             }
 
-                            let (hi, lo) = big_digit::from_doublebigdigit(self);
+                            let (hi, lo) = digit::from_doublebigdigit(self);
                             sub2rev(&[lo, hi], &mut other.data[..]);
                             other.normalized()
                         }
                     );
                 }
 
-                impl CheckedSub for BigUInt
+                impl CheckedSub for BigUint
                 {
                     #[inline] fn checked_sub(&self, v: &BigUint) -> Option<BigUint> {
                         match self.cmp(v) {
@@ -12337,7 +11772,7 @@ pub mod num
                 forward_val_val_binop!(impl BitAnd for BigUint, bitand);
                 forward_ref_val_binop_big!(impl BitAnd for BigUint, bitand);
                
-                impl BitAnd<&BigUint> for &BigUInt
+                impl BitAnd<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
 
@@ -12353,7 +11788,7 @@ pub mod num
 
                 forward_val_assign!(impl BitAndAssign for BigUint, bitand_assign);
 
-                impl BitAnd<&BigUint> for BigUInt
+                impl BitAnd<&BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12362,7 +11797,8 @@ pub mod num
                         self
                     }
                 }
-                impl BitAndAssign<&BigUint> for BigUInt
+                
+                impl BitAndAssign<&BigUint> for BigUint
                 {
                     #[inline] fn bitand_assign(&mut self, other: &BigUint) {
                         for (ai, &bi) in self.data.iter_mut().zip(other.data.iter()) {
@@ -12376,7 +11812,7 @@ pub mod num
                 forward_all_binop_to_val_ref_commutative!(impl BitOr for BigUint, bitor);
                 forward_val_assign!(impl BitOrAssign for BigUint, bitor_assign);
 
-                impl BitOr<&BigUint> for BigUInt
+                impl BitOr<&BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12385,7 +11821,8 @@ pub mod num
                         self
                     }
                 }
-                impl BitOrAssign<&BigUint> for BigUInt
+                
+                impl BitOrAssign<&BigUint> for BigUint
                 {
                     #[inline] fn bitor_assign(&mut self, other: &BigUint) {
                         for (ai, &bi) in self.data.iter_mut().zip(other.data.iter()) {
@@ -12401,7 +11838,7 @@ pub mod num
                 forward_all_binop_to_val_ref_commutative!(impl BitXor for BigUint, bitxor);
                 forward_val_assign!(impl BitXorAssign for BigUint, bitxor_assign);
 
-                impl BitXor<&BigUint> for BigUInt
+                impl BitXor<&BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -12410,7 +11847,8 @@ pub mod num
                         self
                     }
                 }
-                impl BitXorAssign<&BigUint> for BigUInt
+                
+                impl BitXorAssign<&BigUint> for BigUint
                 {
                     #[inline] fn bitxor_assign(&mut self, other: &BigUint) {
                         for (ai, &bi) in self.data.iter_mut().zip(other.data.iter()) {
@@ -12430,6 +11868,7 @@ pub mod num
             {
                 /*!
                 */
+                use num::traits::Float;
                 use ::
                 {
                     vec::{ Vec },
@@ -12439,7 +11878,7 @@ pub mod num
                     {
                         big::
                         {
-                            big_digit::{self, BigDigit},
+                            digit::{self, BigDigit},
                             ParseBigIntError,
                             TryFromBigIntError,
                         },
@@ -12458,15 +11897,17 @@ pub mod num
                 use super::multiplication::mac_with_carry;
                 /*
                 */
-                fn fls<T: PrimInt>(v: T) -> u8 {
+                fn fls<T: PrimInt>(v: T) -> u8
+                {
                     mem::size_of::<T>() as u8 * 8 - v.leading_zeros() as u8
                 }
 
-                fn ilog2<T: PrimInt>(v: T) -> u8 {
+                fn ilog2<T: PrimInt>(v: T) -> u8 
+                {
                     fls(v) - 1
                 }
 
-                impl FromStr for BigUInt
+                impl FromStr for BigUint
                 {
                     type Err = ParseBigIntError;
 
@@ -12476,10 +11917,10 @@ pub mod num
                 }
                 
                 pub fn from_bitwise_digits_le(v: &[u8], bits: u8) -> BigUint {
-                    debug_assert!(!v.is_empty() && bits <= 8 && big_digit::BITS % bits == 0);
+                    debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits == 0);
                     debug_assert!(v.iter().all(|&c| BigDigit::from(c) < (1 << bits)));
 
-                    let digits_per_big_digit = big_digit::BITS / bits;
+                    let digits_per_big_digit = digit::BITS / bits;
 
                     let data = v
                         .chunks(digits_per_big_digit.into())
@@ -12492,32 +11933,28 @@ pub mod num
                         .collect();
 
                     biguint_from_vec(data)
-                }
-
-               
+                }               
                
                 fn from_inexact_bitwise_digits_le(v: &[u8], bits: u8) -> BigUint {
-                    debug_assert!(!v.is_empty() && bits <= 8 && big_digit::BITS % bits != 0);
+                    debug_assert!(!v.is_empty() && bits <= 8 && digit::BITS % bits != 0);
                     debug_assert!(v.iter().all(|&c| BigDigit::from(c) < (1 << bits)));
 
                     let total_bits = (v.len() as u64).saturating_mul(bits.into());
-                    let big_digits = Integer::div_ceil(&total_bits, &big_digit::BITS.into())
+                    let big_digits = Integer::div_ceil(&total_bits, &digit::BITS.into())
                         .to_usize()
                         .unwrap_or(usize::MAX);
                     let mut data = Vec::with_capacity(big_digits);
 
                     let mut d = 0;
                     let mut dbits = 0;
-
-                   
-                   
+                    
                     for &c in v {
                         d |= BigDigit::from(c) << dbits;
                         dbits += bits;
 
-                        if dbits >= big_digit::BITS {
+                        if dbits >= digit::BITS {
                             data.push(d);
-                            dbits -= big_digit::BITS;
+                            dbits -= digit::BITS;
                            
                            
                             d = BigDigit::from(c) >> (bits - dbits);
@@ -12525,23 +11962,20 @@ pub mod num
                     }
 
                     if dbits > 0 {
-                        debug_assert!(dbits < big_digit::BITS);
+                        debug_assert!(dbits < digit::BITS);
                         data.push(d as BigDigit);
                     }
 
                     biguint_from_vec(data)
                 }
-
                
                 fn from_radix_digits_be(v: &[u8], radix: u32) -> BigUint {
                     debug_assert!(!v.is_empty() && !radix.is_power_of_two());
                     debug_assert!(v.iter().all(|&c| u32::from(c) < radix));
-
-                   
-                            let big_digits = {
+                             let big_digits = {
                         let radix_log2 = f64::from(radix).log2();
                         let bits = radix_log2 * v.len() as f64;
-                        (bits / big_digit::BITS as f64).ceil()
+                        (bits / digit::BITS as f64).ceil()
                     };
                     
                     let mut data = Vec::with_capacity(big_digits.to_usize().unwrap_or(0));
@@ -12569,7 +12003,6 @@ pub mod num
                             *d = mac_with_carry(0, *d, base, &mut carry);
                         }
                         debug_assert!(carry == 0);
-
                         let n = chunk
                             .iter()
                             .fold(0, |acc, &d| acc * radix + BigDigit::from(d));
@@ -12598,7 +12031,7 @@ pub mod num
                         let bits = ilog2(radix);
                         let mut v = Vec::from(buf);
                         v.reverse();
-                        if big_digit::BITS % bits == 0 {
+                        if digit::BITS % bits == 0 {
                             from_bitwise_digits_le(&v, bits)
                         } else {
                             from_inexact_bitwise_digits_le(&v, bits)
@@ -12627,7 +12060,7 @@ pub mod num
                     let res = if radix.is_power_of_two() {
                        
                         let bits = ilog2(radix);
-                        if big_digit::BITS % bits == 0 {
+                        if digit::BITS % bits == 0 {
                             from_bitwise_digits_le(buf, bits)
                         } else {
                             from_inexact_bitwise_digits_le(buf, bits)
@@ -12641,7 +12074,7 @@ pub mod num
                     Some(res)
                 }
 
-                impl Num for BigUInt
+                impl Num for BigUint
                 {
                     type FromStrRadixErr = ParseBigIntError;
 
@@ -12684,7 +12117,7 @@ pub mod num
                            
                             let bits = ilog2(radix);
                             v.reverse();
-                            if big_digit::BITS % bits == 0 {
+                            if digit::BITS % bits == 0 {
                                 from_bitwise_digits_le(&v, bits)
                             } else {
                                 from_inexact_bitwise_digits_le(&v, bits)
@@ -12711,7 +12144,7 @@ pub mod num
                             let mut ret_bits = 0;
 
                             for d in v.data.iter().rev() {
-                                let digit_bits = (bits - 1) % u64::from(big_digit::BITS) + 1;
+                                let digit_bits = (bits - 1) % u64::from(digit::BITS) + 1;
                                 let bits_want = Ord::min(64 - ret_bits, digit_bits);
 
                                 if bits_want != 0 {
@@ -12746,7 +12179,7 @@ pub mod num
                     }
                 }
 
-                impl ToPrimitive for BigUInt
+                impl ToPrimitive for BigUint
                 {
                     #[inline] fn to_i64(&self) -> Option<i64> {
                         self.to_u64().as_ref().and_then(u64::to_i64)
@@ -12768,7 +12201,7 @@ pub mod num
 
                            
                             ret += u64::from(*i) << bits;
-                            bits += big_digit::BITS;
+                            bits += digit::BITS;
                         }
 
                         Some(ret)
@@ -12784,7 +12217,7 @@ pub mod num
                             }
 
                             ret |= u128::from(*i) << bits;
-                            bits += big_digit::BITS;
+                            bits += digit::BITS;
                         }
 
                         Some(ret)
@@ -12847,9 +12280,10 @@ pub mod num
                 impl_try_from_biguint!(isize, ToPrimitive::to_isize);
                 impl_try_from_biguint!(i128, ToPrimitive::to_i128);
 
-                impl FromPrimitive for BigUInt
+                impl FromPrimitive for BigUint
                 {
-                    #[inline] fn from_i64(n: i64) -> Option<BigUint> {
+                    #[inline] fn from_i64(n: i64) -> Option<BigUint> 
+                    {
                         if n >= 0 {
                             Some(BigUint::from(n as u64))
                         } else {
@@ -12857,7 +12291,8 @@ pub mod num
                         }
                     }
 
-                    #[inline] fn from_i128(n: i128) -> Option<BigUint> {
+                    #[inline] fn from_i128(n: i128) -> Option<BigUint> 
+                    {
                         if n >= 0 {
                             Some(BigUint::from(n as u128))
                         } else {
@@ -12865,27 +12300,26 @@ pub mod num
                         }
                     }
 
-                    #[inline] fn from_u64(n: u64) -> Option<BigUint> {
+                    #[inline] fn from_u64(n: u64) -> Option<BigUint> 
+                    {
                         Some(BigUint::from(n))
                     }
 
-                    #[inline] fn from_u128(n: u128) -> Option<BigUint> {
+                    #[inline] fn from_u128(n: u128) -> Option<BigUint> 
+                    {
                         Some(BigUint::from(n))
                     }
 
-                    #[inline] fn from_f64(mut n: f64) -> Option<BigUint> {
+                    #[inline] fn from_f64(mut n: f64) -> Option<BigUint>
+                    {
                        
                         if !n.is_finite() {
                             return None;
                         }
-
-                       
+                        
                         n = n.trunc();
 
-                       
-                        if n.is_zero() {
-                            return Some(Self::ZERO);
-                        }
+                        if n.is_zero() { return Some(Self::ZERO); }
 
                         let (mantissa, exponent, sign) = Float::integer_decode(n);
 
@@ -12903,7 +12337,7 @@ pub mod num
                     }
                 }
 
-                impl From<u64> for BigUInt
+                impl From<u64> for BigUint
                 {
                     #[inline] fn from(mut n: u64) -> Self {
                         let mut ret: BigUint = Self::ZERO;
@@ -12911,28 +12345,29 @@ pub mod num
                         while n != 0 {
                             ret.data.push(n as BigDigit);
                            
-                            n = (n >> 1) >> (big_digit::BITS - 1);
+                            n = (n >> 1) >> (digit::BITS - 1);
                         }
 
                         ret
                     }
                 }
 
-                impl From<u128> for BigUInt
+                impl From<u128> for BigUint
                 {
                     #[inline] fn from(mut n: u128) -> Self {
                         let mut ret: BigUint = Self::ZERO;
 
                         while n != 0 {
                             ret.data.push(n as BigDigit);
-                            n >>= big_digit::BITS;
+                            n >>= digit::BITS;
                         }
 
                         ret
                     }
                 }
 
-                macro_rules! impl_biguint_from_uint {
+                macro_rules! impl_biguint_from_uint
+                {
                     ($T:ty) => {
                         impl From<$T> for BigUint {
                             #[inline] fn from(n: $T) -> Self {
@@ -12947,7 +12382,8 @@ pub mod num
                 impl_biguint_from_uint!(u32);
                 impl_biguint_from_uint!(usize);
 
-                macro_rules! impl_biguint_try_from_int {
+                macro_rules! impl_biguint_try_from_int
+                {
                     ($T:ty, $from_ty:path) => {
                         impl TryFrom<$T> for BigUint {
                             type Error = TryFromBigIntError<()>;
@@ -12966,14 +12402,15 @@ pub mod num
                 impl_biguint_try_from_int!(isize, FromPrimitive::from_isize);
                 impl_biguint_try_from_int!(i128, FromPrimitive::from_i128);
 
-                impl ToBigUint for BigUInt
+                impl ToBigUint for BigUint
                 {
                     #[inline] fn to_biguint(&self) -> Option<BigUint> {
                         Some(self.clone())
                     }
                 }
 
-                macro_rules! impl_to_biguint {
+                macro_rules! impl_to_biguint
+                {
                     ($T:ty, $from_ty:path) => {
                         impl ToBigUint for $T {
                             #[inline] fn to_biguint(&self) -> Option<BigUint> {
@@ -13000,7 +12437,8 @@ pub mod num
                 impl_to_biguint!(f32, FromPrimitive::from_f32);
                 impl_to_biguint!(f64, FromPrimitive::from_f64);
 
-                impl From<bool> for BigUint {
+                impl From<bool> for BigUint
+                {
                     fn from(x: bool) -> Self {
                         if x {
                             One::one()
@@ -13009,14 +12447,14 @@ pub mod num
                         }
                     }
                 }
-
                
-                pub fn to_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> {
-                    debug_assert!(!u.is_zero() && bits <= 8 && big_digit::BITS % bits == 0);
+                pub fn to_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> 
+                {
+                    debug_assert!(!u.is_zero() && bits <= 8 && digit::BITS % bits == 0);
 
                     let last_i = u.data.len() - 1;
                     let mask: BigDigit = (1 << bits) - 1;
-                    let digits_per_big_digit = big_digit::BITS / bits;
+                    let digits_per_big_digit = digit::BITS / bits;
                     let digits = Integer::div_ceil(&u.bits(), &u64::from(bits))
                         .to_usize()
                         .unwrap_or(usize::MAX);
@@ -13037,10 +12475,10 @@ pub mod num
 
                     res
                 }
-
                
-                fn to_inexact_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> {
-                    debug_assert!(!u.is_zero() && bits <= 8 && big_digit::BITS % bits != 0);
+                fn to_inexact_bitwise_digits_le(u: &BigUint, bits: u8) -> Vec<u8> 
+                {
+                    debug_assert!(!u.is_zero() && bits <= 8 && digit::BITS % bits != 0);
 
                     let mask: BigDigit = (1 << bits) - 1;
                     let digits = Integer::div_ceil(&u.bits(), &u64::from(bits))
@@ -13053,15 +12491,15 @@ pub mod num
 
                     for c in &u.data {
                         r |= *c << rbits;
-                        rbits += big_digit::BITS;
+                        rbits += digit::BITS;
 
                         while rbits >= bits {
                             res.push((r & mask) as u8);
                             r >>= bits;
 
                            
-                            if rbits > big_digit::BITS {
-                                r = *c >> (big_digit::BITS - (rbits - bits));
+                            if rbits > digit::BITS {
+                                r = *c >> (digit::BITS - (rbits - bits));
                             }
 
                             rbits -= bits;
@@ -13078,10 +12516,9 @@ pub mod num
 
                     res
                 }
-
                
-                #[inline(always)]
-                pub fn to_radix_digits_le(u: &BigUint, radix: u32) -> Vec<u8> {
+                #[inline(always)] pub fn to_radix_digits_le(u: &BigUint, radix: u32) -> Vec<u8>
+                {
                     debug_assert!(!u.is_zero() && !radix.is_power_of_two());
 
                             let radix_digits = {
@@ -13092,33 +12529,25 @@ pub mod num
                     let mut res = Vec::with_capacity(radix_digits.to_usize().unwrap_or(0));
 
                     let mut digits = u.clone();
+                    
+                    let (base, power) = if FAST_DIV_WIDE { get_radix_base(radix) } else { get_half_radix_base(radix) };
 
-                   
-                   
-                    let (base, power) = if FAST_DIV_WIDE {
-                        get_radix_base(radix)
-                    } else {
-                        get_half_radix_base(radix)
-                    };
                     let radix = radix as BigDigit;
-
-                   
-                   
-                   
-                   
-                    if digits.data.len() >= 64 {
+                    
+                    if digits.data.len() >= 64
+                    {
                         let mut big_base = BigUint::from(base);
                         let mut big_power = 1usize;
-
-                       
                         let target_len = digits.data.len().sqrt();
-                        while big_base.data.len() < target_len {
+
+                        while big_base.data.len() < target_len
+                        {
                             big_base = &big_base * &big_base;
                             big_power *= 2;
                         }
-
-                       
-                        while digits > big_base {
+                        
+                        while digits > big_base
+                        {
                            
                             let (q, mut big_r) = digits.div_rem(&big_base);
                             digits = q;
@@ -13135,7 +12564,8 @@ pub mod num
                         }
                     }
 
-                    while digits.data.len() > 1 {
+                    while digits.data.len() > 1
+                    {
                         let (q, mut r) = div_rem_digit(digits, base);
                         for _ in 0..power {
                             res.push((r % radix) as u8);
@@ -13145,6 +12575,7 @@ pub mod num
                     }
 
                     let mut r = digits.data[0];
+
                     while r != 0 {
                         res.push((r % radix) as u8);
                         r /= radix;
@@ -13153,13 +12584,14 @@ pub mod num
                     res
                 }
 
-                pub fn to_radix_le(u: &BigUint, radix: u32) -> Vec<u8> {
+                pub fn to_radix_le(u: &BigUint, radix: u32) -> Vec<u8> 
+                {
                     if u.is_zero() {
                         vec![0]
                     } else if radix.is_power_of_two() {
                        
                         let bits = ilog2(radix);
-                        if big_digit::BITS % bits == 0 {
+                        if digit::BITS % bits == 0 {
                             to_bitwise_digits_le(u, bits)
                         } else {
                             to_inexact_bitwise_digits_le(u, bits)
@@ -13173,7 +12605,8 @@ pub mod num
                     }
                 }
 
-                pub fn to_str_radix_reversed(u: &BigUint, radix: u32) -> Vec<u8> {
+                pub fn to_str_radix_reversed(u: &BigUint, radix: u32) -> Vec<u8> 
+                {
                     assert!(2 <= radix && radix <= 36, "The radix must be within 2...36");
 
                     if u.is_zero() {
@@ -13181,9 +12614,7 @@ pub mod num
                     }
 
                     let mut res = to_radix_le(u, radix);
-
-                   
-                    for r in &mut res {
+                     for r in &mut res {
                         debug_assert!(u32::from(*r) < radix);
                         if *r < 10 {
                             *r += b'0';
@@ -13194,45 +12625,50 @@ pub mod num
                     res
                 }
 
-                #[inline] fn get_radix_base(radix: u32) -> (BigDigit, usize) {
-                    static BASES: [(BigDigit, usize); 257] = generate_radix_bases(big_digit::MAX);
+                #[inline] fn get_radix_base(radix: u32) -> (BigDigit, usize) 
+                {
+                    static BASES: [(BigDigit, usize); 257] = generate_radix_bases(digit::MAX);
                     debug_assert!(!radix.is_power_of_two());
                     debug_assert!((3..256).contains(&radix));
                     BASES[radix as usize]
                 }
 
-                #[inline] fn get_half_radix_base(radix: u32) -> (BigDigit, usize) {
-                    static BASES: [(BigDigit, usize); 257] = generate_radix_bases(big_digit::HALF);
+                #[inline] fn get_half_radix_base(radix: u32) -> (BigDigit, usize) 
+                {
+                    static BASES: [(BigDigit, usize); 257] = generate_radix_bases(digit::HALF);
                     debug_assert!(!radix.is_power_of_two());
                     debug_assert!((3..256).contains(&radix));
                     BASES[radix as usize]
                 }
-                ///
                 
-                const fn generate_radix_bases(max: BigDigit) -> [(BigDigit, usize); 257] {
+                const fn generate_radix_bases(max: BigDigit) -> [(BigDigit, usize); 257]
+                {
                     let mut bases = [(0, 0); 257];
-
                     let mut radix: BigDigit = 3;
-                    while radix < 256 {
-                        if !radix.is_power_of_two() {
+
+                    while radix < 256
+                    {
+                        if !radix.is_power_of_two()
+                        {
                             let mut power = 1;
                             let mut base = radix;
 
-                            while let Some(b) = base.checked_mul(radix) {
-                                if b > max {
-                                    break;
-                                }
+                            while let Some(b) = base.checked_mul(radix)
+                            {
+                                if b > max { break; }
+
                                 base = b;
                                 power += 1;
                             }
+
                             bases[radix as usize] = (base, power)
                         }
+
                         radix += 1;
                     }
 
                     bases
                 }
-
             } pub use self::convert::{*};
 
             pub mod iter
@@ -13241,12 +12677,13 @@ pub mod num
                 */
                 use ::
                 {
+                    iter::{ FusedIterator },
                     *,
                 };
                 /*
-                    use ::iter::FusedIterator;
                 */
-                cfg_digit!(
+                cfg_digit!
+                (
                     pub struct U32Digits<'a> {
                         it: ::slice::Iter<'a, u32>,
                     }
@@ -13257,7 +12694,8 @@ pub mod num
                     }
                 );
 
-                cfg_digit!(
+                cfg_digit!
+                (
                     const _: () = {
                         impl<'a> U32Digits<'a> {
                             #[inline]
@@ -13399,7 +12837,8 @@ pub mod num
 
                 impl FusedIterator for U32Digits<'_> {}
 
-                cfg_digit!(
+                cfg_digit!
+                (
                     pub struct U64Digits<'a> {
                         it: ::slice::Chunks<'a, u32>,
                     }
@@ -13408,7 +12847,8 @@ pub mod num
                     }
                 );
 
-                cfg_digit!(
+                cfg_digit!
+                (
                     const _: () = {
                         impl<'a> U64Digits<'a> {
                             #[inline]
@@ -13483,14 +12923,14 @@ pub mod num
                     };
                 );
 
-                impl ExactSizeIterator for U64Digits<'_> {
+                impl ExactSizeIterator for U64Digits<'_>
+                {
                     #[inline] fn len(&self) -> usize {
                         self.it.len()
                     }
                 }
 
                 impl FusedIterator for U64Digits<'_> {}
-
             } pub use self::iter::{*};
 
             pub mod monty
@@ -13505,8 +12945,8 @@ pub mod num
                     {
                         big::
                         {
-                            big_digit::{self, BigDigit, DoubleBigDigit},
-                            biguint::BigUint,
+                            digit::{self, BigDigit, DoubleBigDigit},
+                            uint::BigUint,
                         },
                         traits::One,
                     },
@@ -13524,7 +12964,7 @@ pub mod num
                     let mut k0 = BigDigit::wrapping_sub(2, b);
                     let mut t = b - 1;
                     let mut i = 1;
-                    while i < big_digit::BITS {
+                    while i < digit::BITS {
                         t = t.wrapping_mul(t);
                         k0 = k0.wrapping_mul(t + 1);
 
@@ -13541,11 +12981,8 @@ pub mod num
                     }
                 }
                 
-                fn montgomery(x: &BigUint, y: &BigUint, m: &BigUint, k: BigDigit, n: usize) -> BigUint {
-                   
-                   
-                   
-                   
+                fn montgomery(x: &BigUint, y: &BigUint, m: &BigUint, k: BigDigit, n: usize) -> BigUint 
+                {
                     assert!(
                         x.data.len() == n && y.data.len() == n && m.data.len() == n,
                         "{:?} {:?} {:?} {}",
@@ -13586,7 +13023,8 @@ pub mod num
                     z
                 }
 
-                #[inline( always )] fn add_mul_vvw(z: &mut [BigDigit], x: &[BigDigit], y: BigDigit) -> BigDigit {
+                #[inline( always )] fn add_mul_vvw(z: &mut [BigDigit], x: &[BigDigit], y: BigDigit) -> BigDigit 
+                {
                     let mut c = 0;
                     for (zi, xi) in z.iter_mut().zip(x.iter()) {
                         let (z1, z0) = mul_add_www(*xi, y, *zi);
@@ -13598,19 +13036,21 @@ pub mod num
                     c
                 }
 
-                #[inline( always )] fn sub_vv(z: &mut [BigDigit], x: &[BigDigit], y: &[BigDigit]) -> BigDigit {
+                #[inline( always )] fn sub_vv(z: &mut [BigDigit], x: &[BigDigit], y: &[BigDigit]) -> BigDigit 
+                {
                     let mut c = 0;
                     for (i, (xi, yi)) in x.iter().zip(y.iter()).enumerate().take(z.len()) {
                         let zi = xi.wrapping_sub(*yi).wrapping_sub(c);
                         z[i] = zi;
                        
-                        c = ((yi & !xi) | ((yi | !xi) & zi)) >> (big_digit::BITS - 1)
+                        c = ((yi & !xi) | ((yi | !xi) & zi)) >> (digit::BITS - 1)
                     }
 
                     c
                 }
 
-                #[inline( always )] fn add_ww(x: BigDigit, y: BigDigit, c: BigDigit) -> (BigDigit, BigDigit) {
+                #[inline( always )] fn add_ww(x: BigDigit, y: BigDigit, c: BigDigit) -> (BigDigit, BigDigit) 
+                {
                     let yc = y.wrapping_add(c);
                     let z0 = x.wrapping_add(yc);
                     let z1 = if z0 < x || yc < y { 1 } else { 0 };
@@ -13618,20 +13058,20 @@ pub mod num
                     (z1, z0)
                 }
 
-                #[inline( always )] fn mul_add_www(x: BigDigit, y: BigDigit, c: BigDigit) -> (BigDigit, BigDigit) {
+                #[inline( always )] fn mul_add_www(x: BigDigit, y: BigDigit, c: BigDigit) -> (BigDigit, BigDigit) 
+                {
                     let z = x as DoubleBigDigit * y as DoubleBigDigit + c as DoubleBigDigit;
-                    ((z >> big_digit::BITS) as BigDigit, z as BigDigit)
+                    ((z >> digit::BITS) as BigDigit, z as BigDigit)
                 }
                 
-                pub fn monty_modpow(x: &BigUint, y: &BigUint, m: &BigUint) -> BigUint {
+                pub fn monty_modpow(x: &BigUint, y: &BigUint, m: &BigUint) -> BigUint 
+                {
                     assert!(m.data[0] & 1 == 1);
                     let mr = MontyReducer::new(m);
                     let num_words = m.data.len();
 
                     let mut x = x.clone();
-
-                   
-                   
+                    
                     if x.data.len() > num_words {
                         x %= m;
                        
@@ -13639,10 +13079,8 @@ pub mod num
                     if x.data.len() < num_words {
                         x.data.resize(num_words, 0);
                     }
-
-                   
-                    let mut rr = BigUint::one();
-                    rr = (rr.shl(2 * num_words as u64 * u64::from(big_digit::BITS))) % m;
+                     let mut rr = BigUint::one();
+                    rr = (rr.shl(2 * num_words as u64 * u64::from(digit::BITS))) % m;
                     if rr.data.len() < num_words {
                         rr.data.resize(num_words, 0);
                     }
@@ -13659,18 +13097,16 @@ pub mod num
                         let r = montgomery(&powers[i - 1], &powers[1], m, mr.n0inv, num_words);
                         powers.push(r);
                     }
-
-                   
+                    
                     let mut z = powers[0].clone();
                     z.data.resize(num_words, 0);
                     let mut zz = BigUint::ZERO;
                     zz.data.resize(num_words, 0);
-
-                   
-                    for i in (0..y.data.len()).rev() {
+                     for i in (0..y.data.len()).rev() {
                         let mut yi = y.data[i];
                         let mut j = 0;
-                        while j < big_digit::BITS {
+                        while j < digit::BITS 
+                        {
                             if i != y.data.len() - 1 || j != 0 {
                                 zz = montgomery(&z, &z, m, mr.n0inv, num_words);
                                 z = montgomery(&zz, &zz, m, mr.n0inv, num_words);
@@ -13679,7 +13115,7 @@ pub mod num
                             }
                             zz = montgomery(
                                 &z,
-                                &powers[(yi >> (big_digit::BITS - n)) as usize],
+                                &powers[(yi >> (digit::BITS - n)) as usize],
                                 m,
                                 mr.n0inv,
                                 num_words,
@@ -13689,21 +13125,12 @@ pub mod num
                             j += n;
                         }
                     }
-
-                   
-                    zz = montgomery(&z, &one, m, mr.n0inv, num_words);
+                     zz = montgomery(&z, &one, m, mr.n0inv, num_words);
 
                     zz.normalize();
                    
                    
                     if zz >= *m {
-                       
-                       
-                       
-                       
-                       
-                       
-                       
                         zz -= m;
                         if zz >= *m {
                             zz %= m;
@@ -13724,7 +13151,7 @@ pub mod num
                 {
                     num::
                     {
-                        big::big_digit::{self, BigDigit},
+                        big::digit::{self, BigDigit},
                         integers::Integer,
                         traits::{One, Pow, ToPrimitive, Zero},
                     },
@@ -13734,7 +13161,6 @@ pub mod num
                 use super::BigUint;
                 /*
                 */
-
                 macro_rules! pow_impl 
                 {
                     ($T:ty) => {
@@ -13797,11 +13223,11 @@ pub mod num
                     };
                 }
 
-                impl Pow<&BigUint> for BigUInt
+                impl Pow<&BigUint> for BigUint
                 {
                     type Output = BigUint;
-
-                    #[inline] fn pow(self, exp: &BigUint) -> BigUint {
+                    #[inline] fn pow(self, exp: &BigUint) -> BigUint
+                    {
                         if self.is_one() || exp.is_zero() {
                             BigUint::one()
                         } else if self.is_zero() {
@@ -13818,7 +13244,7 @@ pub mod num
                     }
                 }
 
-                impl Pow<BigUint> for BigUInt
+                impl Pow<BigUint> for BigUint
                 {
                     type Output = BigUint;
 
@@ -13827,11 +13253,12 @@ pub mod num
                     }
                 }
 
-                impl Pow<&BigUint> for &BigUInt
+                impl Pow<&BigUint> for &BigUint
                 {
                     type Output = BigUint;
 
-                    #[inline] fn pow(self, exp: &BigUint) -> BigUint {
+                    #[inline] fn pow(self, exp: &BigUint) -> BigUint
+                    {
                         if self.is_one() || exp.is_zero() {
                             BigUint::one()
                         } else if self.is_zero() {
@@ -13842,7 +13269,7 @@ pub mod num
                     }
                 }
 
-                impl Pow<BigUint> for &BigUInt
+                impl Pow<BigUint> for &BigUint
                 {
                     type Output = BigUint;
 
@@ -13860,89 +13287,13 @@ pub mod num
 
                 pub fn modpow(x: &BigUint, exponent: &BigUint, modulus: &BigUint) -> BigUint 
                 {
-                    assert!(
-                        !modulus.is_zero(),
-                        "attempt to calculate with zero modulus!"
-                    );
-
-                    if modulus.is_odd() {
-                       
-                        monty_modpow(x, exponent, modulus)
-                    } else {
-                       
-                        plain_modpow(x, &exponent.data, modulus)
-                    }
+                    assert!( !modulus.is_zero(), "attempt to calculate with zero modulus!" );
+                    if modulus.is_odd() { monty_modpow(x, exponent, modulus) } else { plain_modpow(x, &exponent.data, modulus) }
                 }
 
                 fn plain_modpow(base: &BigUint, exp_data: &[BigDigit], modulus: &BigUint) -> BigUint 
                 {
-                    assert!(
-                        !modulus.is_zero(),
-                        "attempt to calculate with zero modulus!"
-                    );
-
-                    let i = match exp_data.iter().position(|&r| r != 0) {
-                        None => return BigUint::one(),
-                        Some(i) => i,
-                    };
-
-                    let mut base = base % modulus;
-                    for _ in 0..i {
-                        for _ in 0..big_digit::BITS {
-                            base = &base * &base % modulus;
-                        }
-                    }
-
-                    let mut r = exp_data[i];
-                    let mut b = 0u8;
-                    while r.is_even() {
-                        base = &base * &base % modulus;
-                        r >>= 1;
-                        b += 1;
-                    }
-
-                    let mut exp_iter = exp_data[i + 1..].iter();
-                    if exp_iter.len() == 0 && r.is_one() {
-                        return base;
-                    }
-
                     let mut acc = base.clone();
-                    r >>= 1;
-                    b += 1;
-
-                    {
-                        let mut unit = |exp_is_odd| {
-                            base = &base * &base % modulus;
-                            if exp_is_odd {
-                                acc *= &base;
-                                acc %= modulus;
-                            }
-                        };
-
-                        if let Some(&last) = exp_iter.next_back() {
-                           
-                            for _ in b..big_digit::BITS {
-                                unit(r.is_odd());
-                                r >>= 1;
-                            }
-
-                           
-                            for &r in exp_iter {
-                                let mut r = r;
-                                for _ in 0..big_digit::BITS {
-                                    unit(r.is_odd());
-                                    r >>= 1;
-                                }
-                            }
-                            r = last;
-                        }
-
-                        debug_assert_ne!(r, 0);
-                        while !r.is_zero() {
-                            unit(r.is_odd());
-                            r >>= 1;
-                        }
-                    }
                     acc
                 }
             } pub use self::power::{*};
@@ -13956,7 +13307,7 @@ pub mod num
                     borrow::{ Cow },
                     num::
                     {
-                        big::{ big_digit },
+                        big::{ digit },
                         traits::{PrimInt, Zero},
                     },
                     ops::{Shl, ShlAssign, Shr, ShrAssign},
@@ -13967,7 +13318,6 @@ pub mod num
                 use super::{biguint_from_vec, BigUint};
                 /*
                 */
-
                 macro_rules! impl_shift
                 {
                     (@ref $Shx:ident :: $shx:ident, $ShxAssign:ident :: $shx_assign:ident, $rhs:ty) =>
@@ -14049,7 +13399,7 @@ pub mod num
                     if n.is_zero() {
                         return n.into_owned();
                     }
-                    let bits = T::from(big_digit::BITS).unwrap();
+                    let bits = T::from(digit::BITS).unwrap();
                     let digits = (shift / bits).to_usize().expect("capacity overflow");
                     let shift = (shift % bits).to_u8().unwrap();
                     biguint_shl2(n, digits, shift)
@@ -14070,7 +13420,7 @@ pub mod num
 
                     if shift > 0 {
                         let mut carry = 0;
-                        let carry_shift = big_digit::BITS - shift;
+                        let carry_shift = digit::BITS - shift;
                         for elem in data[digits..].iter_mut() {
                             let new_carry = *elem >> carry_shift;
                             *elem = (*elem << shift) | carry;
@@ -14092,7 +13442,7 @@ pub mod num
                     if n.is_zero() {
                         return n.into_owned();
                     }
-                    let bits = T::from(big_digit::BITS).unwrap();
+                    let bits = T::from(digit::BITS).unwrap();
                     let digits = (shift / bits).to_usize().unwrap_or(usize::MAX);
                     let shift = (shift % bits).to_u8().unwrap();
                     biguint_shr2(n, digits, shift)
@@ -14115,7 +13465,7 @@ pub mod num
 
                     if shift > 0 {
                         let mut borrow = 0;
-                        let borrow_shift = big_digit::BITS - shift;
+                        let borrow_shift = digit::BITS - shift;
                         for elem in data.iter_mut().rev() {
                             let new_borrow = *elem << borrow_shift;
                             *elem = (*elem >> shift) | borrow;
@@ -14133,7 +13483,7 @@ pub mod num
             pub struct BigUint
             {
                 data: Vec<BigDigit>,
-            }
+            } 
             
             impl Clone for BigUint
             {
@@ -14194,8 +13544,7 @@ pub mod num
 
             impl Default for BigUint
             {
-                #[inline] fn default() -> BigUint {
-                    Self::ZERO
+                #[inline] fn default() -> BigUint { Self::ZERO
                 }
             }
 
@@ -14239,8 +13588,7 @@ pub mod num
 
             impl Zero for BigUint
             {
-                #[inline] fn zero() -> BigUint {
-                    Self::ZERO
+                #[inline] fn zero() -> BigUint { Self::ZERO
                 }
 
                 #[inline] fn set_zero(&mut self) {
@@ -14309,9 +13657,7 @@ pub mod num
                     #[inline] fn twos(x: &BigUint) -> u64 {
                         x.trailing_zeros().unwrap_or(0)
                     }
-
-                   
-                    if self.is_zero() {
+                     if self.is_zero() {
                         return other.clone();
                     }
                     if other.is_zero() {
@@ -14319,12 +13665,8 @@ pub mod num
                     }
                     let mut m = self.clone();
                     let mut n = other.clone();
-
-                   
-                    let shift = cmp::min(twos(&n), twos(&m));
-
-                   
-                   
+                     let shift = cmp::min(twos(&n), twos(&m));
+                    
                     n >>= twos(&n);
 
                     while !m.is_zero() {
@@ -14449,9 +13791,7 @@ pub mod num
                         3 => return self.cbrt(),
                         _ => (),
                     }
-
-                   
-                    let bits = self.bits();
+                     let bits = self.bits();
                     let n64 = u64::from(n);
                     
                     if bits <= n64
@@ -14500,9 +13840,7 @@ pub mod num
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
-
-                   
-                    if let Some(x) = self.to_u64() {
+                     if let Some(x) = self.to_u64() {
                         return x.sqrt().into();
                     }
 
@@ -14542,9 +13880,7 @@ pub mod num
                     if self.is_zero() || self.is_one() {
                         return self.clone();
                     }
-
-                   
-                    if let Some(x) = self.to_u64() {
+                     if let Some(x) = self.to_u64() {
                         return x.cbrt().into();
                     }
 
@@ -14593,11 +13929,8 @@ pub mod num
             impl BigUint {
 
                 pub const ZERO: Self = BigUint { data: Vec::new() };
-
-
                 
-                #[inline]
-                pub fn new(digits: Vec<u32>) -> BigUint {
+                #[inline] pub fn new(digits: Vec<u32>) -> BigUint {
                     let mut big = Self::ZERO;
 
                     cfg_digit_expr!(
@@ -14610,18 +13943,14 @@ pub mod num
 
                     big
                 }
-
                 
-                #[inline]
-                pub fn from_slice(slice: &[u32]) -> BigUint {
+                #[inline] pub fn from_slice(slice: &[u32]) -> BigUint {
                     let mut big = Self::ZERO;
                     big.assign_from_slice(slice);
                     big
                 }
-
                 
-                #[inline]
-                pub fn assign_from_slice(&mut self, slice: &[u32]) {
+                #[inline] pub fn assign_from_slice(&mut self, slice: &[u32]) {
                     self.data.clear();
 
                     cfg_digit_expr!(
@@ -14632,8 +13961,7 @@ pub mod num
                     self.normalize();
                 }
                 
-                #[inline]
-                pub fn from_bytes_be(bytes: &[u8]) -> BigUint {
+                #[inline] pub fn from_bytes_be(bytes: &[u8]) -> BigUint {
                     if bytes.is_empty() {
                         Self::ZERO
                     } else {
@@ -14642,10 +13970,8 @@ pub mod num
                         BigUint::from_bytes_le(&v)
                     }
                 }
-
                 
-                #[inline]
-                pub fn from_bytes_le(bytes: &[u8]) -> BigUint {
+                #[inline] pub fn from_bytes_le(bytes: &[u8]) -> BigUint {
                     if bytes.is_empty() {
                         Self::ZERO
                     } else {
@@ -14653,8 +13979,7 @@ pub mod num
                     }
                 }
                 
-                #[inline]
-                pub fn parse_bytes(buf: &[u8], radix: u32) -> Option<BigUint> {
+                #[inline] pub fn parse_bytes(buf: &[u8], radix: u32) -> Option<BigUint> {
                     let s = str::from_utf8(buf).ok()?;
                     BigUint::from_str_radix(s, radix).ok()
                 }
@@ -14666,16 +13991,14 @@ pub mod num
                 pub fn from_radix_le(buf: &[u8], radix: u32) -> Option<BigUint> {
                     convert::from_radix_le(buf, radix)
                 }
-                ///
-                #[inline]
-                pub fn to_bytes_be(&self) -> Vec<u8> {
+
+                #[inline] pub fn to_bytes_be(&self) -> Vec<u8> {
                     let mut v = self.to_bytes_le();
                     v.reverse();
                     v
                 }
-                ///
-                #[inline]
-                pub fn to_bytes_le(&self) -> Vec<u8> {
+
+                #[inline] pub fn to_bytes_le(&self) -> Vec<u8> {
                     if self.is_zero() {
                         vec![0]
                     } else {
@@ -14683,58 +14006,44 @@ pub mod num
                     }
                 }
                 
-                ///
-                
-                #[inline]
-                pub fn to_u32_digits(&self) -> Vec<u32> {
+                #[inline] pub fn to_u32_digits(&self) -> Vec<u32> {
                     self.iter_u32_digits().collect()
                 }
                 
-                #[inline]
-                pub fn to_u64_digits(&self) -> Vec<u64> {
+                #[inline] pub fn to_u64_digits(&self) -> Vec<u64> {
                     self.iter_u64_digits().collect()
                 }
                 
-                ///
-                
-                #[inline]
-                pub fn iter_u32_digits(&self) -> U32Digits<'_> {
+                #[inline] pub fn iter_u32_digits(&self) -> U32Digits<'_> {
                     U32Digits::new(self.data.as_slice())
                 }
                 
-                #[inline]
-                pub fn iter_u64_digits(&self) -> U64Digits<'_> {
+                #[inline] pub fn iter_u64_digits(&self) -> U64Digits<'_> {
                     U64Digits::new(self.data.as_slice())
                 }
                 
-                #[inline]
-                pub fn to_str_radix(&self, radix: u32) -> String {
+                #[inline] pub fn to_str_radix(&self, radix: u32) -> String {
                     let mut v = to_str_radix_reversed(self, radix);
                     v.reverse();
                     unsafe { String::from_utf8_unchecked(v) }
                 }
-                
-                
-                #[inline]
-                pub fn to_radix_be(&self, radix: u32) -> Vec<u8> {
+               
+                #[inline] pub fn to_radix_be(&self, radix: u32) -> Vec<u8> {
                     let mut v = convert::to_radix_le(self, radix);
                     v.reverse();
                     v
                 }
-                
-                
-                #[inline]
-                pub fn to_radix_le(&self, radix: u32) -> Vec<u8> {
+               
+                #[inline] pub fn to_radix_le(&self, radix: u32) -> Vec<u8> {
                     convert::to_radix_le(self, radix)
                 }
 
-                #[inline]
-                pub fn bits(&self) -> u64 {
+                #[inline] pub fn bits(&self) -> u64 {
                     if self.is_zero() {
                         return 0;
                     }
                     let zeros: u64 = self.data.last().unwrap().leading_zeros().into();
-                    self.data.len() as u64 * u64::from(big_digit::BITS) - zeros
+                    self.data.len() as u64 * u64::from(digit::BITS) - zeros
                 }
                 
                 #[inline] fn normalize(&mut self) {
@@ -14755,18 +14064,13 @@ pub mod num
                 pub fn pow(&self, exponent: u32) -> Self {
                     Pow::pow(self, exponent)
                 }
-
                 
                 pub fn modpow(&self, exponent: &Self, modulus: &Self) -> Self {
                     power::modpow(self, exponent, modulus)
                 }
                 
-                ///
-                pub fn modinv(&self, modulus: &Self) -> Option<Self> {
-                   
-                   
-                   
-
+                pub fn modinv(&self, modulus: &Self) -> Option<Self>
+                {
                     assert!(
                         !modulus.is_zero(),
                         "attempt to calculate with zero modulus!"
@@ -14779,9 +14083,7 @@ pub mod num
                     let mut r1 = self % modulus;
                     let mut t0;
                     let mut t1;
-
-                   
-                    if r1.is_zero() {
+                     if r1.is_zero() {
                         return None;
                     } else if r1.is_one() {
                         return Some(r1);
@@ -14800,8 +14102,6 @@ pub mod num
                         let (q, r2) = r0.div_rem(&r1);
                         r0 = r1;
                         r1 = r2;
-
-                       
                         let qt1 = q * &t1 % modulus;
                         let t2 = if t0 < qt1 {
                             t0 + (modulus - qt1)
@@ -14818,27 +14118,31 @@ pub mod num
                         None
                     }
                 }
+                
                 pub fn sqrt(&self) -> Self {
                     Roots::sqrt(self)
                 }
+                
                 pub fn cbrt(&self) -> Self {
                     Roots::cbrt(self)
                 }
+                
                 pub fn nth_root(&self, n: u32) -> Self {
                     Roots::nth_root(self, n)
                 }
+                
                 pub fn trailing_zeros(&self) -> Option<u64> {
                     let i = self.data.iter().position(|&digit| digit != 0)?;
                     let zeros: u64 = self.data[i].trailing_zeros().into();
-                    Some(i as u64 * u64::from(big_digit::BITS) + zeros)
+                    Some(i as u64 * u64::from(digit::BITS) + zeros)
                 }
 
                 pub fn trailing_ones(&self) -> u64 {
                     if let Some(i) = self.data.iter().position(|&digit| !digit != 0) {
                         let ones: u64 = self.data[i].trailing_ones().into();
-                        i as u64 * u64::from(big_digit::BITS) + ones
+                        i as u64 * u64::from(digit::BITS) + ones
                     } else {
-                        self.data.len() as u64 * u64::from(big_digit::BITS)
+                        self.data.len() as u64 * u64::from(digit::BITS)
                     }
                 }
 
@@ -14847,7 +14151,7 @@ pub mod num
                 }
 
                 pub fn bit(&self, bit: u64) -> bool {
-                    let bits_per_digit = u64::from(big_digit::BITS);
+                    let bits_per_digit = u64::from(digit::BITS);
                     if let Some(digit_index) = (bit / bits_per_digit).to_usize() {
                         if let Some(digit) = self.data.get(digit_index) {
                             let bit_mask = (1 as BigDigit) << (bit % bits_per_digit);
@@ -14856,10 +14160,10 @@ pub mod num
                     }
                     false
                 }
-                pub fn set_bit(&mut self, bit: u64, value: bool) {
-                   
-                   
-                    let bits_per_digit = u64::from(big_digit::BITS);
+                
+                pub fn set_bit(&mut self, bit: u64, value: bool)
+                {
+                    let bits_per_digit = u64::from(digit::BITS);
                     let digit_index = (bit / bits_per_digit).to_usize().unwrap_or(usize::MAX);
                     let bit_mask = (1 as BigDigit) << (bit % bits_per_digit);
                     if value {
@@ -14879,12 +14183,10 @@ pub mod num
             impl num::traits::FromBytes for BigUint {
                 type Bytes = [u8];
 
-                fn from_be_bytes(bytes: &Self::Bytes) -> Self {
-                    Self::from_bytes_be(bytes)
+                fn from_be_bytes(bytes: &Self::Bytes) -> Self { Self::from_bytes_be(bytes)
                 }
 
-                fn from_le_bytes(bytes: &Self::Bytes) -> Self {
-                    Self::from_bytes_le(bytes)
+                fn from_le_bytes(bytes: &Self::Bytes) -> Self { Self::from_bytes_le(bytes)
                 }
             }
 
@@ -15064,8 +14366,6 @@ pub mod num
         pub use self::int::Sign;
         pub use self::int::ToBigInt;
         
-        pub use self::rand::{ RandBigInt, RandomBits, UniformBigInt, UniformBigUint };
-
         mod digit 
         {
            
@@ -15645,7 +14945,7 @@ pub mod num
             impl<T: Integer + Clone> Sum for Ratio<T>
             {
                 fn sum<I>(iter: I) -> Self where
-                    I: Iterator<Item = Ratio<T>>,
+                I: Iterator<Item = Ratio<T>>,
                 {
                     iter.fold(Self::zero(), |sum, num| sum + num)
                 }
@@ -15654,7 +14954,7 @@ pub mod num
             impl<'a, T: Integer + Clone> Sum<&'a Ratio<T>> for Ratio<T>
             {
                 fn sum<I>(iter: I) -> Self where
-                    I: Iterator<Item = &'a Ratio<T>>,
+                I: Iterator<Item = &'a Ratio<T>>,
                 {
                     iter.fold(Self::zero(), |sum, num| sum + num)
                 }
@@ -15663,7 +14963,7 @@ pub mod num
             impl<T: Integer + Clone> Product for Ratio<T>
             {
                 fn product<I>(iter: I) -> Self where
-                    I: Iterator<Item = Ratio<T>>,
+                I: Iterator<Item = Ratio<T>>,
                 {
                     iter.fold(Self::one(), |prod, num| prod * num)
                 }
@@ -15672,7 +14972,7 @@ pub mod num
             impl<'a, T: Integer + Clone> Product<&'a Ratio<T>> for Ratio<T>
             {
                 fn product<I>(iter: I) -> Self where
-                    I: Iterator<Item = &'a Ratio<T>>,
+                I: Iterator<Item = &'a Ratio<T>>,
                 {
                     iter.fold(Self::one(), |prod, num| prod * num)
                 }
@@ -16137,10 +15437,8 @@ pub mod num
             }
 
             #[inline] fn signum(&self) -> Ratio<T> {
-                if self.is_positive() {
-                    Self::one()
-                } else if self.is_zero() {
-                    Self::zero()
+                if self.is_positive() { Self::one()
+                } else if self.is_zero() { Self::zero()
                 } else {
                     -Self::one()
                 }
@@ -17525,11 +16823,7 @@ pub mod rand
             macro_rules! uniform_simd_int_impl
             {
                 ($ty:ident, $unsigned:ident) => {
-                    // The "pick the largest zone that can fit in an `u32`" optimization
-                    // is less useful here. Multiple lanes complicate things, we don't
-                    // know the PRNG's minimal output size, and casting to a larger vector
-                    // is generally a bad idea for SIMD performance. The user can still
-                    // implement it manually.
+
 
                     #[cfg(feature = "simd_support")]
                     impl<const LANES: usize> SampleUniform for Simd<$ty, LANES>
@@ -17552,8 +16846,7 @@ pub mod rand
                     {
                         type X = Simd<$ty, LANES>;
 
-                        #[inline] // if the range is constant, this helps LLVM to do the
-                                // calculations at compile-time.
+                        #[inline]
                         fn new<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error>
                             where B1: SampleBorrow<Self::X> + Sized,
                                 B2: SampleBorrow<Self::X> + Sized
@@ -17566,8 +16859,7 @@ pub mod rand
                             UniformSampler::new_inclusive(low, high - Simd::splat(1))
                         }
 
-                        #[inline] // if the range is constant, this helps LLVM to do the
-                                // calculations at compile-time.
+                        #[inline]
                         fn new_inclusive<B1, B2>(low_b: B1, high_b: B2) -> Result<Self, Error>
                             where B1: SampleBorrow<Self::X> + Sized,
                                 B2: SampleBorrow<Self::X> + Sized
@@ -17577,19 +16869,16 @@ pub mod rand
                             if !(low.simd_le(high).all()) {
                                 return Err(Error::EmptyRange);
                             }
-
-                            // NOTE: all `Simd` operations are inherently wrapping,
-                            //       see https://doc.rust-lang.org/std/simd/struct.Simd.html
                             let range: Simd<$unsigned, LANES> = ((high - low) + Simd::splat(1)).cast();
 
-                            // We must avoid divide-by-zero by using 0 % 1 == 0.
+
                             let not_full_range = range.simd_gt(Simd::splat(0));
                             let modulo = not_full_range.select(range, Simd::splat(1));
                             let ints_to_reject = range.wrapping_neg() % modulo;
 
                             Ok(UniformInt {
                                 low,
-                                // These are really $unsigned values, but store as $ty:
+
                                 range: range.cast(),
                                 thresh: ints_to_reject.cast(),
                             })
@@ -17598,38 +16887,25 @@ pub mod rand
                         fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X {
                             let range: Simd<$unsigned, LANES> = self.range.cast();
                             let thresh: Simd<$unsigned, LANES> = self.thresh.cast();
-
-                            // This might seem very slow, generating a whole new
-                            // SIMD vector for every sample rejection. For most uses
-                            // though, the chance of rejection is small and provides good
-                            // general performance. With multiple lanes, that chance is
-                            // multiplied. To mitigate this, we replace only the lanes of
-                            // the vector which fail, iteratively reducing the chance of
-                            // rejection. The replacement method does however add a little
-                            // overhead. Benchmarking or calculating probabilities might
-                            // reveal contexts where this replacement method is slower.
                             let mut v: Simd<$unsigned, LANES> = rng.random();
                             loop {
                                 let (hi, lo) = v.wmul(range);
                                 let mask = lo.simd_ge(thresh);
                                 if mask.all() {
                                     let hi: Simd<$ty, LANES> = hi.cast();
-                                    // wrapping addition
+
                                     let result = self.low + hi;
-                                    // `select` here compiles to a blend operation
-                                    // When `range.eq(0).none()` the compare and blend
-                                    // operations are avoided.
                                     let v: Simd<$ty, LANES> = v.cast();
                                     return range.simd_gt(Simd::splat(0)).select(result, v);
                                 }
-                                // Replace only the failing lanes
+
                                 v = mask.select(v, rng.random());
                             }
                         }
                     }
                 };
 
-                // bulk implementation
+
                 ($(($unsigned:ident, $signed:ident)),+) => {
                     $(
                         uniform_simd_int_impl!($unsigned, $unsigned);
@@ -18316,7 +17592,7 @@ pub mod rand
             }
         };
 
-        // simd bulk implementation
+
         ($(($ty:ident, $wide:ty),)+, $shift:expr) => {
             $(
                 impl WideningMultiply for $ty {
@@ -18324,10 +17600,6 @@ pub mod rand
 
                     #[inline(always)]
                     fn wmul(self, x: $ty) -> Self::Output {
-                        // For supported vectors, this should compile to a couple
-                        // supported multiply & swizzle instructions (no actual
-                        // casting).
-                        // TODO: optimize
                         let y: $wide = self.cast();
                         let x: $wide = x.cast();
                         let tmp = y * x;
@@ -18372,7 +17644,7 @@ pub mod rand
             }
         };
 
-        // simd bulk implementation
+
         (($($ty:ty,)+) $scalar:ty, $half:expr) => {
             $(
                 impl WideningMultiply for $ty {
@@ -18380,7 +17652,7 @@ pub mod rand
 
                     #[inline(always)]
                     fn wmul(self, b: $ty) -> Self::Output {
-                        // needs wrapping multiplication
+
                         let lower_mask = <$ty>::splat(!0 >> $half);
                         let half = <$ty>::splat($half);
                         let mut low = (self & lower_mask) * (b & lower_mask);
@@ -18542,4 +17814,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 18545 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 17817 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
