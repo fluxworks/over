@@ -1507,6 +1507,11 @@ pub mod arch
     pub use std::arch::*;
 }
 
+pub mod array
+{
+    pub use std::array::{ * };
+}
+
 pub mod ascii
 {
     pub use std::ascii::{ * };
@@ -6048,7 +6053,7 @@ for (i, c) in cs.by_ref() {
                 T::from_str_radix(str, radix).map(Wrapping)
             }
         }
-        
+        /*
         impl<T: Num> Num for ::num::Saturating<T> where
             ::num::Saturating<T>: NumOps,
         {
@@ -6056,7 +6061,7 @@ for (i, c) in cs.by_ref() {
             fn from_str_radix(str: &str, radix: u32) -> Result<Self, Self::FromStrRadixErr> {
                 T::from_str_radix(str, radix).map(::num::Saturating)
             }
-        }
+        }*/
 
         #[derive(Debug)] pub enum FloatErrorKind
         {
@@ -8282,6 +8287,7 @@ m >>= m.trailing_zeros();
                         big::
                         {
                             digit::{ self, BITS, BigDigit, DoubleBigDigit },
+                            uint::{ IntDigits },
                             BigInt, BigUint, Sign::{ self, Minus, NoSign, Plus},
                         },
                         traits::{ToPrimitive, Zero},
@@ -8290,9 +8296,6 @@ m >>= m.trailing_zeros();
                     vec::{ Vec },
                     *,
                 };
-                /*
-                use super::BigInt;
-                use super::Sign::{Minus, NoSign, Plus}; */
                 /*
                 */
                 #[inline] fn negate_carry(a: BigDigit, acc: &mut DoubleBigDigit) -> BigDigit 
@@ -13291,9 +13294,9 @@ a0 = a.data.pop().unwrap();
                     if modulus.is_odd() { monty_modpow(x, exponent, modulus) } else { plain_modpow(x, &exponent.data, modulus) }
                 }
 
-                fn plain_modpow(base: &BigUint, exp_data: &[BigDigit], modulus: &BigUint) -> BigUint 
+                fn plain_modpow(b: &BigUint, e: &[BigDigit], m: &BigUint) -> BigUint 
                 {
-                    let mut acc = base.clone();
+                    let mut acc = b.clone();
                     acc
                 }
             } pub use self::power::{*};
@@ -16020,9 +16023,10 @@ pub mod ptr
 pub mod rand
 {
     /*!
-    Utilities for random number generation*/
+    Utilities for random number generation. */
     use ::
     {
+        num::{ Wrapping },
         *,
     };
     /*
@@ -16660,16 +16664,7 @@ pub mod rand
                 low: X,
                 scale: X,
             }
-
-            uniform_float_impl! { , f32, u32, f32, u32, 32 - 23 }
-            uniform_float_impl! { , f64, u64, f64, u64, 64 - 52 }            
-            uniform_float_impl! { feature = "simd_support", f32x2, u32x2, f32, u32, 32 - 23 }            
-            uniform_float_impl! { feature = "simd_support", f32x4, u32x4, f32, u32, 32 - 23 }            
-            uniform_float_impl! { feature = "simd_support", f32x8, u32x8, f32, u32, 32 - 23 }            
-            uniform_float_impl! { feature = "simd_support", f32x16, u32x16, f32, u32, 32 - 23 }            
-            uniform_float_impl! { feature = "simd_support", f64x2, u64x2, f64, u64, 64 - 52 }            
-            uniform_float_impl! { feature = "simd_support", f64x4, u64x4, f64, u64, 64 - 52 }            
-            uniform_float_impl! { feature = "simd_support", f64x8, u64x8, f64, u64, 64 - 52 }
+            
         } pub use self::float::UniformFloat;
 
         pub mod integer
@@ -16940,7 +16935,8 @@ pub mod rand
             {
                 low: usize,
                 range: usize,
-                thresh: usize
+                thresh: usize,
+                mode64: bool,
             }
 
             #[cfg(any(target_pointer_width = "32", target_pointer_width = "64"))]
@@ -17099,7 +17095,7 @@ pub mod rand
                     uniform::{ Error, SampleBorrow, SampleUniform, Uniform, UniformInt, UniformSampler },
                     Rng, Distribution
                 },
-                time::{ Duration },
+                time::std::{ Duration },
                 *,
             };
             /*
@@ -17567,10 +17563,197 @@ pub mod rand
             s
         }
     }
+
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct Alphabetic;
+
+    #[derive(Debug, Clone, Copy, Default)]
+    pub struct Alphanumeric;
     
     #[derive(Clone, Copy, Debug, Default)]
     pub struct StandardUniform;
+    
+    impl Distribution<char> for StandardUniform
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> char
+        {
+            const GAP_SIZE: u32 = 0xDFFF - 0xD800 + 1;
+            let range = rand::uniform::Uniform::new(GAP_SIZE, 0x11_0000).unwrap();
 
+            let mut n = range.sample(rng);
+
+            if n <= 0xDFFF { n -= GAP_SIZE; }
+
+            unsafe { char::from_u32_unchecked(n) }
+        }
+    }
+    
+    impl SampleString for StandardUniform
+    {
+        fn append_string<R: Rng + ?Sized>(&self, rng: &mut R, s: &mut String, len: usize)
+        {
+            s.reserve(4 * len);
+            s.extend(Distribution::<char>::sample_iter(self, rng).take(len));
+        }
+    }
+
+    impl Distribution<u8> for Alphanumeric
+    {
+        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8
+        {
+            const RANGE: u32 = 26 + 26 + 10;
+            const GEN_ASCII_STR_CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ\
+                    abcdefghijklmnopqrstuvwxyz\
+                    0123456789";
+            loop
+            {
+                let var = rng.next_u32() >> (32 - 6);
+
+                if var < RANGE { return GEN_ASCII_STR_CHARSET[var as usize]; }
+            }
+        }
+    }
+
+    impl Distribution<u8> for Alphabetic
+    {
+        fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8
+        {
+            const RANGE: u8 = 26 + 26;
+            let offset = rng.random_range(0..RANGE) + b'A';
+            offset + (offset > b'Z') as u8 * (b'a' - b'Z' - 1)
+        }
+    }
+
+    impl SampleString for Alphanumeric
+    {
+        fn append_string<R: Rng + ?Sized>(&self, rng: &mut R, string: &mut String, len: usize)
+        {
+            unsafe
+            {
+                let v = string.as_mut_vec();
+                v.extend(
+                    self.sample_iter(rng)
+                        .take(len)
+                        .inspect(|b| debug_assert!(b.is_ascii_alphanumeric())),
+                );
+            }
+        }
+    }
+
+    impl SampleString for Alphabetic 
+    {
+        fn append_string<R: Rng + ?Sized>(&self, rng: &mut R, string: &mut String, len: usize)
+        {
+            unsafe
+            {
+                let v = string.as_mut_vec();
+                v.reserve_exact(len);
+                v.extend(self.sample_iter(rng).take(len));
+            }
+        }
+    }
+
+    impl Distribution<u8> for StandardUniform
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u8 { rng.next_u32() as u8 }
+    }
+
+    impl Distribution<u16> for StandardUniform
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u16 { rng.next_u32() as u16 }
+    }
+
+    impl Distribution<u32> for StandardUniform
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u32 { rng.next_u32() }
+    }
+
+    impl Distribution<u64> for StandardUniform
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u64 { rng.next_u64() }
+    }
+
+    impl Distribution<u128> for StandardUniform 
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> u128 
+        {
+            let x = u128::from(rng.next_u64());
+            let y = u128::from(rng.next_u64());
+            (y << 64) | x
+        }
+    }
+
+    macro_rules! impl_int_from_uint
+    {
+        ($ty:ty, $uty:ty) =>
+        {
+            impl Distribution<$ty> for StandardUniform
+            {
+                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> $ty { rng.random::<$uty>() as $ty }
+            }
+        };
+    }
+
+    impl_int_from_uint! { i8, u8 }
+    impl_int_from_uint! { i16, u16 }
+    impl_int_from_uint! { i32, u32 }
+    impl_int_from_uint! { i64, u64 }
+    impl_int_from_uint! { i128, u128 }
+
+    impl Distribution<bool> for StandardUniform
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> bool { (rng.next_u32() as i32) < 0 }
+    }
+    
+    macro_rules! tuple_impl
+    {
+        ($($tyvar:ident)*) =>
+        {
+            impl< $($tyvar,)* > Distribution<($($tyvar,)*)> for StandardUniform where 
+            $(
+                StandardUniform: Distribution< $tyvar >,
+            )*
+            {
+                #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> ( $($tyvar,)* )
+                {
+                    let out = 
+                    ($(
+                        rng.random::<$tyvar>()
+                    ,)*);
+                    
+                    let _rng = rng;
+                    out
+                }
+            }
+        }
+    }
+    
+    macro_rules! tuple_impls
+    {
+        ($($tyvar:ident)*) => {tuple_impls!{[] $($tyvar)*}};
+
+        ([$($prefix:ident)*] $head:ident $($tail:ident)*) =>
+        {
+            tuple_impl!{$($prefix)*}
+            tuple_impls!{[$($prefix)* $head] $($tail)*}
+        };
+        
+        ([$($prefix:ident)*]) => { tuple_impl!{$($prefix)*} };
+    }
+
+    tuple_impls! {A B C D E F G H I J K L}
+
+    impl<T, const N: usize> Distribution<[T; N]> for StandardUniform where
+    StandardUniform: Distribution<T>
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> [T; N] { array::from_fn(|_| rng.random()) }
+    }
+
+    impl<T> Distribution<Wrapping<T>> for StandardUniform where
+    StandardUniform: Distribution<T>
+    {
+        #[inline] fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Wrapping<T> { Wrapping(rng.random()) }
+    }
     
     pub trait WideningMultiply<RHS = Self>
     {
@@ -17814,4 +17997,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 17817 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 18000 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
