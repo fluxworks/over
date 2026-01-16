@@ -16732,24 +16732,44 @@ pub mod object
 		static ref CUR_ID: AtomicUsize = AtomicUsize::new(0);
 	}
 
-	fn get_id() -> usize {
+	fn get_id() -> usize 
+    {
 		CUR_ID.fetch_add(1, Ordering::Relaxed)
 	}
 
 	#[derive(Clone, Debug)]
-	struct ObjInner {
+	struct ObjInner 
+    {
 		map: HashMap<String, Value>,
 		parent: Option<Obj>,
 		id: usize,
 	}
-
-	/// `Obj` struct.
+    
 	#[derive(Clone, Debug)]
-	pub struct Obj {
+	pub struct Obj
+    {
 		inner: Arc<ObjInner>,
 	}
 
-	macro_rules! get_fn {
+    pub fn from_map_unchecked(obj_map: HashMap<String, Value>) -> Obj 
+    {
+        let id = get_id();
+        Obj
+        {
+            inner: Arc::new
+            (
+                ObjInner 
+                {
+					map: obj_map,
+					parent: None,
+					id,
+				}
+            ),
+        }
+    }
+
+	macro_rules! get_fn 
+    {
 		( $doc:expr, $name:tt, $type:ty ) => {
 			#[doc=$doc]
 			pub fn $name(&self, field: &str) -> OverResult<$type> {
@@ -16766,10 +16786,8 @@ pub mod object
 		}
 	}
 
-	impl Obj {
-		/// Returns a new `Obj` created from the given `HashMap`.
-		///
-		/// must be alphabetic, numeric, or '_'.
+	impl Obj
+    {
 		pub fn from_map(obj_map: HashMap<String, Value>) -> OverResult<Obj> {
 			for field in obj_map.keys() {
 				if !Self::is_valid_field(field) {
@@ -16786,12 +16804,7 @@ pub mod object
 				}),
 			})
 		}
-
-		/// Returns a new `Obj` created from the given `HashMap` with given `parent`.
-		///
-		/// Returns an error if the map contains an invalid field name.
-		///
-		/// See `from_map` for more details.
+        
 		pub fn from_map_with_parent(obj_map: HashMap<String, Value>, parent: Obj) -> OverResult<Obj> {
 			for field in obj_map.keys() {
 				if !Self::is_valid_field(field) {
@@ -16808,11 +16821,7 @@ pub mod object
 				}),
 			})
 		}
-
-		/// Returns a new `Obj` created from the given `HashMap`.
-		///
-		///
-		/// See `from_map` for more details.
+        
 		pub fn from_map_unchecked(obj_map: HashMap<String, Value>) -> Obj {
 			let id = get_id();
 
@@ -16824,12 +16833,9 @@ pub mod object
 				}),
 			}
 		}
-
-		/// Returns a new `Obj` created from the given `HashMap` with given `parent`.
-		///
-		///
-		/// See `from_map` for more details.
-		pub fn from_map_with_parent_unchecked(obj_map: HashMap<String, Value>, parent: Obj) -> Obj {
+        
+		pub fn from_map_with_parent_unchecked(obj_map: HashMap<String, Value>, parent: Obj) -> Obj 
+        {
 			let id = get_id();
 
 			Obj {
@@ -16840,69 +16846,62 @@ pub mod object
 				}),
 			}
 		}
-
-		/// Returns the ID of this `Obj`.
-		///
-		///
+        
 		pub fn id(&self) -> usize {
 			self.inner.id
 		}
-    
-	pub fn map_ref(&self) -> &HashMap<String, Value> {
+        
+        pub fn map_ref(&self) -> &HashMap<String, Value> {
 			&self.inner.map
 		}
-    
-	pub fn from_file(path: &str) -> OverResult<Obj> {
-			Ok(parse::load_from_file(path)?)
+        
+        pub fn from_file(path: &str) -> OverResult<Obj> {
+			Ok( load_from_file(path)?)
 		}
-
-		/// Writes this `Obj` to given file in `.over` representation.
-		///
-		pub fn write_to_file(&self, path: &str) -> OverResult<()> {
+        
+		pub fn write_to_file(&self, path: &str) -> OverResult<()>
+        {
 			write_file_str(path, &self.write_str())?;
 			Ok(())
 		}
-
-		/// Writes this `Obj` to a `String`.
-		///
-		pub fn write_str(&self) -> String {
-			self.format(false, 0)
-		}
-    
-	pub fn with_each<F>(&self, mut f: F)
-		where
-			F: FnMut(&String, &Value),
+        
+		pub fn write_str(&self) -> String { self.format(false, 0) }
+        
+        pub fn with_each<F>(&self, mut f: F) where
+        F: FnMut(&String, &Value),
 		{
-			for (field, value) in &self.inner.map {
+			for (field, value) in &self.inner.map 
+            {
 				f(field, value)
 			}
 		}
     
-	pub fn len(&self) -> usize {
-			self.inner.map.len()
-		}
-    
-	pub fn is_empty(&self) -> bool {
-			self.inner.map.is_empty()
-		}
-    
-	pub fn ptr_eq(&self, other: &Self) -> bool {
-			Arc::ptr_eq(&self.inner, &other.inner)
-		}
-    
-	pub fn contains(&self, field: &str) -> bool {
-			self.inner.map.contains_key(field)
-		}
-    
-	pub fn get(&self, field: &str) -> Option<Value> {
-			match self.inner.map.get(field) {
-				Some(value) => Some(value.clone()),
-				None => match self.inner.parent {
-					Some(ref parent) => parent.get(field),
-					None => None,
-				},
-			}
-		}
+        pub fn len(&self) -> usize {
+            self.inner.map.len()
+        }
+        
+        pub fn is_empty(&self) -> bool {
+            self.inner.map.is_empty()
+        }
+        
+        pub fn ptr_eq(&self, other: &Self) -> bool {
+            Arc::ptr_eq(&self.inner, &other.inner)
+        }
+        
+        pub fn contains(&self, field: &str) -> bool {
+            self.inner.map.contains_key(field)
+        }
+        
+        pub fn get(&self, field: &str) -> Option<Value> {
+            match self.inner.map.get(field) {
+                Some(value) => Some(value.clone()),
+                None => match self.inner.parent {
+                    Some(ref parent) => parent.get(field),
+                    None => None,
+                },
+            }
+        }
+
 		pub fn get_with_source(&self, field: &str) -> Option<(Value, Obj)> {
 			match self.inner.map.get(field) {
 				Some(value) => Some((value.clone(), self.clone())),
@@ -16920,6 +16919,7 @@ pub mod object
 			get_bool,
 			bool
 		);
+
 		get_fn!(
 			"Returns the `BigInt` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16927,6 +16927,7 @@ pub mod object
 			get_int,
 			BigInt
 		);
+
 		get_fn!(
 			"Returns the `BigRational` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16934,6 +16935,7 @@ pub mod object
 			get_frac,
 			BigRational
 		);
+
 		get_fn!(
 			"Returns the `char` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16941,6 +16943,7 @@ pub mod object
 			get_char,
 			char
 		);
+
 		get_fn!(
 			"Returns the `String` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16948,6 +16951,7 @@ pub mod object
 			get_str,
 			String
 		);
+
 		get_fn!(
 			"Returns the `Arr` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16955,6 +16959,7 @@ pub mod object
 			get_arr,
 			Arr
 		);
+
 		get_fn!(
 			"Returns the `Tup` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16962,6 +16967,7 @@ pub mod object
 			get_tup,
 			Tup
 		);
+
 		get_fn!(
 			"Returns the `Obj` found at `field`. \
 			 Returns an error if the field was not found \
@@ -16969,28 +16975,27 @@ pub mod object
 			get_obj,
 			Obj
 		);
-
-		/// Returns whether this `Obj` has a parent.
+        
 		pub fn has_parent(&self) -> bool {
 			self.inner.parent.is_some()
 		}
     
-	pub fn get_parent(&self) -> Option<Obj> {
+	    pub fn get_parent(&self) -> Option<Obj> {
 			match self.inner.parent {
 				Some(ref parent) => Some(parent.clone()),
 				None => None,
 			}
 		}
     
-	pub fn keys(&self) -> Keys<String, Value> {
+	    pub fn keys(&self) -> Keys<String, Value> {
 			self.map_ref().keys()
 		}
     
-	pub fn values(&self) -> Values<String, Value> {
+	    pub fn values(&self) -> Values<String, Value> {
 			self.map_ref().values()
 		}
     
-	pub fn iter(&self) -> Iter<String, Value> {
+	    pub fn iter(&self) -> Iter<String, Value> {
 			self.map_ref().iter()
 		}
 	}
@@ -17009,7 +17014,8 @@ pub mod object
 		}
 	}
 
-	impl FromStr for Obj {
+	impl FromStr for Obj 
+    {
 		type Err = OverError;
 
 		fn from_str(s: &str) -> Result<Self, Self::Err> {
@@ -17080,41 +17086,24 @@ pub mod parse
                 rational::BigRational,
                 traits::{ToPrimitive, Zero},
             },
-            object::Obj,
+            object::{ Obj },
             ops::{ Deref },
+            parse::
+            {
+                over::
+                {
+                    characters::{ CharStream },
+                    error::{ parse_err, ParseError, ParseErrorKind::{ self, * }, },
+                    ParseResult, MAX_DEPTH,
+                },
+            },
             path::{ Path },
-            tup::Tup,
-            types::Type,
-            value::Value,
+            tup::{ Tup },
+            types::{ Type },
+            value::{ Value },
 			*,
 		};
 		/*
-        use ::
-        {
-            
-            array::{self, Arr},
-            collections::{ HashMap, HashSet, VecDeque },
-            num::
-            {
-                bigint::BigInt,
-                rational::BigRational,
-                traits::{ToPrimitive, Zero},
-            },
-            object::Obj,
-            ops::{ Deref },
-            path::{ Path },
-            tup::Tup,
-            types::Type,
-            value::Value,
-            *,
-        };
-        /*				
-        use super::util::*;
-        */
-        use super::characters::CharStream;
-        use super::error::ParseErrorKind::*;
-        use super::error::{parse_err, ParseError};
-        use super::{ParseResult, MAX_DEPTH};
 		*/
         pub const MAX_DEPTH: usize = 64;
         pub type ParseResult<T> = Result<T, ParseError>;
@@ -17125,17 +17114,16 @@ pub mod parse
             Character stream used for parsing. */
             use ::
             {
+                cell::{ RefCell },
+                fs::{ File },
+                io::{ self, Read },
+                iter::{ Peekable },
+                rc::{ Rc },
+                str::{ Chars },
                 *,
             };
             /*
-            use std::cell::RefCell;
-            use std::fs::File;
-            use std::io;
-            use std::io::Read;
-            use std::iter::Peekable;
-            use std::mem;
-            use std::rc::Rc;
-            use std::str::Chars; */
+            */
             #[derive(Clone, Debug)]
             struct Inner
             {
@@ -17254,7 +17242,7 @@ pub mod parse
                     ch => format!("{}", ch),
                 }
             }
-        }
+        } pub use self::characters::{*};
         
         pub mod error
         {
@@ -17264,16 +17252,18 @@ pub mod parse
             {
                 error::{ * },
                 num::{ big::{ * }, ParseIntError },
+                parse::
+                {
+                    over::
+                    {
+                        MAX_DEPTH, OverError, ParseResult,
+                    },
+                },
                 types::{ * },
                 *,
             };
             /*
-            use crate::OverError;
-            */				
-            use super::misc::format_char;
-            use super::ParseResult;
-            use super::MAX_DEPTH;
-            
+            */
             pub fn parse_err<T>(file: Option<String>, kind: ParseErrorKind) -> ParseResult<T>
             {
                 Err(ParseError { file, kind })
@@ -17378,14 +17368,14 @@ pub mod parse
                             f,
                             "Invalid escape character '\\{}' at line {}, column {}. \
                                 If you meant to write a backslash, use '\\\\'",
-                            format_char(*ch),
+                            char::format(*ch),
                             line,
                             col
                         ),
                         InvalidFieldChar(ref ch, ref line, ref col) => write!(
                             f,
                             "Invalid character '{}' for field at line {}, column {}",
-                            format_char(*ch),
+                            char::format(*ch),
                             line,
                             col
                         ),
@@ -17419,38 +17409,13 @@ pub mod parse
                         InvalidNumeric(ref line, ref col) => {
                             write!(f, "Invalid numeric value at line {}, column {}", line, col)
                         }
-                        InvalidValue(ref value, ref line, ref col) => write!(
-                            f,
-                            "Invalid value \"{}\" at line {}, column {}",
-                            value, line, col
-                        ),
-                        InvalidValueChar(ref ch, ref line, ref col) => write!(
-                            f,
-                            "Invalid character '{}' for value at line {}, column {}",
-                            format_char(*ch),
-                            line,
-                            col
-                        ),
-                        MaxDepth(ref line, ref col) => write!(
-                            f,
-                            "Exceeded maximum recursion depth ({}) at line {}, column {}",
-                            MAX_DEPTH, line, col
-                        ),
-                        UnaryOperatorError(ref found, ref op, ref line, ref col) => write!(
-                            f,
-                            "Could not apply operator {} on type {} at line {}, column {}",
-                            op, found, line, col,
-                        ),
-                        UnexpectedEnd(ref line) => write!(f, "Unexpected end at line {}", line,),
-                        VariableNotFound(ref var, ref line, ref col) => write!(
-                            f,
-                            "Variable \"{}\" at line {}, column {} could not be found",
-                            var, line, col
-                        ),
-
-                        IoError(ref error) | OverError(ref error) | ParseIntError(ref error) => {
-                            write!(f, "{}", error)
-                        }
+                        InvalidValue(ref value, ref line, ref col) => write!( f, "Invalid value \"{}\" at line {}, column {}", value, line, col ),
+                        InvalidValueChar(ref ch, ref line, ref col) => write!( f, "Invalid character '{}' for value at line {}, column {}", char::format(*ch), line, col ),
+                        MaxDepth(ref line, ref col) => write!( f, "Exceeded maximum recursion depth ({}) at line {}, column {}", MAX_DEPTH, line, col ),
+                        UnaryOperatorError(ref found, ref op, ref line, ref col) => write!( f, "Could not apply operator {} on type {} at line {}, column {}", op, found, line, col ),                        
+                        UnexpectedEnd(ref line) => write!(f, "Unexpected end at line {}", line,),                        
+                        VariableNotFound(ref var, ref line, ref col) => write!( f, "Variable \"{}\" at line {}, column {} could not be found", var, line, col ),
+                        IoError(ref error) | OverError(ref error) | ParseIntError(ref error) => { write!(f, "{}", error) }
                     }
                 }
             }
@@ -17535,7 +17500,7 @@ pub mod parse
                 }
             }
             
-        } use self::error::ParseError;
+        } pub use self::error::{*};
 
         type ObjMap = HashMap<String, Value>;
         type GlobalMap = HashMap<String, Value>;
@@ -17805,7 +17770,7 @@ pub mod parse
                 if peek == ']' {
                     let _ = stream.next();
                     break;
-                } else if is_end_delimiter(peek) {
+                } else if is::end_delimiter(peek) {
                     return parse_err(
                         stream.file(),
                         InvalidClosingBracket(Some(']'), peek, stream.line(), stream.col()),
@@ -17917,7 +17882,7 @@ pub mod parse
                 if peek == ')' {
                     let _ = stream.next();
                     break;
-                } else if is_end_delimiter(peek) {
+                } else if is::end_delimiter(peek) {
                     return parse_err(
                         stream.file(),
                         InvalidClosingBracket(Some(')'), peek, stream.line(), stream.col()),
@@ -17967,7 +17932,7 @@ pub mod parse
                     ':' if !first => {
                         break;
                     }
-                    ch if object::is_valid_field_char(ch, first) => field.push(ch),
+                    ch if is::valid_field_char(ch, first) => field.push(ch),
                     ch => {
                         return parse_err(
                             stream.file(),
@@ -17981,7 +17946,7 @@ pub mod parse
 
 
             match field.as_str() {
-                _field_str if is_reserved(_field_str) => {
+                _field_str if is::reserved(_field_str) => {
                     parse_err(stream.file(), InvalidFieldName(field.clone(), line, col))
                 }
                 "^" => Ok((field.clone(), false, true)),
@@ -18024,8 +17989,8 @@ pub mod parse
                 ch @ '+' | ch @ '-' => {
                     parse_unary_op(&mut stream, obj, globals, included, depth, cur_brace, ch)?
                 }
-                ch if is_numeric_char(ch) => parse_numeric(&mut stream, line, col)?,
-                ch if object::is_valid_field_char(ch, true) => parse_variable(
+                ch if is::numeric_char(ch) => parse_numeric(&mut stream, line, col)?,
+                ch if is::valid_field_char(ch, true) => parse_variable(
                     &mut stream,
                     obj,
                     globals,
@@ -18048,7 +18013,7 @@ pub mod parse
 
                 loop {
                     match stream.peek() {
-                        Some(ch) if is_operator(ch) => {
+                        Some(ch) if is::operator(ch) => {
                             let _ = stream.next();
                             if stream.peek().is_none() {
                                 return parse_err(stream.file(), UnexpectedEnd(stream.line()));
@@ -18069,7 +18034,7 @@ pub mod parse
                                 false,
                             )?;
 
-                            if is_priority_operator(ch) {
+                            if is::priority_operator(ch) {
                                 let (val1, line1, col1) = val_deque.pop_back().unwrap();
                                 let res = binary_op_on_values(stream, val1, val2, ch, line2, col2)?;
                                 val_deque.push_back((res, line1, col1));
@@ -18128,12 +18093,13 @@ pub mod parse
                     cur_brace,
                     false,
                 )?,
-                None => return parse_err(stream.file(), UnexpectedEnd(line)),
+                None => return error::parse_err(stream.file(), UnexpectedEnd(line)),
             };
             unary_op_on_value(stream, res, ch, line, col)
         }
         
-        fn parse_numeric(stream: &mut CharStream, line: usize, col: usize) -> ParseResult<Value> {
+        fn parse_numeric(stream: &mut CharStream, line: usize, col: usize) -> ParseResult<Value> 
+        {
             let mut s1 = String::new();
             let mut s2 = String::new();
             let mut dec = false;
@@ -18141,8 +18107,8 @@ pub mod parse
 
             while let Some(ch) = stream.peek() {
                 match ch {
-                    ch if is_value_end_char(ch) => break,
-                    ch if is_digit(ch) => {
+                    ch if is::value_end_char(ch) => break,
+                    ch if is::digit(ch) => {
                         if !dec {
                             s1.push(ch);
                         } else {
@@ -18218,7 +18184,8 @@ pub mod parse
             }
         }
         
-        fn parse_variable(
+        fn parse_variable
+        (
             mut stream: &mut CharStream,
             obj: &ObjMap,
             mut globals: &mut GlobalMap,
@@ -18227,7 +18194,8 @@ pub mod parse
             col: usize,
             depth: usize,
             cur_brace: Option<char>,
-        ) -> ParseResult<Value> {
+        ) -> ParseResult<Value> 
+        {
             let mut var = String::new();
             let mut is_global = false;
             let mut dot = false;
@@ -18391,7 +18359,8 @@ pub mod parse
             Ok(value)
         }
         
-        fn parse_char(stream: &mut CharStream) -> ParseResult<Value> {
+        fn parse_char(stream: &mut CharStream) -> ParseResult<Value> 
+        {
             let ch = stream.next().unwrap();
             assert_eq!(ch, '\'');
 
@@ -18436,14 +18405,16 @@ pub mod parse
             Ok(ch.into())
         }
 
-        fn parse_str_file(path: &str) -> ParseResult<String> {
+        fn parse_str_file(path: &str) -> ParseResult<String> 
+        {
 
             let s = read_file_str(path)?.replace("\r\n", "\n");
 
             Ok(s)
         }
         
-        fn parse_str(stream: &mut CharStream) -> ParseResult<Value> {
+        fn parse_str(stream: &mut CharStream) -> ParseResult<Value> 
+        {
             let ch = stream.next().unwrap();
             assert_eq!(ch, '"');
 
@@ -18482,13 +18453,15 @@ pub mod parse
             Ok(s.into())
         }
 
-        fn parse_include(
+        fn parse_include
+        (
             mut stream: &mut CharStream,
             obj: &ObjMap,
             mut globals: &mut GlobalMap,
             mut included: &mut IncludedMap,
             depth: usize,
-        ) -> ParseResult<Value> {
+        ) -> ParseResult<Value> 
+        {
             enum IncludeType {
                 Obj,
                 Str,
@@ -18743,8 +18716,7 @@ pub mod parse
 
 
                                     let arr = if let Arr(ref t) = t {
-
-                                        array::array::from_vec_unchecked(vec, t.deref().clone())
+                                        array::from_vec_unchecked(vec, t.deref().clone())
                                     } else {
                                         panic!("Logic error")
                                     };
@@ -18861,9 +18833,9 @@ pub mod parse
         fn check_value_end(stream: &CharStream, cur_brace: Option<char>) -> ParseResult<()> {
             match stream.peek() {
                 Some(ch) => match ch {
-                    ch if is_value_end_char(ch) => {
-                        if is_end_delimiter(ch) && Some(ch) != cur_brace {
-                            parse_err(
+                    ch if is::value_end_char(ch) => {
+                        if is::end_delimiter(ch) && Some(ch) != cur_brace {
+                            error::parse_err(
                                 stream.file(),
                                 InvalidClosingBracket(cur_brace, ch, stream.line(), stream.col()),
                             )
@@ -18871,7 +18843,7 @@ pub mod parse
                             Ok(())
                         }
                     }
-                    ch => parse_err(
+                    ch => error::parse_err(
                         stream.file(),
                         InvalidValueChar(ch, stream.line(), stream.col()),
                     ),
@@ -18884,6 +18856,7 @@ pub mod parse
         {
             parser::parse_obj_file(path)
         }
+
         pub fn from_str(contents: &str) -> ParseResult<Obj>
         {
             parser::parse_obj_str(contents)
@@ -20967,8 +20940,8 @@ pub mod sync
 						init: Cell::new(Some(f)),
 					}
 				}
-    
-	pub fn as_mut_ptr(&self) -> *mut T {
+                
+                pub fn as_mut_ptr(&self) -> *mut T {
 					self.cell.as_mut_ptr()
 				}
 			}
@@ -20999,8 +20972,8 @@ pub mod sync
 			}
 
 		}
-    
-	pub type Lazy<T, F = fn() -> T> = self::lazy::Lazy<T, F>;
+        
+        pub type Lazy<T, F = fn() -> T> = self::lazy::Lazy<T, F>;
 		
 		pub mod mutex
 		{
@@ -21017,31 +20990,32 @@ pub mod sync
 			pub mod spin
 			{
 				/*!
-				A naïve spinning mutex. */
+				A naive spinning mutex. */
 				use ::
 				{
+					cell::{ UnsafeCell },
+                    marker::{ PhantomData },
+                    mem::{ ManuallyDrop },
+					ops::{Deref, DerefMut},
+                    sync::
+                    {
+                        atomic::{AtomicBool, Ordering},
+                    },
 					*,
 				};
+
+                use super::{ RelaxStrategy, Spin };
 				/*
-				use crate::{
-					atomic::{AtomicBool, Ordering},
-					RelaxStrategy, Spin,
-				};
-				use core::{
-					cell::UnsafeCell,
-					fmt,
-					marker::PhantomData,
-					mem::ManuallyDrop,
-					ops::{Deref, DerefMut},
-				};
 				*/
-                pub struct SpinMutex<T: ?Sized, R = Spin> {
+                pub struct SpinMutex<T: ?Sized, R = Spin> 
+                {
 					phantom: PhantomData<R>,
 					pub lock: AtomicBool,
 					data: UnsafeCell<T>,
 				}
                 
-				pub struct SpinMutexGuard<'a, T: ?Sized + 'a> {
+				pub struct SpinMutexGuard<'a, T: ?Sized + 'a> 
+                {
 					lock: &'a AtomicBool,
 					data: *mut T,
 				}
@@ -21052,155 +21026,139 @@ pub mod sync
 				unsafe impl<T: ?Sized + Sync> Sync for SpinMutexGuard<'_, T> {}
 				unsafe impl<T: ?Sized + Send> Send for SpinMutexGuard<'_, T> {}
 
-				impl<T, R> SpinMutex<T, R> {
-					#[inline(always)]
-					pub const fn new(data: T) -> Self {
-						SpinMutex {
+				impl<T, R> SpinMutex<T, R>
+                {
+					#[inline(always)] pub const fn new(data: T) -> Self
+                    {
+						SpinMutex
+                        {
 							lock: AtomicBool::new(false),
 							data: UnsafeCell::new(data),
 							phantom: PhantomData,
 						}
 					}
                     
-                    #[inline(always)]
-					pub fn into_inner(self) -> T {
+                    #[inline(always)] pub fn into_inner(self) -> T
+                    {
 						let SpinMutex { data, .. } = self;
 						data.into_inner()
 					}
                     
-                    #[inline(always)]
-					pub fn as_mut_ptr(&self) -> *mut T {
-						self.data.get()
-					}
+                    #[inline(always)] pub fn as_mut_ptr(&self) -> *mut T { self.data.get() }
 				}
 
-				impl<T: ?Sized, R: RelaxStrategy> SpinMutex<T, R> {
-					#[inline(always)]
-					pub fn lock(&self) -> SpinMutexGuard<T> {
-						loop {
-							if let Some(guard) = self.try_lock_weak() {
-								break guard;
-							}
+				impl<T: ?Sized, R: RelaxStrategy> SpinMutex<T, R>
+                {
+					#[inline(always)] pub fn lock(&self) -> SpinMutexGuard<T>
+                    {
+						loop
+                        {
+							if let Some(guard) = self.try_lock_weak() { break guard; }
 
-							while self.is_locked() {
-								R::relax();
-							}
+							while self.is_locked()
+                            { 
+                                R::relax();
+                            }
 						}
 					}
 				}
 
-				impl<T: ?Sized, R> SpinMutex<T, R> {
-					#[inline(always)]
-					pub fn is_locked(&self) -> bool {
-						self.lock.load(Ordering::Relaxed)
-					}
+				impl<T: ?Sized, R> SpinMutex<T, R>
+                {
+					#[inline(always)] pub fn is_locked(&self) -> bool { self.lock.load(Ordering::Relaxed) }
                     
-                    #[inline(always)]
-					pub unsafe fn force_unlock(&self) {
-						self.lock.store(false, Ordering::Release);
-					}
+                    #[inline(always)] pub unsafe fn force_unlock(&self) { self.lock.store(false, Ordering::Release); }
                     
-                    #[inline(always)]
-					pub fn try_lock(&self) -> Option<SpinMutexGuard<T>> {
-						if self
-							.lock
-							.compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed)
-							.is_ok()
+                    #[inline(always)] pub fn try_lock(&self) -> Option<SpinMutexGuard<T>>
+                    {
+						if self.lock.compare_exchange(false, true, Ordering::Acquire, Ordering::Relaxed).is_ok()
 						{
-							Some(SpinMutexGuard {
-								lock: &self.lock,
-								data: unsafe { &mut *self.data.get() },
-							})
-						} else {
-							None
+							Some
+                            (
+                                SpinMutexGuard
+                                {
+                                    lock: &self.lock,
+                                    data: unsafe { &mut *self.data.get() },
+							    }
+                            )
 						}
+                        else { None }
 					}
                     
-                    #[inline(always)]
-					pub fn try_lock_weak(&self) -> Option<SpinMutexGuard<T>> {
-						if self
-							.lock
-							.compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed)
-							.is_ok()
+                    #[inline(always)] pub fn try_lock_weak(&self) -> Option<SpinMutexGuard<T>>
+                    {
+						if self.lock.compare_exchange_weak(false, true, Ordering::Acquire, Ordering::Relaxed).is_ok()
 						{
-							Some(SpinMutexGuard {
-								lock: &self.lock,
-								data: unsafe { &mut *self.data.get() },
-							})
-						} else {
-							None
+							Some
+                            (
+                                SpinMutexGuard
+                                {
+                                    lock: &self.lock,
+                                    data: unsafe { &mut *self.data.get() },
+							    }
+                            )
 						}
+                        else { None }
 					}
                     
-                    #[inline(always)]
-					pub fn get_mut(&mut self) -> &mut T {
-						unsafe { &mut *self.data.get() }
-					}
+                    #[inline(always)] pub fn get_mut(&mut self) -> &mut T { unsafe { &mut *self.data.get() } }
 				}
 
-				impl<T: ?Sized + fmt::Debug, R> fmt::Debug for SpinMutex<T, R> {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-						match self.try_lock() {
-							Some(guard) => write!(f, "Mutex {{ data: ")
-								.and_then(|()| (&*guard).fmt(f))
-								.and_then(|()| write!(f, " }}")),
+				impl<T: ?Sized + fmt::Debug, R> fmt::Debug for SpinMutex<T, R>
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                    {
+						match self.try_lock()
+                        {
+							Some(guard) => write!(f, "Mutex {{ data: ").and_then(|()| (&*guard).fmt(f)).and_then(|()| write!(f, " }}")),
 							None => write!(f, "Mutex {{ <locked> }}"),
 						}
 					}
 				}
 
-				impl<T: ?Sized + Default, R> Default for SpinMutex<T, R> {
-					fn default() -> Self {
-						Self::new(Default::default())
-					}
+				impl<T: ?Sized + Default, R> Default for SpinMutex<T, R>
+                {
+					fn default() -> Self { Self::new(Default::default()) }
 				}
 
-				impl<T, R> From<T> for SpinMutex<T, R> {
-					fn from(data: T) -> Self {
-						Self::new(data)
-					}
+				impl<T, R> From<T> for SpinMutex<T, R>
+                {
+					fn from(data: T) -> Self { Self::new(data) }
 				}
 
-				impl<'a, T: ?Sized> SpinMutexGuard<'a, T> {
-					#[inline(always)]
-					pub fn leak(this: Self) -> &'a mut T
+				impl<'a, T: ?Sized> SpinMutexGuard<'a, T>
+                {
+					#[inline(always)] pub fn leak(this: Self) -> &'a mut T
                     {
 						let mut this = ManuallyDrop::new(this);
 						unsafe { &mut *this.data }
 					}
 				}
 
-				impl<'a, T: ?Sized + fmt::Debug> fmt::Debug for SpinMutexGuard<'a, T> {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-						fmt::Debug::fmt(&**self, f)
-					}
+				impl<'a, T: ?Sized + fmt::Debug> fmt::Debug for SpinMutexGuard<'a, T>
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Debug::fmt(&**self, f) }
 				}
 
-				impl<'a, T: ?Sized + fmt::Display> fmt::Display for SpinMutexGuard<'a, T> {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-						fmt::Display::fmt(&**self, f)
-					}
+				impl<'a, T: ?Sized + fmt::Display> fmt::Display for SpinMutexGuard<'a, T>
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Display::fmt(&**self, f) }
 				}
 
-				impl<'a, T: ?Sized> Deref for SpinMutexGuard<'a, T> {
+				impl<'a, T: ?Sized> Deref for SpinMutexGuard<'a, T>
+                {
 					type Target = T;
-					fn deref(&self) -> &T {
-
-						unsafe { &*self.data }
-					}
+					fn deref(&self) -> &T { unsafe { &*self.data } }
 				}
 
-				impl<'a, T: ?Sized> DerefMut for SpinMutexGuard<'a, T> {
-					fn deref_mut(&mut self) -> &mut T {
-
-						unsafe { &mut *self.data }
-					}
+				impl<'a, T: ?Sized> DerefMut for SpinMutexGuard<'a, T>
+                {
+					fn deref_mut(&mut self) -> &mut T { unsafe { &mut *self.data } }
 				}
 
-				impl<'a, T: ?Sized> Drop for SpinMutexGuard<'a, T> {
-					fn drop(&mut self) {
-						self.lock.store(false, Ordering::Release);
-					}
+				impl<'a, T: ?Sized> Drop for SpinMutexGuard<'a, T>
+                {
+					fn drop(&mut self) { self.lock.store(false, Ordering::Release); }
 				}
 			} pub use self::spin::{SpinMutex, SpinMutexGuard};
 			
@@ -21210,19 +21168,21 @@ pub mod sync
 				A ticket-based mutex. */
 				use ::
 				{
+                    cell::{ UnsafeCell },
+					marker::{ PhantomData },
+					ops::{ Deref, DerefMut },
+                    sync::
+                    {
+                        atomic::{AtomicUsize, Ordering},
+                    },
 					*,
 				};
-				/*
-				use crate::{
-					atomic::{AtomicUsize, Ordering},
+
+                use super::
+                {
 					RelaxStrategy, Spin,
 				};
-				use core::{
-					cell::UnsafeCell,
-					fmt,
-					marker::PhantomData,
-					ops::{Deref, DerefMut},
-				};
+				/*
 				*/
                 pub struct TicketMutex<T: ?Sized, R = Spin> {
 					phantom: PhantomData<R>,
@@ -21241,8 +21201,7 @@ pub mod sync
 				unsafe impl<T: ?Sized + Send, R> Send for TicketMutex<T, R> {}
 
 				impl<T, R> TicketMutex<T, R> {
-					#[inline(always)]
-					pub const fn new(data: T) -> Self {
+					#[inline(always)] pub const fn new(data: T) -> Self {
 						Self {
 							phantom: PhantomData,
 							next_ticket: AtomicUsize::new(0),
@@ -21251,13 +21210,11 @@ pub mod sync
 						}
 					}
                     
-                    #[inline(always)]
-					pub fn into_inner(self) -> T {
+                    #[inline(always)] pub fn into_inner(self) -> T {
 						self.data.into_inner()
 					}
                     
-					#[inline(always)]
-					pub fn as_mut_ptr(&self) -> *mut T {
+					#[inline(always)] pub fn as_mut_ptr(&self) -> *mut T {
 						self.data.get()
 					}
 				}
@@ -21274,8 +21231,7 @@ pub mod sync
 				}
 
 				impl<T: ?Sized, R: RelaxStrategy> TicketMutex<T, R> {
-					#[inline(always)]
-					pub fn lock(&self) -> TicketMutexGuard<T> {
+					#[inline(always)] pub fn lock(&self) -> TicketMutexGuard<T> {
 						let ticket = self.next_ticket.fetch_add(1, Ordering::Relaxed);
 
 						while self.next_serving.load(Ordering::Acquire) != ticket {
@@ -21291,19 +21247,16 @@ pub mod sync
 				}
 
 				impl<T: ?Sized, R> TicketMutex<T, R> {
-					#[inline(always)]
-					pub fn is_locked(&self) -> bool {
+					#[inline(always)] pub fn is_locked(&self) -> bool {
 						let ticket = self.next_ticket.load(Ordering::Relaxed);
 						self.next_serving.load(Ordering::Relaxed) != ticket
 					}
                     
-                    #[inline(always)]
-					pub unsafe fn force_unlock(&self) {
+                    #[inline(always)] pub unsafe fn force_unlock(&self) {
 						self.next_serving.fetch_add(1, Ordering::Release);
 					}
                     
-                    #[inline(always)]
-					pub fn try_lock(&self) -> Option<TicketMutexGuard<T>> {
+                    #[inline(always)] pub fn try_lock(&self) -> Option<TicketMutexGuard<T>> {
 						let ticket = {
 							let mut prev = self.next_ticket.load(Ordering::SeqCst);
 							loop {
@@ -21330,8 +21283,7 @@ pub mod sync
 						})
 					}
                     
-                    #[inline(always)]
-					pub fn get_mut(&mut self) -> &mut T {
+                    #[inline(always)] pub fn get_mut(&mut self) -> &mut T {
 						unsafe { &mut *self.data.get() }
 					}
 				}
@@ -21349,8 +21301,7 @@ pub mod sync
 				}
 
 				impl<'a, T: ?Sized> TicketMutexGuard<'a, T> {
-					#[inline(always)]
-					pub fn leak(this: Self) -> &'a mut T {
+					#[inline(always)] pub fn leak(this: Self) -> &'a mut T {
 						let data = this.data as *mut _;
 						core::mem::forget(this);
 						unsafe { &mut *data }
@@ -21412,114 +21363,96 @@ pub mod sync
 				/*
 				*/
 				const LOCKED: usize = 1;
-				const STARVED: usize = 2;
-
-				/// Number chosen by fair roll of the dice, adjust as needed.
+				const STARVED: usize = 2;                
 				const STARVATION_SPINS: usize = 1024;
-
-				/// A spin-lock providing mutually exclusive access to data, but with a fairer algorithm.
-				pub struct FairMutex<T: ?Sized, R = Spin> {
+                
+				pub struct FairMutex<T: ?Sized, R = Spin> 
+                {
 					phantom: PhantomData<R>,
 					pub lock: AtomicUsize,
 					data: UnsafeCell<T>,
 				}
     
-	pub struct FairMutexGuard<'a, T: ?Sized + 'a> {
-					lock: &'a AtomicUsize,
-					data: *mut T,
-				}
-    
-	pub struct Starvation<'a, T: ?Sized + 'a, R> {
-					lock: &'a FairMutex<T, R>,
-				}
-
-				/// Indicates whether a lock was rejected due to the lock being held by another thread or due to starvation.
-				#[derive(Debug)]
-				pub enum LockRejectReason {
-					/// The lock was rejected due to the lock being held by another thread.
+                pub struct FairMutexGuard<'a, T: ?Sized + 'a>
+                {
+                    lock: &'a AtomicUsize,
+                    data: *mut T,
+                }
+                
+                pub struct Starvation<'a, T: ?Sized + 'a, R> 
+                {
+                    lock: &'a FairMutex<T, R>,
+                }
+                
+				#[derive(Debug)] pub enum LockRejectReason
+                {
 					Locked,
-					/// The lock was rejected due to starvation.
 					Starved,
 				}
-
-
-				unsafe impl<T: ?Sized + Send, R> Sync for FairMutex<T, R> {}
+                
+                unsafe impl<T: ?Sized + Send, R> Sync for FairMutex<T, R> {}
 				unsafe impl<T: ?Sized + Send, R> Send for FairMutex<T, R> {}
 
 				unsafe impl<T: ?Sized + Sync> Sync for FairMutexGuard<'_, T> {}
 				unsafe impl<T: ?Sized + Send> Send for FairMutexGuard<'_, T> {}
 
-				impl<T, R> FairMutex<T, R> {
-					#[inline(always)]
-					pub const fn new(data: T) -> Self {
-						FairMutex {
+				impl<T, R> FairMutex<T, R>
+                {
+					#[inline(always)] pub const fn new(data: T) -> Self
+                    {
+						FairMutex 
+                        {
 							lock: AtomicUsize::new(0),
 							data: UnsafeCell::new(data),
 							phantom: PhantomData,
 						}
 					}
                     
-                    #[inline(always)]
-					pub fn into_inner(self) -> T {
+                    #[inline(always)] pub fn into_inner(self) -> T 
+                    {
 						let FairMutex { data, .. } = self;
 						data.into_inner()
 					}
                     
-                    #[inline(always)]
-					pub fn as_mut_ptr(&self) -> *mut T {
-						self.data.get()
-					}
+                    #[inline(always)] pub fn as_mut_ptr(&self) -> *mut T { self.data.get() }
 				}
 
-				impl<T: ?Sized, R: RelaxStrategy> FairMutex<T, R> {
-					#[inline(always)]
-					pub fn lock(&self) -> FairMutexGuard<T> {
+				impl<T: ?Sized, R: RelaxStrategy> FairMutex<T, R>
+                {
+					#[inline(always)] pub fn lock(&self) -> FairMutexGuard<T>
+                    {
 						let mut spins = 0;
-						while self
-							.lock
-							.compare_exchange_weak(0, 1, Ordering::Acquire, Ordering::Relaxed)
-							.is_err()
+						while self.lock.compare_exchange_weak(0, 1, Ordering::Acquire, Ordering::Relaxed).is_err()
 						{
-                            while self.is_locked() {
+                            while self.is_locked()
+                            {
 								R::relax();
-								if spins > STARVATION_SPINS {
-									return self.starve().lock();
-								}
+
+								if spins > STARVATION_SPINS { return self.starve().lock(); }
+
 								spins += 1;
 							}
 						}
 
-						FairMutexGuard {
+						FairMutexGuard
+                        {
 							lock: &self.lock,
 							data: unsafe { &mut *self.data.get() },
 						}
 					}
 				}
 
-				impl<T: ?Sized, R> FairMutex<T, R> {
-                    #[inline(always)]
-					pub fn is_locked(&self) -> bool {
-						self.lock.load(Ordering::Relaxed) & LOCKED != 0
-					}
-                    
-                    #[inline(always)]
-					pub unsafe fn force_unlock(&self) {
-						self.lock.fetch_and(!LOCKED, Ordering::Release);
-					}
-                    
-                    #[inline(always)]
-					pub fn try_lock(&self) -> Option<FairMutexGuard<T>> {
-						self.try_lock_starver().ok()
-					}
-                    
-                    #[inline(always)]
-					pub fn try_lock_starver(&self) -> Result<FairMutexGuard<T>, LockRejectReason> {
-						match self
-							.lock
-							.compare_exchange(0, LOCKED, Ordering::Acquire, Ordering::Relaxed)
-							.unwrap_or_else(|x| x)
+				impl<T: ?Sized, R> FairMutex<T, R>
+                {
+                    #[inline(always)] pub fn is_locked(&self) -> bool { self.lock.load(Ordering::Relaxed) & LOCKED != 0 }                    
+                    #[inline(always)] pub unsafe fn force_unlock(&self) { self.lock.fetch_and(!LOCKED, Ordering::Release); }                    
+                    #[inline(always)] pub fn try_lock(&self) -> Option<FairMutexGuard<T>> { self.try_lock_starver().ok() }                    
+                    #[inline(always)] pub fn try_lock_starver(&self) -> Result<FairMutexGuard<T>, LockRejectReason> 
+                    {
+						match self.lock.compare_exchange(0, LOCKED, Ordering::Acquire, Ordering::Relaxed).unwrap_or_else(|x| x)
 						{
-							0 => Ok(FairMutexGuard {
+							0 => Ok(FairMutexGuard
+                            {
 								lock: &self.lock,
 								data: unsafe { &mut *self.data.get() },
 							}),
@@ -21528,154 +21461,149 @@ pub mod sync
 						}
 					}
                     
-                    pub fn starve(&self) -> Starvation<'_, T, R> {
-						if self.lock.fetch_add(STARVED, Ordering::Relaxed) > (core::isize::MAX - 1) as usize {
-                            crate::abort();
-						}
+                    pub fn starve(&self) -> Starvation<'_, T, R>
+                    {
+						if self.lock.fetch_add(STARVED, Ordering::Relaxed) > (::isize::MAX - 1) as usize { ::sync::spin::abort(); }
 
 						Starvation { lock: self }
 					}
                     
-                    #[inline(always)]
-					pub fn get_mut(&mut self) -> &mut T {
-						unsafe { &mut *self.data.get() }
-					}
+                    #[inline(always)] pub fn get_mut(&mut self) -> &mut T { unsafe { &mut *self.data.get() } }
 				}
 
-				impl<T: ?Sized + fmt::Debug, R> fmt::Debug for FairMutex<T, R> {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+				impl<T: ?Sized + fmt::Debug, R> fmt::Debug for FairMutex<T, R>
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                    {
 						struct LockWrapper<'a, T: ?Sized + fmt::Debug>(Option<FairMutexGuard<'a, T>>);
 
-						impl<T: ?Sized + fmt::Debug> fmt::Debug for LockWrapper<'_, T> {
-							fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-								match &self.0 {
+						impl<T: ?Sized + fmt::Debug> fmt::Debug for LockWrapper<'_, T>
+                        {
+							fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                            {
+								match &self.0
+                                {
 									Some(guard) => fmt::Debug::fmt(guard, f),
 									None => f.write_str("<locked>"),
 								}
 							}
 						}
 
-						f.debug_struct("FairMutex")
-							.field("data", &LockWrapper(self.try_lock()))
-							.finish()
+						f.debug_struct("FairMutex").field("data", &LockWrapper(self.try_lock())).finish()
 					}
 				}
 
-				impl<T: ?Sized + Default, R> Default for FairMutex<T, R> {
-					fn default() -> Self {
-						Self::new(Default::default())
+				impl<T: ?Sized + Default, R> Default for FairMutex<T, R>
+                {
+					fn default() -> Self { Self::new(Default::default()) }
+				}
+
+				impl<T, R> From<T> for FairMutex<T, R>
+                {
+					fn from(data: T) -> Self { Self::new(data) }
+				}
+
+				impl<'a, T: ?Sized> FairMutexGuard<'a, T>
+                {
+                    #[inline(always)] pub fn leak(this: Self) -> &'a mut T
+                    {
+                        unsafe
+                        {
+                            let mut this = ManuallyDrop::new(this);
+                            &mut *this.data
+                        }
 					}
 				}
 
-				impl<T, R> From<T> for FairMutex<T, R> {
-					fn from(data: T) -> Self {
-						Self::new(data)
-					}
+				impl<'a, T: ?Sized + fmt::Debug> fmt::Debug for FairMutexGuard<'a, T>
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Debug::fmt(&**self, f) }
 				}
 
-				impl<'a, T: ?Sized> FairMutexGuard<'a, T> {
-                    #[inline(always)]
-					pub fn leak(this: Self) -> &'a mut T {
-						let mut this = ManuallyDrop::new(this);
-						unsafe { &mut *this.data }
-					}
+				impl<'a, T: ?Sized + fmt::Display> fmt::Display for FairMutexGuard<'a, T>
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { fmt::Display::fmt(&**self, f) }
 				}
 
-				impl<'a, T: ?Sized + fmt::Debug> fmt::Debug for FairMutexGuard<'a, T> {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-						fmt::Debug::fmt(&**self, f)
-					}
-				}
-
-				impl<'a, T: ?Sized + fmt::Display> fmt::Display for FairMutexGuard<'a, T> {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-						fmt::Display::fmt(&**self, f)
-					}
-				}
-
-				impl<'a, T: ?Sized> Deref for FairMutexGuard<'a, T> {
+				impl<'a, T: ?Sized> Deref for FairMutexGuard<'a, T>
+                {
 					type Target = T;
-					fn deref(&self) -> &T {
-						unsafe { &*self.data }
-					}
+					fn deref(&self) -> &T { unsafe { &*self.data } }
 				}
 
-				impl<'a, T: ?Sized> DerefMut for FairMutexGuard<'a, T> {
-					fn deref_mut(&mut self) -> &mut T {
-						unsafe { &mut *self.data }
-					}
+				impl<'a, T: ?Sized> DerefMut for FairMutexGuard<'a, T>
+                {
+					fn deref_mut(&mut self) -> &mut T { unsafe { &mut *self.data } }
 				}
 
-				impl<'a, T: ?Sized> Drop for FairMutexGuard<'a, T> {
-					fn drop(&mut self) {
-						self.lock.fetch_and(!LOCKED, Ordering::Release);
-					}
+				impl<'a, T: ?Sized> Drop for FairMutexGuard<'a, T>
+                {
+					fn drop(&mut self) { self.lock.fetch_and(!LOCKED, Ordering::Release); }
 				}
 
-				impl<'a, T: ?Sized, R> Starvation<'a, T, R> {
+				impl<'a, T: ?Sized, R> Starvation<'a, T, R>
+                {
 					pub fn try_lock_fair(self) -> Result<FairMutexGuard<'a, T>, Self>
                     {
-						if self
-							.lock
-							.lock
-							.compare_exchange(
-								STARVED,
-								STARVED | LOCKED,
-								Ordering::Acquire,
-								Ordering::Relaxed,
-							)
-							.is_ok()
+						if self.lock.lock.compare_exchange( STARVED, STARVED | LOCKED, Ordering::Acquire, Ordering::Relaxed ).is_ok()
 						{
-                            Ok(FairMutexGuard {
+                            Ok(FairMutexGuard
+                            {
 								lock: &self.lock.lock,
 								data: self.lock.data.get(),
 							})
-						} else {
-                            Err(self)
 						}
+                        else { Err(self) }
 					}
                     
 					pub fn try_lock(self) -> Result<FairMutexGuard<'a, T>, Self>
                     {
-						if self.lock.lock.fetch_or(LOCKED, Ordering::Acquire) & LOCKED == 0 {
-							Ok(FairMutexGuard {
-								lock: &self.lock.lock,
-								data: self.lock.data.get(),
-							})
-						} else {
-							Err(self)
+						if self.lock.lock.fetch_or(LOCKED, Ordering::Acquire) & LOCKED == 0
+                        {
+							Ok
+                            (
+                                FairMutexGuard
+                                {
+                                    lock: &self.lock.lock,
+                                    data: self.lock.data.get(),
+                                }
+                            )
 						}
+                        else { Err(self) }
 					}
 				}
 
-				impl<'a, T: ?Sized, R: RelaxStrategy> Starvation<'a, T, R> {
-					/// Locks the mutex.
-					pub fn lock(mut self) -> FairMutexGuard<'a, T> {
-
-						loop {
-							match self.try_lock() {
+				impl<'a, T: ?Sized, R: RelaxStrategy> Starvation<'a, T, R>
+                {
+					pub fn lock(mut self) -> FairMutexGuard<'a, T>
+                    {
+                        loop
+                        {
+							match self.try_lock()
+                            {
 								Ok(lock) => return lock,
 								Err(starve) => self = starve,
 							}
-
-
-							while self.lock.is_locked() {
+                            
+                            while self.lock.is_locked()
+                            {
 								R::relax();
 							}
 						}
 					}
 				}
 
-				impl<'a, T: ?Sized, R> Drop for Starvation<'a, T, R> {
-					fn drop(&mut self) {
-
-						self.lock.lock.fetch_sub(STARVED, Ordering::Release);
-					}
+				impl<'a, T: ?Sized, R> Drop for Starvation<'a, T, R>
+                {
+					fn drop(&mut self) { self.lock.lock.fetch_sub(STARVED, Ordering::Release); }
 				}
 
-				impl fmt::Display for LockRejectReason {
-					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-						match self {
+				impl fmt::Display for LockRejectReason
+                {
+					fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                    {
+						match self
+                        {
 							LockRejectReason::Locked => write!(f, "locked"),
 							LockRejectReason::Starved => write!(f, "starved"),
 						}
@@ -21683,7 +21611,6 @@ pub mod sync
 				}
 				
 				impl ::error::Error for LockRejectReason {}
-				
 			} pub use self::fair::{FairMutex, FairMutexGuard, Starvation};
 			
 			type InnerMutex<T, R> = self::spin::SpinMutex<T, R>;
@@ -21778,7 +21705,6 @@ pub mod sync
 			}
 
 			impl<'a, T: ?Sized> MutexGuard<'a, T> {
-				/// Leak the lock guard, yielding a mutable reference to the underlying data.
 				#[inline(always)]
 				pub fn leak(this: Self) -> &'a mut T {
 					InnerMutexGuard::leak(this.inner)
@@ -21809,8 +21735,8 @@ pub mod sync
 					&mut *self.inner
 				}
 			}
-		} 
-		/// A primitive that synchronizes the execution of multiple threads.
+		}
+
 		pub type Mutex<T> = self::mutex::Mutex<T>;
 
 		pub mod once
@@ -21821,7 +21747,8 @@ pub mod sync
 			{
 				cell::{ UnsafeCell },
 				marker::{ PhantomData },
-				mem::{ PhantomData },
+                mem::{ forget, MaybeUninit },
+                ptr::{ drop_in_place },
 				sync::
 				{
 					atomic::{AtomicU8, Ordering},
@@ -21831,177 +21758,158 @@ pub mod sync
 			};
 			/*
 			*/
-			/// A primitive that provides lazy one-time initialization.
-			pub struct Once<T = (), R = Spin> {
+			pub struct Once<T = (), R = Spin>
+            {
 				phantom: PhantomData<R>,
 				status: AtomicStatus,
 				data: UnsafeCell<MaybeUninit<T>>,
 			}
 
-			impl<T, R> Default for Once<T, R> {
-				fn default() -> Self {
-					Self::new()
-				}
+			impl<T, R> Default for Once<T, R>
+            {
+				fn default() -> Self { Self::new() }
 			}
 
-			impl<T: fmt::Debug, R> fmt::Debug for Once<T, R> {
-				fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+			impl<T: fmt::Debug, R> fmt::Debug for Once<T, R>
+            {
+				fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                {
 					let mut d = f.debug_tuple("Once");
-					let d = if let Some(x) = self.get() {
-						d.field(&x)
-					} else {
-						d.field(&format_args!("<uninit>"))
-					};
+					
+                    let d = if let Some(x) = self.get() { d.field(&x) }
+                    else { d.field(&format_args!("<uninit>")) };
+
 					d.finish()
 				}
 			}
+
 			unsafe impl<T: Send + Sync, R> Sync for Once<T, R> {}
+
 			unsafe impl<T: Send, R> Send for Once<T, R> {}
 
-			mod status {
+			mod status
+            {
 				use super::*;
 
 				#[repr(transparent)]
 				pub struct AtomicStatus(AtomicU8);
-				#[repr(u8)]
-				#[derive(Clone, Copy, Debug, PartialEq)]
-				pub enum Status {
+
+				#[repr(u8)] #[derive(Clone, Copy, Debug, PartialEq)]
+				pub enum Status
+                {
 					Incomplete = 0x00,
 					Running = 0x01,
 					Complete = 0x02,
 					Panicked = 0x03,
 				}
-				impl Status {
 
-					//
-
-					//
-
-					unsafe fn new_unchecked(inner: u8) -> Self {
-						core::mem::transmute(inner)
-					}
+				impl Status
+                {
+                    unsafe fn new_unchecked(inner: u8) -> Self { ::mem::transmute(inner) }
 				}
 
-				impl AtomicStatus {
-					#[inline(always)]
-					pub const fn new(status: Status) -> Self {
-
-						Self(AtomicU8::new(status as u8))
-					}
-					#[inline(always)]
-					pub fn load(&self, ordering: Ordering) -> Status {
-						unsafe { Status::new_unchecked(self.0.load(ordering)) }
-					}
-					#[inline(always)]
-					pub fn store(&self, status: Status, ordering: Ordering) {
-						self.0.store(status as u8, ordering);
-					}
-					#[inline(always)]
-					pub fn compare_exchange(
-						&self,
-						old: Status,
-						new: Status,
-						success: Ordering,
-						failure: Ordering,
-					) -> Result<Status, Status> {
-						match self
-							.0
-							.compare_exchange(old as u8, new as u8, success, failure)
+				impl AtomicStatus
+                {
+					#[inline(always)] pub const fn new(status: Status) -> Self { Self(AtomicU8::new(status as u8)) }                    
+					#[inline(always)] pub fn load(&self, ordering: Ordering) -> Status { unsafe { Status::new_unchecked(self.0.load(ordering)) } }
+					#[inline(always)] pub fn store(&self, status: Status, ordering: Ordering) { self.0.store(status as u8, ordering); }                    
+					#[inline(always)] pub fn compare_exchange( &self, o: Status, n: Status, s: Ordering, f: Ordering ) -> Result<Status, Status>
+                    {
+						match self.0.compare_exchange(o as u8, n as u8, s, f)
 						{
                             Ok(ok) => Ok(unsafe { Status::new_unchecked(ok) }),
 							Err(err) => Err(unsafe { Status::new_unchecked(err) }),
 						}
 					}
-					#[inline(always)]
-					pub fn get_mut(&mut self) -> &mut Status {
-						unsafe { &mut *((self.0.get_mut() as *mut u8).cast::<Status>()) }
-					}
+                    
+					#[inline(always)] pub fn get_mut(&mut self) -> &mut Status { unsafe { &mut *((self.0.get_mut() as *mut u8).cast::<Status>()) } }
 				}
-			}
-			use self::status::{AtomicStatus, Status};
+			} pub use self::status::{ AtomicStatus, Status };
 
-			impl<T, R: RelaxStrategy> Once<T, R> {
-				/// Performs an initialization routine once and only once.
-				pub fn call_once<F: FnOnce() -> T>(&self, f: F) -> &T {
-					match self.try_call_once(|| Ok::<T, core::convert::Infallible>(f())) {
+			impl<T, R: RelaxStrategy> Once<T, R>
+            {
+                pub fn call_once<F: FnOnce() -> T>(&self, f: F) -> &T
+                {
+					match self.try_call_once(|| Ok::<T, ::convert::Infallible>(f()))
+                    {
 						Ok(x) => x,
 						Err(void) => match void {},
 					}
 				}
-				pub fn try_call_once<F: FnOnce() -> Result<T, E>, E>(&self, f: F) -> Result<&T, E> {
-					if let Some(value) = self.get() {
-						Ok(value)
-					} else {
-						self.try_call_once_slow(f)
-					}
+
+				pub fn try_call_once<F: FnOnce() -> Result<T, E>, E>(&self, f: F) -> Result<&T, E>
+                {
+					if let Some(value) = self.get() { Ok(value) }
+                    else { self.try_call_once_slow(f) }
 				}
 
-				#[cold]
-				fn try_call_once_slow<F: FnOnce() -> Result<T, E>, E>(&self, f: F) -> Result<&T, E> {
-					loop {
-						let xchg = self.status.compare_exchange(
-							Status::Incomplete,
-							Status::Running,
-							Ordering::Acquire,
-							Ordering::Acquire,
-						);
+				#[cold] fn try_call_once_slow<F: FnOnce() -> Result<T, E>, E>(&self, f: F) -> Result<&T, E>
+                {
+                    unsafe
+                    {
+                        loop
+                        {
+                            let xchg = self.status.compare_exchange
+                            (
+                                Status::Incomplete,
+                                Status::Running,
+                                Ordering::Acquire,
+                                Ordering::Acquire,
+                            );
 
-						match xchg {
-							Ok(_must_be_state_incomplete) => {
+                            match xchg
+                            {
+                                Ok(_must_be_state_incomplete) => {}
+                                Err(Status::Panicked) => panic!("Once panicked"),
+                                Err(Status::Running) => match self.poll()
+                                {
+                                    Some(v) => return Ok(v),
+                                    None => continue,
+                                },
+                                Err(Status::Complete) => { return Ok(self.force_get()); }
+                                Err(Status::Incomplete) => { continue; }
                             }
-							Err(Status::Panicked) => panic!("Once panicked"),
-							Err(Status::Running) => match self.poll() {
-								Some(v) => return Ok(v),
-								None => continue,
-							},
-							Err(Status::Complete) => {
-								return Ok(unsafe {
-                            		self.force_get()
-								});
-							}
-							Err(Status::Incomplete) => {
-                            	continue;
-							}
-						}
-						let finish = Finish {
-							status: &self.status,
-						};
-						let val = match f() {
-							Ok(val) => val,
-							Err(err) => {
-                            	core::mem::forget(finish);
-								self.status.store(Status::Incomplete, Ordering::Release);
-								return Err(err);
-							}
-						};
-						unsafe {
-							(*self.data.get()).as_mut_ptr().write(val);
-						};
 
-						//
+                            let finish = Finish { status: &self.status };
+                            
+                            let val = match f()
+                            {
+                                Ok(val) => val,
+                                Err(err) =>
+                                {
+                                    forget(finish);
+                                    self.status.store(Status::Incomplete, Ordering::Release);
+                                    return Err(err);
+                                }
+                            };
+                            
+                            (*self.data.get()).as_mut_ptr().write(val);
+                            forget(finish);
+                            self.status.store(Status::Complete, Ordering::Release);
+                            return unsafe { Ok(self.force_get()) };
+                        }
 
-						core::mem::forget(finish);
-
-						//
-						self.status.store(Status::Complete, Ordering::Release);
-
-
-						return unsafe { Ok(self.force_get()) };
-					}
+                    }
 				}
-    
-	pub fn wait(&self) -> &T {
-					loop {
-						match self.poll() {
+                
+                pub fn wait(&self) -> &T
+                {
+					loop
+                    {
+						match self.poll()
+                        {
 							Some(x) => break x,
 							None => R::relax(),
 						}
 					}
 				}
-				pub fn poll(&self) -> Option<&T> {
-					loop {
 
-						match self.status.load(Ordering::Acquire) {
+				pub fn poll(&self) -> Option<&T>
+                {
+					loop
+                    {
+                        match self.status.load(Ordering::Acquire)
+                        {
 							Status::Incomplete => return None,
 							Status::Running => R::relax(),
 							Status::Complete => return Some(unsafe { self.force_get() }),
@@ -22011,59 +21919,43 @@ pub mod sync
 				}
 			}
 
-			impl<T, R> Once<T, R> {
-				/// Initialization constant of [`Once`].
-				#[allow(clippy::declare_interior_mutable_const)]
-				pub const INIT: Self = Self {
+			impl<T, R> Once<T, R>
+            {
+                pub const INIT: Self = Self
+                {
 					phantom: PhantomData,
 					status: AtomicStatus::new(Status::Incomplete),
 					data: UnsafeCell::new(MaybeUninit::uninit()),
 				};
-
-				/// Creates a new [`Once`].
-				pub const fn new() -> Self {
-					Self::INIT
-				}
-    
-	pub const fn initialized(data: T) -> Self {
-					Self {
+                
+                pub const fn new() -> Self { Self::INIT }
+                pub const fn initialized(data: T) -> Self
+                {
+					Self
+                    {
 						phantom: PhantomData,
 						status: AtomicStatus::new(Status::Complete),
 						data: UnsafeCell::new(MaybeUninit::new(data)),
 					}
 				}
-    
-	pub fn as_mut_ptr(&self) -> *mut T {
-					self.data.get().cast::<T>()
-				}
-
-				/// Get a reference to the initialized instance. Must only be called once COMPLETE.
-				unsafe fn force_get(&self) -> &T {
-
-					&*(*self.data.get()).as_ptr()
-				}
-
-				/// Get a reference to the initialized instance. Must only be called once COMPLETE.
-				unsafe fn force_get_mut(&mut self) -> &mut T {
-
-					&mut *(*self.data.get()).as_mut_ptr()
-				}
-
-				/// Get a reference to the initialized instance. Must only be called once COMPLETE.
-				unsafe fn force_into_inner(self) -> T {
-
-					(*self.data.get()).as_ptr().read()
-				}
-    
-	pub fn get(&self) -> Option<&T> {
-					match self.status.load(Ordering::Acquire) {
+                
+                pub fn as_mut_ptr(&self) -> *mut T { self.data.get().cast::<T>() }
+				unsafe fn force_get(&self) -> &T { &*(*self.data.get()).as_ptr() }
+                unsafe fn force_get_mut(&mut self) -> &mut T { &mut *(*self.data.get()).as_mut_ptr() }
+                unsafe fn force_into_inner(self) -> T { (*self.data.get()).as_ptr().read() }
+                pub fn get(&self) -> Option<&T>
+                {
+					match self.status.load(Ordering::Acquire)
+                    {
 						Status::Complete => Some(unsafe { self.force_get() }),
 						_ => None,
 					}
 				}
-    
-	pub unsafe fn get_unchecked(&self) -> &T {
-					debug_assert_eq!(
+                
+                pub unsafe fn get_unchecked(&self) -> &T
+                {
+					debug_assert_eq!
+                    (
 						self.status.load(Ordering::SeqCst),
 						Status::Complete,
 						"Attempted to access an uninitialized Once. If this was run without debug checks, this would be undefined behaviour. This is a serious bug and you must fix it.",
@@ -22071,75 +21963,70 @@ pub mod sync
 					self.force_get()
 				}
     
-	pub fn get_mut(&mut self) -> Option<&mut T> {
-					match *self.status.get_mut() {
-						Status::Complete => Some(unsafe { self.force_get_mut() }),
-						_ => None,
-					}
-				}
-    
-	pub unsafe fn get_mut_unchecked(&mut self) -> &mut T {
-					debug_assert_eq!(
-						self.status.load(Ordering::SeqCst),
-						Status::Complete,
-						"Attempted to access an unintialized Once.  If this was to run without debug checks, this would be undefined behavior.  This is a serious bug and you must fix it.",
-					);
-					self.force_get_mut()
-				}
-    
-	pub fn try_into_inner(mut self) -> Option<T> {
-					match *self.status.get_mut() {
-						Status::Complete => Some(unsafe { self.force_into_inner() }),
-						_ => None,
-					}
-				}
-    
-	pub unsafe fn into_inner_unchecked(self) -> T {
-					debug_assert_eq!(
-						self.status.load(Ordering::SeqCst),
-						Status::Complete,
-						"Attempted to access an unintialized Once.  If this was to run without debug checks, this would be undefined behavior.  This is a serious bug and you must fix it.",
-					);
-					self.force_into_inner()
-				}
-    
-	pub fn is_completed(&self) -> bool {
-
-					self.status.load(Ordering::Acquire) == Status::Complete
-				}
+                pub fn get_mut(&mut self) -> Option<&mut T>
+                {
+                    match *self.status.get_mut()
+                    {
+                        Status::Complete => Some(unsafe { self.force_get_mut() }),
+                        _ => None,
+                    }
+                }
+                
+                pub unsafe fn get_mut_unchecked(&mut self) -> &mut T
+                {
+                    debug_assert_eq!
+                    (
+                        self.status.load(Ordering::SeqCst),
+                        Status::Complete,
+                        "Attempted to access an unintialized Once.  If this was to run without debug checks, this would be undefined behavior.  This is a serious bug and you must fix it.",
+                    );
+                    self.force_get_mut()
+                }
+                
+                pub fn try_into_inner(mut self) -> Option<T>
+                {
+                    match *self.status.get_mut() {
+                        Status::Complete => Some(unsafe { self.force_into_inner() }),
+                        _ => None,
+                    }
+                }
+                
+                pub unsafe fn into_inner_unchecked(self) -> T
+                {
+                    debug_assert_eq!
+                    (
+                        self.status.load(Ordering::SeqCst),
+                        Status::Complete,
+                        "Attempted to access an unintialized Once.  If this was to run without debug checks, this would be undefined behavior.  This is a serious bug and you must fix it.",
+                    );
+                    self.force_into_inner()
+                }
+                
+                pub fn is_completed(&self) -> bool { self.status.load(Ordering::Acquire) == Status::Complete }
 			}
 
-			impl<T, R> From<T> for Once<T, R> {
-				fn from(data: T) -> Self {
-					Self::initialized(data)
-				}
+			impl<T, R> From<T> for Once<T, R>
+            {
+				fn from(data: T) -> Self { Self::initialized(data) }
 			}
 
-			impl<T, R> Drop for Once<T, R> {
-				fn drop(&mut self) {
-
-					if *self.status.get_mut() == Status::Complete {
-						unsafe {
-							//TODO: Use MaybeUninit::assume_init_drop once stabilised
-							core::ptr::drop_in_place((*self.data.get()).as_mut_ptr());
-						}
-					}
-				}
+			impl<T, R> Drop for Once<T, R>
+            {
+				fn drop(&mut self) { if *self.status.get_mut() == Status::Complete { unsafe { drop_in_place((*self.data.get()).as_mut_ptr()); } } }
 			}
 
-			struct Finish<'a> {
+			struct Finish<'a>
+            {
 				status: &'a AtomicStatus,
 			}
 
-			impl<'a> Drop for Finish<'a> {
-				fn drop(&mut self) {
-
-					self.status.store(Status::Panicked, Ordering::SeqCst);
-				}
+			impl<'a> Drop for Finish<'a>
+            {
+				fn drop(&mut self) { self.status.store(Status::Panicked, Ordering::SeqCst); }
 			}
 		}
-    
-	pub type Once<T = ()> = self::once::Once<T>;
+        
+        pub type Once<T = ()> = self::once::Once<T>;
 		
 		pub mod relax
 		{
@@ -22214,25 +22101,24 @@ pub mod sync
 				data: UnsafeCell<T>,
 			}
     
-	pub struct RwLockReadGuard<'a, T: 'a + ?Sized> {
-				lock: &'a AtomicUsize,
-				data: *const T,
+            pub struct RwLockReadGuard<'a, T: 'a + ?Sized> {
+                        lock: &'a AtomicUsize,
+                        data: *const T,
+                    }
+            
+            pub struct RwLockWriteGuard<'a, T: 'a + ?Sized, R = Spin> {
+                        phantom: PhantomData<R>,
+                        inner: &'a RwLock<T, R>,
+                        data: *mut T,
+                    }
+            
+            pub struct RwLockUpgradableGuard<'a, T: 'a + ?Sized, R = Spin> {
+                        phantom: PhantomData<R>,
+                        inner: &'a RwLock<T, R>,
+                        data: *const T,
 			}
-    
-	pub struct RwLockWriteGuard<'a, T: 'a + ?Sized, R = Spin> {
-				phantom: PhantomData<R>,
-				inner: &'a RwLock<T, R>,
-				data: *mut T,
-			}
-    
-	pub struct RwLockUpgradableGuard<'a, T: 'a + ?Sized, R = Spin> {
-				phantom: PhantomData<R>,
-				inner: &'a RwLock<T, R>,
-				data: *const T,
-			}
-
-
-			unsafe impl<T: ?Sized + Send, R> Send for RwLock<T, R> {}
+            
+            unsafe impl<T: ?Sized + Send, R> Send for RwLock<T, R> {}
 			unsafe impl<T: ?Sized + Send + Sync, R> Sync for RwLock<T, R> {}
 
 			unsafe impl<T: ?Sized + Send + Sync, R> Send for RwLockWriteGuard<'_, T, R> {}
@@ -22299,7 +22185,8 @@ pub mod sync
 				}
 			}
 
-			impl<T: ?Sized, R> RwLock<T, R> {
+			impl<T: ?Sized, R> RwLock<T, R> 
+            {
 
 				fn acquire_reader(&self) -> usize {
 
@@ -22333,13 +22220,13 @@ pub mod sync
 						})
 					}
 				}
-    
-	pub fn reader_count(&self) -> usize {
+                
+                pub fn reader_count(&self) -> usize {
 					let state = self.lock.load(Ordering::Relaxed);
 					state / READER + (state & UPGRADED) / UPGRADED
 				}
-    
-	pub fn writer_count(&self) -> usize {
+                
+                pub fn writer_count(&self) -> usize {
 					(self.lock.load(Ordering::Relaxed) & WRITER) / WRITER
 				}
 
@@ -22392,8 +22279,7 @@ pub mod sync
 				}
 
 				/// Tries to obtain an upgradeable lock guard.
-				#[inline]
-				pub fn try_upgradeable_read(&self) -> Option<RwLockUpgradableGuard<T, R>> {
+				#[inline] pub fn try_upgradeable_read(&self) -> Option<RwLockUpgradableGuard<T, R>> {
 					if self.lock.fetch_or(UPGRADED, Ordering::Acquire) & (WRITER | UPGRADED) == 0 {
 						Some(RwLockUpgradableGuard {
 							phantom: PhantomData,
@@ -22407,11 +22293,7 @@ pub mod sync
 					}
 				}
     
-	pub fn get_mut(&mut self) -> &mut T {
-
-
-					unsafe { &mut *self.data.get() }
-				}
+                pub fn get_mut(&mut self) -> &mut T { unsafe { &mut *self.data.get() } }
 			}
 
 			impl<T: ?Sized + fmt::Debug, R> fmt::Debug for RwLock<T, R> {
@@ -22686,7 +22568,7 @@ pub mod sync
 			
 		} pub use self::rwlock::RwLockReadGuard;
 
-		pub type RwLock<T> = crate::rwlock::RwLock<T>;
+		pub type RwLock<T> = self::rwlock::RwLock<T>;
 		pub type RwLockUpgradableGuard<'a, T> = self::rwlock::RwLockUpgradableGuard<'a, T>;
 		pub type RwLockWriteGuard<'a, T> = self::rwlock::RwLockWriteGuard<'a, T>;
 		pub fn abort() -> !
@@ -22695,11 +22577,11 @@ pub mod sync
 		}
 	}
 	
-	pub struct Lazy<T: Sync>(Once<T>);
+	pub struct Lazy<T: Sync>( spin::Once<T> );
 	
 	impl<T: Sync> Lazy<T>
 	{
-		pub const INIT: Self = Lazy(Once::INIT);
+		pub const INIT: Self = Lazy( spin::Once::INIT );
 		#[inline( always )] pub fn get<F>(&'static self, builder: F) -> &T where
 		F: FnOnce() -> T,
 		{ self.0.call_once(builder) }
@@ -23391,4 +23273,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 23394 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 23276 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
