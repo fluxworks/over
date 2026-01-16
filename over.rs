@@ -7,6 +7,7 @@
 
 #![allow
 (
+    ambiguous_glob_reexports,
     bare_trait_objects,
     deprecated,
     mismatched_lifetime_syntaxes,
@@ -16,6 +17,7 @@
     non_upper_case_globals,
     unused_attributes,
     unused_imports,
+    unused_macros,
     unused_variables,
 )]
 /*
@@ -1517,25 +1519,23 @@ pub type OverResult<T> = Result<T, OverError>;
 	/// Given an int, creates and returns a `BigInt`.
 	#[macro_export] macro_rules! int
 	{
-		($int:expr) => {{
-			use num_bigint::BigInt;
-
+		($int:expr) =>
+        {{
+			use ::num::big::BigInt;
 			let _b: BigInt = $int.into();
 			_b
 		}};
 	}
-	/// Given two ints, creates and returns a `BigRational`.
+    
 	#[macro_export] macro_rules! frac
 	{
-		($int1:expr, $int2:expr) => {{
-			::num_rational::BigRational::new($int1.into(), $int2.into())
-		}};
+		($int1:expr, $int2:expr) => {{ ::num::rational::BigRational::new($int1.into(), $int2.into()) }};
 	}
 
 	#[macro_export] macro_rules! arr
 	{
 		[] => {
-			$crate::arr::Arr::from_vec(vec![]).unwrap()
+			$crate::array::Arr::from_vec(vec![]).unwrap()
 		};
 		[ $( $elem:expr ),+ , ] => {
 
@@ -1553,7 +1553,7 @@ pub type OverResult<T> = Result<T, OverError>;
 		};
 		[ $( $elem:expr ),+ ] => {
 			{
-				$crate::arr::Arr::from_vec(vec![ $( $elem.into() ),+ ])
+				$crate::array::Arr::from_vec(vec![ $( $elem.into() ),+ ])
 			}
 		};
 	}
@@ -1648,11 +1648,9 @@ pub type OverResult<T> = Result<T, OverError>;
 				}
 			}
 
-			impl $crate::LazyStatic for $N
+			impl $crate::sync::LazyStatic for $N
             {
-				fn initialize(lazy: &Self) {
-					let _ = &**lazy;
-				}
+				fn initialize(lazy: &Self) { let _ = &**lazy; }
 			}
 		};
         
@@ -2507,6 +2505,15 @@ pub mod cell
 pub mod char
 {
     pub use std::char::{ * };
+    // pub fn format_char(ch: char) -> String
+    pub fn format(ch: char) -> String
+    {
+        match ch
+        {
+            '\n' => String::from("\\n"),
+            ch => format!("{}", ch),
+        }
+    }
 }
 
 pub mod clone
@@ -2657,6 +2664,10 @@ pub mod fmt
             rational::{ BigRational },
             traits::{ One },
         },
+        object::{ Obj },
+        regex::{ replace_all },
+        string::{ indent },
+        tup::{ Tup },
         value::{ Value },
 	    *,
 	};
@@ -2684,7 +2695,7 @@ pub mod fmt
 	impl Format for char
 	{
 		fn format(&self, _full: bool, _indent_amt: usize) -> String {
-			if let Some(s) = get_char_map(*self) {
+			if let Some(s) = get::char_map(*self) {
 				format!("\'{}\'", s)
 			} else {
 				format!("\'{}\'", *self)
@@ -2862,13 +2873,41 @@ pub mod fs
 {
 	pub use std::fs::{ * };
     
-	pub fn write_str(fname: &str, contents: &str) -> io::Result<()>
+	pub fn write_str(fname: &str, contents: &str) -> ::io::Result<()>
 	{
 		use ::io::Write;
 		let mut file = File::create(fname)?;
 		file.write_all(contents.as_bytes())?;
 		Ok(())
 	}
+}
+
+pub mod get
+{
+    /*!
+    */
+    use ::
+    {
+        collections::{ HashMap },
+        *,
+    };
+    /*
+    */
+    // pub fn get_char_map(ch: char) -> Option<&'static str>
+    pub fn char_map(ch: char) -> Option<&'static str>
+    {
+        match ch
+        {
+            '\\' => Some("\\\\"),
+            '\"' => Some("\\\""),
+            '\'' => Some("\\\'"),
+            '$' => Some("\\$"),
+            '\n' => Some("\\n"),
+            '\r' => Some("\\r"),
+            '\t' => Some("\\t"),
+            _ => None,
+        }
+    }
 }
 
 pub mod hash
@@ -2974,12 +3013,12 @@ pub mod is
 	{
 		match ch
 		{
-			'0'...'9' => true,
+			'0'..='9' => true,
 			_ => false,
 		}
 	}
-
-    pub fn is_valid_field(field: &str) -> bool
+    // pub fn is_valid_field(field: &str) -> bool
+    pub fn valid_field(field: &str) -> bool
     {
         let mut first = true;
 
@@ -16692,6 +16731,12 @@ a0 = a.data.pop().unwrap();
                 return 0.0 * x.signum();
             }
         }
+        
+        pub fn frac_from_whole_and_dec(whole: BigInt, decimal: BigInt, dec_len: usize) -> BigRational
+        {
+            let denom = ::num::traits::pow(BigInt::from_u8(10).unwrap(), dec_len);
+            BigRational::new(whole, 1.into()) + BigRational::new(decimal, denom)
+        }
     }
 }
 
@@ -16790,7 +16835,7 @@ pub mod object
     {
 		pub fn from_map(obj_map: HashMap<String, Value>) -> OverResult<Obj> {
 			for field in obj_map.keys() {
-				if !Self::is_valid_field(field) {
+				if !is::valid_field(field) {
 					return Err(OverError::InvalidFieldName((*field).clone()));
 				}
 			}
@@ -16807,7 +16852,7 @@ pub mod object
         
 		pub fn from_map_with_parent(obj_map: HashMap<String, Value>, parent: Obj) -> OverResult<Obj> {
 			for field in obj_map.keys() {
-				if !Self::is_valid_field(field) {
+				if !is::valid_field(field) {
 					return Err(OverError::InvalidFieldName(field.clone()));
 				}
 			}
@@ -16856,12 +16901,12 @@ pub mod object
 		}
         
         pub fn from_file(path: &str) -> OverResult<Obj> {
-			Ok( load_from_file(path)?)
+			Ok( parse::over::from_file(path)?)
 		}
         
 		pub fn write_to_file(&self, path: &str) -> OverResult<()>
         {
-			write_file_str(path, &self.write_str())?;
+			str::write_file(path, &self.write_str())?;
 			Ok(())
 		}
         
@@ -17018,30 +17063,27 @@ pub mod object
     {
 		type Err = OverError;
 
-		fn from_str(s: &str) -> Result<Self, Self::Err> {
-			Ok(parse::load_from_str(s)?)
-		}
+		fn from_str(s: &str) -> Result<Self, Self::Err> { Ok(parse::over::from_str(s)?) }
 	}
-	/// 2. The two Objs must have all the same fields pointing to the same values.
-	impl PartialEq for Obj
+    
+    impl PartialEq for Obj
     {
-		fn eq(&self, other: &Self) -> bool {
+		fn eq(&self, other: &Self) -> bool
+        {
 			let inner = &self.inner;
 			let other_inner = &other.inner;
-
-
-			if inner.parent.is_some() && other_inner.parent.is_some() {
+            
+            if inner.parent.is_some() && other_inner.parent.is_some()
+            {
 				let parent = self.get_parent().unwrap();
 				let other_parent = other.get_parent().unwrap();
-				if parent != other_parent {
-					return false;
-				}
-			} else if !(inner.parent.is_none() && other_inner.parent.is_none()) {
-				return false;
+
+				if parent != other_parent { return false; }
 			}
-
-
-			inner.map == other_inner.map
+            
+            else if !(inner.parent.is_none() && other_inner.parent.is_none()) { return false; }
+            
+            inner.map == other_inner.map
 		}
 	}
 
@@ -17076,14 +17118,14 @@ pub mod parse
 	{
 		/*!
 		*/
-		use ::
+        use ::
 		{
             array::{self, Arr},
             collections::{ HashMap, HashSet, VecDeque },
             num::
             {
                 big::BigInt,
-                rational::BigRational,
+                rational::{ BigRational, frac_from_whole_and_dec },
                 traits::{ToPrimitive, Zero},
             },
             object::{ Obj },
@@ -17092,9 +17134,7 @@ pub mod parse
             {
                 over::
                 {
-                    characters::{ CharStream },
                     error::{ parse_err, ParseError, ParseErrorKind::{ self, * }, },
-                    ParseResult, MAX_DEPTH,
                 },
             },
             path::{ Path },
@@ -17256,7 +17296,7 @@ pub mod parse
                 {
                     over::
                     {
-                        MAX_DEPTH, OverError, ParseResult,
+                        MAX_DEPTH, ParseResult,
                     },
                 },
                 types::{ * },
@@ -17552,10 +17592,14 @@ pub mod parse
                 None,
             )? {}
 
-            Ok(match parent {
-                Some(parent) => object::from_map_with_parent_unchecked(obj, parent),
-                None => object::from_map_unchecked(obj),
-            })
+            Ok
+            (
+                match parent
+                {
+                    Some(parent) => object::Obj::from_map_with_parent_unchecked(obj, parent),
+                    None => object::from_map_unchecked(obj),
+                }
+            )
         }
         
         fn parse_obj(
@@ -17563,26 +17607,20 @@ pub mod parse
             globals: &mut GlobalMap,
             mut included: &mut IncludedMap,
             depth: usize,
-        ) -> ParseResult<Value> {
-
-            if depth > MAX_DEPTH {
-                return parse_err(stream.file(), MaxDepth(stream.line(), stream.col()));
-            }
-
-
+        ) -> ParseResult<Value>
+        {
+            if depth > MAX_DEPTH { return parse_err(stream.file(), MaxDepth(stream.line(), stream.col())); }
+            
             let ch = stream.next().unwrap();
             assert_eq!(ch, '{');
 
-
-            if !find_char(stream.clone()) {
-                return parse_err(stream.file(), UnexpectedEnd(stream.line()));
-            }
+            if !find_char(stream.clone()) { return parse_err(stream.file(), UnexpectedEnd(stream.line())); }
 
             let mut obj: ObjMap = HashMap::new();
             let mut parent = None;
-
-
-            while parse_field_value_pair(
+            
+            while parse_field_value_pair
+            (
                 &mut stream,
                 &mut obj,
                 globals,
@@ -17592,29 +17630,37 @@ pub mod parse
                 Some('}'),
             )? {}
 
-            let obj = match parent {
-                Some(parent) => object::from_map_with_parent_unchecked(obj, parent),
+            let obj = match parent
+            {
+                Some(parent) => object::Obj::from_map_with_parent_unchecked(obj, parent),
                 None => object::from_map_unchecked(obj),
             };
+
             Ok(obj.into())
         }
         
-        #[inline] fn parse_field_value_pair(
+        #[inline] fn parse_field_value_pair
+        (
             mut stream: &mut CharStream,
             obj: &mut ObjMap,
             mut globals: &mut GlobalMap,
             mut included: &mut IncludedMap,
             parent: &mut Option<Obj>,
             depth: usize,
-            cur_brace: Option<char>,
-        ) -> ParseResult<bool> {
-
+            cur_brace: Option<char>
+        ) -> ParseResult<bool>
+        {
             let peek = stream.peek().unwrap();
+            
             if peek == '}' && cur_brace.is_some() {
                 let _ = stream.next();
                 return Ok(false);
-            } else if is_end_delimiter(peek) {
-                return parse_err(
+            }
+
+            else if is::end_delimiter(peek)
+            {
+                return parse_err
+                (
                     stream.file(),
                     InvalidClosingBracket(cur_brace, peek, stream.line(), stream.col()),
                 );
@@ -17735,7 +17781,7 @@ pub mod parse
                 vec.push(value);
             }
 
-            let arr = array::from_vec_unchecked(vec, tcur);
+            let arr = array::Arr::from_vec_unchecked(vec, tcur);
 
             Ok(arr)
         }
@@ -17816,7 +17862,7 @@ pub mod parse
                 vec.push(value);
             }
 
-            let arr = array::from_vec_unchecked(vec, tcur);
+            let arr = array::Arr::from_vec_unchecked(vec, tcur);
 
             Ok(arr.into())
         }
@@ -18202,21 +18248,29 @@ pub mod parse
             let mut dot_global = false;
 
             let ch = stream.peek().unwrap();
-            if ch == '@' {
+            if ch == '@'
+            {
                 let ch = stream.next().unwrap();
                 is_global = true;
                 var.push(ch);
             }
 
-            while let Some(ch) = stream.peek() {
-                match ch {
-                    '.' => {
+            while let Some(ch) = stream.peek()
+            {
+                match ch
+                {
+                    '.' =>
+                    {
                         let _ = stream.next();
-                        match stream.peek() {
+                        
+                        match stream.peek()
+                        {
                             Some('@') => dot_global = true,
-                            Some(ch) if object::is_valid_field_char(ch, true) || is_numeric_char(ch) => (),
-                            Some(ch) => {
-                                return parse_err(
+                            Some(ch) if is::valid_field_char(ch, true) || is::numeric_char(ch) => (),
+                            Some(ch) => 
+                            {
+                                return parse_err
+                                (
                                     stream.file(),
                                     InvalidValueChar(ch, stream.line(), stream.col()),
                                 );
@@ -18227,13 +18281,18 @@ pub mod parse
                         dot = true;
                         break;
                     }
-                    ch if is_value_end_char(ch) => break,
-                    ch if object::is_valid_field_char(ch, false) => {
+
+                    ch if is::value_end_char(ch) => break,
+                    ch if is::valid_field_char(ch, false) =>
+                    {
                         let _ = stream.next();
                         var.push(ch);
                     }
-                    ch => {
-                        return parse_err(
+
+                    ch =>
+                    {
+                        return parse_err
+                        (
                             stream.file(),
                             InvalidValueChar(ch, stream.line(), stream.col()),
                         );
@@ -18241,7 +18300,8 @@ pub mod parse
                 }
             }
 
-            let mut value = match var.as_str() {
+            let mut value = match var.as_str()
+            {
                 "null" => Value::Null,
                 "true" => Value::Bool(true),
                 "false" => Value::Bool(false),
@@ -18716,7 +18776,7 @@ pub mod parse
 
 
                                     let arr = if let Arr(ref t) = t {
-                                        array::from_vec_unchecked(vec, t.deref().clone())
+                                        array::Arr::from_vec_unchecked(vec, t.deref().clone())
                                     } else {
                                         panic!("Logic error")
                                     };
@@ -20787,6 +20847,27 @@ pub mod rc
     pub use std::rc::{ * };
 }
 
+pub mod regex
+{
+    use ::
+    {
+        *
+    };
+
+    pub fn replace_all(s: &str) -> String
+    {
+        let mut string = String::with_capacity(s.len());
+
+        for ch in s.chars()
+        {
+            if let Some(s) = get::char_map(ch) { string.push_str(s); }
+            else { string.push(ch); }
+        }
+
+        string
+    }
+}
+
 pub mod result
 {
     pub use std::result::{ * };
@@ -20800,11 +20881,19 @@ pub mod slice
 pub mod str
 {
     pub use std::str::{ * };
+    // pub fn write_file_str(fname: &str, contents: &str) -> io::Result<()>
+    pub fn write_file(fname: &str, contents: &str) -> ::io::Result<()>
+    {
+        let mut file = ::fs::File::create(fname)?;
+        file.write_all(contents.as_bytes())?;
+        Ok(())
+    }
 }
 
 pub mod string
 {
     pub use std::string::{ * };
+    pub fn indent(a:usize) -> String { " ".repeat(a) }
 }
 
 pub mod sync
@@ -23273,4 +23362,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 23276 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 23365 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
