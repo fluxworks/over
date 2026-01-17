@@ -9,6 +9,7 @@
 (
     ambiguous_glob_reexports,
     bare_trait_objects,
+    dead_code,
     deprecated,
     mismatched_lifetime_syntaxes,
     non_camel_case_types,
@@ -18,6 +19,8 @@
     unused_attributes,
     unused_imports,
     unused_macros,
+    unused_mut,
+    unused_unsafe,
     unused_variables,
 )]
 /*
@@ -2548,7 +2551,7 @@ pub mod error
 	pub use std::error::{ * };
 	use ::
 	{
-		parse::over::error::ParseError,
+		parses::over::error::ParseError,
 		types::{ Type },
 		*,
 	};
@@ -2905,6 +2908,21 @@ pub mod get
             '\n' => Some("\\n"),
             '\r' => Some("\\r"),
             '\t' => Some("\\t"),
+            _ => None,
+        }
+    }
+    // pub fn get_escape_char(ch: char) -> Option<char>
+    pub fn escape_char(ch: char) -> Option<char>
+    {
+        match ch 
+        {
+            '\\' => Some('\\'),
+            '"' => Some('"'),
+            '\'' => Some('\''),
+            '$' => Some('$'),
+            'n' => Some('\n'),
+            'r' => Some('\r'),
+            't' => Some('\t'),
             _ => None,
         }
     }
@@ -16900,9 +16918,7 @@ pub mod object
 			&self.inner.map
 		}
         
-        pub fn from_file(path: &str) -> OverResult<Obj> {
-			Ok( parse::over::from_file(path)?)
-		}
+        pub fn from_file(path: &str) -> OverResult<Obj> { Ok( parses::over::from_file(path)?) }
         
 		pub fn write_to_file(&self, path: &str) -> OverResult<()>
         {
@@ -17062,8 +17078,7 @@ pub mod object
 	impl FromStr for Obj 
     {
 		type Err = OverError;
-
-		fn from_str(s: &str) -> Result<Self, Self::Err> { Ok(parse::over::from_str(s)?) }
+		fn from_str(s: &str) -> Result<Self, Self::Err> { Ok( parses::over::from_str(s)? ) }
 	}
     
     impl PartialEq for Obj
@@ -17104,7 +17119,7 @@ pub mod panic
     pub use std::panic::{ * };
 }
 
-pub mod parse
+pub mod parses
 {
 	/*!
 	*/
@@ -17120,7 +17135,7 @@ pub mod parse
 		*/
         use ::
 		{
-            array::{self, Arr},
+            array::{ self, Arr },
             collections::{ HashMap, HashSet, VecDeque },
             num::
             {
@@ -17130,7 +17145,7 @@ pub mod parse
             },
             object::{ Obj },
             ops::{ Deref },
-            parse::
+            parses::
             {
                 over::
                 {
@@ -17138,6 +17153,7 @@ pub mod parse
                 },
             },
             path::{ Path },
+            str::{ read_file },
             tup::{ Tup },
             types::{ Type },
             value::{ Value },
@@ -17292,7 +17308,7 @@ pub mod parse
             {
                 error::{ * },
                 num::{ big::{ * }, ParseIntError },
-                parse::
+                parses::
                 {
                     over::
                     {
@@ -18438,7 +18454,7 @@ pub mod parse
 
             if escape {
                 ch = match stream.next() {
-                    Some(ch) => match get_escape_char(ch) {
+                    Some(ch) => match get::escape_char(ch) {
                         Some(ch) => ch,
                         None => {
                             return parse_err(
@@ -18468,7 +18484,7 @@ pub mod parse
         fn parse_str_file(path: &str) -> ParseResult<String> 
         {
 
-            let s = read_file_str(path)?.replace("\r\n", "\n");
+            let s = read_file(path)?.replace("\r\n", "\n");
 
             Ok(s)
         }
@@ -18485,7 +18501,7 @@ pub mod parse
                 match stream.next() {
                     Some(ch) => {
                         if escape {
-                            match get_escape_char(ch) {
+                            match get::escape_char(ch) {
                                 Some(ch) => s.push(ch),
                                 None => {
                                     return parse_err(
@@ -18914,12 +18930,12 @@ pub mod parse
         
         pub fn from_file(path: &str) -> ParseResult<Obj>
         {
-            parser::parse_obj_file(path)
+            parses::over::parse_obj_file(path)
         }
 
         pub fn from_str(contents: &str) -> ParseResult<Obj>
         {
-            parser::parse_obj_str(contents)
+            parses::over::parse_obj_str(contents)
         }
 	}
 }
@@ -20884,9 +20900,19 @@ pub mod str
     // pub fn write_file_str(fname: &str, contents: &str) -> io::Result<()>
     pub fn write_file(fname: &str, contents: &str) -> ::io::Result<()>
     {
+        use ::io::Write;
         let mut file = ::fs::File::create(fname)?;
         file.write_all(contents.as_bytes())?;
         Ok(())
+    }
+    // pub fn read_file_str(fname: &str) -> io::Result<String>
+    pub fn read_file(fname: &str) -> ::io::Result<String>
+    {
+        use ::io::Read;
+        let mut file = ::fs::File::open(fname)?;
+        let mut contents = String::new();
+        let _ = file.read_to_string(&mut contents)?;
+        Ok(contents)
     }
 }
 
@@ -23362,4 +23388,4 @@ pub mod vec
 {
     pub use std::vec::{ * };
 }
-// 23365 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 23391 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
