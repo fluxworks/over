@@ -240,6 +240,7 @@ pub mod error
         use ::
         {
             ffi::{ c_char, c_int, NulError },
+            fmt::{ Debug },
             path::{ PathBuf },
             *,
         };
@@ -275,7 +276,7 @@ pub mod error
         {
             SqliteFailure(ffi::Error, Option<String>),
             SqliteSingleThreadedMode,
-            FromSqlConversionFailure(usize, Type, Box<dyn error::Error + Send + Sync + 'static>),
+            FromSqlConversionFailure(usize, DataType, Box<dyn error::Error + Send + Sync + 'static>),
             IntegralValueOutOfRange(usize, i64),
             Utf8Error(str::Utf8Error),
             NulError(NulError),
@@ -286,10 +287,10 @@ pub mod error
             QueryReturnedMoreThanOneRow,
             InvalidColumnIndex(usize),
             InvalidColumnName(String),
-            InvalidColumnType(usize, String, Type),
+            InvalidColumnType(usize, String, DataType),
             StatementChangedRows(usize),
-            InvalidFunctionParameterType(usize, Type),
-            InvalidFilterParameterType(usize, Type),
+            InvalidFunctionParameterType(usize, DataType),
+            InvalidFilterParameterType(usize, DataType),
             UserFunctionError(Box<dyn error::Error + Send + Sync + 'static>),
             ToSqlConversionFailure(Box<dyn error::Error + Send + Sync + 'static>),
             InvalidQuery,
@@ -334,28 +335,22 @@ pub mod error
                         i1 == i2 && t1 == t2 && n1 == n2
                     }
                     (Self::StatementChangedRows(n1), Self::StatementChangedRows(n2)) => n1 == n2,
-                    #[cfg(feature = "functions")]
                     (
                         Self::InvalidFunctionParameterType(i1, t1),
                         Self::InvalidFunctionParameterType(i2, t2),
                     ) => i1 == i2 && t1 == t2,
-                    #[cfg(feature = "vtab")]
                     (
                         Self::InvalidFilterParameterType(i1, t1),
                         Self::InvalidFilterParameterType(i2, t2),
                     ) => i1 == i2 && t1 == t2,
                     (Self::InvalidQuery, Self::InvalidQuery) => true,
-                    #[cfg(feature = "vtab")]
                     (Self::ModuleError(s1), Self::ModuleError(s2)) => s1 == s2,
                     (Self::UnwindingPanic, Self::UnwindingPanic) => true,
-                    #[cfg(feature = "functions")]
                     (Self::GetAuxWrongType, Self::GetAuxWrongType) => true,
                     (Self::InvalidParameterCount(i1, n1), Self::InvalidParameterCount(i2, n2)) => {
                         i1 == i2 && n1 == n2
                     }
-                    #[cfg(feature = "blob")]
                     (Self::BlobSizeError, Self::BlobSizeError) => true,
-                    #[cfg(feature = "modern_sqlite")]
                     (
                         Self::SqlInputError {
                             error: e1,
@@ -370,9 +365,7 @@ pub mod error
                             offset: o2,
                         },
                     ) => e1 == e2 && m1 == m2 && s1 == s2 && o1 == o2,
-                    #[cfg(feature = "loadable_extension")]
                     (Self::InitError(e1), Self::InitError(e2)) => e1 == e2,
-                    #[cfg(feature = "modern_sqlite")]
                     (Self::InvalidDatabaseIndex(i1), Self::InvalidDatabaseIndex(i2)) => i1 == i2,
                     (..) => false,
                 }
@@ -433,7 +426,7 @@ pub mod error
                             "Cannot read {expected_size} byte value out of {blob_size} byte blob"
                         )
                     }
-                    Self::Other(ref err) => err.fmt(f),
+                    Self::Other(ref err) => Debug::fmt(&err, f),
                 }
             }
         }
@@ -463,21 +456,21 @@ pub mod error
             {
                 match *self
                 {
-                    Self::SqliteFailure(ref err, None) => err.fmt(f),
+                    Self::SqliteFailure(ref err, None) => Debug::fmt(&err, f),
                     Self::SqliteFailure(_, Some(ref s)) => write!(f, "{s}"),
                     Self::SqliteSingleThreadedMode => write!( f, "SQLite was compiled or configured for single-threaded use only" ),
                     Self::FromSqlConversionFailure(i, ref t, ref err) =>
                     {
                         if i != UNKNOWN_COLUMN { write!(f, "Conversion error from type {t} at index: {i}, {err}") }
-                        else { err.fmt(f) }
+                        else { Debug::fmt(&err, f) }
                     }
                     Self::IntegralValueOutOfRange(col, val) =>
                     {
                         if col != UNKNOWN_COLUMN { write!(f, "Integer {val} out of range at index {col}") }
                         else { write!(f, "Integer {val} out of range") }
                     }
-                    Self::Utf8Error(ref err) => err.fmt(f),
-                    Self::NulError(ref err) => err.fmt(f),
+                    Self::Utf8Error(ref err) => Debug::fmt(&err, f),
+                    Self::NulError(ref err) => Debug::fmt(&err, f),
                     Self::InvalidParameterName(ref name) => write!(f, "Invalid parameter name: {name}"),
                     Self::InvalidPath(ref p) => write!(f, "Invalid path: {}", p.to_string_lossy()),
                     Self::ExecuteReturnedResults => { write!(f, "Execute returned results - did you mean to call query?") }
@@ -578,6 +571,11 @@ pub mod error
                 else { Some(errmsg_to_string(err_str)) }
             }
             else { Some(errmsg_to_string(ffi::sqlite3_errmsg(db))) }
+        }
+        
+        pub unsafe fn errmsg_to_string(errmsg: *const c_char) -> String
+        {
+            CStr::from_ptr(errmsg).to_string_lossy().into_owned()
         }
 
         pub unsafe fn decode_result_raw(db: *mut ffi::sqlite3, code: c_int) -> Result<()>
@@ -1597,8 +1595,13 @@ pub mod system
         
         unsafe extern "C"
         {
+            pub fn sqlite3_errcode(db: *mut sqlite3) -> ::ffi::c_int;
+            pub fn sqlite3_errstr(arg1: ::ffi::c_int) -> *const ::ffi::c_char;
             pub fn sqlite3_threadsafe() -> ::ffi::c_int;
             pub fn sqlite3_malloc64(arg1: sqlite3_uint64) -> *mut ::ffi::c_void;
+            pub fn sqlite3_errmsg(arg1: *mut sqlite3) -> *const ::ffi::c_char;
+            pub fn sqlite3_error_offset(db: *mut sqlite3) -> ::ffi::c_int;
+            pub fn sqlite3_set_errmsg( db: *mut sqlite3, errcode: ::ffi::c_int, zErrMsg: *const ::ffi::c_char ) -> ::ffi::c_int;
         }
         
         #[repr(C)] #[derive(Debug, Copy, Clone)]
@@ -1683,9 +1686,12 @@ pub mod system
             }
         }
 
-        impl fmt::Display for Error {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-                write!(
+        impl fmt::Display for Error
+        {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+            {
+                write!
+                (
                     f,
                     "Error code {}: {}",
                     self.extended_code,
@@ -1694,24 +1700,20 @@ pub mod system
             }
         }
 
-        impl error::Error for Error {
-            fn description(&self) -> &str {
-                code_to_str(self.extended_code)
-            }
+        impl error::Error for Error
+        {
+            fn description(&self) -> &str { code_to_str(self.extended_code) }
         }
 
-        #[must_use]
-        pub fn code_to_str(code: c_int) -> &'static str {
-            let err_str = unsafe { super::sqlite3_errstr(code) };
-            if err_str.is_null() {
-                "Unknown errod code"
-            } else {
-                // We know these values to be plain ASCII
-                unsafe { CStr::from_ptr(err_str) }.to_str().unwrap()
+        #[must_use] pub fn code_to_str(code: c_int) -> &'static str
+        {
+            unsafe
+            {
+                let err_str = sqlite3_errstr(code);
+                if err_str.is_null() { "Unknown errod code" }
+                else { CStr::from_ptr(err_str).to_str().unwrap() }
             }
         }
-
-
     }
     /*
     rusqlite v0.38.0*/
@@ -2024,4 +2026,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 2027 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 2029 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
