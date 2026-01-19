@@ -239,7 +239,7 @@ pub mod error
         use types::DataType;
         use ::
         {
-            ffi::{ c_char, c_int, NulError },
+            ffi::{ c_char, c_int, CStr, NulError },
             fmt::{ Debug },
             path::{ PathBuf },
             *,
@@ -251,18 +251,6 @@ pub mod error
         use crate::types::Type;
         use crate::{errmsg_to_string, ffi, Result};
         */
-
-        pub const UNKNOWN_COLUMN: usize = usize::MAX;
-
-        #[non_exhaustive] #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-        pub enum InitError
-        {
-            VersionMismatch { compile_time: i32, runtime: i32 },
-            NullFunctionPointer,
-        }
-
-        pub type Result<T, E = Error> = result::Result<T, E>;
-
         macro_rules! err
         {
             ($code:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, None) };
@@ -270,6 +258,34 @@ pub mod error
             ($code:expr, $err:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($err))) };
             ($code:expr, $fmt:expr, $($arg:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($fmt, $($arg)*))) };
         }
+
+        pub const UNKNOWN_COLUMN: usize = usize::MAX;
+        pub type Result<T, E = Error> = result::Result<T, E>;
+
+        #[non_exhaustive] #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+        pub enum InitError
+        {
+            VersionMismatch { compile_time: i32, runtime: i32 },
+            NullFunctionPointer,
+        }
+        
+        impl fmt::Display for InitError
+        {
+            fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+            {
+                match *self
+                {
+                    Self::VersionMismatch
+                    {
+                        compile_time,
+                        runtime
+                    } => { write!(f, "SQLite version mismatch: {runtime} < {compile_time}") }
+                    Self::NullFunctionPointer => { write!(f, "Some sqlite3_api_routines fields are null") }
+                }
+            }
+        }
+        
+        impl error::Error for InitError {}
 
         #[non_exhaustive] #[derive(Debug)]
         pub enum Error
@@ -483,14 +499,14 @@ pub mod error
                     Self::StatementChangedRows(i) => write!(f, "Query changed {i} rows"),
                     Self::InvalidFunctionParameterType(i, ref t) => { write!(f, "Invalid function parameter type {t} at index {i}") }
                     Self::InvalidFilterParameterType(i, ref t) => { write!(f, "Invalid filter parameter type {t} at index {i}") }
-                    Self::UserFunctionError(ref err) => err.fmt(f),
-                    Self::ToSqlConversionFailure(ref err) => err.fmt(f),
+                    Self::UserFunctionError(ref err) => Debug::fmt(&err, f),
+                    Self::ToSqlConversionFailure(ref err) => Debug::fmt(&err, f),
                     Self::InvalidQuery => write!(f, "Query is not read-only"),
                     Self::ModuleError(ref desc) => write!(f, "{desc}"),
                     Self::UnwindingPanic => write!(f, "unwinding panic"),
                     Self::GetAuxWrongType => write!(f, "get_aux called with wrong type"),
                     Self::MultipleStatement => write!(f, "Multiple statements provided"),
-                    Self::BlobSizeError => "Blob size is insufficient".fmt(f),
+                    Self::BlobSizeError => write!(f, "Blob size is insufficient"),
                     Self::SqlInputError
                     {
                         ref msg,
@@ -498,7 +514,7 @@ pub mod error
                         ref sql,
                         ..
                     } => write!(f, "{msg} in {sql} at offset {offset}"),
-                    Self::InitError(ref err) => err.fmt(f),
+                    Self::InitError(ref err) => Debug::fmt(&err, f),
                     Self::InvalidDatabaseIndex(i) => write!(f, "Invalid database index: {i}"),
                 }
             }
@@ -2026,4 +2042,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 2029 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 2045 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
