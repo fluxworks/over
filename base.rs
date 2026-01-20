@@ -815,8 +815,7 @@ pub mod __
             }
         };
     }
-
-    /// Implement iterators on the public (user-facing) bitflags type.
+    
     #[macro_export] macro_rules! __impl_public_bitflags_iter
     {
         (
@@ -858,8 +857,7 @@ pub mod __
             }
         };
     }
-
-    /// Implement traits on the public (user-facing) bitflags type.
+    
     #[macro_export] macro_rules! __impl_public_bitflags_ops
     {
         (
@@ -1008,6 +1006,27 @@ pub mod __
                 }
             }
         };
+    }
+    
+    #[macro_export] macro_rules! smallvec
+    {
+        (@one $x:expr) => (1usize);
+        ($elem:expr; $n:expr) => 
+        ({
+            ::vec::SmallVec::from_elem($elem, $n)
+        });
+        
+        ($($x:expr),*$(,)*) =>
+        ({
+            let count = 0usize $(+ smallvec!(@one $x))*;
+            let mut vec = ::vec::SmallVec::new();
+            if count <= vec.inline_size()
+            {
+                $(vec.push($x);)*
+                vec
+            }
+            else { ::vec::SmallVec::from_vec(vec![$($x,)*]) }
+        });
     }
 }
 
@@ -2560,7 +2579,7 @@ pub mod history
             t
         );
 
-        match conn.execute(&q, []) 
+        match c.execute(&q, []) 
         {
             Ok(_) => {}
             Err(e) => println_stderr!(":: history: query error: {}", e),
@@ -2718,7 +2737,7 @@ pub mod system
         */
         use ::
         {
-            ffi::{ c_int, c_uint, c_longlong, c_ulonglong, CStr },
+            ffi::{ c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
             *,
         };
         /*
@@ -3253,15 +3272,35 @@ pub mod system
         {
             pub fn sqlite3_errcode(db: *mut sqlite3) -> ::ffi::c_int;
             pub fn sqlite3_errstr(arg1: ::ffi::c_int) -> *const ::ffi::c_char;
-            pub fn sqlite3_threadsafe() -> ::ffi::c_int;
-            pub fn sqlite3_malloc64(arg1: sqlite3_uint64) -> *mut ::ffi::c_void;
             pub fn sqlite3_errmsg(arg1: *mut sqlite3) -> *const ::ffi::c_char;
             pub fn sqlite3_error_offset(db: *mut sqlite3) -> ::ffi::c_int;
+            pub fn sqlite3_extended_errcode(db: *mut sqlite3) -> ::ffi::c_int;
+            pub fn sqlite3_malloc64(arg1: sqlite3_uint64) -> *mut ::ffi::c_void;
+            pub fn sqlite3_mutex_free(arg1: *mut sqlite3_mutex);
             pub fn sqlite3_set_errmsg( db: *mut sqlite3, errcode: ::ffi::c_int, zErrMsg: *const ::ffi::c_char ) -> ::ffi::c_int;
+            pub fn sqlite3_threadsafe() -> ::ffi::c_int;
+            pub fn sqlite3_unlock_notify
+            (
+                pBlocked: *mut sqlite3,
+                xNotify: Option<unsafe extern "C" fn(apArg: *mut *mut c_void, nArg: c_int), >,
+                pNotifyArg: *mut c_void,
+            ) -> c_int;
         }
         
         #[repr(C)] #[derive(Debug, Copy, Clone)]
         pub struct sqlite3
+        {
+            _unused: [u8; 0],
+        }
+
+        #[repr(C)] #[derive(Debug, Copy, Clone)]
+        pub struct sqlite3_stmt
+        {
+            _unused: [u8; 0],
+        }
+        
+        #[repr(C)] #[derive(Debug, Copy, Clone)]
+        pub struct sqlite3_mutex
         {
             _unused: [u8; 0],
         }
@@ -3377,13 +3416,16 @@ pub mod system
     {
         /*!
         */
+        use std::convert::TryFrom;
+        use collections::BTreeMap;
         use error::sqlite::Error;
         use ::
         {
             cell::{ RefCell },
-            ffi::{ c_int },
+            ffi::{ c_int, c_uint, c_void, CStr, CString },
             path::{ Path },
-            sync::{ Arc, Mutex },
+            sync::{ Arc, Condvar, Mutex },
+            vec::{ SmallVec },
             *,
         };
 
@@ -3391,6 +3433,11 @@ pub mod system
         /*
         */
         pub type Result<T, E = Error> = result::Result<T, E>;
+        
+        pub trait Params
+        {
+            fn __bind_in(self, stmt: &mut Statement<'_>) -> Result<()>;
+        }
 
         #[repr(i32)] #[non_exhaustive] #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub enum Action
@@ -3562,6 +3609,108 @@ pub mod system
             Recursive,
         }
 
+        #[derive(Clone, PartialEq, Eq, PartialOrd, Ord)]
+        pub struct SmallCString(SmallVec<[u8; 16]>);
+
+        impl SmallCString
+        {
+            #[inline] pub fn as_bytes_without_nul(&self) -> &[u8]
+            {
+                &self.0[..self.len()]
+            }
+
+            #[inline] pub fn as_str(&self) -> &str
+            {
+                unsafe
+                {
+                    ::str::from_utf8_unchecked(self.as_bytes_without_nul())
+                }
+            }
+            
+            #[inline] pub fn len(&self) -> usize
+            {
+                debug_assert_ne!(self.0.len(), 0);
+                self.0.len() - 1
+            }
+        }
+        
+        impl ::fmt::Debug for SmallCString
+        {
+            fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result { f.debug_tuple("SmallCString").field(&self.as_str()).finish() }
+        }
+        
+        #[derive(Default, Clone, Debug)]
+        pub struct ParamIndexCache(RefCell<BTreeMap<SmallCString, usize>>);
+        
+        #[derive(Debug)]
+        pub struct RawStatement
+        {
+            ptr: *mut sql::sqlite3_stmt,
+            cache: ParamIndexCache
+        }
+        
+        impl RawStatement
+        {
+            #[inline] pub fn is_null(&self) -> bool { self.ptr.is_null() }
+
+            pub fn step(&self) -> c_int
+            {
+                let mut db = ptr::null_mut::<sql::sqlite3>();
+                loop {
+                    unsafe {
+                        let mut rc = sql::sqlite3_step(self.ptr);
+                        if (rc & 0xff) != sql::SQLITE_LOCKED {
+                            break rc;
+                        }
+                        if db.is_null() {
+                            db = sql::sqlite3_db_handle(self.ptr);
+                        }
+                        if !unlock_notify::is_locked(db, rc) {
+                            break rc;
+                        }
+                        rc = unlock_notify::wait_for_unlock_notify(db);
+                        if rc != sql::SQLITE_OK {
+                            break rc;
+                        }
+                        self.reset();
+                    }
+                }
+            }
+        }
+
+        pub struct Statement<'conn>
+        {
+            pub conn: &'conn Connection,
+            pub stmt: RawStatement,
+        }
+
+        impl Statement
+        {
+            
+            #[inline] pub fn execute<P: Params>(&mut self, params: P) -> Result<usize>
+            {
+                params.__bind_in(self)?;
+                self.execute_with_bound_parameters()
+            }
+
+            #[inline] fn execute_with_bound_parameters(&mut self) -> Result<usize>
+            {
+                self.check_update()?;
+                let r = self.stmt.step();
+                let rr = self.stmt.reset();
+                match r
+                {
+                    sql::SQLITE_DONE => match rr
+                    {
+                        sql::SQLITE_OK => Ok(self.conn.changes() as usize),
+                        _ => Err(self.conn.decode_result(rr).unwrap_err()),
+                    },
+                    sql::SQLITE_ROW => Err(Error::ExecuteReturnedResults),
+                    _ => Err(self.conn.decode_result(r).unwrap_err()),
+                }
+            }
+        }
+
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
         pub struct AuthContext<'c>
         {
@@ -3590,6 +3739,118 @@ pub mod system
             pub progress_handler:Option<Box<dyn FnMut() -> bool + Send>>,
             pub authorizer:Option<BoxedAuthorizer>,
             owned:bool
+        }
+
+        impl InnerConnection
+        {
+            pub fn open_with_flags( c_path: &CStr, mut flags: OpenFlags, vfs: Option<&CStr> ) -> Result<Self>
+            {
+                unsafe
+                {
+                    ensure_safe_sqlite_threading_mode()?;
+
+                    let z_vfs = match vfs
+                    {
+                        Some(c_vfs) => c_vfs.as_ptr(),
+                        None => ptr::null(),
+                    };
+                    
+                    let exrescode = if version_number() >= 3_037_000
+                    {
+                        flags |= OpenFlags::SQLITE_OPEN_EXRESCODE;
+                        true
+                    }
+                    else { false };
+
+
+                    let mut db: *mut sql::sqlite3 = ptr::null_mut();
+                    let r = sql::sqlite3_open_v2(c_path.as_ptr(), &mut db, flags.bits(), z_vfs);
+                    if r != sql::SQLITE_OK {
+                        let e = if db.is_null() {
+                            err!(r, "{}", c_path.to_string_lossy())
+                        } else {
+                            let mut e = error_from_handle(db, r);
+                            if let Error::SqliteFailure(
+                                sql::Error {
+                                    code: sql::ErrorCode::CannotOpen,
+                                    ..
+                                },
+                                Some(msg),
+                            ) = e
+                            {
+                                e = err!(r, "{msg}: {}", c_path.to_string_lossy());
+                            }
+                            sql::sqlite3_close(db);
+                            e
+                        };
+
+                        return Err(e);
+                    }
+
+                    // attempt to turn on extended results code; don't fail if we can't.
+                    if !exrescode {
+                        sql::sqlite3_extended_result_codes(db, 1);
+                    }
+
+                    let r = sql::sqlite3_busy_timeout(db, 5000);
+                    if r != sql::SQLITE_OK {
+                        let e = error_from_handle(db, r);
+                        sql::sqlite3_close(db);
+                        return Err(e);
+                    }
+
+                    Ok(Self::new(db, true))
+                }
+            }
+            
+            pub fn prepare<'a>( &mut self, conn: &'a Connection, sql: &str, flags: PrepFlags ) -> Result<(Statement<'a>, usize)>
+            {
+                let mut c_stmt: *mut sql::sqlite3_stmt = ptr::null_mut();
+                let Ok(len) = c_int::try_from(sql.len()) else { return Err(err!(ffi::SQLITE_TOOBIG)); };
+                let c_sql = sql.as_bytes().as_ptr().cast::<c_char>();
+                let mut c_tail: *const c_char = ptr::null();
+                let r = unsafe
+                {
+                    let mut rc;
+                    loop {
+                        rc = sql::sqlite3_prepare_v3(
+                            self.db(),
+                            c_sql,
+                            len,
+                            flags.bits(),
+                            &mut c_stmt,
+                            &mut c_tail,
+                        );
+                        if !database_is_locked(self.db, rc) {
+                            break;
+                        }
+                        rc = unlock_notify::wait_for_unlock_notify(self.db);
+                        if rc != sql::SQLITE_OK {
+                            break;
+                        }
+                    }
+                    rc
+                };
+                
+                if r != sql::SQLITE_OK {
+                    return Err(unsafe { error_with_offset(self.db, r, sql) });
+                }
+                
+                let tail = if c_tail.is_null() {
+                    0
+                } else {
+                    let n = (c_tail as isize) - (c_sql as isize);
+                    if n <= 0 || n >= len as isize {
+                        0
+                    } else {
+                        n as usize
+                    }
+                };
+                Ok((
+                    Statement::new(conn, unsafe { RawStatement::new(c_stmt) }),
+                    tail,
+                ))
+            }
         }
 
         #[non_exhaustive] #[derive( Copy, Clone )]
@@ -3629,6 +3890,17 @@ pub mod system
                 | Self::SQLITE_OPEN_URI
             }
         }
+
+        bitflags!
+        {
+            #[derive(Clone, Copy, Debug, Default, Eq, Hash, PartialEq)]
+            #[repr(C)] pub struct PrepFlags: c_uint
+            {
+                const SQLITE_PREPARE_PERSISTENT = 0x01;
+                const SQLITE_PREPARE_NO_VTAB = 0x04;
+                const SQLITE_PREPARE_DONT_LOG = 0x10;
+            }
+        }
         
         pub struct Connection
         {
@@ -3638,6 +3910,9 @@ pub mod system
         
         impl Connection
         {
+            #[inline] pub fn execute<P: Params>(&self, sql: &str, params: P) -> Result<usize>
+            { self.prepare(sql).and_then(|mut stmt| stmt.execute(params)) }
+
             #[inline] pub fn open<P: AsRef<Path>>(path: P) -> Result<Self>
             {
                 let flags = OpenFlags::default();
@@ -3654,6 +3929,108 @@ pub mod system
                     transaction_behavior: TransactionBehavior::Deferred,
                 })
             }
+
+            #[inline] pub fn prepare(&self, sql: &str) -> Result<Statement<'_>> { self.prepare_with_flags(sql, PrepFlags::default()) }
+            
+            #[inline] pub fn prepare_with_flags(&self, sql: &str, flags: PrepFlags) -> Result<Statement<'_>>
+            {
+                let (stmt, tail) = self.db.borrow_mut().prepare(self, sql, flags)?;
+                
+                if tail != 0 && !self.prepare(&sql[tail..])?.stmt.is_null() { Err(Error::MultipleStatement) }
+                else { Ok(stmt) }
+            }
+        }
+        
+        pub struct UnlockNotification
+        {
+            cond:Condvar,
+            mutex:Mutex<bool>,
+        }
+
+        impl UnlockNotification
+        {
+            fn new() -> Self
+            {
+                Self
+                {
+                    cond: Condvar::new(),
+                    mutex: Mutex::new(false),
+                }
+            }
+
+            fn fired(&self)
+            {
+                let mut flag = unpoison(self.mutex.lock());
+                *flag = true;
+                self.cond.notify_one();
+            }
+
+            fn wait(&self)
+            {
+                let mut fired = unpoison(self.mutex.lock());
+                
+                while !*fired
+                {
+                    fired = unpoison(self.cond.wait(fired));
+                }
+            }
+        }
+
+        pub fn ensure_safe_sqlite_threading_mode() -> Result<()> 
+        {
+            if unsafe { sql::sqlite3_threadsafe() == 0 } { return Err(Error::SqliteSingleThreadedMode); }
+
+            const SQLITE_SINGLETHREADED_MUTEX_MAGIC: usize = 8;
+            let is_singlethreaded = unsafe
+            {
+                let mutex_ptr = sql::sqlite3_mutex_alloc(0);
+                let is_singlethreaded = mutex_ptr as usize == SQLITE_SINGLETHREADED_MUTEX_MAGIC;
+                sql::sqlite3_mutex_free(mutex_ptr);
+                is_singlethreaded
+            };
+
+            if is_singlethreaded { Err(Error::SqliteSingleThreadedMode) } else { Ok(()) }
+        }
+        
+        #[inline] fn unpoison<T>(r: Result<T, ::sync::PoisonError<T>>) -> T
+        {
+            r.unwrap_or_else( ::sync::PoisonError::into_inner)
+        }
+
+        pub unsafe fn database_is_locked(db: *mut sql::sqlite3, rc: c_int) -> bool
+        {
+            rc == sql::SQLITE_LOCKED_SHAREDCACHE
+            || (rc & 0xFF) == sql::SQLITE_LOCKED
+            && sql::sqlite3_extended_errcode(db) == sql::SQLITE_LOCKED_SHAREDCACHE
+        }
+
+        pub fn path_to_cstring(p: &Path) -> Result<CString>
+        {
+            use ::os::unix::ffi::OsStrExt;
+            Ok(CString::new(p.as_os_str().as_bytes())?)
+        }
+
+        unsafe extern "C" fn unlock_notify_cb(ap_arg: *mut *mut c_void, n_arg: c_int)
+        {
+            use ::slice::from_raw_parts;
+            let args = from_raw_parts(ap_arg as *const &UnlockNotification, n_arg as usize);
+            
+            for un in args
+            {
+                drop( ::panic::catch_unwind(::panic::AssertUnwindSafe(|| un.fired())));
+            }
+        }
+
+        pub unsafe fn wait_for_unlock_notify(db: *mut sql::sqlite3) -> c_int
+        {
+            let un = UnlockNotification::new();            
+            let rc = sql::sqlite3_unlock_notify( db, Some(unlock_notify_cb), &un as *const UnlockNotification as *mut c_void );
+
+            debug_assert!( rc == sql::SQLITE_LOCKED || rc == sql::SQLITE_LOCKED_SHAREDCACHE || rc == sql::SQLITE_OK );
+
+            if rc == sql::SQLITE_OK { un.wait(); }
+
+            rc
         }
     }
 }
@@ -3727,7 +4104,1227 @@ pub mod usize
 
 pub mod vec
 {
+    /*!
+    */
     pub use std::vec::{ * };
+    use ::
+    {
+        alloc::{Layout, LayoutErr},
+        boxed::Box,
+        vec::Vec,
+        borrow::{Borrow, BorrowMut},
+        hash::{Hash, Hasher},
+        hint::unreachable_unchecked,
+        iter::{repeat, FromIterator, FusedIterator, IntoIterator},
+        mem::MaybeUninit,
+        ops::{self, Range, RangeBounds},
+        ptr::{self, NonNull},
+        slice::{self, SliceIndex},
+        *,
+    };
+    /*
+    */
+    #[deprecated]
+    pub trait ExtendFromSlice<T>
+    {
+        fn extend_from_slice(&mut self, other: &[T]);
+    }
+
+    #[allow(deprecated)]
+    impl<T: Clone> ExtendFromSlice<T> for Vec<T>
+    {
+        fn extend_from_slice(&mut self, other: &[T]) { Vec::extend_from_slice(self, other) }
+    }
+    
+    #[derive(Debug)] pub enum CollectionAllocErr
+    {
+        CapacityOverflow,
+        AllocErr
+        {
+            layout: Layout,
+        },
+    }
+
+    impl fmt::Display for CollectionAllocErr
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { write!(f, "Allocation error: {:?}", self) }
+    }
+
+    #[allow(deprecated)]
+    impl From<LayoutErr> for CollectionAllocErr
+    {
+        fn from(_: LayoutErr) -> Self { CollectionAllocErr::CapacityOverflow }
+    }
+
+    fn infallible<T>(result: Result<T, CollectionAllocErr>) -> T
+    {
+        match result
+        {
+            Ok(x) => x,
+            Err(CollectionAllocErr::CapacityOverflow) => panic!("capacity overflow"),
+            Err(CollectionAllocErr::AllocErr { layout }) => ::alloc::handle_alloc_error(layout),
+        }
+    }
+    
+    fn layout_array<T>(n: usize) -> Result<Layout, CollectionAllocErr>
+    {
+        let size = mem::size_of::<T>()
+        .checked_mul(n)
+        .ok_or(CollectionAllocErr::CapacityOverflow)?;
+        let align = mem::align_of::<T>();
+        Layout::from_size_align(size, align).map_err(|_| CollectionAllocErr::CapacityOverflow)
+    }
+
+    unsafe fn deallocate<T>(ptr: *mut T, capacity: usize)
+    {
+        let layout = layout_array::<T>(capacity).unwrap();
+        alloc::dealloc(ptr as *mut u8, layout)
+    }
+    
+    pub struct Drain<'a, T: 'a + Array>
+    {
+        tail_start: usize,
+        tail_len: usize,
+        iter: slice::Iter<'a, T::Item>,
+        vec: NonNull<SmallVec<T>>,
+    }
+
+    impl<'a, T: 'a + Array> fmt::Debug for Drain<'a, T> where
+    T::Item: fmt::Debug
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.debug_tuple("Drain").field(&self.iter.as_slice()).finish() }
+    }
+
+    unsafe impl<'a, T: Sync + Array> Sync for Drain<'a, T> {}
+    unsafe impl<'a, T: Send + Array> Send for Drain<'a, T> {}
+
+    impl<'a, T: 'a + Array> Iterator for Drain<'a, T>
+    {
+        type Item = T::Item;
+
+        #[inline] fn next(&mut self) -> Option<T::Item>
+        {
+            self.iter
+            .next()
+            .map(|reference| unsafe { ptr::read(reference) })
+        }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>) { self.iter.size_hint() }
+    }
+
+    impl<'a, T: 'a + Array> DoubleEndedIterator for Drain<'a, T>
+    {
+        #[inline] fn next_back(&mut self) -> Option<T::Item>
+        {
+            self.iter
+            .next_back()
+            .map(|reference| unsafe { ptr::read(reference) })
+        }
+    }
+
+    impl<'a, T: Array> ExactSizeIterator for Drain<'a, T>
+    {
+        #[inline] fn len(&self) -> usize { self.iter.len() }
+    }
+
+    impl<'a, T: Array> FusedIterator for Drain<'a, T> {}
+
+    impl<'a, T: 'a + Array> Drop for Drain<'a, T>
+    {
+        fn drop(&mut self)
+        {
+            unsafe
+            {
+                self.for_each(drop);
+                if self.tail_len > 0
+                {
+                    let source_vec = self.vec.as_mut();
+                    let start = source_vec.len();
+                    let tail = self.tail_start;
+                    if tail != start
+                    {
+                        let src = source_vec.as_ptr().add(tail);
+                        let dst = source_vec.as_mut_ptr().add(start);
+                        ptr::copy(src, dst, self.tail_len);
+                    }
+                    source_vec.set_len(start + self.tail_len);
+                }
+            }
+        }
+    }
+    
+    union SmallVecData<A: Array>
+    {
+        inline: ::mem::ManuallyDrop<MaybeUninit<A>>,
+        heap: (*mut A::Item, usize),
+    }
+    
+    impl<A: Array> SmallVecData<A>
+    {
+        #[inline] unsafe fn inline(&self) -> *const A::Item { self.inline.as_ptr() as *const A::Item }
+
+        #[inline] unsafe fn inline_mut(&mut self) -> *mut A::Item { self.inline.as_mut_ptr() as *mut A::Item }
+
+        #[inline] fn from_inline(inline: MaybeUninit<A>) -> SmallVecData<A>
+        {
+            SmallVecData
+            {
+                inline: ::mem::ManuallyDrop::new(inline),
+            }
+        }
+
+        #[inline] unsafe fn into_inline(self) -> MaybeUninit<A> { ::mem::ManuallyDrop::into_inner(self.inline) }
+
+        #[inline] unsafe fn heap(&self) -> (*mut A::Item, usize) { self.heap }
+
+        #[inline] unsafe fn heap_mut(&mut self) -> &mut (*mut A::Item, usize) { &mut self.heap }
+
+        #[inline] fn from_heap(ptr: *mut A::Item, len: usize) -> SmallVecData<A> { SmallVecData { heap: (ptr, len) } }
+    }
+    
+    unsafe impl<A: Array + Send> Send for SmallVecData<A> {}
+    unsafe impl<A: Array + Sync> Sync for SmallVecData<A> {}
+    
+    pub struct SmallVec<A: Array>
+    {
+        capacity: usize,
+        data: SmallVecData<A>,
+    }
+
+    impl<A: Array> SmallVec<A>
+    {
+        #[inline] pub fn new() -> SmallVec<A>
+        {
+            assert!( mem::size_of::<A>() == A::size() * mem::size_of::<A::Item>() && mem::align_of::<A>() >= mem::align_of::<A::Item>() );
+
+            SmallVec
+            {
+                capacity: 0,
+                data: SmallVecData::from_inline(MaybeUninit::uninit()),
+            }
+        }
+        
+        #[inline] pub fn with_capacity(n: usize) -> Self
+        {
+            let mut v = SmallVec::new();
+            v.reserve_exact(n);
+            v
+        }
+        
+        #[inline] pub fn from_vec(mut vec: Vec<A::Item>) -> SmallVec<A>
+        {
+            unsafe
+            {
+                if vec.capacity() <= Self::inline_capacity()
+                {
+                    let mut data = SmallVecData::<A>::from_inline(MaybeUninit::uninit());
+                    let len = vec.len();
+                    vec.set_len(0);
+                    ptr::copy_nonoverlapping(vec.as_ptr(), data.inline_mut(), len);
+
+                    SmallVec
+                    {
+                        capacity: len,
+                        data,
+                    }
+                }
+                
+                else
+                {
+                    let (ptr, cap, len) = (vec.as_mut_ptr(), vec.capacity(), vec.len());
+                    mem::forget(vec);
+
+                    SmallVec
+                    {
+                        capacity: cap,
+                        data: SmallVecData::from_heap(ptr, len),
+                    }
+                }
+            }
+        }
+        
+        #[inline] pub fn from_buf(buf: A) -> SmallVec<A>
+        {
+            SmallVec
+            {
+                capacity: A::size(),
+                data: SmallVecData::from_inline(MaybeUninit::new(buf)),
+            }
+        }
+        
+        #[inline] pub fn from_buf_and_len(buf: A, len: usize) -> SmallVec<A>
+        {
+            assert!(len <= A::size());
+            unsafe { SmallVec::from_buf_and_len_unchecked(MaybeUninit::new(buf), len) }
+        }
+        
+        #[inline] pub unsafe fn from_buf_and_len_unchecked(buf: MaybeUninit<A>, len: usize) -> SmallVec<A>
+        {
+            SmallVec
+            {
+                capacity: len,
+                data: SmallVecData::from_inline(buf),
+            }
+        }
+        
+        pub unsafe fn set_len(&mut self, new_len: usize)
+        {
+            let (_, len_ptr, _) = self.triple_mut();
+            *len_ptr = new_len;
+        }
+        
+        #[inline] fn inline_capacity() -> usize { if mem::size_of::<A::Item>() > 0 { A::size() } else { ::usize::MAX } }
+
+        #[inline] pub fn inline_size(&self) -> usize { Self::inline_capacity() }
+        
+        #[inline] pub fn len(&self) -> usize { self.triple().1 }
+        
+        #[inline] pub fn is_empty(&self) -> bool {  self.len() == 0 }
+        
+        #[inline] pub fn capacity(&self) -> usize { self.triple().2 }
+        
+        #[inline] fn triple(&self) -> (*const A::Item, usize, usize)
+        {
+            unsafe
+            {
+                if self.spilled()
+                {
+                    let (ptr, len) = self.data.heap();
+                    (ptr, len, self.capacity)
+                }
+                else { (self.data.inline(), self.capacity, Self::inline_capacity()) }
+            }
+        }
+        
+        #[inline] fn triple_mut(&mut self) -> (*mut A::Item, &mut usize, usize)
+        {
+            unsafe
+            {
+                if self.spilled()
+                {
+                    let &mut (ptr, ref mut len_ptr) = self.data.heap_mut();
+                    (ptr, len_ptr, self.capacity)
+                }
+                else
+                {
+                    (
+                        self.data.inline_mut(),
+                        &mut self.capacity,
+                        Self::inline_capacity(),
+                    )
+                }
+            }
+        }
+        
+        #[inline] pub fn spilled(&self) -> bool { self.capacity > Self::inline_capacity() }
+        
+        pub fn drain<R>(&mut self, range: R) -> Drain<'_, A> where
+        R: RangeBounds<usize>
+        {
+            unsafe
+            {
+                use ::ops::Bound::*;
+
+                let len = self.len();
+                let start = match range.start_bound()
+                {
+                    Included(&n) => n,
+                    Excluded(&n) => n + 1,
+                    Unbounded => 0,
+                };
+
+                let end = match range.end_bound()
+                {
+                    Included(&n) => n + 1,
+                    Excluded(&n) => n,
+                    Unbounded => len,
+                };
+
+                assert!(start <= end);
+                assert!(end <= len);
+                self.set_len(start);
+
+                let range_slice = slice::from_raw_parts_mut(self.as_mut_ptr().add(start), end - start);
+
+                Drain
+                {
+                    tail_start: end,
+                    tail_len: len - end,
+                    iter: range_slice.iter(),
+                    vec: NonNull::from(self),
+                }
+            }
+        }
+        
+        #[inline] pub fn push(&mut self, value: A::Item)
+        {
+            unsafe
+            {
+                let (mut ptr, mut len, cap) = self.triple_mut();
+                if *len == cap
+                {
+                    self.reserve(1);
+                    let &mut (heap_ptr, ref mut heap_len) = self.data.heap_mut();
+                    ptr = heap_ptr;
+                    len = heap_len;
+                }
+
+                ptr::write(ptr.add(*len), value);
+                *len += 1;
+            }
+        }
+        
+        #[inline] pub fn pop(&mut self) -> Option<A::Item>
+        {
+            unsafe
+            {
+                let (ptr, len_ptr, _) = self.triple_mut();
+
+                if *len_ptr == 0 { return None; }
+
+                let last_index = *len_ptr - 1;
+                *len_ptr = last_index;
+                Some(ptr::read(ptr.add(last_index)))
+            }
+        }
+        
+        pub fn append<B>(&mut self, other: &mut SmallVec<B>) where
+        B: Array<Item = A::Item>
+        { self.extend(other.drain(..)) }
+        
+        pub fn grow(&mut self, new_cap: usize) { infallible(self.try_grow(new_cap)) }
+        
+        pub fn try_grow(&mut self, new_cap: usize) -> Result<(), CollectionAllocErr>
+        {
+            unsafe
+            {
+                let (ptr, &mut len, cap) = self.triple_mut();
+                let unspilled = !self.spilled();
+                assert!(new_cap >= len);
+
+                if new_cap <= self.inline_size()
+                {
+                    if unspilled { return Ok(()); }
+
+                    self.data = SmallVecData::from_inline(MaybeUninit::uninit());
+                    ptr::copy_nonoverlapping(ptr, self.data.inline_mut(), len);
+                    self.capacity = len;
+                    deallocate(ptr, cap);
+                }
+
+                else if new_cap != cap
+                {
+                    let layout = layout_array::<A::Item>(new_cap)?;
+                    debug_assert!(layout.size() > 0);
+                    let new_alloc;
+                    if unspilled
+                    {
+                        new_alloc = NonNull::new(::alloc::alloc(layout))
+                        .ok_or(CollectionAllocErr::AllocErr { layout })?
+                        .cast()
+                        .as_ptr();
+                        ptr::copy_nonoverlapping(ptr, new_alloc, len);
+                    }
+                    
+                    else
+                    {
+                        let old_layout = layout_array::<A::Item>(cap)?;
+                        let new_ptr = ::alloc::realloc(ptr as *mut u8, old_layout, layout.size());
+                        new_alloc = NonNull::new(new_ptr)
+                        .ok_or(CollectionAllocErr::AllocErr { layout })?
+                        .cast()
+                        .as_ptr();
+                    }
+
+                    self.data = SmallVecData::from_heap(new_alloc, len);
+                    self.capacity = new_cap;
+                }
+
+                Ok(())
+            }
+        }
+        
+        #[inline] pub fn reserve(&mut self, additional: usize) { infallible(self.try_reserve(additional)) }
+
+        pub fn try_reserve(&mut self, additional: usize) -> Result<(), CollectionAllocErr>
+        {
+            let (_, &mut len, cap) = self.triple_mut();
+            
+            if cap - len >= additional { return Ok(()); }
+
+            let new_cap = len
+            .checked_add(additional)
+            .and_then(usize::checked_next_power_of_two)
+            .ok_or(CollectionAllocErr::CapacityOverflow)?;
+
+            self.try_grow(new_cap)
+        }
+
+        pub fn reserve_exact(&mut self, additional: usize) { infallible(self.try_reserve_exact(additional)) }
+        
+        pub fn try_reserve_exact(&mut self, additional: usize) -> Result<(), CollectionAllocErr>
+        {
+            let (_, &mut len, cap) = self.triple_mut();
+
+            if cap - len >= additional { return Ok(()); }
+
+            let new_cap = len
+            .checked_add(additional)
+            .ok_or(CollectionAllocErr::CapacityOverflow)?;
+            
+            self.try_grow(new_cap)
+        }
+        
+        pub fn shrink_to_fit(&mut self)
+        {
+            unsafe
+            {
+                if !self.spilled() { return; }
+
+                let len = self.len();
+                if self.inline_size() >= len
+                {
+                    let (ptr, len) = self.data.heap();
+                    self.data = SmallVecData::from_inline(MaybeUninit::uninit());
+                    ptr::copy_nonoverlapping(ptr, self.data.inline_mut(), len);
+                    deallocate(ptr, self.capacity);
+                    self.capacity = len;
+                }
+
+                else if self.capacity() > len { self.grow(len); }
+
+            }
+        }
+        
+        pub fn truncate(&mut self, len: usize)
+        {
+            unsafe
+            {
+                let (ptr, len_ptr, _) = self.triple_mut();
+                
+                while len < *len_ptr
+                {
+                    let last_index = *len_ptr - 1;
+                    *len_ptr = last_index;
+                    ptr::drop_in_place(ptr.add(last_index));
+                }
+            }
+        }
+
+        pub fn as_slice(&self) -> &[A::Item] { self }
+
+        pub fn as_mut_slice(&mut self) -> &mut [A::Item] { self }
+
+        #[inline] pub fn swap_remove(&mut self, index: usize) -> A::Item
+        {
+            let len = self.len();
+            self.swap(len - 1, index);
+            self.pop().unwrap_or_else(|| unsafe { unreachable_unchecked() })
+        }
+        
+        #[inline] pub fn clear(&mut self) { self.truncate(0); }
+        
+        pub fn remove(&mut self, index: usize) -> A::Item
+        {
+            unsafe
+            {
+                let (mut ptr, len_ptr, _) = self.triple_mut();
+                let len = *len_ptr;
+                assert!(index < len);
+                *len_ptr = len - 1;
+                ptr = ptr.add(index);
+                let item = ptr::read(ptr);
+                ptr::copy(ptr.add(1), ptr, len - index - 1);
+                item
+            }
+        }
+
+        pub fn insert(&mut self, index: usize, element: A::Item)
+        {
+            unsafe
+            {
+                self.reserve(1);
+                let (mut ptr, len_ptr, _) = self.triple_mut();
+                let len = *len_ptr;
+                assert!(index <= len);
+                *len_ptr = len + 1;
+                ptr = ptr.add(index);
+                ptr::copy(ptr, ptr.add(1), len - index);
+                ptr::write(ptr, element);
+            }
+        }
+        
+        pub fn insert_many<I: IntoIterator<Item = A::Item>>(&mut self, index: usize, iterable: I)
+        {
+            unsafe
+            {
+                let mut iter = iterable.into_iter();
+
+                if index == self.len() { return self.extend(iter); }
+
+                let (lower_size_bound, _) = iter.size_hint();
+                assert!(lower_size_bound <= ::isize::MAX as usize);
+                assert!(index + lower_size_bound >= index);
+
+                let mut num_added = 0;
+                let old_len = self.len();
+                assert!(index <= old_len);
+                
+                self.reserve(lower_size_bound);
+                let start = self.as_mut_ptr();
+                let ptr = start.add(index);
+                
+                ptr::copy(ptr, ptr.add(lower_size_bound), old_len - index);
+                
+                self.set_len(0);
+                let mut guard = DropOnPanic
+                {
+                    start,
+                    skip: index..(index + lower_size_bound),
+                    len: old_len + lower_size_bound,
+                };
+
+                while num_added < lower_size_bound
+                {
+                    let element = match iter.next()
+                    {
+                        Some(x) => x,
+                        None => break,
+                    };
+
+                    let cur = ptr.add(num_added);
+                    ptr::write(cur, element);
+                    guard.skip.start += 1;
+                    num_added += 1;
+                }
+
+                if num_added < lower_size_bound
+                {
+                    ptr::copy
+                    (
+                        ptr.add(lower_size_bound),
+                        ptr.add(num_added),
+                        old_len - index,
+                    );
+                }
+                
+                self.set_len(old_len + num_added);
+                mem::forget(guard);
+                
+                for element in iter
+                {
+                    self.insert(index + num_added, element);
+                    num_added += 1;
+                }
+
+                struct DropOnPanic<T>
+                {
+                    start: *mut T,
+                    skip: Range<usize>,
+                    len: usize,
+                }
+
+                impl<T> Drop for DropOnPanic<T>
+                {
+                    fn drop(&mut self)
+                    {
+                        unsafe
+                        {
+                            for i in 0..self.len
+                            {
+                                if !self.skip.contains(&i) { ptr::drop_in_place(self.start.add(i)); }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        
+        pub fn into_vec(self) -> Vec<A::Item>
+        {
+            unsafe
+            {
+                if self.spilled()
+                {
+                    let (ptr, len) = self.data.heap();
+                    let v = Vec::from_raw_parts(ptr, len, self.capacity);
+                    mem::forget(self);
+                    v
+                }
+                else { self.into_iter().collect() }
+            }
+        }
+        
+        pub fn into_boxed_slice(self) -> Box<[A::Item]> { self.into_vec().into_boxed_slice() }
+        
+        pub fn into_inner(self) -> Result<A, Self>
+        {
+            unsafe
+            {
+                if self.spilled() || self.len() != A::size() { Err(self) }            
+                else
+                {
+                    let data = ptr::read(&self.data);
+                    mem::forget(self);
+                    Ok(data.into_inline().assume_init())
+                }
+            }
+        }
+        
+        pub fn retain<F: FnMut(&mut A::Item) -> bool>(&mut self, mut f: F)
+        {
+            let mut del = 0;
+            let len = self.len();
+            
+            for i in 0..len
+            {
+                if !f(&mut self[i]) { del += 1; }
+                else if del > 0 { self.swap(i - del, i); }
+            }
+
+            self.truncate(len - del);
+        }
+        
+        pub fn dedup(&mut self) where
+        A::Item: PartialEq<A::Item>
+        { self.dedup_by(|a, b| a == b); }
+        
+        pub fn dedup_by<F>(&mut self, mut same_bucket: F) where
+        F: FnMut(&mut A::Item, &mut A::Item) -> bool
+        {
+            unsafe
+            {
+                let len = self.len();
+
+                if len <= 1 { return; }
+
+                let ptr = self.as_mut_ptr();
+                let mut w: usize = 1;
+                
+                for r in 1..len
+                {
+                    let p_r = ptr.add(r);
+                    let p_wm1 = ptr.add(w - 1);
+
+                    if !same_bucket(&mut *p_r, &mut *p_wm1)
+                    {
+                        if r != w
+                        {
+                            let p_w = p_wm1.add(1);
+                            mem::swap(&mut *p_r, &mut *p_w);
+                        }
+
+                        w += 1;
+                    }
+                }
+
+                self.truncate(w);
+            }
+        }
+        
+        pub fn dedup_by_key<F, K>(&mut self, mut key: F) where
+        F: FnMut(&mut A::Item) -> K,
+        K: PartialEq<K>
+        { self.dedup_by(|a, b| key(a) == key(b)); }
+        
+        pub fn resize_with<F>(&mut self, new_len: usize, f: F) where
+        F: FnMut() -> A::Item
+        {
+            let old_len = self.len();
+            
+            if old_len < new_len
+            {
+                let mut f = f;
+                let additional = new_len - old_len;
+                self.reserve(additional);
+                
+                for _ in 0..additional
+                {
+                    self.push(f());
+                }
+            }
+            else if old_len > new_len { self.truncate(new_len); }
+        }
+        
+        #[inline] pub unsafe fn from_raw_parts(ptr: *mut A::Item, length: usize, capacity: usize) -> SmallVec<A>
+        {
+            assert!(capacity > Self::inline_capacity());
+            SmallVec
+            {
+                capacity,
+                data: SmallVecData::from_heap(ptr, length),
+            }
+        }
+        
+        pub fn as_ptr(&self) -> *const A::Item { self.triple().0 }
+        
+        pub fn as_mut_ptr(&mut self) -> *mut A::Item { self.triple_mut().0 }
+    }
+
+    impl<A: Array> SmallVec<A> where
+    A::Item: Copy
+    {
+
+        pub fn from_slice(slice: &[A::Item]) -> Self
+        {
+            unsafe
+            {
+                let len = slice.len();
+                
+                if len <= Self::inline_capacity()
+                {
+                    SmallVec
+                    {
+                        capacity: len,
+                        data: SmallVecData::from_inline(
+                        {
+                            let mut data: MaybeUninit<A> = MaybeUninit::uninit();
+                            ptr::copy_nonoverlapping
+                            (
+                                slice.as_ptr(),
+                                data.as_mut_ptr() as *mut A::Item,
+                                len,
+                            );
+                            data
+                        }),
+                    }
+                }
+                
+                else
+                {
+                    let mut b = slice.to_vec();
+                    let (ptr, cap) = (b.as_mut_ptr(), b.capacity());
+                    mem::forget(b);
+                    SmallVec
+                    {
+                        capacity: cap,
+                        data: SmallVecData::from_heap(ptr, len),
+                    }
+                }
+            }
+        }
+        
+        pub fn insert_from_slice(&mut self, index: usize, slice: &[A::Item])
+        {
+            unsafe
+            {
+                self.reserve(slice.len());
+                let len = self.len();
+                assert!(index <= len);
+                let slice_ptr = slice.as_ptr();
+                let ptr = self.as_mut_ptr().add(index);
+                ptr::copy(ptr, ptr.add(slice.len()), len - index);
+                ptr::copy_nonoverlapping(slice_ptr, ptr, slice.len());
+                self.set_len(len + slice.len());
+            }
+        }
+
+        #[inline] pub fn extend_from_slice(&mut self, slice: &[A::Item])
+        {
+            let len = self.len();
+            self.insert_from_slice(len, slice);
+        }
+    }
+
+    impl<A: Array> SmallVec<A> where
+    A::Item: Clone
+    {
+        pub fn resize(&mut self, len: usize, value: A::Item)
+        {
+            let old_len = self.len();
+
+            if len > old_len { self.extend(repeat(value).take(len - old_len)); } else { self.truncate(len); }
+        }
+        
+        pub fn from_elem(elem: A::Item, n: usize) -> Self
+        {
+            if n > Self::inline_capacity() { vec![elem; n].into() }
+            else
+            {
+                let mut v = SmallVec::<A>::new();
+                unsafe
+                {
+                    let (ptr, len_ptr, _) = v.triple_mut();
+                    let mut local_len = SetLenOnDrop::new(len_ptr);
+
+                    for i in 0..n 
+                    {
+                        ::ptr::write(ptr.add(i), elem.clone());
+                        local_len.increment_len(1);
+                    }
+                }
+                v
+            }
+        }
+    }
+
+    impl<A: Array> ops::Deref for SmallVec<A>
+    {
+        type Target = [A::Item];
+        #[inline] fn deref(&self) -> &[A::Item]
+        {
+            unsafe
+            {
+                let (ptr, len, _) = self.triple();
+                slice::from_raw_parts(ptr, len)
+            }
+        }
+    }
+
+    impl<A: Array> ops::DerefMut for SmallVec<A>
+    {
+        #[inline] fn deref_mut(&mut self) -> &mut [A::Item]
+        {
+            unsafe
+            {
+                let (ptr, &mut len, _) = self.triple_mut();
+                slice::from_raw_parts_mut(ptr, len)
+            }
+        }
+    }
+
+    impl<A: Array> AsRef<[A::Item]> for SmallVec<A>
+    {
+        #[inline] fn as_ref(&self) -> &[A::Item] { self }
+    }
+
+    impl<A: Array> AsMut<[A::Item]> for SmallVec<A>
+    {
+        #[inline] fn as_mut(&mut self) -> &mut [A::Item] { self }
+    }
+
+    impl<A: Array> Borrow<[A::Item]> for SmallVec<A>
+    {
+        #[inline] fn borrow(&self) -> &[A::Item] { self }
+    }
+
+    impl<A: Array> BorrowMut<[A::Item]> for SmallVec<A>
+    {
+        #[inline] fn borrow_mut(&mut self) -> &mut [A::Item] { self }
+    }
+    
+    impl<A: Array<Item = u8>> io::Write for SmallVec<A>
+    {
+        #[inline] fn write(&mut self, buf: &[u8]) -> io::Result<usize>
+        {
+            self.extend_from_slice(buf);
+            Ok(buf.len())
+        }
+
+        #[inline] fn write_all(&mut self, buf: &[u8]) -> io::Result<()>
+        {
+            self.extend_from_slice(buf);
+            Ok(())
+        }
+
+        #[inline] fn flush(&mut self) -> io::Result<()> { Ok(()) }
+    }
+    
+    impl<'a, A: Array> From<&'a [A::Item]> for SmallVec<A> where
+    A::Item: Clone
+    {
+        #[inline] fn from(slice: &'a [A::Item]) -> SmallVec<A> { slice.iter().cloned().collect() }
+    }
+
+    impl<A: Array> From<Vec<A::Item>> for SmallVec<A>
+    {
+        #[inline] fn from(vec: Vec<A::Item>) -> SmallVec<A> { SmallVec::from_vec(vec) }
+    }
+
+    impl<A: Array> From<A> for SmallVec<A>
+    {
+        #[inline] fn from(array: A) -> SmallVec<A> { SmallVec::from_buf(array) }
+    }
+
+    impl<A: Array, I: SliceIndex<[A::Item]>> ops::Index<I> for SmallVec<A>
+    {
+        type Output = I::Output;
+        fn index(&self, index: I) -> &I::Output { &(**self)[index] }
+    }
+
+    impl<A: Array, I: SliceIndex<[A::Item]>> ops::IndexMut<I> for SmallVec<A>
+    {
+        fn index_mut(&mut self, index: I) -> &mut I::Output { &mut (&mut **self)[index] }
+    }
+
+    #[allow(deprecated)]
+    impl<A: Array> ExtendFromSlice<A::Item> for SmallVec<A> where
+    A::Item: Copy
+    {
+        fn extend_from_slice(&mut self, other: &[A::Item]) { SmallVec::extend_from_slice(self, other) }
+    }
+
+    impl<A: Array> FromIterator<A::Item> for SmallVec<A>
+    {
+        #[inline] fn from_iter<I: IntoIterator<Item = A::Item>>(iterable: I) -> SmallVec<A>
+        {
+            let mut v = SmallVec::new();
+            v.extend(iterable);
+            v
+        }
+    }
+
+    impl<A: Array> Extend<A::Item> for SmallVec<A>
+    {
+        fn extend<I: IntoIterator<Item = A::Item>>(&mut self, iterable: I)
+        {
+            let mut iter = iterable.into_iter();
+            let (lower_size_bound, _) = iter.size_hint();
+            self.reserve(lower_size_bound);
+            unsafe
+            {
+                let (ptr, len_ptr, cap) = self.triple_mut();
+                let mut len = SetLenOnDrop::new(len_ptr);
+
+                while len.get() < cap
+                {
+                    if let Some(out) = iter.next()
+                    {
+                        ptr::write(ptr.add(len.get()), out);
+                        len.increment_len(1);
+                    } else { return; }
+                }
+            }
+            
+            for elem in iter
+            {
+                self.push(elem);
+            }
+        }
+    }
+
+    impl<A: Array> fmt::Debug for SmallVec<A> where
+    A::Item: fmt::Debug
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.debug_list().entries(self.iter()).finish() }
+    }
+
+    impl<A: Array> Default for SmallVec<A>
+    {
+        #[inline] fn default() -> SmallVec<A> { SmallVec::new() }
+    }
+    
+    impl<A: Array> Drop for SmallVec<A>
+    {
+        fn drop(&mut self)
+        {
+            unsafe
+            {
+                if self.spilled()
+                {
+                    let (ptr, len) = self.data.heap();
+                    Vec::from_raw_parts(ptr, len, self.capacity);
+                }
+                else { ptr::drop_in_place(&mut self[..]); }
+            }
+        }
+    }
+
+    impl<A: Array> Clone for SmallVec<A> where
+    A::Item: Clone
+    {
+        #[inline] fn clone(&self) -> SmallVec<A> { SmallVec::from(self.as_slice()) }
+    }
+
+    impl<A: Array, B: Array> PartialEq<SmallVec<B>> for SmallVec<A> where
+    A::Item: PartialEq<B::Item>
+    {
+        #[inline] fn eq(&self, other: &SmallVec<B>) -> bool { self[..] == other[..] }
+    }
+
+    impl<A: Array> Eq for SmallVec<A> where A::Item: Eq {}
+
+    impl<A: Array> PartialOrd for SmallVec<A> where
+    A::Item: PartialOrd
+    {
+        #[inline] fn partial_cmp(&self, other: &SmallVec<A>) -> Option<cmp::Ordering> { PartialOrd::partial_cmp(&**self, &**other) }
+    }
+
+    impl<A: Array> Ord for SmallVec<A> where
+    A::Item: Ord
+    {
+        #[inline] fn cmp(&self, other: &SmallVec<A>) -> cmp::Ordering { Ord::cmp(&**self, &**other) }
+    }
+
+    impl<A: Array> Hash for SmallVec<A> where
+    A::Item: Hash
+    {
+        fn hash<H: Hasher>(&self, state: &mut H) { (**self).hash(state) }
+    }
+
+    unsafe impl<A: Array> Send for SmallVec<A> where A::Item: Send {}
+
+    pub struct IntoIter<A: Array>
+    {
+        data: SmallVec<A>,
+        current: usize,
+        end: usize,
+    }
+
+    impl<A: Array> fmt::Debug for IntoIter<A> where
+    A::Item: fmt::Debug
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result { f.debug_tuple("IntoIter").field(&self.as_slice()).finish() }
+    }
+
+    impl<A: Array + Clone> Clone for IntoIter<A> where
+    A::Item: Clone
+    {
+        fn clone(&self) -> IntoIter<A> { SmallVec::from(self.as_slice()).into_iter() }
+    }
+
+    impl<A: Array> Drop for IntoIter<A>
+    {
+        fn drop(&mut self) { for _ in self {} }
+    }
+
+    impl<A: Array> Iterator for IntoIter<A>
+    {
+        type Item = A::Item;
+
+        #[inline] fn next(&mut self) -> Option<A::Item>
+        {
+            unsafe
+            {
+                if self.current == self.end { None }
+                else
+                {
+                    let current = self.current;
+                    self.current += 1;
+                    Some(ptr::read(self.data.as_ptr().add(current)))
+                }
+            }
+        }
+
+        #[inline] fn size_hint(&self) -> (usize, Option<usize>)
+        {
+            let size = self.end - self.current;
+            (size, Some(size))
+        }
+    }
+
+    impl<A: Array> DoubleEndedIterator for IntoIter<A>
+    {
+        #[inline] fn next_back(&mut self) -> Option<A::Item>
+        {
+            unsafe
+            {
+                if self.current == self.end { None }
+                else
+                {
+                    self.end -= 1;
+                    Some(ptr::read(self.data.as_ptr().add(self.end)))
+                }
+            }
+        }
+    }
+
+    impl<A: Array> ExactSizeIterator for IntoIter<A> {}
+    impl<A: Array> FusedIterator for IntoIter<A> {}
+
+    impl<A: Array> IntoIter<A>
+    {
+        pub fn as_slice(&self) -> &[A::Item]
+        {unsafe
+            { 
+                let len = self.end - self.current;
+                ::slice::from_raw_parts(self.data.as_ptr().add(self.current), len)
+            }
+        }
+        
+        pub fn as_mut_slice(&mut self) -> &mut [A::Item]
+        {
+            unsafe
+            {
+                let len = self.end - self.current;
+                ::slice::from_raw_parts_mut(self.data.as_mut_ptr().add(self.current), len)
+            }
+        }
+    }
+
+    impl<A: Array> IntoIterator for SmallVec<A>
+    {
+        type IntoIter = IntoIter<A>;
+        type Item = A::Item;
+        fn into_iter(mut self) -> Self::IntoIter
+        {
+            unsafe
+            {
+                let len = self.len();
+                self.set_len(0);
+                IntoIter
+                {
+                    data: self,
+                    current: 0,
+                    end: len,
+                }
+            }
+        }
+    }
+
+    impl<'a, A: Array> IntoIterator for &'a SmallVec<A>
+    {
+        type IntoIter = slice::Iter<'a, A::Item>;
+        type Item = &'a A::Item;
+        fn into_iter(self) -> Self::IntoIter { self.iter() }
+    }
+
+    impl<'a, A: Array> IntoIterator for &'a mut SmallVec<A>
+    {
+        type IntoIter = slice::IterMut<'a, A::Item>;
+        type Item = &'a mut A::Item;
+        fn into_iter(self) -> Self::IntoIter { self.iter_mut() }
+    }
+    
+    pub unsafe trait Array
+    {
+        type Item;
+        fn size() -> usize;
+    }
+
+    struct SetLenOnDrop<'a>
+    {
+        len: &'a mut usize,
+        local_len: usize,
+    }
+
+    impl<'a> SetLenOnDrop<'a>
+    {
+        #[inline] fn new(len: &'a mut usize) -> Self
+        {
+            SetLenOnDrop
+            {
+                local_len: *len,
+                len,
+            }
+        }
+
+        #[inline] fn get(&self) -> usize { self.local_len }
+
+        #[inline] fn increment_len(&mut self, increment: usize) { self.local_len += increment; }
+    }
+
+    impl<'a> Drop for SetLenOnDrop<'a>
+    {
+        #[inline] fn drop(&mut self) { *self.len = self.local_len; }
+    }
+    
+    unsafe impl<T, const N: usize> Array for [T; N]
+    {
+        type Item = T;
+        fn size() -> usize { N }
+    }
+    
+    pub trait ToSmallVec<A: Array>
+    {
+        fn to_smallvec(&self) -> SmallVec<A>;
+    }
+
+    impl<A: Array> ToSmallVec<A> for [A::Item] where
+    A::Item: Copy
+    {
+        #[inline] fn to_smallvec(&self) -> SmallVec<A> { SmallVec::from_slice(self) }
+    }
 }
 
 pub fn main() -> Result<(), ()>
@@ -3737,4 +5334,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 3740 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 5337 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
