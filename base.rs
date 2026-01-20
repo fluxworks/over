@@ -1028,6 +1028,14 @@ pub mod __
             else { ::vec::SmallVec::from_vec(vec![$($x,)*]) }
         });
     }
+
+    #[macro_export] macro_rules! err
+    {
+        ($code:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, None) };
+        ($code:expr, $msg:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($msg))) };
+        ($code:expr, $err:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($err))) };
+        ($code:expr, $fmt:expr, $($arg:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($fmt, $($arg)*))) };
+    }
 }
 
 pub mod alloc
@@ -2737,667 +2745,738 @@ pub mod system
         */
         use ::
         {
-            ffi::{ c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
+            ffi::{ c_char, c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
             *,
         };
         /*
         */
-        pub const SQLITE_VERSION: &str = "3.51.2";
-        pub const SQLITE_VERSION_NUMBER: i32 = 3051002;
-        pub const SQLITE_SOURCE_ID: &str = "2026-01-09 17:27:48 b270f8339eb13b504d0b2ba154ebca966b7dde08e40c3ed7d559749818cb2075";
-        pub const SQLITE_SCM_BRANCH: &str = "branch-3.51";
-        pub const SQLITE_SCM_TAGS: &str = "release version-3.51.2";
-        pub const SQLITE_SCM_DATETIME: &str = "2026-01-09T17:27:48.405Z";
-        pub const SQLITE_OK: i32 = 0;
-        pub const SQLITE_ERROR: i32 = 1;
-        pub const SQLITE_INTERNAL: i32 = 2;
-        pub const SQLITE_PERM: i32 = 3;
-        pub const SQLITE_ABORT: i32 = 4;
-        pub const SQLITE_BUSY: i32 = 5;
-        pub const SQLITE_LOCKED: i32 = 6;
-        pub const SQLITE_NOMEM: i32 = 7;
-        pub const SQLITE_READONLY: i32 = 8;
-        pub const SQLITE_INTERRUPT: i32 = 9;
-        pub const SQLITE_IOERR: i32 = 10;
-        pub const SQLITE_CORRUPT: i32 = 11;
-        pub const SQLITE_NOTFOUND: i32 = 12;
-        pub const SQLITE_FULL: i32 = 13;
-        pub const SQLITE_CANTOPEN: i32 = 14;
-        pub const SQLITE_PROTOCOL: i32 = 15;
-        pub const SQLITE_EMPTY: i32 = 16;
-        pub const SQLITE_SCHEMA: i32 = 17;
-        pub const SQLITE_TOOBIG: i32 = 18;
-        pub const SQLITE_CONSTRAINT: i32 = 19;
-        pub const SQLITE_MISMATCH: i32 = 20;
-        pub const SQLITE_MISUSE: i32 = 21;
-        pub const SQLITE_NOLFS: i32 = 22;
-        pub const SQLITE_AUTH: i32 = 23;
-        pub const SQLITE_FORMAT: i32 = 24;
-        pub const SQLITE_RANGE: i32 = 25;
-        pub const SQLITE_NOTADB: i32 = 26;
-        pub const SQLITE_NOTICE: i32 = 27;
-        pub const SQLITE_WARNING: i32 = 28;
-        pub const SQLITE_ROW: i32 = 100;
-        pub const SQLITE_DONE: i32 = 101;
-        pub const SQLITE_ERROR_MISSING_COLLSEQ: i32 = 257;
-        pub const SQLITE_ERROR_RETRY: i32 = 513;
-        pub const SQLITE_ERROR_SNAPSHOT: i32 = 769;
-        pub const SQLITE_ERROR_RESERVESIZE: i32 = 1025;
-        pub const SQLITE_ERROR_KEY: i32 = 1281;
-        pub const SQLITE_ERROR_UNABLE: i32 = 1537;
-        pub const SQLITE_IOERR_READ: i32 = 266;
-        pub const SQLITE_IOERR_SHORT_READ: i32 = 522;
-        pub const SQLITE_IOERR_WRITE: i32 = 778;
-        pub const SQLITE_IOERR_FSYNC: i32 = 1034;
-        pub const SQLITE_IOERR_DIR_FSYNC: i32 = 1290;
-        pub const SQLITE_IOERR_TRUNCATE: i32 = 1546;
-        pub const SQLITE_IOERR_FSTAT: i32 = 1802;
-        pub const SQLITE_IOERR_UNLOCK: i32 = 2058;
-        pub const SQLITE_IOERR_RDLOCK: i32 = 2314;
-        pub const SQLITE_IOERR_DELETE: i32 = 2570;
-        pub const SQLITE_IOERR_BLOCKED: i32 = 2826;
-        pub const SQLITE_IOERR_NOMEM: i32 = 3082;
-        pub const SQLITE_IOERR_ACCESS: i32 = 3338;
-        pub const SQLITE_IOERR_CHECKRESERVEDLOCK: i32 = 3594;
-        pub const SQLITE_IOERR_LOCK: i32 = 3850;
-        pub const SQLITE_IOERR_CLOSE: i32 = 4106;
-        pub const SQLITE_IOERR_DIR_CLOSE: i32 = 4362;
-        pub const SQLITE_IOERR_SHMOPEN: i32 = 4618;
-        pub const SQLITE_IOERR_SHMSIZE: i32 = 4874;
-        pub const SQLITE_IOERR_SHMLOCK: i32 = 5130;
-        pub const SQLITE_IOERR_SHMMAP: i32 = 5386;
-        pub const SQLITE_IOERR_SEEK: i32 = 5642;
-        pub const SQLITE_IOERR_DELETE_NOENT: i32 = 5898;
-        pub const SQLITE_IOERR_MMAP: i32 = 6154;
-        pub const SQLITE_IOERR_GETTEMPPATH: i32 = 6410;
-        pub const SQLITE_IOERR_CONVPATH: i32 = 6666;
-        pub const SQLITE_IOERR_VNODE: i32 = 6922;
-        pub const SQLITE_IOERR_AUTH: i32 = 7178;
-        pub const SQLITE_IOERR_BEGIN_ATOMIC: i32 = 7434;
-        pub const SQLITE_IOERR_COMMIT_ATOMIC: i32 = 7690;
-        pub const SQLITE_IOERR_ROLLBACK_ATOMIC: i32 = 7946;
-        pub const SQLITE_IOERR_DATA: i32 = 8202;
-        pub const SQLITE_IOERR_CORRUPTFS: i32 = 8458;
-        pub const SQLITE_IOERR_IN_PAGE: i32 = 8714;
-        pub const SQLITE_IOERR_BADKEY: i32 = 8970;
-        pub const SQLITE_IOERR_CODEC: i32 = 9226;
-        pub const SQLITE_LOCKED_SHAREDCACHE: i32 = 262;
-        pub const SQLITE_LOCKED_VTAB: i32 = 518;
-        pub const SQLITE_BUSY_RECOVERY: i32 = 261;
-        pub const SQLITE_BUSY_SNAPSHOT: i32 = 517;
-        pub const SQLITE_BUSY_TIMEOUT: i32 = 773;
-        pub const SQLITE_CANTOPEN_NOTEMPDIR: i32 = 270;
-        pub const SQLITE_CANTOPEN_ISDIR: i32 = 526;
-        pub const SQLITE_CANTOPEN_FULLPATH: i32 = 782;
-        pub const SQLITE_CANTOPEN_CONVPATH: i32 = 1038;
-        pub const SQLITE_CANTOPEN_DIRTYWAL: i32 = 1294;
-        pub const SQLITE_CANTOPEN_SYMLINK: i32 = 1550;
-        pub const SQLITE_CORRUPT_VTAB: i32 = 267;
-        pub const SQLITE_CORRUPT_SEQUENCE: i32 = 523;
-        pub const SQLITE_CORRUPT_INDEX: i32 = 779;
-        pub const SQLITE_READONLY_RECOVERY: i32 = 264;
-        pub const SQLITE_READONLY_CANTLOCK: i32 = 520;
-        pub const SQLITE_READONLY_ROLLBACK: i32 = 776;
-        pub const SQLITE_READONLY_DBMOVED: i32 = 1032;
-        pub const SQLITE_READONLY_CANTINIT: i32 = 1288;
-        pub const SQLITE_READONLY_DIRECTORY: i32 = 1544;
-        pub const SQLITE_ABORT_ROLLBACK: i32 = 516;
-        pub const SQLITE_CONSTRAINT_CHECK: i32 = 275;
-        pub const SQLITE_CONSTRAINT_COMMITHOOK: i32 = 531;
-        pub const SQLITE_CONSTRAINT_FOREIGNKEY: i32 = 787;
-        pub const SQLITE_CONSTRAINT_FUNCTION: i32 = 1043;
-        pub const SQLITE_CONSTRAINT_NOTNULL: i32 = 1299;
-        pub const SQLITE_CONSTRAINT_PRIMARYKEY: i32 = 1555;
-        pub const SQLITE_CONSTRAINT_TRIGGER: i32 = 1811;
-        pub const SQLITE_CONSTRAINT_UNIQUE: i32 = 2067;
-        pub const SQLITE_CONSTRAINT_VTAB: i32 = 2323;
-        pub const SQLITE_CONSTRAINT_ROWID: i32 = 2579;
-        pub const SQLITE_CONSTRAINT_PINNED: i32 = 2835;
-        pub const SQLITE_CONSTRAINT_DATATYPE: i32 = 3091;
-        pub const SQLITE_NOTICE_RECOVER_WAL: i32 = 283;
-        pub const SQLITE_NOTICE_RECOVER_ROLLBACK: i32 = 539;
-        pub const SQLITE_NOTICE_RBU: i32 = 795;
-        pub const SQLITE_WARNING_AUTOINDEX: i32 = 284;
-        pub const SQLITE_AUTH_USER: i32 = 279;
-        pub const SQLITE_OK_LOAD_PERMANENTLY: i32 = 256;
-        pub const SQLITE_OK_SYMLINK: i32 = 512;
-        pub const SQLITE_OPEN_READONLY: i32 = 1;
-        pub const SQLITE_OPEN_READWRITE: i32 = 2;
-        pub const SQLITE_OPEN_CREATE: i32 = 4;
-        pub const SQLITE_OPEN_DELETEONCLOSE: i32 = 8;
-        pub const SQLITE_OPEN_EXCLUSIVE: i32 = 16;
-        pub const SQLITE_OPEN_AUTOPROXY: i32 = 32;
-        pub const SQLITE_OPEN_URI: i32 = 64;
-        pub const SQLITE_OPEN_MEMORY: i32 = 128;
-        pub const SQLITE_OPEN_MAIN_DB: i32 = 256;
-        pub const SQLITE_OPEN_TEMP_DB: i32 = 512;
-        pub const SQLITE_OPEN_TRANSIENT_DB: i32 = 1024;
-        pub const SQLITE_OPEN_MAIN_JOURNAL: i32 = 2048;
-        pub const SQLITE_OPEN_TEMP_JOURNAL: i32 = 4096;
-        pub const SQLITE_OPEN_SUBJOURNAL: i32 = 8192;
-        pub const SQLITE_OPEN_SUPER_JOURNAL: i32 = 16384;
-        pub const SQLITE_OPEN_NOMUTEX: i32 = 32768;
-        pub const SQLITE_OPEN_FULLMUTEX: i32 = 65536;
-        pub const SQLITE_OPEN_SHAREDCACHE: i32 = 131072;
-        pub const SQLITE_OPEN_PRIVATECACHE: i32 = 262144;
-        pub const SQLITE_OPEN_WAL: i32 = 524288;
-        pub const SQLITE_OPEN_NOFOLLOW: i32 = 16777216;
-        pub const SQLITE_OPEN_EXRESCODE: i32 = 33554432;
-        pub const SQLITE_OPEN_MASTER_JOURNAL: i32 = 16384;
-        pub const SQLITE_IOCAP_ATOMIC: i32 = 1;
-        pub const SQLITE_IOCAP_ATOMIC512: i32 = 2;
-        pub const SQLITE_IOCAP_ATOMIC1K: i32 = 4;
-        pub const SQLITE_IOCAP_ATOMIC2K: i32 = 8;
-        pub const SQLITE_IOCAP_ATOMIC4K: i32 = 16;
-        pub const SQLITE_IOCAP_ATOMIC8K: i32 = 32;
-        pub const SQLITE_IOCAP_ATOMIC16K: i32 = 64;
-        pub const SQLITE_IOCAP_ATOMIC32K: i32 = 128;
-        pub const SQLITE_IOCAP_ATOMIC64K: i32 = 256;
-        pub const SQLITE_IOCAP_SAFE_APPEND: i32 = 512;
-        pub const SQLITE_IOCAP_SEQUENTIAL: i32 = 1024;
-        pub const SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN: i32 = 2048;
-        pub const SQLITE_IOCAP_POWERSAFE_OVERWRITE: i32 = 4096;
-        pub const SQLITE_IOCAP_IMMUTABLE: i32 = 8192;
-        pub const SQLITE_IOCAP_BATCH_ATOMIC: i32 = 16384;
-        pub const SQLITE_IOCAP_SUBPAGE_READ: i32 = 32768;
-        pub const SQLITE_LOCK_NONE: i32 = 0;
-        pub const SQLITE_LOCK_SHARED: i32 = 1;
-        pub const SQLITE_LOCK_RESERVED: i32 = 2;
-        pub const SQLITE_LOCK_PENDING: i32 = 3;
-        pub const SQLITE_LOCK_EXCLUSIVE: i32 = 4;
-        pub const SQLITE_SYNC_NORMAL: i32 = 2;
-        pub const SQLITE_SYNC_FULL: i32 = 3;
-        pub const SQLITE_SYNC_DATAONLY: i32 = 16;
-        pub const SQLITE_FCNTL_LOCKSTATE: i32 = 1;
-        pub const SQLITE_FCNTL_GET_LOCKPROXYFILE: i32 = 2;
-        pub const SQLITE_FCNTL_SET_LOCKPROXYFILE: i32 = 3;
-        pub const SQLITE_FCNTL_LAST_ERRNO: i32 = 4;
-        pub const SQLITE_FCNTL_SIZE_HINT: i32 = 5;
-        pub const SQLITE_FCNTL_CHUNK_SIZE: i32 = 6;
-        pub const SQLITE_FCNTL_FILE_POINTER: i32 = 7;
-        pub const SQLITE_FCNTL_SYNC_OMITTED: i32 = 8;
-        pub const SQLITE_FCNTL_WIN32_AV_RETRY: i32 = 9;
-        pub const SQLITE_FCNTL_PERSIST_WAL: i32 = 10;
-        pub const SQLITE_FCNTL_OVERWRITE: i32 = 11;
-        pub const SQLITE_FCNTL_VFSNAME: i32 = 12;
-        pub const SQLITE_FCNTL_POWERSAFE_OVERWRITE: i32 = 13;
-        pub const SQLITE_FCNTL_PRAGMA: i32 = 14;
-        pub const SQLITE_FCNTL_BUSYHANDLER: i32 = 15;
-        pub const SQLITE_FCNTL_TEMPFILENAME: i32 = 16;
-        pub const SQLITE_FCNTL_MMAP_SIZE: i32 = 18;
-        pub const SQLITE_FCNTL_TRACE: i32 = 19;
-        pub const SQLITE_FCNTL_HAS_MOVED: i32 = 20;
-        pub const SQLITE_FCNTL_SYNC: i32 = 21;
-        pub const SQLITE_FCNTL_COMMIT_PHASETWO: i32 = 22;
-        pub const SQLITE_FCNTL_WIN32_SET_HANDLE: i32 = 23;
-        pub const SQLITE_FCNTL_WAL_BLOCK: i32 = 24;
-        pub const SQLITE_FCNTL_ZIPVFS: i32 = 25;
-        pub const SQLITE_FCNTL_RBU: i32 = 26;
-        pub const SQLITE_FCNTL_VFS_POINTER: i32 = 27;
-        pub const SQLITE_FCNTL_JOURNAL_POINTER: i32 = 28;
-        pub const SQLITE_FCNTL_WIN32_GET_HANDLE: i32 = 29;
-        pub const SQLITE_FCNTL_PDB: i32 = 30;
-        pub const SQLITE_FCNTL_BEGIN_ATOMIC_WRITE: i32 = 31;
-        pub const SQLITE_FCNTL_COMMIT_ATOMIC_WRITE: i32 = 32;
-        pub const SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE: i32 = 33;
-        pub const SQLITE_FCNTL_LOCK_TIMEOUT: i32 = 34;
-        pub const SQLITE_FCNTL_DATA_VERSION: i32 = 35;
-        pub const SQLITE_FCNTL_SIZE_LIMIT: i32 = 36;
-        pub const SQLITE_FCNTL_CKPT_DONE: i32 = 37;
-        pub const SQLITE_FCNTL_RESERVE_BYTES: i32 = 38;
-        pub const SQLITE_FCNTL_CKPT_START: i32 = 39;
-        pub const SQLITE_FCNTL_EXTERNAL_READER: i32 = 40;
-        pub const SQLITE_FCNTL_CKSM_FILE: i32 = 41;
-        pub const SQLITE_FCNTL_RESET_CACHE: i32 = 42;
-        pub const SQLITE_FCNTL_NULL_IO: i32 = 43;
-        pub const SQLITE_FCNTL_BLOCK_ON_CONNECT: i32 = 44;
-        pub const SQLITE_FCNTL_FILESTAT: i32 = 45;
-        pub const SQLITE_GET_LOCKPROXYFILE: i32 = 2;
-        pub const SQLITE_SET_LOCKPROXYFILE: i32 = 3;
-        pub const SQLITE_LAST_ERRNO: i32 = 4;
-        pub const SQLITE_ACCESS_EXISTS: i32 = 0;
-        pub const SQLITE_ACCESS_READWRITE: i32 = 1;
-        pub const SQLITE_ACCESS_READ: i32 = 2;
-        pub const SQLITE_SHM_UNLOCK: i32 = 1;
-        pub const SQLITE_SHM_LOCK: i32 = 2;
-        pub const SQLITE_SHM_SHARED: i32 = 4;
-        pub const SQLITE_SHM_EXCLUSIVE: i32 = 8;
-        pub const SQLITE_SHM_NLOCK: i32 = 8;
-        pub const SQLITE_CONFIG_SINGLETHREAD: i32 = 1;
-        pub const SQLITE_CONFIG_MULTITHREAD: i32 = 2;
-        pub const SQLITE_CONFIG_SERIALIZED: i32 = 3;
-        pub const SQLITE_CONFIG_MALLOC: i32 = 4;
-        pub const SQLITE_CONFIG_GETMALLOC: i32 = 5;
-        pub const SQLITE_CONFIG_SCRATCH: i32 = 6;
-        pub const SQLITE_CONFIG_PAGECACHE: i32 = 7;
-        pub const SQLITE_CONFIG_HEAP: i32 = 8;
-        pub const SQLITE_CONFIG_MEMSTATUS: i32 = 9;
-        pub const SQLITE_CONFIG_MUTEX: i32 = 10;
-        pub const SQLITE_CONFIG_GETMUTEX: i32 = 11;
-        pub const SQLITE_CONFIG_LOOKASIDE: i32 = 13;
-        pub const SQLITE_CONFIG_PCACHE: i32 = 14;
-        pub const SQLITE_CONFIG_GETPCACHE: i32 = 15;
-        pub const SQLITE_CONFIG_LOG: i32 = 16;
-        pub const SQLITE_CONFIG_URI: i32 = 17;
-        pub const SQLITE_CONFIG_PCACHE2: i32 = 18;
-        pub const SQLITE_CONFIG_GETPCACHE2: i32 = 19;
-        pub const SQLITE_CONFIG_COVERING_INDEX_SCAN: i32 = 20;
-        pub const SQLITE_CONFIG_SQLLOG: i32 = 21;
-        pub const SQLITE_CONFIG_MMAP_SIZE: i32 = 22;
-        pub const SQLITE_CONFIG_WIN32_HEAPSIZE: i32 = 23;
-        pub const SQLITE_CONFIG_PCACHE_HDRSZ: i32 = 24;
-        pub const SQLITE_CONFIG_PMASZ: i32 = 25;
-        pub const SQLITE_CONFIG_STMTJRNL_SPILL: i32 = 26;
-        pub const SQLITE_CONFIG_SMALL_MALLOC: i32 = 27;
-        pub const SQLITE_CONFIG_SORTERREF_SIZE: i32 = 28;
-        pub const SQLITE_CONFIG_MEMDB_MAXSIZE: i32 = 29;
-        pub const SQLITE_CONFIG_ROWID_IN_VIEW: i32 = 30;
-        pub const SQLITE_DBCONFIG_MAINDBNAME: i32 = 1000;
-        pub const SQLITE_DBCONFIG_LOOKASIDE: i32 = 1001;
-        pub const SQLITE_DBCONFIG_ENABLE_FKEY: i32 = 1002;
-        pub const SQLITE_DBCONFIG_ENABLE_TRIGGER: i32 = 1003;
-        pub const SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER: i32 = 1004;
-        pub const SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION: i32 = 1005;
-        pub const SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: i32 = 1006;
-        pub const SQLITE_DBCONFIG_ENABLE_QPSG: i32 = 1007;
-        pub const SQLITE_DBCONFIG_TRIGGER_EQP: i32 = 1008;
-        pub const SQLITE_DBCONFIG_RESET_DATABASE: i32 = 1009;
-        pub const SQLITE_DBCONFIG_DEFENSIVE: i32 = 1010;
-        pub const SQLITE_DBCONFIG_WRITABLE_SCHEMA: i32 = 1011;
-        pub const SQLITE_DBCONFIG_LEGACY_ALTER_TABLE: i32 = 1012;
-        pub const SQLITE_DBCONFIG_DQS_DML: i32 = 1013;
-        pub const SQLITE_DBCONFIG_DQS_DDL: i32 = 1014;
-        pub const SQLITE_DBCONFIG_ENABLE_VIEW: i32 = 1015;
-        pub const SQLITE_DBCONFIG_LEGACY_FILE_FORMAT: i32 = 1016;
-        pub const SQLITE_DBCONFIG_TRUSTED_SCHEMA: i32 = 1017;
-        pub const SQLITE_DBCONFIG_STMT_SCANSTATUS: i32 = 1018;
-        pub const SQLITE_DBCONFIG_REVERSE_SCANORDER: i32 = 1019;
-        pub const SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE: i32 = 1020;
-        pub const SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE: i32 = 1021;
-        pub const SQLITE_DBCONFIG_ENABLE_COMMENTS: i32 = 1022;
-        pub const SQLITE_DBCONFIG_MAX: i32 = 1022;
-        pub const SQLITE_SETLK_BLOCK_ON_CONNECT: i32 = 1;
-        pub const SQLITE_DENY: i32 = 1;
-        pub const SQLITE_IGNORE: i32 = 2;
-        pub const SQLITE_CREATE_INDEX: i32 = 1;
-        pub const SQLITE_CREATE_TABLE: i32 = 2;
-        pub const SQLITE_CREATE_TEMP_INDEX: i32 = 3;
-        pub const SQLITE_CREATE_TEMP_TABLE: i32 = 4;
-        pub const SQLITE_CREATE_TEMP_TRIGGER: i32 = 5;
-        pub const SQLITE_CREATE_TEMP_VIEW: i32 = 6;
-        pub const SQLITE_CREATE_TRIGGER: i32 = 7;
-        pub const SQLITE_CREATE_VIEW: i32 = 8;
-        pub const SQLITE_DELETE: i32 = 9;
-        pub const SQLITE_DROP_INDEX: i32 = 10;
-        pub const SQLITE_DROP_TABLE: i32 = 11;
-        pub const SQLITE_DROP_TEMP_INDEX: i32 = 12;
-        pub const SQLITE_DROP_TEMP_TABLE: i32 = 13;
-        pub const SQLITE_DROP_TEMP_TRIGGER: i32 = 14;
-        pub const SQLITE_DROP_TEMP_VIEW: i32 = 15;
-        pub const SQLITE_DROP_TRIGGER: i32 = 16;
-        pub const SQLITE_DROP_VIEW: i32 = 17;
-        pub const SQLITE_INSERT: i32 = 18;
-        pub const SQLITE_PRAGMA: i32 = 19;
-        pub const SQLITE_READ: i32 = 20;
-        pub const SQLITE_SELECT: i32 = 21;
-        pub const SQLITE_TRANSACTION: i32 = 22;
-        pub const SQLITE_UPDATE: i32 = 23;
-        pub const SQLITE_ATTACH: i32 = 24;
-        pub const SQLITE_DETACH: i32 = 25;
-        pub const SQLITE_ALTER_TABLE: i32 = 26;
-        pub const SQLITE_REINDEX: i32 = 27;
-        pub const SQLITE_ANALYZE: i32 = 28;
-        pub const SQLITE_CREATE_VTABLE: i32 = 29;
-        pub const SQLITE_DROP_VTABLE: i32 = 30;
-        pub const SQLITE_FUNCTION: i32 = 31;
-        pub const SQLITE_SAVEPOINT: i32 = 32;
-        pub const SQLITE_COPY: i32 = 0;
-        pub const SQLITE_RECURSIVE: i32 = 33;
-        pub const SQLITE_TRACE_STMT: c_uint = 1;
-        pub const SQLITE_TRACE_PROFILE: c_uint = 2;
-        pub const SQLITE_TRACE_ROW: c_uint = 4;
-        pub const SQLITE_TRACE_CLOSE: c_uint = 8;
-        pub const SQLITE_LIMIT_LENGTH: i32 = 0;
-        pub const SQLITE_LIMIT_SQL_LENGTH: i32 = 1;
-        pub const SQLITE_LIMIT_COLUMN: i32 = 2;
-        pub const SQLITE_LIMIT_EXPR_DEPTH: i32 = 3;
-        pub const SQLITE_LIMIT_COMPOUND_SELECT: i32 = 4;
-        pub const SQLITE_LIMIT_VDBE_OP: i32 = 5;
-        pub const SQLITE_LIMIT_FUNCTION_ARG: i32 = 6;
-        pub const SQLITE_LIMIT_ATTACHED: i32 = 7;
-        pub const SQLITE_LIMIT_LIKE_PATTERN_LENGTH: i32 = 8;
-        pub const SQLITE_LIMIT_VARIABLE_NUMBER: i32 = 9;
-        pub const SQLITE_LIMIT_TRIGGER_DEPTH: i32 = 10;
-        pub const SQLITE_LIMIT_WORKER_THREADS: i32 = 11;
-        pub const SQLITE_PREPARE_PERSISTENT: c_uint = 1;
-        pub const SQLITE_PREPARE_NORMALIZE: c_uint = 2;
-        pub const SQLITE_PREPARE_NO_VTAB: c_uint = 4;
-        pub const SQLITE_PREPARE_DONT_LOG: c_uint = 16;
-        pub const SQLITE_INTEGER: i32 = 1;
-        pub const SQLITE_FLOAT: i32 = 2;
-        pub const SQLITE_BLOB: i32 = 4;
-        pub const SQLITE_NULL: i32 = 5;
-        pub const SQLITE_TEXT: i32 = 3;
-        pub const SQLITE3_TEXT: i32 = 3;
-        pub const SQLITE_UTF8: i32 = 1;
-        pub const SQLITE_UTF16LE: i32 = 2;
-        pub const SQLITE_UTF16BE: i32 = 3;
-        pub const SQLITE_UTF16: i32 = 4;
-        pub const SQLITE_ANY: i32 = 5;
-        pub const SQLITE_UTF16_ALIGNED: i32 = 8;
-        pub const SQLITE_DETERMINISTIC: i32 = 2048;
-        pub const SQLITE_DIRECTONLY: i32 = 524288;
-        pub const SQLITE_SUBTYPE: i32 = 1048576;
-        pub const SQLITE_INNOCUOUS: i32 = 2097152;
-        pub const SQLITE_RESULT_SUBTYPE: i32 = 16777216;
-        pub const SQLITE_SELFORDER1: i32 = 33554432;
-        pub const SQLITE_WIN32_DATA_DIRECTORY_TYPE: i32 = 1;
-        pub const SQLITE_WIN32_TEMP_DIRECTORY_TYPE: i32 = 2;
-        pub const SQLITE_TXN_NONE: i32 = 0;
-        pub const SQLITE_TXN_READ: i32 = 1;
-        pub const SQLITE_TXN_WRITE: i32 = 2;
-        pub const SQLITE_INDEX_SCAN_UNIQUE: i32 = 1;
-        pub const SQLITE_INDEX_SCAN_HEX: i32 = 2;
-        pub const SQLITE_INDEX_CONSTRAINT_EQ: i32 = 2;
-        pub const SQLITE_INDEX_CONSTRAINT_GT: i32 = 4;
-        pub const SQLITE_INDEX_CONSTRAINT_LE: i32 = 8;
-        pub const SQLITE_INDEX_CONSTRAINT_LT: i32 = 16;
-        pub const SQLITE_INDEX_CONSTRAINT_GE: i32 = 32;
-        pub const SQLITE_INDEX_CONSTRAINT_MATCH: i32 = 64;
-        pub const SQLITE_INDEX_CONSTRAINT_LIKE: i32 = 65;
-        pub const SQLITE_INDEX_CONSTRAINT_GLOB: i32 = 66;
-        pub const SQLITE_INDEX_CONSTRAINT_REGEXP: i32 = 67;
-        pub const SQLITE_INDEX_CONSTRAINT_NE: i32 = 68;
-        pub const SQLITE_INDEX_CONSTRAINT_ISNOT: i32 = 69;
-        pub const SQLITE_INDEX_CONSTRAINT_ISNOTNULL: i32 = 70;
-        pub const SQLITE_INDEX_CONSTRAINT_ISNULL: i32 = 71;
-        pub const SQLITE_INDEX_CONSTRAINT_IS: i32 = 72;
-        pub const SQLITE_INDEX_CONSTRAINT_LIMIT: i32 = 73;
-        pub const SQLITE_INDEX_CONSTRAINT_OFFSET: i32 = 74;
-        pub const SQLITE_INDEX_CONSTRAINT_FUNCTION: i32 = 150;
-        pub const SQLITE_MUTEX_FAST: i32 = 0;
-        pub const SQLITE_MUTEX_RECURSIVE: i32 = 1;
-        pub const SQLITE_MUTEX_STATIC_MAIN: i32 = 2;
-        pub const SQLITE_MUTEX_STATIC_MEM: i32 = 3;
-        pub const SQLITE_MUTEX_STATIC_MEM2: i32 = 4;
-        pub const SQLITE_MUTEX_STATIC_OPEN: i32 = 4;
-        pub const SQLITE_MUTEX_STATIC_PRNG: i32 = 5;
-        pub const SQLITE_MUTEX_STATIC_LRU: i32 = 6;
-        pub const SQLITE_MUTEX_STATIC_LRU2: i32 = 7;
-        pub const SQLITE_MUTEX_STATIC_PMEM: i32 = 7;
-        pub const SQLITE_MUTEX_STATIC_APP1: i32 = 8;
-        pub const SQLITE_MUTEX_STATIC_APP2: i32 = 9;
-        pub const SQLITE_MUTEX_STATIC_APP3: i32 = 10;
-        pub const SQLITE_MUTEX_STATIC_VFS1: i32 = 11;
-        pub const SQLITE_MUTEX_STATIC_VFS2: i32 = 12;
-        pub const SQLITE_MUTEX_STATIC_VFS3: i32 = 13;
-        pub const SQLITE_MUTEX_STATIC_MASTER: i32 = 2;
-        pub const SQLITE_TESTCTRL_FIRST: i32 = 5;
-        pub const SQLITE_TESTCTRL_PRNG_SAVE: i32 = 5;
-        pub const SQLITE_TESTCTRL_PRNG_RESTORE: i32 = 6;
-        pub const SQLITE_TESTCTRL_PRNG_RESET: i32 = 7;
-        pub const SQLITE_TESTCTRL_FK_NO_ACTION: i32 = 7;
-        pub const SQLITE_TESTCTRL_BITVEC_TEST: i32 = 8;
-        pub const SQLITE_TESTCTRL_FAULT_INSTALL: i32 = 9;
-        pub const SQLITE_TESTCTRL_BENIGN_MALLOC_HOOKS: i32 = 10;
-        pub const SQLITE_TESTCTRL_PENDING_BYTE: i32 = 11;
-        pub const SQLITE_TESTCTRL_ASSERT: i32 = 12;
-        pub const SQLITE_TESTCTRL_ALWAYS: i32 = 13;
-        pub const SQLITE_TESTCTRL_RESERVE: i32 = 14;
-        pub const SQLITE_TESTCTRL_JSON_SELFCHECK: i32 = 14;
-        pub const SQLITE_TESTCTRL_OPTIMIZATIONS: i32 = 15;
-        pub const SQLITE_TESTCTRL_ISKEYWORD: i32 = 16;
-        pub const SQLITE_TESTCTRL_GETOPT: i32 = 16;
-        pub const SQLITE_TESTCTRL_SCRATCHMALLOC: i32 = 17;
-        pub const SQLITE_TESTCTRL_INTERNAL_FUNCTIONS: i32 = 17;
-        pub const SQLITE_TESTCTRL_LOCALTIME_FAULT: i32 = 18;
-        pub const SQLITE_TESTCTRL_EXPLAIN_STMT: i32 = 19;
-        pub const SQLITE_TESTCTRL_ONCE_RESET_THRESHOLD: i32 = 19;
-        pub const SQLITE_TESTCTRL_NEVER_CORRUPT: i32 = 20;
-        pub const SQLITE_TESTCTRL_VDBE_COVERAGE: i32 = 21;
-        pub const SQLITE_TESTCTRL_BYTEORDER: i32 = 22;
-        pub const SQLITE_TESTCTRL_ISINIT: i32 = 23;
-        pub const SQLITE_TESTCTRL_SORTER_MMAP: i32 = 24;
-        pub const SQLITE_TESTCTRL_IMPOSTER: i32 = 25;
-        pub const SQLITE_TESTCTRL_PARSER_COVERAGE: i32 = 26;
-        pub const SQLITE_TESTCTRL_RESULT_INTREAL: i32 = 27;
-        pub const SQLITE_TESTCTRL_PRNG_SEED: i32 = 28;
-        pub const SQLITE_TESTCTRL_EXTRA_SCHEMA_CHECKS: i32 = 29;
-        pub const SQLITE_TESTCTRL_SEEK_COUNT: i32 = 30;
-        pub const SQLITE_TESTCTRL_TRACEFLAGS: i32 = 31;
-        pub const SQLITE_TESTCTRL_TUNE: i32 = 32;
-        pub const SQLITE_TESTCTRL_LOGEST: i32 = 33;
-        pub const SQLITE_TESTCTRL_USELONGDOUBLE: i32 = 34;
-        pub const SQLITE_TESTCTRL_LAST: i32 = 34;
-        pub const SQLITE_STATUS_MEMORY_USED: i32 = 0;
-        pub const SQLITE_STATUS_PAGECACHE_USED: i32 = 1;
-        pub const SQLITE_STATUS_PAGECACHE_OVERFLOW: i32 = 2;
-        pub const SQLITE_STATUS_SCRATCH_USED: i32 = 3;
-        pub const SQLITE_STATUS_SCRATCH_OVERFLOW: i32 = 4;
-        pub const SQLITE_STATUS_MALLOC_SIZE: i32 = 5;
-        pub const SQLITE_STATUS_PARSER_STACK: i32 = 6;
-        pub const SQLITE_STATUS_PAGECACHE_SIZE: i32 = 7;
-        pub const SQLITE_STATUS_SCRATCH_SIZE: i32 = 8;
-        pub const SQLITE_STATUS_MALLOC_COUNT: i32 = 9;
-        pub const SQLITE_DBSTATUS_LOOKASIDE_USED: i32 = 0;
-        pub const SQLITE_DBSTATUS_CACHE_USED: i32 = 1;
-        pub const SQLITE_DBSTATUS_SCHEMA_USED: i32 = 2;
-        pub const SQLITE_DBSTATUS_STMT_USED: i32 = 3;
-        pub const SQLITE_DBSTATUS_LOOKASIDE_HIT: i32 = 4;
-        pub const SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE: i32 = 5;
-        pub const SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL: i32 = 6;
-        pub const SQLITE_DBSTATUS_CACHE_HIT: i32 = 7;
-        pub const SQLITE_DBSTATUS_CACHE_MISS: i32 = 8;
-        pub const SQLITE_DBSTATUS_CACHE_WRITE: i32 = 9;
-        pub const SQLITE_DBSTATUS_DEFERRED_FKS: i32 = 10;
-        pub const SQLITE_DBSTATUS_CACHE_USED_SHARED: i32 = 11;
-        pub const SQLITE_DBSTATUS_CACHE_SPILL: i32 = 12;
-        pub const SQLITE_DBSTATUS_TEMPBUF_SPILL: i32 = 13;
-        pub const SQLITE_DBSTATUS_MAX: i32 = 13;
-        pub const SQLITE_STMTSTATUS_FULLSCAN_STEP: i32 = 1;
-        pub const SQLITE_STMTSTATUS_SORT: i32 = 2;
-        pub const SQLITE_STMTSTATUS_AUTOINDEX: i32 = 3;
-        pub const SQLITE_STMTSTATUS_VM_STEP: i32 = 4;
-        pub const SQLITE_STMTSTATUS_REPREPARE: i32 = 5;
-        pub const SQLITE_STMTSTATUS_RUN: i32 = 6;
-        pub const SQLITE_STMTSTATUS_FILTER_MISS: i32 = 7;
-        pub const SQLITE_STMTSTATUS_FILTER_HIT: i32 = 8;
-        pub const SQLITE_STMTSTATUS_MEMUSED: i32 = 99;
-        pub const SQLITE_CHECKPOINT_NOOP: i32 = -1;
-        pub const SQLITE_CHECKPOINT_PASSIVE: i32 = 0;
-        pub const SQLITE_CHECKPOINT_FULL: i32 = 1;
-        pub const SQLITE_CHECKPOINT_RESTART: i32 = 2;
-        pub const SQLITE_CHECKPOINT_TRUNCATE: i32 = 3;
-        pub const SQLITE_VTAB_CONSTRAINT_SUPPORT: i32 = 1;
-        pub const SQLITE_VTAB_INNOCUOUS: i32 = 2;
-        pub const SQLITE_VTAB_DIRECTONLY: i32 = 3;
-        pub const SQLITE_VTAB_USES_ALL_SCHEMAS: i32 = 4;
-        pub const SQLITE_ROLLBACK: i32 = 1;
-        pub const SQLITE_FAIL: i32 = 3;
-        pub const SQLITE_REPLACE: i32 = 5;
-        pub const SQLITE_SCANSTAT_NLOOP: i32 = 0;
-        pub const SQLITE_SCANSTAT_NVISIT: i32 = 1;
-        pub const SQLITE_SCANSTAT_EST: i32 = 2;
-        pub const SQLITE_SCANSTAT_NAME: i32 = 3;
-        pub const SQLITE_SCANSTAT_EXPLAIN: i32 = 4;
-        pub const SQLITE_SCANSTAT_SELECTID: i32 = 5;
-        pub const SQLITE_SCANSTAT_PARENTID: i32 = 6;
-        pub const SQLITE_SCANSTAT_NCYCLE: i32 = 7;
-        pub const SQLITE_SCANSTAT_COMPLEX: i32 = 1;
-        pub const SQLITE_SERIALIZE_NOCOPY: c_uint = 1;
-        pub const SQLITE_DESERIALIZE_FREEONCLOSE: c_uint = 1;
-        pub const SQLITE_DESERIALIZE_RESIZEABLE: c_uint = 2;
-        pub const SQLITE_DESERIALIZE_READONLY: c_uint = 4;
-        pub const SQLITE_CARRAY_INT32: i32 = 0;
-        pub const SQLITE_CARRAY_INT64: i32 = 1;
-        pub const SQLITE_CARRAY_DOUBLE: i32 = 2;
-        pub const SQLITE_CARRAY_TEXT: i32 = 3;
-        pub const SQLITE_CARRAY_BLOB: i32 = 4;
-        pub const CARRAY_INT32: i32 = 0;
-        pub const CARRAY_INT64: i32 = 1;
-        pub const CARRAY_DOUBLE: i32 = 2;
-        pub const CARRAY_TEXT: i32 = 3;
-        pub const CARRAY_BLOB: i32 = 4;
-        pub const NOT_WITHIN: i32 = 0;
-        pub const PARTLY_WITHIN: i32 = 1;
-        pub const FULLY_WITHIN: i32 = 2;
-        pub const SQLITE_SESSION_OBJCONFIG_SIZE: i32 = 1;
-        pub const SQLITE_SESSION_OBJCONFIG_ROWID: i32 = 2;
-        pub const SQLITE_CHANGESETSTART_INVERT: i32 = 2;
-        pub const SQLITE_CHANGESETAPPLY_NOSAVEPOINT: i32 = 1;
-        pub const SQLITE_CHANGESETAPPLY_INVERT: i32 = 2;
-        pub const SQLITE_CHANGESETAPPLY_IGNORENOOP: i32 = 4;
-        pub const SQLITE_CHANGESETAPPLY_FKNOACTION: i32 = 8;
-        pub const SQLITE_CHANGESET_DATA: i32 = 1;
-        pub const SQLITE_CHANGESET_NOTFOUND: i32 = 2;
-        pub const SQLITE_CHANGESET_CONFLICT: i32 = 3;
-        pub const SQLITE_CHANGESET_CONSTRAINT: i32 = 4;
-        pub const SQLITE_CHANGESET_FOREIGN_KEY: i32 = 5;
-        pub const SQLITE_CHANGESET_OMIT: i32 = 0;
-        pub const SQLITE_CHANGESET_REPLACE: i32 = 1;
-        pub const SQLITE_CHANGESET_ABORT: i32 = 2;
-        pub const SQLITE_SESSION_CONFIG_STRMSIZE: i32 = 1;
-        pub const FTS5_TOKENIZE_QUERY: i32 = 1;
-        pub const FTS5_TOKENIZE_PREFIX: i32 = 2;
-        pub const FTS5_TOKENIZE_DOCUMENT: i32 = 4;
-        pub const FTS5_TOKENIZE_AUX: i32 = 8;
-        pub const FTS5_TOKEN_COLOCATED: i32 = 1;
+        pub mod constants
+        {
+            /*!
+            */
+            use ::
+            {
+                ffi::{ c_char, c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
+                *,
+            };
+            
+            pub const SQLITE_VERSION: &str = "3.51.2";
+            pub const SQLITE_VERSION_NUMBER: i32 = 3051002;
+            pub const SQLITE_SOURCE_ID: &str = "2026-01-09 17:27:48 b270f8339eb13b504d0b2ba154ebca966b7dde08e40c3ed7d559749818cb2075";
+            pub const SQLITE_SCM_BRANCH: &str = "branch-3.51";
+            pub const SQLITE_SCM_TAGS: &str = "release version-3.51.2";
+            pub const SQLITE_SCM_DATETIME: &str = "2026-01-09T17:27:48.405Z";
+            pub const SQLITE_OK: i32 = 0;
+            pub const SQLITE_ERROR: i32 = 1;
+            pub const SQLITE_INTERNAL: i32 = 2;
+            pub const SQLITE_PERM: i32 = 3;
+            pub const SQLITE_ABORT: i32 = 4;
+            pub const SQLITE_BUSY: i32 = 5;
+            pub const SQLITE_LOCKED: i32 = 6;
+            pub const SQLITE_NOMEM: i32 = 7;
+            pub const SQLITE_READONLY: i32 = 8;
+            pub const SQLITE_INTERRUPT: i32 = 9;
+            pub const SQLITE_IOERR: i32 = 10;
+            pub const SQLITE_CORRUPT: i32 = 11;
+            pub const SQLITE_NOTFOUND: i32 = 12;
+            pub const SQLITE_FULL: i32 = 13;
+            pub const SQLITE_CANTOPEN: i32 = 14;
+            pub const SQLITE_PROTOCOL: i32 = 15;
+            pub const SQLITE_EMPTY: i32 = 16;
+            pub const SQLITE_SCHEMA: i32 = 17;
+            pub const SQLITE_TOOBIG: i32 = 18;
+            pub const SQLITE_CONSTRAINT: i32 = 19;
+            pub const SQLITE_MISMATCH: i32 = 20;
+            pub const SQLITE_MISUSE: i32 = 21;
+            pub const SQLITE_NOLFS: i32 = 22;
+            pub const SQLITE_AUTH: i32 = 23;
+            pub const SQLITE_FORMAT: i32 = 24;
+            pub const SQLITE_RANGE: i32 = 25;
+            pub const SQLITE_NOTADB: i32 = 26;
+            pub const SQLITE_NOTICE: i32 = 27;
+            pub const SQLITE_WARNING: i32 = 28;
+            pub const SQLITE_ROW: i32 = 100;
+            pub const SQLITE_DONE: i32 = 101;
+            pub const SQLITE_ERROR_MISSING_COLLSEQ: i32 = 257;
+            pub const SQLITE_ERROR_RETRY: i32 = 513;
+            pub const SQLITE_ERROR_SNAPSHOT: i32 = 769;
+            pub const SQLITE_ERROR_RESERVESIZE: i32 = 1025;
+            pub const SQLITE_ERROR_KEY: i32 = 1281;
+            pub const SQLITE_ERROR_UNABLE: i32 = 1537;
+            pub const SQLITE_IOERR_READ: i32 = 266;
+            pub const SQLITE_IOERR_SHORT_READ: i32 = 522;
+            pub const SQLITE_IOERR_WRITE: i32 = 778;
+            pub const SQLITE_IOERR_FSYNC: i32 = 1034;
+            pub const SQLITE_IOERR_DIR_FSYNC: i32 = 1290;
+            pub const SQLITE_IOERR_TRUNCATE: i32 = 1546;
+            pub const SQLITE_IOERR_FSTAT: i32 = 1802;
+            pub const SQLITE_IOERR_UNLOCK: i32 = 2058;
+            pub const SQLITE_IOERR_RDLOCK: i32 = 2314;
+            pub const SQLITE_IOERR_DELETE: i32 = 2570;
+            pub const SQLITE_IOERR_BLOCKED: i32 = 2826;
+            pub const SQLITE_IOERR_NOMEM: i32 = 3082;
+            pub const SQLITE_IOERR_ACCESS: i32 = 3338;
+            pub const SQLITE_IOERR_CHECKRESERVEDLOCK: i32 = 3594;
+            pub const SQLITE_IOERR_LOCK: i32 = 3850;
+            pub const SQLITE_IOERR_CLOSE: i32 = 4106;
+            pub const SQLITE_IOERR_DIR_CLOSE: i32 = 4362;
+            pub const SQLITE_IOERR_SHMOPEN: i32 = 4618;
+            pub const SQLITE_IOERR_SHMSIZE: i32 = 4874;
+            pub const SQLITE_IOERR_SHMLOCK: i32 = 5130;
+            pub const SQLITE_IOERR_SHMMAP: i32 = 5386;
+            pub const SQLITE_IOERR_SEEK: i32 = 5642;
+            pub const SQLITE_IOERR_DELETE_NOENT: i32 = 5898;
+            pub const SQLITE_IOERR_MMAP: i32 = 6154;
+            pub const SQLITE_IOERR_GETTEMPPATH: i32 = 6410;
+            pub const SQLITE_IOERR_CONVPATH: i32 = 6666;
+            pub const SQLITE_IOERR_VNODE: i32 = 6922;
+            pub const SQLITE_IOERR_AUTH: i32 = 7178;
+            pub const SQLITE_IOERR_BEGIN_ATOMIC: i32 = 7434;
+            pub const SQLITE_IOERR_COMMIT_ATOMIC: i32 = 7690;
+            pub const SQLITE_IOERR_ROLLBACK_ATOMIC: i32 = 7946;
+            pub const SQLITE_IOERR_DATA: i32 = 8202;
+            pub const SQLITE_IOERR_CORRUPTFS: i32 = 8458;
+            pub const SQLITE_IOERR_IN_PAGE: i32 = 8714;
+            pub const SQLITE_IOERR_BADKEY: i32 = 8970;
+            pub const SQLITE_IOERR_CODEC: i32 = 9226;
+            pub const SQLITE_LOCKED_SHAREDCACHE: i32 = 262;
+            pub const SQLITE_LOCKED_VTAB: i32 = 518;
+            pub const SQLITE_BUSY_RECOVERY: i32 = 261;
+            pub const SQLITE_BUSY_SNAPSHOT: i32 = 517;
+            pub const SQLITE_BUSY_TIMEOUT: i32 = 773;
+            pub const SQLITE_CANTOPEN_NOTEMPDIR: i32 = 270;
+            pub const SQLITE_CANTOPEN_ISDIR: i32 = 526;
+            pub const SQLITE_CANTOPEN_FULLPATH: i32 = 782;
+            pub const SQLITE_CANTOPEN_CONVPATH: i32 = 1038;
+            pub const SQLITE_CANTOPEN_DIRTYWAL: i32 = 1294;
+            pub const SQLITE_CANTOPEN_SYMLINK: i32 = 1550;
+            pub const SQLITE_CORRUPT_VTAB: i32 = 267;
+            pub const SQLITE_CORRUPT_SEQUENCE: i32 = 523;
+            pub const SQLITE_CORRUPT_INDEX: i32 = 779;
+            pub const SQLITE_READONLY_RECOVERY: i32 = 264;
+            pub const SQLITE_READONLY_CANTLOCK: i32 = 520;
+            pub const SQLITE_READONLY_ROLLBACK: i32 = 776;
+            pub const SQLITE_READONLY_DBMOVED: i32 = 1032;
+            pub const SQLITE_READONLY_CANTINIT: i32 = 1288;
+            pub const SQLITE_READONLY_DIRECTORY: i32 = 1544;
+            pub const SQLITE_ABORT_ROLLBACK: i32 = 516;
+            pub const SQLITE_CONSTRAINT_CHECK: i32 = 275;
+            pub const SQLITE_CONSTRAINT_COMMITHOOK: i32 = 531;
+            pub const SQLITE_CONSTRAINT_FOREIGNKEY: i32 = 787;
+            pub const SQLITE_CONSTRAINT_FUNCTION: i32 = 1043;
+            pub const SQLITE_CONSTRAINT_NOTNULL: i32 = 1299;
+            pub const SQLITE_CONSTRAINT_PRIMARYKEY: i32 = 1555;
+            pub const SQLITE_CONSTRAINT_TRIGGER: i32 = 1811;
+            pub const SQLITE_CONSTRAINT_UNIQUE: i32 = 2067;
+            pub const SQLITE_CONSTRAINT_VTAB: i32 = 2323;
+            pub const SQLITE_CONSTRAINT_ROWID: i32 = 2579;
+            pub const SQLITE_CONSTRAINT_PINNED: i32 = 2835;
+            pub const SQLITE_CONSTRAINT_DATATYPE: i32 = 3091;
+            pub const SQLITE_NOTICE_RECOVER_WAL: i32 = 283;
+            pub const SQLITE_NOTICE_RECOVER_ROLLBACK: i32 = 539;
+            pub const SQLITE_NOTICE_RBU: i32 = 795;
+            pub const SQLITE_WARNING_AUTOINDEX: i32 = 284;
+            pub const SQLITE_AUTH_USER: i32 = 279;
+            pub const SQLITE_OK_LOAD_PERMANENTLY: i32 = 256;
+            pub const SQLITE_OK_SYMLINK: i32 = 512;
+            pub const SQLITE_OPEN_READONLY: i32 = 1;
+            pub const SQLITE_OPEN_READWRITE: i32 = 2;
+            pub const SQLITE_OPEN_CREATE: i32 = 4;
+            pub const SQLITE_OPEN_DELETEONCLOSE: i32 = 8;
+            pub const SQLITE_OPEN_EXCLUSIVE: i32 = 16;
+            pub const SQLITE_OPEN_AUTOPROXY: i32 = 32;
+            pub const SQLITE_OPEN_URI: i32 = 64;
+            pub const SQLITE_OPEN_MEMORY: i32 = 128;
+            pub const SQLITE_OPEN_MAIN_DB: i32 = 256;
+            pub const SQLITE_OPEN_TEMP_DB: i32 = 512;
+            pub const SQLITE_OPEN_TRANSIENT_DB: i32 = 1024;
+            pub const SQLITE_OPEN_MAIN_JOURNAL: i32 = 2048;
+            pub const SQLITE_OPEN_TEMP_JOURNAL: i32 = 4096;
+            pub const SQLITE_OPEN_SUBJOURNAL: i32 = 8192;
+            pub const SQLITE_OPEN_SUPER_JOURNAL: i32 = 16384;
+            pub const SQLITE_OPEN_NOMUTEX: i32 = 32768;
+            pub const SQLITE_OPEN_FULLMUTEX: i32 = 65536;
+            pub const SQLITE_OPEN_SHAREDCACHE: i32 = 131072;
+            pub const SQLITE_OPEN_PRIVATECACHE: i32 = 262144;
+            pub const SQLITE_OPEN_WAL: i32 = 524288;
+            pub const SQLITE_OPEN_NOFOLLOW: i32 = 16777216;
+            pub const SQLITE_OPEN_EXRESCODE: i32 = 33554432;
+            pub const SQLITE_OPEN_MASTER_JOURNAL: i32 = 16384;
+            pub const SQLITE_IOCAP_ATOMIC: i32 = 1;
+            pub const SQLITE_IOCAP_ATOMIC512: i32 = 2;
+            pub const SQLITE_IOCAP_ATOMIC1K: i32 = 4;
+            pub const SQLITE_IOCAP_ATOMIC2K: i32 = 8;
+            pub const SQLITE_IOCAP_ATOMIC4K: i32 = 16;
+            pub const SQLITE_IOCAP_ATOMIC8K: i32 = 32;
+            pub const SQLITE_IOCAP_ATOMIC16K: i32 = 64;
+            pub const SQLITE_IOCAP_ATOMIC32K: i32 = 128;
+            pub const SQLITE_IOCAP_ATOMIC64K: i32 = 256;
+            pub const SQLITE_IOCAP_SAFE_APPEND: i32 = 512;
+            pub const SQLITE_IOCAP_SEQUENTIAL: i32 = 1024;
+            pub const SQLITE_IOCAP_UNDELETABLE_WHEN_OPEN: i32 = 2048;
+            pub const SQLITE_IOCAP_POWERSAFE_OVERWRITE: i32 = 4096;
+            pub const SQLITE_IOCAP_IMMUTABLE: i32 = 8192;
+            pub const SQLITE_IOCAP_BATCH_ATOMIC: i32 = 16384;
+            pub const SQLITE_IOCAP_SUBPAGE_READ: i32 = 32768;
+            pub const SQLITE_LOCK_NONE: i32 = 0;
+            pub const SQLITE_LOCK_SHARED: i32 = 1;
+            pub const SQLITE_LOCK_RESERVED: i32 = 2;
+            pub const SQLITE_LOCK_PENDING: i32 = 3;
+            pub const SQLITE_LOCK_EXCLUSIVE: i32 = 4;
+            pub const SQLITE_SYNC_NORMAL: i32 = 2;
+            pub const SQLITE_SYNC_FULL: i32 = 3;
+            pub const SQLITE_SYNC_DATAONLY: i32 = 16;
+            pub const SQLITE_FCNTL_LOCKSTATE: i32 = 1;
+            pub const SQLITE_FCNTL_GET_LOCKPROXYFILE: i32 = 2;
+            pub const SQLITE_FCNTL_SET_LOCKPROXYFILE: i32 = 3;
+            pub const SQLITE_FCNTL_LAST_ERRNO: i32 = 4;
+            pub const SQLITE_FCNTL_SIZE_HINT: i32 = 5;
+            pub const SQLITE_FCNTL_CHUNK_SIZE: i32 = 6;
+            pub const SQLITE_FCNTL_FILE_POINTER: i32 = 7;
+            pub const SQLITE_FCNTL_SYNC_OMITTED: i32 = 8;
+            pub const SQLITE_FCNTL_WIN32_AV_RETRY: i32 = 9;
+            pub const SQLITE_FCNTL_PERSIST_WAL: i32 = 10;
+            pub const SQLITE_FCNTL_OVERWRITE: i32 = 11;
+            pub const SQLITE_FCNTL_VFSNAME: i32 = 12;
+            pub const SQLITE_FCNTL_POWERSAFE_OVERWRITE: i32 = 13;
+            pub const SQLITE_FCNTL_PRAGMA: i32 = 14;
+            pub const SQLITE_FCNTL_BUSYHANDLER: i32 = 15;
+            pub const SQLITE_FCNTL_TEMPFILENAME: i32 = 16;
+            pub const SQLITE_FCNTL_MMAP_SIZE: i32 = 18;
+            pub const SQLITE_FCNTL_TRACE: i32 = 19;
+            pub const SQLITE_FCNTL_HAS_MOVED: i32 = 20;
+            pub const SQLITE_FCNTL_SYNC: i32 = 21;
+            pub const SQLITE_FCNTL_COMMIT_PHASETWO: i32 = 22;
+            pub const SQLITE_FCNTL_WIN32_SET_HANDLE: i32 = 23;
+            pub const SQLITE_FCNTL_WAL_BLOCK: i32 = 24;
+            pub const SQLITE_FCNTL_ZIPVFS: i32 = 25;
+            pub const SQLITE_FCNTL_RBU: i32 = 26;
+            pub const SQLITE_FCNTL_VFS_POINTER: i32 = 27;
+            pub const SQLITE_FCNTL_JOURNAL_POINTER: i32 = 28;
+            pub const SQLITE_FCNTL_WIN32_GET_HANDLE: i32 = 29;
+            pub const SQLITE_FCNTL_PDB: i32 = 30;
+            pub const SQLITE_FCNTL_BEGIN_ATOMIC_WRITE: i32 = 31;
+            pub const SQLITE_FCNTL_COMMIT_ATOMIC_WRITE: i32 = 32;
+            pub const SQLITE_FCNTL_ROLLBACK_ATOMIC_WRITE: i32 = 33;
+            pub const SQLITE_FCNTL_LOCK_TIMEOUT: i32 = 34;
+            pub const SQLITE_FCNTL_DATA_VERSION: i32 = 35;
+            pub const SQLITE_FCNTL_SIZE_LIMIT: i32 = 36;
+            pub const SQLITE_FCNTL_CKPT_DONE: i32 = 37;
+            pub const SQLITE_FCNTL_RESERVE_BYTES: i32 = 38;
+            pub const SQLITE_FCNTL_CKPT_START: i32 = 39;
+            pub const SQLITE_FCNTL_EXTERNAL_READER: i32 = 40;
+            pub const SQLITE_FCNTL_CKSM_FILE: i32 = 41;
+            pub const SQLITE_FCNTL_RESET_CACHE: i32 = 42;
+            pub const SQLITE_FCNTL_NULL_IO: i32 = 43;
+            pub const SQLITE_FCNTL_BLOCK_ON_CONNECT: i32 = 44;
+            pub const SQLITE_FCNTL_FILESTAT: i32 = 45;
+            pub const SQLITE_GET_LOCKPROXYFILE: i32 = 2;
+            pub const SQLITE_SET_LOCKPROXYFILE: i32 = 3;
+            pub const SQLITE_LAST_ERRNO: i32 = 4;
+            pub const SQLITE_ACCESS_EXISTS: i32 = 0;
+            pub const SQLITE_ACCESS_READWRITE: i32 = 1;
+            pub const SQLITE_ACCESS_READ: i32 = 2;
+            pub const SQLITE_SHM_UNLOCK: i32 = 1;
+            pub const SQLITE_SHM_LOCK: i32 = 2;
+            pub const SQLITE_SHM_SHARED: i32 = 4;
+            pub const SQLITE_SHM_EXCLUSIVE: i32 = 8;
+            pub const SQLITE_SHM_NLOCK: i32 = 8;
+            pub const SQLITE_CONFIG_SINGLETHREAD: i32 = 1;
+            pub const SQLITE_CONFIG_MULTITHREAD: i32 = 2;
+            pub const SQLITE_CONFIG_SERIALIZED: i32 = 3;
+            pub const SQLITE_CONFIG_MALLOC: i32 = 4;
+            pub const SQLITE_CONFIG_GETMALLOC: i32 = 5;
+            pub const SQLITE_CONFIG_SCRATCH: i32 = 6;
+            pub const SQLITE_CONFIG_PAGECACHE: i32 = 7;
+            pub const SQLITE_CONFIG_HEAP: i32 = 8;
+            pub const SQLITE_CONFIG_MEMSTATUS: i32 = 9;
+            pub const SQLITE_CONFIG_MUTEX: i32 = 10;
+            pub const SQLITE_CONFIG_GETMUTEX: i32 = 11;
+            pub const SQLITE_CONFIG_LOOKASIDE: i32 = 13;
+            pub const SQLITE_CONFIG_PCACHE: i32 = 14;
+            pub const SQLITE_CONFIG_GETPCACHE: i32 = 15;
+            pub const SQLITE_CONFIG_LOG: i32 = 16;
+            pub const SQLITE_CONFIG_URI: i32 = 17;
+            pub const SQLITE_CONFIG_PCACHE2: i32 = 18;
+            pub const SQLITE_CONFIG_GETPCACHE2: i32 = 19;
+            pub const SQLITE_CONFIG_COVERING_INDEX_SCAN: i32 = 20;
+            pub const SQLITE_CONFIG_SQLLOG: i32 = 21;
+            pub const SQLITE_CONFIG_MMAP_SIZE: i32 = 22;
+            pub const SQLITE_CONFIG_WIN32_HEAPSIZE: i32 = 23;
+            pub const SQLITE_CONFIG_PCACHE_HDRSZ: i32 = 24;
+            pub const SQLITE_CONFIG_PMASZ: i32 = 25;
+            pub const SQLITE_CONFIG_STMTJRNL_SPILL: i32 = 26;
+            pub const SQLITE_CONFIG_SMALL_MALLOC: i32 = 27;
+            pub const SQLITE_CONFIG_SORTERREF_SIZE: i32 = 28;
+            pub const SQLITE_CONFIG_MEMDB_MAXSIZE: i32 = 29;
+            pub const SQLITE_CONFIG_ROWID_IN_VIEW: i32 = 30;
+            pub const SQLITE_DBCONFIG_MAINDBNAME: i32 = 1000;
+            pub const SQLITE_DBCONFIG_LOOKASIDE: i32 = 1001;
+            pub const SQLITE_DBCONFIG_ENABLE_FKEY: i32 = 1002;
+            pub const SQLITE_DBCONFIG_ENABLE_TRIGGER: i32 = 1003;
+            pub const SQLITE_DBCONFIG_ENABLE_FTS3_TOKENIZER: i32 = 1004;
+            pub const SQLITE_DBCONFIG_ENABLE_LOAD_EXTENSION: i32 = 1005;
+            pub const SQLITE_DBCONFIG_NO_CKPT_ON_CLOSE: i32 = 1006;
+            pub const SQLITE_DBCONFIG_ENABLE_QPSG: i32 = 1007;
+            pub const SQLITE_DBCONFIG_TRIGGER_EQP: i32 = 1008;
+            pub const SQLITE_DBCONFIG_RESET_DATABASE: i32 = 1009;
+            pub const SQLITE_DBCONFIG_DEFENSIVE: i32 = 1010;
+            pub const SQLITE_DBCONFIG_WRITABLE_SCHEMA: i32 = 1011;
+            pub const SQLITE_DBCONFIG_LEGACY_ALTER_TABLE: i32 = 1012;
+            pub const SQLITE_DBCONFIG_DQS_DML: i32 = 1013;
+            pub const SQLITE_DBCONFIG_DQS_DDL: i32 = 1014;
+            pub const SQLITE_DBCONFIG_ENABLE_VIEW: i32 = 1015;
+            pub const SQLITE_DBCONFIG_LEGACY_FILE_FORMAT: i32 = 1016;
+            pub const SQLITE_DBCONFIG_TRUSTED_SCHEMA: i32 = 1017;
+            pub const SQLITE_DBCONFIG_STMT_SCANSTATUS: i32 = 1018;
+            pub const SQLITE_DBCONFIG_REVERSE_SCANORDER: i32 = 1019;
+            pub const SQLITE_DBCONFIG_ENABLE_ATTACH_CREATE: i32 = 1020;
+            pub const SQLITE_DBCONFIG_ENABLE_ATTACH_WRITE: i32 = 1021;
+            pub const SQLITE_DBCONFIG_ENABLE_COMMENTS: i32 = 1022;
+            pub const SQLITE_DBCONFIG_MAX: i32 = 1022;
+            pub const SQLITE_SETLK_BLOCK_ON_CONNECT: i32 = 1;
+            pub const SQLITE_DENY: i32 = 1;
+            pub const SQLITE_IGNORE: i32 = 2;
+            pub const SQLITE_CREATE_INDEX: i32 = 1;
+            pub const SQLITE_CREATE_TABLE: i32 = 2;
+            pub const SQLITE_CREATE_TEMP_INDEX: i32 = 3;
+            pub const SQLITE_CREATE_TEMP_TABLE: i32 = 4;
+            pub const SQLITE_CREATE_TEMP_TRIGGER: i32 = 5;
+            pub const SQLITE_CREATE_TEMP_VIEW: i32 = 6;
+            pub const SQLITE_CREATE_TRIGGER: i32 = 7;
+            pub const SQLITE_CREATE_VIEW: i32 = 8;
+            pub const SQLITE_DELETE: i32 = 9;
+            pub const SQLITE_DROP_INDEX: i32 = 10;
+            pub const SQLITE_DROP_TABLE: i32 = 11;
+            pub const SQLITE_DROP_TEMP_INDEX: i32 = 12;
+            pub const SQLITE_DROP_TEMP_TABLE: i32 = 13;
+            pub const SQLITE_DROP_TEMP_TRIGGER: i32 = 14;
+            pub const SQLITE_DROP_TEMP_VIEW: i32 = 15;
+            pub const SQLITE_DROP_TRIGGER: i32 = 16;
+            pub const SQLITE_DROP_VIEW: i32 = 17;
+            pub const SQLITE_INSERT: i32 = 18;
+            pub const SQLITE_PRAGMA: i32 = 19;
+            pub const SQLITE_READ: i32 = 20;
+            pub const SQLITE_SELECT: i32 = 21;
+            pub const SQLITE_TRANSACTION: i32 = 22;
+            pub const SQLITE_UPDATE: i32 = 23;
+            pub const SQLITE_ATTACH: i32 = 24;
+            pub const SQLITE_DETACH: i32 = 25;
+            pub const SQLITE_ALTER_TABLE: i32 = 26;
+            pub const SQLITE_REINDEX: i32 = 27;
+            pub const SQLITE_ANALYZE: i32 = 28;
+            pub const SQLITE_CREATE_VTABLE: i32 = 29;
+            pub const SQLITE_DROP_VTABLE: i32 = 30;
+            pub const SQLITE_FUNCTION: i32 = 31;
+            pub const SQLITE_SAVEPOINT: i32 = 32;
+            pub const SQLITE_COPY: i32 = 0;
+            pub const SQLITE_RECURSIVE: i32 = 33;
+            pub const SQLITE_TRACE_STMT: c_uint = 1;
+            pub const SQLITE_TRACE_PROFILE: c_uint = 2;
+            pub const SQLITE_TRACE_ROW: c_uint = 4;
+            pub const SQLITE_TRACE_CLOSE: c_uint = 8;
+            pub const SQLITE_LIMIT_LENGTH: i32 = 0;
+            pub const SQLITE_LIMIT_SQL_LENGTH: i32 = 1;
+            pub const SQLITE_LIMIT_COLUMN: i32 = 2;
+            pub const SQLITE_LIMIT_EXPR_DEPTH: i32 = 3;
+            pub const SQLITE_LIMIT_COMPOUND_SELECT: i32 = 4;
+            pub const SQLITE_LIMIT_VDBE_OP: i32 = 5;
+            pub const SQLITE_LIMIT_FUNCTION_ARG: i32 = 6;
+            pub const SQLITE_LIMIT_ATTACHED: i32 = 7;
+            pub const SQLITE_LIMIT_LIKE_PATTERN_LENGTH: i32 = 8;
+            pub const SQLITE_LIMIT_VARIABLE_NUMBER: i32 = 9;
+            pub const SQLITE_LIMIT_TRIGGER_DEPTH: i32 = 10;
+            pub const SQLITE_LIMIT_WORKER_THREADS: i32 = 11;
+            pub const SQLITE_PREPARE_PERSISTENT: c_uint = 1;
+            pub const SQLITE_PREPARE_NORMALIZE: c_uint = 2;
+            pub const SQLITE_PREPARE_NO_VTAB: c_uint = 4;
+            pub const SQLITE_PREPARE_DONT_LOG: c_uint = 16;
+            pub const SQLITE_INTEGER: i32 = 1;
+            pub const SQLITE_FLOAT: i32 = 2;
+            pub const SQLITE_BLOB: i32 = 4;
+            pub const SQLITE_NULL: i32 = 5;
+            pub const SQLITE_TEXT: i32 = 3;
+            pub const SQLITE3_TEXT: i32 = 3;
+            pub const SQLITE_UTF8: i32 = 1;
+            pub const SQLITE_UTF16LE: i32 = 2;
+            pub const SQLITE_UTF16BE: i32 = 3;
+            pub const SQLITE_UTF16: i32 = 4;
+            pub const SQLITE_ANY: i32 = 5;
+            pub const SQLITE_UTF16_ALIGNED: i32 = 8;
+            pub const SQLITE_DETERMINISTIC: i32 = 2048;
+            pub const SQLITE_DIRECTONLY: i32 = 524288;
+            pub const SQLITE_SUBTYPE: i32 = 1048576;
+            pub const SQLITE_INNOCUOUS: i32 = 2097152;
+            pub const SQLITE_RESULT_SUBTYPE: i32 = 16777216;
+            pub const SQLITE_SELFORDER1: i32 = 33554432;
+            pub const SQLITE_WIN32_DATA_DIRECTORY_TYPE: i32 = 1;
+            pub const SQLITE_WIN32_TEMP_DIRECTORY_TYPE: i32 = 2;
+            pub const SQLITE_TXN_NONE: i32 = 0;
+            pub const SQLITE_TXN_READ: i32 = 1;
+            pub const SQLITE_TXN_WRITE: i32 = 2;
+            pub const SQLITE_INDEX_SCAN_UNIQUE: i32 = 1;
+            pub const SQLITE_INDEX_SCAN_HEX: i32 = 2;
+            pub const SQLITE_INDEX_CONSTRAINT_EQ: i32 = 2;
+            pub const SQLITE_INDEX_CONSTRAINT_GT: i32 = 4;
+            pub const SQLITE_INDEX_CONSTRAINT_LE: i32 = 8;
+            pub const SQLITE_INDEX_CONSTRAINT_LT: i32 = 16;
+            pub const SQLITE_INDEX_CONSTRAINT_GE: i32 = 32;
+            pub const SQLITE_INDEX_CONSTRAINT_MATCH: i32 = 64;
+            pub const SQLITE_INDEX_CONSTRAINT_LIKE: i32 = 65;
+            pub const SQLITE_INDEX_CONSTRAINT_GLOB: i32 = 66;
+            pub const SQLITE_INDEX_CONSTRAINT_REGEXP: i32 = 67;
+            pub const SQLITE_INDEX_CONSTRAINT_NE: i32 = 68;
+            pub const SQLITE_INDEX_CONSTRAINT_ISNOT: i32 = 69;
+            pub const SQLITE_INDEX_CONSTRAINT_ISNOTNULL: i32 = 70;
+            pub const SQLITE_INDEX_CONSTRAINT_ISNULL: i32 = 71;
+            pub const SQLITE_INDEX_CONSTRAINT_IS: i32 = 72;
+            pub const SQLITE_INDEX_CONSTRAINT_LIMIT: i32 = 73;
+            pub const SQLITE_INDEX_CONSTRAINT_OFFSET: i32 = 74;
+            pub const SQLITE_INDEX_CONSTRAINT_FUNCTION: i32 = 150;
+            pub const SQLITE_MUTEX_FAST: i32 = 0;
+            pub const SQLITE_MUTEX_RECURSIVE: i32 = 1;
+            pub const SQLITE_MUTEX_STATIC_MAIN: i32 = 2;
+            pub const SQLITE_MUTEX_STATIC_MEM: i32 = 3;
+            pub const SQLITE_MUTEX_STATIC_MEM2: i32 = 4;
+            pub const SQLITE_MUTEX_STATIC_OPEN: i32 = 4;
+            pub const SQLITE_MUTEX_STATIC_PRNG: i32 = 5;
+            pub const SQLITE_MUTEX_STATIC_LRU: i32 = 6;
+            pub const SQLITE_MUTEX_STATIC_LRU2: i32 = 7;
+            pub const SQLITE_MUTEX_STATIC_PMEM: i32 = 7;
+            pub const SQLITE_MUTEX_STATIC_APP1: i32 = 8;
+            pub const SQLITE_MUTEX_STATIC_APP2: i32 = 9;
+            pub const SQLITE_MUTEX_STATIC_APP3: i32 = 10;
+            pub const SQLITE_MUTEX_STATIC_VFS1: i32 = 11;
+            pub const SQLITE_MUTEX_STATIC_VFS2: i32 = 12;
+            pub const SQLITE_MUTEX_STATIC_VFS3: i32 = 13;
+            pub const SQLITE_MUTEX_STATIC_MASTER: i32 = 2;
+            pub const SQLITE_TESTCTRL_FIRST: i32 = 5;
+            pub const SQLITE_TESTCTRL_PRNG_SAVE: i32 = 5;
+            pub const SQLITE_TESTCTRL_PRNG_RESTORE: i32 = 6;
+            pub const SQLITE_TESTCTRL_PRNG_RESET: i32 = 7;
+            pub const SQLITE_TESTCTRL_FK_NO_ACTION: i32 = 7;
+            pub const SQLITE_TESTCTRL_BITVEC_TEST: i32 = 8;
+            pub const SQLITE_TESTCTRL_FAULT_INSTALL: i32 = 9;
+            pub const SQLITE_TESTCTRL_BENIGN_MALLOC_HOOKS: i32 = 10;
+            pub const SQLITE_TESTCTRL_PENDING_BYTE: i32 = 11;
+            pub const SQLITE_TESTCTRL_ASSERT: i32 = 12;
+            pub const SQLITE_TESTCTRL_ALWAYS: i32 = 13;
+            pub const SQLITE_TESTCTRL_RESERVE: i32 = 14;
+            pub const SQLITE_TESTCTRL_JSON_SELFCHECK: i32 = 14;
+            pub const SQLITE_TESTCTRL_OPTIMIZATIONS: i32 = 15;
+            pub const SQLITE_TESTCTRL_ISKEYWORD: i32 = 16;
+            pub const SQLITE_TESTCTRL_GETOPT: i32 = 16;
+            pub const SQLITE_TESTCTRL_SCRATCHMALLOC: i32 = 17;
+            pub const SQLITE_TESTCTRL_INTERNAL_FUNCTIONS: i32 = 17;
+            pub const SQLITE_TESTCTRL_LOCALTIME_FAULT: i32 = 18;
+            pub const SQLITE_TESTCTRL_EXPLAIN_STMT: i32 = 19;
+            pub const SQLITE_TESTCTRL_ONCE_RESET_THRESHOLD: i32 = 19;
+            pub const SQLITE_TESTCTRL_NEVER_CORRUPT: i32 = 20;
+            pub const SQLITE_TESTCTRL_VDBE_COVERAGE: i32 = 21;
+            pub const SQLITE_TESTCTRL_BYTEORDER: i32 = 22;
+            pub const SQLITE_TESTCTRL_ISINIT: i32 = 23;
+            pub const SQLITE_TESTCTRL_SORTER_MMAP: i32 = 24;
+            pub const SQLITE_TESTCTRL_IMPOSTER: i32 = 25;
+            pub const SQLITE_TESTCTRL_PARSER_COVERAGE: i32 = 26;
+            pub const SQLITE_TESTCTRL_RESULT_INTREAL: i32 = 27;
+            pub const SQLITE_TESTCTRL_PRNG_SEED: i32 = 28;
+            pub const SQLITE_TESTCTRL_EXTRA_SCHEMA_CHECKS: i32 = 29;
+            pub const SQLITE_TESTCTRL_SEEK_COUNT: i32 = 30;
+            pub const SQLITE_TESTCTRL_TRACEFLAGS: i32 = 31;
+            pub const SQLITE_TESTCTRL_TUNE: i32 = 32;
+            pub const SQLITE_TESTCTRL_LOGEST: i32 = 33;
+            pub const SQLITE_TESTCTRL_USELONGDOUBLE: i32 = 34;
+            pub const SQLITE_TESTCTRL_LAST: i32 = 34;
+            pub const SQLITE_STATUS_MEMORY_USED: i32 = 0;
+            pub const SQLITE_STATUS_PAGECACHE_USED: i32 = 1;
+            pub const SQLITE_STATUS_PAGECACHE_OVERFLOW: i32 = 2;
+            pub const SQLITE_STATUS_SCRATCH_USED: i32 = 3;
+            pub const SQLITE_STATUS_SCRATCH_OVERFLOW: i32 = 4;
+            pub const SQLITE_STATUS_MALLOC_SIZE: i32 = 5;
+            pub const SQLITE_STATUS_PARSER_STACK: i32 = 6;
+            pub const SQLITE_STATUS_PAGECACHE_SIZE: i32 = 7;
+            pub const SQLITE_STATUS_SCRATCH_SIZE: i32 = 8;
+            pub const SQLITE_STATUS_MALLOC_COUNT: i32 = 9;
+            pub const SQLITE_DBSTATUS_LOOKASIDE_USED: i32 = 0;
+            pub const SQLITE_DBSTATUS_CACHE_USED: i32 = 1;
+            pub const SQLITE_DBSTATUS_SCHEMA_USED: i32 = 2;
+            pub const SQLITE_DBSTATUS_STMT_USED: i32 = 3;
+            pub const SQLITE_DBSTATUS_LOOKASIDE_HIT: i32 = 4;
+            pub const SQLITE_DBSTATUS_LOOKASIDE_MISS_SIZE: i32 = 5;
+            pub const SQLITE_DBSTATUS_LOOKASIDE_MISS_FULL: i32 = 6;
+            pub const SQLITE_DBSTATUS_CACHE_HIT: i32 = 7;
+            pub const SQLITE_DBSTATUS_CACHE_MISS: i32 = 8;
+            pub const SQLITE_DBSTATUS_CACHE_WRITE: i32 = 9;
+            pub const SQLITE_DBSTATUS_DEFERRED_FKS: i32 = 10;
+            pub const SQLITE_DBSTATUS_CACHE_USED_SHARED: i32 = 11;
+            pub const SQLITE_DBSTATUS_CACHE_SPILL: i32 = 12;
+            pub const SQLITE_DBSTATUS_TEMPBUF_SPILL: i32 = 13;
+            pub const SQLITE_DBSTATUS_MAX: i32 = 13;
+            pub const SQLITE_STMTSTATUS_FULLSCAN_STEP: i32 = 1;
+            pub const SQLITE_STMTSTATUS_SORT: i32 = 2;
+            pub const SQLITE_STMTSTATUS_AUTOINDEX: i32 = 3;
+            pub const SQLITE_STMTSTATUS_VM_STEP: i32 = 4;
+            pub const SQLITE_STMTSTATUS_REPREPARE: i32 = 5;
+            pub const SQLITE_STMTSTATUS_RUN: i32 = 6;
+            pub const SQLITE_STMTSTATUS_FILTER_MISS: i32 = 7;
+            pub const SQLITE_STMTSTATUS_FILTER_HIT: i32 = 8;
+            pub const SQLITE_STMTSTATUS_MEMUSED: i32 = 99;
+            pub const SQLITE_CHECKPOINT_NOOP: i32 = -1;
+            pub const SQLITE_CHECKPOINT_PASSIVE: i32 = 0;
+            pub const SQLITE_CHECKPOINT_FULL: i32 = 1;
+            pub const SQLITE_CHECKPOINT_RESTART: i32 = 2;
+            pub const SQLITE_CHECKPOINT_TRUNCATE: i32 = 3;
+            pub const SQLITE_VTAB_CONSTRAINT_SUPPORT: i32 = 1;
+            pub const SQLITE_VTAB_INNOCUOUS: i32 = 2;
+            pub const SQLITE_VTAB_DIRECTONLY: i32 = 3;
+            pub const SQLITE_VTAB_USES_ALL_SCHEMAS: i32 = 4;
+            pub const SQLITE_ROLLBACK: i32 = 1;
+            pub const SQLITE_FAIL: i32 = 3;
+            pub const SQLITE_REPLACE: i32 = 5;
+            pub const SQLITE_SCANSTAT_NLOOP: i32 = 0;
+            pub const SQLITE_SCANSTAT_NVISIT: i32 = 1;
+            pub const SQLITE_SCANSTAT_EST: i32 = 2;
+            pub const SQLITE_SCANSTAT_NAME: i32 = 3;
+            pub const SQLITE_SCANSTAT_EXPLAIN: i32 = 4;
+            pub const SQLITE_SCANSTAT_SELECTID: i32 = 5;
+            pub const SQLITE_SCANSTAT_PARENTID: i32 = 6;
+            pub const SQLITE_SCANSTAT_NCYCLE: i32 = 7;
+            pub const SQLITE_SCANSTAT_COMPLEX: i32 = 1;
+            pub const SQLITE_SERIALIZE_NOCOPY: c_uint = 1;
+            pub const SQLITE_DESERIALIZE_FREEONCLOSE: c_uint = 1;
+            pub const SQLITE_DESERIALIZE_RESIZEABLE: c_uint = 2;
+            pub const SQLITE_DESERIALIZE_READONLY: c_uint = 4;
+            pub const SQLITE_CARRAY_INT32: i32 = 0;
+            pub const SQLITE_CARRAY_INT64: i32 = 1;
+            pub const SQLITE_CARRAY_DOUBLE: i32 = 2;
+            pub const SQLITE_CARRAY_TEXT: i32 = 3;
+            pub const SQLITE_CARRAY_BLOB: i32 = 4;
+            pub const CARRAY_INT32: i32 = 0;
+            pub const CARRAY_INT64: i32 = 1;
+            pub const CARRAY_DOUBLE: i32 = 2;
+            pub const CARRAY_TEXT: i32 = 3;
+            pub const CARRAY_BLOB: i32 = 4;
+            pub const NOT_WITHIN: i32 = 0;
+            pub const PARTLY_WITHIN: i32 = 1;
+            pub const FULLY_WITHIN: i32 = 2;
+            pub const SQLITE_SESSION_OBJCONFIG_SIZE: i32 = 1;
+            pub const SQLITE_SESSION_OBJCONFIG_ROWID: i32 = 2;
+            pub const SQLITE_CHANGESETSTART_INVERT: i32 = 2;
+            pub const SQLITE_CHANGESETAPPLY_NOSAVEPOINT: i32 = 1;
+            pub const SQLITE_CHANGESETAPPLY_INVERT: i32 = 2;
+            pub const SQLITE_CHANGESETAPPLY_IGNORENOOP: i32 = 4;
+            pub const SQLITE_CHANGESETAPPLY_FKNOACTION: i32 = 8;
+            pub const SQLITE_CHANGESET_DATA: i32 = 1;
+            pub const SQLITE_CHANGESET_NOTFOUND: i32 = 2;
+            pub const SQLITE_CHANGESET_CONFLICT: i32 = 3;
+            pub const SQLITE_CHANGESET_CONSTRAINT: i32 = 4;
+            pub const SQLITE_CHANGESET_FOREIGN_KEY: i32 = 5;
+            pub const SQLITE_CHANGESET_OMIT: i32 = 0;
+            pub const SQLITE_CHANGESET_REPLACE: i32 = 1;
+            pub const SQLITE_CHANGESET_ABORT: i32 = 2;
+            pub const SQLITE_SESSION_CONFIG_STRMSIZE: i32 = 1;
+            pub const FTS5_TOKENIZE_QUERY: i32 = 1;
+            pub const FTS5_TOKENIZE_PREFIX: i32 = 2;
+            pub const FTS5_TOKENIZE_DOCUMENT: i32 = 4;
+            pub const FTS5_TOKENIZE_AUX: i32 = 8;
+            pub const FTS5_TOKEN_COLOCATED: i32 = 1;
+
+        } pub use self::constants::{ * };
         
-        pub type sqlite_int64 = c_longlong;
-        pub type sqlite_uint64 = c_ulonglong;
-        pub type sqlite3_int64 = sqlite_int64;
-        pub type sqlite3_uint64 = sqlite_uint64;
+        pub mod types
+        {
+            /*!
+            */
+            use ::
+            {
+                ffi::{ c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
+                *,
+            };
+            
+            pub type sqlite_int64 = c_longlong;
+            pub type sqlite_uint64 = c_ulonglong;
+            pub type sqlite3_int64 = sqlite_int64;
+            pub type sqlite3_uint64 = sqlite_uint64;
+        } pub use self::types::{ * };
+        
+        pub mod enums
+        {
+            /*!
+            */
+            use ::
+            {
+                ffi::{ c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
+                *,
+            };
+            
+            #[non_exhaustive] #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+            pub enum ErrorCode 
+            {
+                InternalMalfunction,
+                PermissionDenied,
+                OperationAborted,
+                DatabaseBusy,
+                DatabaseLocked,
+                OutOfMemory,
+                ReadOnly,
+                OperationInterrupted,
+                SystemIoFailure,
+                DatabaseCorrupt,
+                NotFound,
+                DiskFull,
+                CannotOpen,
+                FileLockingProtocolFailed,
+                SchemaChanged,
+                TooBig,
+                ConstraintViolation,
+                TypeMismatch,
+                ApiMisuse,
+                NoLargeFileSupport,
+                AuthorizationForStatementDenied,
+                ParameterOutOfRange,
+                NotADatabase,
+                Unknown,
+            }
+        } pub use self::enums::{ * };
+        
+        pub mod structs
+        {
+            /*!
+            */
+            use ::
+            {
+                ffi::{ c_int, c_uint, c_longlong, c_ulonglong, c_void, CStr },
+                *,
+            };
+
+            use super::{ * };
+            
+            #[repr(C)] #[derive(Debug, Copy, Clone)]
+            pub struct sqlite3
+            {
+                _unused: [u8; 0],
+            }
+
+            #[repr(C)] #[derive(Debug, Copy, Clone)]
+            pub struct sqlite3_stmt
+            {
+                _unused: [u8; 0],
+            }
+            
+            #[repr(C)] #[derive(Debug, Copy, Clone)]
+            pub struct sqlite3_mutex
+            {
+                _unused: [u8; 0],
+            }
+
+            #[derive(Clone, Copy, Debug, PartialEq, Eq)]
+            pub struct Error
+            {
+                pub code: ErrorCode,
+                pub extended_code: c_int,
+            }
+            
+            impl Error
+            {
+                #[must_use]
+                pub fn new(result_code: c_int) -> Self 
+                {
+                    let code = match result_code & 0xff 
+                    {
+                        SQLITE_INTERNAL => ErrorCode::InternalMalfunction,
+                        SQLITE_PERM => ErrorCode::PermissionDenied,
+                        SQLITE_ABORT => ErrorCode::OperationAborted,
+                        SQLITE_BUSY => ErrorCode::DatabaseBusy,
+                        SQLITE_LOCKED => ErrorCode::DatabaseLocked,
+                        SQLITE_NOMEM => ErrorCode::OutOfMemory,
+                        SQLITE_READONLY => ErrorCode::ReadOnly,
+                        SQLITE_INTERRUPT => ErrorCode::OperationInterrupted,
+                        SQLITE_IOERR => ErrorCode::SystemIoFailure,
+                        SQLITE_CORRUPT => ErrorCode::DatabaseCorrupt,
+                        SQLITE_NOTFOUND => ErrorCode::NotFound,
+                        SQLITE_FULL => ErrorCode::DiskFull,
+                        SQLITE_CANTOPEN => ErrorCode::CannotOpen,
+                        SQLITE_PROTOCOL => ErrorCode::FileLockingProtocolFailed,
+                        SQLITE_SCHEMA => ErrorCode::SchemaChanged,
+                        SQLITE_TOOBIG => ErrorCode::TooBig,
+                        SQLITE_CONSTRAINT => ErrorCode::ConstraintViolation,
+                        SQLITE_MISMATCH => ErrorCode::TypeMismatch,
+                        SQLITE_MISUSE => ErrorCode::ApiMisuse,
+                        SQLITE_NOLFS => ErrorCode::NoLargeFileSupport,
+                        SQLITE_AUTH => ErrorCode::AuthorizationForStatementDenied,
+                        SQLITE_RANGE => ErrorCode::ParameterOutOfRange,
+                        SQLITE_NOTADB => ErrorCode::NotADatabase,
+                        _ => ErrorCode::Unknown,
+                    };
+
+                    Self {
+                        code,
+                        extended_code: result_code,
+                    }
+                }
+            }
+
+            impl fmt::Display for Error
+            {
+                fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+                {
+                    write!
+                    (
+                        f,
+                        "Error code {}: {}",
+                        self.extended_code,
+                        code_to_str(self.extended_code)
+                    )
+                }
+            }
+
+            impl error::Error for Error
+            {
+                fn description(&self) -> &str { code_to_str(self.extended_code) }
+            }
+        } pub use self::structs::{ * };
         
         unsafe extern "C"
         {
-            pub fn sqlite3_errcode(db: *mut sqlite3) -> ::ffi::c_int;
-            pub fn sqlite3_errstr(arg1: ::ffi::c_int) -> *const ::ffi::c_char;
-            pub fn sqlite3_errmsg(arg1: *mut sqlite3) -> *const ::ffi::c_char;
-            pub fn sqlite3_error_offset(db: *mut sqlite3) -> ::ffi::c_int;
-            pub fn sqlite3_extended_errcode(db: *mut sqlite3) -> ::ffi::c_int;
-            pub fn sqlite3_malloc64(arg1: sqlite3_uint64) -> *mut ::ffi::c_void;
+            pub fn sqlite3_bind_parameter_count(arg1: *mut sqlite3_stmt) -> c_int;
+            pub fn sqlite3_busy_timeout(arg1: *mut sqlite3, ms: c_int) -> c_int;
+            pub fn sqlite3_changes64(arg1: *mut sqlite3) -> sqlite3_int64;
+            pub fn sqlite3_close(arg1: *mut sqlite3) -> c_int;
+            pub fn sqlite3_column_count(pStmt: *mut sqlite3_stmt) -> c_int;
+            pub fn sqlite3_db_handle(arg1: *mut sqlite3_stmt) -> *mut sqlite3;
+            pub fn sqlite3_errcode(db: *mut sqlite3) -> c_int;
+            pub fn sqlite3_errstr(arg1: c_int) -> *const c_char;
+            pub fn sqlite3_errmsg(arg1: *mut sqlite3) -> *const c_char;
+            pub fn sqlite3_error_offset(db: *mut sqlite3) -> c_int;
+            pub fn sqlite3_extended_errcode(db: *mut sqlite3) -> c_int;
+            pub fn sqlite3_extended_result_codes
+            (
+                arg1: *mut sqlite3,
+                onoff: c_int,
+            ) -> c_int;
+            pub fn sqlite3_libversion_number() -> c_int;
+            pub fn sqlite3_open_v2
+            (
+                filename: *const c_char,
+                ppDb: *mut *mut sqlite3,
+                flags: c_int,
+                zVfs: *const c_char,
+            ) -> c_int;
+            pub fn sqlite3_malloc64(arg1: sqlite3_uint64) -> *mut c_void;
+            pub fn sqlite3_mutex_alloc(arg1: c_int) -> *mut sqlite3_mutex;
             pub fn sqlite3_mutex_free(arg1: *mut sqlite3_mutex);
-            pub fn sqlite3_set_errmsg( db: *mut sqlite3, errcode: ::ffi::c_int, zErrMsg: *const ::ffi::c_char ) -> ::ffi::c_int;
-            pub fn sqlite3_threadsafe() -> ::ffi::c_int;
+            pub fn sqlite3_prepare_v3( db: *mut sqlite3, zSql: *const c_char, nByte: c_int, prepFlags: c_uint, ppStmt: *mut *mut sqlite3_stmt, pzTail: *mut *const c_char ) -> c_int;
+            pub fn sqlite3_reset(pStmt: *mut sqlite3_stmt) -> c_int;
+            pub fn sqlite3_set_errmsg( db: *mut sqlite3, errcode: c_int, zErrMsg: *const c_char ) -> c_int;
+            pub fn sqlite3_step(arg1: *mut sqlite3_stmt) -> c_int;
+            pub fn sqlite3_stmt_readonly(pStmt: *mut sqlite3_stmt) -> c_int;
+            pub fn sqlite3_threadsafe() -> c_int;
             pub fn sqlite3_unlock_notify
             (
                 pBlocked: *mut sqlite3,
                 xNotify: Option<unsafe extern "C" fn(apArg: *mut *mut c_void, nArg: c_int), >,
                 pNotifyArg: *mut c_void,
             ) -> c_int;
-        }
-        
-        #[repr(C)] #[derive(Debug, Copy, Clone)]
-        pub struct sqlite3
-        {
-            _unused: [u8; 0],
-        }
-
-        #[repr(C)] #[derive(Debug, Copy, Clone)]
-        pub struct sqlite3_stmt
-        {
-            _unused: [u8; 0],
-        }
-        
-        #[repr(C)] #[derive(Debug, Copy, Clone)]
-        pub struct sqlite3_mutex
-        {
-            _unused: [u8; 0],
-        }
-
-        #[non_exhaustive] #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-        pub enum ErrorCode 
-        {
-            InternalMalfunction,
-            PermissionDenied,
-            OperationAborted,
-            DatabaseBusy,
-            DatabaseLocked,
-            OutOfMemory,
-            ReadOnly,
-            OperationInterrupted,
-            SystemIoFailure,
-            DatabaseCorrupt,
-            NotFound,
-            DiskFull,
-            CannotOpen,
-            FileLockingProtocolFailed,
-            SchemaChanged,
-            TooBig,
-            ConstraintViolation,
-            TypeMismatch,
-            ApiMisuse,
-            NoLargeFileSupport,
-            AuthorizationForStatementDenied,
-            ParameterOutOfRange,
-            NotADatabase,
-            Unknown,
-        }
-
-        #[derive(Clone, Copy, Debug, PartialEq, Eq)]
-        pub struct Error
-        {
-            pub code: ErrorCode,
-            pub extended_code: c_int,
-        }
-        
-        impl Error
-        {
-            #[must_use]
-            pub fn new(result_code: c_int) -> Self 
-            {
-                let code = match result_code & 0xff 
-                {
-                    SQLITE_INTERNAL => ErrorCode::InternalMalfunction,
-                    SQLITE_PERM => ErrorCode::PermissionDenied,
-                    SQLITE_ABORT => ErrorCode::OperationAborted,
-                    SQLITE_BUSY => ErrorCode::DatabaseBusy,
-                    SQLITE_LOCKED => ErrorCode::DatabaseLocked,
-                    SQLITE_NOMEM => ErrorCode::OutOfMemory,
-                    SQLITE_READONLY => ErrorCode::ReadOnly,
-                    SQLITE_INTERRUPT => ErrorCode::OperationInterrupted,
-                    SQLITE_IOERR => ErrorCode::SystemIoFailure,
-                    SQLITE_CORRUPT => ErrorCode::DatabaseCorrupt,
-                    SQLITE_NOTFOUND => ErrorCode::NotFound,
-                    SQLITE_FULL => ErrorCode::DiskFull,
-                    SQLITE_CANTOPEN => ErrorCode::CannotOpen,
-                    SQLITE_PROTOCOL => ErrorCode::FileLockingProtocolFailed,
-                    SQLITE_SCHEMA => ErrorCode::SchemaChanged,
-                    SQLITE_TOOBIG => ErrorCode::TooBig,
-                    SQLITE_CONSTRAINT => ErrorCode::ConstraintViolation,
-                    SQLITE_MISMATCH => ErrorCode::TypeMismatch,
-                    SQLITE_MISUSE => ErrorCode::ApiMisuse,
-                    SQLITE_NOLFS => ErrorCode::NoLargeFileSupport,
-                    SQLITE_AUTH => ErrorCode::AuthorizationForStatementDenied,
-                    SQLITE_RANGE => ErrorCode::ParameterOutOfRange,
-                    SQLITE_NOTADB => ErrorCode::NotADatabase,
-                    _ => ErrorCode::Unknown,
-                };
-
-                Self {
-                    code,
-                    extended_code: result_code,
-                }
-            }
-        }
-
-        impl fmt::Display for Error
-        {
-            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
-            {
-                write!
-                (
-                    f,
-                    "Error code {}: {}",
-                    self.extended_code,
-                    code_to_str(self.extended_code)
-                )
-            }
-        }
-
-        impl error::Error for Error
-        {
-            fn description(&self) -> &str { code_to_str(self.extended_code) }
         }
 
         #[must_use] pub fn code_to_str(code: c_int) -> &'static str
@@ -3418,12 +3497,13 @@ pub mod system
         */
         use std::convert::TryFrom;
         use collections::BTreeMap;
-        use error::sqlite::Error;
         use ::
         {
             cell::{ RefCell },
-            ffi::{ c_int, c_uint, c_void, CStr, CString },
+            error::sqlite::{ * },
+            ffi::{ c_char, c_int, c_uint, c_void, CStr, CString },
             path::{ Path },
+            rc::{ Rc },
             sync::{ Arc, Condvar, Mutex },
             vec::{ SmallVec },
             *,
@@ -3432,11 +3512,58 @@ pub mod system
         use super::sql;
         /*
         */
+        pub type Array = Rc<Vec<Value>>;
+
+        impl ToSql for Array
+        {
+            #[inline] fn to_sql(&self) -> Result<ToSqlOutput<'_>> { Ok(ToSqlOutput::Array(self.clone())) }
+        }
+
         pub type Result<T, E = Error> = result::Result<T, E>;
         
         pub trait Params
         {
             fn __bind_in(self, stmt: &mut Statement<'_>) -> Result<()>;
+        }
+
+        impl Params for [&(dyn ToSql + Send + Sync); 0]
+        {
+            #[inline] fn __bind_in(self, stmt: &mut Statement<'_>) -> Result<()> { stmt.ensure_parameter_count(0) }
+        }
+
+        pub trait ToSql
+        {
+            fn to_sql(&self) -> Result<ToSqlOutput<'_>>;
+        }
+
+        #[derive(Copy, Clone, Debug, PartialEq)]
+        pub enum ValueRef<'a>
+        {
+            Null,
+            Integer(i64),
+            Real(f64),
+            Text(&'a [u8]),
+            Blob(&'a [u8]),
+        }
+
+        #[derive(Clone, Debug, PartialEq)]
+        pub enum Value
+        {
+            Null,
+            Integer(i64),
+            Real(f64),
+            Text(String),
+            Blob(Vec<u8>),
+        }
+        
+        #[non_exhaustive] #[derive(Clone, Debug, PartialEq)]
+        pub enum ToSqlOutput<'a>
+        {
+            Borrowed(ValueRef<'a>),
+            Owned(Value),
+            ZeroBlob(i32),
+            Arg(usize),
+            Array(Array),
         }
 
         #[repr(i32)] #[non_exhaustive] #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -3651,13 +3778,32 @@ pub mod system
         
         impl RawStatement
         {
+            #[inline] pub fn bind_parameter_count(&self) -> usize { unsafe { sql::sqlite3_bind_parameter_count(self.ptr) as usize } }
+            
+            #[inline] pub fn column_count(&self) -> usize { unsafe { sql::sqlite3_column_count(self.ptr) as usize } }
+
             #[inline] pub fn is_null(&self) -> bool { self.ptr.is_null() }
+
+            #[inline] pub unsafe fn new(s: *mut sql::sqlite3_stmt) -> Self
+            {
+                Self
+                {
+                    ptr: s,
+                    cache: ParamIndexCache::default(),
+                }
+            }
+
+            #[inline] pub fn readonly(&self) -> bool { unsafe { sql::sqlite3_stmt_readonly(self.ptr) != 0 } }
+
+            #[inline] pub fn reset(&self) -> c_int { unsafe { sql::sqlite3_reset(self.ptr) } }
 
             pub fn step(&self) -> c_int
             {
-                let mut db = ptr::null_mut::<sql::sqlite3>();
-                loop {
-                    unsafe {
+                unsafe
+                {
+                    let mut db = ptr::null_mut::<sql::sqlite3>();
+                    loop
+                    {                    
                         let mut rc = sql::sqlite3_step(self.ptr);
                         if (rc & 0xff) != sql::SQLITE_LOCKED {
                             break rc;
@@ -3665,14 +3811,14 @@ pub mod system
                         if db.is_null() {
                             db = sql::sqlite3_db_handle(self.ptr);
                         }
-                        if !unlock_notify::is_locked(db, rc) {
+                        if !database_is_locked(db, rc) {
                             break rc;
                         }
-                        rc = unlock_notify::wait_for_unlock_notify(db);
+                        rc = wait_for_unlock_notify(db);
                         if rc != sql::SQLITE_OK {
                             break rc;
                         }
-                        self.reset();
+                        self.reset();    
                     }
                 }
             }
@@ -3684,9 +3830,22 @@ pub mod system
             pub stmt: RawStatement,
         }
 
-        impl Statement
+        impl Statement<'_>
         {
-            
+            #[inline] pub fn check_update(&self) -> Result<()>
+            {
+                if self.column_count() > 0 && self.stmt.readonly() { return Err(Error::ExecuteReturnedResults); }
+                Ok(())
+            }
+
+            #[inline] pub fn column_count(&self) -> usize { self.stmt.column_count() }
+
+            #[inline] pub fn ensure_parameter_count(&self, n: usize) -> Result<()>
+            {
+                let count = self.parameter_count();
+                if count != n { Err(Error::InvalidParameterCount(n, count)) } else { Ok(()) }
+            }
+
             #[inline] pub fn execute<P: Params>(&mut self, params: P) -> Result<usize>
             {
                 params.__bind_in(self)?;
@@ -3709,6 +3868,10 @@ pub mod system
                     _ => Err(self.conn.decode_result(r).unwrap_err()),
                 }
             }
+
+            #[inline] pub fn new(conn: &Connection, stmt: RawStatement) -> Statement<'_> { Statement { conn, stmt } }
+
+            #[inline] pub fn parameter_count(&self) -> usize { self.stmt.bind_parameter_count() }
         }
 
         #[derive(Clone, Copy, Debug, Eq, PartialEq)]
@@ -3743,6 +3906,27 @@ pub mod system
 
         impl InnerConnection
         {
+            #[inline] pub fn changes(&self) -> u64 { unsafe { sql::sqlite3_changes64(self.db()) as u64 } }
+
+            #[inline] pub fn db(&self) -> *mut sql::sqlite3 { self.db }
+
+            #[inline] pub fn decode_result(&self, code: c_int) -> Result<()> { unsafe { decode_result_raw(self.db(), code) } }
+            
+            #[inline] pub unsafe fn new(db: *mut sql::sqlite3, owned: bool) -> Self
+            {
+                Self
+                {
+                    db,
+                    interrupt_lock: Arc::new(Mutex::new(if owned { db } else { ptr::null_mut() })),
+                    commit_hook: None,
+                    rollback_hook: None,
+                    update_hook: None,
+                    progress_handler: None,
+                    authorizer: None,
+                    owned,
+                }
+            }
+
             pub fn open_with_flags( c_path: &CStr, mut flags: OpenFlags, vfs: Option<&CStr> ) -> Result<Self>
             {
                 unsafe
@@ -3786,8 +3970,7 @@ pub mod system
 
                         return Err(e);
                     }
-
-                    // attempt to turn on extended results code; don't fail if we can't.
+                    
                     if !exrescode {
                         sql::sqlite3_extended_result_codes(db, 1);
                     }
@@ -3806,13 +3989,14 @@ pub mod system
             pub fn prepare<'a>( &mut self, conn: &'a Connection, sql: &str, flags: PrepFlags ) -> Result<(Statement<'a>, usize)>
             {
                 let mut c_stmt: *mut sql::sqlite3_stmt = ptr::null_mut();
-                let Ok(len) = c_int::try_from(sql.len()) else { return Err(err!(ffi::SQLITE_TOOBIG)); };
+                let Ok(len) = c_int::try_from(sql.len()) else { return Err(err!(sql::SQLITE_TOOBIG)); };
                 let c_sql = sql.as_bytes().as_ptr().cast::<c_char>();
                 let mut c_tail: *const c_char = ptr::null();
                 let r = unsafe
                 {
                     let mut rc;
-                    loop {
+                    loop
+                    {
                         rc = sql::sqlite3_prepare_v3(
                             self.db(),
                             c_sql,
@@ -3824,7 +4008,7 @@ pub mod system
                         if !database_is_locked(self.db, rc) {
                             break;
                         }
-                        rc = unlock_notify::wait_for_unlock_notify(self.db);
+                        rc = wait_for_unlock_notify(self.db);
                         if rc != sql::SQLITE_OK {
                             break;
                         }
@@ -3832,9 +4016,7 @@ pub mod system
                     rc
                 };
                 
-                if r != sql::SQLITE_OK {
-                    return Err(unsafe { error_with_offset(self.db, r, sql) });
-                }
+                if r != sql::SQLITE_OK { return Err(unsafe { error_with_offset(self.db, r, sql) }); }
                 
                 let tail = if c_tail.is_null() {
                     0
@@ -3910,6 +4092,10 @@ pub mod system
         
         impl Connection
         {
+            #[inline] pub fn changes(&self) -> u64 { self.db.borrow().changes() }
+
+            #[inline] fn decode_result(&self, code: c_int) -> Result<()> { self.db.borrow().decode_result(code) }
+
             #[inline] pub fn execute<P: Params>(&self, sql: &str, params: P) -> Result<usize>
             { self.prepare(sql).and_then(|mut stmt| stmt.execute(params)) }
 
@@ -4020,6 +4206,8 @@ pub mod system
                 drop( ::panic::catch_unwind(::panic::AssertUnwindSafe(|| un.fired())));
             }
         }
+
+        #[must_use] #[inline] pub fn version_number() -> i32 { unsafe { sql::sqlite3_libversion_number() } }
 
         pub unsafe fn wait_for_unlock_notify(db: *mut sql::sqlite3) -> c_int
         {
@@ -5334,4 +5522,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 5337 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 5525 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
