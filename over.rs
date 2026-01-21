@@ -65,18 +65,18 @@ pub mod __
     
     #[macro_export] macro_rules! println_stderr
     {
-        ($fmt:expr) =>
+        ($f:expr) =>
         (
-            match writeln!(&mut ::io::stderr(), $fmt)
+            match writeln!(&mut ::io::stderr(), $f)
             {
                 Ok(_) => {}
                 Err(e) => println!("write to stderr failed: {:?}", e)
             }
         );
 
-        ($fmt:expr, $($arg:tt)*) =>
+        ($f:expr, $($v:tt)*) =>
         (
-            match writeln!(&mut ::io::stderr(), $fmt, $($arg)*)
+            match writeln!(&mut ::io::stderr(), $f, $($v)*)
             {
                 Ok(_) => {}
                 Err(e) => println!("write to stderr failed: {:?}", e)
@@ -87,8 +87,8 @@ pub mod __
     #[macro_export] macro_rules! bitflags
     {
         (
-            $(#[$outer:meta])*
-            $vis:vis struct $BitFlags:ident: $T:ty
+            $(#[$o:meta])*
+            $v:vis struct $BF:ident: $T:ty
             {
                 $(
                     $(#[$i:ident $($args:tt)*])*
@@ -101,13 +101,13 @@ pub mod __
         {
             ::__declare_public_bitflags!
             {
-                $(#[$outer])*
-                $vis struct $BitFlags
+                $(#[$o])*
+                $v struct $BF
             }
             
             ::__impl_public_bitflags_consts!
             {
-                $BitFlags: $T
+                $BF: $T
                 {
                     $(
                         $(#[$i $($args)*])*
@@ -120,12 +120,12 @@ pub mod __
             {
                 ::__declare_internal_bitflags!
                 {
-                    $vis struct InternalBitFlags: $T
+                    $v struct InternalBitFlags: $T
                 }
 
                 ::__impl_internal_bitflags!
                 {
-                    InternalBitFlags: $T, $BitFlags
+                    InternalBitFlags: $T, $BF
                     {
                         $(
                             $(#[$i $($args)*])*
@@ -136,17 +136,17 @@ pub mod __
 
                 ::__impl_public_bitflags_forward!
                 {
-                    $BitFlags: $T, InternalBitFlags
+                    $BF: $T, InternalBitFlags
                 }
 
                 ::__impl_public_bitflags_ops!
                 {
-                    $BitFlags
+                    $BF
                 }
 
                 ::__impl_public_bitflags_iter!
                 {
-                    $BitFlags: $T, $BitFlags
+                    $BF: $T, $BF
                 }
             };
 
@@ -157,8 +157,8 @@ pub mod __
         };
 
         (
-            $(#[$outer:meta])*
-            impl $BitFlags:ident: $T:ty
+            $(#[$o:meta])*
+            impl $BF:ident: $T:ty
             {
                 $(
                     $(#[$i:ident $($args:tt)*])*
@@ -171,7 +171,7 @@ pub mod __
         {
             ::__impl_public_bitflags_consts!
             {
-                $BitFlags: $T
+                $BF: $T
                 {
                     $(
                         $(#[$i $($args)*])*
@@ -184,8 +184,8 @@ pub mod __
             {
                 ::__impl_public_bitflags!
                 {
-                    $(#[$outer])*
-                    $BitFlags: $T, $BitFlags
+                    $(#[$o])*
+                    $BF: $T, $BF
                     {
                         $(
                             $(#[$i $($args)*])*
@@ -196,12 +196,12 @@ pub mod __
 
                 ::__impl_public_bitflags_ops!
                 {
-                    $BitFlags
+                    $BF
                 }
 
                 ::__impl_public_bitflags_iter!
                 {
-                    $BitFlags: $T, $BitFlags
+                    $BF: $T, $BF
                 }
             };
 
@@ -216,14 +216,14 @@ pub mod __
     
     #[macro_export] macro_rules! bitflags_match
     {
-        ($operation:expr,
+        ($o:expr,
         {
             $($t:tt)*
         }) =>
         {
             (||
             {
-                ::__bitflags_match!($operation, { $($t)* })
+                ::__bitflags_match!($o, { $($t)* })
             })()
         };
     }
@@ -231,8 +231,8 @@ pub mod __
     #[macro_export] macro_rules! __impl_public_bitflags_consts
     {
         (
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident: $T:ty
+            $(#[$o:meta])*
+            $PBF:ident: $T:ty
             {
                 $(
                     $(#[$i:ident $($args:tt)*])*
@@ -241,8 +241,8 @@ pub mod __
             }
         ) =>
         {
-            $(#[$outer])*
-            impl $PublicBitFlags
+            $(#[$o])*
+            impl $PBF
             {
                 $(
                     ::__bitflags_flag!
@@ -258,10 +258,10 @@ pub mod __
                 )*
             }
 
-            $(#[$outer])*
-            impl ::bits::flags::Flags for $PublicBitFlags
+            $(#[$o])*
+            impl ::bits::flags::Flags for $PBF
             {
-                const FLAGS: &'static [::bits::flags::Flag<$PublicBitFlags>] = 
+                const FLAGS: &'static [::bits::flags::Flag<$PBF>] = 
                 &[
                     $(
                         ::__bitflags_flag!
@@ -272,7 +272,7 @@ pub mod __
                                 ::__bitflags_expr_safe_attrs!(
                                     $(#[$i $($args)*])*
                                     {
-                                        ::bits::flags::Flag::new(stringify!($Flag), $PublicBitFlags::$Flag)
+                                        ::bits::flags::Flag::new(stringify!($Flag), $PBF::$Flag)
                                     }
                                 )
                             },
@@ -282,7 +282,7 @@ pub mod __
                                 (
                                     $(#[$i $($args)*])*
                                     {
-                                        ::bits::flags::Flag::new("", $PublicBitFlags::from_bits_retain($value))
+                                        ::bits::flags::Flag::new("", $PBF::from_bits_retain($value))
                                     }
                                 )
                             },
@@ -292,9 +292,9 @@ pub mod __
 
                 type Bits = $T;
 
-                fn bits(&self) -> $T { $PublicBitFlags::bits(self) }
+                fn bits(&self) -> $T { $PBF::bits(self) }
 
-                fn from_bits_retain(bits: $T) -> $PublicBitFlags { $PublicBitFlags::from_bits_retain(bits) }
+                fn from_bits_retain(bits: $T) -> $PBF { $PBF::from_bits_retain(bits) }
             }
         };
     }
@@ -303,8 +303,8 @@ pub mod __
     {
         (
             params: $self:ident, $bits:ident, $name:ident, $other:ident, $value:ident;
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident: $T:ty
+            $(#[$o:meta])*
+            $PBF:ident: $T:ty
             {
                 fn empty() $empty_body:block
                 fn all() $all_body:block
@@ -329,8 +329,8 @@ pub mod __
             }
         ) =>
         {
-            $(#[$outer])*
-            impl $PublicBitFlags
+            $(#[$o])*
+            impl $PBF
             {
                 #[inline] pub const fn empty() -> Self
                     $empty_body
@@ -398,26 +398,26 @@ pub mod __
     #[macro_export] macro_rules! __declare_public_bitflags
     {
         (
-            $(#[$outer:meta])*
-            $vis:vis struct $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $v:vis struct $PBF:ident
         ) =>
         {
-            $(#[$outer])*
-            $vis struct $PublicBitFlags(<$PublicBitFlags as ::bits::flags::PublicFlags>::Internal);
+            $(#[$o])*
+            $v struct $PBF(<$PBF as ::bits::flags::PublicFlags>::Internal);
         };
     }
     
     #[macro_export] macro_rules! __bitflags_match
     {
-        ($operation:expr, { $pattern:expr => { $($body:tt)* } , $($t:tt)+ }) =>
+        ($o:expr, { $pattern:expr => { $($body:tt)* } , $($t:tt)+ }) =>
         {
-            ::__bitflags_match!($operation, { $pattern => { $($body)* } $($t)+ })
+            ::__bitflags_match!($o, { $pattern => { $($body)* } $($t)+ })
         };
         
-        ($operation:expr, { $pattern:expr => { $($body:tt)* } $($t:tt)+ }) =>
+        ($o:expr, { $pattern:expr => { $($body:tt)* } $($t:tt)+ }) =>
         {
             {
-                if $operation == $pattern
+                if $o == $pattern
                 {
                     return
                     {
@@ -425,20 +425,20 @@ pub mod __
                     };
                 }
 
-                ::__bitflags_match!($operation, { $($t)+ })
+                ::__bitflags_match!($o, { $($t)+ })
             }
         };
         
-        ($operation:expr, { $pattern:expr => $body:expr , $($t:tt)+ }) =>
+        ($o:expr, { $pattern:expr => $body:expr , $($t:tt)+ }) =>
         {
             {
-                if $operation == $pattern { return $body; }
+                if $o == $pattern { return $body; }
 
-                ::__bitflags_match!($operation, { $($t)+ })
+                ::__bitflags_match!($o, { $($t)+ })
             }
         };
         
-        ($operation:expr, { _ => $default:expr $(,)? }) => { $default }
+        ($o:expr, { _ => $default:expr $(,)? }) => { $default }
     }
     
     #[macro_export] macro_rules! __bitflags_expr_safe_attrs
@@ -559,17 +559,17 @@ pub mod __
 
     #[macro_export] macro_rules! __declare_internal_bitflags
     {
-        ( $vis:vis struct $InternalBitFlags:ident: $T:ty ) =>
+        ( $v:vis struct $InternalBitFlags:ident: $T:ty ) =>
         {
             #[repr(transparent)] #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-            $vis struct $InternalBitFlags($T);
+            $v struct $InternalBitFlags($T);
         };
     }
     
     #[macro_export] macro_rules! __impl_internal_bitflags
     {
         (
-            $InternalBitFlags:ident: $T:ty, $PublicBitFlags:ident
+            $InternalBitFlags:ident: $T:ty, $PBF:ident
             {
                 $(
                     $(#[$i:ident $($args:tt)*])*
@@ -578,7 +578,7 @@ pub mod __
             }
         ) =>
         {
-            impl::bits::flags::PublicFlags for $PublicBitFlags
+            impl::bits::flags::PublicFlags for $PBF
             {
                 type Primitive = $T;
                 type Internal = $InternalBitFlags;
@@ -602,7 +602,7 @@ pub mod __
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
                 {
-                    ::bits::flags::to_writer(&$PublicBitFlags(*self), f)
+                    ::bits::flags::to_writer(&$PBF(*self), f)
                 }
             }
 
@@ -611,7 +611,7 @@ pub mod __
                 type Err = ::bits::flags::ParseError;
 
                 fn from_str(s: &str) -> ::result::Result<Self, Self::Err> 
-                { ::bits::flags::from_str::<$PublicBitFlags>(s).map(|flags| flags.0) }
+                { ::bits::flags::from_str::<$PBF>(s).map(|flags| flags.0) }
             }
 
             impl ::convert::AsRef<$T> for $InternalBitFlags
@@ -626,7 +626,7 @@ pub mod __
             
             __impl_public_bitflags!
             {
-                $InternalBitFlags: $T, $PublicBitFlags
+                $InternalBitFlags: $T, $PBF
                 {
                     $(
                         $(#[$i $($args)*])*
@@ -642,7 +642,7 @@ pub mod __
             
             __impl_public_bitflags_iter!
             {
-                $InternalBitFlags: $T, $PublicBitFlags
+                $InternalBitFlags: $T, $PBF
             }
 
             impl $InternalBitFlags
@@ -655,15 +655,15 @@ pub mod __
     #[macro_export] macro_rules! __impl_public_bitflags_forward
     {
         (
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident: $T:ty, $InternalBitFlags:ident
+            $(#[$o:meta])*
+            $PBF:ident: $T:ty, $InternalBitFlags:ident
         ) =>
         {
             __impl_bitflags!
             {
                 params: self, bits, name, other, value;
-                $(#[$outer])*
-                $PublicBitFlags: $T
+                $(#[$o])*
+                $PBF: $T
                 {
                     fn empty() { Self($InternalBitFlags::empty()) }
 
@@ -714,8 +714,8 @@ pub mod __
     #[macro_export] macro_rules! __impl_public_bitflags
     {
         (
-            $(#[$outer:meta])*
-            $BitFlags:ident: $T:ty, $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $BF:ident: $T:ty, $PBF:ident
             {
                 $(
                     $(#[$i:ident $($args:tt)*])*
@@ -727,8 +727,8 @@ pub mod __
             __impl_bitflags!
             {
                 params: self, bits, name, other, value;
-                $(#[$outer])*
-                $BitFlags: $T
+                $(#[$o])*
+                $BF: $T
                 {
                     fn empty() { Self(<$T as ::bits::flags::Bits>::EMPTY) }
 
@@ -742,7 +742,7 @@ pub mod __
                             (
                                 $(#[$i $($args)*])*
                                 {{
-                                    let flag = <$PublicBitFlags as ::bits::flags::Flags>::FLAGS[i].value().bits();
+                                    let flag = <$PBF as ::bits::flags::Flags>::FLAGS[i].value().bits();
 
                                     truncated = truncated | flag;
                                     i += 1;
@@ -781,7 +781,7 @@ pub mod __
                                         $(#[$i $($args)*])*
                                         {
                                             if name == stringify!($Flag) {
-                                                return Some(Self($PublicBitFlags::$Flag.bits()));
+                                                return Some(Self($PBF::$Flag.bits()));
                                             }
                                         }
                                     );
@@ -819,40 +819,40 @@ pub mod __
     #[macro_export] macro_rules! __impl_public_bitflags_iter
     {
         (
-            $(#[$outer:meta])*
-            $BitFlags:ident: $T:ty, $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $BF:ident: $T:ty, $PBF:ident
         ) =>
         {
-            $(#[$outer])*
-            impl $BitFlags
+            $(#[$o])*
+            impl $BF
             {
                 
-                #[inline] pub const fn iter(&self) -> ::bits::flags::Iter<$PublicBitFlags>
+                #[inline] pub const fn iter(&self) -> ::bits::flags::Iter<$PBF>
                 {
                     ::bits::flags::Iter::__private_const_new
                     (
-                        <$PublicBitFlags as ::bits::flags::Flags>::FLAGS,
-                        $PublicBitFlags::from_bits_retain(self.bits()),
-                        $PublicBitFlags::from_bits_retain(self.bits()),
+                        <$PBF as ::bits::flags::Flags>::FLAGS,
+                        $PBF::from_bits_retain(self.bits()),
+                        $PBF::from_bits_retain(self.bits()),
                     )
                 }
                 
-                #[inline] pub const fn iter_names(&self) -> ::bits::flags::IterNames<$PublicBitFlags>
+                #[inline] pub const fn iter_names(&self) -> ::bits::flags::IterNames<$PBF>
                 {
                     ::bits::flags::IterNames::__private_const_new
                     (
-                        <$PublicBitFlags as ::bits::flags::Flags>::FLAGS,
-                        $PublicBitFlags::from_bits_retain(self.bits()),
-                        $PublicBitFlags::from_bits_retain(self.bits()),
+                        <$PBF as ::bits::flags::Flags>::FLAGS,
+                        $PBF::from_bits_retain(self.bits()),
+                        $PBF::from_bits_retain(self.bits()),
                     )
                 }
             }
 
-            $(#[$outer:meta])*
-            impl ::iter::IntoIterator for $BitFlags
+            $(#[$o:meta])*
+            impl ::iter::IntoIterator for $BF
             {
-                type Item = $PublicBitFlags;
-                type IntoIter = ::bits::flags::Iter<$PublicBitFlags>;
+                type Item = $PBF;
+                type IntoIter = ::bits::flags::Iter<$PBF>;
                 fn into_iter(self) -> Self::IntoIter { self.iter() }
             }
         };
@@ -861,13 +861,13 @@ pub mod __
     #[macro_export] macro_rules! __impl_public_bitflags_ops
     {
         (
-            $(#[$outer:meta])*
-            $PublicBitFlags:ident
+            $(#[$o:meta])*
+            $PBF:ident
         ) =>
         {
 
-            $(#[$outer])*
-            impl ::fmt::Binary for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::Binary for $PBF
             {
                 fn fmt
                 (
@@ -880,8 +880,8 @@ pub mod __
                 }
             }
 
-            $(#[$outer])*
-            impl ::fmt::Octal for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::Octal for $PBF
             {
                 fn fmt
                 (
@@ -894,8 +894,8 @@ pub mod __
                 }
             }
 
-            $(#[$outer])*
-            impl ::fmt::LowerHex for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::LowerHex for $PBF
             {
                 fn fmt
                 (
@@ -908,8 +908,8 @@ pub mod __
                 }
             }
 
-            $(#[$outer])*
-            impl ::fmt::UpperHex for $PublicBitFlags
+            $(#[$o])*
+            impl ::fmt::UpperHex for $PBF
             {
                 fn fmt
                 (
@@ -922,68 +922,68 @@ pub mod __
                 }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitOr for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitOr for $PBF
             {
                 type Output = Self;
-                #[inline] fn bitor(self, other: $PublicBitFlags) -> Self { self.union(other) }
+                #[inline] fn bitor(self, other: $PBF) -> Self { self.union(other) }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitOrAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitOrAssign for $PBF
             {
                 #[inline] fn bitor_assign(&mut self, other: Self) { self.insert(other); }
             }
 
-            $(#[$outer])*
-            impl ops::BitXor for $PublicBitFlags
+            $(#[$o])*
+            impl ops::BitXor for $PBF
             {
                 type Output = Self;                
                 #[inline] fn bitxor(self, other: Self) -> Self { self.symmetric_difference(other) }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitXorAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitXorAssign for $PBF
             {
                 #[inline] fn bitxor_assign(&mut self, other: Self) { self.toggle(other); }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitAnd for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitAnd for $PBF
             {
                 type Output = Self;
                 #[inline] fn bitand(self, other: Self) -> Self { self.intersection(other) }
             }
 
-            $(#[$outer])*
-            impl ::ops::BitAndAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::BitAndAssign for $PBF
             {
                 #[inline] fn bitand_assign(&mut self, other: Self)
                 { *self = Self::from_bits_retain(self.bits()).intersection(other); }
             }
 
-            $(#[$outer])*
-            impl ::ops::Sub for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::Sub for $PBF
             {
                 type Output = Self;
                 #[inline] fn sub(self, other: Self) -> Self { self.difference(other) }
             }
 
-            $(#[$outer])*
-            impl ::ops::SubAssign for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::SubAssign for $PBF
             {
                 #[inline] fn sub_assign(&mut self, other: Self) { self.remove(other); }
             }
 
-            $(#[$outer])*
-            impl ::ops::Not for $PublicBitFlags
+            $(#[$o])*
+            impl ::ops::Not for $PBF
             {
                 type Output = Self;
                 #[inline] fn not(self) -> Self { self.complement() }
             }
 
-            $(#[$outer])*
-            impl ::iter::Extend<$PublicBitFlags> for $PublicBitFlags
+            $(#[$o])*
+            impl ::iter::Extend<$PBF> for $PBF
             {
                 fn extend<T: ::iter::IntoIterator<Item = Self>>( &mut self, iterator: T )
                 {
@@ -994,8 +994,8 @@ pub mod __
                 }
             }
 
-            $(#[$outer])*
-            impl ::iter::FromIterator<$PublicBitFlags> for $PublicBitFlags
+            $(#[$o])*
+            impl ::iter::FromIterator<$PBF> for $PBF
             {
                 fn from_iter<T: ::iter::IntoIterator<Item = Self>>( iterator: T ) -> Self
                 {
@@ -1034,7 +1034,7 @@ pub mod __
         ($code:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, None) };
         ($code:expr, $msg:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($msg))) };
         ($code:expr, $err:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($err))) };
-        ($code:expr, $fmt:expr, $($arg:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($fmt, $($arg)*))) };
+        ($code:expr, $f:expr, $($v:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($f, $($v)*))) };
     }
 
     #[macro_export] macro_rules! __lazy_static_create
@@ -1047,9 +1047,9 @@ pub mod __
 	
 	#[macro_export(local_inner_macros)] macro_rules! __lazy_static_internal
 	{
-		($(#[$attr:meta])* ($($vis:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => 
+		($(#[$attr:meta])* ($($v:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => 
         {
-			__lazy_static_internal!(@MAKE TY, $(#[$attr])*, ($($vis)*), $N);
+			__lazy_static_internal!(@MAKE TY, $(#[$attr])*, ($($v)*), $N);
 			__lazy_static_internal!(@TAIL, $N : $T = $e);
 			lazy_static!($($t)*);
 		};
@@ -1077,16 +1077,16 @@ pub mod __
 			}
 		};
         
-		(@MAKE TY, $(#[$attr:meta])*, ($($vis:tt)*), $N:ident) =>
+		(@MAKE TY, $(#[$attr:meta])*, ($($v:tt)*), $N:ident) =>
         {
 			#[allow(missing_copy_implementations)]
 			#[allow(non_camel_case_types)]
 			#[allow(dead_code)]
 			$(#[$attr])*
-			$($vis)* struct $N {__private_field: ()}
+			$($v)* struct $N {__private_field: ()}
 			#[doc(hidden)]
 			#[allow(non_upper_case_globals)]
-			$($vis)* static $N: $N = $N {__private_field: ()};
+			$($v)* static $N: $N = $N {__private_field: ()};
 		};
 
 		() => ()
@@ -1644,29 +1644,17 @@ pub mod __
     
     #[macro_export] macro_rules! forward
     {
-        ($( Self :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret { Self::$method(self $( , $arg )* )
-                }
-            )*};
-        ($( $base:ident :: $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret {
-                    <Self as $base>::$method(self $( , $arg )* )
-                }
-            )*};
-        ($( $base:ident :: $method:ident ( $( $arg:ident : $ty:ty ),* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method( $( $arg : $ty ),* ) -> $ret {
-                    <Self as $base>::$method( $( $arg ),* )
-                }
-            )*};
-        ($( $imp:path as $method:ident ( self $( , $arg:ident : $ty:ty )* ) -> $ret:ty ; )*)
-            => {$(
-                #[inline] fn $method(self $( , $arg : $ty )* ) -> $ret {
-                    $imp(self $( , $arg )* )
-                }
-            )*};
+        ($( Self :: $method:ident ( self $( , $v:ident : $ty:ty )* ) -> $ret:ty ; )*) =>
+        {$( #[inline] fn $method(self $( , $v : $ty )* ) -> $ret { Self::$method(self $( , $v )* ) } )*};
+
+        ($( $base:ident :: $method:ident ( self $( , $v:ident : $ty:ty )* ) -> $ret:ty ; )*) =>
+        {$( #[inline] fn $method(self $( , $v : $ty )* ) -> $ret { <Self as $base>::$method(self $( , $v )* ) } )*};
+
+        ($( $base:ident :: $method:ident ( $( $v:ident : $ty:ty ),* ) -> $ret:ty ; )*) =>
+        {$( #[inline] fn $method( $( $v : $ty ),* ) -> $ret { <Self as $base>::$method( $( $v ),* ) } )*};
+
+        ($( $imp:path as $method:ident ( self $( , $v:ident : $ty:ty )* ) -> $ret:ty ; )*) =>
+        {$( #[inline] fn $method(self $( , $v : $ty )* ) -> $ret { $imp(self $( , $v )* ) } )*};
     }
 
     #[macro_export] macro_rules! constant
@@ -3987,7 +3975,7 @@ pub mod error
             ($code:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, None) };
             ($code:expr, $msg:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($msg))) };
             ($code:expr, $err:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($err))) };
-            ($code:expr, $fmt:expr, $($arg:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($fmt, $($arg)*))) };
+            ($code:expr, $f:expr, $($v:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($f, $($v)*))) };
         }
 
         pub const UNKNOWN_COLUMN: usize = usize::MAX;
@@ -26896,4 +26884,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 26899 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 26887 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
