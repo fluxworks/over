@@ -91,8 +91,8 @@ pub mod __
             $v:vis struct $BF:ident: $T:ty
             {
                 $(
-                    $(#[$i:ident $($args:tt)*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$i:ident $($x:tt)*])*
+                    const $F:tt = $w:expr;
                 )*
             }
 
@@ -110,8 +110,8 @@ pub mod __
                 $BF: $T
                 {
                     $(
-                        $(#[$i $($args)*])*
-                        const $Flag = $value;
+                        $(#[$i $($x)*])*
+                        const $F = $w;
                     )*
                 }
             }
@@ -128,8 +128,8 @@ pub mod __
                     InternalBitFlags: $T, $BF
                     {
                         $(
-                            $(#[$i $($args)*])*
-                            const $Flag = $value;
+                            $(#[$i $($x)*])*
+                            const $F = $w;
                         )*
                     }
                 }
@@ -161,8 +161,8 @@ pub mod __
             impl $BF:ident: $T:ty
             {
                 $(
-                    $(#[$i:ident $($args:tt)*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$i:ident $($x:tt)*])*
+                    const $F:tt = $v:expr;
                 )*
             }
 
@@ -174,8 +174,8 @@ pub mod __
                 $BF: $T
                 {
                     $(
-                        $(#[$i $($args)*])*
-                        const $Flag = $value;
+                        $(#[$i $($x)*])*
+                        const $F = $v;
                     )*
                 }
             }
@@ -188,8 +188,8 @@ pub mod __
                     $BF: $T, $BF
                     {
                         $(
-                            $(#[$i $($args)*])*
-                            const $Flag = $value;
+                            $(#[$i $($x)*])*
+                            const $F = $v;
                         )*
                     }
                 }
@@ -235,8 +235,8 @@ pub mod __
             $PBF:ident: $T:ty
             {
                 $(
-                    $(#[$i:ident $($args:tt)*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$i:ident $($x:tt)*])*
+                    const $F:tt = $v:expr;
                 )*
             }
         ) =>
@@ -247,11 +247,11 @@ pub mod __
                 $(
                     ::__bitflags_flag!
                     ({
-                        name: $Flag,
+                        name: $F,
                         named:
                         {
-                            $(#[$i $($args)*])*
-                            pub const $Flag: Self = Self::from_bits_retain($value);
+                            $(#[$i $($x)*])*
+                            pub const $F: Self = Self::from_bits_retain($v);
                         },
                         unnamed: {},
                     });
@@ -266,13 +266,13 @@ pub mod __
                     $(
                         ::__bitflags_flag!
                         ({
-                            name: $Flag,
+                            name: $F,
                             named:
                             {
                                 ::__bitflags_expr_safe_attrs!(
-                                    $(#[$i $($args)*])*
+                                    $(#[$i $($x)*])*
                                     {
-                                        ::bits::flags::Flag::new(stringify!($Flag), $PBF::$Flag)
+                                        ::bits::flags::Flag::new(stringify!($F), $PBF::$F)
                                     }
                                 )
                             },
@@ -280,9 +280,9 @@ pub mod __
                             {
                                 ::__bitflags_expr_safe_attrs!
                                 (
-                                    $(#[$i $($args)*])*
+                                    $(#[$i $($x)*])*
                                     {
-                                        ::bits::flags::Flag::new("", $PBF::from_bits_retain($value))
+                                        ::bits::flags::Flag::new("", $PBF::from_bits_retain($v))
                                     }
                                 )
                             },
@@ -302,7 +302,7 @@ pub mod __
     #[macro_export] macro_rules! __impl_bitflags
     {
         (
-            params: $s:ident, $b:ident, $n:ident, $oo:ident, $value:ident;
+            params: $s:ident, $b:ident, $n:ident, $oo:ident, $v:ident;
             $(#[$o:meta])*
             $PBF:ident: $T:ty
             {
@@ -374,7 +374,7 @@ pub mod __
                 #[inline] pub fn toggle(&mut $s, $oo: Self)
                     $tbb
                     
-                #[inline] pub fn set(&mut $s, $oo: Self, $value: bool)
+                #[inline] pub fn set(&mut $s, $oo: Self, $v: bool)
                     $sbb
                     
                 #[must_use] #[inline] pub const fn intersection($s, $oo: Self) -> Self
@@ -444,7 +444,7 @@ pub mod __
     #[macro_export] macro_rules! __bitflags_expr_safe_attrs
     {
         (
-            $(#[$i:ident $($args:tt)*])*
+            $(#[$i:ident $($x:tt)*])*
             { $e:expr }
         ) =>
         {
@@ -453,7 +453,7 @@ pub mod __
                 expr: { $e },
                 attrs:
                 {
-                    unprocessed: [$(#[$i $($args)*])*],
+                    unprocessed: [$(#[$i $($x)*])*],
                     processed: [],
                 },
             }
@@ -465,10 +465,10 @@ pub mod __
             {
                 unprocessed:
                 [
-                    #[cfg $($args:tt)*]
-                    $($attrs_rest:tt)*
+                    #[cfg $($x:tt)*]
+                    $($r:tt)*
                 ],
-                processed: [$($expr:tt)*],
+                processed: [$($ex:tt)*],
             },
         ) =>
         {
@@ -479,12 +479,12 @@ pub mod __
                 {
                     unprocessed:
                     [
-                        $($attrs_rest)*
+                        $($r)*
                     ],
                     processed:
                     [
-                        $($expr)*
-                        #[cfg $($args)*]
+                        $($ex)*
+                        #[cfg $($x)*]
                     ],
                 },
             }
@@ -496,10 +496,10 @@ pub mod __
             {
                 unprocessed:
                 [
-                    #[$o:ident $($args:tt)*]
-                    $($attrs_rest:tt)*
+                    #[$o:ident $($x:tt)*]
+                    $($r:tt)*
                 ],
-                processed: [$($expr:tt)*],
+                processed: [$($ex:tt)*],
             },
         ) =>
         {
@@ -510,11 +510,11 @@ pub mod __
                 {
                     unprocessed:
                     [
-                        $($attrs_rest)*
+                        $($r)*
                     ],
                     processed:
                     [
-                        $($expr)*
+                        $($ex)*
                     ],
                 },
             }
@@ -525,11 +525,11 @@ pub mod __
             attrs:
             {
                 unprocessed: [],
-                processed: [$(#[$expr:ident $($exprargs:tt)*])*],
+                processed: [$(#[$ex:ident $($exa:tt)*])*],
             },
         ) =>
         {
-            $(#[$expr $($exprargs)*])*
+            $(#[$ex $($exa)*])*
             { $e }
         }
     }
@@ -539,41 +539,41 @@ pub mod __
         (
             {
                 name: _,
-                named: { $($nd:tt)* },
-                unnamed: { $($unnamed:tt)* },
+                named: { $($n:tt)* },
+                unnamed: { $($u:tt)* },
             }
         ) =>
         {
-            $($unnamed)*
+            $($u)*
         };
         (
             {
-                name: $Flag:ident,
-                named: { $($nd:tt)* },
-                unnamed: { $($unnamed:tt)* },
+                name: $F:ident,
+                named: { $($n:tt)* },
+                unnamed: { $($u:tt)* },
             }
         ) => {
-            $($nd)*
+            $($n)*
         };
     }
 
     #[macro_export] macro_rules! __declare_internal_bitflags
     {
-        ( $v:vis struct $InternalBitFlags:ident: $T:ty ) =>
+        ( $v:vis struct $IBF:ident: $T:ty ) =>
         {
             #[repr(transparent)] #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
-            $v struct $InternalBitFlags($T);
+            $v struct $IBF($T);
         };
     }
     
     #[macro_export] macro_rules! __impl_internal_bitflags
     {
         (
-            $InternalBitFlags:ident: $T:ty, $PBF:ident
+            $IBF:ident: $T:ty, $PBF:ident
             {
                 $(
-                    $(#[$i:ident $($args:tt)*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$i:ident $($x:tt)*])*
+                    const $F:tt = $v:expr;
                 )*
             }
         ) =>
@@ -581,15 +581,15 @@ pub mod __
             impl::bits::flags::PublicFlags for $PBF
             {
                 type Primitive = $T;
-                type Internal = $InternalBitFlags;
+                type Internal = $IBF;
             }
 
-            impl ::default::Default for $InternalBitFlags
+            impl ::default::Default for $IBF
             {
-                #[inline] fn default() -> Self { $InternalBitFlags::empty() }
+                #[inline] fn default() -> Self { $IBF::empty() }
             }
 
-            impl ::fmt::Debug for $InternalBitFlags
+            impl ::fmt::Debug for $IBF
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
                 {
@@ -598,7 +598,7 @@ pub mod __
                 }
             }
 
-            impl ::fmt::Display for $InternalBitFlags
+            impl ::fmt::Display for $IBF
             {
                 fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result
                 {
@@ -606,7 +606,7 @@ pub mod __
                 }
             }
 
-            impl ::str::FromStr for $InternalBitFlags
+            impl ::str::FromStr for $IBF
             {
                 type Err = ::bits::flags::ParseError;
 
@@ -614,38 +614,38 @@ pub mod __
                 { ::bits::flags::from_str::<$PBF>(s).map(|flags| flags.0) }
             }
 
-            impl ::convert::AsRef<$T> for $InternalBitFlags
+            impl ::convert::AsRef<$T> for $IBF
             {
                 fn as_ref(&self) -> &$T { &self.0 }
             }
 
-            impl ::convert::From<$T> for $InternalBitFlags
+            impl ::convert::From<$T> for $IBF
             {
                 fn from(bits: $T) -> Self { Self::from_bits_retain(bits) }
             }
             
             __impl_public_bitflags!
             {
-                $InternalBitFlags: $T, $PBF
+                $IBF: $T, $PBF
                 {
                     $(
-                        $(#[$i $($args)*])*
-                        const $Flag = $value;
+                        $(#[$i $($x)*])*
+                        const $F = $v;
                     )*
                 }
             }
             
             __impl_public_bitflags_ops!
             {
-                $InternalBitFlags
+                $IBF
             }
             
             __impl_public_bitflags_iter!
             {
-                $InternalBitFlags: $T, $PBF
+                $IBF: $T, $PBF
             }
 
-            impl $InternalBitFlags
+            impl $IBF
             {
                 #[inline] pub fn bits_mut(&mut self) -> &mut $T { &mut self.0 }
             }
@@ -656,7 +656,7 @@ pub mod __
     {
         (
             $(#[$o:meta])*
-            $PBF:ident: $T:ty, $InternalBitFlags:ident
+            $PBF:ident: $T:ty, $IBF:ident
         ) =>
         {
             __impl_bitflags!
@@ -665,28 +665,28 @@ pub mod __
                 $(#[$o])*
                 $PBF: $T
                 {
-                    fn empty() { Self($InternalBitFlags::empty()) }
+                    fn empty() { Self($IBF::empty()) }
 
-                    fn all() { Self($InternalBitFlags::all()) }
+                    fn all() { Self($IBF::all()) }
 
                     fn bits(&self) { self.0.bits() }
 
                     fn from_bits(bits)
                     {
-                        match $InternalBitFlags::from_bits(bits)
+                        match $IBF::from_bits(bits)
                         {
                             Some(bits) => Some(Self(bits)),
                             None => None,
                         }
                     }
 
-                    fn from_bits_truncate(bits) { Self($InternalBitFlags::from_bits_truncate(bits)) }
+                    fn from_bits_truncate(bits) { Self($IBF::from_bits_truncate(bits)) }
 
-                    fn from_bits_retain(bits) { Self($InternalBitFlags::from_bits_retain(bits)) }
+                    fn from_bits_retain(bits) { Self($IBF::from_bits_retain(bits)) }
 
                     fn from_name(name)
                     {
-                        match $InternalBitFlags::from_name(name)
+                        match $IBF::from_name(name)
                         {
                             Some(bits) => Some(Self(bits)),
                             None => None,
@@ -718,8 +718,8 @@ pub mod __
             $BF:ident: $T:ty, $PBF:ident
             {
                 $(
-                    $(#[$i:ident $($args:tt)*])*
-                    const $Flag:tt = $value:expr;
+                    $(#[$i:ident $($x:tt)*])*
+                    const $F:tt = $v:expr;
                 )*
             }
         ) =>
@@ -740,7 +740,7 @@ pub mod __
                         $(
                             __bitflags_expr_safe_attrs!
                             (
-                                $(#[$i $($args)*])*
+                                $(#[$i $($x)*])*
                                 {{
                                     let flag = <$PBF as ::bits::flags::Flags>::FLAGS[i].value().bits();
 
@@ -773,15 +773,15 @@ pub mod __
                         $(
                             __bitflags_flag!
                             ({
-                                name: $Flag,
+                                name: $F,
                                 named:
                                 {
                                     __bitflags_expr_safe_attrs!
                                     (
-                                        $(#[$i $($args)*])*
+                                        $(#[$i $($x)*])*
                                         {
-                                            if name == stringify!($Flag) {
-                                                return Some(Self($PBF::$Flag.bits()));
+                                            if name == stringify!($F) {
+                                                return Some(Self($PBF::$F.bits()));
                                             }
                                         }
                                     );
@@ -1011,9 +1011,9 @@ pub mod __
     #[macro_export] macro_rules! smallvec
     {
         (@one $x:expr) => (1usize);
-        ($elem:expr; $n:expr) => 
+        ($e:expr; $n:expr) => 
         ({
-            ::vec::SmallVec::from_elem($elem, $n)
+            ::vec::SmallVec::from_elem($e, $n)
         });
         
         ($($x:expr),*$(,)*) =>
@@ -1031,10 +1031,10 @@ pub mod __
 
     #[macro_export] macro_rules! err
     {
-        ($code:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, None) };
-        ($code:expr, $msg:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($msg))) };
-        ($code:expr, $err:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($err))) };
-        ($code:expr, $f:expr, $($v:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($f, $($v)*))) };
+        ($c:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($c, None) };
+        ($c:expr, $m:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($c, Some(format!($m))) };
+        ($c:expr, $e:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($c, Some(format!($e))) };
+        ($c:expr, $f:expr, $($v:tt)*) => { ::error::sqlite::error_from_sqlite_code($c, Some(format!($f, $($v)*))) };
     }
 
     #[macro_export] macro_rules! __lazy_static_create
@@ -1047,9 +1047,9 @@ pub mod __
 	
 	#[macro_export(local_inner_macros)] macro_rules! __lazy_static_internal
 	{
-		($(#[$attr:meta])* ($($v:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => 
+		($(#[$a:meta])* ($($v:tt)*) static ref $N:ident : $T:ty = $e:expr; $($t:tt)*) => 
         {
-			__lazy_static_internal!(@MAKE TY, $(#[$attr])*, ($($v)*), $N);
+			__lazy_static_internal!(@MAKE TY, $(#[$a])*, ($($v)*), $N);
 			__lazy_static_internal!(@TAIL, $N : $T = $e);
 			lazy_static!($($t)*);
 		};
@@ -1077,12 +1077,12 @@ pub mod __
 			}
 		};
         
-		(@MAKE TY, $(#[$attr:meta])*, ($($v:tt)*), $N:ident) =>
+		(@MAKE TY, $(#[$a:meta])*, ($($v:tt)*), $N:ident) =>
         {
 			#[allow(missing_copy_implementations)]
 			#[allow(non_camel_case_types)]
 			#[allow(dead_code)]
-			$(#[$attr])*
+			$(#[$a])*
 			$($v)* struct $N {__private_field: ()}
 			#[doc(hidden)]
 			#[allow(non_upper_case_globals)]
@@ -1109,18 +1109,18 @@ pub mod __
     #[macro_export] macro_rules! map
     {
         { } => { ::collections::HashMap::new() };
-        { $( $key:expr => $value:expr ),+ , } =>
+        { $( $k:expr => $v:expr ),+ , } =>
         {
            
-            map!{ $( $key => $value),+ }
+            map!{ $( $k => $v),+ }
         };
-        { $( $key:expr => $value:expr ),* } =>
+        { $( $k:expr => $v:expr ),* } =>
         {
             {
                 let mut _map = ::collections::HashMap::new();
 
                 $(
-                    let _ = _map.insert($key, $value);
+                    let _ = _map.insert($k, $v);
                 )*
 
                 _map
@@ -1130,18 +1130,18 @@ pub mod __
     
     #[macro_export] macro_rules! int 
     {
-        ($int:expr) => {{
+        ($i:expr) => {{
             use num::big::BigInt;
 
-            let _b: BigInt = $int.into();
+            let _b: BigInt = $i.into();
             _b
         }};
     }
     
     #[macro_export] macro_rules! frac 
     {
-        ($int1:expr, $int2:expr) => {{
-            ::num::rational::BigRational::new($int1.into(), $int2.into())
+        ($a:expr, $b:expr) => {{
+            ::num::rational::BigRational::new($a.into(), $b.into())
         }};
     }
     
@@ -1152,40 +1152,40 @@ pub mod __
             $crate::arrays::Arr::from_vec(vec![]).unwrap()
         };
 
-        [ $( $elem:expr ),+ , ] => 
+        [ $( $e:expr ),+ , ] => 
         {
            
-            try_arr![ $( $elem ),+ ].unwrap()
+            try_arr![ $( $e ),+ ].unwrap()
         };
 
-        [ $( $elem:expr ),+ ] => 
+        [ $( $e:expr ),+ ] => 
         {
-            try_arr![ $( $elem ),+ ].unwrap()
+            try_arr![ $( $e ),+ ].unwrap()
         };
     }
     
     #[macro_export] macro_rules! try_arr 
     {
-        [ $( $elem:expr ),+ , ] => 
+        [ $( $e:expr ),+ , ] => 
         {
            
-            try_arr![ $( $elem ),+ ]
+            try_arr![ $( $e ),+ ]
         };
 
-        [ $( $elem:expr ),+ ] => 
+        [ $( $e:expr ),+ ] => 
         {{
-                $crate::arrays::Arr::from_vec(vec![ $( $elem.into() ),+ ])
+                $crate::arrays::Arr::from_vec(vec![ $( $e.into() ),+ ])
         }};
     }
     
     #[macro_export] macro_rules! tup 
     {
-        ( $( $elem:expr ),* , ) => {
-            tup!( $( $elem ),* )
+        ( $( $e:expr ),* , ) => {
+            tup!( $( $e ),* )
         };
-        ( $( $elem:expr ),* ) => {
+        ( $( $e:expr ),* ) => {
             {
-                $crate::tuples::Tup::from_vec(vec![ $( $elem.into() ),+ ])
+                $crate::tuples::Tup::from_vec(vec![ $( $e.into() ),+ ])
             }
         };
     }
@@ -1644,50 +1644,48 @@ pub mod __
     
     #[macro_export] macro_rules! forward
     {
-        ($( Self :: $method:ident ( self $( , $v:ident : $ty:ty )* ) -> $ret:ty ; )*) =>
-        {$( #[inline] fn $method(self $( , $v : $ty )* ) -> $ret { Self::$method(self $( , $v )* ) } )*};
+        ($( Self :: $m:ident ( self $( , $v:ident : $ty:ty )* ) -> $r:ty ; )*) =>
+        {$( #[inline] fn $m(self $( , $v : $ty )* ) -> $r { Self::$m(self $( , $v )* ) } )*};
 
-        ($( $base:ident :: $method:ident ( self $( , $v:ident : $ty:ty )* ) -> $ret:ty ; )*) =>
-        {$( #[inline] fn $method(self $( , $v : $ty )* ) -> $ret { <Self as $base>::$method(self $( , $v )* ) } )*};
+        ($( $b:ident :: $m:ident ( self $( , $v:ident : $ty:ty )* ) -> $r:ty ; )*) =>
+        {$( #[inline] fn $m(self $( , $v : $ty )* ) -> $r { <Self as $b>::$m(self $( , $v )* ) } )*};
 
-        ($( $base:ident :: $method:ident ( $( $v:ident : $ty:ty ),* ) -> $ret:ty ; )*) =>
-        {$( #[inline] fn $method( $( $v : $ty ),* ) -> $ret { <Self as $base>::$method( $( $v ),* ) } )*};
+        ($( $b:ident :: $m:ident ( $( $v:ident : $ty:ty ),* ) -> $r:ty ; )*) =>
+        {$( #[inline] fn $m( $( $v : $ty ),* ) -> $r { <Self as $b>::$m( $( $v ),* ) } )*};
 
-        ($( $imp:path as $method:ident ( self $( , $v:ident : $ty:ty )* ) -> $ret:ty ; )*) =>
-        {$( #[inline] fn $method(self $( , $v : $ty )* ) -> $ret { $imp(self $( , $v )* ) } )*};
+        ($( $i:path as $m:ident ( self $( , $v:ident : $ty:ty )* ) -> $r:ty ; )*) =>
+        {$( #[inline] fn $m(self $( , $v : $ty )* ) -> $r { $i(self $( , $v )* ) } )*};
     }
 
     #[macro_export] macro_rules! constant
     {
-        ($( $method:ident () -> $ret:expr ; )*)
-            => {$(
-                #[inline] fn $method() -> Self {
-                    $ret
-                }
-            )*};
+        ($( $m:ident () -> $r:expr ; )*) =>
+        {$(
+            #[inline] fn $m() -> Self { $r }
+        )*};
     }
 
     #[macro_export] macro_rules! promote_scalars 
     {
-        (impl $imp:ident<$promo:ty> for $res:ty, $method:ident, $( $scalar:ty ),*) => {
+        (impl $i:ident<$p:ty> for $r:ty, $m:ident, $( $sc:ty ),*) => {
             $(
-                forward_all_scalar_binop_to_val_val!(impl $imp<$scalar> for $res, $method);
+                forward_all_scalar_binop_to_val_val!(impl $i<$sc> for $r, $m);
 
-                impl $imp<$scalar> for $res {
-                    type Output = $res;
+                impl $i<$sc> for $r {
+                    type Output = $r;
 
                     #[allow(clippy::cast_lossless)]
-                    #[inline] fn $method(self, other: $scalar) -> $res {
-                        $imp::$method(self, other as $promo)
+                    #[inline] fn $m(self, other: $sc) -> $r {
+                        $i::$m(self, other as $p)
                     }
                 }
 
-                impl $imp<$res> for $scalar {
-                    type Output = $res;
+                impl $i<$r> for $sc {
+                    type Output = $r;
 
                     #[allow(clippy::cast_lossless)]
-                    #[inline] fn $method(self, other: $res) -> $res {
-                        $imp::$method(self as $promo, other)
+                    #[inline] fn $m(self, other: $r) -> $r {
+                        $i::$m(self as $p, other)
                     }
                 }
             )*
@@ -1696,12 +1694,12 @@ pub mod __
 
     #[macro_export] macro_rules! promote_scalars_assign 
     {
-        (impl $imp:ident<$promo:ty> for $res:ty, $method:ident, $( $scalar:ty ),*) => {
+        (impl $i:ident<$p:ty> for $r:ty, $m:ident, $( $sc:ty ),*) => {
             $(
-                impl $imp<$scalar> for $res {
+                impl $i<$sc> for $r {
                     #[allow(clippy::cast_lossless)]
-                    #[inline] fn $method(&mut self, other: $scalar) {
-                        self.$method(other as $promo);
+                    #[inline] fn $m(&mut self, other: $sc) {
+                        self.$m(other as $p);
                     }
                 }
             )*
@@ -1710,54 +1708,54 @@ pub mod __
 
     #[macro_export] macro_rules! promote_unsigned_scalars 
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_scalars!(impl $imp<u32> for $res, $method, u8, u16);
-            promote_scalars!(impl $imp<::num::big::UsizePromotion> for $res, $method, usize);
+        (impl $i:ident for $r:ty, $m:ident) => {
+            promote_scalars!(impl $i<u32> for $r, $m, u8, u16);
+            promote_scalars!(impl $i<::num::big::UsizePromotion> for $r, $m, usize);
         }
     }
 
     #[macro_export] macro_rules! promote_unsigned_scalars_assign 
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_scalars_assign!(impl $imp<u32> for $res, $method, u8, u16);
-            promote_scalars_assign!(impl $imp<::num::big::UsizePromotion> for $res, $method, usize);
+        (impl $i:ident for $r:ty, $m:ident) => {
+            promote_scalars_assign!(impl $i<u32> for $r, $m, u8, u16);
+            promote_scalars_assign!(impl $i<::num::big::UsizePromotion> for $r, $m, usize);
         }
     }
 
     #[macro_export] macro_rules! promote_signed_scalars 
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_scalars!(impl $imp<i32> for $res, $method, i8, i16);
-            promote_scalars!(impl $imp<::num::big::IsizePromotion> for $res, $method, isize);
+        (impl $i:ident for $r:ty, $m:ident) => {
+            promote_scalars!(impl $i<i32> for $r, $m, i8, i16);
+            promote_scalars!(impl $i<::num::big::IsizePromotion> for $r, $m, isize);
         }
     }
 
     #[macro_export] macro_rules! promote_all_scalars
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_unsigned_scalars!(impl $imp for $res, $method);
-            promote_signed_scalars!(impl $imp for $res, $method);
+        (impl $i:ident for $r:ty, $m:ident) => {
+            promote_unsigned_scalars!(impl $i for $r, $m);
+            promote_signed_scalars!(impl $i for $r, $m);
         }
     }
 
     #[macro_export] macro_rules! promote_all_scalars_assign
     {
-        (impl $imp:ident for $res:ty, $method:ident) => {
-            promote_unsigned_scalars_assign!(impl $imp for $res, $method);
-            promote_signed_scalars_assign!(impl $imp for $res, $method);
+        (impl $i:ident for $r:ty, $m:ident) => {
+            promote_unsigned_scalars_assign!(impl $i for $r, $m);
+            promote_signed_scalars_assign!(impl $i for $r, $m);
         }
     }
 
     #[macro_export] macro_rules! impl_sum_iter_type
     {
-        ($res:ty) => {
-            impl<T> Sum<T> for $res where
-                $res: Add<T, Output = $res>,
+        ($r:ty) => {
+            impl<T> Sum<T> for $r where
+                $r: Add<T, Output = $r>,
             {
                 fn sum<I>(iter: I) -> Self where
                 I: Iterator<Item = T>,
                 {
-                    iter.fold(Self::ZERO, <$res>::add)
+                    iter.fold(Self::ZERO, <$r>::add)
                 }
             }
         };
@@ -1765,14 +1763,14 @@ pub mod __
 
     #[macro_export] macro_rules! impl_product_iter_type
     {
-        ($res:ty) => {
-            impl<T> Product<T> for $res where
-                $res: Mul<T, Output = $res>,
+        ($r:ty) => {
+            impl<T> Product<T> for $r where
+                $r: Mul<T, Output = $r>,
             {
                 fn product<I>(iter: I) -> Self where
                 I: Iterator<Item = T>,
                 {
-                    iter.fold(One::one(), <$res>::mul)
+                    iter.fold(One::one(), <$r>::mul)
                 }
             }
         };
@@ -3972,10 +3970,10 @@ pub mod error
         */
         macro_rules! err
         {
-            ($code:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, None) };
-            ($code:expr, $msg:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($msg))) };
-            ($code:expr, $err:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($err))) };
-            ($code:expr, $f:expr, $($v:tt)*) => { ::error::sqlite::error_from_sqlite_code($code, Some(format!($f, $($v)*))) };
+            ($c:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($c, None) };
+            ($c:expr, $m:literal $(,)?) => { ::error::sqlite::error_from_sqlite_code($c, Some(format!($m))) };
+            ($c:expr, $e:expr $(,)?) => { ::error::sqlite::error_from_sqlite_code($c, Some(format!($e))) };
+            ($c:expr, $f:expr, $($v:tt)*) => { ::error::sqlite::error_from_sqlite_code($c, Some(format!($f, $($v)*))) };
         }
 
         pub const UNKNOWN_COLUMN: usize = usize::MAX;
@@ -5529,8 +5527,8 @@ pub mod num
             {
                
                
-                ($float:expr => $int:ty) => {
-                    unsafe { $float.to_int_unchecked::<$int>() }
+                ($float:expr => $i:ty) => {
+                    unsafe { $float.to_int_unchecked::<$i>() }
                 };
             }
             macro_rules! impl_to_primitive_float_to_signed_int 
@@ -23262,7 +23260,7 @@ pub mod rand
         };
 
 
-        (($($ty:ty,)+) $scalar:ty, $half:expr) => {
+        (($($ty:ty,)+) $sc:ty, $half:expr) => {
             $(
                 impl WideningMultiply for $ty {
                     type Output = ($ty, $ty);
@@ -26884,4 +26882,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 26887 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 26885 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
