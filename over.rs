@@ -302,30 +302,30 @@ pub mod __
     #[macro_export] macro_rules! __impl_bitflags
     {
         (
-            params: $s:ident, $bits:ident, $name:ident, $other:ident, $value:ident;
+            params: $s:ident, $b:ident, $n:ident, $oo:ident, $value:ident;
             $(#[$o:meta])*
             $PBF:ident: $T:ty
             {
-                fn empty() $empty_body:block
-                fn all() $all_body:block
-                fn bits(&self) $bits_body:block
-                fn from_bits(bits) $from_bits_body:block
-                fn from_bits_truncate(bits) $from_bits_truncate_body:block
-                fn from_bits_retain(bits) $from_bits_retain_body:block
-                fn from_name(name) $from_name_body:block
-                fn is_empty(&self) $is_empty_body:block
-                fn is_all(&self) $is_all_body:block
-                fn intersects(&self, other) $intersects_body:block
-                fn contains(&self, other) $contains_body:block
-                fn insert(&mut self, other) $insert_body:block
-                fn remove(&mut self, other) $remove_body:block
-                fn toggle(&mut self, other) $toggle_body:block
-                fn set(&mut self, other, value) $set_body:block
-                fn intersection(self, other) $intersection_body:block
+                fn empty() $ebb:block
+                fn all() $abb:block
+                fn bits(&self) $bbb:block
+                fn from_bits(bits) $fbbb:block
+                fn from_bits_truncate(bits) $fbtbb:block
+                fn from_bits_retain(bits) $fbrbb:block
+                fn from_name(name) $fnbb:block
+                fn is_empty(&self) $iebb:block
+                fn is_all(&self) $iabb:block
+                fn intersects(&self, other) $ibb:block
+                fn contains(&self, other) $cbb:block
+                fn insert(&mut self, other) $inbb:block
+                fn remove(&mut self, other) $rbb:block
+                fn toggle(&mut self, other) $tbb:block
+                fn set(&mut self, other, value) $sbb:block
+                fn intersection(self, other) $ixbb:block
                 fn union(self, other) $union_body:block
-                fn difference(self, other) $difference_body:block
-                fn symmetric_difference(self, other) $symmetric_difference_body:block
-                fn complement(self) $complement_body:block
+                fn difference(self, other) $dbb:block
+                fn symmetric_difference(self, other) $sdbb:block
+                fn complement(self) $cxbb:block
             }
         ) =>
         {
@@ -333,64 +333,64 @@ pub mod __
             impl $PBF
             {
                 #[inline] pub const fn empty() -> Self
-                    $empty_body
+                    $ebb
                     
                 #[inline] pub const fn all() -> Self
-                    $all_body
+                    $abb
                     
                 #[inline] pub const fn bits(&$s) -> $T
-                    $bits_body
+                    $bbb
                     
-                #[inline] pub const fn from_bits($bits: $T) -> ::option::Option<Self>
-                    $from_bits_body
+                #[inline] pub const fn from_bits($b: $T) -> ::option::Option<Self>
+                    $fbbb
                     
-                #[inline] pub const fn from_bits_truncate($bits: $T) -> Self
-                    $from_bits_truncate_body
+                #[inline] pub const fn from_bits_truncate($b: $T) -> Self
+                    $fbtbb
                     
-                #[inline] pub const fn from_bits_retain($bits: $T) -> Self
-                    $from_bits_retain_body
+                #[inline] pub const fn from_bits_retain($b: $T) -> Self
+                    $fbrbb
                     
-                #[inline] pub fn from_name($name: &str) -> ::option::Option<Self>
-                    $from_name_body
+                #[inline] pub fn from_name($n: &str) -> ::option::Option<Self>
+                    $fnbb
                     
                 #[inline] pub const fn is_empty(&$s) -> bool
-                    $is_empty_body
+                    $iebb
                     
                 #[inline] pub const fn is_all(&$s) -> bool
-                    $is_all_body
+                    $iabb
                     
-                #[inline] pub const fn intersects(&$s, $other: Self) -> bool
-                    $intersects_body
+                #[inline] pub const fn intersects(&$s, $oo: Self) -> bool
+                    $ibb
                     
-                #[inline] pub const fn contains(&$s, $other: Self) -> bool
-                    $contains_body
+                #[inline] pub const fn contains(&$s, $oo: Self) -> bool
+                    $cbb
                     
-                #[inline] pub fn insert(&mut $s, $other: Self)
-                    $insert_body
+                #[inline] pub fn insert(&mut $s, $oo: Self)
+                    $inbb
                     
-                #[inline] pub fn remove(&mut $s, $other: Self)
-                    $remove_body
+                #[inline] pub fn remove(&mut $s, $oo: Self)
+                    $rbb
                     
-                #[inline] pub fn toggle(&mut $s, $other: Self)
-                    $toggle_body
+                #[inline] pub fn toggle(&mut $s, $oo: Self)
+                    $tbb
                     
-                #[inline] pub fn set(&mut $s, $other: Self, $value: bool)
-                    $set_body
+                #[inline] pub fn set(&mut $s, $oo: Self, $value: bool)
+                    $sbb
                     
-                #[must_use] #[inline] pub const fn intersection($s, $other: Self) -> Self
-                    $intersection_body
+                #[must_use] #[inline] pub const fn intersection($s, $oo: Self) -> Self
+                    $ixbb
                     
-                #[must_use] #[inline] pub const fn union($s, $other: Self) -> Self
+                #[must_use] #[inline] pub const fn union($s, $oo: Self) -> Self
                     $union_body
                     
-                #[must_use] #[inline] pub const fn difference($s, $other: Self) -> Self
-                    $difference_body
+                #[must_use] #[inline] pub const fn difference($s, $oo: Self) -> Self
+                    $dbb
 
-                #[must_use] #[inline] pub const fn symmetric_difference($s, $other: Self) -> Self
-                    $symmetric_difference_body
+                #[must_use] #[inline] pub const fn symmetric_difference($s, $oo: Self) -> Self
+                    $sdbb
                     
                 #[must_use] #[inline] pub const fn complement($s) -> Self
-                    $complement_body
+                    $cxbb
             }
         };
     }
@@ -409,19 +409,19 @@ pub mod __
     
     #[macro_export] macro_rules! __bitflags_match
     {
-        ($o:expr, { $pattern:expr => { $($body:tt)* } , $($t:tt)+ }) =>
+        ($o:expr, { $p:expr => { $($b:tt)* } , $($t:tt)+ }) =>
         {
-            ::__bitflags_match!($o, { $pattern => { $($body)* } $($t)+ })
+            ::__bitflags_match!($o, { $p => { $($b)* } $($t)+ })
         };
         
-        ($o:expr, { $pattern:expr => { $($body:tt)* } $($t:tt)+ }) =>
+        ($o:expr, { $p:expr => { $($b:tt)* } $($t:tt)+ }) =>
         {
             {
-                if $o == $pattern
+                if $o == $p
                 {
                     return
                     {
-                        $($body)*
+                        $($b)*
                     };
                 }
 
@@ -429,16 +429,16 @@ pub mod __
             }
         };
         
-        ($o:expr, { $pattern:expr => $body:expr , $($t:tt)+ }) =>
+        ($o:expr, { $p:expr => $b:expr , $($t:tt)+ }) =>
         {
             {
-                if $o == $pattern { return $body; }
+                if $o == $p { return $b; }
 
                 ::__bitflags_match!($o, { $($t)+ })
             }
         };
         
-        ($o:expr, { _ => $default:expr $(,)? }) => { $default }
+        ($o:expr, { _ => $d:expr $(,)? }) => { $d }
     }
     
     #[macro_export] macro_rules! __bitflags_expr_safe_attrs
@@ -496,7 +496,7 @@ pub mod __
             {
                 unprocessed:
                 [
-                    #[$other:ident $($args:tt)*]
+                    #[$o:ident $($args:tt)*]
                     $($attrs_rest:tt)*
                 ],
                 processed: [$($expr:tt)*],
@@ -539,7 +539,7 @@ pub mod __
         (
             {
                 name: _,
-                named: { $($named:tt)* },
+                named: { $($nd:tt)* },
                 unnamed: { $($unnamed:tt)* },
             }
         ) =>
@@ -549,11 +549,11 @@ pub mod __
         (
             {
                 name: $Flag:ident,
-                named: { $($named:tt)* },
+                named: { $($nd:tt)* },
                 unnamed: { $($unnamed:tt)* },
             }
         ) => {
-            $($named)*
+            $($nd)*
         };
     }
 
@@ -1039,9 +1039,9 @@ pub mod __
 
     #[macro_export] macro_rules! __lazy_static_create
 	{
-		($NAME:ident, $T:ty) =>
+		($n:ident, $T:ty) =>
 		{
-			static $NAME: ::sync::Lazy<$T> = ::sync::Lazy::INIT;
+			static $n: ::sync::Lazy<$T> = ::sync::Lazy::INIT;
 		};
 	}
 	
@@ -5231,15 +5231,15 @@ pub mod num
             }
             macro_rules! bounded_tuple 
             {
-                ( $($name:ident)* ) => (
-                    impl<$($name: Bounded,)*> Bounded for ($($name,)*) {
+                ( $($n:ident)* ) => (
+                    impl<$($n: Bounded,)*> Bounded for ($($n,)*) {
                         #[inline]
                         fn min_value() -> Self {
-                            ($($name::min_value(),)*)
+                            ($($n::min_value(),)*)
                         }
                         #[inline]
                         fn max_value() -> Self {
-                            ($($name::max_value(),)*)
+                            ($($n::max_value(),)*)
                         }
                     }
                 );
@@ -6642,7 +6642,7 @@ pub mod num
             }
             macro_rules! totalorder_impl
             {
-                ($T:ident, $I:ident, $U:ident, $bits:expr) => {
+                ($T:ident, $I:ident, $U:ident, $b:expr) => {
                     impl TotalOrder for $T {
                         #[inline]
                         #[cfg(has_total_cmp)]
@@ -6657,8 +6657,8 @@ pub mod num
                             let mut left = self.to_bits() as $I;
                             let mut right = other.to_bits() as $I;
 
-                            left ^= (((left >> ($bits - 1)) as $U) >> 1) as $I;
-                            right ^= (((right >> ($bits - 1)) as $U) >> 1) as $I;
+                            left ^= (((left >> ($b - 1)) as $U) >> 1) as $I;
+                            right ^= (((right >> ($b - 1)) as $U) >> 1) as $I;
 
                             left.cmp(&right)
                         }
@@ -8865,8 +8865,8 @@ pub mod num
             pub trait Unsigned: Num {}
             macro_rules! empty_trait_impl
             {
-                ($name:ident for $($t:ty)*) => ($(
-                    impl $name for $t {}
+                ($n:ident for $($t:ty)*) => ($(
+                    impl $n for $t {}
                 )*)
             }
             empty_trait_impl!(Unsigned for usize u8 u16 u32 u64 u128);
@@ -8942,8 +8942,8 @@ pub mod num
 
         macro_rules! int_trait_impl
         {
-            ($name:ident for $($t:ty)*) => ($(
-                impl $name for $t {
+            ($n:ident for $($t:ty)*) => ($(
+                impl $n for $t {
                     type FromStrRadixErr = ::num::ParseIntError;
                     #[inline] fn from_str_radix(s: &str, radix: u32)
                                     -> Result<Self, ::num::ParseIntError>
@@ -9002,8 +9002,8 @@ pub mod num
         
         macro_rules! float_trait_impl
         {
-            ($name:ident for $($t:ident)*) => ($(
-                impl $name for $t {
+            ($n:ident for $($t:ident)*) => ($(
+                impl $n for $t {
                     type FromStrRadixErr = ParseFloatError;
 
                     fn from_str_radix(src: &str, radix: u32)
@@ -10931,12 +10931,12 @@ pub mod num
                     }
                 }
                 macro_rules! impl_mul {
-                    ($(impl Mul<$Other:ty> for $s:ty;)*) => {$(
-                        impl Mul<$Other> for $s {
+                    ($(impl Mul<$o:ty> for $s:ty;)*) => {$(
+                        impl Mul<$o> for $s {
                             type Output = BigInt;
 
                             #[inline]
-                            fn mul(self, other: $Other) -> BigInt {
+                            fn mul(self, other: $o) -> BigInt {
                                
                                 let BigInt { data: x, .. } = self;
                                 let BigInt { data: y, .. } = other;
@@ -10952,10 +10952,10 @@ pub mod num
                     impl Mul<&BigInt> for &BigInt;
                 }
                 macro_rules! impl_mul_assign {
-                    ($(impl MulAssign<$Other:ty> for BigInt;)*) => {$(
-                        impl MulAssign<$Other> for BigInt {
+                    ($(impl MulAssign<$o:ty> for BigInt;)*) => {$(
+                        impl MulAssign<$o> for BigInt {
                             #[inline]
-                            fn mul_assign(&mut self, other: $Other) {
+                            fn mul_assign(&mut self, other: $o) {
                                
                                 let BigInt { data: y, .. } = other;
                                 self.data *= y;
@@ -14944,12 +14944,12 @@ pub mod num
                     }
                 }
                 macro_rules! impl_mul {
-                    ($(impl Mul<$Other:ty> for $s:ty;)*) => {$(
-                        impl Mul<$Other> for $s {
+                    ($(impl Mul<$o:ty> for $s:ty;)*) => {$(
+                        impl Mul<$o> for $s {
                             type Output = BigUint;
 
                             #[inline]
-                            fn mul(self, other: $Other) -> BigUint {
+                            fn mul(self, other: $o) -> BigUint {
                                 match (&*self.data, &*other.data) {
                                    
                                     (&[], _) | (_, &[]) => BigUint::ZERO,
@@ -14970,10 +14970,10 @@ pub mod num
                     impl Mul<&BigUint> for &BigUint;
                 }
                 macro_rules! impl_mul_assign {
-                    ($(impl MulAssign<$Other:ty> for BigUint;)*) => {$(
-                        impl MulAssign<$Other> for BigUint {
+                    ($(impl MulAssign<$o:ty> for BigUint;)*) => {$(
+                        impl MulAssign<$o> for BigUint {
                             #[inline]
-                            fn mul_assign(&mut self, other: $Other) {
+                            fn mul_assign(&mut self, other: $o) {
                                 match (&*self.data, &*other.data) {
                                    
                                     (&[], _) => {},
@@ -19616,12 +19616,12 @@ pub mod objects
 
     macro_rules! get_fn 
     {
-        ( $doc:expr, $name:tt, $type:ty ) => {
+        ( $doc:expr, $n:tt, $type:ty ) => {
             #[doc=$doc]
-            pub fn $name(&self, field: &str) -> OverResult<$type> {
+            pub fn $n(&self, field: &str) -> OverResult<$type> {
                 match self.get(field) {
                     Some(value) => {
-                        match value.$name() {
+                        match value.$n() {
                             Ok(result) => Ok(result),
                             e @ Err(_) => e,
                         }
@@ -21977,7 +21977,7 @@ pub mod rand
             */
             macro_rules! uniform_float_impl
             {
-                ($($meta:meta)?, $ty:ty, $uty:ident, $f_scalar:ident, $u_scalar:ident, $bits_to_discard:expr) => {
+                ($($meta:meta)?, $ty:ty, $uty:ident, $f_scalar:ident, $u_scalar:ident, $b_to_discard:expr) => {
                     $(#[cfg($meta)])?
                     impl UniformFloat<$ty>
                     {
@@ -22050,7 +22050,7 @@ pub mod rand
 
                         fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Self::X
                         {
-                            let value1_2 = (rng.random::<$uty>() >> $uty::splat($bits_to_discard)).into_float_with_exponent(0);
+                            let value1_2 = (rng.random::<$uty>() >> $uty::splat($b_to_discard)).into_float_with_exponent(0);
                             let value0_1 = value1_2 - <$ty>::splat(1.0);
                             value0_1 * self.scale + self.low
                         }
@@ -22077,7 +22077,7 @@ pub mod rand
                             
                             if !scale.all_finite() { return Err(Error::NonFinite); }
                             
-                            let value1_2 = (rng.random::<$uty>() >> $uty::splat($bits_to_discard)).into_float_with_exponent(0);
+                            let value1_2 = (rng.random::<$uty>() >> $uty::splat($b_to_discard)).into_float_with_exponent(0);
                                 
                             let value0_1 = value1_2 - <$ty>::splat(1.0);
                             Ok(value0_1 * scale + low)
@@ -25372,9 +25372,9 @@ pub mod values
 
 	macro_rules! get_fn 
     {
-		( $doc:expr, $name:tt, $type:ty, $variant:ident ) => {
+		( $doc:expr, $n:tt, $type:ty, $variant:ident ) => {
 			#[doc=$doc]
-			pub fn $name(&self) -> OverResult<$type> {
+			pub fn $n(&self) -> OverResult<$type> {
 				if let Value::$variant(ref inner) = *self {
 					Ok(inner.clone())
 				} else {
