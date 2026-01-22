@@ -302,7 +302,7 @@ pub mod __
     #[macro_export] macro_rules! __impl_bitflags
     {
         (
-            params: $self:ident, $bits:ident, $name:ident, $other:ident, $value:ident;
+            params: $s:ident, $bits:ident, $name:ident, $other:ident, $value:ident;
             $(#[$o:meta])*
             $PBF:ident: $T:ty
             {
@@ -338,7 +338,7 @@ pub mod __
                 #[inline] pub const fn all() -> Self
                     $all_body
                     
-                #[inline] pub const fn bits(&$self) -> $T
+                #[inline] pub const fn bits(&$s) -> $T
                     $bits_body
                     
                 #[inline] pub const fn from_bits($bits: $T) -> ::option::Option<Self>
@@ -353,43 +353,43 @@ pub mod __
                 #[inline] pub fn from_name($name: &str) -> ::option::Option<Self>
                     $from_name_body
                     
-                #[inline] pub const fn is_empty(&$self) -> bool
+                #[inline] pub const fn is_empty(&$s) -> bool
                     $is_empty_body
                     
-                #[inline] pub const fn is_all(&$self) -> bool
+                #[inline] pub const fn is_all(&$s) -> bool
                     $is_all_body
                     
-                #[inline] pub const fn intersects(&$self, $other: Self) -> bool
+                #[inline] pub const fn intersects(&$s, $other: Self) -> bool
                     $intersects_body
                     
-                #[inline] pub const fn contains(&$self, $other: Self) -> bool
+                #[inline] pub const fn contains(&$s, $other: Self) -> bool
                     $contains_body
                     
-                #[inline] pub fn insert(&mut $self, $other: Self)
+                #[inline] pub fn insert(&mut $s, $other: Self)
                     $insert_body
                     
-                #[inline] pub fn remove(&mut $self, $other: Self)
+                #[inline] pub fn remove(&mut $s, $other: Self)
                     $remove_body
                     
-                #[inline] pub fn toggle(&mut $self, $other: Self)
+                #[inline] pub fn toggle(&mut $s, $other: Self)
                     $toggle_body
                     
-                #[inline] pub fn set(&mut $self, $other: Self, $value: bool)
+                #[inline] pub fn set(&mut $s, $other: Self, $value: bool)
                     $set_body
                     
-                #[must_use] #[inline] pub const fn intersection($self, $other: Self) -> Self
+                #[must_use] #[inline] pub const fn intersection($s, $other: Self) -> Self
                     $intersection_body
                     
-                #[must_use] #[inline] pub const fn union($self, $other: Self) -> Self
+                #[must_use] #[inline] pub const fn union($s, $other: Self) -> Self
                     $union_body
                     
-                #[must_use] #[inline] pub const fn difference($self, $other: Self) -> Self
+                #[must_use] #[inline] pub const fn difference($s, $other: Self) -> Self
                     $difference_body
 
-                #[must_use] #[inline] pub const fn symmetric_difference($self, $other: Self) -> Self
+                #[must_use] #[inline] pub const fn symmetric_difference($s, $other: Self) -> Self
                     $symmetric_difference_body
                     
-                #[must_use] #[inline] pub const fn complement($self) -> Self
+                #[must_use] #[inline] pub const fn complement($s) -> Self
                     $complement_body
             }
         };
@@ -10931,8 +10931,8 @@ pub mod num
                     }
                 }
                 macro_rules! impl_mul {
-                    ($(impl Mul<$Other:ty> for $Self:ty;)*) => {$(
-                        impl Mul<$Other> for $Self {
+                    ($(impl Mul<$Other:ty> for $s:ty;)*) => {$(
+                        impl Mul<$Other> for $s {
                             type Output = BigInt;
 
                             #[inline]
@@ -14944,8 +14944,8 @@ pub mod num
                     }
                 }
                 macro_rules! impl_mul {
-                    ($(impl Mul<$Other:ty> for $Self:ty;)*) => {$(
-                        impl Mul<$Other> for $Self {
+                    ($(impl Mul<$Other:ty> for $s:ty;)*) => {$(
+                        impl Mul<$Other> for $s {
                             type Output = BigUint;
 
                             #[inline]
