@@ -25833,8 +25833,8 @@ pub mod vec
     
     pub struct SmallVec<A: Array>
     {
-        capacity: usize,
-        data: SmallVecData<A>,
+        c: usize,
+        d: SmallVecData<A>,
     }
 
     impl<A: Array> SmallVec<A>
@@ -25845,8 +25845,8 @@ pub mod vec
 
             SmallVec
             {
-                capacity: 0,
-                data: SmallVecData::from_inline(MaybeUninit::uninit()),
+                c: 0,
+                d: SmallVecData::from_inline(MaybeUninit::uninit()),
             }
         }
         
@@ -25863,15 +25863,15 @@ pub mod vec
             {
                 if vec.capacity() <= Self::inline_capacity()
                 {
-                    let mut data = SmallVecData::<A>::from_inline(MaybeUninit::uninit());
+                    let mut d = SmallVecData::<A>::from_inline(MaybeUninit::uninit());
                     let len = vec.len();
                     vec.set_len(0);
-                    ptr::copy_nonoverlapping(vec.as_ptr(), data.inline_mut(), len);
+                    ptr::copy_nonoverlapping(vec.as_ptr(), d.inline_mut(), len);
 
                     SmallVec
                     {
-                        capacity: len,
-                        data,
+                        c: len,
+                        d,
                     }
                 }
                 
@@ -25882,8 +25882,8 @@ pub mod vec
 
                     SmallVec
                     {
-                        capacity: cap,
-                        data: SmallVecData::from_heap(ptr, len),
+                        c: cap,
+                        d: SmallVecData::from_heap(ptr, len),
                     }
                 }
             }
@@ -25893,8 +25893,8 @@ pub mod vec
         {
             SmallVec
             {
-                capacity: A::size(),
-                data: SmallVecData::from_inline(MaybeUninit::new(buf)),
+                c: A::size(),
+                d: SmallVecData::from_inline(MaybeUninit::new(buf)),
             }
         }
         
@@ -25908,8 +25908,8 @@ pub mod vec
         {
             SmallVec
             {
-                capacity: len,
-                data: SmallVecData::from_inline(buf),
+                c: len,
+                d: SmallVecData::from_inline(buf),
             }
         }
         
@@ -25935,10 +25935,10 @@ pub mod vec
             {
                 if self.spilled()
                 {
-                    let (ptr, len) = self.data.heap();
-                    (ptr, len, self.capacity)
+                    let (ptr, len) = self.d.heap();
+                    (ptr, len, self.c)
                 }
-                else { (self.data.inline(), self.capacity, Self::inline_capacity()) }
+                else { (self.d.inline(), self.c, Self::inline_capacity()) }
             }
         }
         
@@ -25948,21 +25948,21 @@ pub mod vec
             {
                 if self.spilled()
                 {
-                    let &mut (ptr, ref mut len_ptr) = self.data.heap_mut();
-                    (ptr, len_ptr, self.capacity)
+                    let &mut (ptr, ref mut len_ptr) = self.d.heap_mut();
+                    (ptr, len_ptr, self.c)
                 }
                 else
                 {
                     (
-                        self.data.inline_mut(),
-                        &mut self.capacity,
+                        self.d.inline_mut(),
+                        &mut self.c,
                         Self::inline_capacity(),
                     )
                 }
             }
         }
         
-        #[inline] pub fn spilled(&self) -> bool { self.capacity > Self::inline_capacity() }
+        #[inline] pub fn spilled(&self) -> bool { self.c > Self::inline_capacity() }
         
         pub fn drain<R>(&mut self, range: R) -> Drain<'_, A> where
         R: RangeBounds<usize>
@@ -26010,7 +26010,7 @@ pub mod vec
                 if *len == cap
                 {
                     self.reserve(1);
-                    let &mut (heap_ptr, ref mut heap_len) = self.data.heap_mut();
+                    let &mut (heap_ptr, ref mut heap_len) = self.d.heap_mut();
                     ptr = heap_ptr;
                     len = heap_len;
                 }
@@ -26052,9 +26052,9 @@ pub mod vec
                 {
                     if unspilled { return Ok(()); }
 
-                    self.data = SmallVecData::from_inline(MaybeUninit::uninit());
-                    ptr::copy_nonoverlapping(ptr, self.data.inline_mut(), len);
-                    self.capacity = len;
+                    self.d = SmallVecData::from_inline(MaybeUninit::uninit());
+                    ptr::copy_nonoverlapping(ptr, self.d.inline_mut(), len);
+                    self.c = len;
                     deallocate(ptr, cap);
                 }
 
@@ -26082,8 +26082,8 @@ pub mod vec
                         .as_ptr();
                     }
 
-                    self.data = SmallVecData::from_heap(new_alloc, len);
-                    self.capacity = new_cap;
+                    self.d = SmallVecData::from_heap(new_alloc, len);
+                    self.c = new_cap;
                 }
 
                 Ok(())
@@ -26130,11 +26130,11 @@ pub mod vec
                 let len = self.len();
                 if self.inline_size() >= len
                 {
-                    let (ptr, len) = self.data.heap();
-                    self.data = SmallVecData::from_inline(MaybeUninit::uninit());
-                    ptr::copy_nonoverlapping(ptr, self.data.inline_mut(), len);
-                    deallocate(ptr, self.capacity);
-                    self.capacity = len;
+                    let (ptr, len) = self.d.heap();
+                    self.d = SmallVecData::from_inline(MaybeUninit::uninit());
+                    ptr::copy_nonoverlapping(ptr, self.d.inline_mut(), len);
+                    deallocate(ptr, self.c);
+                    self.c = len;
                 }
 
                 else if self.capacity() > len { self.grow(len); }
@@ -26292,8 +26292,8 @@ pub mod vec
             {
                 if self.spilled()
                 {
-                    let (ptr, len) = self.data.heap();
-                    let v = Vec::from_raw_parts(ptr, len, self.capacity);
+                    let (ptr, len) = self.d.heap();
+                    let v = Vec::from_raw_parts(ptr, len, self.c);
                     mem::forget(self);
                     v
                 }
@@ -26310,9 +26310,9 @@ pub mod vec
                 if self.spilled() || self.len() != A::size() { Err(self) }            
                 else
                 {
-                    let data = ptr::read(&self.data);
+                    let d = ptr::read(&self.d);
                     mem::forget(self);
-                    Ok(data.into_inline().assume_init())
+                    Ok(d.into_inline().assume_init())
                 }
             }
         }
@@ -26392,13 +26392,13 @@ pub mod vec
             else if old_len > new_len { self.truncate(new_len); }
         }
         
-        #[inline] pub unsafe fn from_raw_parts(ptr: *mut A::Item, length: usize, capacity: usize) -> SmallVec<A>
+        #[inline] pub unsafe fn from_raw_parts(ptr: *mut A::Item, length: usize, c: usize) -> SmallVec<A>
         {
-            assert!(capacity > Self::inline_capacity());
+            assert!(c > Self::inline_capacity());
             SmallVec
             {
-                capacity,
-                data: SmallVecData::from_heap(ptr, length),
+                c,
+                d: SmallVecData::from_heap(ptr, length),
             }
         }
         
@@ -26421,17 +26421,17 @@ pub mod vec
                 {
                     SmallVec
                     {
-                        capacity: len,
-                        data: SmallVecData::from_inline(
+                        c: len,
+                        d: SmallVecData::from_inline(
                         {
-                            let mut data: MaybeUninit<A> = MaybeUninit::uninit();
+                            let mut d: MaybeUninit<A> = MaybeUninit::uninit();
                             ptr::copy_nonoverlapping
                             (
                                 slice.as_ptr(),
-                                data.as_mut_ptr() as *mut A::Item,
+                                d.as_mut_ptr() as *mut A::Item,
                                 len,
                             );
-                            data
+                            d
                         }),
                     }
                 }
@@ -26443,8 +26443,8 @@ pub mod vec
                     mem::forget(b);
                     SmallVec
                     {
-                        capacity: cap,
-                        data: SmallVecData::from_heap(ptr, len),
+                        c: cap,
+                        d: SmallVecData::from_heap(ptr, len),
                     }
                 }
             }
@@ -26658,8 +26658,8 @@ pub mod vec
             {
                 if self.spilled()
                 {
-                    let (ptr, len) = self.data.heap();
-                    Vec::from_raw_parts(ptr, len, self.capacity);
+                    let (ptr, len) = self.d.heap();
+                    Vec::from_raw_parts(ptr, len, self.c);
                 }
                 else { ptr::drop_in_place(&mut self[..]); }
             }
@@ -26702,9 +26702,9 @@ pub mod vec
 
     pub struct IntoIter<A: Array>
     {
-        data: SmallVec<A>,
-        current: usize,
-        end: usize,
+        d: SmallVec<A>,
+        c: usize,
+        e: usize,
     }
 
     impl<A: Array> fmt::Debug for IntoIter<A> where
@@ -26732,20 +26732,20 @@ pub mod vec
         {
             unsafe
             {
-                if self.current == self.end { None }
+                if self.c == self.e { None }
                 else
                 {
-                    let current = self.current;
-                    self.current += 1;
-                    Some(ptr::read(self.data.as_ptr().add(current)))
+                    let c = self.c;
+                    self.c += 1;
+                    Some(ptr::read(self.d.as_ptr().add(c)))
                 }
             }
         }
 
         #[inline] fn size_hint(&self) -> (usize, Option<usize>)
         {
-            let size = self.end - self.current;
-            (size, Some(size))
+            let s = self.e - self.c;
+            (s, Some(s))
         }
     }
 
@@ -26755,11 +26755,11 @@ pub mod vec
         {
             unsafe
             {
-                if self.current == self.end { None }
+                if self.c == self.e { None }
                 else
                 {
-                    self.end -= 1;
-                    Some(ptr::read(self.data.as_ptr().add(self.end)))
+                    self.e -= 1;
+                    Some(ptr::read(self.d.as_ptr().add(self.e)))
                 }
             }
         }
@@ -26771,10 +26771,11 @@ pub mod vec
     impl<A: Array> IntoIter<A>
     {
         pub fn as_slice(&self) -> &[A::Item]
-        {unsafe
+        {
+            unsafe
             { 
-                let len = self.end - self.current;
-                ::slice::from_raw_parts(self.data.as_ptr().add(self.current), len)
+                let l = self.e - self.c;
+                ::slice::from_raw_parts(self.d.as_ptr().add(self.c), l)
             }
         }
         
@@ -26782,8 +26783,8 @@ pub mod vec
         {
             unsafe
             {
-                let len = self.end - self.current;
-                ::slice::from_raw_parts_mut(self.data.as_mut_ptr().add(self.current), len)
+                let l = self.e - self.c;
+                ::slice::from_raw_parts_mut(self.d.as_mut_ptr().add(self.c), l)
             }
         }
     }
@@ -26796,13 +26797,13 @@ pub mod vec
         {
             unsafe
             {
-                let len = self.len();
+                let l = self.len();
                 self.set_len(0);
                 IntoIter
                 {
-                    data: self,
-                    current: 0,
-                    end: len,
+                    d: self,
+                    c: 0,
+                    e: l,
                 }
             }
         }
@@ -26830,29 +26831,29 @@ pub mod vec
 
     struct SetLenOnDrop<'a>
     {
-        len: &'a mut usize,
-        local_len: usize,
+        l: &'a mut usize,
+        w: usize,
     }
 
     impl<'a> SetLenOnDrop<'a>
     {
-        #[inline] fn new(len: &'a mut usize) -> Self
+        #[inline] fn new(l: &'a mut usize) -> Self
         {
             SetLenOnDrop
             {
-                local_len: *len,
-                len,
+                w: *l,
+                l,
             }
         }
 
-        #[inline] fn get(&self) -> usize { self.local_len }
+        #[inline] fn get(&self) -> usize { self.w }
 
-        #[inline] fn increment_len(&mut self, increment: usize) { self.local_len += increment; }
+        #[inline] fn increment_len(&mut self, i: usize) { self.w += i; }
     }
 
     impl<'a> Drop for SetLenOnDrop<'a>
     {
-        #[inline] fn drop(&mut self) { *self.len = self.local_len; }
+        #[inline] fn drop(&mut self) { *self.l = self.w; }
     }
     
     unsafe impl<T, const N: usize> Array for [T; N]
@@ -26882,4 +26883,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 26885 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 26886 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
