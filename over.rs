@@ -4826,7 +4826,7 @@ pub mod history
     use lineread::Interface;
     */
     // fn init_db(hfile: &str, htable: &str)
-    fn create(f:&str,t:&str) -> Result<(), ()>
+    pub fn create(f:&str,t:&str) -> Result<(), ()>
     {
         let path = Path::new(f);
 
@@ -4908,6 +4908,68 @@ pub mod history
         }
 
         Ok(())
+    }
+
+    pub fn init(rl: &mut Interface<DefaultTerminal>)
+    {
+        let mut hist_size: usize = 99999;
+        if let Ok(x) = env::var("HISTORY_SIZE") {
+            if let Ok(y) = x.parse::<usize>() {
+                hist_size = y;
+            }
+        }
+        rl.set_history_size(hist_size);
+
+        let history_table = get_history_table();
+        let hfile = get_history_file();
+
+        if !Path::new(&hfile).exists() {
+            init_db(&hfile, &history_table);
+        }
+
+        let mut delete_dups = true;
+        if let Ok(x) = env::var("HISTORY_DELETE_DUPS") {
+            if x == "0" {
+                delete_dups = false;
+            }
+        }
+        if delete_dups {
+            delete_duplicated_histories();
+        }
+
+        let conn = match Conn::open(&hfile) {
+            Ok(x) => x,
+            Err(e) => {
+                println_stderr!("cicada: history: conn error: {}", e);
+                return;
+            }
+        };
+        let sql = format!("SELECT inp FROM {} ORDER BY tsb;", history_table);
+        let mut stmt = match conn.prepare(&sql) {
+            Ok(x) => x,
+            Err(e) => {
+                println_stderr!("cicada: prepare select error: {}", e);
+                return;
+            }
+        };
+
+        let rows = match stmt.query_map([], |row| row.get(0)) {
+            Ok(x) => x,
+            Err(e) => {
+                println_stderr!("cicada: query select error: {}", e);
+                return;
+            }
+        };
+
+        let mut dict_helper: HashMap<String, bool> = HashMap::new();
+        for x in rows.flatten() {
+            let inp: String = x;
+            if dict_helper.contains_key(&inp) {
+                continue;
+            }
+            dict_helper.insert(inp.clone(), true);
+            rl.add_history(inp.trim().to_string());
+        }
     }
 }
 
@@ -23449,8 +23511,321 @@ pub mod system
     */
     use ::
     {
+        borrow::{ Cow },
+        fs::{File, OpenOptions},
+        io::{ self, BufRead, BufReader, BufWriter, Read as _, Seek, SeekFrom, Write as _, },
+        path::{ Path },
+        sync::{Arc, Mutex, MutexGuard},
+        time::std::{ Duration },
         *,
     };
+    /*
+    use crate::command::Command;
+    use crate::complete::Completer;
+    use crate::function::Function;
+    use crate::highlighting::Highlighter;
+    use crate::inputrc::Directive;
+    use crate::reader::{ Read, Reader, ReadLock, ReadResult };
+    use crate::terminal::{DefaultTerminal, Signal };
+    use crate::variables::Variable;
+    use crate::writer::{ Write, Writer, WriteLock };
+    lineread v0.7.3*/
+    pub trait Terminals: Sized + Send + Sync
+    {
+        type PrepareState;
+        /*
+        /// Holds an exclusive read lock and provides read operations
+        type Reader: TerminalReader;
+        /// Holds an exclusive write lock and provides write operations
+        type Writer: TerminalWriter;
+        */
+        fn name(&self) -> &str;
+        fn lock_read<'a>(&'a self) -> Box<dyn TerminalReader<Self> + 'a>;
+        fn lock_write<'a>(&'a self) -> Box<dyn TerminalWriter<Self> + 'a>;
+    }
+    
+    pub trait TerminalReader<Term:Terminals>
+    {
+        fn prepare(&mut self, block_signals: bool, report_signals: SignalSet) -> io::Result<Term::PrepareState>;      
+        unsafe fn prepare_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>, block_signals: bool, report_signals: SignalSet) -> io::Result<Term::PrepareState>;
+        fn restore(&mut self, state: Term::PrepareState) -> io::Result<()>;
+        unsafe fn restore_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>, state: Term::PrepareState) -> io::Result<()>;
+        fn read(&mut self, buf: &mut Vec<u8>) -> io::Result<RawRead>;
+        fn wait_for_input(&mut self, timeout: Option<Duration>) -> io::Result<bool>;
+    }
+    
+    pub trait TerminalWriter<Term:Terminals>
+    {
+        fn size(&self) -> io::Result<Size>;
+        fn clear_screen(&mut self) -> io::Result<()>;
+        fn clear_to_screen_end(&mut self) -> io::Result<()>;
+        fn move_up(&mut self, n: usize) -> io::Result<()>;
+        fn move_down(&mut self, n: usize) -> io::Result<()>;
+        fn move_left(&mut self, n: usize) -> io::Result<()>;
+        fn move_right(&mut self, n: usize) -> io::Result<()>;
+        fn move_to_first_column(&mut self) -> io::Result<()>;
+        fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()>;
+        fn write(&mut self, s: &str) -> io::Result<()>;
+        fn flush(&mut self) -> io::Result<()>;
+    }
+    
+    pub trait Highlighter
+    {
+        fn highlight(&self, line: &str) -> Vec<(Range<usize>, Style)>;
+    }
+    
+    pub struct Interface<Term:Terminals>
+    {
+        term: Term,
+        write: Mutex<Write>,
+        read: Mutex<Read<Term>>,
+        highlighter: Option<Arc<dyn Highlighter + Send + Sync>>,
+    }
+
+    pub struct Terminal( pub common::Terminal );
+    
+    pub struct DefaultTerminal(Terminal);
+
+    pub struct WriteLock<'a, Term: 'a + Terminals>
+    {
+        term: Box<dyn TerminalWriter<Term> + 'a>,
+        data: MutexGuard<'a, Write>,
+        highlighter: Option<Arc<dyn Highlighter + Send + Sync>>,
+    }
+
+    impl<'a, Term: Terminal> WriteLock<'a, Term>
+    {
+        
+    }
+
+    impl Interface<DefaultTerminal>
+    {
+        pub fn new<T>(application: T) -> io::Result<Interface<DefaultTerminal>> where
+        T: Into<Cow<'static, str>>
+        {
+            let term = DefaultTerminal::new()?;
+            Interface::with_term(application, term)
+        }
+    }
+
+    impl<Term: Terminals> Interface<Term>
+    {
+        pub fn with_term<T>(application: T, term: Term) -> io::Result<Interface<Term>> where
+        T:Into<Cow<'static, str>>
+        {
+            let size = term.lock_write().size()?;
+            let read = Read::new(&term, application.into());
+
+            Ok
+            (
+                Interface
+                {
+                    term: term,
+                    write: Mutex::new(Write::new(size)),
+                    read: Mutex::new(read),
+                    highlighter: None,
+                }
+            )
+        }
+        
+        pub fn lock_reader(&self) -> Reader<Term> { Reader::new(self, self.lock_read()) }
+        
+        pub fn lock_writer_append(&self) -> io::Result<Writer<Term>> { Writer::with_lock(self.lock_write(), false) }
+        
+        pub fn lock_writer_erase(&self) -> io::Result<Writer<Term>> { Writer::with_lock(self.lock_write(), true) }
+
+        pub fn lock_read(&self) -> ReadLock<Term>
+        {
+            ReadLock::new
+            (
+                self.term.lock_read(),
+                self.read.lock().expect("Interface::lock_read")
+            )
+        }
+
+        pub fn lock_write(&self) -> WriteLock<Term>
+        {
+            WriteLock::new
+            (
+                self.term.lock_write(),
+                self.write.lock().expect("Interface::lock_write"),
+                self.highlighter.clone(),
+            )
+        }
+
+        pub fn lock_write_data(&self) -> MutexGuard<Write> { self.write.lock().expect("Interface::lock_write_data") }
+    }
+    
+    impl<Term: Terminals> Interface<Term>
+    {
+        pub fn read_line(&self) -> io::Result<ReadResult> { self.lock_reader().read_line() }
+
+        pub fn read_line_step(&self, timeout: Option<Duration>) -> io::Result<Option<ReadResult>> { self.lock_reader().read_line_step(timeout) }
+
+        pub fn cancel_read_line(&self) -> io::Result<()> { self.lock_reader().cancel_read_line() }
+
+        pub fn completer(&self) -> Arc<dyn Completer<Term>> { self.lock_reader().completer().clone() }
+
+        pub fn set_completer(&self, completer: Arc<dyn Completer<Term>>) -> Arc<dyn Completer<Term>> { self.lock_reader().set_completer(completer) }
+
+        pub fn get_variable(&self, name: &str) -> Option<Variable> { self.lock_reader().get_variable(name) }
+
+        pub fn set_variable(&self, name: &str, value: &str) -> Option<Variable> { self.lock_reader().set_variable(name, value) }
+
+        pub fn ignore_signal(&self, signal: Signal) -> bool { self.lock_reader().ignore_signal(signal) }
+
+        pub fn set_ignore_signal(&self, signal: Signal, set: bool) { self.lock_reader().set_ignore_signal(signal, set) }
+
+        pub fn report_signal(&self, signal: Signal) -> bool { self.lock_reader().report_signal(signal) }
+
+        pub fn set_report_signal(&self, signal: Signal, set: bool) { self.lock_reader().set_report_signal(signal, set) }
+
+        pub fn bind_sequence<T>(&self, seq: T, cmd: Command) -> Option<Command> where
+        T: Into<Cow<'static, str>>
+        { self.lock_reader().bind_sequence(seq, cmd) }
+        
+        pub fn bind_sequence_if_unbound<T>(&self, seq: T, cmd: Command) -> bool where
+        T:Into<Cow<'static, str>>
+        { self.lock_reader().bind_sequence_if_unbound(seq, cmd) }
+        
+        pub fn unbind_sequence(&self, seq: &str) -> Option<Command> { self.lock_reader().unbind_sequence(seq) }
+        
+        pub fn define_function<T>(&self, name: T, cmd: Arc<dyn Function<Term>>) -> Option<Arc<dyn Function<Term>>> where T: Into<Cow<'static, str>> { self.lock_reader().define_function(name, cmd) }
+
+        pub fn remove_function(&self, name: &str) -> Option<Arc<dyn Function<Term>>> { self.lock_reader().remove_function(name) }
+
+        pub fn evaluate_directives(&self, dirs: Vec<Directive>) { self.lock_reader().evaluate_directives(&self.term, dirs) }
+
+        pub fn evaluate_directive(&self, dir: Directive) { self.lock_reader().evaluate_directive(&self.term, dir) }
+    }
+    
+    impl<Term: Terminals> Interface<Term>
+    {
+        pub fn buffer(&self) -> String { self.lock_write().buffer.to_owned() }
+        
+        pub fn history_len(&self) -> usize { self.lock_write().history_len() }
+        
+        pub fn history_size(&self) -> usize { self.lock_write().history_size() }
+
+        pub fn save_history<P: AsRef<Path>>(&self, path: P) -> io::Result<()>
+        {
+            let path = path.as_ref();
+            let mut w = self.lock_write();
+
+            if !path.exists() || w.history_size() == !0 { self.append_history(path, &w)?; }
+            else { self.rewrite_history(path, &w)?; }
+
+            w.reset_new_history();
+            Ok(())
+        }
+
+        fn append_history<P: AsRef<Path>>(&self, path: P, w: &WriteLock<Term>) -> io::Result<()>
+        {
+            let file = OpenOptions::new()
+            .append(true)
+            .create(true)
+            .open(path.as_ref())?;
+
+            self.append_history_to(&file, w)
+        }
+
+        fn append_history_to(&self, file: &File, w: &WriteLock<Term>) -> io::Result<()>
+        {
+            let mut wtr = BufWriter::new(file);
+
+            for entry in w.new_history()
+            {
+                wtr.write_all(entry.as_bytes())?;
+                wtr.write_all(b"\n")?;
+            }
+
+            wtr.flush()
+        }
+
+        fn rewrite_history<P: AsRef<Path>>(&self, path: P, w: &WriteLock<Term>) -> io::Result<()>
+        {
+            fn nth_line(s: &str, n: usize) -> Option<usize>
+            {
+                let start = s.as_ptr() as usize;
+                s.lines().nth(n).map(|s| s.as_ptr() as usize - start)
+            }
+
+            let mut file = OpenOptions::new()
+            .create(true)
+            .read(true)
+            .write(true)
+            .open(path.as_ref())?;
+
+            let mut hist = String::new();
+
+            file.read_to_string(&mut hist)?;
+
+            let n_lines = hist.lines().count();
+            let n = n_lines.saturating_sub(w.history_size() - w.new_history_entries());
+
+            if n != 0
+            {
+                if let Some(pos) = nth_line(&hist, n)
+                {
+                    file.seek(SeekFrom::Start(0))?;
+                    file.write_all(hist[pos..].as_bytes())?;
+
+                    let n = file.seek(SeekFrom::Current(0))?;
+                    file.set_len(n)?;
+                }
+            }
+
+            self.append_history_to(&file, w)
+        }
+        
+        pub fn load_history<P: AsRef<Path>>(&self, path: P) -> io::Result<()>
+        {
+            let mut writer = self.lock_write();
+
+            let file = File::open(&path)?;
+            let rdr = BufReader::new(file);
+
+            for line in rdr.lines()
+            {
+                writer.add_history(line?);
+            }
+
+            writer.reset_new_history();
+
+            Ok(())
+        }
+        
+        pub fn write_fmt(&self, args: fmt::Arguments) -> io::Result<()>
+        {
+            let s = args.to_string();
+            self.write_str(&s)
+        }
+
+        fn write_str(&self, line: &str) -> io::Result<()> { self.lock_writer_erase()?.write_str(line) }
+    }
+    
+    impl<Term: Terminals> Interface<Term>
+    {
+        pub fn set_prompt(&self, prompt: &str) -> io::Result<()> { self.lock_reader().set_prompt(prompt) }
+        
+        pub fn set_buffer(&self, buf: &str) -> io::Result<()> { self.lock_reader().set_buffer(buf) }
+        
+        pub fn set_cursor(&self, pos: usize) -> io::Result<()> { self.lock_reader().set_cursor(pos) }
+        
+        pub fn add_history(&self, line: String) { self.lock_reader().add_history(line); }
+        
+        pub fn add_history_unique(&self, line: String) { self.lock_reader().add_history_unique(line); }
+        
+        pub fn clear_history(&self) { self.lock_reader().clear_history(); }
+        
+        pub fn remove_history(&self, idx: usize) { self.lock_reader().remove_history(idx); }
+
+        pub fn set_history_size(&self, n: usize) { self.lock_reader().set_history_size(n); }
+        
+        pub fn truncate_history(&self, n: usize) { self.lock_reader().truncate_history(n); }
+        
+        pub fn set_highlighter(&mut self, highlighter: Arc<dyn Highlighter + Send + Sync>) { self.highlighter = Some(highlighter); }
+    }
     /*
     libsqlite3 v0.36.0*/
     pub mod sql
@@ -24933,6 +25308,196 @@ pub mod system
 
             rc
         }
+    }
+    /*
+    mortal v0.6.0*/
+    pub mod common
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+
+        #[derive(Copy, Clone, Default, Eq, PartialEq)]
+        pub struct Signals(u8);
+
+        #[derive(Copy, Clone, Debug)]
+        pub struct PrepareConfig
+        {
+            pub block_signals: bool,
+            pub enable_control_flow: bool,
+            pub enable_keypad: bool,
+            pub enable_mouse: bool,
+            pub always_track_motion: bool,
+            pub report_signals: Signals,
+        }
+        
+        pub mod unix
+        {
+            /*!
+            */
+            use ::
+            {
+                convert::TryFrom,
+                fs::{ File },
+                libc::{ ioctl, c_int, c_ushort, termios, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, TIOCGWINSZ, },
+                mem::{replace, zeroed},
+                os::unix::io::{FromRawFd, IntoRawFd, RawFd},
+                path::{ Path },
+                str::{ from_utf8 },
+                sync::{ atomic::{AtomicUsize, Ordering}, LockResult, Mutex, MutexGuard, TryLockResult},
+                system::
+                {
+                    common::{ Color, PrepareConfig, Signals, Style },
+                },
+                time::{ Duration },
+                *,
+            };
+            /*
+                use nix::errno::Errno;
+                use nix::sys::select::{select, FdSet};
+                use nix::sys::signal::{
+                    sigaction,
+                    SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
+                };
+                use nix::sys::termios::{
+                    tcgetattr, tcsetattr,
+                    SetArg, InputFlags, LocalFlags,
+                };
+                use nix::sys::time::{TimeVal, TimeValLike};
+                use nix::unistd::{read, write};
+
+                use smallstr::SmallString;
+
+                use terminfo::{self, capability as cap, Database};
+                use terminfo::capability::Expansion;
+                use terminfo::expand::Context;
+
+                use crate::priv_util::{map_lock_result, map_try_lock_result};
+                use crate::sequence::{FindResult, SequenceMap};
+                use crate::signal::{Signal, SignalSet};
+                use crate::terminal::{
+                    Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme,
+                    MouseButton, MouseEvent, MouseInput, ModifierState,
+                };
+                use crate::util::prefixes;
+            */
+            pub struct Terminal
+            {
+                info: (), // Database,
+                out_fd: RawFd,
+                in_fd: RawFd,
+                owned_fd: bool,
+                sequences: (),// SeqMap,
+                reader: Mutex<Reader>,
+                writer: Mutex<Writer>,
+            }
+            
+            #[derive(Copy, Clone, Debug)]
+            struct Resume
+            {
+                config: PrepareConfig,
+            }
+
+            pub struct Reader
+            {
+                in_buffer: Vec<u8>,
+                resume: Option<Resume>,
+                report_signals: Signals,
+            }
+            
+            pub struct Writer
+            {
+                context: (), // Context,
+                out_buffer: Vec<u8>,
+                fg: Option<Color>,
+                bg: Option<Color>,
+                cur_style: Style,
+            }
+
+        } #[cfg(unix)] pub use self::unix::{ * };
+        
+        pub mod windows
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+        } #[cfg(windows)] pub use self::windows::{ * };
+
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum Color
+        {
+            Black,
+            Blue,
+            Cyan,
+            Green,
+            Magenta,
+            Red,
+            White,
+            Yellow,
+        }
+
+        bitflags!
+        {
+            #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
+            pub struct Style: u8
+            {
+                const BOLD      = 1 << 0;
+                const ITALIC    = 1 << 1;
+                const REVERSE   = 1 << 2;
+                const UNDERLINE = 1 << 3;
+            }
+        }
+        
+        #[derive(Copy, Clone, Debug, Default)]
+        pub struct Theme
+        {
+            pub fg: Option<Color>,
+            pub bg: Option<Color>,
+            pub style: Style,
+        }
+
+        impl Theme
+        {
+            pub fn new<F,B,S>(fg: F, bg: B, style: S) -> Theme where
+            F: Into<Option<Color>>,
+            B: Into<Option<Color>>,
+            S: Into<Option<Style>>
+            {
+                Theme
+                {
+                    fg: fg.into(),
+                    bg: bg.into(),
+                    style: style.into().unwrap_or_default(),
+                }
+            }
+            
+            pub fn fg<F>(mut self, fg: F) -> Theme where F: Into<Option<Color>>
+            {
+                self.fg = fg.into();
+                self
+            }
+            
+            pub fn bg<B>(mut self, bg: B) -> Theme where
+            B: Into<Option<Color>>
+            {
+                self.bg = bg.into();
+                self
+            }
+            
+            pub fn style<S>(mut self, style: S) -> Theme where S: Into<Option<Style>>
+            {
+                self.style = style.into().unwrap_or_default();
+                self
+            }
+        }
+
+
     }
 }
 /*
