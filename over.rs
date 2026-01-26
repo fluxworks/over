@@ -4818,6 +4818,7 @@ pub mod history
             {
                 Connection as Conn,
             },
+            DefaultTerminal, Interface,
         },
         *,
     };
@@ -23512,11 +23513,16 @@ pub mod system
     use ::
     {
         borrow::{ Cow },
+        collections::{ VecDeque },
         fs::{File, OpenOptions},
         io::{ self, BufRead, BufReader, BufWriter, Read as _, Seek, SeekFrom, Write as _, },
         path::{ Path },
         sync::{Arc, Mutex, MutexGuard},
-        time::std::{ Duration },
+        system::
+        {
+            common::{ Signal },
+        },
+        time::std::{ Duration, Instant },
         *,
     };
     /*
@@ -23530,6 +23536,54 @@ pub mod system
     use crate::variables::Variable;
     use crate::writer::{ Write, Writer, WriteLock };
     lineread v0.7.3*/
+    macro_rules! define_commands
+    {
+        ( $( $n:ident => $s:expr , )+ ) =>
+        {
+            #[derive(Clone, Debug, Eq, PartialEq)]
+            pub enum Command
+            {
+                $( $n , )+
+                Custom(Cow<'static, str>),
+                Macro(Cow<'static, str>),
+            }
+            
+            pub static COMMANDS: &[&str] = &[ $( $s ),+ ];
+
+            impl fmt::Display for Command 
+            {
+                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+                {
+                    match *self 
+                    {
+                        $( Command::$n => f.write_str($s) , )+
+                        Command::Custom(ref s) => f.write_str(s),
+                        Command::Macro(ref s) => write!(f, "\"{}\"", escape_sequence(s))
+                    }
+                }
+            }
+
+            impl Command
+            {
+                pub fn from_str(name: &'static str) -> Command { Command::opt_from_str(name).unwrap_or_else(|| Command::Custom(Borrowed(name))) }
+                
+                pub fn from_string<T>(name: T) -> Command where T: AsRef<str> + Into<String> { Command::opt_from_str(name.as_ref()).unwrap_or_else(|| Command::Custom(Owned(name.into()))) }
+
+                fn opt_from_str(s: &str) -> Option<Command>
+                {
+                    match s
+                    {
+                        $( $s => Some(Command::$n), )+
+                        _ => None
+                    }
+                }
+            }
+        }
+    }
+
+    pub const BLINK_DURATION: Duration = Duration::from_millis(500);
+    pub const COMPLETE_MORE: &'static str = "--More--";
+
     pub trait Terminals: Sized + Send + Sync
     {
         type PrepareState;
@@ -23546,8 +23600,8 @@ pub mod system
     
     pub trait TerminalReader<Term:Terminals>
     {
-        fn prepare(&mut self, block_signals: bool, report_signals: SignalSet) -> io::Result<Term::PrepareState>;      
-        unsafe fn prepare_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>, block_signals: bool, report_signals: SignalSet) -> io::Result<Term::PrepareState>;
+        fn prepare(&mut self, block_signals: bool, report_signals: Signals) -> io::Result<Term::PrepareState>;      
+        unsafe fn prepare_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>, block_signals: bool, report_signals: Signals) -> io::Result<Term::PrepareState>;
         fn restore(&mut self, state: Term::PrepareState) -> io::Result<()>;
         unsafe fn restore_with_lock(&mut self, lock: &mut dyn TerminalWriter<Term>, state: Term::PrepareState) -> io::Result<()>;
         fn read(&mut self, buf: &mut Vec<u8>) -> io::Result<RawRead>;
@@ -23574,6 +23628,86 @@ pub mod system
         fn highlight(&self, line: &str) -> Vec<(Range<usize>, Style)>;
     }
     
+    pub trait Completer<Term: Terminals>: Send + Sync
+    {
+        fn complete(&self, word: &str, prompter: &Prompter<Term>, start: usize, end: usize) -> Option<Vec<Completion>>;        
+        fn word_start(&self, line: &str, end: usize, prompter: &Prompter<Term>) -> usize { word_break_start(&line[..end], prompter.word_break_chars()) };
+        fn quote<'a>(&self, word: &'a str) -> Cow<'a, str> { Borrowed(word) }
+        fn unquote<'a>(&self, word: &'a str) -> Cow<'a, str> { Borrowed(word) }
+    }
+
+    pub trait Function<Term: Terminals>: Send + Sync
+    {
+        fn execute(&self, prompter: &mut Prompter<Term>, count: i32, ch: char) -> io::Result<()>;
+        fn category(&self) -> Category { Category::Other }
+    }
+
+    impl<F, Term:Terminals> Function<Term> for F where
+    F: Send + Sync,
+    F: Fn(&mut Prompter<Term>, i32, char) -> io::Result<()>
+    {
+        fn execute(&self, prompter: &mut Prompter<Term>, count: i32, ch: char) -> io::Result<()> { self(prompter, count, ch) }
+    }
+    
+    pub struct DummyCompleter;
+
+    impl<Term: Terminals> Completer<Term> for DummyCompleter
+    {
+        fn complete(&self, _word: &str, _reader: &Prompter<Term>, _start: usize, _end: usize) -> Option<Vec<Completion>> { None }
+    }
+    
+    pub struct PathCompleter;
+
+    impl<Term: Terminals> Completer<Term> for PathCompleter
+    {
+        fn complete(&self, word: &str, _reader: &Prompter<Term>, _start: usize, _end: usize) -> Option<Vec<Completion>> { Some(complete_path(word)) }
+        fn word_start(&self, line: &str, end: usize, _reader: &Prompter<Term>) -> usize { escaped_word_start(&line[..end]) }
+        fn quote<'a>(&self, word: &'a str) -> Cow<'a, str> { escape(word) }
+        fn unquote<'a>(&self, word: &'a str) -> Cow<'a, str> { unescape(word) }
+    }
+    
+    pub fn complete_path(path: &str) -> Vec<Completion>
+    {
+        let (base_dir, fname) = split_path(path);
+        let mut res = Vec::new();
+
+        let lookup_dir = base_dir.unwrap_or(".");
+
+        if let Ok(list) = read_dir(lookup_dir)
+        {
+            for ent in list
+            {
+                if let Ok(ent) = ent
+                {
+                    let ent_name = ent.file_name();
+
+                    if let Ok(path) = ent_name.into_string()
+                    {
+                        if path.starts_with(fname)
+                        {
+                            let (name, display) = if let Some(dir) = base_dir { (format!("{}{}{}", dir, MAIN_SEPARATOR, path), Some(path)) } else { (path, None) };
+                            let is_dir = ent.metadata().ok().map_or(false, |m| m.is_dir());
+                            let suffix = if is_dir { Suffix::Some(MAIN_SEPARATOR) } else { Suffix::Default };
+
+                            res.push
+                            (
+                                Completion
+                                {
+                                    completion: name,
+                                    display: display,
+                                    suffix: suffix,
+                                }
+                            );
+                        }
+                    }
+                }
+            }
+        }
+
+        res.sort_by(|a, b| a.display_str().cmp(b.display_str()));
+        res
+    }
+    
     pub struct Interface<Term:Terminals>
     {
         term: Term,
@@ -23586,6 +23720,494 @@ pub mod system
     
     pub struct DefaultTerminal(Terminal);
 
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub struct Size
+    {
+        pub lines: usize,
+        pub columns: usize,
+    }
+
+    impl Size
+    {
+        #[inline] pub fn area(&self) -> usize { self.checked_area().unwrap_or_else( || panic!("overflow in Size::area {:?}", self)) }
+        #[inline] pub fn checked_area(&self) -> Option<usize> { self.lines.checked_mul(self.columns) }
+    }
+
+    #[derive(Copy, Clone, Debug)]
+    pub struct Blink
+    {
+        pos:usize,
+        expiry:Instant,
+    }
+
+    #[derive(Copy, Clone, Debug)]
+    pub enum Digit
+    {
+        None,
+        NegNone,
+        Num(i32),
+        NegNum(i32),
+    }
+
+    impl Digit
+    {
+        pub fn input(&mut self, n: i32)
+        {
+            match *self
+            {
+                Digit::None => *self = Digit::Num(n),
+                Digit::NegNone => *self = Digit::NegNum(n),
+                Digit::Num(ref mut m) | Digit::NegNum(ref mut m) =>
+                {
+                    *m *= 10;
+                    *m += n;
+                }
+            }
+        }
+
+        pub fn is_out_of_bounds(&self) -> bool
+        {
+            match *self
+            {
+                Digit::Num(n) | Digit::NegNum(n) if n > NUMBER_MAX => true,
+                _ => false
+            }
+        }
+
+        pub fn to_i32(&self) -> i32
+        {
+            match *self
+            {
+                Digit::None => 1,
+                Digit::NegNone => -1,
+                Digit::Num(n) => n,
+                Digit::NegNum(n) => -n,
+            }
+        }
+    }
+
+    impl From<char> for Digit
+    {
+        fn from(ch: char) -> Digit
+        {
+            let n = (ch as u8) - b'0';
+            Digit::Num(n as i32)
+        }
+    }
+    
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum PromptType
+    {
+        Normal,
+        Number,
+        Search,
+        CompleteIntro(usize),
+        CompleteMore,
+    }
+
+    impl PromptType
+    {
+        pub fn is_normal(&self) -> bool { *self == PromptType::Normal }
+    }
+
+    #[derive(Debug)]
+    pub struct Write
+    {
+        pub buffer: String,
+        pub backup_buffer: String,
+        pub cursor: usize,
+        pub blink: Option<Blink>,
+        pub history: VecDeque<String>,
+        pub history_index: Option<usize>,
+        pub history_size: usize,
+        pub history_new_entries: usize,
+        pub is_prompt_drawn: bool,
+        pub prompt_prefix: String,
+        pub prompt_prefix_len: usize,
+        pub prompt_suffix: String,
+        pub prompt_suffix_len: usize,
+        pub prompt_type: PromptType,
+        pub reverse_search: bool,
+        pub search_failed: bool,
+        pub search_buffer: String,
+        pub last_search: String,
+        pub prev_history: Option<usize>,
+        pub prev_cursor: usize,
+        pub input_arg: Digit,
+        pub explicit_arg: bool,
+        pub screen_size: Size,
+    }
+
+    #[derive(Debug)]
+    pub enum ReadResult
+    {
+        Eof,
+        Input(String),
+        Signal(Signal),
+    }
+
+    define_commands!
+    {
+        Abort => "abort",
+        AcceptLine => "accept-line",
+        Complete => "complete",
+        InsertCompletions => "insert-completions",
+        PossibleCompletions => "possible-completions",
+        MenuComplete => "menu-complete",
+        MenuCompleteBackward => "menu-complete-backward",
+        DigitArgument => "digit-argument",
+        SelfInsert => "self-insert",
+        TabInsert => "tab-insert",
+        OverwriteMode => "overwrite-mode",
+        InsertComment => "insert-comment",
+        BackwardChar => "backward-char",
+        ForwardChar => "forward-char",
+        CharacterSearch => "character-search",
+        CharacterSearchBackward => "character-search-backward",
+        BackwardWord => "backward-word",
+        ForwardWord => "forward-word",
+        BackwardKillLine => "backward-kill-line",
+        KillLine => "kill-line",
+        BackwardKillWord => "backward-kill-word",
+        KillWord => "kill-word",
+        UnixWordRubout => "unix-word-rubout",
+        ClearScreen => "clear-screen",
+        BeginningOfLine => "beginning-of-line",
+        EndOfLine => "end-of-line",
+        BackwardDeleteChar => "backward-delete-char",
+        DeleteChar => "delete-char",
+        TransposeChars => "transpose-chars",
+        TransposeWords => "transpose-words",
+        BeginningOfHistory => "beginning-of-history",
+        EndOfHistory => "end-of-history",
+        NextHistory => "next-history",
+        PreviousHistory => "previous-history",
+        ForwardSearchHistory => "forward-search-history",
+        ReverseSearchHistory => "reverse-search-history",
+        HistorySearchForward => "history-search-forward",
+        HistorySearchBackward => "history-search-backward",
+        QuotedInsert => "quoted-insert",
+        Yank => "yank",
+        YankPop => "yank-pop",
+    }
+
+    #[derive(Clone, Debug)]
+    pub enum Directive
+    {
+        Bind(String, Command),
+        Conditional
+        {
+            name: Option<String>,
+            value: String,
+            then_group: Vec<Directive>,
+            else_group: Vec<Directive>,
+        },
+        SetVariable(String, String),
+    }
+    
+    pub struct Parser<'a>
+    {
+        lines: Lines<'a>,
+        filename: &'a Path,
+        line_num: usize,
+    }
+
+    impl<'a> Parser<'a>
+    {
+        pub fn new(filename: &'a Path, text: &'a str) -> Parser<'a>
+        {
+            Parser
+            {
+                lines: text.lines(),
+                filename: filename,
+                line_num: 0,
+            }
+        }
+
+        fn next_line(&mut self) -> Option<&'a str>
+        {
+            self.lines.next().map(|line|
+            {
+                self.line_num += 1;
+                line.trim()
+            })
+        }
+
+        fn parse(&mut self) -> Vec<Directive>
+        {
+            let mut dirs = Vec::new();
+
+            while let Some(line) = self.next_line()
+            {
+                if line.starts_with('#') { continue; }
+
+                let mut tokens = Tokens::new(line);
+
+                if let Some(Token::SpecialWord("include")) = tokens.next()
+                {
+                    let path = tokens.line;
+
+                    if let Some(d) = parse_file(Path::new(path)) { dirs.extend(d); }
+
+                    continue;
+                }
+
+                if let Some(dir) = self.parse_line(line) { dirs.push(dir); }
+            }
+
+            dirs
+        }
+
+        fn parse_conditional(&mut self) -> (Vec<Directive>, Vec<Directive>)
+        {
+            let mut then_group = Vec::new();
+            let mut else_group = Vec::new();
+            let mut parse_else = false;
+
+            loop
+            {
+                let line = match self.next_line()
+                {
+                    Some(line) => line,
+                    None =>
+                    {
+                        self.error("missing $endif directive");
+                        break;
+                    }
+                };
+
+                if line.starts_with('#') { continue; }
+
+                let mut tokens = Tokens::new(line);
+
+                let start = match tokens.next()
+                {
+                    Some(tok) => tok,
+                    None => continue
+                };
+
+                match start
+                {
+                    Token::SpecialWord("else") =>
+                    {
+                        if parse_else { self.error("duplicate $else directive"); } else { parse_else = true; }
+                    }
+
+                    Token::SpecialWord("endif") => { break; }
+
+                    _ =>
+                    {
+                        if let Some(dir) = self.parse_line(line)
+                        {
+                            if parse_else { else_group.push(dir); } else { then_group.push(dir); }
+                        }
+                    }
+                }
+            }
+
+            (then_group, else_group)
+        }
+
+        fn parse_line(&mut self, line: &str) -> Option<Directive>
+        {
+            let mut tokens = Tokens::new(line);
+            let start = tokens.next()?;
+            let dir = match start
+            {
+                Token::SpecialWord("if") =>
+                {
+                    let name = match tokens.next()
+                    {
+                        Some(Token::Word(w)) => w,
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    };
+
+                    let (name, value) = match tokens.next()
+                    {
+                        Some(Token::Equal) =>
+                        {
+                            let value = match tokens.next()
+                            {
+                                Some(Token::Word(w)) => w,
+                                None => "",
+                                _ =>
+                                {
+                                    self.invalid();
+                                    return None;
+                                }
+                            };
+
+                            (Some(name), value)
+                        }
+                        
+                        None => (None, name),
+                        
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    };
+
+                    let (then_group, else_group) = self.parse_conditional();
+
+                    Directive::Conditional
+                    {
+                        name: name.map(|s| s.to_owned()),
+                        value: value.to_owned(),
+                        then_group: then_group,
+                        else_group: else_group,
+                    }
+                }
+
+                Token::SpecialWord("else") => 
+                {
+                    self.error("$else without matching $if directive");
+                    return None;
+                }
+
+                Token::SpecialWord("endif") => 
+                {
+                    self.error("$endif without matching $if directive");
+                    return None;
+                }
+
+                Token::String(seq) =>
+                {
+                    match tokens.next()
+                    {
+                        Some(Token::Colon) => (),
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    }
+
+                    match tokens.next()
+                    {
+                        Some(Token::Word(value)) => Directive::Bind(seq, Command::from_string(value)),
+                        Some(Token::String(out)) => Directive::Bind(seq, Command::Macro(out.to_owned().into())),
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    }
+                }
+
+                Token::Word("set") =>
+                {
+                    let name = match tokens.next()
+                    {
+                        Some(Token::Word(w)) => w,
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    };
+
+                    let rest = tokens.line;
+
+                    let value = match tokens.next()
+                    {
+                        Some(Token::String(s)) => s,
+                        Some(Token::Word(_)) => rest.to_owned(),
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    };
+
+                    Directive::SetVariable(name.to_owned(), value)
+                }
+
+                Token::Word(name) => 
+                {
+                    match tokens.next()
+                    {
+                        Some(Token::Colon) => (),
+                        _ =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    }
+
+                    let seq = match parse_char_name(name)
+                    {
+                        Some(seq) => seq,
+                        None =>
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    };
+
+                    match tokens.next() 
+                    {
+                        Some(Token::Word(value)) => Directive::Bind(seq, Command::from_string(value)),
+                        Some(Token::String(macro_seq)) => Directive::Bind(seq, Command::Macro(macro_seq.to_owned().into())),
+                        _ => 
+                        {
+                            self.invalid();
+                            return None;
+                        }
+                    }
+                }
+                _ => 
+                {
+                    self.invalid();
+                    return None;
+                }
+            };
+
+            Some(dir)
+        }
+
+        fn error(&self, msg: &str) { let _ = writeln!(stderr(), "lineread: {} line {}: {}", self.filename.display(), self.line_num, msg); }
+
+        fn invalid(&self) { self.error("invalid directive"); }
+    }
+    
+    pub fn parse_file<P: ?Sized>(filename: &P) -> Option<Vec<Directive>> where 
+    P: AsRef<Path>
+    {
+        let filename = filename.as_ref();
+        let mut f = match File::open(filename)
+        {
+            Ok(f) => f,
+            Err(e) =>
+            {
+                let _ = writeln!(io::stderr(), "lineread: {}: {}", filename.display(), e);
+                return None;
+            }
+        };
+
+        let mut buf = String::new();
+
+        if let Err(e) = f.read_to_string(&mut buf)
+        {
+            let _ = writeln!(io::stderr(), "{}: {}", filename.display(), e);
+            return None;
+        }
+
+        Some(parse_text(filename, &buf))
+    }
+    
+    pub fn parse_text<P: ?Sized>(name: &P, line: &str) -> Vec<Directive> where 
+    P:AsRef<Path>
+    {
+        let mut p = Parser::new(name.as_ref(), line);
+        p.parse()
+    }
+
     pub struct WriteLock<'a, Term: 'a + Terminals>
     {
         term: Box<dyn TerminalWriter<Term> + 'a>,
@@ -23595,7 +24217,1015 @@ pub mod system
 
     impl<'a, Term: Terminal> WriteLock<'a, Term>
     {
+        pub fn new(term: Box<dyn TerminalWriter<Term> + 'a>, data: MutexGuard<'a, Write>, highlighter: Option<Arc<dyn Highlighter + Send + Sync>> ) -> WriteLock<'a, Term> 
+        {
+            WriteLock
+            {
+                term,
+                data,
+                highlighter,
+            }
+        }
+
+        pub fn size(&self) -> io::Result<Size> { self.term.size() }
+
+        pub fn flush(&mut self) -> io::Result<()> { self.term.flush() }
+
+        pub fn update_size(&mut self) -> io::Result<()>
+        {
+            let size = self.size()?;
+            self.screen_size = size;
+            Ok(())
+        }
+
+        pub fn blink(&mut self, pos: usize) -> io::Result<()>
+        {
+            self.expire_blink()?;
+            let orig = self.cursor;
+            self.move_to(pos)?;
+            self.cursor = orig;
+            let expiry = Instant::now() + BLINK_DURATION;
+
+            self.blink = Some
+            (
+                Blink
+                {
+                    pos,
+                    expiry,
+                }
+            );
+
+            Ok(())
+        }
+
+        pub fn check_expire_blink(&mut self, now: Instant) -> io::Result<bool>
+        {
+            if let Some(blink) = self.data.blink
+            {
+                if now >= blink.expiry { self.expire_blink()?; }
+            }
+
+            Ok(self.blink.is_none())
+        }
+
+        pub fn expire_blink(&mut self) -> io::Result<()>
+        {
+            if let Some(blink) = self.data.blink.take() { self.move_from(blink.pos)?; }
+
+            Ok(())
+        }
+
+        pub fn set_prompt(&mut self, prompt: &str) -> io::Result<()>
+        {
+            self.expire_blink()?;
+            let redraw = self.is_prompt_drawn && self.prompt_type.is_normal();
+
+            if redraw { self.clear_full_prompt()?; }
+
+            self.data.set_prompt(prompt);
+
+            if redraw { self.draw_prompt()?; }
+
+            Ok(())
+        }
         
+        pub fn draw_prompt(&mut self) -> io::Result<()>
+        {
+            self.draw_prompt_prefix()?;
+            self.draw_prompt_suffix()
+        }
+
+        pub fn draw_prompt_prefix(&mut self) -> io::Result<()>
+        {
+            match self.prompt_type
+            {
+                PromptType::CompleteMore => Ok(()),
+                _ =>
+                {
+                    let pfx = self.prompt_prefix.clone();
+                    self.draw_raw_prompt(&pfx, Vec::new())
+                }
+            }
+        }
+
+        pub fn draw_prompt_suffix(&mut self) -> io::Result<()>
+        {
+            match self.prompt_type
+            {
+                PromptType::Normal =>
+                {
+                    let sfx = self.prompt_suffix.clone();
+                    let styles = self.highlighter.as_ref().map(|h| h.highlight(&sfx) ).unwrap_or_default();
+                    self.draw_raw_prompt(&sfx, styles)?;
+                }
+
+                PromptType::Number =>
+                {
+                    let n = self.input_arg.to_i32();
+                    let s = format!("(arg: {}) ", n);
+                    self.draw_text(0, &s)?;
+                }
+
+                PromptType::Search =>
+                {
+                    let pre = match (self.reverse_search, self.search_failed)
+                    {
+                        (false, false) => "(i-search)",
+                        (false, true)  => "(failed i-search)",
+                        (true,  false) => "(reverse-i-search)",
+                        (true,  true)  => "(failed reverse-i-search)",
+                    };
+
+                    let entry_str = self.get_history(self.history_index).to_owned();
+                    let prefix_str = format!("{}`{}': ", pre, self.search_buffer);
+                    let prefix_len = prefix_str.len();
+                    let entry_styles = self.highlighter.as_ref().map(|h| h.highlight(&entry_str)).unwrap_or_default();
+                    let adjusted_styles: Vec<(Range<usize>, Style)> = entry_styles.into_iter().map(|(range, style)| (range.start + prefix_len .. range.end + prefix_len, style)).collect();
+                    let full_str = format!("{}{}", prefix_str, entry_str);
+                    
+                    self.draw_text_impl(0, &full_str, Display
+                    {
+                        allow_tab: true,
+                        allow_newline: true,
+                        allow_escape: true,
+                    }, false, &adjusted_styles, 0)?;
+                    
+                    let (end_line, _end_col) = self.line_col_with(full_str.len(), &full_str, 0);
+                    let target_cursor_pos_in_full_str = prefix_len + self.cursor;
+                    let (target_line, target_col) = self.line_col_with(target_cursor_pos_in_full_str, &full_str, 0);
+                    let lines = target_line as isize - end_line as isize;                    
+                    let cols = target_col as isize;
+                    
+                    if lines > 0 { self.term.move_down(lines as usize)?; } else if lines < 0 { self.term.move_up((-lines) as usize)?; }
+                    
+                    self.term.move_to_first_column()?;
+
+                    if cols > 0 { self.term.move_right(cols as usize)?; }
+                    
+                    return Ok(())
+                }
+
+                PromptType::CompleteIntro(n) => { return self.term.write(&complete_intro(n)); }
+
+                PromptType::CompleteMore => { return self.term.write(COMPLETE_MORE); }
+            }
+
+            self.draw_buffer(0)?;
+            let len = self.buffer.len();
+            self.move_from(len)
+        }
+
+        pub fn redraw_prompt(&mut self, new_prompt: PromptType) -> io::Result<()>
+        {
+            self.clear_prompt()?;
+            self.prompt_type = new_prompt;
+            self.draw_prompt_suffix()
+        }
+        
+        pub fn draw_buffer(&mut self, pos: usize) -> io::Result<()>
+        {
+            let (_, col) = self.line_col(pos);
+            let styles = self.highlighter.as_ref().map(|h| h.highlight(&self.buffer) ).unwrap_or_default();
+            let buf_slice = self.buffer[pos..].to_owned();
+
+            self.draw_text_impl(col, &buf_slice, Display
+            {
+                allow_tab: true,
+                allow_newline: true,
+                .. Display::default()
+            }, false, &styles, pos)?;
+
+            Ok(())
+        }
+        
+        fn draw_text(&mut self, start_col: usize, text: &str) -> io::Result<()>
+        {
+            self.draw_text_impl(start_col, text, Display
+            {
+                allow_newline: true,
+                .. Display::default()
+            }, false, &[], 0)
+        }
+
+        fn draw_raw_prompt(&mut self, text: &str, styles: Vec<(Range<usize>, Style)>) -> io::Result<()>
+        {
+            self.draw_text_impl(0, text, Display
+            {
+                allow_tab: true,
+                allow_newline: true,
+                allow_escape: true,
+            }, true, &styles, 0)
+        }
+
+        fn draw_text_impl(&mut self, start_col: usize, text: &str, disp: Display, handle_invisible: bool, styles: &[(Range<usize>, Style)], text_offset: usize) -> io::Result<()>
+        {
+            let width = self.screen_size.columns;
+            let mut col = start_col;
+            let mut out = String::with_capacity(text.len());
+            let mut current_style = &Style::Default;
+            let mut style_iter = styles.iter().peekable();
+            let mut current_text_byte = 0;
+            let mut clear = false;
+            let mut hidden = false;
+            
+            for grapheme in text.graphemes(true)
+            {
+                if handle_invisible && grapheme.len() == 1
+                {
+                    let ch = grapheme.chars().next().unwrap();
+                    if ch == START_INVISIBLE
+                    {
+                        hidden = true;
+                        current_text_byte += grapheme.len();
+                        continue;
+                    }
+                    
+                    else if ch == END_INVISIBLE
+                    {
+                        hidden = false;
+                        current_text_byte += grapheme.len();
+                        continue;
+                    }
+                }
+
+                if hidden
+                {
+                    out.push_str(grapheme);
+                    current_text_byte += grapheme.len();
+                    continue;
+                }
+                
+                let absolute_byte_pos = text_offset + current_text_byte;
+                while let Some((range, _)) = style_iter.peek() {
+                    if range.end <= absolute_byte_pos {
+                        style_iter.next();
+                    } else {
+                        break;
+                    }
+                }
+
+                // Find the style that applies to the current position
+                let new_style = style_iter.peek()
+                    .filter(|(range, _)| range.start <= absolute_byte_pos)
+                    .map(|(_, style)| style)
+                    .unwrap_or(&Style::Default);
+
+                // Apply style change if needed
+                if new_style != current_style {
+                    if current_style != &Style::Default {
+                        out.push_str(RESET_STYLE); // Reset previous style
+                    }
+                    if let Style::AnsiColor(ansi_code) = new_style {
+                        out.push_str(ansi_code); // Apply new style
+                    }
+                    current_style = new_style;
+                }
+
+                // Handle single-character graphemes specially (tabs, newlines, control chars)
+                if grapheme.len() == 1 {
+                    let ch = grapheme.chars().next().unwrap();
+
+                    // Handle tab
+                    if ch == '\t' && disp.allow_tab {
+                        let n = TAB_STOP - (col % TAB_STOP);
+                        if col + n > width {
+                            let pre = width - col;
+                            out.extend(repeat(' ').take(pre));
+                            out.push_str(" \r");
+                            out.extend(repeat(' ').take(n - pre));
+                            col = n - pre;
+                        } else {
+                            out.extend(repeat(' ').take(n));
+                            col += n;
+                            if col == width {
+                                out.push_str(" \r");
+                                col = 0;
+                            }
+                        }
+                        current_text_byte += grapheme.len();
+                        continue;
+                    }
+
+                    // Handle newline
+                    if ch == '\n' && disp.allow_newline {
+                        if !clear {
+                            self.term.write(&out)?;
+                            out.clear();
+                            self.term.clear_to_screen_end()?;
+                            clear = true;
+                        }
+                        out.push('\n');
+                        col = 0;
+                        current_text_byte += grapheme.len();
+                        continue;
+                    }
+
+                    // Handle control characters (display as ^X)
+                    if is_ctrl(ch) && ch != ESCAPE {
+                        for disp_ch in display(ch, disp) {
+                            out.push(disp_ch);
+                            col += 1;
+                            if col == width {
+                                out.push_str(" \r");
+                                col = 0;
+                            }
+                        }
+                        current_text_byte += grapheme.len();
+                        continue;
+                    }
+
+                    // Handle escape character
+                    if ch == ESCAPE && disp.allow_escape {
+                        out.push(ch);
+                        current_text_byte += grapheme.len();
+                        continue;
+                    }
+                }
+
+                // For all other graphemes (including complex emoji), use grapheme width
+                let gw = grapheme_width(grapheme);
+
+                if gw == 0 {
+                    // Zero-width grapheme, just output it
+                    out.push_str(grapheme);
+                } else if gw >= 2 && col == width - 1 {
+                    // Wide grapheme at end of line - wrap first
+                    out.push_str("  \r");
+                    out.push_str(grapheme);
+                    col = gw;
+                } else {
+                    out.push_str(grapheme);
+                    col += gw;
+                    if col >= width {
+                        out.push_str(" \r");
+                        col = col % width;
+                    }
+                }
+
+                current_text_byte += grapheme.len();
+            }
+
+            // Ensure style is reset at the end
+            if current_style != &Style::Default {
+                // Check if the last applied style was actually from the styles vec
+                let last_applied_style = styles.iter().rev().find(|(range, _)| range.start < text_offset + text.len());
+                match last_applied_style {
+                    Some((_, Style::Default)) => {}, // Already default
+                    Some((_, Style::AnsiColor(_))) => out.push_str(RESET_STYLE),
+                    None if !styles.is_empty() => out.push_str(RESET_STYLE), // Reset if styles were provided but didn't cover the end
+                    _ => {} // No styles or last was default
+                }
+            }
+
+            if col == width {
+                out.push_str(" \r");
+            }
+
+            self.term.write(&out)
+        }
+
+        pub fn set_buffer(&mut self, buf: &str) -> io::Result<()> {
+            self.expire_blink()?;
+
+            self.move_to(0)?;
+            self.buffer.clear();
+            self.buffer.push_str(buf);
+            self.new_buffer()
+        }
+
+        pub fn set_cursor(&mut self, pos: usize) -> io::Result<()> {
+            self.expire_blink()?;
+
+            if !self.buffer.is_char_boundary(pos) {
+                panic!("invalid cursor position {} in buffer {:?}",
+                    pos, self.buffer);
+            }
+
+            self.move_to(pos)
+        }
+
+        pub fn set_cursor_mode(&mut self, mode: CursorMode) -> io::Result<()> {
+            self.term.set_cursor_mode(mode)
+        }
+
+        pub fn history_len(&self) -> usize {
+            self.history.len()
+        }
+
+        pub fn history_size(&self) -> usize {
+            self.history_size
+        }
+
+        pub fn set_history_size(&mut self, n: usize) {
+            self.history_size = n;
+            self.truncate_history(n);
+        }
+
+        pub fn write_str(&mut self, s: &str) -> io::Result<()> {
+            self.term.write(s)
+        }
+
+        pub fn start_history_search(&mut self, reverse: bool) -> io::Result<()> {
+            self.search_buffer = self.buffer[..self.cursor].to_owned();
+
+            self.continue_history_search(reverse)
+        }
+
+        pub fn continue_history_search(&mut self, reverse: bool) -> io::Result<()> {
+            if let Some(idx) = self.find_history_search(reverse) {
+                let original_cursor = self.cursor;
+                self.set_history_entry(Some(idx));
+
+                // Clear the old line content visually
+                self.clear_prompt()?;
+                // Redraw the prompt and the entire new buffer content
+                self.draw_prompt_suffix()?;
+                // Move the cursor back to its original position
+                self.move_to(original_cursor)?; // This updates self.cursor and moves physical cursor
+            }
+            Ok(())
+        }
+
+        pub fn info(&self) -> String {
+            format!(
+                "buffer: {:?}, cursor: {} hindex: {:?} pmt_suffix_len: {} pmt_type: {:?} search_buffer: {:?} last_s: {:?} prompt_p: {:?} ({}) prompt_s: {:?} ({})",
+                self.buffer, self.cursor, self.history_index,
+                self.prompt_suffix_len, self.prompt_type, self.search_buffer,
+                self.last_search, self.prompt_prefix, self.prompt_prefix_len,
+                self.prompt_suffix, self.prompt_suffix_len,
+            )
+        }
+
+        fn find_history_search(&self, reverse: bool) -> Option<usize> {
+            let len = self.history.len();
+            let idx = self.history_index.unwrap_or(len);
+
+            if reverse {
+                self.history.iter().rev().skip(len - idx)
+                    .position(|ent| ent.starts_with(&self.search_buffer))
+                    .map(|pos| idx - (pos + 1))
+            } else {
+                self.history.iter().skip(idx + 1)
+                    .position(|ent| ent.starts_with(&self.search_buffer))
+                    .map(|pos| idx + (pos + 1))
+            }
+        }
+
+        pub fn start_search_history(&mut self, reverse: bool) -> io::Result<()> {
+            self.reverse_search = reverse;
+            self.search_failed = false;
+            self.search_buffer.clear();
+            self.prev_history = self.history_index;
+            self.prev_cursor = self.cursor;
+
+            self.redraw_prompt(PromptType::Search)
+        }
+
+        pub fn continue_search_history(&mut self, reverse: bool) -> io::Result<()> {
+            self.reverse_search = reverse;
+            self.search_failed = false;
+
+            {
+                let data = &mut *self.data;
+                data.search_buffer.clone_from(&data.last_search);
+            }
+
+            self.search_history_step()
+        }
+
+        pub fn end_search_history(&mut self) -> io::Result<()> {
+            self.redraw_prompt(PromptType::Normal)
+        }
+
+        pub fn abort_search_history(&mut self) -> io::Result<()> {
+            self.clear_prompt()?;
+
+            let ent = self.prev_history;
+            self.set_history_entry(ent);
+            self.cursor = self.prev_cursor;
+
+            self.prompt_type = PromptType::Normal;
+            self.draw_prompt_suffix()
+        }
+
+        fn show_search_match(&mut self, next_match: Option<(Option<usize>, usize)>)
+                -> io::Result<()> {
+            self.clear_prompt()?;
+
+            if let Some((idx, pos)) = next_match {
+                self.search_failed = false;
+                self.set_history_entry(idx);
+                self.cursor = pos;
+            } else {
+                self.search_failed = true;
+            }
+
+
+            self.prompt_type = PromptType::Search;
+            self.draw_prompt_suffix()
+        }
+
+        pub fn search_history_update(&mut self) -> io::Result<()> {
+            // Search for the next match, perhaps including the current position
+            let next_match = if self.reverse_search {
+                self.search_history_backward(&self.search_buffer, true)
+            } else {
+                self.search_history_forward(&self.search_buffer, true)
+            };
+
+            self.show_search_match(next_match)
+        }
+
+        fn search_history_step(&mut self) -> io::Result<()> {
+            if self.search_buffer.is_empty() {
+                return self.redraw_prompt(PromptType::Search);
+            }
+
+            // Search for the next match
+            let next_match = if self.reverse_search {
+                self.search_history_backward(&self.search_buffer, false)
+            } else {
+                self.search_history_forward(&self.search_buffer, false)
+            };
+
+            self.show_search_match(next_match)
+        }
+
+        fn search_history_backward(&self, s: &str, include_cur: bool)
+                -> Option<(Option<usize>, usize)> {
+            let mut idx = self.history_index;
+            let mut pos = Some(self.cursor);
+
+            if include_cur && !self.search_failed {
+                if let Some(p) = pos {
+                    if self.get_history(idx).is_char_boundary(p + s.len()) {
+                        pos = Some(p + s.len());
+                    }
+                }
+            }
+
+            loop {
+                let line = self.get_history(idx);
+
+                match line[..pos.unwrap_or(line.len())].rfind(s) {
+                    Some(found) => {
+                        pos = Some(found);
+                        break;
+                    }
+                    None => {
+                        match idx {
+                            Some(0) => return None,
+                            Some(n) => {
+                                idx = Some(n - 1);
+                                pos = None;
+                            }
+                            None => {
+                                if self.history.is_empty() {
+                                    return None;
+                                } else {
+                                    idx = Some(self.history.len() - 1);
+                                    pos = None;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            pos.map(|pos| (idx, pos))
+        }
+
+        fn search_history_forward(&self, s: &str, include_cur: bool)
+                -> Option<(Option<usize>, usize)> {
+            let mut idx = self.history_index;
+            let mut pos = Some(self.cursor);
+
+            if !include_cur {
+                if let Some(p) = pos {
+                    pos = Some(forward_char(1, self.get_history(idx), p));
+                }
+            }
+
+            loop {
+                let line = self.get_history(idx);
+
+                match line[pos.unwrap_or(0)..].find(s) {
+                    Some(found) => {
+                        pos = pos.map(|n| n + found).or(Some(found));
+                        break;
+                    }
+                    None => {
+                        if let Some(n) = idx {
+                            if n + 1 == self.history.len() {
+                                idx = None;
+                            } else {
+                                idx = Some(n + 1);
+                            }
+                            pos = None;
+                        } else {
+                            return None;
+                        }
+                    }
+                }
+            }
+
+            pos.map(|pos| (idx, pos))
+        }
+
+        pub fn add_history(&mut self, line: String) {
+            if self.history.len() == self.history_size {
+                self.history.pop_front();
+            }
+
+            self.history.push_back(line);
+            self.history_new_entries = self.history.len()
+                .min(self.history_new_entries + 1);
+        }
+
+        pub fn add_history_unique(&mut self, line: String) {
+            let is_duplicate = self.history.back().map_or(false, |ent| *ent == line);
+
+            if !is_duplicate {
+                self.add_history(line);
+            }
+        }
+
+        pub fn clear_history(&mut self) {
+            self.truncate_history(0);
+            self.history_new_entries = 0;
+        }
+
+        pub fn remove_history(&mut self, n: usize) {
+            if n < self.history.len() {
+                let first_new = self.history.len() - self.history_new_entries;
+
+                if n >= first_new {
+                    self.history_new_entries -= 1;
+                }
+
+                self.history.remove(n);
+            }
+        }
+
+        pub fn truncate_history(&mut self, n: usize) {
+            let len = self.history.len();
+
+            if n < len {
+                let _ = self.history.drain(..len - n);
+                self.history_new_entries = self.history_new_entries.max(n);
+            }
+        }
+
+        pub fn next_history(&mut self, n: usize) -> io::Result<()> {
+            if let Some(old) = self.history_index {
+                let new = old.saturating_add(n);
+
+                if new >= self.history.len() {
+                    self.select_history_entry(None)?;
+                } else {
+                    self.select_history_entry(Some(new))?;
+                }
+            }
+
+            Ok(())
+        }
+
+        pub fn prev_history(&mut self, n: usize) -> io::Result<()> {
+            if !self.history.is_empty() && self.history_index != Some(0) {
+                let new = if let Some(old) = self.history_index {
+                    old.saturating_sub(n)
+                } else {
+                    self.history.len().saturating_sub(n)
+                };
+
+                self.select_history_entry(Some(new))?;
+            }
+
+            Ok(())
+        }
+
+        pub fn select_history_entry(&mut self, new: Option<usize>) -> io::Result<()> {
+            if new != self.history_index {
+                self.move_to(0)?;
+                self.set_history_entry(new);
+                self.new_buffer()?;
+            }
+
+            Ok(())
+        }
+
+        pub fn set_history_entry(&mut self, new: Option<usize>) {
+            let old = self.history_index;
+
+            if old != new {
+                let data = &mut *self.data;
+                data.history_index = new;
+
+                if let Some(old) = old {
+                    data.history[old].clone_from(&data.buffer);
+                } else {
+                    swap(&mut data.buffer, &mut data.backup_buffer);
+                }
+
+                if let Some(new) = new {
+                    data.buffer.clone_from(&data.history[new]);
+                } else {
+                    data.buffer.clear();
+                    swap(&mut data.buffer, &mut data.backup_buffer);
+                }
+            }
+        }
+
+        fn get_history(&self, n: Option<usize>) -> &str {
+            if self.history_index == n {
+                &self.buffer
+            } else if let Some(n) = n {
+                &self.history[n]
+            } else {
+                &self.backup_buffer
+            }
+        }
+
+        pub fn backward_char(&mut self, n: usize) -> io::Result<()> {
+            let pos = backward_char(n, &self.buffer, self.cursor);
+            self.move_to(pos)
+        }
+
+        pub fn forward_char(&mut self, n: usize) -> io::Result<()> {
+            let pos = forward_char(n, &self.buffer, self.cursor);
+            self.move_to(pos)
+        }
+
+        pub fn backward_search_char(&mut self, n: usize, ch: char) -> io::Result<()> {
+            if let Some(pos) = backward_search_char(n, &self.buffer, self.cursor, ch) {
+                self.move_to(pos)?;
+            }
+
+            Ok(())
+        }
+
+        pub fn forward_search_char(&mut self, n: usize, ch: char) -> io::Result<()> {
+            if let Some(pos) = forward_search_char(n, &self.buffer, self.cursor, ch) {
+                self.move_to(pos)?;
+            }
+
+            Ok(())
+        }
+
+        /// Deletes a range from the buffer; the cursor is moved to the end
+        /// of the given range.
+        pub fn delete_range<R: RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
+            let start = range.start().cloned().unwrap_or(0);
+            let end = range.end().cloned().unwrap_or_else(|| self.buffer.len());
+
+            // Move to the start of the deletion range
+            self.move_to(start)?;
+
+            // Remove the characters in the range
+            let _ = self.buffer.drain(start..end);
+
+            // Move physical cursor to the beginning of the editable area
+            let current_internal_cursor = self.cursor; // Save internal cursor state
+            self.move_to(0)?; // Move physical cursor to start of input area
+            self.cursor = current_internal_cursor; // Restore internal cursor state
+
+            // Redraw the entire buffer from position 0 with updated highlighting
+            self.draw_buffer(0)?;
+
+            // Clear any leftover characters from the previous render
+            self.term.clear_to_screen_end()?;
+
+            // Update internal cursor state to the deletion point
+            self.cursor = start;
+
+            // Move physical cursor from the end of the drawn buffer back to deletion point
+            let len = self.buffer.len();
+            self.move_from(len)?;
+
+            Ok(())
+        }
+
+        pub fn insert_str(&mut self, s: &str) -> io::Result<()> {
+            let original_cursor = self.cursor;
+            self.buffer.insert_str(original_cursor, s);
+            let new_cursor = original_cursor + s.len();
+
+            // Move physical cursor to the beginning of the editable area (position 0 relative to prompt suffix)
+            // Need to use move_rel carefully or move_to(0) which recalculates absolute position.
+            // Let's recalculate using move_to(0).
+            let current_internal_cursor = self.cursor; // Save internal cursor state before move_to potentially changes it
+            self.move_to(0)?; // Move physical cursor to the start of the input area
+            self.cursor = current_internal_cursor; // Restore internal cursor state
+
+            // Redraw the entire buffer from position 0 with updated highlighting
+            self.draw_buffer(0)?; // This draws the text and leaves the physical cursor at the end
+
+
+            // Clear any leftover characters from the previous render (if the line got shorter)
+            // Although in insert_str it only gets longer or stays same. Still good practice.
+            self.term.clear_to_screen_end()?;
+
+            // Update the internal cursor state to the correct position after insertion
+            self.cursor = new_cursor;
+
+            // Move the physical cursor from the end of the drawn buffer
+            // back to the correct internal cursor position.
+            let len = self.buffer.len();
+            self.move_from(len)?;
+
+            Ok(())
+        }
+
+        pub fn transpose_range(&mut self, src: Range<usize>, dest: Range<usize>)
+                -> io::Result<()> {
+            // Ranges must not overlap
+            assert!(src.end <= dest.start || src.start >= dest.end);
+
+            // Final cursor position
+            let final_cur = if src.start < dest.start {
+                dest.end
+            } else {
+                dest.start + (src.end - src.start)
+            };
+
+            let (left, right) = if src.start < dest.start {
+                (src, dest)
+            } else {
+                (dest, src)
+            };
+
+            self.move_to(left.start)?;
+
+            let a = self.buffer[left.clone()].to_owned();
+            let b = self.buffer[right.clone()].to_owned();
+
+            let _ = self.buffer.drain(right.clone());
+            self.buffer.insert_str(right.start, &a);
+
+            let _ = self.buffer.drain(left.clone());
+            self.buffer.insert_str(left.start, &b);
+
+            let cursor = self.cursor;
+            self.draw_buffer(cursor)?;
+            self.term.clear_to_screen_end()?;
+
+            self.cursor = final_cur;
+            let len = self.buffer.len();
+            self.move_from(len)
+        }
+
+        fn prompt_suffix_length(&self) -> usize {
+            match self.prompt_type {
+                PromptType::Normal => self.prompt_suffix_len,
+                PromptType::Number => {
+                    let n = number_len(self.input_arg.to_i32());
+                    PROMPT_NUM_PREFIX + PROMPT_NUM_SUFFIX + n
+                }
+                PromptType::Search => {
+                    let mut prefix = PROMPT_SEARCH_PREFIX;
+
+                    if self.reverse_search {
+                        prefix += PROMPT_SEARCH_REVERSE_PREFIX;
+                    }
+                    if self.search_failed {
+                        prefix += PROMPT_SEARCH_FAILED_PREFIX;
+                    }
+
+                    let n = self.display_size(&self.search_buffer, prefix);
+                    prefix + n + PROMPT_SEARCH_SUFFIX
+                }
+                PromptType::CompleteIntro(n) => complete_intro(n).len(),
+                PromptType::CompleteMore => COMPLETE_MORE.len(),
+            }
+        }
+
+        fn line_col(&self, pos: usize) -> (usize, usize) {
+            let prompt_len = self.prompt_suffix_length();
+
+            match self.prompt_type {
+                PromptType::CompleteIntro(_) |
+                PromptType::CompleteMore => {
+                    let width = self.screen_size.columns;
+                    (prompt_len / width, prompt_len % width)
+                }
+                _ => self.line_col_with(pos, &self.buffer, prompt_len)
+            }
+        }
+
+        fn line_col_with(&self, pos: usize, buf: &str, start_col: usize) -> (usize, usize) {
+            let width = self.screen_size.columns;
+            if width == 0 {
+                return (0, 0);
+            }
+
+            let n = start_col + self.display_size(&buf[..pos], start_col);
+
+            (n / width, n % width)
+        }
+
+        pub fn clear_screen(&mut self) -> io::Result<()> {
+            self.term.clear_screen()?;
+            self.draw_prompt()?;
+
+            Ok(())
+        }
+
+        pub fn clear_to_screen_end(&mut self) -> io::Result<()> {
+            self.term.clear_to_screen_end()
+        }
+
+        /// Draws a new buffer on the screen. Cursor position is assumed to be `0`.
+        pub fn new_buffer(&mut self) -> io::Result<()> {
+            self.draw_buffer(0)?;
+            self.cursor = self.buffer.len();
+
+            self.term.clear_to_screen_end()?;
+
+            Ok(())
+        }
+
+        pub fn clear_full_prompt(&mut self) -> io::Result<()> {
+            let prefix_lines = self.prompt_prefix_len / self.screen_size.columns;
+            let (line, _) = self.line_col(self.cursor);
+            self.term.move_up(prefix_lines + line)?;
+            self.term.move_to_first_column()?;
+            self.term.clear_to_screen_end()
+        }
+
+        pub(crate) fn clear_prompt(&mut self) -> io::Result<()> {
+            let (line, _) = self.line_col(self.cursor);
+
+            self.term.move_up(line)?;
+            self.term.move_to_first_column()?;
+            self.term.clear_to_screen_end()
+        }
+
+        /// Move back to true cursor position from some other position
+        pub fn move_from(&mut self, pos: usize) -> io::Result<()> {
+            let (lines, cols) = self.move_delta(pos, self.cursor, &self.buffer);
+            self.move_rel(lines, cols)
+        }
+
+        pub fn move_to(&mut self, pos: usize) -> io::Result<()> {
+            if pos != self.cursor {
+                let (lines, cols) = self.move_delta(self.cursor, pos, &self.buffer);
+                self.move_rel(lines, cols)?;
+                self.cursor = pos;
+            }
+
+            Ok(())
+        }
+
+        pub fn move_to_end(&mut self) -> io::Result<()> {
+            let pos = self.buffer.len();
+            self.move_to(pos)
+        }
+
+        pub fn move_right(&mut self, n: usize) -> io::Result<()> {
+            self.term.move_right(n)
+        }
+
+        /// Moves from `old` to `new` cursor position, using the given buffer
+        /// as current input.
+        fn move_delta(&self, old: usize, new: usize, buf: &str) -> (isize, isize) {
+            let prompt_len = self.prompt_suffix_length();
+            let (old_line, old_col) = self.line_col_with(old, buf, prompt_len);
+            let (new_line, new_col) = self.line_col_with(new, buf, prompt_len);
+
+            (new_line as isize - old_line as isize,
+            new_col as isize - old_col as isize)
+        }
+
+        fn move_rel(&mut self, lines: isize, cols: isize) -> io::Result<()> {
+            if lines > 0 {
+                self.term.move_down(lines as usize)?;
+            } else if lines < 0 {
+                self.term.move_up((-lines) as usize)?;
+            }
+
+            if cols > 0 {
+                self.term.move_right(cols as usize)?;
+            } else if cols < 0 {
+                self.term.move_left((-cols) as usize)?;
+            }
+
+            Ok(())
+        }
+
+        pub fn reset_data(&mut self) {
+            self.data.reset_data();
+        }
+
+        pub fn set_digit_from_char(&mut self, ch: char) {
+            let digit = match ch {
+                '-' => Digit::NegNone,
+                '0' ..= '9' => Digit::from(ch),
+                _ => Digit::None
+            };
+
+            self.input_arg = digit;
+            self.explicit_arg = true;
+        }
     }
 
     impl Interface<DefaultTerminal>
@@ -23803,27 +25433,18 @@ pub mod system
 
         fn write_str(&self, line: &str) -> io::Result<()> { self.lock_writer_erase()?.write_str(line) }
     }
-    
-    impl<Term: Terminals> Interface<Term>
+        
+    impl<Term:Terminals> Interface<Term>
     {
-        pub fn set_prompt(&self, prompt: &str) -> io::Result<()> { self.lock_reader().set_prompt(prompt) }
-        
-        pub fn set_buffer(&self, buf: &str) -> io::Result<()> { self.lock_reader().set_buffer(buf) }
-        
+        pub fn set_prompt(&self, prompt: &str) -> io::Result<()> { self.lock_reader().set_prompt(prompt) }        
+        pub fn set_buffer(&self, buf: &str) -> io::Result<()> { self.lock_reader().set_buffer(buf) }        
         pub fn set_cursor(&self, pos: usize) -> io::Result<()> { self.lock_reader().set_cursor(pos) }
-        
-        pub fn add_history(&self, line: String) { self.lock_reader().add_history(line); }
-        
+        pub fn add_history(&self, line: String) { self.lock_reader().add_history(line); }        
         pub fn add_history_unique(&self, line: String) { self.lock_reader().add_history_unique(line); }
-        
-        pub fn clear_history(&self) { self.lock_reader().clear_history(); }
-        
-        pub fn remove_history(&self, idx: usize) { self.lock_reader().remove_history(idx); }
-
-        pub fn set_history_size(&self, n: usize) { self.lock_reader().set_history_size(n); }
-        
-        pub fn truncate_history(&self, n: usize) { self.lock_reader().truncate_history(n); }
-        
+        pub fn clear_history(&self) { self.lock_reader().clear_history(); }        
+        pub fn remove_history(&self, idx: usize) { self.lock_reader().remove_history(idx); }        
+        pub fn set_history_size(&self, n: usize) { self.lock_reader().set_history_size(n); }        
+        pub fn truncate_history(&self, n: usize) { self.lock_reader().truncate_history(n); }        
         pub fn set_highlighter(&mut self, highlighter: Arc<dyn Highlighter + Send + Sync>) { self.highlighter = Some(highlighter); }
     }
     /*
@@ -25377,13 +26998,15 @@ pub mod system
 
                 use crate::priv_util::{map_lock_result, map_try_lock_result};
                 use crate::sequence::{FindResult, SequenceMap};
-                use crate::signal::{Signal, SignalSet};
+                use crate::signal::{Signal, Signals};
                 use crate::terminal::{
                     Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme,
                     MouseButton, MouseEvent, MouseInput, ModifierState,
                 };
                 use crate::util::prefixes;
             */
+            const NUM_SIGNALS: u8 = 6;
+
             pub struct Terminal
             {
                 info: (), // Database,
@@ -25415,6 +27038,42 @@ pub mod system
                 fg: Option<Color>,
                 bg: Option<Color>,
                 cur_style: Style,
+            }
+            
+            #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+            pub enum Signal
+            {
+                Break,
+                Continue,
+                Interrupt,
+                Resize,
+                Suspend,
+                Quit,
+            }
+            
+            impl Signal
+            {
+                fn as_bit(&self) -> u8 { 1 << (*self as u8) }
+                fn all_bits() -> u8 { (1 << NUM_SIGNALS) - 1 }
+            }
+
+            impl ops::BitOr for Signal
+            {
+                type Output = Signals;
+
+                fn bitor(self, rhs: Signal) -> Signals
+                {
+                    let mut set = Signals::new();
+                    set.insert(self);
+                    set.insert(rhs);
+                    set
+                }
+            }
+
+            impl ops::Not for Signal
+            {
+                type Output = Signals;
+                fn not(self) -> Signals { !Signals::from(self) }
             }
 
         } #[cfg(unix)] pub use self::unix::{ * };
@@ -25496,8 +27155,6 @@ pub mod system
                 self
             }
         }
-
-
     }
 }
 /*
