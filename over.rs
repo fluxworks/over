@@ -23520,7 +23520,7 @@ pub mod system
         sync::{Arc, Mutex, MutexGuard},
         system::
         {
-            common::{ Signal },
+            common::{ CursorMode, Signal },
         },
         time::std::{ Duration, Instant },
         *,
@@ -23631,7 +23631,7 @@ pub mod system
     pub trait Completer<Term: Terminals>: Send + Sync
     {
         fn complete(&self, word: &str, prompter: &Prompter<Term>, start: usize, end: usize) -> Option<Vec<Completion>>;        
-        fn word_start(&self, line: &str, end: usize, prompter: &Prompter<Term>) -> usize { word_break_start(&line[..end], prompter.word_break_chars()) };
+        fn word_start(&self, line: &str, end: usize, prompter: &Prompter<Term>) -> usize { word_break_start(&line[..end], prompter.word_break_chars()) }
         fn quote<'a>(&self, word: &'a str) -> Cow<'a, str> { Borrowed(word) }
         fn unquote<'a>(&self, word: &'a str) -> Cow<'a, str> { Borrowed(word) }
     }
@@ -23647,6 +23647,200 @@ pub mod system
     F: Fn(&mut Prompter<Term>, i32, char) -> io::Result<()>
     {
         fn execute(&self, prompter: &mut Prompter<Term>, count: i32, ch: char) -> io::Result<()> { self(prompter, count, ch) }
+    }
+    
+    #[derive(Clone, Debug)]
+    pub enum Directive
+    {
+        Bind(String, Command),
+        Conditional
+        {
+            name: Option<String>,
+            value: String,
+            then_group: Vec<Directive>,
+            else_group: Vec<Directive>,
+        },
+        SetVariable(String, String),
+    }
+
+    #[derive(Copy, Clone, Debug)]
+    pub enum Digit
+    {
+        None,
+        NegNone,
+        Num(i32),
+        NegNum(i32),
+    }
+
+    impl Digit
+    {
+        pub fn input(&mut self, n: i32)
+        {
+            match *self
+            {
+                Digit::None => *self = Digit::Num(n),
+                Digit::NegNone => *self = Digit::NegNum(n),
+                Digit::Num(ref mut m) | Digit::NegNum(ref mut m) =>
+                {
+                    *m *= 10;
+                    *m += n;
+                }
+            }
+        }
+
+        pub fn is_out_of_bounds(&self) -> bool
+        {
+            match *self
+            {
+                Digit::Num(n) | Digit::NegNum(n) if n > NUMBER_MAX => true,
+                _ => false
+            }
+        }
+
+        pub fn to_i32(&self) -> i32
+        {
+            match *self
+            {
+                Digit::None => 1,
+                Digit::NegNone => -1,
+                Digit::Num(n) => n,
+                Digit::NegNum(n) => -n,
+            }
+        }
+    }
+
+    impl From<char> for Digit
+    {
+        fn from(ch: char) -> Digit
+        {
+            let n = (ch as u8) - b'0';
+            Digit::Num(n as i32)
+        }
+    }
+    
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum PromptType
+    {
+        Normal,
+        Number,
+        Search,
+        CompleteIntro(usize),
+        CompleteMore,
+    }
+
+    impl PromptType
+    {
+        pub fn is_normal(&self) -> bool { *self == PromptType::Normal }
+    }
+    
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum Suffix
+    {
+        Default,
+        None,
+        Some(char),
+    }
+
+    impl Suffix
+    {
+        pub fn is_default(&self) -> bool
+        {
+            match *self
+            {
+                Suffix::Default => true,
+                _ => false
+            }
+        }
+        
+        pub fn is_some(&self) -> bool
+        {
+            match *self
+            {
+                Suffix::Some(_) => true,
+                _ => false
+            }
+        }
+        
+        pub fn is_none(&self) -> bool
+        {
+            match *self
+            {
+                Suffix::None => true,
+                _ => false
+            }
+        }
+        
+        pub fn with_default(self, default: Option<char>) -> Option<char>
+        {
+            match self
+            {
+                Suffix::None => None,
+                Suffix::Some(ch) => Some(ch),
+                Suffix::Default => default
+            }
+        }
+    }
+
+    impl Default for Suffix
+    {
+        fn default() -> Suffix { Suffix::Default }
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct Completion
+    {
+        pub completion: String,
+        pub display: Option<String>,
+        pub suffix: Suffix,
+    }
+
+    impl Completion
+    {
+        pub fn simple(s: String) -> Completion 
+        {
+            Completion
+            {
+                completion: s,
+                display: None,
+                suffix: Suffix::default(),
+            }
+        }
+        
+        pub fn completion(&self, def_suffix: Option<char>) -> Cow<str> 
+        {
+            let mut s = Borrowed(&self.completion[..]);
+
+            if let Some(suffix) = self.suffix.with_default(def_suffix) 
+            {
+                s.to_mut().push(suffix);
+            }
+
+            s
+        }
+        
+        pub fn display(&self) -> Cow<str> 
+        {
+            let mut s = Borrowed(self.display_str());
+
+            if let Suffix::Some(suffix) = self.suffix { s.to_mut().push(suffix); }
+
+            s
+        }
+        
+        pub fn display_chars(&self) -> usize
+        {
+            let n = self.display_str().chars().count();
+            n + if self.suffix.is_some() { 1 } else { 0 }
+        }
+
+        pub fn display_str(&self) -> &str
+        {
+            match self.display
+            {
+                Some(ref dis) => dis,
+                None => &self.completion
+            }
+        }
     }
     
     pub struct DummyCompleter;
@@ -23740,76 +23934,6 @@ pub mod system
         expiry:Instant,
     }
 
-    #[derive(Copy, Clone, Debug)]
-    pub enum Digit
-    {
-        None,
-        NegNone,
-        Num(i32),
-        NegNum(i32),
-    }
-
-    impl Digit
-    {
-        pub fn input(&mut self, n: i32)
-        {
-            match *self
-            {
-                Digit::None => *self = Digit::Num(n),
-                Digit::NegNone => *self = Digit::NegNum(n),
-                Digit::Num(ref mut m) | Digit::NegNum(ref mut m) =>
-                {
-                    *m *= 10;
-                    *m += n;
-                }
-            }
-        }
-
-        pub fn is_out_of_bounds(&self) -> bool
-        {
-            match *self
-            {
-                Digit::Num(n) | Digit::NegNum(n) if n > NUMBER_MAX => true,
-                _ => false
-            }
-        }
-
-        pub fn to_i32(&self) -> i32
-        {
-            match *self
-            {
-                Digit::None => 1,
-                Digit::NegNone => -1,
-                Digit::Num(n) => n,
-                Digit::NegNum(n) => -n,
-            }
-        }
-    }
-
-    impl From<char> for Digit
-    {
-        fn from(ch: char) -> Digit
-        {
-            let n = (ch as u8) - b'0';
-            Digit::Num(n as i32)
-        }
-    }
-    
-    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-    pub enum PromptType
-    {
-        Normal,
-        Number,
-        Search,
-        CompleteIntro(usize),
-        CompleteMore,
-    }
-
-    impl PromptType
-    {
-        pub fn is_normal(&self) -> bool { *self == PromptType::Normal }
-    }
-
     #[derive(Debug)]
     pub struct Write
     {
@@ -23889,20 +24013,6 @@ pub mod system
         QuotedInsert => "quoted-insert",
         Yank => "yank",
         YankPop => "yank-pop",
-    }
-
-    #[derive(Clone, Debug)]
-    pub enum Directive
-    {
-        Bind(String, Command),
-        Conditional
-        {
-            name: Option<String>,
-            value: String,
-            then_group: Vec<Directive>,
-            else_group: Vec<Directive>,
-        },
-        SetVariable(String, String),
     }
     
     pub struct Parser<'a>
@@ -24215,7 +24325,7 @@ pub mod system
         highlighter: Option<Arc<dyn Highlighter + Send + Sync>>,
     }
 
-    impl<'a, Term: Terminal> WriteLock<'a, Term>
+    impl<'a, Term: Terminals> WriteLock<'a, Term>
     {
         pub fn new(term: Box<dyn TerminalWriter<Term> + 'a>, data: MutexGuard<'a, Write>, highlighter: Option<Arc<dyn Highlighter + Send + Sync>> ) -> WriteLock<'a, Term> 
         {
@@ -24971,9 +25081,7 @@ pub mod system
 
             Ok(())
         }
-
-        /// Deletes a range from the buffer; the cursor is moved to the end
-        /// of the given range.
+        
         pub fn delete_range<R: RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
             let start = range.start().cloned().unwrap_or(0);
             let end = range.end().cloned().unwrap_or_else(|| self.buffer.len());
@@ -25133,8 +25241,7 @@ pub mod system
         pub fn clear_to_screen_end(&mut self) -> io::Result<()> {
             self.term.clear_to_screen_end()
         }
-
-        /// Draws a new buffer on the screen. Cursor position is assumed to be `0`.
+        
         pub fn new_buffer(&mut self) -> io::Result<()> {
             self.draw_buffer(0)?;
             self.cursor = self.buffer.len();
@@ -25159,8 +25266,7 @@ pub mod system
             self.term.move_to_first_column()?;
             self.term.clear_to_screen_end()
         }
-
-        /// Move back to true cursor position from some other position
+        
         pub fn move_from(&mut self, pos: usize) -> io::Result<()> {
             let (lines, cols) = self.move_delta(pos, self.cursor, &self.buffer);
             self.move_rel(lines, cols)
@@ -25184,9 +25290,7 @@ pub mod system
         pub fn move_right(&mut self, n: usize) -> io::Result<()> {
             self.term.move_right(n)
         }
-
-        /// Moves from `old` to `new` cursor position, using the given buffer
-        /// as current input.
+        
         fn move_delta(&self, old: usize, new: usize, buf: &str) -> (isize, isize) {
             let prompt_len = self.prompt_suffix_length();
             let (old_line, old_col) = self.line_col_with(old, buf, prompt_len);
@@ -25436,15 +25540,15 @@ pub mod system
         
     impl<Term:Terminals> Interface<Term>
     {
-        pub fn set_prompt(&self, prompt: &str) -> io::Result<()> { self.lock_reader().set_prompt(prompt) }        
-        pub fn set_buffer(&self, buf: &str) -> io::Result<()> { self.lock_reader().set_buffer(buf) }        
+        pub fn set_prompt(&self, prompt: &str) -> io::Result<()> { self.lock_reader().set_prompt(prompt) }
+        pub fn set_buffer(&self, buf: &str) -> io::Result<()> { self.lock_reader().set_buffer(buf) }
         pub fn set_cursor(&self, pos: usize) -> io::Result<()> { self.lock_reader().set_cursor(pos) }
-        pub fn add_history(&self, line: String) { self.lock_reader().add_history(line); }        
+        pub fn add_history(&self, line: String) { self.lock_reader().add_history(line); }
         pub fn add_history_unique(&self, line: String) { self.lock_reader().add_history_unique(line); }
-        pub fn clear_history(&self) { self.lock_reader().clear_history(); }        
-        pub fn remove_history(&self, idx: usize) { self.lock_reader().remove_history(idx); }        
-        pub fn set_history_size(&self, n: usize) { self.lock_reader().set_history_size(n); }        
-        pub fn truncate_history(&self, n: usize) { self.lock_reader().truncate_history(n); }        
+        pub fn clear_history(&self) { self.lock_reader().clear_history(); }
+        pub fn remove_history(&self, idx: usize) { self.lock_reader().remove_history(idx); }
+        pub fn set_history_size(&self, n: usize) { self.lock_reader().set_history_size(n); }
+        pub fn truncate_history(&self, n: usize) { self.lock_reader().truncate_history(n); }
         pub fn set_highlighter(&mut self, highlighter: Arc<dyn Highlighter + Send + Sync>) { self.highlighter = Some(highlighter); }
     }
     /*
@@ -27154,6 +27258,14 @@ pub mod system
                 self.style = style.into().unwrap_or_default();
                 self
             }
+        }
+
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum CursorMode
+        {
+            Normal,
+            Invisible,
+            Overwrite,
         }
     }
 }
