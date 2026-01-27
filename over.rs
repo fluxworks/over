@@ -1775,6 +1775,278 @@ pub mod __
             }
         };
     }
+
+    #[macro_export] macro_rules! feature
+    {
+        (
+            #![$meta:meta]
+            $($item:item)*
+        ) => {
+            $(
+                #[cfg($meta)]
+                #[cfg_attr(docsrs, doc(cfg($meta)))]
+                $item
+            )*
+        }
+    }
+    
+    #[macro_export] macro_rules! libc_bitflags
+    {
+        (
+            $(#[$outer:meta])*
+            pub struct $BitFlags:ident: $T:ty {
+                $(
+                    $(#[$inner:ident $($args:tt)*])*
+                    $Flag:ident $(as $cast:ty)*;
+                )+
+            }
+        ) => {
+            ::bitflags::bitflags! {
+                #[derive(Copy, Clone, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+                #[repr(transparent)]
+                $(#[$outer])*
+                pub struct $BitFlags: $T {
+                    $(
+                        $(#[$inner $($args)*])*
+                        const $Flag = libc::$Flag $(as $cast)*;
+                    )+
+                }
+            }
+        };
+    }
+    
+    #[macro_export] macro_rules! libc_enum
+    {
+        // Exit rule.
+        (@make_enum
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: [$($attrs:tt)*],
+                entries: [$($entries:tt)*],
+            }
+        ) => {
+            $($attrs)*
+            #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            $v enum $BitFlags {
+                $($entries)*
+            }
+        };
+
+        // Exit rule including TryFrom
+        (@make_enum
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: [$($attrs:tt)*],
+                entries: [$($entries:tt)*],
+                from_type: $repr:path,
+                try_froms: [$($try_froms:tt)*]
+            }
+        ) => {
+            $($attrs)*
+            #[derive(Clone, Copy, Debug, Eq, Hash, Ord, PartialEq, PartialOrd)]
+            $v enum $BitFlags {
+                $($entries)*
+            }
+            impl ::std::convert::TryFrom<$repr> for $BitFlags {
+                type Error = $crate::Error;
+                #[allow(unused_doc_comments)]
+                #[allow(deprecated)]
+                #[allow(unused_attributes)]
+                fn try_from(x: $repr) -> $crate::Result<Self> {
+                    match x {
+                        $($try_froms)*
+                        _ => Err($crate::Error::EINVAL)
+                    }
+                }
+            }
+        };
+
+        // Done accumulating.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: $attrs:tt,
+            },
+            $entries:tt,
+            $try_froms:tt;
+        ) => {
+            libc_enum! {
+                @make_enum
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: $attrs,
+                    entries: $entries,
+                }
+            }
+        };
+
+        // Done accumulating and want TryFrom
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            {
+                $v:vis
+                attrs: $attrs:tt,
+                from_type: $repr:path,
+            },
+            $entries:tt,
+            $try_froms:tt;
+        ) => {
+            libc_enum! {
+                @make_enum
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: $attrs,
+                    entries: $entries,
+                    from_type: $repr,
+                    try_froms: $try_froms
+                }
+            }
+        };
+
+        // Munch an attr.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            #[$attr:meta] $($tail:tt)*
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    #[$attr]
+                ],
+                [
+                    $($try_froms)*
+                    #[$attr]
+                ];
+                $($tail)*
+            }
+        };
+
+        // Munch last ident if not followed by a comma.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            $entry:ident
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    $entry = libc::$entry,
+                ],
+                [
+                    $($try_froms)*
+                    libc::$entry => Ok($BitFlags::$entry),
+                ];
+            }
+        };
+
+        // Munch an ident; covers terminating comma case.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            $entry:ident,
+            $($tail:tt)*
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    $entry = libc::$entry,
+                ],
+                [
+                    $($try_froms)*
+                    libc::$entry => Ok($BitFlags::$entry),
+                ];
+                $($tail)*
+            }
+        };
+
+        // Munch an ident and cast it to the given type; covers terminating comma.
+        (@accumulate_entries
+            name: $BitFlags:ident,
+            $prefix:tt,
+            [$($entries:tt)*],
+            [$($try_froms:tt)*];
+            $entry:ident as $ty:ty,
+            $($tail:tt)*
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                $prefix,
+                [
+                    $($entries)*
+                    $entry = libc::$entry as $ty,
+                ],
+                [
+                    $($try_froms)*
+                    libc::$entry as $ty => Ok($BitFlags::$entry),
+                ];
+                $($tail)*
+            }
+        };
+
+        // Entry rule.
+        (
+            $(#[$attr:meta])*
+            $v:vis enum $BitFlags:ident {
+                $($vals:tt)*
+            }
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: [$(#[$attr])*],
+                },
+                [],
+                [];
+                $($vals)*
+            }
+        };
+
+        // Entry rule including TryFrom
+        (
+            $(#[$attr:meta])*
+            $v:vis enum $BitFlags:ident {
+                $($vals:tt)*
+            }
+            impl TryFrom<$repr:path>
+        ) => {
+            libc_enum! {
+                @accumulate_entries
+                name: $BitFlags,
+                {
+                    $v
+                    attrs: [$(#[$attr])*],
+                    from_type: $repr,
+                },
+                [],
+                [];
+                $($vals)*
+            }
+        };
+    }
 }
 
 pub mod alloc
@@ -1862,6 +2134,1205 @@ pub mod alloc
     pub fn allocate(s:&str) -> *mut c_char
     {
         SqliteMallocString::from_str(s).into_raw()
+    }
+}
+
+pub mod api
+{
+    /*!
+    */
+    use ::
+    {
+        io::{ self, Error, Write },
+        os::fd::{ AsRawFd },
+        path::{ Path },
+        regex::{ contains, Regex },
+        shell::{ Shell },
+        system::
+        {
+            sqlite::{ Connection as Conn },
+        },
+        types::{ * },
+        *,
+    };
+    /*
+        use regex::Regex;
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::shell;
+        use crate::tools;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::jobc;
+        use crate::libc;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::parsers;
+        use crate::shell;
+        use crate::tools;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::history;
+        use crate::libs;
+        use crate::rcfile;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::parsers;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::libs;
+        use crate::parsers;
+        use crate::tools;
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+        
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::ctime;
+        use crate::history;
+        use crate::parsers;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use std::io::Write;
+        use std::os::fd::AsRawFd;
+
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::libs::re::re_contains;
+        use crate::shell::Shell;
+        use crate::tools;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::parsers;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::parsers;
+        use crate::scripting;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::parsers;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+        use crate::builtins::utils::print_stderr_with_capture;
+        
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+
+        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::shell::Shell;
+        use crate::types::{Command, CommandLine, CommandResult};
+    */
+    pub fn run_alias( sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool ) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        if tokens.len() == 1 { return show_alias_list(sh, cmd, cl, capture); }
+
+        if tokens.len() > 2
+        {
+            let info = "alias syntax error: usage: alias foo='echo foo'";
+            emit::stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        let re_single_read = Regex::new(r"^[a-zA-Z0-9_\.-]+$").unwrap();
+
+        if re_single_read.is_match(input) { return show_single_alias(sh, input, cmd, cl, capture); }
+
+        let re_to_add = Regex::new(r"^([a-zA-Z0-9_\.-]+)=(.*)$").unwrap();
+        for cap in re_to_add.captures_iter(input)
+        {
+            let name = tools::unquote(&cap[1]);
+            let value = if cap[2].starts_with('"') || cap[2].starts_with('\'') {
+                tools::unquote(&cap[2])
+            } else {
+                cap[2].to_string()
+            };
+            sh.add_alias(name.as_str(), value.as_str());
+        }
+
+        CommandResult::new()
+    }
+    
+    pub fn run_bg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if sh.jobs.is_empty() {
+            let info = "cicada: bg: no job found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut job_id = -1;
+        if tokens.len() == 1 {
+            if let Some((gid, _)) = sh.jobs.iter().next() {
+                job_id = *gid;
+            }
+        }
+
+        if tokens.len() >= 2 {
+            let mut job_str = tokens[1].1.clone();
+            if job_str.starts_with("%") {
+                job_str = job_str.trim_start_matches('%').to_string();
+            }
+
+            match job_str.parse::<i32>() {
+                Ok(n) => job_id = n,
+                Err(_) => {
+                    let info = "cicada: bg: invalid job id";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+        if job_id == -1 {
+            let info = "cicada: bg: not such job";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let gid: i32;
+
+        {
+            let mut result = sh.get_job_by_id(job_id);
+            // fall back to find job by using prcess group id
+            if result.is_none() {
+                result = sh.get_job_by_gid(job_id);
+            }
+
+            match result {
+                Some(job) => {
+                    unsafe {
+                        libc::killpg(job.gid, libc::SIGCONT);
+                        gid = job.gid;
+                        if job.status == "Running" {
+                            let info = format!("cicada: bg: job {} already in background", job.id);
+                            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                            return cr;
+                        }
+                    }
+
+                    let info_cmd = format!("[{}]  {} &", job.id, job.cmd);
+                    print_stderr_with_capture(&info_cmd, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                }
+                None => {
+                    let info = "cicada: bg: not such job";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        jobc::mark_job_as_running(sh, gid, true);
+        cr
+    }
+
+    pub fn run_cd( sh:&mut Shell, cl:&CommandLine, cmd: &Command, capture:bool ) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+        let args = parsers::parser_line::tokens_to_args(&tokens);
+
+        if args.len() > 2 {
+            let info = "cicada: cd: too many argument";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let str_current_dir = tools::get_current_dir();
+
+        let mut dir_to = if args.len() == 1 {
+            let home = tools::get_user_home();
+            home.to_string()
+        } else {
+            args[1..].join("")
+        };
+
+        if dir_to == "-" {
+            if sh.previous_dir.is_empty() {
+                let info = "no previous dir";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+            dir_to = sh.previous_dir.clone();
+        } else if !dir_to.starts_with('/') {
+            dir_to = format!("{}/{}", str_current_dir, dir_to);
+        }
+
+        if !Path::new(&dir_to).exists() {
+            let info = format!("cicada: cd: {}: No such file or directory", &args[1]);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        match Path::new(&dir_to).canonicalize() {
+            Ok(p) => {
+                dir_to = p.as_path().to_string_lossy().to_string();
+            }
+            Err(e) => {
+                let info = format!("cicada: cd: error: {}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        match env::set_current_dir(&dir_to) {
+            Ok(_) => {
+                sh.current_dir = dir_to.clone();
+                if str_current_dir != dir_to {
+                    sh.previous_dir = str_current_dir.clone();
+                    env::set_var("PWD", &sh.current_dir);
+                };
+                cr.status = 0;
+                cr
+            }
+            Err(e) => {
+                let info = format!("cicada: cd: {}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                cr
+            }
+        }
+    }
+
+    pub fn run_info(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut info = vec![];
+        const VERSION: &str = env!("CARGO_PKG_VERSION");
+        info.push(("version", VERSION));
+
+        let os_name = libs::os_type::get_os_name();
+        info.push(("os-name", &os_name));
+
+        let hfile = history::get_history_file();
+        info.push(("history-file", &hfile));
+
+        let rcf = rcfile::get_rc_file();
+        info.push(("rc-file", &rcf));
+
+        let git_hash = env!("GIT_HASH");
+        if !git_hash.is_empty() {
+            info.push(("git-commit", env!("GIT_HASH")));
+        }
+
+        let git_branch = env!("GIT_BRANCH");
+        let mut branch = String::new();
+        if !git_branch.is_empty() {
+            branch.push_str(git_branch);
+            let git_status = env!("GIT_STATUS");
+            if git_status != "0" {
+                branch.push_str(" (dirty)");
+            }
+            info.push(("git-branch", &branch));
+        }
+
+        info.push(("built-with", env!("BUILD_RUSTC_VERSION")));
+        info.push(("built-at", env!("BUILD_DATE")));
+
+        let mut lines = Vec::new();
+        for (k, v) in &info {
+            // longest key above is 12-char length
+            lines.push(format!("{: >12}: {}", k, v));
+        }
+        let buffer = lines.join("\n");
+        let mut cr = CommandResult::new();
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_exec(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        let args = parsers::parser_line::tokens_to_args(&tokens);
+        let len = args.len();
+        if len == 1 {
+            print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut _cmd = exec::Command::new(&args[1]);
+        let err = _cmd.args(&args[2..len]).exec();
+        let info = format!("cicada: exec: {}", err);
+        print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_exit(sh: &Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        if tokens.len() > 2 {
+            let info = "cicada: exit: too many arguments";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        if tokens.len() == 2 {
+            let _code = &tokens[1].1;
+            match _code.parse::<i32>() {
+                Ok(x) => {
+                    process::exit(x);
+                }
+                Err(_) => {
+                    let info = format!("cicada: exit: {}: numeric argument required", _code);
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    process::exit(255);
+                }
+            }
+        }
+
+        for (_i, job) in sh.jobs.iter() {
+            if !job.cmd.starts_with("nohup ") {
+                let mut info = String::new();
+                info.push_str("There are background jobs.");
+                info.push_str("Run `jobs` to see details; `exit 1` to force quit.");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        process::exit(0);
+        cr
+    }
+
+    pub fn run_export(_sh: &Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        let re_name_ptn = Regex::new(r"^([a-zA-Z_][a-zA-Z0-9_]*)=(.*)$").unwrap();
+        for (_, text) in tokens.iter() {
+            if text == "export" {
+                continue;
+            }
+
+            if !tools::is_env(text) {
+                let mut info = String::new();
+                info.push_str("export: invalid command\n");
+                info.push_str("usage: export XXX=YYY");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            if !re_name_ptn.is_match(text) {
+                let mut info = String::new();
+                info.push_str("export: invalid command\n");
+                info.push_str("usage: export XXX=YYY ZZ=123");
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+
+            for cap in re_name_ptn.captures_iter(text) {
+                let name = cap[1].to_string();
+                let token = parsers::parser_line::unquote(&cap[2]);
+                let value = libs::path::expand_home(&token);
+                env::set_var(name, &value);
+            }
+        }
+        cr
+    }
+
+    pub fn run_fg(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if sh.jobs.is_empty() {
+            let info = "cicada: fg: no job found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let mut job_id = -1;
+        if tokens.len() == 1 {
+            if let Some((gid, _)) = sh.jobs.iter().next() {
+                job_id = *gid;
+            }
+        }
+
+        if tokens.len() >= 2 {
+            let mut job_str = tokens[1].1.clone();
+            if job_str.starts_with("%") {
+                job_str = job_str.trim_start_matches('%').to_string();
+            }
+
+            match job_str.parse::<i32>() {
+                Ok(n) => job_id = n,
+                Err(_) => {
+                    let info = "cicada: fg: invalid job id";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        if job_id == -1 {
+            let info = "cicada: not job id found";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let gid: i32;
+        let pid_list: Vec<i32>;
+
+        {
+            let mut result = sh.get_job_by_id(job_id);
+            // fall back to find job by using prcess group id
+            if result.is_none() {
+                result = sh.get_job_by_gid(job_id);
+            }
+
+            match result {
+                Some(job) => {
+                    print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+
+                    unsafe {
+                        if !shell::give_terminal_to(job.gid) {
+                            return CommandResult::error();
+                        }
+
+                        libc::killpg(job.gid, libc::SIGCONT);
+                        pid_list = job.pids.clone();
+                        gid = job.gid;
+                    }
+                }
+                None => {
+                    let info = "cicada: fg: no such job";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        unsafe {
+            jobc::mark_job_as_running(sh, gid, false);
+
+            let cr = jobc::wait_fg_job(sh, gid, &pid_list);
+
+            let gid_shell = libc::getpgid(0);
+            if !shell::give_terminal_to(gid_shell) {
+                log!("failed to give term to back to shell : {}", gid_shell);
+            }
+
+            cr
+        }
+    }
+
+    pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let hfile = history::get_history_file();
+        let path = Path::new(hfile.as_str());
+        if !path.exists() {
+            let info = "no history file";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        let conn = match Conn::open(&hfile) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: sqlite error: {:?}", e);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        };
+
+        let tokens = cmd.tokens.clone();
+        let args = parsers::parser_line::tokens_to_args(&tokens);
+
+        let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+        let opt = OptMain::from_iter_safe(args);
+        match opt {
+            Ok(opt) => match opt.cmd {
+                Some(SubCommand::Delete { rowid: rowids }) => {
+                    let mut _count = 0;
+                    for rowid in rowids {
+                        let _deleted = delete_history_item(&conn, rowid);
+                        if _deleted {
+                            _count += 1;
+                        }
+                    }
+                    if _count > 0 {
+                        let info = format!("deleted {} items", _count);
+                        print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    }
+                    cr
+                }
+                Some(SubCommand::Add {
+                    timestamp: ts,
+                    input,
+                }) => {
+                    let ts = ts.unwrap_or(0 as f64);
+                    add_history(sh, ts, &input);
+                    cr
+                }
+                None => {
+                    let (str_out, str_err) = list_current_history(sh, &conn, &opt);
+                    if !str_out.is_empty() {
+                        print_stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
+                    }
+                    if !str_err.is_empty() {
+                        print_stderr_with_capture(&str_err, &mut cr, cl, cmd, capture);
+                    }
+                    cr
+                }
+            },
+            Err(e) => {
+                let info = format!("{}", e);
+                if show_usage {
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                } else {
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 1;
+                }
+                cr
+            }
+        }
+    }
+
+    pub fn run_jobs(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        if sh.jobs.is_empty() {
+            return cr;
+        }
+
+        // update status of jobs if any
+        jobc::try_wait_bg_jobs(sh, false, false);
+
+        let mut lines = Vec::new();
+        let jobs = sh.jobs.clone();
+        let no_trim = cmd.tokens.len() >= 2 && cmd.tokens[1].1 == "-f";
+        for (_i, job) in jobs.iter() {
+            let line = jobc::get_job_line(job, !no_trim);
+            lines.push(line);
+        }
+        let buffer = lines.join("\n");
+
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    pub fn run_minfd(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+
+        let fd = nix::fcntl::open(
+            "/dev/null",
+            nix::fcntl::OFlag::empty(),
+            nix::sys::stat::Mode::empty(),
+        );
+        match fd {
+            Ok(fd) => {
+                let info = format!("{}", fd.as_raw_fd());
+                print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+            }
+            Err(e) => {
+                println_stderr!("cicada: minfd: error: {}", e);
+            }
+        }
+
+        cr
+    }
+
+    pub fn run_read(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+
+        let name_list: Vec<String>;
+        if tokens.len() <= 1 {
+            name_list = vec!["REPLY".to_string()];
+        } else {
+            name_list = tokens[1..].iter().map(|x| x.1.clone()).collect();
+            if let Some(id_) = _find_invalid_identifier(&name_list) {
+                let info = format!("cicada: read: `{}': not a valid identifier", id_);
+                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+        }
+
+        let mut buffer = String::new();
+
+        if cmd.has_here_string() {
+            if let Some(redirect_from) = &cmd.redirect_from {
+                buffer.push_str(&redirect_from.1);
+                buffer.push('\n');
+            }
+        } else {
+            match io::stdin().read_line(&mut buffer) {
+                Ok(_) => {}
+                Err(e) => {
+                    let info = format!("cicada: read: error in reading stdin: {:?}", e);
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        let envs = cl.envs.clone();
+        let value_list = tools::split_into_fields(sh, buffer.trim(), &envs);
+
+        let idx_2rd_last = name_list.len() - 1;
+        for i in 0..idx_2rd_last {
+            let name = name_list.get(i);
+            if name.is_none() {
+                let info = "cicada: read: name index error";
+                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                return cr;
+            }
+            let name = name.unwrap();
+
+            let value = value_list.get(i).unwrap_or(&String::new()).clone();
+            sh.set_env(name, &value);
+        }
+
+        let name_last = &name_list[idx_2rd_last];
+        let value_left: String = if value_list.len() > idx_2rd_last {
+            value_list[idx_2rd_last..].join(" ")
+        } else {
+            String::new()
+        };
+        sh.set_env(name_last, &value_left);
+        cr
+    }
+
+    pub fn run_set(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parsers::parser_line::tokens_to_args(tokens);
+        let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
+
+        let opt = OptMain::from_iter_safe(args);
+        match opt {
+            Ok(opt) => {
+                if opt.exit_on_error {
+                    sh.exit_on_error = true;
+                    cr
+                } else {
+                    let info = "cicada: set: option not implemented";
+                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    cr
+                }
+            }
+            Err(e) => {
+                let info = format!("{}", e);
+                if show_usage {
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 0;
+                } else {
+                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    cr.status = 1;
+                }
+                cr
+            }
+        }
+    }
+
+    pub fn run_source(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parsers::parser_line::tokens_to_args(tokens);
+
+        if args.len() < 2 {
+            let info = "cicada: source: no file specified";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let status = scripting::run_script(sh, &args);
+        cr.status = status;
+        cr
+    }
+    
+    pub fn run_ulimit(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = &cmd.tokens;
+        let args = parsers::parser_line::tokens_to_args(tokens);
+
+        if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
+            App::command().print_help().unwrap();
+            println!();
+            return cr;
+        }
+
+        let app = App::parse_from(args);
+
+        if app.H && app.S {
+            println!("cicada: ulimit: Cannot both hard and soft.");
+            cr.status = 1;
+            return cr;
+        }
+
+        let mut all_stdout = String::new();
+        let mut all_stderr = String::new();
+
+        if app.a {
+            report_all(&app, &mut all_stdout, &mut all_stderr);
+        } else if handle_limit(app.n, "open_files", app.H, &mut all_stdout, &mut all_stderr)
+            || handle_limit(
+                app.c,
+                "core_file_size",
+                app.H,
+                &mut all_stdout,
+                &mut all_stderr,
+            )
+        {
+        } else {
+            report_all(&app, &mut all_stdout, &mut all_stderr);
+        }
+
+        if !all_stdout.is_empty() {
+            print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
+        }
+        if !all_stderr.is_empty() {
+            print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
+        }
+
+        cr
+    }
+
+    pub fn run_unalias(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = "cicada: unalias: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        if !sh.remove_alias(input) {
+            let info = format!("cicada: unalias: {}: not found", input);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        cr
+    }
+
+    pub fn run_unpath(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = "cicada: unpath: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        sh.remove_path(input);
+        cr
+    }
+
+    pub fn run_unset(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let tokens = cmd.tokens.clone();
+        let mut cr = CommandResult::new();
+
+        if tokens.len() != 2 {
+            let info = "cicada: unset: syntax error";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+
+        let input = &tokens[1].1;
+        if !sh.remove_env(input) {
+            let info = format!("cicada: unset: invalid varname: {:?}", input);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            return cr;
+        }
+        cr
+    }
+
+    pub fn run_vox(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture:bool) -> CommandResult
+    {
+        let mut cr = CommandResult::new();
+        let tokens = cmd.tokens.clone();
+        let args = parsers::parser_line::tokens_to_args(&tokens);
+        let len = args.len();
+        let subcmd = if len > 1 { &args[1] } else { "" };
+
+        if len == 1 || (len == 2 && subcmd == "ls") {
+            match get_all_venvs() {
+                Ok(venvs) => {
+                    let info = venvs.join("\n");
+                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+                Err(reason) => {
+                    print_stderr_with_capture(&reason, &mut cr, cl, cmd, capture);
+                    return cr;
+                }
+            }
+        }
+
+        if len == 3 && subcmd == "create" {
+            let pybin = match env::var("VIRTUALENV_PYBIN") {
+                Ok(x) => x,
+                Err(_) => "python3".to_string(),
+            };
+            let dir_venv = get_envs_home();
+            let venv_name = args[2].to_string();
+            let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
+            print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
+            let cr_list = execute::run_command_line(sh, &line, false, false);
+            return cr_list[0].clone();
+        }
+
+        if len == 3 && subcmd == "enter" {
+            let _err = enter_env(sh, args[2].as_str());
+            if !_err.is_empty() {
+                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+            }
+            cr
+        } else if len == 2 && subcmd == "exit" {
+            let _err = exit_env(sh);
+            if !_err.is_empty() {
+                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+            }
+            cr
+        } else {
+            let info = "cicada: vox: invalid option";
+            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            cr
+        }
+    }
+
+    fn add_history(sh: &Shell, ts: f64, input: &str) 
+    {
+        let (tsb, tse) = (ts, ts + 1.0);
+        history::add_raw(sh, input, 0, tsb, tse);
+    }
+
+    fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
+    {
+        let mut result_stderr = String::new();
+        let result_stdout = String::new();
+
+        let history_table = history::get_history_table();
+        let mut sql = format!(
+            "SELECT ROWID, inp, tsb FROM {} WHERE ROWID > 0",
+            history_table
+        );
+        if !opt.pattern.is_empty() {
+            sql = format!("{} AND inp LIKE '%{}%'", sql, opt.pattern)
+        }
+        if opt.session {
+            sql = format!("{} AND sessionid = '{}'", sql, sh.session_id)
+        }
+        if opt.pwd {
+            sql = format!("{} AND info like '%dir:{}|%'", sql, sh.current_dir)
+        }
+
+        if opt.asc {
+            sql = format!("{} ORDER BY tsb", sql);
+        } else {
+            sql = format!("{} order by tsb desc", sql);
+        };
+        sql = format!("{} limit {} ", sql, opt.limit);
+
+        let mut stmt = match conn.prepare(&sql) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: prepare select error: {:?}", e);
+                result_stderr.push_str(&info);
+                return (result_stdout, result_stderr);
+            }
+        };
+
+        let mut rows = match stmt.query([]) {
+            Ok(x) => x,
+            Err(e) => {
+                let info = format!("history: query error: {:?}", e);
+                result_stderr.push_str(&info);
+                return (result_stdout, result_stderr);
+            }
+        };
+
+        let mut lines = Vec::new();
+        loop {
+            match rows.next() {
+                Ok(_rows) => {
+                    if let Some(row) = _rows {
+                        let row_id: i32 = match row.get(0) {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let info = format!("history: error: {:?}", e);
+                                result_stderr.push_str(&info);
+                                return (result_stdout, result_stderr);
+                            }
+                        };
+                        let inp: String = match row.get(1) {
+                            Ok(x) => x,
+                            Err(e) => {
+                                let info = format!("history: error: {:?}", e);
+                                result_stderr.push_str(&info);
+                                return (result_stdout, result_stderr);
+                            }
+                        };
+
+                        if opt.no_id {
+                            lines.push(inp.to_string());
+                        } else if opt.only_id {
+                            lines.push(row_id.to_string());
+                        } else if opt.show_date {
+                            let tsb: f64 = match row.get(2) {
+                                Ok(x) => x,
+                                Err(e) => {
+                                    let info = format!("history: error: {:?}", e);
+                                    result_stderr.push_str(&info);
+                                    return (result_stdout, result_stderr);
+                                }
+                            };
+                            let dt = ctime::DateTime::from_timestamp(tsb);
+                            lines.push(format!("{}: {}: {}", row_id, dt, inp));
+                        } else {
+                            lines.push(format!("{}: {}", row_id, inp));
+                        }
+                    } else {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    let info = format!("history: rows next error: {:?}", e);
+                    result_stderr.push_str(&info);
+                    return (result_stdout, result_stderr);
+                }
+            }
+        }
+
+        if !opt.asc {
+            lines.reverse();
+        }
+
+        let buffer = lines.join("\n");
+
+        (buffer, result_stderr)
+    }
+
+    fn delete_history_item(conn: &Conn, rowid: usize) -> bool 
+    {
+        let history_table = history::get_history_table();
+        let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
+        match conn.execute(&sql, []) {
+            Ok(_) => true,
+            Err(e) => {
+                log!("history: error when delete: {:?}", e);
+                false
+            }
+        }
+    }
+    
+    fn show_alias_list( sh:&mut Shell, cl:&CommandLine, cmd: &Command, capture:bool ) -> CommandResult 
+    {
+        let mut lines = Vec::new();
+        for (name, value) in sh.get_alias_list() {
+            let line = format!("alias {}='{}'", name, value);
+            lines.push(line);
+        }
+        let buffer = lines.join("\n");
+        let mut cr = CommandResult::new();
+        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        cr
+    }
+
+    fn show_single_alias( sh: &Shell, name_to_find: &str, cmd: &Command, cl: &CommandLine, capture:bool ) -> CommandResult 
+    {
+        let mut cr = CommandResult::new();
+        if let Some(content) = sh.get_alias_content(name_to_find) {
+            let info = format!("alias {}='{}'", name_to_find, content);
+            print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+        } else {
+            let info = format!("cicada: alias: {}: not found", name_to_find);
+            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        }
+        cr
+    }
+
+    fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
+    {
+        for id_ in name_list {
+            if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
+                return Some(id_.to_string());
+            }
+        }
+        None
+    }
+
+    fn set_limit(limit_name: &str, value: u64, for_hard: bool) -> String
+    {
+        let limit_id = match limit_name {
+            "open_files" => libc::RLIMIT_NOFILE,
+            "core_file_size" => libc::RLIMIT_CORE,
+            _ => return String::from("invalid limit name"),
+        };
+
+        let mut rlp = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+
+        unsafe {
+            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+                return format!(
+                    "cicada: ulimit: error getting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+        }
+
+        // to support armv7-linux-gnueabihf & 32-bit musl systems
+        if for_hard {
+            #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+            {
+                rlp.rlim_max = value as u32;
+            }
+            #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+            {
+                rlp.rlim_max = value;
+            }
+        } else {
+            #[cfg(all(target_pointer_width = "32", target_env = "gnu"))]
+            {
+                rlp.rlim_cur = value as u32;
+            }
+            #[cfg(not(all(target_pointer_width = "32", target_env = "gnu")))]
+            {
+                rlp.rlim_cur = value;
+            }
+        }
+
+        unsafe {
+            if libc::setrlimit(limit_id, &rlp) != 0 {
+                return format!(
+                    "cicada: ulimit: error setting limit: {}",
+                    Error::last_os_error()
+                );
+            }
+        }
+
+        String::new()
+    }
+
+    pub fn get_limit(limit_name: &str, single_print: bool, for_hard: bool) -> (String, String)
+    {
+        let (desc, limit_id) = match limit_name {
+            "open_files" => ("open files", libc::RLIMIT_NOFILE),
+            "core_file_size" => ("core file size", libc::RLIMIT_CORE),
+            _ => {
+                return (
+                    String::new(),
+                    String::from("ulimit: error: invalid limit name"),
+                )
+            }
+        };
+
+        let mut rlp = libc::rlimit {
+            rlim_cur: 0,
+            rlim_max: 0,
+        };
+
+        let mut result_stdout = String::new();
+        let mut result_stderr = String::new();
+
+        unsafe {
+            if libc::getrlimit(limit_id, &mut rlp) != 0 {
+                result_stderr.push_str(&format!("error getting limit: {}", Error::last_os_error()));
+                return (result_stdout, result_stderr);
+            }
+
+            let to_print = if for_hard { rlp.rlim_max } else { rlp.rlim_cur };
+
+            let info = if to_print == libc::RLIM_INFINITY {
+                if single_print {
+                    "unlimited\n".to_string()
+                } else {
+                    format!("{}\t\tunlimited\n", desc)
+                }
+            } else if single_print {
+                format!("{}\n", to_print)
+            } else {
+                format!("{}\t\t{}\n", desc, to_print)
+            };
+
+            result_stdout.push_str(&info);
+        }
+
+        (result_stdout, result_stderr)
+    }
+
+    pub fn report_all( a:&App, o: &mut String, e: &mut String)
+    {
+        for limit_name in &["open_files", "core_file_size"]
+        {
+            let (out, err) = get_limit(limit_name, false, a.H );
+            o.push_str(&out);
+            e.push_str(&err);
+        }
+    }
+
+    pub fn handle_limit( l:Option<Option<u64>>, n: &str, h: bool, o: &mut String, e: &mut String ) -> bool
+    {
+        match l
+        {
+            None => false,
+            Some(None) =>
+            {
+                let (out, err) = get_limit(n, true, h);
+                o.push_str(&out);
+                e.push_str(&err);
+                true
+            }
+
+            Some(Some(value)) =>
+            {
+                let err = set_limit(n, value, h);
+
+                if !err.is_empty() { e.push_str(&err); }
+                
+                true
+            }
+        }
     }
 }
 
@@ -3433,10 +4904,81 @@ pub mod emit
     */
     use ::
     {
+        fs::{ File },
+        types::{ * },
         *,
     };
     /*
-    */
+    */    
+    // pub fn print_stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        let fd = get::duped_stdout_fd(cmd, cl);
+
+        if fd == -1 { return; }
+
+        unsafe
+        {
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            
+            match f.write_all(info.as_bytes())
+            {
+                Ok(_) => {}
+                Err(e) => { println_stderr!("write_all: error: {}", e); }
+            }
+
+            if !info.is_empty()
+            {
+                match f.write_all(b"\n")
+                {
+                    Ok(_) => {}
+                    Err(e) => { println_stderr!("write_all: error: {}", e); }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        let fd = get::duped_stderr_fd(cmd, cl);
+
+        if fd == -1 { return; }
+
+        unsafe
+        {
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            match f.write_all(info.as_bytes())
+            {
+                Ok(_) => (),
+                Err(e) => { println_stderr!("write_all: error: {}", e); }
+            }
+
+            if !info.is_empty()
+            {
+                match f.write_all(b"\n")
+                {
+                    Ok(_) => (),
+                    Err(e) => { println_stderr!("write_all: error: {}", e); }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture:bool )
+    pub fn stderr_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture:bool )
+    {
+        cr.status = 1;
+
+        if capture { cr.stderr = info.to_string(); } else { stderr(info, cmd, cl); }
+    }
+    // pub fn print_stdout_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture:bool )
+    pub fn stdout_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture:bool )
+    {
+        cr.status = 0;
+
+        if capture { cr.stdout = info.to_string(); } else { stdout(info, cmd, cl); }
+    }
 }
 
 pub mod env
@@ -4472,6 +6014,8 @@ pub mod get
     use ::
     {
         collections::{ HashMap },
+        os::fd::{ create_raw_from_file, RawFd },
+        types::{ * },
         *,
     };
     /*
@@ -4504,6 +6048,113 @@ pub mod get
             'r' => Some('\r'),
             't' => Some('\t'),
             _ => None,
+        }
+    }
+    // pub fn _get_std_fds(redirects: &[Redirection]) -> (Option<RawFd>, Option<RawFd>)
+    pub fn std_fds(redirects: &[Redirection]) -> (Option<RawFd>, Option<RawFd>)
+    {
+        if redirects.is_empty() { return (None, None); }
+
+        let mut fd_out = None;
+        let mut fd_err = None;
+
+        for i in 0..redirects.len()
+        {
+            let item = &redirects[i];
+
+            if item.0 == "1"
+            {
+                let mut _fd_candidate = None;
+
+                if item.2 == "&2"
+                {
+                    let (_fd_out, _fd_err) = std_fds(&redirects[i + 1..]);
+
+                    if let Some(fd) = _fd_err { _fd_candidate = Some(fd); }
+                    else { _fd_candidate = unsafe { Some(libc::dup(2)) }; }
+                }
+                
+                else
+                {
+                    let append = item.1 == ">>";
+
+                    if let Ok(fd) = create_raw_from_file(&item.2, append) { _fd_candidate = Some(fd); }
+                }
+                
+                if let Some(fd) = fd_out { unsafe { libc::close(fd); } }
+
+                fd_out = _fd_candidate;
+            }
+
+            if item.0 == "2"
+            {
+                let mut _fd_candidate = None;
+
+                if item.2 == "&1"
+                {
+                    if let Some(fd) = fd_out { _fd_candidate = unsafe { Some(libc::dup(fd)) }; }
+                }
+                
+                else
+                {
+                    let append = item.1 == ">>";
+                    //if let Ok(fd) = tools::create_raw_fd_from_file(&item.2, append) { _fd_candidate = Some(fd); }
+                    if let Ok(fd) = create_raw_from_file(&item.2, append) { _fd_candidate = Some(fd); }
+                }
+
+                if let Some(fd) = fd_err { unsafe { libc::close(fd); } }
+
+                fd_err = _fd_candidate;
+            }
+        }
+
+        (fd_out, fd_err)
+    }
+    // pub fn _get_dupped_stdout_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    pub fn duped_stdout_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    {
+        if cl.with_pipeline() { return 1; }
+
+        let (_fd_out, _fd_err) = std_fds(&cmd.redirects_to);
+
+        if let Some(fd) = _fd_err { unsafe { libc::close(fd); } }
+
+        if let Some(fd) = _fd_out { fd }
+
+        else
+        {
+            let fd = unsafe { libc::dup(1) };
+            
+            if fd == -1
+            {
+                //let eno = errno();
+                println_stderr!("cicada: dup: {}", 0);
+            }
+
+            fd
+        }
+    }
+    // pub fn _get_dupped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    pub fn duped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    {
+        if cl.with_pipeline() { return 2; }
+
+        let (_fd_out, _fd_err) = std_fds(&cmd.redirects_to);
+
+        if let Some(fd) = _fd_out { unsafe { libc::close(fd); } }
+
+        if let Some(fd) = _fd_err { fd }
+        else
+        {
+            let fd = unsafe { libc::dup(2) };
+
+            if fd == -1
+            {
+                //let eno = errno();
+                println_stderr!("cicada: dup: {}", 0);
+            }
+
+            fd
         }
     }
 }
@@ -5093,6 +6744,12 @@ pub mod is
     pub fn ident_continue(c: char) -> bool
     {
         xid_continue(c)
+    }
+    // pub fn is_builtin(s: &str) -> bool
+    pub fn builtin(s: &str) -> bool
+    {
+        let builtins = [ "alias", "bg", "cd", "check", "cinfo", "exec", "exit", "export", "fg", "history", "jobs", "read", "source", "ulimit", "unalias", "vox", "minfd", "set", "unset", "unpath" ];
+        builtins.contains(&s)
     }
 }
 
@@ -20034,7 +21691,35 @@ pub mod ops
 
 pub mod os
 {
-    pub use std::os::{ * };
+    pub use std::os::{ fd as _, * };
+    pub mod fd
+    {
+        pub use std::os::fd::{ * };
+        use ::{ * };
+        // pub fn create_raw_fd_from_file(file_name: &str, append: bool) -> Result<i32, String>
+        pub fn create_raw_from_file(file_name: &str, append: bool) -> Result<i32, String>
+        {
+            let mut oos = fs::OpenOptions::new();
+
+            if append { oos.append(true); }            
+            else
+            {
+                oos.write(true);
+                oos.truncate(true);
+            }
+
+            match oos.create(true).open(file_name)
+            {
+                Ok(x) =>
+                {
+                    let fd = x.into_raw_fd();
+                    Ok(fd)
+                }
+
+                Err(e) => Err(format!("{}", e)),
+            }
+        }
+    }
 }
 
 pub mod option
@@ -23418,6 +25103,469 @@ pub mod rc
     pub use std::rc::{ * };
 }
 
+pub mod regex
+{
+    /*!
+    */
+    use ::
+    {
+        cell::{ UnsafeCell },
+        collections::{ HashMap },
+        fmt::{ Debug },
+        num::{ NonZeroUsize },
+        panic::{RefUnwindSafe, UnwindSafe},
+        sync::{ atomic::{ AtomicUsize }, Arc, Mutex },
+        *,
+    };
+    /*
+    */
+    pub type CachePoolFn = Box<dyn Fn() -> Cache + Send + Sync + UnwindSafe + RefUnwindSafe>;
+    pub type CachePool = Pool<Cache, CachePoolFn>;
+    pub type CaptureNameMap = HashMap<Arc<str>, SmallIndex>;
+    pub type StateMap = HashMap<State, LazyStateID>;
+    pub type NFAStateID = u32;
+
+    pub trait Strategy:Debug + Send + Sync + RefUnwindSafe + UnwindSafe + 'static
+    {
+        fn group_info(&self) -> &GroupInfo;
+        fn create_cache(&self) -> Cache;
+        fn reset_cache(&self, cache: &mut Cache);
+        fn is_accelerated(&self) -> bool;
+        fn memory_usage(&self) -> usize;
+        fn search(&self, cache: &mut Cache, input: &Input<'_>) -> Option<Match>;
+        fn search_half( &self, cache: &mut Cache, input: &Input<'_> ) -> Option<HalfMatch>;
+        fn is_match(&self, cache: &mut Cache, input: &Input<'_>) -> bool;
+        fn search_slots( &self, cache: &mut Cache, input: &Input<'_>, slots: &mut [Option<NonMaxUsize>] ) -> Option<PatternID>;
+        fn which_overlapping_matches( &self, cache: &mut Cache, input: &Input<'_>, patset: &mut PatternSet );
+    }
+
+    pub trait PrefilterI: Debug + Send + Sync + RefUnwindSafe + UnwindSafe + 'static
+    {
+        fn find(&self, haystack: &[u8], span: Span) -> Option<Span>;
+        fn prefix(&self, haystack: &[u8], span: Span) -> Option<Span>;
+        fn memory_usage(&self) -> usize;
+        fn is_fast(&self) -> bool;
+    }
+        
+    #[non_exhaustive] #[derive(Clone, PartialEq)]
+    pub enum Error
+    {
+        Syntax(String),
+        CompiledTooBig(usize),
+    }
+
+    #[derive(Clone, Copy, Debug)]
+    pub enum WhichCaptures
+    {
+        All,
+        Implicit,
+        None,
+    }
+
+    #[non_exhaustive] #[derive(Clone, Copy, Default, Debug, Eq, PartialEq)]
+    pub enum MatchKind
+    {
+        All,
+        #[default]
+        LeftmostFirst,
+    }
+
+    #[derive(Clone, Debug)]
+    pub enum FollowEpsilon
+    {
+        Explore(StateID),
+        RestoreCapture { slot: SmallIndex, offset: Option<NonMaxUsize> },
+    }
+
+    #[derive(Clone, Debug)]
+    pub enum BacktrackFrame
+    {
+        Step { sid: StateID, at: usize },
+        RestoreCapture { slot: SmallIndex, offset: Option<NonMaxUsize> },
+    }
+
+    #[derive(Clone, Debug)]
+    pub enum StateSaver
+    {
+        None,
+        ToSave { id: LazyStateID, state: State },
+        Saved(LazyStateID),
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, PartialEq)]
+    pub enum Anchored
+    {
+        No,
+        Yes,
+        Pattern(PatternID),
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+    pub struct HalfMatch
+    {
+        pattern: PatternID,
+        offset: usize,
+    }
+
+    #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+    pub struct Match
+    {
+        pattern: PatternID,
+        span: Span,
+    }
+
+    #[derive(Clone)]
+    pub struct Input<'h>
+    {
+        haystack: &'h [u8],
+        span: Span,
+        anchored: Anchored,
+        earliest: bool,
+    }
+
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PatternSet
+    {
+        len: usize,
+        which:Box<[bool]>,
+    }
+
+    #[repr(transparent)] #[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd, Ord)]
+    pub struct StateID(SmallIndex);
+
+    #[derive(Clone, Copy, Eq, Hash, PartialEq)]
+    pub struct Span
+    {
+        pub start: usize,
+        pub end: usize,
+    }
+
+    // pub struct LookSet
+    #[derive(Clone, Copy, Default, Eq, PartialEq)]    
+    pub struct Looks
+    {
+        pub bits: u32,
+    }
+
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct PropertiesI
+    {
+        minimum_len: Option<usize>,
+        maximum_len: Option<usize>,
+        look_set: Looks,
+        look_set_prefix: Looks,
+        look_set_suffix: Looks,
+        look_set_prefix_any: Looks,
+        look_set_suffix_any: Looks,
+        utf8: bool,
+        explicit_captures_len: usize,
+        static_explicit_captures_len: Option<usize>,
+        literal: bool,
+        alternation_literal: bool,
+    }
+
+    #[derive(Clone, Debug, Eq, PartialEq)]
+    pub struct Properties(Box<PropertiesI>);
+
+    #[derive(Clone, Debug)]
+    pub struct Prefilter
+    {
+        pre: Arc<dyn PrefilterI>,
+        is_fast: bool,
+        max_needle_len: usize,
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub struct Config
+    {
+        match_kind: Option<MatchKind>,
+        utf8_empty: Option<bool>,
+        autopre: Option<bool>,
+        pre: Option<Option<Prefilter>>,
+        which_captures: Option<WhichCaptures>,
+        nfa_size_limit: Option<Option<usize>>,
+        onepass_size_limit: Option<Option<usize>>,
+        hybrid_cache_capacity: Option<usize>,
+        hybrid: Option<bool>,
+        dfa: Option<bool>,
+        dfa_size_limit: Option<Option<usize>>,
+        dfa_state_limit: Option<Option<usize>>,
+        onepass: Option<bool>,
+        backtrack: Option<bool>,
+        byte_classes: Option<bool>,
+        line_terminator: Option<u8>,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct Information
+    {
+        config: Config,
+        props: Vec<Properties>,
+        props_union:Properties,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct RegexInfo(Arc<Information>);
+
+    #[repr(transparent)] #[derive( Clone, Copy, Debug, Default, Eq, Hash, PartialEq, PartialOrd, Ord )]
+    pub struct SmallIndex(u32);
+
+    #[derive(Debug, Default)]
+    pub struct GroupInfoInner
+    {
+        slot_ranges: Vec<(SmallIndex, SmallIndex)>,
+        name_to_index: Vec<CaptureNameMap>,
+        index_to_name: Vec<Vec<Option<Arc<str>>>>,
+        memory_extra: usize,
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub struct GroupInfo(Arc<GroupInfoInner>);
+
+    #[repr(transparent)] #[derive(Clone, Copy, Default, Eq, Hash, PartialEq, PartialOrd, Ord)]
+    pub struct PatternID(SmallIndex);
+
+    #[repr(transparent)] #[derive(Clone, Copy, Eq, Hash, PartialEq, PartialOrd, Ord)]
+    pub struct NonMaxUsize(NonZeroUsize);
+
+    #[derive(Clone)]
+    pub struct Captures
+    {
+        group_info: GroupInfo,
+        pid: Option<PatternID>,
+        slots: Vec<Option<NonMaxUsize>>,
+    }
+
+    #[derive(Clone)]
+    pub struct SparseSet
+    {
+        len: usize,
+        dense: Vec<StateID>,
+        sparse: Vec<StateID>,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct SlotTable
+    {
+        table: Vec<Option<NonMaxUsize>>,
+        slots_per_state: usize,
+        slots_for_captures: usize,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct ActiveStates
+    {
+        set: SparseSet,
+        slot_table: SlotTable,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct PikeVM
+    {
+        stack: Vec<FollowEpsilon>,
+        curr: ActiveStates,
+        next: ActiveStates,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct PikeVMCache(Option<PikeVM>);
+
+    #[derive(Clone, Debug)]
+    pub struct Visited
+    {
+        bitset: Vec<usize>,
+        stride: usize,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct BacktrackCache
+    {
+        stack: Vec<BacktrackFrame>,
+        visited: Visited,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct BoundedBacktrackerCache( Option<BacktrackCache> );
+
+    #[derive(Clone, Debug)]
+    pub struct OnePass
+    {
+        explicit_slots: Vec<Option<NonMaxUsize>>,
+        explicit_slot_len: usize,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct OnePassCache( Option<OnePass> );
+
+    #[derive( Clone, Copy, Debug, Default, Eq, Hash, PartialEq, PartialOrd, Ord )]
+    pub struct LazyStateID(u32);
+    
+    #[derive(Clone, Eq, Hash, PartialEq, PartialOrd, Ord)]
+    pub struct State(Arc<[u8]>);
+
+    #[derive(Clone, Debug)]
+    pub struct SparseSets
+    {
+        pub set1: SparseSet,
+        pub set2: SparseSet
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct StateBuilderEmpty(Vec<u8>);
+
+    #[derive(Clone, Debug)]
+    pub struct SearchProgress
+    {
+        start: usize,
+        at: usize,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct DFACache
+    {
+        trans: Vec<LazyStateID>,
+        starts: Vec<LazyStateID>,
+        states: Vec<State>,
+        states_to_id: StateMap,
+        sparses: SparseSets,
+        stack: Vec<NFAStateID>,
+        scratch_state_builder: StateBuilderEmpty,
+        state_saver: StateSaver,
+        memory_usage_state: usize,
+        clear_count: usize,
+        bytes_searched: usize,
+        progress: Option<SearchProgress>,
+    }
+
+    #[derive(Debug, Clone)]
+    pub struct HybridRegexCache
+    {
+        forward: DFACache,
+        reverse: DFACache,
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct HybridCache( Option<HybridRegexCache> );
+
+    #[derive(Clone, Debug)]
+    pub struct ReverseHybridCache( Option<DFACache> );
+
+    #[derive(Debug, Clone)]
+    pub struct Cache
+    {
+        pub capmatches: Captures,
+        pub pikevm: PikeVMCache,
+        pub backtrack: BoundedBacktrackerCache,
+        pub onepass: OnePassCache,
+        pub hybrid: HybridCache,
+        pub revhybrid: ReverseHybridCache,
+    }
+
+    #[repr(C, align(64))] #[derive(Debug)]    
+    pub struct CacheLine<T>(T);
+
+    pub struct Depth<T, F>
+    {
+        create: F,
+        stacks: Vec<CacheLine<Mutex<Vec<Box<T>>>>>,
+        owner: AtomicUsize,
+        owner_val: UnsafeCell<Option<T>>,
+    }
+
+    pub struct Pool<T, F = fn() -> T>( Box<Depth<T, F>> );
+
+    impl<T, F> Pool<T, F>
+    {
+        pub fn new(create: F) -> Pool<T, F>
+        {
+            Pool(Box::new(Depth::new(create)))
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct Implementation
+    {
+        strat: Arc<dyn Strategy>,
+        info: RegexInfo,
+    }
+
+    
+    #[derive(Debug)]
+    pub struct RegularMeta
+    {
+        imp: Arc<Implementation>,
+        pool: CachePool,
+    }
+    
+
+    #[derive(Clone, Debug)]
+    pub struct Builder
+    {
+        pats: Vec<String>,
+        metac: Config,
+        syntaxc: Config,
+    }
+    
+    impl Default for Builder
+    {
+        fn default() -> Builder
+        {
+            let metac = Config::new().nfa_size_limit(Some(10 * (1 << 20))).hybrid_cache_capacity(2 * (1 << 20));
+            Builder { pats: vec![], metac, syntaxc:Config::default() }
+        }
+    }
+
+    impl Builder
+    {
+        fn new<I, S>(patterns: I) -> Builder where
+        S: AsRef<str>,
+        I: IntoIterator<Item = S>
+        {
+            let mut b = Builder::default();
+            b.pats.extend(patterns.into_iter().map(|p| p.as_ref().to_string()));
+            b
+        }
+    }
+
+    #[derive(Clone, Debug)]
+    pub struct RegexBuilder
+    {
+        builder: Builder,
+    }
+
+    impl RegexBuilder
+    {
+        pub fn new(pattern: &str) -> RegexBuilder { RegexBuilder { builder: Builder::new([pattern]) } }
+        pub fn build(&self) -> Result<Regex, Error> { self.builder.build_one_bytes() }
+    }
+    
+    #[derive(Clone)]
+    pub struct Regex
+    {
+        pub meta: RegularMeta,
+        pub pattern: Arc<str>,
+    }
+
+    impl Regex
+    {
+        pub fn new(re: &str) -> Result<Regex, Error> { RegexBuilder::new(re).build() }
+    }
+
+    pub fn contains(t: &str, p: &str) -> bool
+    {
+        let re = match Regex::new(p)
+        {
+            Ok(x) => x,
+            Err(e) =>
+            {
+                println!("Regex new error: {:?}", e);
+                return false;
+            }
+        };
+        re.is_match(t)
+    }
+}
+
 pub mod result
 {
     pub use std::result::{ * };
@@ -23428,6 +25576,53 @@ pub mod result
     };
     pub type OverResult<T> = Result<T, ::error::OverError>;
     pub type ParseResult<T> = Result<T, ParseError>;
+}
+
+
+pub mod shell
+{
+    /*!
+    */
+    use ::
+    {
+        collections::{ HashMap, HashSet },
+        types::{ * },
+        *,
+    };
+    /*
+        use errno::errno;
+        use std::collections::{HashMap, HashSet};
+        use std::env;
+        use std::io::Write;
+        use std::mem;
+        use std::path::{Path, PathBuf};
+
+        use regex::Regex;
+        use uuid::Uuid;
+
+        use crate::core;
+        use crate::libs;
+        use crate::parsers;
+        use crate::tools;
+        use crate::types::{self, CommandLine};
+    */
+    #[derive(Debug, Clone)]
+    pub struct Shell
+    {
+        pub jobs: HashMap<i32, Job>,
+        pub aliases: HashMap<String, String>,
+        pub envs: HashMap<String, String>,
+        pub funcs: HashMap<String, String>,
+        pub cmd: String,
+        pub current_dir: String,
+        pub previous_dir: String,
+        pub previous_cmd: String,
+        pub previous_status: i32,
+        pub is_login: bool,
+        pub exit_on_error: bool,
+        pub has_terminal: bool,
+        pub session_id: String,
+    }
 }
 
 pub mod slice
@@ -25552,6 +27747,1123 @@ pub mod system
         pub fn set_highlighter(&mut self, highlighter: Arc<dyn Highlighter + Send + Sync>) { self.highlighter = Some(highlighter); }
     }
     /*
+    mortal v0.6.0*/
+    pub mod common
+    {
+        /*!
+        */
+        use ::
+        {
+            *,
+        };
+
+        #[derive(Copy, Clone, Default, Eq, PartialEq)]
+        pub struct Signals(u8);
+
+        #[derive(Copy, Clone, Debug)]
+        pub struct PrepareConfig
+        {
+            pub block_signals: bool,
+            pub enable_control_flow: bool,
+            pub enable_keypad: bool,
+            pub enable_mouse: bool,
+            pub always_track_motion: bool,
+            pub report_signals: Signals,
+        }
+        
+        pub mod unix
+        {
+            /*!
+            */
+            use ;
+            use ::
+            {
+                convert::TryFrom,
+                error::no::{ Errno },
+                fs::{ File },
+                libc::{ ioctl, c_int, c_ushort, termios, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, TIOCGWINSZ, },
+                mem::{replace, zeroed},
+                os::unix::io::{FromRawFd, IntoRawFd, RawFd},
+                path::{ Path },
+                str::{ from_utf8, FromStr },
+                sync::{ atomic::{AtomicUsize, Ordering}, LockResult, Mutex, MutexGuard, TryLockResult},
+                system::
+                {
+                    common::{ Color, PrepareConfig, Signals, Style },
+                },
+                time::{ Duration },
+                *,
+            };
+            /*
+                use nix::errno::Errno;
+                use nix::sys::select::{select, FdSet};
+                use nix::sys::signal::{
+                    sigaction,
+                    SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
+                };
+                use nix::sys::termios::{
+                    tcgetattr, tcsetattr,
+                    SetArg, InputFlags, LocalFlags,
+                };
+                use nix::sys::time::{TimeVal, TimeValLike};
+                use nix::unistd::{read, write};
+
+                use smallstr::SmallString;
+
+                use terminfo::{self, capability as cap, Database};
+                use terminfo::capability::Expansion;
+                use terminfo::expand::Context;
+
+                use crate::priv_util::{map_lock_result, map_try_lock_result};
+                use crate::sequence::{FindResult, SequenceMap};
+                use crate::signal::{Signal, Signals};
+                use crate::terminal::{
+                    Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme,
+                    MouseButton, MouseEvent, MouseInput, ModifierState,
+                };
+                use crate::util::prefixes;
+            */
+            const NUM_SIGNALS: u8 = 6;
+
+            pub struct Terminal
+            {
+                info: (), // Database,
+                out_fd: RawFd,
+                in_fd: RawFd,
+                owned_fd: bool,
+                sequences: (),// SeqMap,
+                reader: Mutex<Reader>,
+                writer: Mutex<Writer>,
+            }
+            
+            #[derive(Copy, Clone, Debug)]
+            struct Resume
+            {
+                config: PrepareConfig,
+            }
+
+            pub struct Reader
+            {
+                in_buffer: Vec<u8>,
+                resume: Option<Resume>,
+                report_signals: Signals,
+            }
+            
+            pub struct Writer
+            {
+                context: (), // Context,
+                out_buffer: Vec<u8>,
+                fg: Option<Color>,
+                bg: Option<Color>,
+                cur_style: Style,
+            }
+            
+            #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+            pub enum Signs
+            {
+                Break,
+                Continue,
+                Interrupt,
+                Resize,
+                Suspend,
+                Quit,
+            }
+            
+            impl Signs
+            {
+                fn as_bit(&self) -> u8 { 1 << (*self as u8) }
+                fn all_bits() -> u8 { (1 << NUM_SIGNALS) - 1 }
+            }
+
+            impl ops::BitOr for Signs
+            {
+                type Output = Signals;
+
+                fn bitor(self, rhs: Signs) -> Signals
+                {
+                    let mut set = Signals::new();
+                    set.insert(self);
+                    set.insert(rhs);
+                    set
+                }
+            }
+
+            impl ops::Not for Signs
+            {
+                type Output = Signals;
+                fn not(self) -> Signals { !Signals::from(self) }
+            }
+
+            libc_enum!
+            {
+                #[repr(i32)] #[non_exhaustive]
+                pub enum Signal
+                {
+                    SIGHUP,
+                    SIGINT,
+                    SIGQUIT,
+                    SIGILL,
+                    SIGTRAP,
+                    SIGABRT,
+                    SIGBUS,
+                    SIGFPE,
+                    SIGKILL,
+                    SIGUSR1,
+                    SIGSEGV,
+                    SIGUSR2,
+                    SIGPIPE,
+                    SIGALRM,
+                    SIGTERM,
+                    SIGCHLD,
+                    SIGCONT,
+                    SIGSTOP,
+                    SIGTSTP,
+                    SIGTTIN,
+                    SIGTTOU,
+                    SIGURG,
+                    SIGXCPU,
+                    SIGXFSZ,
+                    SIGVTALRM,
+                    SIGPROF,
+                    SIGWINCH,
+                    SIGIO,
+                    SIGSYS,
+                }
+                impl TryFrom<i32>
+            }
+            
+            impl FromStr for Signal
+            {
+                type Err = Error;
+                fn from_str(s: &str) -> Result<Signal>
+                {
+                    Ok(match s
+                    {
+                        "SIGHUP" => Signal::SIGHUP,
+                        "SIGINT" => Signal::SIGINT,
+                        "SIGQUIT" => Signal::SIGQUIT,
+                        "SIGILL" => Signal::SIGILL,
+                        "SIGTRAP" => Signal::SIGTRAP,
+                        "SIGABRT" => Signal::SIGABRT,
+                        "SIGBUS" => Signal::SIGBUS,
+                        "SIGFPE" => Signal::SIGFPE,
+                        "SIGKILL" => Signal::SIGKILL,
+                        "SIGUSR1" => Signal::SIGUSR1,
+                        "SIGSEGV" => Signal::SIGSEGV,
+                        "SIGUSR2" => Signal::SIGUSR2,
+                        "SIGPIPE" => Signal::SIGPIPE,
+                        "SIGALRM" => Signal::SIGALRM,
+                        "SIGTERM" => Signal::SIGTERM,
+                        "SIGCHLD" => Signal::SIGCHLD,
+                        "SIGCONT" => Signal::SIGCONT,
+                        "SIGSTOP" => Signal::SIGSTOP,
+                        "SIGTSTP" => Signal::SIGTSTP,
+                        "SIGTTIN" => Signal::SIGTTIN,
+                        "SIGTTOU" => Signal::SIGTTOU,
+                        "SIGURG" => Signal::SIGURG,
+                        "SIGXCPU" => Signal::SIGXCPU,
+                        "SIGXFSZ" => Signal::SIGXFSZ,
+                        "SIGVTALRM" => Signal::SIGVTALRM,
+                        "SIGPROF" => Signal::SIGPROF,
+                        "SIGWINCH" => Signal::SIGWINCH,
+                        "SIGIO" => Signal::SIGIO,
+                        "SIGSYS" => Signal::SIGSYS,
+                        "SIGEMT" => Signal::SIGEMT,
+                        "SIGINFO" => Signal::SIGINFO,
+                        _ => return Err(Errno::EINVAL),
+                    })
+                }
+            }
+            
+            impl Signal
+            {
+                pub const fn as_str(self) -> &'static str
+                {
+                    match self
+                    {
+                        Signal::SIGHUP => "SIGHUP",
+                        Signal::SIGINT => "SIGINT",
+                        Signal::SIGQUIT => "SIGQUIT",
+                        Signal::SIGILL => "SIGILL",
+                        Signal::SIGTRAP => "SIGTRAP",
+                        Signal::SIGABRT => "SIGABRT",
+                        Signal::SIGBUS => "SIGBUS",
+                        Signal::SIGFPE => "SIGFPE",
+                        Signal::SIGKILL => "SIGKILL",
+                        Signal::SIGUSR1 => "SIGUSR1",
+                        Signal::SIGSEGV => "SIGSEGV",
+                        Signal::SIGUSR2 => "SIGUSR2",
+                        Signal::SIGPIPE => "SIGPIPE",
+                        Signal::SIGALRM => "SIGALRM",
+                        Signal::SIGTERM => "SIGTERM",
+                        Signal::SIGCHLD => "SIGCHLD",
+                        Signal::SIGCONT => "SIGCONT",
+                        Signal::SIGSTOP => "SIGSTOP",
+                        Signal::SIGTSTP => "SIGTSTP",
+                        Signal::SIGTTIN => "SIGTTIN",
+                        Signal::SIGTTOU => "SIGTTOU",
+                        Signal::SIGURG => "SIGURG",
+                        Signal::SIGXCPU => "SIGXCPU",
+                        Signal::SIGXFSZ => "SIGXFSZ",
+                        Signal::SIGVTALRM => "SIGVTALRM",
+                        Signal::SIGPROF => "SIGPROF",
+                        Signal::SIGWINCH => "SIGWINCH",
+                        Signal::SIGIO => "SIGIO",
+                        Signal::SIGSYS => "SIGSYS",
+                        Signal::SIGEMT => "SIGEMT",
+                        Signal::SIGINFO => "SIGINFO",
+                    }
+                }
+            }
+            
+            impl AsRef<str> for Signal
+            {
+                fn as_ref(&self) -> &str { self.as_str() }
+            }
+            
+            impl fmt::Display for Signal
+            {
+                fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result { f.write_str(self.as_ref()) }
+            }
+            
+            pub use self::Signal::*;
+            
+            pub const SIGNALS: [Signal; 31] =
+            [
+                SIGHUP, SIGINT, SIGQUIT, SIGILL, SIGTRAP, SIGABRT, SIGBUS, SIGFPE, SIGKILL,
+                SIGUSR1, SIGSEGV, SIGUSR2, SIGPIPE, SIGALRM, SIGTERM, SIGCHLD, SIGCONT,
+                SIGSTOP, SIGTSTP, SIGTTIN, SIGTTOU, SIGURG, SIGXCPU, SIGXFSZ, SIGVTALRM,
+                SIGPROF, SIGWINCH, SIGIO, SIGSYS, SIGEMT, SIGINFO,
+            ];
+
+            #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+            pub struct SignalIterator
+            {
+                next: usize,
+            }
+
+            impl Iterator for SignalIterator
+            {
+                type Item = Signal;
+                fn next(&mut self) -> Option<Signal>
+                {
+                    if self.next < SIGNALS.len()
+                    {
+                        let next_signal = SIGNALS[self.next];
+                        self.next += 1;
+                        Some(next_signal)
+                    }
+                    else { None }
+                }
+            }
+
+            impl Signal
+            {
+                pub const fn iterator() -> SignalIterator { SignalIterator{next: 0} }
+            }
+            
+            pub const SIGIOT : Signal = SIGABRT;
+            pub const SIGPOLL : Signal = SIGIO;
+            pub const SIGUNUSED : Signal = SIGSYS;
+
+            pub type SaFlags_t = libc::c_int;
+            
+            libc_bitflags!
+            {
+                pub struct SaFlags: SaFlags_t
+                {
+                    SA_NOCLDSTOP;
+                    SA_NOCLDWAIT;
+                    SA_NODEFER;
+                    SA_ONSTACK;
+                    SA_RESETHAND;
+                    SA_RESTART;
+                    SA_SIGINFO;
+                }
+            }
+            
+            libc_enum!
+            {
+                #[repr(i32)] #[non_exhaustive]
+                pub enum SigmaskHow
+                {
+                    SIG_BLOCK,
+                    SIG_UNBLOCK,
+                    SIG_SETMASK,
+                }
+            }
+
+            
+            #![feature = "signal"]
+
+            use crate::unistd::Pid;
+            use std::iter::Extend;
+            use std::iter::FromIterator;
+            use std::iter::IntoIterator;
+
+            /// Specifies a set of [`Signal`]s that may be blocked, waited for, etc.
+            // We are using `transparent` here to be super sure that `SigSet`
+            // is represented exactly like the `sigset_t` struct from C.
+            #[repr(transparent)]
+            #[derive(Clone, Copy, Debug, Eq)]
+            pub struct SigSet {
+                sigset: libc::sigset_t
+            }
+
+            impl SigSet {
+                /// Initialize to include all signals.
+                #[doc(alias("sigfillset"))]
+                pub fn all() -> SigSet {
+                    let mut sigset = mem::MaybeUninit::uninit();
+                    let _ = unsafe { libc::sigfillset(sigset.as_mut_ptr()) };
+
+                    unsafe{ SigSet { sigset: sigset.assume_init() } }
+                }
+
+                /// Initialize to include nothing.
+                #[doc(alias("sigemptyset"))]
+                pub fn empty() -> SigSet {
+                    let mut sigset = mem::MaybeUninit::uninit();
+                    let _ = unsafe { libc::sigemptyset(sigset.as_mut_ptr()) };
+
+                    unsafe{ SigSet { sigset: sigset.assume_init() } }
+                }
+
+                /// Add the specified signal to the set.
+                #[doc(alias("sigaddset"))]
+                pub fn add(&mut self, signal: Signal) {
+                    unsafe { libc::sigaddset(&mut self.sigset as *mut libc::sigset_t, signal as libc::c_int) };
+                }
+
+                /// Remove all signals from this set.
+                #[doc(alias("sigemptyset"))]
+                pub fn clear(&mut self) {
+                    unsafe { libc::sigemptyset(&mut self.sigset as *mut libc::sigset_t) };
+                }
+
+                /// Remove the specified signal from this set.
+                #[doc(alias("sigdelset"))]
+                pub fn remove(&mut self, signal: Signal) {
+                    unsafe { libc::sigdelset(&mut self.sigset as *mut libc::sigset_t, signal as libc::c_int) };
+                }
+
+                /// Return whether this set includes the specified signal.
+                #[doc(alias("sigismember"))]
+                pub fn contains(&self, signal: Signal) -> bool {
+                    let res = unsafe { libc::sigismember(&self.sigset as *const libc::sigset_t, signal as libc::c_int) };
+
+                    match res {
+                        1 => true,
+                        0 => false,
+                        _ => unreachable!("unexpected value from sigismember"),
+                    }
+                }
+
+                /// Returns an iterator that yields the signals contained in this set.
+                pub fn iter(&self) -> SigSetIter<'_> {
+                    self.into_iter()
+                }
+
+                /// Gets the currently blocked (masked) set of signals for the calling thread.
+                pub fn thread_get_mask() -> Result<SigSet> {
+                    let mut oldmask = mem::MaybeUninit::uninit();
+                    do_pthread_sigmask(SigmaskHow::SIG_SETMASK, None, Some(oldmask.as_mut_ptr()))?;
+                    Ok(unsafe{ SigSet{sigset: oldmask.assume_init()}})
+                }
+
+                /// Sets the set of signals as the signal mask for the calling thread.
+                pub fn thread_set_mask(&self) -> Result<()> {
+                    pthread_sigmask(SigmaskHow::SIG_SETMASK, Some(self), None)
+                }
+
+                /// Adds the set of signals to the signal mask for the calling thread.
+                pub fn thread_block(&self) -> Result<()> {
+                    pthread_sigmask(SigmaskHow::SIG_BLOCK, Some(self), None)
+                }
+
+                /// Removes the set of signals from the signal mask for the calling thread.
+                pub fn thread_unblock(&self) -> Result<()> {
+                    pthread_sigmask(SigmaskHow::SIG_UNBLOCK, Some(self), None)
+                }
+
+                /// Sets the set of signals as the signal mask, and returns the old mask.
+                pub fn thread_swap_mask(&self, how: SigmaskHow) -> Result<SigSet> {
+                    let mut oldmask = mem::MaybeUninit::uninit();
+                    do_pthread_sigmask(how, Some(self), Some(oldmask.as_mut_ptr()))?;
+                    Ok(unsafe{ SigSet{sigset: oldmask.assume_init()}})
+                }
+
+                /// Suspends execution of the calling thread until one of the signals in the
+                /// signal mask becomes pending, and returns the accepted signal.
+                #[cfg(not(target_os = "redox"))] // RedoxFS does not yet support sigwait
+                pub fn wait(&self) -> Result<Signal> {
+                    use std::convert::TryFrom;
+
+                    let mut signum = mem::MaybeUninit::uninit();
+                    let res = unsafe { libc::sigwait(&self.sigset as *const libc::sigset_t, signum.as_mut_ptr()) };
+
+                    Errno::result(res).map(|_| unsafe {
+                        Signal::try_from(signum.assume_init()).unwrap()
+                    })
+                }
+
+                /// Wait for a signal
+                ///
+                /// # Return value
+                /// If `sigsuspend(2)` is interrupted (EINTR), this function returns `Ok`.
+                /// If `sigsuspend(2)` set other error, this function returns `Err`.
+                ///
+                /// For more information see the
+                /// [`sigsuspend(2)`](https://pubs.opengroup.org/onlinepubs/9699919799/functions/sigsuspend.html).
+                #[cfg(any(
+                    bsd,
+                    linux_android,
+                    solarish,
+                    target_os = "haiku",
+                    target_os = "hurd",
+                    target_os = "aix",
+                    target_os = "fuchsia"
+                ))]
+                #[doc(alias("sigsuspend"))]
+                pub fn suspend(&self) -> Result<()> {
+                    let res = unsafe {
+                        libc::sigsuspend(&self.sigset as *const libc::sigset_t)
+                    };
+                    match Errno::result(res).map(drop) {
+                        Err(Errno::EINTR) => Ok(()),
+                        Err(e) => Err(e),
+                        Ok(_) => unreachable!("because this syscall always returns -1 if returns"),
+                    }
+                }
+
+                /// Converts a `libc::sigset_t` object to a [`SigSet`] without checking  whether the
+                /// `libc::sigset_t` is already initialized.
+                ///
+                /// # Safety
+                ///
+                /// The `sigset` passed in must be a valid an initialized `libc::sigset_t` by calling either
+                /// [`sigemptyset(3)`](https://man7.org/linux/man-pages/man3/sigemptyset.3p.html) or
+                /// [`sigfillset(3)`](https://man7.org/linux/man-pages/man3/sigfillset.3p.html).
+                /// Otherwise, the results are undefined.
+                pub unsafe fn from_sigset_t_unchecked(sigset: libc::sigset_t) -> SigSet {
+                    SigSet { sigset }
+                }
+            }
+
+            impl From<Signal> for SigSet {
+                fn from(signal: Signal) -> SigSet {
+                    let mut sigset = SigSet::empty();
+                    sigset.add(signal);
+                    sigset
+                }
+            }
+
+            impl BitOr for Signal {
+                type Output = SigSet;
+
+                fn bitor(self, rhs: Self) -> Self::Output {
+                    let mut sigset = SigSet::empty();
+                    sigset.add(self);
+                    sigset.add(rhs);
+                    sigset
+                }
+            }
+
+            impl BitOr<Signal> for SigSet {
+                type Output = SigSet;
+
+                fn bitor(mut self, rhs: Signal) -> Self::Output {
+                    self.add(rhs);
+                    self
+                }
+            }
+
+            impl BitOr for SigSet {
+                type Output = Self;
+
+                fn bitor(self, rhs: Self) -> Self::Output {
+                    self.iter().chain(rhs.iter()).collect()
+                }
+            }
+
+            impl AsRef<libc::sigset_t> for SigSet {
+                fn as_ref(&self) -> &libc::sigset_t {
+                    &self.sigset
+                }
+            }
+
+            // TODO: Consider specialization for the case where T is &SigSet and libc::sigorset is available.
+            impl Extend<Signal> for SigSet {
+                fn extend<T>(&mut self, iter: T)
+                where T: IntoIterator<Item = Signal> {
+                    for signal in iter {
+                        self.add(signal);
+                    }
+                }
+            }
+
+            impl FromIterator<Signal> for SigSet {
+                fn from_iter<T>(iter: T) -> Self
+                where T: IntoIterator<Item = Signal> {
+                    let mut sigset = SigSet::empty();
+                    sigset.extend(iter);
+                    sigset
+                }
+            }
+
+            impl PartialEq for SigSet {
+                fn eq(&self, other: &Self) -> bool {
+                    for signal in Signal::iterator() {
+                        if self.contains(signal) != other.contains(signal) {
+                            return false;
+                        }
+                    }
+                    true
+                }
+            }
+
+            impl Hash for SigSet {
+                fn hash<H: Hasher>(&self, state: &mut H) {
+                    for signal in Signal::iterator() {
+                        if self.contains(signal) {
+                            signal.hash(state);
+                        }
+                    }
+                }
+            }
+
+            /// Iterator for a [`SigSet`].
+            ///
+            /// Call [`SigSet::iter`] to create an iterator.
+            #[derive(Clone, Debug)]
+            pub struct SigSetIter<'a> {
+                sigset: &'a SigSet,
+                inner: SignalIterator,
+            }
+
+            impl Iterator for SigSetIter<'_> {
+                type Item = Signal;
+                fn next(&mut self) -> Option<Signal> {
+                    loop {
+                        match self.inner.next() {
+                            None => return None,
+                            Some(signal) if self.sigset.contains(signal) => return Some(signal),
+                            Some(_signal) => continue,
+                        }
+                    }
+                }
+            }
+
+            impl<'a> IntoIterator for &'a SigSet {
+                type Item = Signal;
+                type IntoIter = SigSetIter<'a>;
+                fn into_iter(self) -> Self::IntoIter {
+                    SigSetIter { sigset: self, inner: Signal::iterator() }
+                }
+            }
+
+            /// A signal handler.
+            #[derive(Clone, Copy, Debug, Hash)]
+            pub enum SigHandler {
+                /// Default signal handling.
+                SigDfl,
+                /// Request that the signal be ignored.
+                SigIgn,
+                /// Use the given signal-catching function, which takes in the signal.
+                Handler(extern "C" fn(libc::c_int)),
+                /// Use the given signal-catching function, which takes in the signal, information about how
+                /// the signal was generated, and a pointer to the threads `ucontext_t`.
+                #[cfg(not(target_os = "redox"))]
+                SigAction(extern "C" fn(libc::c_int, *mut libc::siginfo_t, *mut libc::c_void))
+            }
+
+            /// Action to take on receipt of a signal. Corresponds to `sigaction`.
+            #[repr(transparent)]
+            #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
+            pub struct SigAction {
+                sigaction: libc::sigaction
+            }
+
+            impl From<SigAction> for libc::sigaction {
+                fn from(value: SigAction) -> libc::sigaction {
+                    value.sigaction
+                }
+            }
+
+            impl SigAction {
+                /// Creates a new action.
+                ///
+                /// The `SA_SIGINFO` bit in the `flags` argument is ignored (it will be set only if `handler`
+                /// is the `SigAction` variant). `mask` specifies other signals to block during execution of
+                /// the signal-catching function.
+                pub fn new(handler: SigHandler, flags: SaFlags, mask: SigSet) -> SigAction {
+                    unsafe fn install_sig(p: *mut libc::sigaction, handler: SigHandler) {
+                        unsafe {
+                            (*p).sa_sigaction = match handler {
+                                SigHandler::SigDfl => libc::SIG_DFL,
+                                SigHandler::SigIgn => libc::SIG_IGN,
+                                SigHandler::Handler(f) => f as *const extern "C" fn(libc::c_int) as usize,
+                                #[cfg(not(target_os = "redox"))]
+                                SigHandler::SigAction(f) => f as *const extern "C" fn(libc::c_int, *mut libc::siginfo_t, *mut libc::c_void) as usize,
+                            };
+                        }
+                    }
+
+                    let mut s = mem::MaybeUninit::<libc::sigaction>::uninit();
+                    unsafe {
+                        let p = s.as_mut_ptr();
+                        install_sig(p, handler);
+                        (*p).sa_flags = match handler {
+                            #[cfg(not(target_os = "redox"))]
+                            SigHandler::SigAction(_) => (flags | SaFlags::SA_SIGINFO).bits(),
+                            _ => (flags - SaFlags::SA_SIGINFO).bits(),
+                        };
+                        (*p).sa_mask = mask.sigset;
+
+                        SigAction { sigaction: s.assume_init() }
+                    }
+                }
+
+                /// Returns the flags set on the action.
+                pub fn flags(&self) -> SaFlags {
+                    SaFlags::from_bits_truncate(self.sigaction.sa_flags)
+                }
+
+                /// Returns the set of signals that are blocked during execution of the action's
+                /// signal-catching function.
+                pub fn mask(&self) -> SigSet {
+                    SigSet { sigset: self.sigaction.sa_mask }
+                }
+
+                /// Returns the action's handler.
+                pub fn handler(&self) -> SigHandler {
+                    match self.sigaction.sa_sigaction {
+                        libc::SIG_DFL => SigHandler::SigDfl,
+                        libc::SIG_IGN => SigHandler::SigIgn,
+                        #[cfg(not(target_os = "redox"))]
+                        p if self.flags().contains(SaFlags::SA_SIGINFO) =>
+                            SigHandler::SigAction(
+                            // Safe for one of two reasons:
+                            // * The SigHandler was created by SigHandler::new, in which
+                            //   case the pointer is correct, or
+                            // * The SigHandler was created by signal or sigaction, which
+                            //   are unsafe functions, so the caller should've somehow
+                            //   ensured that it is correctly initialized.
+                            unsafe{
+                                *(&p as *const usize
+                                    as *const extern "C" fn(_, _, _))
+                            }
+                            as extern "C" fn(_, _, _)),
+                        p => SigHandler::Handler(
+                            // Safe for one of two reasons:
+                            // * The SigHandler was created by SigHandler::new, in which
+                            //   case the pointer is correct, or
+                            // * The SigHandler was created by signal or sigaction, which
+                            //   are unsafe functions, so the caller should've somehow
+                            //   ensured that it is correctly initialized.
+                            unsafe{
+                                *(&p as *const usize
+                                    as *const extern "C" fn(libc::c_int))
+                            }
+                            as extern "C" fn(libc::c_int)),
+                    }
+                }
+            }
+
+            /// Changes the action taken by a process on receipt of a specific signal.
+            ///
+            /// `signal` can be any signal except `SIGKILL` or `SIGSTOP`. On success, it returns the previous
+            /// action for the given signal. If `sigaction` fails, no new signal handler is installed.
+            ///
+            /// # Safety
+            ///
+            /// * Signal handlers may be called at any point during execution, which limits
+            ///   what is safe to do in the body of the signal-catching function. Be certain
+            ///   to only make syscalls that are explicitly marked safe for signal handlers
+            ///   and only share global data using atomics.
+            ///
+            /// * There is also no guarantee that the old signal handler was installed
+            ///   correctly.  If it was installed by this crate, it will be.  But if it was
+            ///   installed by, for example, C code, then there is no guarantee its function
+            ///   pointer is valid.  In that case, this function effectively dereferences a
+            ///   raw pointer of unknown provenance.
+            pub unsafe fn sigaction(signal: Signal, sigaction: &SigAction) -> Result<SigAction> {
+                let mut oldact = mem::MaybeUninit::<libc::sigaction>::uninit();
+
+                let res = unsafe { libc::sigaction(signal as libc::c_int,
+                                        &sigaction.sigaction as *const libc::sigaction,
+                                        oldact.as_mut_ptr()) };
+
+                Errno::result(res).map(|_| SigAction { sigaction: unsafe { oldact.assume_init() } })
+            }
+
+            /// Signal management (see [signal(3p)](https://pubs.opengroup.org/onlinepubs/9699919799/functions/signal.html))
+            ///
+            /// Installs `handler` for the given `signal`, returning the previous signal
+            /// handler. `signal` should only be used following another call to `signal` or
+            /// if the current handler is the default. The return value of `signal` is
+            /// undefined after setting the handler with [`sigaction`][SigActionFn].
+            ///
+            /// # Safety
+            ///
+            /// If the pointer to the previous signal handler is invalid, undefined
+            /// behavior could be invoked when casting it back to a [`SigAction`][SigActionStruct].
+            ///
+            /// # Examples
+            ///
+            /// Ignore `SIGINT`:
+            ///
+            /// ```no_run
+            /// # use nix::sys::signal::{self, Signal, SigHandler};
+            /// unsafe { signal::signal(Signal::SIGINT, SigHandler::SigIgn) }.unwrap();
+            /// ```
+            ///
+            /// Use a signal handler to set a flag variable:
+            ///
+            /// ```no_run
+            /// # use std::convert::TryFrom;
+            /// # use std::sync::atomic::{AtomicBool, Ordering};
+            /// # use nix::sys::signal::{self, Signal, SigHandler};
+            /// static SIGNALED: AtomicBool = AtomicBool::new(false);
+            ///
+            /// extern "C" fn handle_sigint(signal: libc::c_int) {
+            ///     let signal = Signal::try_from(signal).unwrap();
+            ///     SIGNALED.store(signal == Signal::SIGINT, Ordering::Relaxed);
+            /// }
+            ///
+            /// fn main() {
+            ///     let handler = SigHandler::Handler(handle_sigint);
+            ///     unsafe { signal::signal(Signal::SIGINT, handler) }.unwrap();
+            /// }
+            /// ```
+            ///
+            /// # Errors
+            ///
+            /// Returns [`Error(Errno::EOPNOTSUPP)`](Errno::EOPNOTSUPP) if `handler` is
+            /// [`SigAction`][SigActionStruct]. Use [`sigaction`][SigActionFn] instead.
+            ///
+            /// `signal` also returns any error from `libc::signal`, such as when an attempt
+            /// is made to catch a signal that cannot be caught or to ignore a signal that
+            /// cannot be ignored.
+            ///
+            /// [`Error::UnsupportedOperation`]: ../../enum.Error.html#variant.UnsupportedOperation
+            /// [SigActionStruct]: struct.SigAction.html
+            /// [sigactionFn]: fn.sigaction.html
+            pub unsafe fn signal(signal: Signal, handler: SigHandler) -> Result<SigHandler> {
+                let signal = signal as libc::c_int;
+                let res = match handler {
+                    SigHandler::SigDfl => unsafe { libc::signal(signal, libc::SIG_DFL) },
+                    SigHandler::SigIgn => unsafe { libc::signal(signal, libc::SIG_IGN) },
+                    SigHandler::Handler(handler) => unsafe { libc::signal(signal, handler as libc::sighandler_t) },
+                    #[cfg(not(target_os = "redox"))]
+                    SigHandler::SigAction(_) => return Err(Errno::ENOTSUP),
+                };
+                Errno::result(res).map(|oldhandler| {
+                    match oldhandler {
+                        libc::SIG_DFL => SigHandler::SigDfl,
+                        libc::SIG_IGN => SigHandler::SigIgn,
+                        p => SigHandler::Handler(
+                            unsafe { *(&p as *const usize as *const extern "C" fn(libc::c_int)) } as extern "C" fn(libc::c_int)),
+                    }
+                })
+            }
+
+            fn do_pthread_sigmask(how: SigmaskHow,
+                                set: Option<&SigSet>,
+                                oldset: Option<*mut libc::sigset_t>) -> Result<()> {
+                if set.is_none() && oldset.is_none() {
+                    return Ok(())
+                }
+
+                let res = unsafe {
+                    // if set or oldset is None, pass in null pointers instead
+                    libc::pthread_sigmask(how as libc::c_int,
+                                        set.map_or_else(ptr::null::<libc::sigset_t>,
+                                                        |s| &s.sigset as *const libc::sigset_t),
+                                        oldset.unwrap_or(ptr::null_mut())
+                                        )
+                };
+
+                Errno::result(res).map(drop)
+            }
+
+            /// Manages the signal mask (set of blocked signals) for the calling thread.
+            ///
+            /// If the `set` parameter is `Some(..)`, then the signal mask will be updated with the signal set.
+            /// The `how` flag decides the type of update. If `set` is `None`, `how` will be ignored,
+            /// and no modification will take place.
+            ///
+            /// If the 'oldset' parameter is `Some(..)` then the current signal mask will be written into it.
+            ///
+            /// If both `set` and `oldset` is `Some(..)`, the current signal mask will be written into oldset,
+            /// and then it will be updated with `set`.
+            ///
+            /// If both `set` and `oldset` is None, this function is a no-op.
+            ///
+            /// For more information, visit the [`pthread_sigmask`](https://pubs.opengroup.org/onlinepubs/9699919799/functions/pthread_sigmask.html),
+            /// or [`sigprocmask`](https://pubs.opengroup.org/onlinepubs/9699919799/functions/sigprocmask.html) man pages.
+            pub fn pthread_sigmask(how: SigmaskHow,
+                                set: Option<&SigSet>,
+                                oldset: Option<&mut SigSet>) -> Result<()>
+            {
+                do_pthread_sigmask(how, set, oldset.map(|os| &mut os.sigset as *mut _ ))
+            }
+            
+            pub fn sigprocmask(how: SigmaskHow, set: Option<&SigSet>, oldset: Option<&mut SigSet>) -> Result<()>
+            {
+                if set.is_none() && oldset.is_none() { return Ok(()) }
+
+                let res = unsafe
+                {
+                    libc::sigprocmask
+                    (
+                        how as libc::c_int, 
+                        set.map_or_else(ptr::null::<libc::sigset_t>, |s| &s.sigset as *const libc::sigset_t),
+                        oldset.map_or_else(ptr::null_mut::<libc::sigset_t>, |os| &mut os.sigset as *mut libc::sigset_t)
+                    )
+                };
+
+                Errno::result(res).map(drop)
+            }
+            
+            pub fn kill<T: Into<Option<Signal>>>(pid: Pid, signal: T) -> Result<()>
+            {
+                let res = unsafe
+                {
+                    libc::kill(pid.into(), match signal.into()
+                    {
+                        Some(s) => s as libc::c_int,
+                        None => 0,
+                    })
+                };
+
+                Errno::result(res).map(drop)
+            }
+            
+            pub fn killpg<T: Into<Option<Signal>>>(pgrp: Pid, signal: T) -> Result<()>
+            {
+                let res = unsafe
+                {
+                    libc::killpg(pgrp.into(), match signal.into()
+                    {
+                        Some(s) => s as libc::c_int,
+                        None => 0,
+                    })
+                };
+
+                Errno::result(res).map(drop)
+            }
+            
+            pub fn raise(signal: Signal) -> Result<()>
+            {
+                let res = unsafe { libc::raise(signal as libc::c_int) };
+                Errno::result(res).map(drop)
+            }
+
+            feature! {
+            #![any(feature = "aio", feature = "signal")]
+
+            /// Identifies a thread for [`SigevNotify::SigevThreadId`]
+            #[cfg(target_os = "freebsd")]
+            pub type type_of_thread_id = libc::lwpid_t;
+            /// Identifies a thread for [`SigevNotify::SigevThreadId`]
+            #[cfg(all(not(target_os = "hurd"), any(target_env = "gnu", target_env = "uclibc")))]
+            pub type type_of_thread_id = libc::pid_t;
+
+            /// Specifies the notification method used by a [`SigEvent`]
+            // sigval is actually a union of a int and a void*.  But it's never really used
+            // as a pointer, because neither libc nor the kernel ever dereference it.  nix
+            // therefore presents it as an intptr_t, which is how kevent uses it.
+            #[cfg(not(any(target_os = "fuchsia", target_os = "hurd", target_os = "openbsd", target_os = "redox")))]
+            #[derive(Clone, Copy, Debug)]
+            pub enum SigevNotify<'fd> {
+                /// No notification will be delivered
+                SigevNone,
+                /// Notify by delivering a signal to the process.
+                SigevSignal {
+                    /// Signal to deliver
+                    signal: Signal,
+                    /// Will be present in the `si_value` field of the [`libc::siginfo_t`]
+                    /// structure of the queued signal.
+                    si_value: libc::intptr_t
+                },
+                // Note: SIGEV_THREAD is not implemented, but could be if desired.
+                /// Notify by delivering an event to a kqueue.
+                #[cfg(freebsdlike)]
+                SigevKevent {
+                    /// File descriptor of the kqueue to notify.
+                    kq: std::os::fd::BorrowedFd<'fd>,
+                    /// Will be contained in the kevent's `udata` field.
+                    udata: libc::intptr_t
+                },
+                /// Notify by delivering an event to a kqueue, with optional event flags set
+                #[cfg(target_os = "freebsd")]
+                #[cfg(feature = "event")]
+                SigevKeventFlags {
+                    /// File descriptor of the kqueue to notify.
+                    kq: std::os::fd::BorrowedFd<'fd>,
+                    /// Will be contained in the kevent's `udata` field.
+                    udata: libc::intptr_t,
+                    /// Flags that will be set on the delivered event.  See `kevent(2)`.
+                    flags: crate::sys::event::EvFlags
+                },
+                /// Notify by delivering a signal to a thread.
+                #[cfg(any(
+                        target_os = "freebsd",
+                        target_env = "gnu",
+                        target_env = "uclibc",
+                ))]
+                SigevThreadId {
+                    /// Signal to send
+                    signal: Signal,
+                    /// LWP ID of the thread to notify
+                    thread_id: type_of_thread_id,
+                    /// Will be present in the `si_value` field of the [`libc::siginfo_t`]
+                    /// structure of the queued signal.
+                    si_value: libc::intptr_t
+                },
+                /// A helper variant to resolve the unused parameter (`'fd`) problem on
+                /// platforms other than FreeBSD and DragonFlyBSD.
+                ///
+                /// This variant can never be constructed due to the usage of an enum with 0
+                /// variants.
+                #[doc(hidden)]
+                #[cfg(not(freebsdlike))]
+                _Unreachable(&'fd std::convert::Infallible),
+            }
+            }
+
+
+            mod sigevent
+            {
+                use super::SigevNotify;
+                pub use libc::sigevent as libc_sigevent;
+                
+                #[repr(C)] #[derive(Clone, Debug, Eq, Hash, PartialEq)]
+                pub struct SigEvent
+                {
+                    sigevent: libc_sigevent
+                }
+
+                impl SigEvent
+                {
+                    pub fn new(sigev_notify: SigevNotify) -> SigEvent
+                    {
+                        let mut sev: libc_sigevent = unsafe { ::mem::zeroed() };
+
+                        match sigev_notify
+                        {
+                            SigevNotify::SigevNone => {
+                                sev.sigev_notify = libc::SIGEV_NONE;
+                            },
+                            SigevNotify::SigevSignal{signal, si_value} => {
+                                sev.sigev_notify = libc::SIGEV_SIGNAL;
+                                sev.sigev_signo = signal as libc::c_int;
+                                sev.sigev_value.sival_ptr = si_value as *mut libc::c_void
+                            },
+                            SigevNotify::_Unreachable(_) => unreachable!("This variant could never be constructed")
+                        }
+                        SigEvent{sigevent: sev}
+                    }
+                    
+                    pub fn sigevent(&self) -> libc::sigevent { self.sigevent }                    
+                    pub fn as_mut_ptr(&mut self) -> *mut libc::sigevent { &mut self.sigevent }
+                }
+
+                impl From<&'_ libc::sigevent> for SigEvent
+                {
+                    fn from(sigevent: &libc::sigevent) -> Self { SigEvent{ sigevent: *sigevent } }
+                }
+            } pub use self::sigevent::*;
+        } #[cfg(unix)] pub use self::unix::{ * };
+        
+        pub mod windows
+        {
+            /*!
+            */
+            use ::
+            {
+                *,
+            };
+        } #[cfg(windows)] pub use self::windows::{ * };
+
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum Color
+        {
+            Black,
+            Blue,
+            Cyan,
+            Green,
+            Magenta,
+            Red,
+            White,
+            Yellow,
+        }
+
+        bitflags!
+        {
+            #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
+            pub struct Style: u8
+            {
+                const BOLD      = 1 << 0;
+                const ITALIC    = 1 << 1;
+                const REVERSE   = 1 << 2;
+                const UNDERLINE = 1 << 3;
+            }
+        }
+        
+        #[derive(Copy, Clone, Debug, Default)]
+        pub struct Theme
+        {
+            pub fg: Option<Color>,
+            pub bg: Option<Color>,
+            pub style: Style,
+        }
+
+        impl Theme
+        {
+            pub fn new<F,B,S>(fg: F, bg: B, style: S) -> Theme where
+            F: Into<Option<Color>>,
+            B: Into<Option<Color>>,
+            S: Into<Option<Style>>
+            {
+                Theme
+                {
+                    fg: fg.into(),
+                    bg: bg.into(),
+                    style: style.into().unwrap_or_default(),
+                }
+            }
+            
+            pub fn fg<F>(mut self, fg: F) -> Theme where F: Into<Option<Color>>
+            {
+                self.fg = fg.into();
+                self
+            }
+            
+            pub fn bg<B>(mut self, bg: B) -> Theme where
+            B: Into<Option<Color>>
+            {
+                self.bg = bg.into();
+                self
+            }
+            
+            pub fn style<S>(mut self, style: S) -> Theme where S: Into<Option<Style>>
+            {
+                self.style = style.into().unwrap_or_default();
+                self
+            }
+        }
+
+        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+        pub enum CursorMode
+        {
+            Normal,
+            Invisible,
+            Overwrite,
+        }
+    }
+    /*
     libsqlite3 v0.36.0*/
     pub mod sql
     {
@@ -27034,238 +30346,251 @@ pub mod system
             rc
         }
     }
-    /*
-    mortal v0.6.0*/
-    pub mod common
+    
+    pub mod jobs
     {
         /*!
         */
         use ::
         {
+            io::{ Write },
+            types::{ * },
             *,
         };
+        /*
+            use std::io::Write;
 
-        #[derive(Copy, Clone, Default, Eq, PartialEq)]
-        pub struct Signals(u8);
+            use nix::sys::signal::Signal;
+            use nix::sys::wait::waitpid;
+            use nix::sys::wait::WaitPidFlag as WF;
+            use nix::sys::wait::WaitStatus as WS;
+            use nix::unistd::Pid;
 
-        #[derive(Copy, Clone, Debug)]
-        pub struct PrepareConfig
+            use crate::shell;
+            use crate::signals;
+        */
+        pub fn get_job_line(job: &types::Job, trim: bool) -> String
         {
-            pub block_signals: bool,
-            pub enable_control_flow: bool,
-            pub enable_keypad: bool,
-            pub enable_mouse: bool,
-            pub always_track_motion: bool,
-            pub report_signals: Signals,
-        }
-        
-        pub mod unix
-        {
-            /*!
-            */
-            use ::
-            {
-                convert::TryFrom,
-                fs::{ File },
-                libc::{ ioctl, c_int, c_ushort, termios, STDIN_FILENO, STDOUT_FILENO, STDERR_FILENO, TIOCGWINSZ, },
-                mem::{replace, zeroed},
-                os::unix::io::{FromRawFd, IntoRawFd, RawFd},
-                path::{ Path },
-                str::{ from_utf8 },
-                sync::{ atomic::{AtomicUsize, Ordering}, LockResult, Mutex, MutexGuard, TryLockResult},
-                system::
-                {
-                    common::{ Color, PrepareConfig, Signals, Style },
-                },
-                time::{ Duration },
-                *,
+            let mut cmd = job.cmd.clone();
+            if trim && cmd.len() > 50 {
+                cmd.truncate(50);
+                cmd.push_str(" ...");
+            }
+            let _cmd = if job.is_bg && job.status == "Running" {
+                format!("{} &", cmd)
+            } else {
+                cmd
             };
-            /*
-                use nix::errno::Errno;
-                use nix::sys::select::{select, FdSet};
-                use nix::sys::signal::{
-                    sigaction,
-                    SaFlags, SigAction, SigHandler, Signal as NixSignal, SigSet,
-                };
-                use nix::sys::termios::{
-                    tcgetattr, tcsetattr,
-                    SetArg, InputFlags, LocalFlags,
-                };
-                use nix::sys::time::{TimeVal, TimeValLike};
-                use nix::unistd::{read, write};
+            format!("[{}] {}  {}   {}", job.id, job.gid, job.status, _cmd)
+        }
 
-                use smallstr::SmallString;
+        pub fn print_job(job: &types::Job) {
+            let line = get_job_line(job, true);
+            println_stderr!("{}", line);
+        }
 
-                use terminfo::{self, capability as cap, Database};
-                use terminfo::capability::Expansion;
-                use terminfo::expand::Context;
-
-                use crate::priv_util::{map_lock_result, map_try_lock_result};
-                use crate::sequence::{FindResult, SequenceMap};
-                use crate::signal::{Signal, Signals};
-                use crate::terminal::{
-                    Color, Cursor, CursorMode, Event, Key, PrepareConfig, Size, Style, Theme,
-                    MouseButton, MouseEvent, MouseInput, ModifierState,
-                };
-                use crate::util::prefixes;
-            */
-            const NUM_SIGNALS: u8 = 6;
-
-            pub struct Terminal
-            {
-                info: (), // Database,
-                out_fd: RawFd,
-                in_fd: RawFd,
-                owned_fd: bool,
-                sequences: (),// SeqMap,
-                reader: Mutex<Reader>,
-                writer: Mutex<Writer>,
-            }
-            
-            #[derive(Copy, Clone, Debug)]
-            struct Resume
-            {
-                config: PrepareConfig,
-            }
-
-            pub struct Reader
-            {
-                in_buffer: Vec<u8>,
-                resume: Option<Resume>,
-                report_signals: Signals,
-            }
-            
-            pub struct Writer
-            {
-                context: (), // Context,
-                out_buffer: Vec<u8>,
-                fg: Option<Color>,
-                bg: Option<Color>,
-                cur_style: Style,
-            }
-            
-            #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-            pub enum Signal
-            {
-                Break,
-                Continue,
-                Interrupt,
-                Resize,
-                Suspend,
-                Quit,
-            }
-            
-            impl Signal
-            {
-                fn as_bit(&self) -> u8 { 1 << (*self as u8) }
-                fn all_bits() -> u8 { (1 << NUM_SIGNALS) - 1 }
-            }
-
-            impl ops::BitOr for Signal
-            {
-                type Output = Signals;
-
-                fn bitor(self, rhs: Signal) -> Signals
-                {
-                    let mut set = Signals::new();
-                    set.insert(self);
-                    set.insert(rhs);
-                    set
+        pub fn mark_job_as_done(sh: &mut shell::Shell, gid: i32, pid: i32, reason: &str) {
+            if let Some(mut job) = sh.remove_pid_from_job(gid, pid) {
+                job.status = reason.to_string();
+                if job.is_bg {
+                    println_stderr!("");
+                    print_job(&job);
                 }
             }
+        }
 
-            impl ops::Not for Signal
-            {
-                type Output = Signals;
-                fn not(self) -> Signals { !Signals::from(self) }
+        pub fn mark_job_as_stopped(sh: &mut shell::Shell, gid: i32, report: bool) {
+            sh.mark_job_as_stopped(gid);
+            if !report {
+                return;
             }
 
-        } #[cfg(unix)] pub use self::unix::{ * };
-        
-        pub mod windows
-        {
-            /*!
-            */
-            use ::
-            {
-                *,
+            // add an extra line to separate output of fg commands if any.
+            if let Some(job) = sh.get_job_by_gid(gid) {
+                println_stderr!("");
+                print_job(job);
+            }
+        }
+
+        pub fn mark_job_member_stopped(sh: &mut shell::Shell, pid: i32, gid: i32, report: bool) {
+            let _gid = if gid == 0 {
+                unsafe { libc::getpgid(pid) }
+            } else {
+                gid
             };
-        } #[cfg(windows)] pub use self::windows::{ * };
 
-        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum Color
-        {
-            Black,
-            Blue,
-            Cyan,
-            Green,
-            Magenta,
-            Red,
-            White,
-            Yellow,
-        }
-
-        bitflags!
-        {
-            #[derive(Copy, Clone, Debug, Default, Eq, PartialEq, Hash)]
-            pub struct Style: u8
-            {
-                const BOLD      = 1 << 0;
-                const ITALIC    = 1 << 1;
-                const REVERSE   = 1 << 2;
-                const UNDERLINE = 1 << 3;
-            }
-        }
-        
-        #[derive(Copy, Clone, Debug, Default)]
-        pub struct Theme
-        {
-            pub fg: Option<Color>,
-            pub bg: Option<Color>,
-            pub style: Style,
-        }
-
-        impl Theme
-        {
-            pub fn new<F,B,S>(fg: F, bg: B, style: S) -> Theme where
-            F: Into<Option<Color>>,
-            B: Into<Option<Color>>,
-            S: Into<Option<Style>>
-            {
-                Theme
-                {
-                    fg: fg.into(),
-                    bg: bg.into(),
-                    style: style.into().unwrap_or_default(),
+            if let Some(job) = sh.mark_job_member_stopped(pid, gid) {
+                if job.all_members_stopped() {
+                    mark_job_as_stopped(sh, gid, report);
                 }
             }
-            
-            pub fn fg<F>(mut self, fg: F) -> Theme where F: Into<Option<Color>>
-            {
-                self.fg = fg.into();
-                self
-            }
-            
-            pub fn bg<B>(mut self, bg: B) -> Theme where
-            B: Into<Option<Color>>
-            {
-                self.bg = bg.into();
-                self
-            }
-            
-            pub fn style<S>(mut self, style: S) -> Theme where S: Into<Option<Style>>
-            {
-                self.style = style.into().unwrap_or_default();
-                self
+        }
+
+        pub fn mark_job_member_continued(sh: &mut shell::Shell, pid: i32, gid: i32) {
+            let _gid = if gid == 0 {
+                unsafe { libc::getpgid(pid) }
+            } else {
+                gid
+            };
+
+            if let Some(job) = sh.mark_job_member_continued(pid, gid) {
+                if job.all_members_running() {
+                    mark_job_as_running(sh, gid, true);
+                }
             }
         }
 
-        #[derive(Copy, Clone, Debug, Eq, PartialEq)]
-        pub enum CursorMode
-        {
-            Normal,
-            Invisible,
-            Overwrite,
+        pub fn mark_job_as_running(sh: &mut shell::Shell, gid: i32, bg: bool) {
+            sh.mark_job_as_running(gid, bg);
+        }
+
+        #[allow(unreachable_patterns)]
+        pub fn waitpidx(wpid: i32, block: bool) -> types::WaitStatus {
+            let options = if block {
+                Some(WF::WUNTRACED | WF::WCONTINUED)
+            } else {
+                Some(WF::WUNTRACED | WF::WCONTINUED | WF::WNOHANG)
+            };
+            match waitpid(Pid::from_raw(wpid), options) {
+                Ok(WS::Exited(pid, status)) => {
+                    let pid = i32::from(pid);
+                    types::WaitStatus::from_exited(pid, status)
+                }
+                Ok(WS::Stopped(pid, sig)) => {
+                    let pid = i32::from(pid);
+                    types::WaitStatus::from_stopped(pid, sig as i32)
+                }
+                Ok(WS::Continued(pid)) => {
+                    let pid = i32::from(pid);
+                    types::WaitStatus::from_continuted(pid)
+                }
+                Ok(WS::Signaled(pid, sig, _core_dumped)) => {
+                    let pid = i32::from(pid);
+                    types::WaitStatus::from_signaled(pid, sig as i32)
+                }
+                Ok(WS::StillAlive) => types::WaitStatus::empty(),
+                Ok(_others) => {
+                    // this is for PtraceEvent and PtraceSyscall on Linux,
+                    // unreachable on other platforms.
+                    types::WaitStatus::from_others()
+                }
+                Err(e) => types::WaitStatus::from_error(e as i32),
+            }
+        }
+
+        pub fn wait_fg_job(sh: &mut shell::Shell, gid: i32, pids: &[i32]) -> CommandResult {
+            let mut cmd_result = CommandResult::new();
+            let mut count_waited = 0;
+            let count_child = pids.len();
+            if count_child == 0 {
+                return cmd_result;
+            }
+            let pid_last = pids.last().unwrap();
+
+            loop {
+                let ws = waitpidx(-1, true);
+                // here when we calling waitpidx(), all signals should have
+                // been masked. There should no errors (ECHILD/EINTR etc) happen.
+                if ws.is_error() {
+                    let err = ws.get_errno();
+                    if err == nix::Error::ECHILD {
+                        break;
+                    }
+
+                    log!("jobc unexpected waitpid error: {}", err);
+                    cmd_result = CommandResult::from_status(gid, err as i32);
+                    break;
+                }
+
+                let pid = ws.get_pid();
+                let is_a_fg_child = pids.contains(&pid);
+                if is_a_fg_child && !ws.is_continued() {
+                    count_waited += 1;
+                }
+
+                if ws.is_exited() {
+                    if is_a_fg_child {
+                        mark_job_as_done(sh, gid, pid, "Done");
+                    } else {
+                        let status = ws.get_status();
+                        signals::insert_reap_map(pid, status);
+                    }
+                } else if ws.is_stopped() {
+                    if is_a_fg_child {
+                        // for stop signal of fg job (current job)
+                        // i.e. Ctrl-Z is pressed on the fg job
+                        mark_job_member_stopped(sh, pid, gid, true);
+                    } else {
+                        // for stop signal of bg jobs
+                        signals::insert_stopped_map(pid);
+                        mark_job_member_stopped(sh, pid, 0, false);
+                    }
+                } else if ws.is_continued() {
+                    if !is_a_fg_child {
+                        signals::insert_cont_map(pid);
+                    }
+                    continue;
+                } else if ws.is_signaled() {
+                    if is_a_fg_child {
+                        mark_job_as_done(sh, gid, pid, "Killed");
+                    } else {
+                        signals::killed_map_insert(pid, ws.get_signal());
+                    }
+                }
+
+                if is_a_fg_child && pid == *pid_last {
+                    let status = ws.get_status();
+                    cmd_result.status = status;
+                }
+
+                if count_waited >= count_child {
+                    break;
+                }
+            }
+            cmd_result
+        }
+
+        pub fn try_wait_bg_jobs(sh: &mut shell::Shell, report: bool, sig_handler_enabled: bool) {
+            if sh.jobs.is_empty() {
+                return;
+            }
+
+            if !sig_handler_enabled {
+                // we need to wait pids in case CICADA_ENABLE_SIG_HANDLER=0
+                signals::handle_sigchld(Signal::SIGCHLD as i32);
+            }
+
+            let jobs = sh.jobs.clone();
+            for (_i, job) in jobs.iter() {
+                for pid in job.pids.iter() {
+                    if let Some(_status) = signals::pop_reap_map(*pid) {
+                        mark_job_as_done(sh, job.gid, *pid, "Done");
+                        continue;
+                    }
+
+                    if let Some(sig) = signals::killed_map_pop(*pid) {
+                        let reason = if sig == Signal::SIGQUIT as i32 {
+                            format!("Quit: {}", sig)
+                        } else if sig == Signal::SIGINT as i32 {
+                            format!("Interrupt: {}", sig)
+                        } else if sig == Signal::SIGKILL as i32 {
+                            format!("Killed: {}", sig)
+                        } else if sig == Signal::SIGTERM as i32 {
+                            format!("Terminated: {}", sig)
+                        } else {
+                            format!("Killed: {}", sig)
+                        };
+                        mark_job_as_done(sh, job.gid, *pid, &reason);
+                        continue;
+                    }
+
+                    if signals::pop_stopped_map(*pid) {
+                        mark_job_member_stopped(sh, *pid, job.gid, report);
+                    } else if signals::pop_cont_map(*pid) {
+                        mark_job_member_continued(sh, *pid, job.gid);
+                    }
+                }
+            }
         }
     }
 }
@@ -27406,8 +30731,13 @@ pub mod types
 {
     use ::
     {
+        collections::{ HashMap, HashSet },
         *,
     };
+    
+    pub type Token = (String, String);
+    pub type Tokens = Vec<Token>;
+    pub type Redirection = (String, String, String);
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub enum DataType
@@ -27665,6 +30995,171 @@ pub mod types
 			}
 		}
 	}
+
+    #[derive(Copy, Clone, Debug, PartialEq, Eq)]
+    pub struct App
+    {
+        a: bool,
+        n: Option<Option<u64>>,
+        c: Option<Option<u64>>,
+        u: Option<Option<u64>>,
+        s: Option<Option<u64>>,
+        S: bool,
+        H: bool,
+    }
+
+    #[derive(Debug, Clone, Default)]
+    pub struct Job
+    {
+        pub cmd: String,
+        pub id: i32,
+        pub gid: i32,
+        pub pids: Vec<i32>,
+        pub pids_stopped: HashSet<i32>,
+        pub status: String,
+        pub is_bg: bool,
+    }
+
+    impl Job
+    {
+        pub fn all_members_stopped(&self) -> bool
+        {
+            for pid in &self.pids
+            {
+                if !self.pids_stopped.contains(pid) { return false; }
+            }
+
+            true
+        }
+
+        pub fn all_members_running(&self) -> bool { self.pids_stopped.is_empty() }
+    }
+
+    #[derive(Debug)]
+    pub struct Command
+    {
+        pub tokens:Tokens,
+        pub redirects_to:Vec<Redirection>,
+        pub redirect_from:Option<Token>,
+    }
+
+    impl Command
+    {
+        pub fn from_tokens(tokens:Tokens) -> Result<Command, String>
+        {
+            let mut tokens_new = tokens.clone();
+            let mut redirects_from_type = String::new();
+            let mut redirects_from_value = String::new();
+            let mut has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<");
+
+            let mut len = tokens_new.len();
+            while has_redirect_from {
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<") {
+                    redirects_from_type = "<".to_string();
+                    tokens_new.remove(idx);
+                    len -= 1;
+                    if len > idx {
+                        redirects_from_value = tokens_new.remove(idx).1;
+                        len -= 1;
+                    }
+                }
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<<<") {
+                    redirects_from_type = "<<<".to_string();
+                    tokens_new.remove(idx);
+                    len -= 1;
+                    if len > idx {
+                        redirects_from_value = tokens_new.remove(idx).1;
+                        len -= 1;
+                    }
+                }
+
+                has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<");
+            }
+
+            let tokens_final;
+            let redirects_to;
+            match tokens_to_redirections(&tokens_new) {
+                Ok((_tokens, _redirects_to)) => {
+                    tokens_final = _tokens;
+                    redirects_to = _redirects_to;
+                }
+                Err(e) => {
+                    return Err(e);
+                }
+            }
+
+            let redirect_from = if redirects_from_type.is_empty() {
+                None
+            } else {
+                Some((redirects_from_type, redirects_from_value))
+            };
+
+            Ok(Command {
+                tokens: tokens_final,
+                redirects_to,
+                redirect_from,
+            })
+        }
+
+        pub fn has_redirect_from(&self) -> bool { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<" }
+
+        pub fn has_here_string(&self) -> bool { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<<<" }
+
+        pub fn is_builtin(&self) -> bool { is::builtin(&self.tokens[0].1) }
+    }
+
+    #[derive(Debug)]
+    pub struct CommandLine
+    {
+        pub line: String,
+        pub commands: Vec<Command>,
+        pub envs: HashMap<String, String>,
+        pub background: bool,
+    }
+
+    pub struct CommandResult
+    {
+        pub gid: i32,
+        pub status: i32,
+        pub stdout: String,
+        pub stderr: String,
+    }
+
+    impl CommandResult
+    {
+        pub fn new() -> CommandResult
+        {
+            CommandResult
+            {
+                gid: 0,
+                status: 0,
+                stdout: String::new(),
+                stderr: String::new(),
+            }
+        }
+
+        pub fn from_status(gid: i32, status: i32) -> CommandResult
+        {
+            CommandResult
+            {
+                gid,
+                status,
+                stdout: String::new(),
+                stderr: String::new(),
+            }
+        }
+
+        pub fn error() -> CommandResult
+        {
+            CommandResult
+            {
+                gid: 0,
+                status: 1,
+                stdout: String::new(),
+                stderr: String::new(),
+            }
+        }
+    }
 }
 
 pub mod values
