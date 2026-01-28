@@ -1873,7 +1873,7 @@ pub mod api
     use ::
     {
         io::{ self, Error, Write },
-        os::fd::{ AsRawFd }
+        os::fd::{ AsRawFd },
         path::{ Path },
         shell::{ Shell },
         types::{ * },
@@ -1937,7 +1937,7 @@ pub mod api
         use crate::types::{Command, CommandLine, CommandResult};
 
         use crate::builtins::utils::emit::stdout_with_capture;
-        use crate::libs::re::re_contains;
+        use crate::regex::contains;
         use crate::shell::Shell;
         use crate::tools;
         use crate::types::{Command, CommandLine, CommandResult};
@@ -1972,7 +1972,7 @@ pub mod api
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
     */
-    pub fn run_alias( sh: &mut shell::Shell, cl: &CommandLine, cmd: &Command, capture: bool ) -> CommandResult
+    pub fn run_alias( sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool ) -> CommandResult
     {
         let mut cr = CommandResult::new();
         let tokens = cmd.tokens.clone();
@@ -2153,7 +2153,7 @@ pub mod api
     pub fn run_info(_sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut info = vec![];
-        const VERSION: &str = env!("CARGO_PKG_VERSION");
+        const VERSION: &str = ""; // env!("CARGO_PKG_VERSION");
         info.push(("version", VERSION));
 
         let os_name = libs::os_type::get_os_name();
@@ -2165,12 +2165,12 @@ pub mod api
         let rcf = rcfile::get_rc_file();
         info.push(("rc-file", &rcf));
 
-        let git_hash = env!("GIT_HASH");
+        let git_hash = ""; //env!("GIT_HASH");
         if !git_hash.is_empty() {
             info.push(("git-commit", env!("GIT_HASH")));
         }
 
-        let git_branch = env!("GIT_BRANCH");
+        let git_branch = ""; //env!("GIT_BRANCH");
         let mut branch = String::new();
         if !git_branch.is_empty() {
             branch.push_str(git_branch);
@@ -2181,7 +2181,7 @@ pub mod api
             info.push(("git-branch", &branch));
         }
 
-        info.push(("built-with", env!("BUILD_RUSTC_VERSION")));
+        info.push(("built-with", "")); //env!("BUILD_RUSTC_VERSION")));
         info.push(("built-at", env!("BUILD_DATE")));
 
         let mut lines = Vec::new();
@@ -2262,7 +2262,7 @@ pub mod api
                 continue;
             }
 
-            if !tools::is_env(text) {
+            if !is::env(text) {
                 let mut info = String::new();
                 info.push_str("export: invalid command\n");
                 info.push_str("usage: export XXX=YYY");
@@ -2888,7 +2888,7 @@ pub mod api
         }
     }
     
-    fn show_alias_list( sh:&mut shell::Shell, cl:&CommandLine, cmd: &Command, capture:bool ) -> CommandResult 
+    fn show_alias_list( sh:&mut Shell, cl:&CommandLine, cmd: &Command, capture:bool ) -> CommandResult 
     {
         let mut lines = Vec::new();
         for (name, value) in sh.get_alias_list() {
@@ -4632,10 +4632,86 @@ pub mod emit
     */
     use ::
     {
+        fs::{ File },
+        io::{ Write },
+        os::unix::io::{ FromRawFd, RawFd },
+        types::{ * },
         *,
     };
     /*
     */
+    // pub fn print_stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stdout(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        let fd = get::duped_stdout_fd(cmd, cl);
+
+        if fd == -1 { return; }
+
+        unsafe
+        {
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+
+            match f.write_all(info.as_bytes())
+            {
+                Ok(_) => {}
+                Err(e) => { println_stderr!("write_all: error: {}", e); }
+            }
+
+            if !info.is_empty()
+            {
+                match f.write_all(b"\n")
+                {
+                    Ok(_) => {}
+                    Err(e) => { println_stderr!("write_all: error: {}", e); }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    pub fn stderr(info: &str, cmd: &Command, cl: &CommandLine)
+    {
+        let fd = get::duped_stderr_fd(cmd, cl);
+        
+        if fd == -1 { return; }
+
+        unsafe
+        {
+            let mut f = File::from_raw_fd(fd);
+            let info = info.trim_end_matches('\n');
+            
+            match f.write_all(info.as_bytes())
+            {
+                Ok(_) => (),
+                Err(e) => { println_stderr!("write_all: error: {}", e); }
+            }
+
+            if !info.is_empty()
+            {
+                match f.write_all(b"\n")
+                {
+                    Ok(_) => (),
+                    Err(e) => { println_stderr!("write_all: error: {}", e); }
+                }
+            }
+        }
+    }
+    // pub fn print_stderr_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture: bool )
+    pub fn stderr_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture: bool )
+    {
+        cr.status = 1;
+
+        if capture { cr.stderr = info.to_string(); }
+        else { stderr(info, cmd, cl); }
+    }
+    // pub fn print_stdout_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture: bool )
+    pub fn stdout_with_capture( info: &str, cr: &mut CommandResult, cl: &CommandLine, cmd: &Command, capture: bool )
+    {
+        cr.status = 0;
+
+        if capture { cr.stdout = info.to_string(); }
+        else { stdout(info, cmd, cl); }
+    }
 }
 
 pub mod env
@@ -5671,6 +5747,8 @@ pub mod get
     use ::
     {
         collections::{ HashMap },
+        os::fd::{ RawFd },
+        types::{ * },
         *,
     };
     /*
@@ -5703,6 +5781,118 @@ pub mod get
             'r' => Some('\r'),
             't' => Some('\t'),
             _ => None,
+        }
+    }
+    // pub fn _get_std_fds(redirects: &[Redirection]) -> (Option<RawFd>, Option<RawFd>)
+    pub fn std_fds(redirects: &[Redirection]) -> (Option<RawFd>, Option<RawFd>)
+    {
+        if redirects.is_empty() { return (None, None); }
+
+        let mut fd_out = None;
+        let mut fd_err = None;
+
+        for i in 0..redirects.len()
+        {
+            let item = &redirects[i];
+
+            if item.0 == "1"
+            {
+                let mut _fd_candidate = None;
+
+                if item.2 == "&2"
+                {
+                    let (_fd_out, _fd_err) = std_fds(&redirects[i + 1..]);
+
+                    if let Some(fd) = _fd_err { _fd_candidate = Some(fd); }
+                    else { _fd_candidate = unsafe { Some(libc::dup(2)) }; }
+                }
+
+                else
+                {
+                    let append = item.1 == ">>";
+
+                    if let Ok(fd) = os::fd::create_raw_from_file(&item.2, append) { _fd_candidate = Some(fd); }
+                }
+                
+                if let Some(fd) = fd_out
+                {
+                    unsafe { libc::close(fd); }
+                }
+
+                fd_out = _fd_candidate;
+            }
+
+            if item.0 == "2"
+            {
+                let mut _fd_candidate = None;
+
+                if item.2 == "&1"
+                {
+                    if let Some(fd) = fd_out { _fd_candidate = unsafe { Some(libc::dup(fd)) }; }
+                }
+                
+                else
+                {
+                    let append = item.1 == ">>";
+
+                    if let Ok(fd) = os::fd::create_raw_from_file(&item.2, append) { _fd_candidate = Some(fd); }
+                }
+
+                if let Some(fd) = fd_err
+                {
+                    unsafe { libc::close(fd); }
+                }
+
+                fd_err = _fd_candidate;
+            }
+        }
+
+        (fd_out, fd_err)
+    }
+    // fn _get_dupped_stdout_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    pub fn duped_stdout_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    {
+        if cl.with_pipeline() { return 1; }
+
+        let (_fd_out, _fd_err) = std_fds(&cmd.redirects_to);
+
+        if let Some(fd) = _fd_err { unsafe { libc::close(fd); } }
+
+        if let Some(fd) = _fd_out { fd }
+        else
+        {
+            let fd = unsafe { libc::dup(1) };
+            
+            if fd == -1
+            {
+                let eno = error::no::errno();
+                println_stderr!("cicada: dup: {}", eno);
+            }
+
+            fd
+        }
+    }
+    // fn _get_dupped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    pub fn duped_stderr_fd(cmd: &Command, cl: &CommandLine) -> RawFd
+    {
+        if cl.with_pipeline() { return 2; }
+
+        let (_fd_out, _fd_err) = std_fds(&cmd.redirects_to);
+
+        if let Some(fd) = _fd_out { unsafe { libc::close(fd); } }
+
+        if let Some(fd) = _fd_err { fd }
+        else
+        {
+            let fd = unsafe { libc::dup(2) };
+            
+            if fd == -1
+            {
+                let eno = error::no::errno();
+                println_stderr!("cicada: dup: {}", eno);
+            }
+
+            fd
         }
     }
 }
@@ -6292,6 +6482,38 @@ pub mod is
     pub fn ident_continue(c: char) -> bool
     {
         xid_continue(c)
+    }
+    // pub fn is_signal_handler_enabled() -> bool
+    pub fn signal_handler_enabled() -> bool { env::var("CICADA_ENABLE_SIG_HANDLER").is_ok_and(|x| x == "1") }
+    // pub fn is_env(line: &str) -> bool
+    pub fn env(line: &str) -> bool { regex::contains(line, r"^[a-zA-Z_][a-zA-Z0-9_]*=.*$") }
+    //pub fn is_arithmetic(line: &str) -> bool
+    pub fn arithmetic(line: &str) -> bool
+    {
+        if !regex::contains(line, r"[0-9]+") { return false; }
+
+        if !regex::contains(line, r"\+|\-|\*|/|\^") { return false; }
+
+        regex::contains(line, r"^[ 0-9\.\(\)\+\-\*/\^]+[\.0-9 \)]$")
+    }
+    // pub fn is_builtin(s: &str) -> bool
+    pub fn builtin(s: &str) -> bool
+    {
+        let builtins = [ "alias", "bg", "cd", "check", "cinfo", "exec", "exit", "export", "fg", "history", "jobs", "read", "source", "ulimit", "unalias", "vox", "minfd", "set", "unset", "unpath" ];
+        builtins.contains(&s)
+    }
+    // pub fn is_shell_altering_command(line: &str) -> bool
+    pub fn shell_altering_command(line: &str) -> bool
+    {
+        let line = line.trim();
+
+        if regex::contains(line, r"^[A-Za-z_][A-Za-z0-9_]*=.*$") { return true; }
+
+        line.starts_with("alias ")
+        || line.starts_with("export ")
+        || line.starts_with("unalias ")
+        || line.starts_with("unset ")
+        || line.starts_with("source ")
     }
 }
 
@@ -21233,7 +21455,35 @@ pub mod ops
 
 pub mod os
 {
-    pub use std::os::{ * };
+    pub use std::os::{ fd as _, * };
+    pub mod fd
+    {
+        pub use std::os::fd::{ * };
+        // pub fn create_raw_fd_from_file(file_name: &str, append: bool) -> Result<i32, String>
+        pub fn create_raw_from_file(file_name: &str, append: bool) -> Result<i32, String>
+        {
+            let mut oos = ::fs::OpenOptions::new();
+            
+            if append { oos.append(true); }
+            
+            else
+            {
+                oos.write(true);
+                oos.truncate(true);
+            }
+
+            match oos.create(true).open(file_name)
+            {
+                Ok(x) =>
+                {
+                    let fd = x.into_raw_fd();
+                    Ok(fd)
+                }
+
+                Err(e) => Err(format!("{}", e)),
+            }
+        }
+    }
 }
 
 pub mod option
@@ -25077,6 +25327,1126 @@ pub mod result
     };
     pub type OverResult<T> = Result<T, ::error::OverError>;
     pub type ParseResult<T> = Result<T, ParseError>;
+}
+
+pub mod shell
+{
+    /*!
+    */
+    use ::
+    {
+        error::{ no::{ errno }, },
+        collections::{ HashMap, HashSet },
+        io::{ Write },
+        path::{ Path, PathBuf },
+        regex::{ Regex },
+        types::{ * },
+        *,
+    };
+    /*
+    use uuid::Uuid;
+    */
+    #[derive(Debug, Clone)]
+    pub struct Shell
+    {
+        pub jobs: HashMap<i32, Job>,
+        pub aliases: HashMap<String, String>,
+        pub envs: HashMap<String, String>,
+        pub funcs: HashMap<String, String>,
+        pub cmd: String,
+        pub current_dir: String,
+        pub previous_dir: String,
+        pub previous_cmd: String,
+        pub previous_status: i32,
+        pub is_login: bool,
+        pub exit_on_error: bool,
+        pub has_terminal: bool,
+        pub session_id: String,
+    }
+
+    impl Shell
+    {
+        pub fn new() -> Shell
+        {
+            let uuid = Uuid::new_v4().as_hyphenated().to_string();
+            let current_dir = get::current_dir();            
+            let has_terminal = proc_has_terminal();
+            let (session_id, _) = uuid.split_at(13);
+            Shell 
+            {
+                jobs: HashMap::new(),
+                aliases: HashMap::new(),
+                envs: HashMap::new(),
+                funcs: HashMap::new(),
+                cmd: String::new(),
+                current_dir: current_dir.clone(),
+                previous_dir: String::new(),
+                previous_cmd: String::new(),
+                previous_status: 0,
+                is_login: false,
+                exit_on_error: false,
+                has_terminal,
+                session_id: session_id.to_string(),
+            }
+        }
+
+        pub fn insert_job(&mut self, gid: i32, pid: i32, cmd: &str, status: &str, bg: bool)
+        {
+            let mut i = 1;
+            loop
+            {
+                let mut indexed_job_missing = false;
+
+                if let Some(x) = self.jobs.get_mut(&i)
+                {
+                    if x.gid == gid
+                    {
+                        x.pids.push(pid);
+                        x.cmd = format!("{} | {}", x.cmd, cmd);
+                        return;
+                    }
+                }
+
+                else { indexed_job_missing = true; }
+
+                if indexed_job_missing
+                {
+                    self.jobs.insert
+                    (
+                        i,
+                        Job
+                        {
+                            cmd: cmd.to_string(),
+                            id: i,
+                            gid,
+                            pids: vec![pid],
+                            pids_stopped: HashSet::new(),
+                            status: status.to_string(),
+                            is_bg: bg,
+                        },
+                    );
+                    return;
+                }
+                i += 1;
+            }
+        }
+
+        pub fn get_job_by_id(&self, job_id: i32) -> Option<&Job> { self.jobs.get(&job_id) }
+
+        pub fn mark_job_member_continued(&mut self, pid: i32, gid: i32) -> Option<&Job>
+        {
+            if self.jobs.is_empty() { return None; }
+
+            let mut i = 1;
+            let mut idx_found = 0;
+            loop
+            {
+                if let Some(job) = self.jobs.get_mut(&i)
+                {
+                    if job.gid == gid
+                    {
+                        job.pids_stopped.remove(&pid);
+                        idx_found = i;
+                        break;
+                    }
+                }
+
+                i += 1;
+
+                if i >= 65535 { break; }
+            }
+
+            self.jobs.get(&idx_found)
+        }
+
+        pub fn mark_job_member_stopped(&mut self, pid: i32, gid: i32) -> Option<&Job>
+        {
+            if self.jobs.is_empty() { return None; }
+
+            let mut i = 1;
+            let mut idx_found = 0;
+            
+            loop
+            {
+                if let Some(job) = self.jobs.get_mut(&i)
+                {
+                    if job.gid == gid
+                    {
+                        job.pids_stopped.insert(pid);
+                        idx_found = i;
+                        break;
+                    }
+                }
+
+                i += 1;
+
+                if i >= 65535 { break; }
+            }
+
+            self.jobs.get(&idx_found)
+        }
+
+        pub fn get_job_by_gid(&self, gid: i32) -> Option<&Job>
+        {
+            if self.jobs.is_empty() { return None; }
+
+            let mut i = 1;
+
+            loop
+            {
+                if let Some(x) = self.jobs.get(&i)
+                {
+                    if x.gid == gid { return Some(x); }
+                }
+
+                i += 1;
+
+                if i >= 65535 { break; }
+            }
+
+            None
+        }
+
+        pub fn mark_job_as_running(&mut self, gid: i32, bg: bool)
+        {
+            if self.jobs.is_empty() { return; }
+
+            let mut i = 1;
+
+            loop
+            {
+                if let Some(job) = self.jobs.get_mut(&i)
+                {
+                    if job.gid == gid
+                    {
+                        job.status = "Running".to_string();
+                        job.pids_stopped.clear();
+                        job.is_bg = bg;
+                        return;
+                    }
+                }
+
+                i += 1;
+
+                if i >= 65535 { break; }
+            }
+        }
+
+        pub fn mark_job_as_stopped(&mut self, gid: i32)
+        {
+            if self.jobs.is_empty() { return; }
+
+            let mut i = 1;
+
+            loop
+            {
+                if let Some(x) = self.jobs.get_mut(&i)
+                {
+                    if x.gid == gid
+                    {
+                        x.status = "Stopped".to_string();
+                        x.is_bg = true;
+                        return;
+                    }
+                }
+
+                i += 1;
+
+                if i >= 65535 { break; }
+            }
+        }
+
+        pub fn remove_pid_from_job(&mut self, gid: i32, pid: i32) -> Option<Job>
+        {
+            if self.jobs.is_empty() { return None; }
+
+            let mut empty_pids = false;
+            let mut i = 1;
+
+            loop
+            {
+                if let Some(x) = self.jobs.get_mut(&i)
+                {
+                    if x.gid == gid
+                    {
+                        if let Ok(i_pid) = x.pids.binary_search(&pid) { x.pids.remove(i_pid); }
+                        empty_pids = x.pids.is_empty();
+                        break;
+                    }
+                }
+
+                i += 1;
+
+                if i >= 65535 { break; }
+            }
+
+            if empty_pids { return self.jobs.remove(&i); }
+
+            None
+        }
+        
+        pub fn set_env(&mut self, name: &str, value: &str)
+        {
+            if env::var(name).is_ok() { env::set_var(name, value); } else { self.envs.insert(name.to_string(), value.to_string()); }
+        }
+        
+        pub fn get_env(&self, name: &str) -> Option<String>
+        {
+            match self.envs.get(name)
+            {
+                Some(x) => Some(x.to_string()),
+                None => env::var(name).ok(),
+            }
+        }
+        
+        pub fn remove_env(&mut self, name: &str) -> bool
+        {
+            let ptn_env = Regex::new(r"^[a-zA-Z_][a-zA-Z0-9_-]*$").unwrap();
+            
+            if !ptn_env.is_match(name) { return false; }
+
+            env::remove_var(name);
+            self.envs.remove(name);
+            self.remove_func(name);
+            true
+        }
+
+        pub fn remove_path(&mut self, path_to_remove: &Path)
+        {
+            if let Ok(paths) = env::var("PATH")
+            {
+                let mut paths_new: Vec<PathBuf> = env::split_paths(&paths).collect();
+                paths_new.retain(|x| x != path_to_remove);
+                let joined = env::join_paths(paths_new).unwrap_or_default();
+                env::set_var("PATH", joined);
+            }
+        }
+
+        pub fn remove_func(&mut self, name: &str) { self.funcs.remove(name); }
+        pub fn set_func(&mut self, name: &str, value: &str) { self.funcs.insert(name.to_string(), value.to_string()); }
+        pub fn get_func(&self, name: &str) -> Option<String> { self.funcs.get(name).map(|x| x.to_string()) }
+        pub fn get_alias_list(&self) -> Vec<(String, String)>
+        {
+            let mut result = Vec::new();
+            
+            for (name, value) in &self.aliases
+            {
+                result.push((name.clone(), value.clone()));
+            }
+
+            result
+        }
+
+        pub fn add_alias(&mut self, name: &str, value: &str) { self.aliases.insert(name.to_string(), value.to_string()); }
+        pub fn is_alias(&self, name: &str) -> bool { self.aliases.contains_key(name) }
+        pub fn remove_alias(&mut self, name: &str) -> bool
+        {
+            let opt = self.aliases.remove(name);
+            opt.is_some()
+        }
+
+        pub fn get_alias_content(&self, name: &str) -> Option<String>
+        {
+            let result = match self.aliases.get(name)
+            {
+                Some(x) => x.to_string(),
+                None => String::new(),
+            };
+
+            if result.is_empty() { None } else { Some(result) }
+        }
+    }
+
+    pub unsafe fn give_terminal_to(gid: i32) -> bool
+    {
+        let mut mask: libc::sigset_t = mem::zeroed();
+        let mut old_mask: libc::sigset_t = mem::zeroed();
+
+        libc::sigemptyset(&mut mask);
+        libc::sigaddset(&mut mask, libc::SIGTSTP);
+        libc::sigaddset(&mut mask, libc::SIGTTIN);
+        libc::sigaddset(&mut mask, libc::SIGTTOU);
+        libc::sigaddset(&mut mask, libc::SIGCHLD);
+
+        let rcode = libc::pthread_sigmask(libc::SIG_BLOCK, &mask, &mut old_mask);
+        
+        let rcode = libc::tcsetpgrp(1, gid);
+        let given;
+        if rcode == -1
+        {
+            given = false;
+            /*
+            let e = errno();
+            let code = e.0;
+            log!("error in give_terminal_to() {}: {}", code, e); */
+        }
+        else { given = true; }
+
+        let rcode = libc::pthread_sigmask(libc::SIG_SETMASK, &old_mask, &mut mask);
+        
+        given
+    }
+
+    pub fn needs_globbing(line: &str) -> bool
+    {
+        let re = Regex::new(r"\*+").expect("Invalid regex ptn");
+        re.is_match(line)
+    }
+
+    pub fn expand_glob(tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+        
+        for (sep, text) in tokens.iter()
+        {
+            if !sep.is_empty() || !needs_globbing(text)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut result: Vec<String> = Vec::new();
+            let item = text.as_str();
+
+            if !item.contains('*') || item.trim().starts_with('\'') || item.trim().starts_with('"') { result.push(item.to_string()); }
+            
+            else
+            {
+                let _basename = libs::path::basename(item);
+                let show_hidden = _basename.starts_with(".*");
+
+                match glob::glob(item)
+                {
+                    Ok(paths) =>
+                    {
+                        let mut is_empty = true;
+
+                        for entry in paths
+                        {
+                            match entry
+                            {
+                                Ok(path) =>
+                                {
+                                    let file_path = path.to_string_lossy();
+                                    let _basename = libs::path::basename(&file_path);
+
+                                    if _basename == ".." || _basename == "." { continue; }
+
+                                    if _basename.starts_with('.') && !show_hidden { continue; }
+
+                                    result.push(file_path.to_string());
+                                    is_empty = false;
+                                }
+
+                                Err(e) => { log!("glob error: {:?}", e); }
+                            }
+                        }
+
+                        if is_empty { result.push(item.to_string()); }
+                    }
+
+                    Err(e) =>
+                    {
+                        println!("glob error: {:?}", e);
+                        result.push(item.to_string());
+                        return;
+                    }
+                }
+            }
+
+            buff.push((idx, result));
+            idx += 1;
+        }
+
+        for (i, result) in buff.iter().rev()
+        {
+            tokens.remove(*i);
+
+            for (j, token) in result.iter().enumerate()
+            {
+                let sep = if token.contains(' ') { "\"" } else { "" };
+                tokens.insert(*i + j, (sep.to_string(), token.clone()));
+            }
+        }
+    }
+
+    pub fn expand_one_env(sh: &Shell, token: &str) -> String
+    {
+        let re1 = Regex::new(r"^(.*?)\$([A-Za-z0-9_]+|\$|\?)(.*)$").unwrap();
+        let re2 = Regex::new(r"(.*?)\$\{([A-Za-z0-9_]+|\$|\?)\}(.*)$").unwrap();
+        if !re1.is_match(token) && !re2.is_match(token) { return token.to_string(); }
+
+        let mut result = String::new();
+        let match_re1 = re1.is_match(token);
+        let match_re2 = re2.is_match(token);
+        if !match_re1 && !match_re2 { return token.to_string(); }
+
+        let cap_results = if match_re1 { re1.captures_iter(token) } else { re2.captures_iter(token) };
+
+        for cap in cap_results
+        {
+            let head = cap[1].to_string();
+            let tail = cap[3].to_string();
+            let key = cap[2].to_string();
+            
+            if key == "?"
+            {
+                result.push_str(format!("{}{}", head, sh.previous_status).as_str());
+            }
+
+            else if key == "$"
+            {
+                unsafe
+                {
+                    let val = libc::getpid();
+                    result.push_str(format!("{}{}", head, val).as_str());
+                }
+            }
+            else if let Ok(val) = env::var(&key) { result.push_str(format!("{}{}", head, val).as_str()); }
+            else if let Some(val) = sh.get_env(&key) { result.push_str(format!("{}{}", head, val).as_str()); }
+            else { result.push_str(&head); }
+
+            result.push_str(&tail);
+        }
+
+        result
+    }
+
+    pub fn need_expand_brace(line: &str) -> bool { regex::contains(line, r#"\{[^ "']*,[^ "']*,?[^ "']*\}"#) }
+
+    pub fn brace_getitem(s: &str, depth: i32) -> (Vec<String>, String)
+    {
+        let mut out: Vec<String> = vec![String::new()];
+        let mut ss = s.to_string();
+        let mut tmp;
+        
+        while !ss.is_empty()
+        {
+            let c = match ss.chars().next()
+            {
+                Some(x) => x,
+                None => { return (out, ss); }
+            };
+
+            if depth > 0 && (c == ',' || c == '}') { return (out, ss); }
+
+            if c == '{'
+            {
+                let mut sss = ss.clone();
+                sss.remove(0);
+                let result_groups = brace_getgroup(&sss, depth + 1);
+
+                if let Some((out_group, s_group)) = result_groups
+                {
+                    let mut tmp_out = Vec::new();
+                    
+                    for x in out.iter()
+                    {
+                        for y in out_group.iter()
+                        {
+                            let item = format!("{}{}", x, y);
+                            tmp_out.push(item);
+                        }
+                    }
+
+                    out = tmp_out;
+                    ss = s_group.clone();
+                    continue;
+                }
+            }
+            
+            if c == '\\' && ss.len() > 1
+            {
+                ss.remove(0);
+
+                let c = match ss.chars().next()
+                {
+                    Some(x) => x,
+                    None => return (out, ss),
+                };
+
+                tmp = format!("\\{}", c);
+            }
+
+            else { tmp = c.to_string(); }
+
+            let mut result = Vec::new();
+
+            for x in out.iter()
+            {
+                let item = format!("{}{}", x, tmp);
+                result.push(item);
+            }
+
+            out = result;
+            ss.remove(0);
+        }
+
+        (out, ss)
+    }
+
+    pub fn brace_getgroup(s: &str, depth: i32) -> Option<(Vec<String>, String)>
+    {
+        let mut out: Vec<String> = Vec::new();
+        let mut comma = false;
+        let mut ss = s.to_string();
+
+        while !ss.is_empty()
+        {
+            let (g, sss) = brace_getitem(ss.as_str(), depth);
+            ss = sss.clone();
+
+            if ss.is_empty() { break; }
+
+            for x in g.iter()
+            {
+                out.push(x.clone());
+            }
+
+            let c = match ss.chars().next()
+            {
+                Some(x) => x,
+                None => { break; }
+            };
+
+            if c == '}'
+            {
+                let mut sss = ss.clone();
+                sss.remove(0);
+                
+                if comma { return Some((out, sss)); }
+                
+                let mut result = Vec::new();
+                
+                for x in out.iter()
+                {
+                    let item = format!("{{{}}}", x);
+                    result.push(item);
+                }
+
+                return Some((result, ss));
+            }
+
+            if c == ','
+            {
+                comma = true;
+                ss.remove(0);
+            }
+        }
+
+        None
+    }
+
+    pub fn expand_brace(tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for (sep, token) in tokens.iter
+        {
+            if !sep.is_empty() || !need_expand_brace(token)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut result: Vec<String> = Vec::new();
+            let items = brace_getitem(token, 0);
+            
+            for x in items.0
+            {
+                result.push(x.clone());
+            }
+
+            buff.push((idx, result));
+            idx += 1;
+        }
+
+        for (i, items) in buff.iter().rev()
+        {
+            tokens.remove(*i);
+
+            for (j, token) in items.iter().enumerate()
+            {
+                let sep = if token.contains(' ') { "\"" } else { "" };
+                tokens.insert(*i + j, (sep.to_string(), token.clone()));
+            }
+        }
+    }
+
+    pub fn expand_brace_range(tokens: &mut Tokens)
+    {
+        let re;
+
+        if let Ok(x) = Regex::new(r#"\{(-?[0-9]+)\.\.(-?[0-9]+)(\.\.)?([0-9]+)?\}"#) { re = x; }
+        
+        else
+        {
+            println_stderr!("cicada: re new error");
+            return;
+        }
+
+        let mut idx: usize = 0;
+        let mut buff: Vec<(usize, Vec<String>)> = Vec::new();
+
+        for (sep, token) in tokens.iter()
+        {
+            if !sep.is_empty() || !re.is_match(token)
+            {
+                idx += 1;
+                continue;
+            }
+            
+            let caps = re.captures(token).unwrap();
+
+            let start = match caps[1].to_string().parse::<i32>()
+            {
+                Ok(x) => x,
+                Err(e) =>
+                {
+                    println_stderr!("cicada: {}", e);
+                    return;
+                }
+            };
+
+            let end = match caps[2].to_string().parse::<i32>()
+            {
+                Ok(x) => x,
+                Err(e) =>
+                {
+                    println_stderr!("cicada: {}", e);
+                    return;
+                }
+            };
+            
+            let mut incr = if caps.get(4).is_none() { 1 }
+            else
+            {
+                match caps[4].to_string().parse::<i32>()
+                {
+                    Ok(x) => x,
+                    Err(e) =>
+                    {
+                        println_stderr!("cicada: {}", e);
+                        return;
+                    }
+                }
+            };
+
+            if incr <= 1 { incr = 1; }
+
+            let mut result: Vec<String> = Vec::new();
+            let mut n = start;
+
+            if start > end
+            {
+                while n >= end
+                {
+                    result.push(format!("{}", n));
+                    n -= incr;
+                }
+            }
+
+            else
+            {
+                while n <= end
+                {
+                    result.push(format!("{}", n));
+                    n += incr;
+                }
+            }
+
+            buff.push((idx, result));
+            idx += 1;
+        }
+
+        for (i, items) in buff.iter().rev()
+        {
+            tokens.remove(*i);
+            
+            for (j, token) in items.iter().enumerate()
+            {
+                let sep = if token.contains(' ') { "\"" } else { "" };
+                tokens.insert(*i + j, (sep.to_string(), token.clone()));
+            }
+        }
+    }
+
+    pub fn expand_alias(sh: &Shell, tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+        let mut is_head = true;
+
+        for (sep, text) in tokens.iter()
+        {
+            if sep.is_empty() && text == "|"
+            {
+                is_head = true;
+                idx += 1;
+                continue;
+            }
+
+            if is_head && text == "xargs"
+            {
+                idx += 1;
+                continue;
+            }
+
+            if !is_head || !sh.is_alias(text)
+            {
+                idx += 1;
+                is_head = false;
+                continue;
+            }
+
+            if let Some(value) = sh.get_alias_content(text) { buff.push((idx, value.clone())); }
+
+            idx += 1;
+            is_head = false;
+        }
+
+        for (i, text) in buff.iter().rev()
+        {
+            let linfo = parsers::parser_line::parse_line(text);
+            let tokens_ = linfo.tokens;
+            tokens.remove(*i);
+
+            for item in tokens_.iter().rev()
+            {
+                tokens.insert(*i, item.clone());
+            }
+        }
+    }
+
+    pub fn expand_home(tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for (sep, text) in tokens.iter()
+        {
+            if !sep.is_empty() || !text.starts_with("~")
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut s: String = text.clone();
+            let ptn = r"^~(?P<tail>.*)";
+            let re = Regex::new(ptn).expect("invalid re ptn");
+            let home = tools::get_user_home();
+            let ss = s.clone();
+            let to = format!("{}$tail", home);
+            let result = re.replace_all(ss.as_str(), to.as_str());
+            s = result.to_string();
+
+            buff.push((idx, s.clone()));
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter().rev()
+        {
+            tokens[*i].1 = text.to_string();
+        }
+    }
+
+    pub fn env_in_token(token: &str) -> bool
+    {
+        if regex::contains(token, r"\$\{?[\$\?]\}?") { return true; }
+
+        let ptn_env_name = r"[a-zA-Z_][a-zA-Z0-9_]*";
+        let ptn_env = format!(r"\$\{{?{}\}}?", ptn_env_name);
+
+        if !regex::contains(token, &ptn_env) { return false; }
+        
+        let ptn_cmd_sub1 = format!(r"^{}=`.*`$", ptn_env_name);
+        let ptn_cmd_sub2 = format!(r"^{}=\$\(.*\)$", ptn_env_name);
+        
+        if regex::contains(token, &ptn_cmd_sub1) || regex::contains(token, &ptn_cmd_sub2) || regex::contains(token, r"^\$\(.+\)$") { return false; }
+        
+        let ptn_env = format!(r"='.*\$\{{?{}\}}?.*'$", ptn_env_name);
+        !regex::contains(token, &ptn_env)
+    }
+
+    pub fn expand_env(sh: &Shell, tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff = Vec::new();
+
+        for (sep, token) in tokens.iter()
+        {
+            if sep == "`" || sep == "'"
+            {
+                idx += 1;
+                continue;
+            }
+
+            if !env_in_token(token)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut _token = token.clone();
+            
+            while env_in_token(&_token)
+            {
+                _token = expand_one_env(sh, &_token);
+            }
+
+            buff.push((idx, _token));
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter().rev()
+        {
+            tokens[*i].1 = text.to_string();
+        }
+    }
+
+    pub fn should_do_dollar_command_extension(line: &str) -> bool
+    {
+        regex::contains(line, r"\$\([^\)]+\)") && !regex::contains(line, r"='.*\$\([^\)]+\).*'$")
+    }
+
+    pub fn do_command_substitution_for_dollar(sh: &mut Shell, tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff: HashMap<usize, String> = HashMap::new();
+
+        for (sep, token) in tokens.iter()
+        {
+            if sep == "'" || sep == "\\" || !should_do_dollar_command_extension(token)
+            {
+                idx += 1;
+                continue;
+            }
+
+            let mut line = token.to_string();
+
+            loop
+            {
+                if !should_do_dollar_command_extension(&line) {  break; }
+
+                let ptn_cmd = r"\$\((.+)\)";
+                let cmd = match regex::find_first_group(ptn_cmd, &line)
+                {
+                    Some(x) => x,
+                    None =>
+                    {
+                        println_stderr!("cicada: calculator: no first group");
+                        return;
+                    }
+                };
+
+                let cmd_result = match CommandLine::from_line(&cmd, sh)
+                {
+                    Ok(c) =>
+                    {
+                        let (term_given, cr) = core::run_pipeline(sh, &c, true, true, false);
+
+                        if term_given
+                        {
+                            unsafe
+                            {
+                                let gid = libc::getpgid(0);
+                                give_terminal_to(gid);
+                            }
+                        }
+
+                        cr
+                    }
+
+                    Err(e) =>
+                    {
+                        println_stderr!("cicada: {}", e);
+                        continue;
+                    }
+                };
+
+                let output_txt = cmd_result.stdout.trim();
+
+                let ptn = r"(?P<head>[^\$]*)\$\(.+\)(?P<tail>.*)";
+                let re;
+
+                if let Ok(x) = Regex::new(ptn) { re = x; } else { return; }
+
+                let to = format!("${{head}}{}${{tail}}", output_txt);
+                let line_ = line.clone();
+                let result = re.replace(&line_, to.as_str());
+                line = result.to_string();
+            }
+
+            buff.insert(idx, line.clone());
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter()
+        {
+            tokens[*i].1 = text.to_string();
+        }
+    }
+
+    pub fn do_command_substitution_for_dot(sh: &mut Shell, tokens: &mut Tokens)
+    {
+        let mut idx: usize = 0;
+        let mut buff: HashMap<usize, String> = HashMap::new();
+        let re = Regex::new(r"^([^`]*)`([^`]+)`(.*)$").unwrap();
+
+        for (sep, token) in tokens.iter()
+        {
+            let new_token: String;
+            
+            if sep == "`"
+            {
+                let cr = match CommandLine::from_line(token, sh)
+                {
+                    Ok(c) =>
+                    {
+                        let (term_given, _cr) = core::run_pipeline(sh, &c, true, true, false);
+                        if term_given
+                        {
+                            unsafe
+                            {
+                                let gid = libc::getpgid(0);
+                                give_terminal_to(gid);
+                            }
+                        }
+
+                        _cr
+                    }
+
+                    Err(e) =>
+                    {
+                        println_stderr!("cicada: {}", e);
+                        continue;
+                    }
+                };
+
+                new_token = cr.stdout.trim().to_string();
+            }
+            
+            else if sep == "\"" || sep.is_empty()
+            {
+                if !re.is_match(token)
+                {
+                    idx += 1;
+                    continue;
+                }
+
+                let mut _token = token.clone();
+                let mut _item = String::new();
+                let mut _head = String::new();
+                let mut _output = String::new();
+                let mut _tail = String::new();
+
+                loop
+                {
+                    if !re.is_match(&_token)
+                    {
+                        if !_token.is_empty() { _item = format!("{}{}", _item, _token); }
+
+                        break;
+                    }
+
+                    for cap in re.captures_iter(&_token)
+                    {
+                        _head = cap[1].to_string();
+                        _tail = cap[3].to_string();
+
+                        let cr = match CommandLine::from_line(&cap[2], sh)
+                        {
+                            Ok(c) =>
+                            {
+                                let (term_given, _cr) = core::run_pipeline(sh, &c, true, true, false);
+                                
+                                if term_given
+                                {
+                                    unsafe
+                                    {
+                                        let gid = libc::getpgid(0);
+                                        give_terminal_to(gid);
+                                    }
+                                }
+
+                                _cr
+                            }
+
+                            Err(e) =>
+                            {
+                                println_stderr!("cicada: {}", e);
+                                continue;
+                            }
+                        };
+
+                        _output = cr.stdout.trim().to_string();
+                    }
+
+                    _item = format!("{}{}{}", _item, _head, _output);
+
+                    if _tail.is_empty() { break; }
+
+                    _token = _tail.clone();
+                }
+                new_token = _item;
+            }
+            
+            else
+            {
+                idx += 1;
+                continue;
+            }
+
+            buff.insert(idx, new_token.clone());
+            idx += 1;
+        }
+
+        for (i, text) in buff.iter()
+        {
+            tokens[*i].1 = text.to_string();
+        }
+    }
+
+    pub fn do_command_substitution(sh: &mut Shell, tokens: &mut Tokens)
+    {
+        do_command_substitution_for_dot(sh, tokens);
+        do_command_substitution_for_dollar(sh, tokens);
+    }
+
+    pub fn do_expansion(sh: &mut Shell, tokens: &mut Tokens)
+    {
+        let line = parses::lines::tokens_to_line(tokens);
+        if is::arithmetic(&line) { return; }
+
+        if tokens.len() >= 2 && tokens[0].1 == "export" && tokens[1].1.starts_with("PROMPT=") { return; }
+
+        expand_alias(sh, tokens);
+        expand_home(tokens);
+        expand_env(sh, tokens);
+        expand_brace(tokens);
+        expand_glob(tokens);
+        do_command_substitution(sh, tokens);
+        expand_brace_range(tokens);
+    }
+
+    pub fn trim_multiline_prompts(line: &str) -> String
+    {
+        let line_new = regex::replace_all(line, r"\\\n>> ", "");
+        let line_new = regex::replace_all(&line_new, r"\| *\n>> ", "| ");
+        regex::replace_all(&line_new, r"(?P<NEWLINE>\n)>> ", "$NEWLINE")
+    }
+
+    pub fn proc_has_terminal() -> bool
+    {
+        unsafe
+        {
+            let tgid = libc::tcgetpgrp(0);
+            let pgid = libc::getpgid(0);
+            tgid == pgid
+        }
+    }
 }
 
 pub mod slice
@@ -29313,8 +30683,13 @@ pub mod types
 {
     use ::
     {
+        collections::{ HashMap, HashSet },
         *,
     };
+    
+    pub type Token = (String, String);
+    pub type Tokens = Vec<Token>;
+    pub type Redirection = (String, String, String);
 
     #[derive(Copy, Clone, Debug, PartialEq, Eq)]
     pub enum DataType
@@ -29583,6 +30958,357 @@ pub mod types
         s: Option<Option<u64>>,
         S: bool,
         H: bool,
+    }
+
+    #[derive(Debug, Clone, Default)]
+    pub struct Job
+    {
+        pub cmd: String,
+        pub id: i32,
+        pub gid: i32,
+        pub pids: Vec<i32>,
+        pub pids_stopped: HashSet<i32>,
+        pub status: String,
+        pub is_bg: bool,
+    }
+
+    impl Job
+    {
+        pub fn all_members_stopped(&self) -> bool
+        {
+            for pid in &self.pids
+            {
+                if !self.pids_stopped.contains(pid) { return false; }
+            }
+
+            true
+        }
+
+        pub fn all_members_running(&self) -> bool { self.pids_stopped.is_empty() }
+    }
+
+    #[derive(Copy, Clone, Eq, PartialEq, Ord, PartialOrd, Hash)]
+    pub struct WaitStatus(i32, i32, i32);
+
+    impl WaitStatus
+    {
+        pub fn from_exited(pid: i32, status: i32) -> Self { WaitStatus(pid, 0, status) }
+        pub fn from_signaled(pid: i32, sig: i32) -> Self { WaitStatus(pid, 1, sig) }
+        pub fn from_stopped(pid: i32, sig: i32) -> Self { WaitStatus(pid, 2, sig) }
+        pub fn from_continuted(pid: i32) -> Self { WaitStatus(pid, 3, 0) }
+        pub fn from_others() -> Self { WaitStatus(0, 9, 9) }
+        pub fn from_error(errno: i32) -> Self { WaitStatus(0, 255, errno) }
+        pub fn empty() -> Self { WaitStatus(0, 0, 0) }
+        pub fn is_error(&self) -> bool { self.1 == 255 }
+        pub fn is_others(&self) -> bool { self.1 == 9 }
+        pub fn is_signaled(&self) -> bool { self.1 == 1 }
+        pub fn get_errno(&self) -> nix::Error { nix::Error::from_raw(self.2) }
+        pub fn is_exited(&self) -> bool { self.0 != 0 && self.1 == 0 }
+        pub fn is_stopped(&self) -> bool { self.1 == 2 }
+        pub fn is_continued(&self) -> bool { self.1 == 3 }
+        pub fn get_pid(&self) -> i32 { self.0 }
+        fn _get_signaled_status(&self) -> i32 { self.2 + 128 }
+        pub fn get_signal(&self) -> i32 { self.2 }
+
+        pub fn get_name(&self) -> String
+        {
+            if self.is_exited() { "Exited".to_string() }
+            
+            else if self.is_stopped() { "Stopped".to_string() }
+            
+            else if self.is_continued() { "Continued".to_string() }
+            
+            else if self.is_signaled() { "Signaled".to_string() }
+            
+            else if self.is_others() { "Others".to_string() }
+
+            else if self.is_error() { "Error".to_string() }
+
+            else { format!("unknown: {}", self.2) }
+        }
+
+        pub fn get_status(&self) -> i32
+        {
+            if self.is_exited() { self.2 } else { self._get_signaled_status() }
+        }
+    }
+
+    impl fmt::Debug for WaitStatus
+    {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result
+        {
+            let mut formatter = f.debug_struct("WaitStatus");
+            formatter.field("pid", &self.0);
+            let name = self.get_name();
+            formatter.field("name", &name);
+            formatter.field("ext", &self.2);
+            formatter.finish()
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct LineInfo
+    {
+        pub tokens: Tokens,
+        pub is_complete: bool,
+    }
+
+    impl LineInfo
+    {
+        pub fn new(tokens: Tokens) -> Self
+        {
+            LineInfo
+            {
+                tokens,
+                is_complete: true,
+            }
+        }
+    }
+
+    #[derive(Debug)]
+    pub struct Command
+    {
+        pub tokens: Tokens,
+        pub redirects_to: Vec<Redirection>,
+        pub redirect_from: Option<Token>,
+    }
+
+    impl Command
+    {
+        pub fn from_tokens(tokens: Tokens) -> Result<Command, String>
+        {
+            let mut tokens_new = tokens.clone();
+            let mut redirects_from_type = String::new();
+            let mut redirects_from_value = String::new();
+            let mut has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<");
+            let mut len = tokens_new.len();
+
+            while has_redirect_from
+            {
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<")
+                {
+                    redirects_from_type = "<".to_string();
+                    tokens_new.remove(idx);
+                    len -= 1;
+
+                    if len > idx
+                    {
+                        redirects_from_value = tokens_new.remove(idx).1;
+                        len -= 1;
+                    }
+                }
+
+                if let Some(idx) = tokens_new.iter().position(|x| x.1 == "<<<")
+                {
+                    redirects_from_type = "<<<".to_string();
+                    tokens_new.remove(idx);
+                    len -= 1;
+
+                    if len > idx
+                    {
+                        redirects_from_value = tokens_new.remove(idx).1;
+                        len -= 1;
+                    }
+                }
+
+                has_redirect_from = tokens_new.iter().any(|x| x.1 == "<" || x.1 == "<<<");
+            }
+
+            let tokens_final;
+            let redirects_to;
+
+            match tokens_to_redirections(&tokens_new)
+            {
+                Ok((_tokens, _redirects_to)) =>
+                {
+                    tokens_final = _tokens;
+                    redirects_to = _redirects_to;
+                }
+
+                Err(e) => { return Err(e); }
+            }
+
+            let redirect_from = if redirects_from_type.is_empty() { None }
+
+            else { Some((redirects_from_type, redirects_from_value)) };
+
+            Ok
+            (
+                Command
+                {
+                    tokens: tokens_final,
+                    redirects_to,
+                    redirect_from,
+                }
+            )
+        }
+
+        pub fn has_redirect_from(&self) -> bool { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<" }
+
+        pub fn has_here_string(&self) -> bool { self.redirect_from.is_some() && self.redirect_from.clone().unwrap().0 == "<<<" }
+
+        pub fn is_builtin(&self) -> bool { is::builtin(&self.tokens[0].1) }
+    }
+
+    #[derive(Debug)]
+    pub struct CommandLine
+    {
+        pub line: String,
+        pub commands: Vec<Command>,
+        pub envs: HashMap<String, String>,
+        pub background: bool,
+    }
+
+    impl CommandLine
+    {
+        pub fn from_line(line: &str, sh: &mut shell::Shell) -> Result<CommandLine, String>
+        {
+            let linfo = parses::lines::parse_line(line);
+            let mut tokens = linfo.tokens;
+            shell::do_expansion(sh, &mut tokens);
+            let envs = drain_env_tokens(&mut tokens);
+            let mut background = false;
+            let len = tokens.len();
+
+            if len > 1 && tokens[len - 1].1 == "&"
+            {
+                background = true;
+                tokens.pop();
+            }
+
+            let mut commands = Vec::new();
+
+            for sub_tokens in split_tokens_by_pipes(&tokens)
+            {
+                match Command::from_tokens(sub_tokens)
+                {
+                    Ok(c) => { commands.push(c); }
+
+                    Err(e) => { return Err(e); }
+                }
+            }
+
+            Ok
+            (
+                CommandLine
+                {
+                    line: line.to_string(),
+                    commands,
+                    envs,
+                    background,
+                }
+            )
+        }
+
+        pub fn is_empty(&self) -> bool { self.commands.is_empty() }
+        pub fn with_pipeline(&self) -> bool { self.commands.len() > 1 }
+        pub fn is_single_and_builtin(&self) -> bool { self.commands.len() == 1 && self.commands[0].is_builtin() }
+    }
+    
+    #[derive(Clone, Debug, Default)]
+    pub struct CommandResult
+    {
+        pub gid: i32,
+        pub status: i32,
+        pub stdout: String,
+        pub stderr: String,
+    }
+
+    impl CommandResult
+    {
+        pub fn new() -> CommandResult
+        {
+            CommandResult
+            {
+                gid: 0,
+                status: 0,
+                stdout: String::new(),
+                stderr: String::new(),
+            }
+        }
+
+        pub fn from_status(gid: i32, status: i32) -> CommandResult
+        {
+            CommandResult
+            {
+                gid,
+                status,
+                stdout: String::new(),
+                stderr: String::new(),
+            }
+        }
+
+        pub fn error() -> CommandResult
+        {
+            CommandResult
+            {
+                gid: 0,
+                status: 1,
+                stdout: String::new(),
+                stderr: String::new(),
+            }
+        }
+    }
+    
+    #[derive(Clone, Debug, Default)]
+    pub struct CommandOptions
+    {
+        pub background: bool,
+        pub isatty: bool,
+        pub capture_output: bool,
+        pub envs: HashMap<String, String>,
+    }
+
+    pub fn split_tokens_by_pipes(tokens: &[Token]) -> Vec<Tokens>
+    {
+        let mut cmd = Vec::new();
+        let mut cmds = Vec::new();
+
+        for token in tokens
+        {
+            let sep = &token.0;
+            let value = &token.1;
+
+            if sep.is_empty() && value == "|"
+            {
+                if cmd.is_empty() { return Vec::new(); }
+
+                cmds.push(cmd.clone());
+                cmd = Vec::new();
+            }
+
+            else { cmd.push(token.clone()); }
+        }
+
+        if cmd.is_empty() { return Vec::new(); }
+
+        cmds.push(cmd.clone());
+        cmds
+    }
+
+    pub fn drain_env_tokens(tokens: &mut Tokens) -> HashMap<String, String>
+    {
+        let mut envs: HashMap<String, String> = HashMap::new();
+        let mut n = 0;
+        let re = Regex::new(r"^([a-zA-Z0-9_]+)=(.*)$").unwrap();
+
+        for (sep, text) in tokens.iter()
+        {
+            if !sep.is_empty() || !regex::contains(text, r"^([a-zA-Z0-9_]+)=(.*)$") { break; }
+
+            for cap in re.captures_iter(text)
+            {
+                let name = cap[1].to_string();
+                let value = parsers::parser_line::unquote(&cap[2]);
+                envs.insert(name, value);
+            }
+
+            n += 1;
+        }
+
+        if n > 0 { tokens.drain(0..n); }
+
+        envs
     }
 }
 
@@ -31136,5 +32862,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 30862 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
+// 32865 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
