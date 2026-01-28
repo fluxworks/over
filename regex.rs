@@ -1869,54 +1869,56 @@ pub mod api
 {
     /*!
     */
+    use regex::contains;
     use ::
     {
         io::{ self, Error, Write },
         os::fd::{ AsRawFd }
         path::{ Path },
+        shell::{ Shell },
         types::{ * },
         *,
     };
     /*
         use regex::Regex;
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell;
         use crate::tools;
         use crate::types::{Command, CommandLine, CommandResult};
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::jobc;
         use crate::libc;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::parsers;
         use crate::shell;
         use crate::tools;
         use crate::types::{Command, CommandLine, CommandResult};
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::history;
         use crate::libs;
         use crate::rcfile;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::parsers;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
         use crate::libs;
         use crate::parsers;
         use crate::tools;
 
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
         
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::ctime;
         use crate::history;
         use crate::parsers;
@@ -1926,47 +1928,47 @@ pub mod api
         use std::io::Write;
         use std::os::fd::AsRawFd;
 
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::libs::re::re_contains;
         use crate::shell::Shell;
         use crate::tools;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::parsers;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::parsers;
         use crate::scripting;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stderr_with_capture;
-        use crate::builtins::utils::print_stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::parsers;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
 
-        use crate::builtins::utils::print_stderr_with_capture;
+        use crate::builtins::utils::emit::stdout_with_capture;
         use crate::shell::Shell;
         use crate::types::{Command, CommandLine, CommandResult};
     */
@@ -1980,7 +1982,7 @@ pub mod api
         if tokens.len() > 2
         {
             let info = "alias syntax error: usage: alias foo='echo foo'";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2012,7 +2014,7 @@ pub mod api
 
         if sh.jobs.is_empty() {
             let info = "cicada: bg: no job found";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2033,14 +2035,14 @@ pub mod api
                 Ok(n) => job_id = n,
                 Err(_) => {
                     let info = "cicada: bg: invalid job id";
-                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                     return cr;
                 }
             }
         }
         if job_id == -1 {
             let info = "cicada: bg: not such job";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2060,18 +2062,18 @@ pub mod api
                         gid = job.gid;
                         if job.status == "Running" {
                             let info = format!("cicada: bg: job {} already in background", job.id);
-                            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                            emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                             return cr;
                         }
                     }
 
                     let info_cmd = format!("[{}]  {} &", job.id, job.cmd);
-                    print_stderr_with_capture(&info_cmd, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info_cmd, &mut cr, cl, cmd, capture);
                     cr.status = 0;
                 }
                 None => {
                     let info = "cicada: bg: not such job";
-                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                     return cr;
                 }
             }
@@ -2081,7 +2083,7 @@ pub mod api
         cr
     }
 
-    pub fn run_cd( sh:&mut shell::Shell, cl:&CommandLine, cmd: &Command, capture:bool ) -> CommandResult
+    pub fn run_cd( sh:&mut Shell, cl:&CommandLine, cmd: &Command, capture:bool ) -> CommandResult
     {
         let tokens = cmd.tokens.clone();
         let mut cr = CommandResult::new();
@@ -2089,7 +2091,7 @@ pub mod api
 
         if args.len() > 2 {
             let info = "cicada: cd: too many argument";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2105,7 +2107,7 @@ pub mod api
         if dir_to == "-" {
             if sh.previous_dir.is_empty() {
                 let info = "no previous dir";
-                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                 return cr;
             }
             dir_to = sh.previous_dir.clone();
@@ -2115,7 +2117,7 @@ pub mod api
 
         if !Path::new(&dir_to).exists() {
             let info = format!("cicada: cd: {}: No such file or directory", &args[1]);
-            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2125,7 +2127,7 @@ pub mod api
             }
             Err(e) => {
                 let info = format!("cicada: cd: error: {}", e);
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 return cr;
             }
         }
@@ -2142,7 +2144,7 @@ pub mod api
             }
             Err(e) => {
                 let info = format!("cicada: cd: {}", e);
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 cr
             }
         }
@@ -2189,7 +2191,7 @@ pub mod api
         }
         let buffer = lines.join("\n");
         let mut cr = CommandResult::new();
-        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        emit::stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
         cr
     }
 
@@ -2200,14 +2202,14 @@ pub mod api
         let args = parsers::parser_line::tokens_to_args(&tokens);
         let len = args.len();
         if len == 1 {
-            print_stderr_with_capture("invalid usage", &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture("invalid usage", &mut cr, cl, cmd, capture);
             return cr;
         }
 
         let mut _cmd = exec::Command::new(&args[1]);
         let err = _cmd.args(&args[2..len]).exec();
         let info = format!("cicada: exec: {}", err);
-        print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+        emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
         cr
     }
 
@@ -2217,7 +2219,7 @@ pub mod api
         let tokens = cmd.tokens.clone();
         if tokens.len() > 2 {
             let info = "cicada: exit: too many arguments";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2229,7 +2231,7 @@ pub mod api
                 }
                 Err(_) => {
                     let info = format!("cicada: exit: {}: numeric argument required", _code);
-                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     process::exit(255);
                 }
             }
@@ -2240,7 +2242,7 @@ pub mod api
                 let mut info = String::new();
                 info.push_str("There are background jobs.");
                 info.push_str("Run `jobs` to see details; `exit 1` to force quit.");
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 return cr;
             }
         }
@@ -2264,7 +2266,7 @@ pub mod api
                 let mut info = String::new();
                 info.push_str("export: invalid command\n");
                 info.push_str("usage: export XXX=YYY");
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 return cr;
             }
 
@@ -2272,7 +2274,7 @@ pub mod api
                 let mut info = String::new();
                 info.push_str("export: invalid command\n");
                 info.push_str("usage: export XXX=YYY ZZ=123");
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 return cr;
             }
 
@@ -2293,7 +2295,7 @@ pub mod api
 
         if sh.jobs.is_empty() {
             let info = "cicada: fg: no job found";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2314,7 +2316,7 @@ pub mod api
                 Ok(n) => job_id = n,
                 Err(_) => {
                     let info = "cicada: fg: invalid job id";
-                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                     return cr;
                 }
             }
@@ -2322,7 +2324,7 @@ pub mod api
 
         if job_id == -1 {
             let info = "cicada: not job id found";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2338,7 +2340,7 @@ pub mod api
 
             match result {
                 Some(job) => {
-                    print_stderr_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&job.cmd, &mut cr, cl, cmd, capture);
                     cr.status = 0;
 
                     unsafe {
@@ -2353,7 +2355,7 @@ pub mod api
                 }
                 None => {
                     let info = "cicada: fg: no such job";
-                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                     return cr;
                 }
             }
@@ -2380,14 +2382,14 @@ pub mod api
         let path = Path::new(hfile.as_str());
         if !path.exists() {
             let info = "no history file";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
         let conn = match Conn::open(&hfile) {
             Ok(x) => x,
             Err(e) => {
                 let info = format!("history: sqlite error: {:?}", e);
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 return cr;
             }
         };
@@ -2409,7 +2411,7 @@ pub mod api
                     }
                     if _count > 0 {
                         let info = format!("deleted {} items", _count);
-                        print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                        emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     }
                     cr
                 }
@@ -2424,10 +2426,10 @@ pub mod api
                 None => {
                     let (str_out, str_err) = list_current_history(sh, &conn, &opt);
                     if !str_out.is_empty() {
-                        print_stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
+                        emit::stdout_with_capture(&str_out, &mut cr, cl, cmd, capture);
                     }
                     if !str_err.is_empty() {
-                        print_stderr_with_capture(&str_err, &mut cr, cl, cmd, capture);
+                        emit::stdout_with_capture(&str_err, &mut cr, cl, cmd, capture);
                     }
                     cr
                 }
@@ -2435,10 +2437,10 @@ pub mod api
             Err(e) => {
                 let info = format!("{}", e);
                 if show_usage {
-                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     cr.status = 0;
                 } else {
-                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     cr.status = 1;
                 }
                 cr
@@ -2465,7 +2467,7 @@ pub mod api
         }
         let buffer = lines.join("\n");
 
-        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        emit::stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
         cr
     }
 
@@ -2481,7 +2483,7 @@ pub mod api
         match fd {
             Ok(fd) => {
                 let info = format!("{}", fd.as_raw_fd());
-                print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
             }
             Err(e) => {
                 println_stderr!("cicada: minfd: error: {}", e);
@@ -2503,7 +2505,7 @@ pub mod api
             name_list = tokens[1..].iter().map(|x| x.1.clone()).collect();
             if let Some(id_) = _find_invalid_identifier(&name_list) {
                 let info = format!("cicada: read: `{}': not a valid identifier", id_);
-                print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                 return cr;
             }
         }
@@ -2520,7 +2522,7 @@ pub mod api
                 Ok(_) => {}
                 Err(e) => {
                     let info = format!("cicada: read: error in reading stdin: {:?}", e);
-                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     return cr;
                 }
             }
@@ -2534,7 +2536,7 @@ pub mod api
             let name = name_list.get(i);
             if name.is_none() {
                 let info = "cicada: read: name index error";
-                print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                 return cr;
             }
             let name = name.unwrap();
@@ -2568,17 +2570,17 @@ pub mod api
                     cr
                 } else {
                     let info = "cicada: set: option not implemented";
-                    print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
                     cr
                 }
             }
             Err(e) => {
                 let info = format!("{}", e);
                 if show_usage {
-                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     cr.status = 0;
                 } else {
-                    print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     cr.status = 1;
                 }
                 cr
@@ -2594,7 +2596,7 @@ pub mod api
 
         if args.len() < 2 {
             let info = "cicada: source: no file specified";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2642,10 +2644,10 @@ pub mod api
         }
 
         if !all_stdout.is_empty() {
-            print_stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&all_stdout, &mut cr, cl, cmd, capture);
         }
         if !all_stderr.is_empty() {
-            print_stderr_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&all_stderr, &mut cr, cl, cmd, capture);
         }
 
         cr
@@ -2658,14 +2660,14 @@ pub mod api
 
         if tokens.len() != 2 {
             let info = "cicada: unalias: syntax error";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
         let input = &tokens[1].1;
         if !sh.remove_alias(input) {
             let info = format!("cicada: unalias: {}: not found", input);
-            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
             return cr;
         }
         cr
@@ -2678,7 +2680,7 @@ pub mod api
 
         if tokens.len() != 2 {
             let info = "cicada: unpath: syntax error";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
@@ -2694,14 +2696,14 @@ pub mod api
 
         if tokens.len() != 2 {
             let info = "cicada: unset: syntax error";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             return cr;
         }
 
         let input = &tokens[1].1;
         if !sh.remove_env(input) {
             let info = format!("cicada: unset: invalid varname: {:?}", input);
-            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
             return cr;
         }
         cr
@@ -2719,11 +2721,11 @@ pub mod api
             match get_all_venvs() {
                 Ok(venvs) => {
                     let info = venvs.join("\n");
-                    print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
                     return cr;
                 }
                 Err(reason) => {
-                    print_stderr_with_capture(&reason, &mut cr, cl, cmd, capture);
+                    emit::stdout_with_capture(&reason, &mut cr, cl, cmd, capture);
                     return cr;
                 }
             }
@@ -2737,7 +2739,7 @@ pub mod api
             let dir_venv = get_envs_home();
             let venv_name = args[2].to_string();
             let line = format!("{} -m venv \"{}/{}\"", pybin, dir_venv, venv_name);
-            print_stderr_with_capture(&line, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&line, &mut cr, cl, cmd, capture);
             let cr_list = execute::run_command_line(sh, &line, false, false);
             return cr_list[0].clone();
         }
@@ -2745,18 +2747,18 @@ pub mod api
         if len == 3 && subcmd == "enter" {
             let _err = enter_env(sh, args[2].as_str());
             if !_err.is_empty() {
-                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&_err, &mut cr, cl, cmd, capture);
             }
             cr
         } else if len == 2 && subcmd == "exit" {
             let _err = exit_env(sh);
             if !_err.is_empty() {
-                print_stderr_with_capture(&_err, &mut cr, cl, cmd, capture);
+                emit::stdout_with_capture(&_err, &mut cr, cl, cmd, capture);
             }
             cr
         } else {
             let info = "cicada: vox: invalid option";
-            print_stderr_with_capture(info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(info, &mut cr, cl, cmd, capture);
             cr
         }
     }
@@ -2895,7 +2897,7 @@ pub mod api
         }
         let buffer = lines.join("\n");
         let mut cr = CommandResult::new();
-        print_stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
+        emit::stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
         cr
     }
 
@@ -2904,21 +2906,24 @@ pub mod api
         let mut cr = CommandResult::new();
         if let Some(content) = sh.get_alias_content(name_to_find) {
             let info = format!("alias {}='{}'", name_to_find, content);
-            print_stdout_with_capture(&info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
         } else {
             let info = format!("cicada: alias: {}: not found", name_to_find);
-            print_stderr_with_capture(&info, &mut cr, cl, cmd, capture);
+            emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
         }
         cr
     }
 
     fn _find_invalid_identifier(name_list: &Vec<String>) -> Option<String>
     {
-        for id_ in name_list {
-            if !re_contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$") {
+        for id_ in name_list 
+        {
+            if !contains(id_, r"^[a-zA-Z_][a-zA-Z0-9_]*$")
+            {
                 return Some(id_.to_string());
             }
         }
+
         None
     }
 
@@ -25046,6 +25051,20 @@ pub mod regex
         };
         re.is_match(t)
     }
+
+    pub fn word_break_start(s: &str, word_break: &str) -> usize
+    {
+        let mut start = s.len();
+
+        for (idx, ch) in s.char_indices().rev()
+        {
+            if word_break.contains(ch) { break; }
+
+            start = idx;
+        }
+
+        start
+    }
 }
 
 pub mod result
@@ -25142,15 +25161,19 @@ pub mod system
     */
     use ::
     {
-        borrow::{ Cow },
-        collections::{ VecDeque },
-        fs::{File, OpenOptions},
+        borrow::{ Cow::{ self, Borrowed, Owned } },
+        collections::{ HashMap, vec_deque, VecDeque },
+        fs::{ File, OpenOptions },
         io::{ self, BufRead, BufReader, BufWriter, Read as _, Seek, SeekFrom, Write as _, },
+        iter::{ repeat, Skip },
+        ops::{ Deref, DerefMut, Range },
+        mem::{ replace, swap },
         path::{ Path },
-        sync::{Arc, Mutex, MutexGuard},
+        regex::{ contains, Regex, word_break_start },
+        sync::{ Arc, Mutex, MutexGuard },
         system::
         {
-            common::{ CursorMode, Signal },
+            common::{ CursorMode, Signal, Signals, Style },
         },
         time::std::{ Duration, Instant },
         *,
@@ -25165,7 +25188,19 @@ pub mod system
     use crate::terminal::{DefaultTerminal, Signal };
     use crate::variables::Variable;
     use crate::writer::{ Write, Writer, WriteLock };
-    lineread v0.7.3*/
+    
+    use crate::chars::{is_ctrl, unctrl, ESCAPE, RUBOUT};
+    use crate::highlighting::{Highlighter, Style, RESET_STYLE};
+    use crate::reader::{START_INVISIBLE, END_INVISIBLE};
+    use crate::terminal::{CursorMode, Size, Terminal, TerminalWriter};
+    use crate::util::{
+        backward_char, forward_char, backward_search_char, forward_search_char,
+        grapheme_width, filter_visible, RangeArgument,
+    };
+    use unicode_segmentation::UnicodeSegmentation;
+
+    lineread v0.7.3 
+    */
     macro_rules! define_commands
     {
         ( $( $n:ident => $s:expr , )+ ) =>
@@ -25210,9 +25245,70 @@ pub mod system
             }
         }
     }
+    
+    macro_rules! define_variables 
+    {
+        ( $( $field:ident : $ty:ty => ( $name:expr , $conv:ident ,
+                |$gr:ident| $getter:expr , |$sr:ident, $v:ident| $setter:expr ) , )+ ) => {
+            static VARIABLE_NAMES: &[&str] = &[ $( $name ),+ ];
+
+            pub struct Variables {
+                $( pub $field : $ty ),*
+            }
+
+            impl Variables {
+                pub fn get_variable(&self, name: &str) -> Option<Variable> {
+                    match name {
+                        $( $name => {
+                            let $gr = self;
+                            Some(Variable::from($getter))
+                        } )+
+                        _ => None
+                    }
+                }
+
+                pub fn set_variable(&mut self, name: &str, value: &str)
+                        -> Option<Variable> {
+                    match name {
+                        $( $name => {
+                            if let Some($v) = $conv(value) {
+                                let $sr = self;
+                                Some(Variable::from($setter))
+                            } else {
+                                None
+                            }
+                        } )+
+                        _ => None
+                    }
+                }
+
+                pub fn iter(&self) -> VariableIter {
+                    VariableIter{vars: self, n: 0}
+                }
+            }
+
+            impl<'a> Iterator for VariableIter<'a> {
+                type Item = (&'static str, Variable);
+
+                fn next(&mut self) -> Option<Self::Item> {
+                    let res = match VARIABLE_NAMES.get(self.n).cloned() {
+                        $( Some($name) => ($name, {
+                            let $gr = self.vars;
+                            Variable::from($getter)
+                        }) , )+
+                        _ => return None
+                    };
+
+                    self.n += 1;
+                    Some(res)
+                }
+            }
+        }
+    }
 
     pub const BLINK_DURATION: Duration = Duration::from_millis(500);
     pub const COMPLETE_MORE: &'static str = "--More--";
+    pub const NUMBER_MAX: i32 = 1_000_000;
 
     pub trait Terminals: Sized + Send + Sync
     {
@@ -25414,6 +25510,160 @@ pub mod system
     impl Default for Suffix
     {
         fn default() -> Suffix { Suffix::Default }
+    }
+
+    #[derive(Clone, Debug)]
+    pub enum Variable
+    {
+        Boolean(bool),
+        Integer(i32),
+        String(Cow<'static, str>),
+    }
+
+    impl From<bool> for Variable
+    {
+        fn from(b: bool) -> Variable { Variable::Boolean(b) }
+    }
+
+    impl From<i32> for Variable
+    {
+        fn from(i: i32) -> Variable { Variable::Integer(i) }
+    }
+
+    impl From<&'static str> for Variable
+    {
+        fn from(s: &'static str) -> Variable { Variable::String(s.into()) }
+    }
+
+    impl From<Cow<'static, str>> for Variable
+    {
+        fn from(s: Cow<'static, str>) -> Variable { Variable::String(s) }
+    }
+
+    impl From<String> for Variable
+    {
+        fn from(s: String) -> Variable { Variable::String(s.into()) }
+    }
+
+    impl fmt::Display for Variable
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result
+        {
+            match *self
+            {
+                Variable::Boolean(b) => f.write_str(if b { "on" } else { "off" }),
+                Variable::Integer(n) => fmt::Display::fmt(&n, f),
+                Variable::String(ref s) => fmt::Display::fmt(&s[..], f),
+            }
+        }
+    }
+    
+    pub enum RawRead
+    {
+        Bytes(usize),
+        Resize(Size),
+        Signal(Signal),
+    }
+
+    #[derive(Clone)]
+    pub struct VariableIter<'a>
+    {
+        vars: &'a Variables,
+        n: usize,
+    }
+
+    #[derive(Clone, Debug, Default)]
+    pub struct SequenceMap<K, V>
+    {
+        sequences: Vec<(K, V)>,
+    }
+
+    #[derive(Copy, Clone, Debug, Eq, PartialEq)]
+    pub enum Category
+    {
+        Complete,
+        Kill,
+        Search,
+        IncrementalSearch,
+        Yank,
+        Digit,
+        Other,
+    }
+
+    define_variables!
+    {
+        blink_matching_paren: bool => ("blink-matching-paren", parse_bool,
+            |r| r.blink_matching_paren,
+            |r, v| replace(&mut r.blink_matching_paren, v)),
+        comment_begin: Cow<'static, str> => ("comment-begin", parse_string,
+            |r| r.comment_begin.clone(),
+            |r, v| replace(&mut r.comment_begin, v.into())),
+        completion_display_width: usize => ("completion-display-width", parse_usize,
+            |r| usize_as_i32(r.completion_display_width),
+            |r, v| usize_as_i32(replace(&mut r.completion_display_width, v))),
+        completion_query_items: usize => ("completion-query-items", parse_usize,
+            |r| usize_as_i32(r.completion_query_items),
+            |r, v| usize_as_i32(replace(&mut r.completion_query_items, v))),
+        disable_completion: bool => ("disable-completion", parse_bool,
+            |r| r.disable_completion,
+            |r, v| replace(&mut r.disable_completion, v)),
+        echo_control_characters: bool => ("echo-control-characters", parse_bool,
+            |r| r.echo_control_characters,
+            |r, v| replace(&mut r.echo_control_characters, v)),
+        keyseq_timeout: Option<Duration> => ("keyseq-timeout", parse_duration,
+            |r| as_millis(r.keyseq_timeout),
+            |r, v| as_millis(replace(&mut r.keyseq_timeout, v))),
+        page_completions: bool => ("page-completions", parse_bool,
+            |r| r.page_completions,
+            |r, v| replace(&mut r.page_completions, v)),
+        print_completions_horizontally: bool => ("print-completions-horizontally", parse_bool,
+            |r| r.print_completions_horizontally,
+            |r, v| replace(&mut r.print_completions_horizontally, v)),
+    }
+    
+    pub struct Read<Term: Terminals>
+    {
+        pub application: Cow<'static, str>,
+        pub input_buffer: Vec<u8>,
+        pub macro_buffer: String,
+        pub bindings: SequenceMap<Cow<'static, str>, Command>,
+        pub functions: HashMap<Cow<'static, str>, Arc<dyn Function<Term>>>,
+        pub sequence: String,
+        pub input_accepted: bool,
+        pub overwrite_mode: bool,
+        pub overwritten_append: usize,
+        pub overwritten_chars: String,
+        pub completer: Arc<dyn Completer<Term>>,
+        pub completion_append_character: Option<char>,
+        pub completions: Option<Vec<Completion>>,
+        pub completion_index: usize,
+        pub completion_start: usize,
+        pub completion_prefix: usize,
+        pub string_chars: Cow<'static, str>,
+        pub word_break: Cow<'static, str>,
+        pub last_cmd: Category,
+        pub last_yank: Option<(usize, usize)>,
+        pub kill_ring: VecDeque<String>,
+        pub catch_signals: bool,
+        pub ignore_signals: Signals,
+        pub report_signals: Signals,
+        pub last_resize: Option<Size>,
+        pub last_signal: Option<Signal>,
+        variables: Variables,
+        pub state: InputState,
+        pub max_wait_duration: Option<Duration>,
+    }
+
+    pub struct ReadLock<'a, Term: 'a + Terminals>
+    {
+        term: Box<dyn TerminalReader<Term> + 'a>,
+        data: MutexGuard<'a, Read<Term>>,
+    }
+
+    pub struct Prompter<'a, 'b: 'a, Term: 'b + Terminals> 
+    {
+        pub read: &'a mut ReadLock<'b, Term>,
+        write: WriteLock<'b, Term>,
     }
 
     #[derive(Clone, Debug)]
@@ -25940,12 +26190,36 @@ pub mod system
 
         Some(parse_text(filename, &buf))
     }
+
+    pub fn parse_bool(s: &str) -> Option<bool>
+    {
+        match s 
+        {
+            "0" => Some(false),
+            "1" => Some(true),
+            s if s.eq_ignore_ascii_case("off") => Some(false),
+            s if s.eq_ignore_ascii_case("on") => Some(true),
+            _ => None
+        }
+    }
+
+    pub fn parse_string(s: &str) -> Option<String> { Some(s.to_owned()) }
     
     pub fn parse_text<P: ?Sized>(name: &P, line: &str) -> Vec<Directive> where 
     P:AsRef<Path>
     {
         let mut p = Parser::new(name.as_ref(), line);
         p.parse()
+    }
+
+    pub fn parse_usize(s: &str) -> Option<usize>
+    {
+        match s.parse::<i32>()
+        {
+            Ok(n) if n < 0 => Some(usize::max_value()),
+            Ok(n) => Some(n as usize),
+            Err(_) => None
+        }
     }
 
     pub struct WriteLock<'a, Term: 'a + Terminals>
@@ -26696,7 +26970,8 @@ pub mod system
             self.move_to(pos)
         }
 
-        pub fn backward_search_char(&mut self, n: usize, ch: char) -> io::Result<()> {
+        pub fn backward_search_char(&mut self, n: usize, ch: char) -> io::Result<()>
+        {
             if let Some(pos) = backward_search_char(n, &self.buffer, self.cursor, ch) {
                 self.move_to(pos)?;
             }
@@ -26704,7 +26979,8 @@ pub mod system
             Ok(())
         }
 
-        pub fn forward_search_char(&mut self, n: usize, ch: char) -> io::Result<()> {
+        pub fn forward_search_char(&mut self, n: usize, ch: char) -> io::Result<()>
+        {
             if let Some(pos) = forward_search_char(n, &self.buffer, self.cursor, ch) {
                 self.move_to(pos)?;
             }
@@ -26712,7 +26988,8 @@ pub mod system
             Ok(())
         }
         
-        pub fn delete_range<R: RangeArgument<usize>>(&mut self, range: R) -> io::Result<()> {
+        pub fn delete_range<R: RangeArgument<usize>>(&mut self, range: R) -> io::Result<()>
+        {
             let start = range.start().cloned().unwrap_or(0);
             let end = range.end().cloned().unwrap_or_else(|| self.buffer.len());
 
@@ -26889,7 +27166,7 @@ pub mod system
             self.term.clear_to_screen_end()
         }
 
-        pub(crate) fn clear_prompt(&mut self) -> io::Result<()> {
+        pub fn clear_prompt(&mut self) -> io::Result<()> {
             let (line, _) = self.line_col(self.cursor);
 
             self.term.move_up(line)?;
