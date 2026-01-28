@@ -2087,7 +2087,7 @@ pub mod api
     {
         let tokens = cmd.tokens.clone();
         let mut cr = CommandResult::new();
-        let args = parsers::parser_line::tokens_to_args(&tokens);
+        let args = parses::lines::tokens_to_args(&tokens);
 
         if args.len() > 2 {
             let info = "cicada: cd: too many argument";
@@ -2166,15 +2166,16 @@ pub mod api
         info.push(("rc-file", &rcf));
 
         let git_hash = ""; //env!("GIT_HASH");
-        if !git_hash.is_empty() {
-            info.push(("git-commit", env!("GIT_HASH")));
+        if !git_hash.is_empty()
+        {
+            info.push(("git-commit", "")); //env!("GIT_HASH")));
         }
 
         let git_branch = ""; //env!("GIT_BRANCH");
         let mut branch = String::new();
         if !git_branch.is_empty() {
             branch.push_str(git_branch);
-            let git_status = env!("GIT_STATUS");
+            let git_status = ""; //env!("GIT_STATUS");
             if git_status != "0" {
                 branch.push_str(" (dirty)");
             }
@@ -2182,13 +2183,15 @@ pub mod api
         }
 
         info.push(("built-with", "")); //env!("BUILD_RUSTC_VERSION")));
-        info.push(("built-at", env!("BUILD_DATE")));
+        info.push(("built-at", ""));// env!("BUILD_DATE")));
 
         let mut lines = Vec::new();
-        for (k, v) in &info {
-            // longest key above is 12-char length
+        
+        for (k, v) in &info
+        {
             lines.push(format!("{: >12}: {}", k, v));
         }
+
         let buffer = lines.join("\n");
         let mut cr = CommandResult::new();
         emit::stdout_with_capture(&buffer, &mut cr, cl, cmd, capture);
@@ -2199,7 +2202,7 @@ pub mod api
     {
         let mut cr = CommandResult::new();
         let tokens = cmd.tokens.clone();
-        let args = parsers::parser_line::tokens_to_args(&tokens);
+        let args = parses::lines::tokens_to_args(&tokens);
         let len = args.len();
         if len == 1 {
             emit::stdout_with_capture("invalid usage", &mut cr, cl, cmd, capture);
@@ -2280,7 +2283,7 @@ pub mod api
 
             for cap in re_name_ptn.captures_iter(text) {
                 let name = cap[1].to_string();
-                let token = parsers::parser_line::unquote(&cap[2]);
+                let token = parses::lines::unquote(&cap[2]);
                 let value = libs::path::expand_home(&token);
                 env::set_var(name, &value);
             }
@@ -2367,9 +2370,6 @@ pub mod api
             let cr = jobc::wait_fg_job(sh, gid, &pid_list);
 
             let gid_shell = libc::getpgid(0);
-            if !shell::give_terminal_to(gid_shell) {
-                log!("failed to give term to back to shell : {}", gid_shell);
-            }
 
             cr
         }
@@ -2395,7 +2395,7 @@ pub mod api
         };
 
         let tokens = cmd.tokens.clone();
-        let args = parsers::parser_line::tokens_to_args(&tokens);
+        let args = parses::lines::tokens_to_args(&tokens);
 
         let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
         let opt = OptMain::from_iter_safe(args);
@@ -2559,7 +2559,7 @@ pub mod api
     {
         let mut cr = CommandResult::new();
         let tokens = &cmd.tokens;
-        let args = parsers::parser_line::tokens_to_args(tokens);
+        let args = parses::lines::tokens_to_args(tokens);
         let show_usage = args.len() > 1 && (args[1] == "-h" || args[1] == "--help");
 
         let opt = OptMain::from_iter_safe(args);
@@ -2592,7 +2592,7 @@ pub mod api
     {
         let mut cr = CommandResult::new();
         let tokens = &cmd.tokens;
-        let args = parsers::parser_line::tokens_to_args(tokens);
+        let args = parses::lines::tokens_to_args(tokens);
 
         if args.len() < 2 {
             let info = "cicada: source: no file specified";
@@ -2609,7 +2609,7 @@ pub mod api
     {
         let mut cr = CommandResult::new();
         let tokens = &cmd.tokens;
-        let args = parsers::parser_line::tokens_to_args(tokens);
+        let args = parses::lines::tokens_to_args(tokens);
 
         if args.contains(&"--help".to_string()) || args.contains(&"-h".to_string()) {
             App::command().print_help().unwrap();
@@ -2713,7 +2713,7 @@ pub mod api
     {
         let mut cr = CommandResult::new();
         let tokens = cmd.tokens.clone();
-        let args = parsers::parser_line::tokens_to_args(&tokens);
+        let args = parses::lines::tokens_to_args(&tokens);
         let len = args.len();
         let subcmd = if len > 1 { &args[1] } else { "" };
 
@@ -2879,12 +2879,10 @@ pub mod api
     {
         let history_table = history::get_history_table();
         let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
-        match conn.execute(&sql, []) {
+        match conn.execute(&sql, [])
+        {
             Ok(_) => true,
-            Err(e) => {
-                log!("history: error when delete: {:?}", e);
-                false
-            }
+            Err(e) => { false }
         }
     }
     
@@ -22947,6 +22945,657 @@ pub mod parses
             None => Ok(()),
         }
     }
+    
+    pub mod lines
+    {
+        /*!
+        */
+        use ::
+        {
+            types::{ * },
+            *,
+        };
+        /*
+        use regex::Regex;
+        use crate::libs;
+        use crate::tools;
+        use crate::types::{LineInfo, Redirection, Tokens};
+        */
+        pub fn line_to_plain_tokens(line: &str) -> Vec<String>
+        {
+            let mut result = Vec::new();
+            let linfo = parse_line(line);
+            
+            for (_, r) in linfo.tokens
+            {
+                result.push(r.clone());
+            }
+
+            result
+        }
+
+        pub fn tokens_to_args(tokens: &Tokens) -> Vec<String>
+        {
+            let mut result = Vec::new();
+            
+            for s in tokens
+            {
+                result.push(s.1.clone());
+            }
+
+            result
+        }
+
+        pub fn tokens_to_line(tokens: &Tokens) -> String
+        {
+            let mut result = String::new();
+
+            for t in tokens
+            {
+                if t.0.is_empty() { result.push_str(&t.1); }
+                
+                else
+                {
+                    let s = tools::wrap_sep_string(&t.0, &t.1);
+                    result.push_str(&s);
+                }
+
+                result.push(' ');
+            }
+
+            if result.ends_with(' ')
+            {
+                let len = result.len();
+                result.truncate(len - 1);
+            }
+
+            result
+        }
+        
+        pub fn line_to_cmds(line: &str) -> Vec<String>
+        {
+            let mut result = Vec::new();
+            let mut sep = String::new();
+            let mut token = String::new();
+            let mut has_backslash = false;
+            let len = line.chars().count();
+            
+            for (i, c) in line.chars().enumerate()
+            {
+                if has_backslash
+                {
+                    token.push('\\');
+                    token.push(c);
+                    has_backslash = false;
+                    continue;
+                }
+
+                if c == '\\' && sep != "'"
+                {
+                    has_backslash = true;
+                    continue;
+                }
+
+                if c == '#'
+                {
+                    if sep.is_empty() { break; }
+                    
+                    else
+                    {
+                        token.push(c);
+                        continue;
+                    }
+                }
+
+                if c == '\'' || c == '"' || c == '`'
+                {
+                    if sep.is_empty()
+                    {
+                        sep.push(c);
+                        token.push(c);
+                        continue;
+                    }
+                    
+                    else if sep == c.to_string()
+                    {
+                        token.push(c);
+                        sep = String::new();
+                        continue;
+                    }
+                    
+                    else
+                    {
+                        token.push(c);
+                        continue;
+                    }
+                }
+
+                if c == '&' || c == '|'
+                {
+                    if sep.is_empty()
+                    {
+                        if i + 1 == len
+                        {
+                            token.push(c);
+                            continue;
+                        }
+                        
+                        else
+                        {
+                            let c_next = match line.chars().nth(i + 1)
+                            {
+                                Some(x) => x,
+                                None =>
+                                {
+                                    println!("chars nth error - should never happen");
+                                    continue;
+                                }
+                            };
+
+                            if c_next != c
+                            {
+                                token.push(c);
+                                continue;
+                            }
+                        }
+                    }
+
+                    if sep.is_empty() {
+                        sep.push(c);
+                        continue;
+                    } else if c.to_string() == sep {
+                        let _token = token.trim().to_string();
+                        if !_token.is_empty() {
+                            result.push(_token);
+                        }
+                        token = String::new();
+                        result.push(format!("{}{}", sep, sep));
+                        sep = String::new();
+                        continue;
+                    } else {
+                        token.push(c);
+                        continue;
+                    }
+                }
+
+                if c == ';'
+                {
+                    if sep.is_empty()
+                    {
+                        let _token = token.trim().to_string();
+
+                        if !_token.is_empty() { result.push(_token); }
+
+                        result.push(String::from(";"));
+                        token = String::new();
+                        continue;
+                    }
+                    
+                    else
+                    {
+                        token.push(c);
+                        continue;
+                    }
+                }
+
+                token.push(c);
+            }
+
+            if !token.is_empty() { result.push(token.trim().to_string()); }
+
+            result
+        }
+        
+        pub fn parse_line(line: &str) -> LineInfo
+        {
+            let mut result = Vec::new();
+            
+            if is::arithmetic(line)
+            {
+                for x in line.split(' ')
+                {
+                    result.push((String::from(""), x.to_string()));
+                }
+
+                return LineInfo::new(result);
+            }
+
+            let mut sep = String::new();
+            let mut sep_second = String::new();
+            let mut token = String::new();
+            let mut has_backslash = false;
+            let mut met_parenthesis = false;
+            let mut new_round = true;
+            let mut skip_next = false;
+            let mut has_dollar = false;
+            let mut parens_left_ignored = false;
+            let mut sep_made = String::new();
+            let mut semi_ok = false;
+            let count_chars = line.chars().count();
+
+            for (i, c) in line.chars().enumerate()
+            {
+                if skip_next
+                {
+                    skip_next = false;
+                    continue;
+                }
+
+                if has_backslash && sep.is_empty() && (c == '>' || c == '<')
+                {
+                    sep_made = String::from("'");
+                    token.push(c);
+                    has_backslash = false;
+                    continue;
+                }
+
+                if has_backslash && sep == "\"" && c != '\"'
+                {
+                    token.push('\\');
+                    token.push(c);
+                    has_backslash = false;
+                    continue;
+                }
+
+                if has_backslash
+                {
+                    if new_round && sep.is_empty() && (c == '|' || c == '$') && token.is_empty()
+                    {
+                        sep = String::from("\\");
+                        token = format!("{}", c);
+                    }
+
+                    else { token.push(c); }
+
+                    new_round = false;
+                    has_backslash = false;
+                    continue;
+                }
+
+                if c == '$' { has_dollar = true; }
+                
+                if c == '(' && sep.is_empty()
+                {
+                    if !has_dollar && token.is_empty()
+                    {
+                        parens_left_ignored = true;
+                        continue;
+                    }
+
+                    met_parenthesis = true;
+                }
+
+                if c == ')'
+                {
+                    if parens_left_ignored && !has_dollar
+                    {
+                        if i == count_chars - 1 || (i + 1 < count_chars && line.chars().nth(i + 1).unwrap() == ' ') { continue; }
+                    }
+                    
+                    if sep.is_empty() { met_parenthesis = false; }
+                }
+
+                if c == '\\'
+                {
+                    if sep == "'" || !sep_second.is_empty() { token.push(c) } else { has_backslash = true; }
+                    continue;
+                }
+
+                if new_round
+                {
+                    if c == ' ' { continue; }
+                    else if c == '"' || c == '\'' || c == '`'
+                    {
+                        sep = c.to_string();
+                        new_round = false;
+                        continue;
+                    }
+
+                    sep = String::new();
+
+                    if c == '#' { break; }
+
+                    if c == '|'
+                    {
+                        if i + 1 < count_chars && line.chars().nth(i + 1).unwrap() == '|'
+                        {
+                            result.push((String::from(""), "||".to_string()));
+                            skip_next = true;
+                        }
+
+                        else { result.push((String::from(""), "|".to_string())); }
+
+                        new_round = true;
+                        continue;
+                    }
+
+                    token.push(c);
+                    new_round = false;
+                    continue;
+                }
+
+                if c == '|' && !has_backslash
+                {
+                    if semi_ok
+                    {
+                        if sep.is_empty() && !sep_made.is_empty()
+                        {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        }
+
+                        else { result.push((sep.to_string(), token)); }
+
+                        result.push((String::from(""), "|".to_string()));
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        semi_ok = false;
+                        continue;
+                    }
+                    
+                    else if !met_parenthesis && sep_second.is_empty() && sep.is_empty()
+                    {
+                        if sep.is_empty() && !sep_made.is_empty()
+                        {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        }
+
+                        else { result.push((String::from(""), token)); }
+
+                        result.push((String::from(""), "|".to_string()));
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        continue;
+                    }
+                }
+
+                if c == ' '
+                {
+                    if semi_ok {
+                        if sep.is_empty() && !sep_made.is_empty() {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        } else {
+                            result.push((sep.to_string(), token));
+                        }
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        semi_ok = false;
+                        continue;
+                    }
+
+                    if has_backslash {
+                        has_backslash = false;
+                        token.push(c);
+                        continue;
+                    }
+
+                    if met_parenthesis {
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep == "\\"
+                    {
+                        result.push((String::from("\\"), token));
+                        token = String::new();
+                        new_round = true;
+                        continue;
+                    }
+
+                    if sep.is_empty()
+                    {
+                        if sep_second.is_empty()
+                        {
+                            if sep.is_empty() && !sep_made.is_empty()
+                            {
+                                result.push((sep_made.clone(), token));
+                                sep_made = String::new();
+                            }
+
+                            else { result.push((String::from(""), token)); }
+
+                            token = String::new();
+                            new_round = true;
+                            continue;
+                        }
+                        
+                        else
+                        {
+                            token.push(c);
+                            continue;
+                        }
+                    }
+                    
+                    else
+                    {
+                        token.push(c);
+                        continue;
+                    }
+                }
+
+                if c == '\'' || c == '"' || c == '`'
+                {
+                    if has_backslash
+                    {
+                        has_backslash = false;
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep != c.to_string() && semi_ok
+                    {
+                        if sep.is_empty() && !sep_made.is_empty()
+                        {
+                            result.push((sep_made.to_string(), token));
+                            sep_made = String::new();
+                        }
+
+                        else { result.push((sep.to_string(), token)); }
+
+                        sep = String::new();
+                        sep_second = String::new();
+                        token = String::new();
+                        new_round = true;
+                        semi_ok = false;
+                    }
+
+                    if sep != c.to_string() && met_parenthesis
+                    {
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep.is_empty() && !sep_second.is_empty() && sep_second != c.to_string()
+                    {
+                        token.push(c);
+                        continue;
+                    }
+
+                    if sep.is_empty()
+                    {
+                        let is_an_env = regex::contains(&token, r"^[a-zA-Z0-9_]+=.*$");
+
+                        if !is_an_env && (c == '\'' || c == '"')
+                        {
+                            sep = c.to_string();
+                            continue;
+                        }
+
+                        token.push(c);
+
+                        if sep_second.is_empty() { sep_second = c.to_string(); }
+                        else if sep_second == c.to_string() { sep_second = String::new(); }
+
+                        continue;
+                    }
+
+                    else if sep == c.to_string()
+                    {
+                        semi_ok = true;
+                        continue;
+                    }
+
+                    else { token.push(c); }
+                }
+
+                else
+                {
+                    if has_backslash
+                    {
+                        has_backslash = false;
+
+                        if sep == "\"" || sep == "'" { token.push('\\'); }
+                    }
+
+                    token.push(c);
+                }
+            }
+
+            if !token.is_empty() || semi_ok
+            {
+                if sep.is_empty() && !sep_made.is_empty() { result.push((sep_made.clone(), token)); }
+                else { result.push((sep.clone(), token)); }
+            }
+
+            let mut is_line_complete = true;
+
+            if !result.is_empty()
+            {
+                let token_last = result[result.len() - 1].clone();
+
+                if token_last.0.is_empty() && token_last.1 == "|" { is_line_complete = false; }
+            }
+
+            if !sep.is_empty() { is_line_complete = semi_ok; }
+
+            if has_backslash { is_line_complete = false; }
+
+            LineInfo
+            {
+                tokens: result,
+                is_complete: is_line_complete,
+            }
+        }
+
+        pub fn tokens_to_redirections(tokens: &Tokens) -> Result<(Tokens, Vec<Redirection>), String> {
+            let mut tokens_new = Vec::new();
+            let mut redirects = Vec::new();
+            let mut to_be_continued = false;
+            let mut to_be_continued_s1 = String::new();
+            let mut to_be_continued_s2 = String::new();
+
+            for token in tokens {
+                let sep = &token.0;
+                if !sep.is_empty() && !to_be_continued {
+                    tokens_new.push(token.clone());
+                    continue;
+                }
+                let word = &token.1;
+
+                if to_be_continued {
+                    if sep.is_empty() && word.starts_with('&') {
+                        return Err(String::from("bad redirection syntax near &"));
+                    }
+
+                    let s3 = word.to_string();
+                    if regex::contains(&to_be_continued_s1, r"^\d+$") {
+                        if to_be_continued_s1 != "1" && to_be_continued_s1 != "2" {
+                            return Err(String::from("Bad file descriptor #3"));
+                        }
+                        let s1 = to_be_continued_s1.clone();
+                        let s2 = to_be_continued_s2.clone();
+                        redirects.push((s1, s2, s3));
+                    } else {
+                        if !to_be_continued_s1.is_empty() {
+                            tokens_new.push((sep.clone(), to_be_continued_s1.to_string()));
+                        }
+                        redirects.push(("1".to_string(), to_be_continued_s2.clone(), s3));
+                    }
+
+                    to_be_continued = false;
+                    continue;
+                }
+
+                let ptn1 = r"^([^>]*)(>>?)([^>]+)$";
+                let ptn2 = r"^([^>]*)(>>?)$";
+                if !regex::contains(word, r">") {
+                    tokens_new.push(token.clone());
+                } else if regex::contains(word, ptn1) {
+                    let re;
+                    if let Ok(x) = Regex::new(ptn1) {
+                        re = x;
+                    } else {
+                        return Err(String::from("Failed to build Regex"));
+                    }
+
+                    if let Some(caps) = re.captures(word) {
+                        let s1 = caps.get(1).unwrap().as_str();
+                        let s2 = caps.get(2).unwrap().as_str();
+                        let s3 = caps.get(3).unwrap().as_str();
+                        if s3.starts_with('&') && s3 != "&1" && s3 != "&2" {
+                            return Err(String::from("Bad file descriptor #1"));
+                        }
+
+                        if regex::contains(s1, r"^\d+$") {
+                            if s1 != "1" && s1 != "2" {
+                                return Err(String::from("Bad file descriptor #2"));
+                            }
+                            redirects.push((s1.to_string(), s2.to_string(), s3.to_string()));
+                        } else {
+                            if !s1.is_empty() {
+                                tokens_new.push((sep.clone(), s1.to_string()));
+                            }
+                            redirects.push((String::from("1"), s2.to_string(), s3.to_string()));
+                        }
+                    }
+                } else if regex::contains(word, ptn2) {
+                    let re;
+                    if let Ok(x) = Regex::new(ptn2) {
+                        re = x;
+                    } else {
+                        return Err(String::from("Failed to build Regex"));
+                    }
+
+                    if let Some(caps) = re.captures(word) {
+                        let s1 = caps.get(1).unwrap().as_str();
+                        let s2 = caps.get(2).unwrap().as_str();
+
+                        to_be_continued = true;
+                        to_be_continued_s1 = s1.to_string();
+                        to_be_continued_s2 = s2.to_string();
+                    }
+                }
+            }
+
+            if to_be_continued {
+                return Err(String::from("redirection syntax error"));
+            }
+
+            Ok((tokens_new, redirects))
+        }
+
+        pub fn unquote(text: &str) -> String {
+            let mut new_str = String::from(text);
+            for &c in ['"', '\''].iter() {
+                if text.starts_with(c) && text.ends_with(c) {
+                    new_str.remove(0);
+                    new_str.pop();
+                    break;
+                }
+            }
+            new_str
+        }
+
+
+    }
 }
 
 pub mod path
@@ -25672,15 +26321,7 @@ pub mod shell
         
         let rcode = libc::tcsetpgrp(1, gid);
         let given;
-        if rcode == -1
-        {
-            given = false;
-            /*
-            let e = errno();
-            let code = e.0;
-            log!("error in give_terminal_to() {}: {}", code, e); */
-        }
-        else { given = true; }
+        if rcode == -1 { given = false; } else { given = true; }
 
         let rcode = libc::pthread_sigmask(libc::SIG_SETMASK, &old_mask, &mut mask);
         
@@ -25739,7 +26380,7 @@ pub mod shell
                                     is_empty = false;
                                 }
 
-                                Err(e) => { log!("glob error: {:?}", e); }
+                                Err(e) => {}
                             }
                         }
 
@@ -26109,7 +26750,7 @@ pub mod shell
 
         for (i, text) in buff.iter().rev()
         {
-            let linfo = parsers::parser_line::parse_line(text);
+            let linfo = parses::lines::parse_line(text);
             let tokens_ = linfo.tokens;
             tokens.remove(*i);
 
@@ -31299,7 +31940,7 @@ pub mod types
             for cap in re.captures_iter(text)
             {
                 let name = cap[1].to_string();
-                let value = parsers::parser_line::unquote(&cap[2]);
+                let value = parses::lines::unquote(&cap[2]);
                 envs.insert(name, value);
             }
 
@@ -32862,4 +33503,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 32865 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 33506 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
