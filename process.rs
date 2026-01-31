@@ -60,7 +60,6 @@ pub mod __
         cell::{ Cell },
         mem::{ MaybeUninit },
         sync::{ Once, ONCE_INIT },
-        *
     };
     
     #[macro_export] macro_rules! println_stderr
@@ -2074,6 +2073,18 @@ pub mod __
             }
         };
     }
+    
+    #[macro_export] macro_rules! exec_try
+    {
+        ( $ expr : expr ) =>
+        {
+            match $expr
+            {
+                Ok(val) => val,
+                Err(err) => return From::from(err),
+            }
+        };
+    }
 }
 
 pub mod alloc
@@ -2168,13 +2179,17 @@ pub mod api
 {
     /*!
     */
-    use regex::contains;
     use ::
     {
         io::{ self, Error, Write },
         os::fd::{ AsRawFd },
         path::{ Path },
+        regex::{ contains, Regex },
         shell::{ Shell },
+        system::
+        {
+            sqlite::{ Connection as Conn },
+        },
         types::{ * },
         *,
     };
@@ -2458,7 +2473,7 @@ pub mod api
         let os_name = get::os_name();
         info.push(("os-name", &os_name));
 
-        let hfile = history::get_history_file();
+        let hfile = history::read_file();
         info.push(("history-file", &hfile));
 
         let rcf = rcfile::get_rc_file();
@@ -2503,12 +2518,14 @@ pub mod api
         let tokens = cmd.tokens.clone();
         let args = parses::lines::tokens_to_args(&tokens);
         let len = args.len();
-        if len == 1 {
+        
+        if len == 1 
+        {
             emit::stdout_with_capture("invalid usage", &mut cr, cl, cmd, capture);
             return cr;
         }
 
-        let mut _cmd = exec::Command::new(&args[1]);
+        let mut _cmd = executes::Command::new(&args[1]);
         let err = _cmd.args(&args[2..len]).exec();
         let info = format!(":: exec: {}", err);
         emit::stdout_with_capture(&info, &mut cr, cl, cmd, capture);
@@ -2677,7 +2694,7 @@ pub mod api
     pub fn run_history(sh: &mut Shell, cl: &CommandLine, cmd: &Command, capture: bool) -> CommandResult
     {
         let mut cr = CommandResult::new();
-        let hfile = history::get_history_file();
+        let hfile = history::read_file();
         let path = Path::new(hfile.as_str());
         if !path.exists() {
             let info = "no history file";
@@ -3070,12 +3087,12 @@ pub mod api
         history::add_raw(sh, input, 0, tsb, tse);
     }
 
-    fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMain) -> (String, String) 
+    fn list_current_history(sh: &Shell, conn: &Conn, opt: &OptMainHistory) -> (String, String) 
     {
         let mut result_stderr = String::new();
         let result_stdout = String::new();
 
-        let history_table = history::get_history_table();
+        let history_table = history::read_table();
         let mut sql = format!(
             "SELECT ROWID, inp, tsb FROM {} WHERE ROWID > 0",
             history_table
@@ -3150,7 +3167,7 @@ pub mod api
                                     return (result_stdout, result_stderr);
                                 }
                             };
-                            let dt = ctime::DateTime::from_timestamp(tsb);
+                            let dt = time::DateTime::from_timestamp(tsb);
                             lines.push(format!("{}: {}: {}", row_id, dt, inp));
                         } else {
                             lines.push(format!("{}: {}", row_id, inp));
@@ -3178,7 +3195,7 @@ pub mod api
 
     fn delete_history_item(conn: &Conn, rowid: usize) -> bool 
     {
-        let history_table = history::get_history_table();
+        let history_table = history::read_table();
         let sql = format!("DELETE from {} where rowid = {}", history_table, rowid);
         match conn.execute(&sql, [])
         {
@@ -5679,7 +5696,7 @@ pub mod error
             }
         }
 
-        impl From<str::Utf8Error> for Error
+        impl From<::str::Utf8Error> for Error
         {
             #[cold] fn from(err: str::Utf8Error) -> Self { Self::Utf8Error(err) }
         }
@@ -6027,6 +6044,114 @@ pub mod error
     }
 }
 
+pub mod executes
+{
+    /*!
+    */
+    use ::
+    {
+        error::{ no::{Errno, errno}, Error as ErrorTrait },
+        ffi::{ CString, NulError, OsStr, OsString },
+        iter::{ IntoIterator, Iterator },
+        os::unix::ffi::{ OsStrExt },
+        *,
+    };
+    /*
+    */
+    #[must_use] #[derive( Debug )]    
+    pub enum Error
+    {
+        BadArgument(NulError),
+        Errno(Errno),
+    }
+
+    impl error::Error for Error 
+    {
+        fn description(&self) -> &str 
+        {
+            match self 
+            {
+                &Error::BadArgument(_) => "bad argument to exec",
+                &Error::Errno(_) => "couldn't exec process",
+            }
+        }
+
+        fn cause(&self) -> Option<&error::Error> 
+        {
+            match self 
+            {
+                &Error::BadArgument(ref err) => Some(err),
+                &Error::Errno(_) => None,
+            }
+        }
+    }
+
+    impl fmt::Display for Error 
+    {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result 
+        {
+            match self 
+            {
+                &Error::BadArgument(ref err) => write!(f, "{}: {}", self.description(), err),
+                &Error::Errno(err) => write!(f, "{}: {}", self.description(), err),
+            }
+        }
+    }
+
+    impl From<NulError> for Error
+    {
+        fn from(err: NulError) -> Error { Error::BadArgument(err) }
+    }
+    
+    pub fn execvp<S, I>(program: S, args: I) -> Error where
+    S: AsRef<OsStr>, 
+    I: IntoIterator, 
+    I::Item: AsRef<OsStr>
+    {
+        let program_cstring = exec_try!(CString::new(program.as_ref().as_bytes()));
+        let arg_cstrings = exec_try!(args.into_iter().map(|arg| { CString::new(arg.as_ref().as_bytes()) }).collect::<Result<Vec<_>, _>>());
+        let mut arg_charptrs: Vec<_> = arg_cstrings.iter().map(|arg| { arg.as_ptr() }).collect();
+        arg_charptrs.push(ptr::null());        
+        let res = unsafe { libc::execvp(program_cstring.as_ptr(), arg_charptrs.as_ptr()) };
+        
+        if res < 0 { Error::Errno(errno()) } else { panic!("execvp returned unexpectedly") }
+    }
+    
+    pub struct Command
+    {
+        argv: Vec<OsString>,
+    }
+
+    impl Command
+    {
+        pub fn new<S: AsRef<OsStr>>(program: S) -> Command
+        {
+            Command
+            {
+                argv: vec!(program.as_ref().to_owned()),
+            }
+        }
+        
+        pub fn arg<S: AsRef<OsStr>>(&mut self, arg: S) -> &mut Command
+        {
+            self.argv.push(arg.as_ref().to_owned());
+            self
+        }
+        
+        pub fn args<S: AsRef<OsStr>>(&mut self, args: &[S]) -> &mut Command
+        {
+            for arg in args
+            {
+                self.arg(arg.as_ref());
+            }
+
+            self
+        }
+        
+        pub fn exec(&mut self) -> Error { execvp(&self.argv[0], &self.argv) }
+    }
+}
+
 pub mod expand
 {
     /*!
@@ -6046,7 +6171,7 @@ pub mod get
     use ::
     {
         collections::{ HashMap },
-        file::{ File },
+        fs::{ File },
         os::fd::{ RawFd },
         path::{ Path, PathBuf },
         types::{ * },
@@ -6330,6 +6455,16 @@ pub mod get
             Ok(f) => f,
         };
         a.into_raw_fd()
+    }
+
+    pub fn get_release_value(ptn: &str) -> String
+    {
+        let line = format!(
+            "grep -i '{}' /etc/*release* 2>&1 | grep -o '=.*' | tr '\"=' ' '",
+            ptn
+        );
+        let cr = execute::run(&line);
+        cr.stdout.trim().to_string()
     }
 }
 
@@ -6651,6 +6786,32 @@ pub mod history
     use lineread::terminal::DefaultTerminal;
     use lineread::Interface;
     */
+    #[derive( Debug )]
+    pub struct OptMain 
+    {
+        session: bool,
+        asc: bool,
+        pwd: bool,
+        only_id: bool,
+        no_id: bool,
+        show_date: bool,
+        limit: i32,
+        pattern: String,
+        cmd: Option<SubCommand>,
+    }
+    
+    enum SubCommand 
+    {
+        Add 
+        {
+            timestamp: Option<f64>,
+            input: String,
+        },
+        Delete 
+        {
+            rowid: Vec<usize>,
+        },
+    }
     // fn init_db(hfile: &str, htable: &str)
     pub fn create(f:&str,t:&str) -> Result<(), ()>
     {
@@ -6796,6 +6957,103 @@ pub mod history
             dict_helper.insert(inp.clone(), true);
             rl.add_history(inp.trim().to_string());
         }
+    }
+
+    pub fn read_file() -> String
+    {
+        if let Ok(hfile) = env::var("HISTORY_FILE") { hfile }
+        else if let Ok(d) = env::var("XDG_DATA_HOME") { format!("{}/{}", d, "cicada/history.sqlite") }        
+        else
+        {
+            let home = get::user_home();
+            format!("{}/{}", home, ".local/share/cicada/history.sqlite")
+        }
+    }
+
+    pub fn read_table() -> String
+    {
+        if let Ok(hfile) = env::var("HISTORY_TABLE") { hfile } else { String::from("cicada_history") }
+    }
+
+    pub fn delete_duplicated_histories() 
+    {
+        let hfile = get_history_file();
+        let history_table = get_history_table();
+        let conn = match Conn::open(&hfile) {
+            Ok(x) => x,
+            Err(e) => {
+                println_stderr!("cicada: history: conn error: {}", e);
+                return;
+            }
+        };
+        let sql = format!(
+            "DELETE FROM {} WHERE rowid NOT IN (
+            SELECT MAX(rowid) FROM {} GROUP BY inp)",
+            history_table, history_table
+        );
+        match conn.execute(&sql, []) {
+            Ok(_) => {}
+            Err(e) => match e {
+                SqliteFailure(ee, msg) => {
+                    if ee.extended_code == 5 {
+                        log!(
+                            "failed to delete dup histories: {}",
+                            msg.unwrap_or("db is locked?".to_owned()),
+                        );
+                        return;
+                    }
+                    println_stderr!("cicada: history: delete dups error: {}: {:?}", &ee, &msg);
+                }
+                _ => {
+                    println_stderr!("cicada: history: delete dup error: {}", e);
+                }
+            },
+        }
+    }
+
+    pub fn add_raw(sh: &shell::Shell, line: &str, status: i32, tsb: f64, tse: f64) 
+    {
+        let hfile = read_file();
+        let history_table = read_table();
+        if !Path::new(&hfile).exists() {
+            create(&hfile, &history_table);
+        }
+
+        let conn = match Conn::open(&hfile) {
+            Ok(x) => x,
+            Err(e) => {
+                println_stderr!("cicada: history: conn error: {}", e);
+                return;
+            }
+        };
+        let sql = format!(
+            "INSERT INTO \
+            {} (inp, rtn, tsb, tse, sessionid, info) \
+            VALUES('{}', {}, {}, {}, '{}', 'dir:{}|');",
+            history_table,
+            str::replace(line.trim(), "'", "''"),
+            status,
+            tsb,
+            tse,
+            sh.session_id,
+            sh.current_dir,
+        );
+        match conn.execute(&sql, []) {
+            Ok(_) => {}
+            Err(e) => println_stderr!("cicada: history: save error: {}", e),
+        }
+    }
+
+    pub fn add(
+        sh: &shell::Shell,
+        rl: &mut Interface<DefaultTerminal>,
+        line: &str,
+        status: i32,
+        tsb: f64,
+        tse: f64,
+    ) {
+        add_raw(sh, line, status, tsb, tse);
+        rl.add_history(line.to_string());
     }
 }
 
@@ -6985,6 +7243,141 @@ pub mod iter
 pub mod marker
 {
     pub use std::marker::{ * };
+}
+
+pub mod now
+{
+    /*!
+    */
+    use ::
+    {
+        collections::{ HashMap },
+        io::{ self, Read, Write },
+        shell::{self, Shell},
+        types::{*},
+        *,
+    };
+    /*
+    */
+    pub fn run_procs_for_non_tty(sh: &mut Shell)
+    {
+        let mut buffer = String::new();
+        let stdin = io::stdin();
+        let mut handle = stdin.lock();
+        match handle.read_to_string(&mut buffer) {
+            Ok(_) => {
+                run_command_line(sh, &buffer, false, false);
+            }
+            Err(e) => {
+                println!("cicada: stdin.read_to_string() failed: {:?}", e);
+            }
+        }
+    }
+
+    pub fn run_command_line(
+        sh: &mut Shell,
+        line: &str,
+        tty: bool,
+        capture: bool,
+    ) -> Vec<CommandResult> {
+        let mut cr_list = Vec::new();
+        let mut status = 0;
+        let mut sep = String::new();
+        for token in parses::lines::line_to_cmds(line) {
+            if token == ";" || token == "&&" || token == "||" {
+                sep = token.clone();
+                continue;
+            }
+            if sep == "&&" && status != 0 {
+                break;
+            }
+            if sep == "||" && status == 0 {
+                break;
+            }
+            let cmd = token.clone();
+            let cr = run_proc(sh, &cmd, tty, capture);
+            status = cr.status;
+            sh.previous_status = status;
+            cr_list.push(cr);
+        }
+        cr_list
+    }
+
+    fn line_to_tokens(sh: &mut Shell, line: &str) -> (Tokens, HashMap<String, String>) {
+        let linfo = parses::lines::parse_line(line);
+        let mut tokens = linfo.tokens;
+        shell::do_expansion(sh, &mut tokens);
+        let envs = drain_env_tokens(&mut tokens);
+        (tokens, envs)
+    }
+
+    fn set_shell_vars(sh: &mut Shell, envs: &HashMap<String, String>) {
+        for (name, value) in envs.iter() {
+            sh.set_env(name, value);
+        }
+    }
+    
+    fn run_proc(sh: &mut Shell, line: &str, tty: bool, capture: bool) -> CommandResult {
+        let log_cmd = !sh.cmd.starts_with(' ');
+        match CommandLine::from_line(line, sh) {
+            Ok(cl) => {
+                if cl.is_empty() {
+                    if !cl.envs.is_empty() {
+                        set_shell_vars(sh, &cl.envs);
+                    }
+                    return CommandResult::new();
+                }
+
+                let (term_given, cr) = run::pipeline(sh, &cl, tty, capture, log_cmd);
+                if term_given {
+                    unsafe {
+                        let gid = libc::getpgid(0);
+                        shell::give_terminal_to(gid);
+                    }
+                }
+
+                cr
+            }
+            Err(e) => {
+                println_stderr!("cicada: {}", e);
+                CommandResult::from_status(0, 1)
+            }
+        }
+    }
+
+    fn run_with_shell(sh: &mut Shell, line: &str) -> CommandResult {
+        let (tokens, envs) = line_to_tokens(sh, line);
+        if tokens.is_empty() {
+            set_shell_vars(sh, &envs);
+            return CommandResult::new();
+        }
+
+        match CommandLine::from_line(line, sh) 
+        {
+            Ok(c) => {
+                let (term_given, cr) = run::pipeline(sh, &c, false, true, false);
+                if term_given {
+                    unsafe {
+                        let gid = libc::getpgid(0);
+                        shell::give_terminal_to(gid);
+                    }
+                }
+
+                cr
+            }
+            Err(e) => {
+                println_stderr!("cicada: {}", e);
+                CommandResult::from_status(0, 1)
+            }
+        }
+    }
+
+    pub fn run(line: &str) -> CommandResult {
+        let mut sh = Shell::new();
+        run_with_shell(&mut sh, line)
+    }
+
+
 }
 
 pub mod num
@@ -21565,29 +21958,19 @@ pub mod os
 
     pub fn get_other_name() -> String 
     {
-        let mut name = get_release_value("PRETTY_NAME");
+        let mut name = ::get::release_value("PRETTY_NAME");
         if !name.is_empty() {
             return name;
         }
-        name = get_release_value("DISTRIB_DESCRIPTION");
+        name = ::get::release_value("DISTRIB_DESCRIPTION");
         if !name.is_empty() {
             return name;
         }
-        name = get_release_value("IMAGE_DESCRIPTION");
+        name = ::get::release_value("IMAGE_DESCRIPTION");
         if !name.is_empty() {
             return name;
         }
         get_uname_mo()
-    }
-
-    pub fn get_release_value(ptn: &str) -> String
-    {
-        let line = format!(
-            "grep -i '{}' /etc/*release* 2>&1 | grep -o '=.*' | tr '\"=' ' '",
-            ptn
-        );
-        let cr = now::run(&line);
-        cr.stdout.trim().to_string()
     }
 
     pub fn get_uname() -> String 
@@ -27053,6 +27436,7 @@ pub mod run
     {
         ffi::{ CStr, CString },
         fs::{ File },
+        os::{ fd::RawFd, unix::io::FromRawFd },
         shell::{ Shell },
         types::{ * },
         *,
@@ -27062,10 +27446,7 @@ pub mod run
     use std::ffi::{CStr, CString};
     use std::fs::File;
     use std::io::{Read, Write};
-    use std::os::fd::RawFd;
-    use std::os::unix::io::FromRawFd;
-    use std::process;
-
+    
     use libs::pipes::pipe;
     use nix::unistd::{execve, ForkResult};
 
@@ -27078,145 +27459,8 @@ pub mod run
     use crate::shell::{self, Shell};
     use crate::tools;
     use crate::types::{CommandLine, CommandOptions, CommandResult};
-    */
-    pub fn try_run_builtin_in_subprocess( sh: &mut Shell, cl: &CommandLine, idx_cmd: usize, capture: bool ) -> Option<i32>
-    {
-        if let Some(cr) = try_run_builtin(sh, cl, idx_cmd, capture) { return Some(cr.status); }
-        None
-    }
-
-    pub fn try_run_builtin( sh: &mut Shell, cl: &CommandLine, idx_cmd: usize, capture: bool ) -> Option<CommandResult>
-    {
-        let capture = capture && idx_cmd + 1 == cl.commands.len();
-
-        if idx_cmd >= cl.commands.len()
-        {
-            println_stderr!("unexpected error in try_run_builtin");
-            return None;
-        }
-
-        let cmd = &cl.commands[idx_cmd];
-        let tokens = cmd.tokens.clone();
-        let cname = tokens[0].1.clone();
-        
-        if cname == "alias"
-        {
-            let cr = api::run_alias(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "bg"
-        {
-            let cr = api::run_bg(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "cd"
-        {
-            let cr = api::run_cd(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "cinfo"
-        {
-            let cr = api::run_info(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "exec"
-        {
-            let cr = api::run_exec(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "exit"
-        {
-            let cr = api::run_exit(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "export"
-        {
-            let cr = api::run_export(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "fg"
-        {
-            let cr = api::run_fg(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "history"
-        {
-            let cr = api::run_history(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "jobs"
-        {
-            let cr = api::run_jobs(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "minfd"
-        {
-            let cr = api::run_minfd(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "read"
-        {
-            let cr = api::run_read(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "set"
-        {
-            let cr = api::run_set(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "source"
-        {
-            let cr = api::run_source(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "ulimit"
-        {
-            let cr = api::run_ulimit(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "unalias"
-        {
-            let cr = api::run_unalias(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "unset"
-        {
-            let cr = api::run_unset(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "unpath"
-        {
-            let cr = api::run_unpath(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-        
-        else if cname == "vox"
-        {
-            let cr = api::run_vox(sh, cl, cmd, capture);
-            return Some(cr);
-        }
-
-        None
-    }
-    
-    pub fn run_pipeline( sh: &mut shell::Shell, cl: &CommandLine, tty: bool, capture: bool, log_cmd: bool ) -> (bool, CommandResult) 
+    */    
+    pub fn pipeline( sh: &mut shell::Shell, cl: &CommandLine, tty: bool, capture: bool, log_cmd: bool ) -> (bool, CommandResult) 
     {
         let mut term_given = false;
 
@@ -27226,7 +27470,7 @@ pub mod run
             return (term_given, CommandResult::error());
         }
         
-        if let Some(cr) = try_run_func(sh, cl, capture, log_cmd) { return (term_given, cr); }
+        if let Some(cr) = try_fn(sh, cl, capture, log_cmd) { return (term_given, cr); }
 
         let length = cl.commands.len();
 
@@ -27348,7 +27592,7 @@ pub mod run
         (term_given, cmd_result)
     }
     
-    pub fn run_single_program( sh: &mut shell::Shell, cl: &CommandLine, idx_cmd: usize, options: &CommandOptions, pgid: &mut i32, term_given: &mut bool, cmd_result: &mut CommandResult, pipes: &[(RawFd, RawFd)], fds_capture_stdout: &Option<(RawFd, RawFd)>, fds_capture_stderr: &Option<(RawFd, RawFd)> ) -> i32
+    pub fn single_program( sh: &mut shell::Shell, cl: &CommandLine, idx_cmd: usize, options: &CommandOptions, pgid: &mut i32, term_given: &mut bool, cmd_result: &mut CommandResult, pipes: &[(RawFd, RawFd)], fds_capture_stdout: &Option<(RawFd, RawFd)>, fds_capture_stderr: &Option<(RawFd, RawFd)> ) -> i32
     {
         let capture = options.capture_output;
 
@@ -27727,7 +27971,144 @@ pub mod run
         }
     }
 
-    pub fn try_run_func( sh: &mut Shell, cl: &CommandLine, capture: bool, log_cmd: bool ) -> Option<CommandResult>
+    pub fn try_builtin_in_subprocess( sh: &mut Shell, cl: &CommandLine, idx_cmd: usize, capture: bool ) -> Option<i32>
+    {
+        if let Some(cr) = try_builtin(sh, cl, idx_cmd, capture) { return Some(cr.status); }
+        None
+    }
+
+    pub fn try_builtin( sh: &mut Shell, cl: &CommandLine, idx_cmd: usize, capture: bool ) -> Option<CommandResult>
+    {
+        let capture = capture && idx_cmd + 1 == cl.commands.len();
+
+        if idx_cmd >= cl.commands.len()
+        {
+            println_stderr!("unexpected error in try_run_builtin");
+            return None;
+        }
+
+        let cmd = &cl.commands[idx_cmd];
+        let tokens = cmd.tokens.clone();
+        let cname = tokens[0].1.clone();
+        
+        if cname == "alias"
+        {
+            let cr = api::run_alias(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "bg"
+        {
+            let cr = api::run_bg(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "cd"
+        {
+            let cr = api::run_cd(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "cinfo"
+        {
+            let cr = api::run_info(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "exec"
+        {
+            let cr = api::run_exec(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "exit"
+        {
+            let cr = api::run_exit(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "export"
+        {
+            let cr = api::run_export(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "fg"
+        {
+            let cr = api::run_fg(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "history"
+        {
+            let cr = api::run_history(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "jobs"
+        {
+            let cr = api::run_jobs(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "minfd"
+        {
+            let cr = api::run_minfd(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "read"
+        {
+            let cr = api::run_read(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "set"
+        {
+            let cr = api::run_set(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "source"
+        {
+            let cr = api::run_source(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "ulimit"
+        {
+            let cr = api::run_ulimit(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "unalias"
+        {
+            let cr = api::run_unalias(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "unset"
+        {
+            let cr = api::run_unset(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "unpath"
+        {
+            let cr = api::run_unpath(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+        
+        else if cname == "vox"
+        {
+            let cr = api::run_vox(sh, cl, cmd, capture);
+            return Some(cr);
+        }
+
+        None
+    }
+
+    pub fn try_fn( sh: &mut Shell, cl: &CommandLine, capture: bool, log_cmd: bool ) -> Option<CommandResult>
     {
         if cl.is_empty() { return None; }
 
@@ -31775,6 +32156,252 @@ pub mod system
             Overwrite,
         }
     }
+
+    pub mod jobs
+    {
+        /*!
+        */
+        use ::
+        {
+            types::{ * },
+            *,
+        };
+        /*
+        use std::io::Write;
+
+        use nix::sys::signal::Signal;
+        use nix::sys::wait::waitpid;
+        use nix::sys::wait::WaitPidFlag as WF;
+        use nix::sys::wait::WaitStatus as WS;
+        use nix::unistd::Pid;
+
+        use crate::shell;
+        use crate::signals;
+        use crate::types::{self, CommandResult};
+        */
+        pub fn get_job_line(job: &Job, trim: bool) -> String 
+        {
+            let mut cmd = job.cmd.clone();
+            if trim && cmd.len() > 50 {
+                cmd.truncate(50);
+                cmd.push_str(" ...");
+            }
+            let _cmd = if job.is_bg && job.status == "Running" {
+                format!("{} &", cmd)
+            } else {
+                cmd
+            };
+            format!("[{}] {}  {}   {}", job.id, job.gid, job.status, _cmd)
+        }
+
+        pub fn print_job(job: &Job) 
+        {
+            let line = get_job_line(job, true);
+            println_stderr!("{}", line);
+        }
+
+        pub fn mark_job_as_done(sh: &mut shell::Shell, gid: i32, pid: i32, reason: &str) 
+        {
+            if let Some(mut job) = sh.remove_pid_from_job(gid, pid) {
+                job.status = reason.to_string();
+                if job.is_bg {
+                    println_stderr!("");
+                    print_job(&job);
+                }
+            }
+        }
+
+        pub fn mark_job_as_stopped(sh: &mut shell::Shell, gid: i32, report: bool) 
+        {
+            sh.mark_job_as_stopped(gid);
+            if !report {
+                return;
+            }
+
+            // add an extra line to separate output of fg commands if any.
+            if let Some(job) = sh.get_job_by_gid(gid) {
+                println_stderr!("");
+                print_job(job);
+            }
+        }
+
+        pub fn mark_job_member_stopped(sh: &mut shell::Shell, pid: i32, gid: i32, report: bool) 
+        {
+            let _gid = if gid == 0 {
+                unsafe { libc::getpgid(pid) }
+            } else {
+                gid
+            };
+
+            if let Some(job) = sh.mark_job_member_stopped(pid, gid) {
+                if job.all_members_stopped() {
+                    mark_job_as_stopped(sh, gid, report);
+                }
+            }
+        }
+
+        pub fn mark_job_member_continued(sh: &mut shell::Shell, pid: i32, gid: i32) 
+        {
+            let _gid = if gid == 0 {
+                unsafe { libc::getpgid(pid) }
+            } else {
+                gid
+            };
+
+            if let Some(job) = sh.mark_job_member_continued(pid, gid) {
+                if job.all_members_running() {
+                    mark_job_as_running(sh, gid, true);
+                }
+            }
+        }
+
+        pub fn mark_job_as_running(sh: &mut shell::Shell, gid: i32, bg: bool) 
+        {
+            sh.mark_job_as_running(gid, bg);
+        }
+        
+        pub fn waitpidx(wpid: i32, block: bool) -> WaitStatus 
+        {
+            let options = if block {
+                Some(WF::WUNTRACED | WF::WCONTINUED)
+            } else {
+                Some(WF::WUNTRACED | WF::WCONTINUED | WF::WNOHANG)
+            };
+            match waitpid(Pid::from_raw(wpid), options) {
+                Ok(WS::Exited(pid, status)) => {
+                    let pid = i32::from(pid);
+                    WaitStatus::from_exited(pid, status)
+                }
+                Ok(WS::Stopped(pid, sig)) => {
+                    let pid = i32::from(pid);
+                    WaitStatus::from_stopped(pid, sig as i32)
+                }
+                Ok(WS::Continued(pid)) => {
+                    let pid = i32::from(pid);
+                    WaitStatus::from_continuted(pid)
+                }
+                Ok(WS::Signaled(pid, sig, _core_dumped)) => {
+                    let pid = i32::from(pid);
+                    WaitStatus::from_signaled(pid, sig as i32)
+                }
+                Ok(WS::StillAlive) => WaitStatus::empty(),
+                Ok(_others) => {
+                    WaitStatus::from_others()
+                }
+                Err(e) => WaitStatus::from_error(e as i32),
+            }
+        }
+
+        pub fn wait_fg_job(sh: &mut shell::Shell, gid: i32, pids: &[i32]) -> CommandResult {
+            let mut cmd_result = CommandResult::new();
+            let mut count_waited = 0;
+            let count_child = pids.len();
+            if count_child == 0 {
+                return cmd_result;
+            }
+            let pid_last = pids.last().unwrap();
+
+            loop {
+                let ws = waitpidx(-1, true);
+                
+                if ws.is_error() {
+                    let err = ws.get_errno();
+                    if err == nix::Error::ECHILD {
+                        break;
+                    }
+
+                    log!("jobc unexpected waitpid error: {}", err);
+                    cmd_result = CommandResult::from_status(gid, err as i32);
+                    break;
+                }
+
+                let pid = ws.get_pid();
+                let is_a_fg_child = pids.contains(&pid);
+                if is_a_fg_child && !ws.is_continued() {
+                    count_waited += 1;
+                }
+
+                if ws.is_exited() {
+                    if is_a_fg_child {
+                        mark_job_as_done(sh, gid, pid, "Done");
+                    } else {
+                        let status = ws.get_status();
+                        signals::insert_reap_map(pid, status);
+                    }
+                } else if ws.is_stopped() {
+                    if is_a_fg_child {
+                        mark_job_member_stopped(sh, pid, gid, true);
+                    } else {
+                        signals::insert_stopped_map(pid);
+                        mark_job_member_stopped(sh, pid, 0, false);
+                    }
+                } else if ws.is_continued() {
+                    if !is_a_fg_child {
+                        signals::insert_cont_map(pid);
+                    }
+                    continue;
+                } else if ws.is_signaled() {
+                    if is_a_fg_child {
+                        mark_job_as_done(sh, gid, pid, "Killed");
+                    } else {
+                        signals::killed_map_insert(pid, ws.get_signal());
+                    }
+                }
+
+                if is_a_fg_child && pid == *pid_last {
+                    let status = ws.get_status();
+                    cmd_result.status = status;
+                }
+
+                if count_waited >= count_child {
+                    break;
+                }
+            }
+            cmd_result
+        }
+
+        pub fn try_wait_bg_jobs(sh: &mut shell::Shell, report: bool, sig_handler_enabled: bool) {
+            if sh.jobs.is_empty() {
+                return;
+            }
+
+            if !sig_handler_enabled {
+                signals::handle_sigchld(Signal::SIGCHLD as i32);
+            }
+
+            let jobs = sh.jobs.clone();
+            for (_i, job) in jobs.iter() {
+                for pid in job.pids.iter() {
+                    if let Some(_status) = signals::pop_reap_map(*pid) {
+                        mark_job_as_done(sh, job.gid, *pid, "Done");
+                        continue;
+                    }
+
+                    if let Some(sig) = signals::killed_map_pop(*pid) {
+                        let reason = if sig == Signal::SIGQUIT as i32 {
+                            format!("Quit: {}", sig)
+                        } else if sig == Signal::SIGINT as i32 {
+                            format!("Interrupt: {}", sig)
+                        } else if sig == Signal::SIGKILL as i32 {
+                            format!("Killed: {}", sig)
+                        } else if sig == Signal::SIGTERM as i32 {
+                            format!("Terminated: {}", sig)
+                        } else {
+                            format!("Killed: {}", sig)
+                        };
+                        mark_job_as_done(sh, job.gid, *pid, &reason);
+                        continue;
+                    }
+
+                    if signals::pop_stopped_map(*pid) {
+                        mark_job_member_stopped(sh, *pid, job.gid, report);
+                    } else if signals::pop_cont_map(*pid) {
+                        mark_job_member_continued(sh, *pid, job.gid);
+                    }
+                }
+            }
+        }
+    }
     /*
     libsqlite3 v0.36.0*/
     pub mod sql
@@ -33258,6 +33885,30 @@ pub mod system
             rc
         }
     }
+
+    pub fn complete_intro(n: usize) -> String { format!("Display all {} possibilities? (y/n)", n) }
+
+    pub fn number_len(n: i32) -> usize
+    {
+        match n 
+        {
+            -1_000_000              => 8,
+            -  999_999 ..= -100_000 => 7,
+            -   99_999 ..= - 10_000 => 6,
+            -    9_999 ..= -  1_000 => 5,
+            -      999 ..= -    100 => 4,
+            -       99 ..= -     10 => 3,
+            -        9 ..= -      1 => 2,
+                    0 ..=        9 => 1,
+                    10 ..=       99 => 2,
+                100 ..=      999 => 3,
+                1_000 ..=    9_999 => 4,
+                10_000 ..=   99_999 => 5,
+            100_000 ..=  999_999 => 6,
+            1_000_000              => 7,
+            _ => unreachable!()
+        }
+    }
 }
 /*
 */
@@ -33285,6 +33936,61 @@ pub mod time
             }
 
             None => -1
+        }
+    }
+
+    #[derive(Debug, PartialEq, Eq)]
+    pub struct DateTime
+    {
+        odt: OffsetDateTime,
+    }
+
+    impl DateTime 
+    {
+        pub fn now() -> Self 
+        {
+            let odt: OffsetDateTime = match OffsetDateTime::now_local()
+            {
+                Ok(dt) => dt,
+                Err(_) => OffsetDateTime::now_utc(),
+            };
+
+            DateTime { odt }
+        }
+
+        pub fn from_timestamp(ts: f64) -> Self 
+        {
+            let dummy_now = Self::now();
+            let offset_seconds = dummy_now.odt.offset().whole_minutes() * 60;
+            let ts_nano = (ts + offset_seconds as f64) * 1000000000.0;
+            let odt: OffsetDateTime = match OffsetDateTime::from_unix_timestamp_nanos(ts_nano as i128)
+            {
+                Ok(x) => x,
+                Err(_) => OffsetDateTime::now_utc(),
+            };
+
+            DateTime { odt }
+        }
+
+        pub fn unix_timestamp(&self) -> f64 { self.odt.unix_timestamp_nanos() as f64 / 1000000000.0 }
+    }
+
+    impl ::fmt::Display for DateTime 
+    {
+        fn fmt(&self, f: &mut ::fmt::Formatter<'_>) -> ::fmt::Result 
+        {
+            write!
+            (
+                f,
+                "{:04}-{:02}-{:02} {:02}:{:02}:{:02}.{:03}",
+                self.odt.year(),
+                self.odt.month() as u8,
+                self.odt.day(),
+                self.odt.hour(),
+                self.odt.minute(),
+                self.odt.second(),
+                self.odt.millisecond(),
+            )
         }
     }
 
@@ -37354,4 +38060,4 @@ pub fn main() -> Result<(), ()>
         Ok( () )
     }
 }
-// 37357 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// 38063 /////////////////////////////////////////////////////////////////////////////////////////////////////////////
